@@ -21,13 +21,10 @@ class ChartBuilder {
   }
 
   initTCOComparisonChart() {
-    const ctx = document.getElementById('tco-comparison-chart');
+    const ctx = document.getElementById('tco-comparison-chart').getContext('2d');
     if (!ctx) return;
     
-    const ctxCanvas = ctx.getContext('2d');
-    if (!ctxCanvas) return;
-    
-    this.charts.tcoComparison = new Chart(ctxCanvas, {
+    this.charts.tcoComparison = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: ['Cisco ISE', 'Aruba ClearPass', 'Forescout', 'Microsoft NPS', 'Portnox Cloud'],
@@ -88,16 +85,13 @@ class ChartBuilder {
   updateTCOComparisonChart(results) {
     if (!this.charts.tcoComparison || !results) return;
     
-    // Safely get vendors
-    const vendors = Object.keys(window.vendorData || {});
-    if (!vendors.length) return;
-    
-    const labels = vendors.map(vendor => window.vendorData[vendor].name);
+    const vendors = Object.keys(vendorData);
+    const labels = vendors.map(vendor => vendorData[vendor].name);
     const initialCostsData = vendors.map(vendor => {
-      return results[vendor] ? results[vendor].totalInitialCosts + (results[vendor].migrationCost || 0) : 0;
+      return results[vendor].totalInitialCosts + (results[vendor].migrationCost || 0);
     });
     const ongoingCostsData = vendors.map(vendor => {
-      return results[vendor] ? results[vendor].annualCosts * results.yearsToProject : 0;
+      return results[vendor].annualCosts * results.yearsToProject;
     });
     
     this.charts.tcoComparison.data.labels = labels;
@@ -107,13 +101,10 @@ class ChartBuilder {
   }
 
   initCumulativeCostChart() {
-    const ctx = document.getElementById('cumulative-cost-chart');
+    const ctx = document.getElementById('cumulative-cost-chart').getContext('2d');
     if (!ctx) return;
     
-    const ctxCanvas = ctx.getContext('2d');
-    if (!ctxCanvas) return;
-    
-    this.charts.cumulativeCost = new Chart(ctxCanvas, {
+    this.charts.cumulativeCost = new Chart(ctx, {
       type: 'line',
       data: {
         labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
@@ -159,11 +150,8 @@ class ChartBuilder {
   updateCumulativeCostChart(results) {
     if (!this.charts.cumulativeCost || !results) return;
     
-    // Safely get vendors
-    const vendors = Object.keys(window.vendorData || {});
-    if (!vendors.length) return;
-    
-    const yearsToProject = results.yearsToProject || 3;
+    const vendors = Object.keys(vendorData);
+    const yearsToProject = results.yearsToProject;
     
     // Generate labels
     const labels = ['Initial'];
@@ -175,9 +163,7 @@ class ChartBuilder {
     const datasets = [];
     
     vendors.forEach(vendor => {
-      if (!results[vendor]) return;
-      
-      const vendorColor = this.chartColors[vendor] || '#888888';
+      const vendorColor = this.chartColors[vendor];
       const data = [];
       
       // Initial costs
@@ -190,7 +176,7 @@ class ChartBuilder {
       }
       
       datasets.push({
-        label: window.vendorData[vendor].name,
+        label: vendorData[vendor].name,
         data: data,
         backgroundColor: vendorColor,
         borderColor: vendorColor,
@@ -205,15 +191,10 @@ class ChartBuilder {
   }
 
   initBreakdownCharts(currentVendor, altVendor) {
-    const currentCtx = document.getElementById('current-breakdown-chart');
-    const altCtx = document.getElementById('alternative-breakdown-chart');
+    const currentCtx = document.getElementById('current-breakdown-chart').getContext('2d');
+    const altCtx = document.getElementById('alternative-breakdown-chart').getContext('2d');
     
     if (!currentCtx || !altCtx) return;
-    
-    const currentCtxCanvas = currentCtx.getContext('2d');
-    const altCtxCanvas = altCtx.getContext('2d');
-    
-    if (!currentCtxCanvas || !altCtxCanvas) return;
     
     const pieOptions = {
       responsive: true,
@@ -225,8 +206,8 @@ class ChartBuilder {
               const label = context.label || '';
               const value = context.raw || 0;
               const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
-              return `${label}: ${window.formatCurrency(value)} (${percentage}%)`;
+              const percentage = ((value / total) * 100).toFixed(1);
+              return `${label}: ${formatCurrency(value)} (${percentage}%)`;
             }
           }
         }
@@ -234,7 +215,7 @@ class ChartBuilder {
     };
     
     // Create placeholder charts, to be updated with actual data
-    this.charts.currentBreakdown = new Chart(currentCtxCanvas, {
+    this.charts.currentBreakdown = new Chart(currentCtx, {
       type: 'pie',
       data: {
         labels: ['Hardware', 'Network Redesign', 'Implementation', 'Training', 'Maintenance', 'Licensing', 'Personnel', 'Downtime'],
@@ -249,7 +230,7 @@ class ChartBuilder {
       options: pieOptions
     });
     
-    this.charts.altBreakdown = new Chart(altCtxCanvas, {
+    this.charts.altBreakdown = new Chart(altCtx, {
       type: 'pie',
       data: {
         labels: ['Hardware', 'Network Redesign', 'Implementation', 'Training', 'Maintenance', 'Licensing', 'Personnel', 'Downtime'],
@@ -266,44 +247,39 @@ class ChartBuilder {
   }
 
   updateBreakdownCharts(currentVendor, altVendor) {
-    if (!this.charts.currentBreakdown || !this.charts.altBreakdown || !window.calculator || !window.calculator.results) return;
+    if (!this.charts.currentBreakdown || !this.charts.altBreakdown || !window.calculator.results) return;
     
     const results = window.calculator.results;
+    const yearsToProject = results.yearsToProject;
     
     const createBreakdownData = (vendor) => {
-      // Check if vendor exists in results
       const vendorResults = results[vendor];
-      if (!vendorResults || !vendorResults.costBreakdown) {
-        console.warn(`No cost breakdown data found for vendor: ${vendor}`);
-        return [0, 0, 0, 0, 0, 0, 0, 0];
-      }
+      if (!vendorResults) return [0, 0, 0, 0, 0, 0, 0, 0];
       
-      // Create breakdown data from costBreakdown object
-      return [
-        vendorResults.costBreakdown.hardware || 0,
-        vendorResults.costBreakdown.networkRedesign || 0,
-        vendorResults.costBreakdown.implementation || 0,
-        vendorResults.costBreakdown.training || 0,
-        vendorResults.costBreakdown.maintenance || 0,
-        vendorResults.costBreakdown.licensing || 0,
-        vendorResults.costBreakdown.personnel || 0,
-        vendorResults.costBreakdown.downtime || 0
+      const orgSize = document.getElementById('organization-size').value;
+      const vendorData = vendorData[vendor]?.[orgSize] || {};
+      const complexityMultiplier = calculateComplexityMultiplier(vendor, window.vendorData[vendor].cloudBased);
+      
+      // Create breakdown data
+      const categories = [
+        vendorResults.costBreakdown.hardware,
+        vendorResults.costBreakdown.networkRedesign,
+        vendorResults.costBreakdown.implementation,
+        vendorResults.costBreakdown.training,
+        vendorResults.costBreakdown.maintenance,
+        vendorResults.costBreakdown.licensing,
+        vendorResults.costBreakdown.personnel,
+        vendorResults.costBreakdown.downtime
       ];
+      
+      return categories;
     };
     
     // Update charts
-    try {
-      this.charts.currentBreakdown.data.datasets[0].data = createBreakdownData(currentVendor);
-      this.charts.currentBreakdown.update();
-    } catch (err) {
-      console.error("Error updating current breakdown chart:", err);
-    }
+    this.charts.currentBreakdown.data.datasets[0].data = createBreakdownData(currentVendor);
+    this.charts.currentBreakdown.update();
     
-    try {
-      this.charts.altBreakdown.data.datasets[0].data = createBreakdownData(altVendor);
-      this.charts.altBreakdown.update();
-    } catch (err) {
-      console.error("Error updating alternative breakdown chart:", err);
-    }
+    this.charts.altBreakdown.data.datasets[0].data = createBreakdownData(altVendor);
+    this.charts.altBreakdown.update();
   }
 }
