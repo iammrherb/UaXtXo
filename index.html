@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portnox TCO and ROI Calculator</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <img src="img/portnox-logo.png" alt="Portnox" id="portnox-logo">
+                <h1>Total Cost of Ownership Calculator</h1>
+            </div>
+            <div class="header-actions">
+                <button id="save-btn" class="btn btn-outline">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button id="share-btn" class="btn btn-outline">
+                    <i class="fas fa-share-alt"></i> Share
+                </button>
+                <button id="print-btn" class="btn btn-outline">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+        </header>
+
+        <main class="calculator-container">
+            <div class="sidebar">
+                <div class="vendor-selection-card">
+                    <h3>Current NAC Solution</h3>
+                    <div class="vendor-options">
+                        <div class="vendor-card" data-vendor="cisco">
+                            <img src="img/cisco-logo.png" alt="Cisco ISE">
+                            <span>Cisco ISE</span>
+                        </div>
+                        <div class="vendor-card" data-vendor="aruba">
+                            <img src="img/aruba-logo.png" alt="Aruba ClearPass">
+                            <span>Aruba ClearPass</span>
+                        </div>
+                        <div class="vendor-card" data-vendor="forescout">
+                            <img src="img/forescout-logo.png" alt="Forescout">
+                            <span>Forescout</span>
+                        </div>
+                        <div class="vendor-card" data-vendor="nps">
+                            <img src="img/microsoft-logo.png" alt="Microsoft NPS">
+                            <span>Microsoft NPS</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="organization-inputs">
+                    <h3>Organization Profile</h3>
+                    <div class="input-group">
+                        <label for="organization-size">Organization Size</label>
+                        <select id="organization-size">
+                            <option value="small">Small (1-500 devices)</option>
+                            <option value="medium" selected>Medium (501-2,500 devices)</option>
+                            <option value="large">Large (2,501-10,000 devices)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="device-count">Number of Devices</label>
+                        <input type="number" id="device-count" value="1000" min="1">
+                    </div>
+                    <div class="input-group">
+                        <label for="years-to-project">Years to Project</label>
+                        <select id="years-to-project">
+                            <option value="1">1 Year</option>
+                            <option value="2">2 Years</option>
+                            <option value="3" selected>3 Years</option>
+                            <option value="5">5 Years</option>
+                        </select>
+                    </div>
+                    <div class="advanced-options-toggle">
+                        <button id="advanced-toggle" class="btn btn-text">
+                            <i class="fas fa-cog"></i> Advanced Options
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div id="advanced-options" class="advanced-options-panel hidden">
+                        <div class="input-group checkbox-group">
+                            <input type="checkbox" id="multiple-locations">
+                            <label for="multiple-locations">Multiple Physical Locations</label>
+                        </div>
+                        <div class="location-count-container hidden">
+                            <div class="input-group">
+                                <label for="location-count">Number of Locations</label>
+                                <input type="number" id="location-count" value="1" min="1">
+                            </div>
+                        </div>
+                        <div class="input-group checkbox-group">
+                            <input type="checkbox" id="complex-authentication">
+                            <label for="complex-authentication">Complex Authentication Requirements</label>
+                        </div>
+                        <div class="input-group checkbox-group">
+                            <input type="checkbox" id="legacy-devices">
+                            <label for="legacy-devices">Legacy Devices to Support</label>
+                        </div>
+                        <div class="legacy-devices-container hidden">
+                            <div class="input-group">
+                                <label for="legacy-percentage">Percentage of Legacy Devices</label>
+                                <div class="range-container">
+                                    <input type="range" id="legacy-percentage" min="1" max="100" value="10">
+                                    <span id="legacy-percentage-display">10%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-group checkbox-group">
+                            <input type="checkbox" id="cloud-integration">
+                            <label for="cloud-integration">Cloud Service Integrations</label>
+                        </div>
+                        <div class="input-group checkbox-group">
+                            <input type="checkbox" id="custom-policies">
+                            <label for="custom-policies">Custom Security Policies</label>
+                        </div>
+                        <div class="custom-policies-container hidden">
+                            <div class="input-group">
+                                <label for="policy-complexity">Policy Complexity Level</label>
+                                <select id="policy-complexity">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portnox-spotlight">
+                    <h3>Portnox Cloud Advantage</h3>
+                    <p>Cloud-native NAC with zero trust, simplified deployment and minimal maintenance overhead</p>
+                    <div class="potential-savings-container">
+                        <div class="savings-metric">
+                            <label>Potential 3-Year Savings</label>
+                            <span id="potential-savings-amount" class="savings-amount">$0</span>
+                        </div>
+                        <div class="savings-metric">
+                            <label>Implementation Time Reduction</label>
+                            <span id="implementation-time-reduction" class="savings-amount">0%</span>
+                        </div>
+                    </div>
+                    <button id="calculate-btn" class="btn btn-primary">
+                        <i class="fas fa-calculator"></i> Calculate ROI
+                    </button>
+                </div>
+            </div>
+
+            <div class="results-container">
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="tco">TCO Analysis</button>
+                    <button class="tab-button" data-tab="timeline">Implementation Timeline</button>
+                    <button class="tab-button" data-tab="features">Feature Comparison</button>
+                    <button class="tab-button" data-tab="fte">FTE Analysis</button>
+                    <button class="tab-button" data-tab="migration">Migration Path</button>
+                </div>
+
+                <div class="tab-content">
+                    <!-- TCO Tab -->
+                    <div id="tco" class="tab-pane active">
+                        <div class="sub-tabs">
+                            <button class="sub-tab-button active" data-subtab="overview">Overview</button>
+                            <button class="sub-tab-button" data-subtab="breakdown">Cost Breakdown</button>
+                            <button class="sub-tab-button" data-subtab="comparison">Vendor Comparison</button>
+                            <button class="sub-tab-button" data-subtab="roi">ROI Analysis</button>
+                        </div>
+
+                        <div class="sub-tab-content">
+                            <!-- TCO Overview Section -->
+                            <div id="overview" class="sub-tab-pane active">
+                                <div class="results-grid">
+                                    <div class="result-card">
+                                        <h3>TCO Comparison Chart</h3>
+                                        <div class="chart-container">
+                                            <canvas id="tco-comparison-chart"></canvas>
+                                        </div>
+                                    </div>
+                                    <div class="result-card">
+                                        <h3>Cumulative Cost Comparison</h3>
+                                        <div class="chart-container">
+                                            <canvas id="cumulative-cost-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="result-card">
+                                    <h3>TCO Summary Table</h3>
+                                    <div class="table-container">
+                                        <table id="tco-summary-table" class="data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Vendor</th>
+                                                    <th>3-Year TCO</th>
+                                                    <th>Initial Costs</th>
+                                                    <th>Annual Costs</th>
+                                                    <th>Savings vs Current</th>
+                                                    <th>Savings %</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Dynamically populated by JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="comparison-highlight-card">
+                                    <h3>Portnox Cloud vs <span id="current-solution-name">Cisco ISE</span> Comparison</h3>
+                                    <div class="comparison-metrics">
+                                        <div class="metric-container">
+                                            <span class="metric-label">3-Year TCO Savings</span>
+                                            <div class="metric-value-container">
+                                                <span id="tco-savings-amount" class="metric-value">$750,000</span>
+                                                <div class="progress-bar">
+                                                    <div class="progress" style="width: 65%"></div>
+                                                </div>
+                                                <div class="progress-labels">
+                                                    <span>0%</span>
+                                                    <span id="savings-percentage">65% savings</span>
+                                                    <span>100%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="metric-container">
+                                            <span class="metric-label">Annual Operating Cost Reduction</span>
+                                            <div class="metric-value-container">
+                                                <span id="annual-cost-reduction" class="metric-value">$185,000/year</span>
+                                                <div class="progress-bar">
+                                                    <div class="progress" style="width: 74%"></div>
+                                                </div>
+                                                <div class="progress-labels">
+                                                    <span>0%</span>
+                                                    <span id="operating-reduction-percentage">74% reduction</span>
+                                                    <span>100%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="key-benefits">
+                                        <h4>Key Benefits of Migrating to Portnox Cloud</h4>
+                                        <div class="benefits-grid">
+                                            <!-- Dynamically filled by JavaScript -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cost Breakdown Section -->
+                            <div id="breakdown" class="sub-tab-pane">
+                                <div class="results-grid">
+                                    <div class="result-card">
+                                        <h3>Current Solution: <span id="breakdown-current-solution">Cisco ISE</span></h3>
+                                        <div class="chart-container">
+                                            <canvas id="current-breakdown-chart"></canvas>
+                                        </div>
+                                    </div>
+                                    <div class="result-card">
+                                        <h3>Alternative Solution: <span id="breakdown-alt-solution">Portnox Cloud</span></h3>
+                                        <div class="chart-container">
+                                            <canvas id="alternative-breakdown-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="result-card">
+                                    <h3>Cost Breakdown Across All Vendors</h3>
+                                    <div class="table-container">
+                                        <table id="cost-breakdown-table" class="data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Vendor</th>
+                                                    <th>Hardware</th>
+                                                    <th>Implementation</th>
+                                                    <th>Licensing</th>
+                                                    <th>Maintenance</th>
+                                                    <th>Personnel</th>
+                                                    <th>Downtime</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Dynamically populated by JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Additional sub-tab content sections would go here -->
+                            <!-- Vendor Comparison Section -->
+                            <div id="comparison" class="sub-tab-pane">
+                                <!-- Content for vendor comparison -->
+                            </div>
+
+                            <!-- ROI Analysis Section -->
+                            <div id="roi" class="sub-tab-pane">
+                                <!-- Content for ROI analysis -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other tab panes would go here -->
+                    <div id="timeline" class="tab-pane">
+                        <!-- Implementation timeline content -->
+                    </div>
+
+                    <div id="features" class="tab-pane">
+                        <!-- Feature comparison content -->
+                    </div>
+
+                    <div id="fte" class="tab-pane">
+                        <!-- FTE analysis content -->
+                    </div>
+
+                    <div id="migration" class="tab-pane">
+                        <!-- Migration path content -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <p>© 2025 Portnox - Network Security Solutions</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact Us</a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal for results -->
+    <div id="results-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>TCO Analysis Results</h2>
+            <div class="modal-body">
+                <div class="results-summary">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="export-pdf" class="btn btn-primary">Export as PDF</button>
+                <button id="close-modal" class="btn btn-outline">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript files -->
+    <script src="js/utils/helpers.js"></script>
+    <script src="js/vendors/vendor-data.js"></script>
+    <script src="js/components/ui-controller.js"></script>
+    <script src="js/charts/chart-builder.js"></script>
+    <script src="js/components/calculator.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
