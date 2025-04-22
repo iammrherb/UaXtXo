@@ -257,7 +257,7 @@ class ChartBuilder {
       if (!vendorResults) return [0, 0, 0, 0, 0, 0, 0, 0];
       
       const orgSize = document.getElementById('organization-size').value;
-      const vendorData = window.vendorData[vendor][orgSize];
+      const vendorData = vendorData[vendor]?.[orgSize] || {};
       const complexityMultiplier = calculateComplexityMultiplier(vendor, window.vendorData[vendor].cloudBased);
       
       // Create breakdown data
