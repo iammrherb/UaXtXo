@@ -2,14 +2,14 @@
  * Utility functions for the TCO Calculator
  */
 
-// Format currency - make globally available for chart tooltips
-window.formatCurrency = function(value) {
+// Format currency
+function formatCurrency(value) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 0
   }).format(value);
-};
+}
 
 // Format percentage
 function formatPercentage(value) {
@@ -23,30 +23,30 @@ function calculateComplexityMultiplier(vendor, cloudBased) {
   // Cloud vendors are less affected by complexity factors
   const cloudReductionFactor = cloudBased ? 0.4 : 1.0;
   
-  if (document.getElementById('multiple-locations')?.checked) {
+  if (document.getElementById('multiple-locations').checked) {
     // Additional 10% per location beyond the first, up to a max of 100% extra
-    const locationCount = parseInt(document.getElementById('location-count')?.value) || 1;
+    const locationCount = parseInt(document.getElementById('location-count').value) || 1;
     multiplier += Math.min(0.1 * (locationCount - 1), 1.0) * cloudReductionFactor;
   }
   
-  if (document.getElementById('complex-authentication')?.checked) {
+  if (document.getElementById('complex-authentication').checked) {
     multiplier += 0.15 * cloudReductionFactor;
   }
   
-  if (document.getElementById('legacy-devices')?.checked) {
+  if (document.getElementById('legacy-devices').checked) {
     // Additional 0-30% based on percentage of legacy devices
-    const legacyPercentage = parseInt(document.getElementById('legacy-percentage')?.value) || 10;
+    const legacyPercentage = parseInt(document.getElementById('legacy-percentage').value) || 10;
     multiplier += (legacyPercentage / 100) * 0.3 * cloudReductionFactor;
   }
   
-  if (document.getElementById('cloud-integration')?.checked) {
+  if (document.getElementById('cloud-integration').checked) {
     // Cloud vendors handle this better
     multiplier += 0.1 * cloudReductionFactor;
   }
   
-  if (document.getElementById('custom-policies')?.checked) {
+  if (document.getElementById('custom-policies').checked) {
     // Different multipliers based on policy complexity
-    const policyComplexity = document.getElementById('policy-complexity')?.value || 'medium';
+    const policyComplexity = document.getElementById('policy-complexity').value;
     if (policyComplexity === 'low') {
       multiplier += 0.05 * cloudReductionFactor;
     } else if (policyComplexity === 'medium') {
@@ -61,8 +61,6 @@ function calculateComplexityMultiplier(vendor, cloudBased) {
 
 // Calculate migration complexity factor
 function calculateMigrationFactor(fromVendor, toVendor) {
-  if (!fromVendor || !toVendor) return 0.5; // Default factor
-  
   const migrationFactors = {
     cisco: {
       aruba: 0.7,
@@ -100,17 +98,11 @@ function calculateMigrationFactor(fromVendor, toVendor) {
     return 0; // Same vendor has no migration cost
   }
   
-  if (migrationFactors[fromVendor] && migrationFactors[fromVendor][toVendor]) {
-    return migrationFactors[fromVendor][toVendor];
-  }
-  
-  return 0.5; // Default factor if not found
+  return migrationFactors[fromVendor][toVendor] || 0.5; // Default factor if not found
 }
 
 // Get FTE costs
 function calculateFTECosts(allocation) {
-  if (!allocation) return 0;
-  
   const fteCosts = {
     networkAdmin: 120000,
     securityAdmin: 135000,

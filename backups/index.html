@@ -33,20 +33,20 @@
                 <div class="vendor-selection-card">
                     <h3>Current NAC Solution</h3>
                     <div class="vendor-options">
-                        <div class="vendor-card active" data-vendor="cisco">
-                            <img src="img/cisco-logo.png" alt="Cisco ISE" class="vendor-logo">
+                        <div class="vendor-card" data-vendor="cisco">
+                            <img src="img/cisco-logo.png" alt="Cisco ISE">
                             <span>Cisco ISE</span>
                         </div>
                         <div class="vendor-card" data-vendor="aruba">
-                            <img src="img/aruba-logo.png" alt="Aruba ClearPass" class="vendor-logo">
+                            <img src="img/aruba-logo.png" alt="Aruba ClearPass">
                             <span>Aruba ClearPass</span>
                         </div>
                         <div class="vendor-card" data-vendor="forescout">
-                            <img src="img/forescout-logo.png" alt="Forescout" class="vendor-logo">
+                            <img src="img/forescout-logo.png" alt="Forescout">
                             <span>Forescout</span>
                         </div>
                         <div class="vendor-card" data-vendor="nps">
-                            <img src="img/microsoft-logo.png" alt="Microsoft NPS" class="vendor-logo">
+                            <img src="img/microsoft-logo.png" alt="Microsoft NPS">
                             <span>Microsoft NPS</span>
                         </div>
                     </div>
@@ -81,12 +81,12 @@
                             <i class="fas fa-chevron-down"></i>
                         </button>
                     </div>
-                    <div id="advanced-options" class="advanced-options-panel">
+                    <div id="advanced-options" class="advanced-options-panel hidden">
                         <div class="input-group checkbox-group">
                             <input type="checkbox" id="multiple-locations">
                             <label for="multiple-locations">Multiple Physical Locations</label>
                         </div>
-                        <div class="location-count-container">
+                        <div class="location-count-container hidden">
                             <div class="input-group">
                                 <label for="location-count">Number of Locations</label>
                                 <input type="number" id="location-count" value="1" min="1">
@@ -100,7 +100,7 @@
                             <input type="checkbox" id="legacy-devices">
                             <label for="legacy-devices">Legacy Devices to Support</label>
                         </div>
-                        <div class="legacy-devices-container">
+                        <div class="legacy-devices-container hidden">
                             <div class="input-group">
                                 <label for="legacy-percentage">Percentage of Legacy Devices</label>
                                 <div class="range-container">
@@ -117,7 +117,7 @@
                             <input type="checkbox" id="custom-policies">
                             <label for="custom-policies">Custom Security Policies</label>
                         </div>
-                        <div class="custom-policies-container">
+                        <div class="custom-policies-container hidden">
                             <div class="input-group">
                                 <label for="policy-complexity">Policy Complexity Level</label>
                                 <select id="policy-complexity">
@@ -213,13 +213,13 @@
                                         <div class="metric-container">
                                             <span class="metric-label">3-Year TCO Savings</span>
                                             <div class="metric-value-container">
-                                                <span id="tco-savings-amount" class="metric-value">$0</span>
+                                                <span id="tco-savings-amount" class="metric-value">$750,000</span>
                                                 <div class="progress-bar">
-                                                    <div class="progress" style="width: 0%"></div>
+                                                    <div class="progress" style="width: 65%"></div>
                                                 </div>
                                                 <div class="progress-labels">
                                                     <span>0%</span>
-                                                    <span id="savings-percentage">0% savings</span>
+                                                    <span id="savings-percentage">65% savings</span>
                                                     <span>100%</span>
                                                 </div>
                                             </div>
@@ -227,13 +227,13 @@
                                         <div class="metric-container">
                                             <span class="metric-label">Annual Operating Cost Reduction</span>
                                             <div class="metric-value-container">
-                                                <span id="annual-cost-reduction" class="metric-value">$0/year</span>
+                                                <span id="annual-cost-reduction" class="metric-value">$185,000/year</span>
                                                 <div class="progress-bar">
-                                                    <div class="progress" style="width: 0%"></div>
+                                                    <div class="progress" style="width: 74%"></div>
                                                 </div>
                                                 <div class="progress-labels">
                                                     <span>0%</span>
-                                                    <span id="operating-reduction-percentage">0% reduction</span>
+                                                    <span id="operating-reduction-percentage">74% reduction</span>
                                                     <span>100%</span>
                                                 </div>
                                             </div>
@@ -288,63 +288,41 @@
                                 </div>
                             </div>
 
+                            <!-- Additional sub-tab content sections would go here -->
                             <!-- Vendor Comparison Section -->
                             <div id="comparison" class="sub-tab-pane">
-                                <!-- Content will be dynamically created by JavaScript -->
-                                <div class="result-card">
-                                    <h3>Loading vendor comparison data...</h3>
-                                    <p>Please wait while we prepare the vendor comparison data or click "Calculate ROI" to refresh.</p>
-                                </div>
+                                <!-- Content for vendor comparison -->
                             </div>
 
                             <!-- ROI Analysis Section -->
                             <div id="roi" class="sub-tab-pane">
-                                <!-- Content will be dynamically created by JavaScript -->
-                                <div class="result-card">
-                                    <h3>Loading ROI analysis data...</h3>
-                                    <p>Please wait while we prepare the ROI analysis data or click "Calculate ROI" to refresh.</p>
-                                </div>
+                                <!-- Content for ROI analysis -->
                             </div>
                         </div>
                     </div>
 
-                    <!-- Implementation Timeline Tab -->
+                    <!-- Other tab panes would go here -->
                     <div id="timeline" class="tab-pane">
-                        <div class="result-card">
-                            <h3>Implementation Timeline Comparison</h3>
-                            <p>Click "Calculate ROI" to view implementation timeline data.</p>
-                        </div>
+                        <!-- Implementation timeline content -->
                     </div>
 
-                    <!-- Feature Comparison Tab -->
                     <div id="features" class="tab-pane">
-                        <div class="result-card">
-                            <h3>Feature Comparison</h3>
-                            <p>Click "Calculate ROI" to view feature comparison data.</p>
-                        </div>
+                        <!-- Feature comparison content -->
                     </div>
 
-                    <!-- FTE Analysis Tab -->
                     <div id="fte" class="tab-pane">
-                        <div class="result-card">
-                            <h3>FTE Resource Analysis</h3>
-                            <p>Click "Calculate ROI" to view FTE analysis data.</p>
-                        </div>
+                        <!-- FTE analysis content -->
                     </div>
 
-                    <!-- Migration Path Tab -->
                     <div id="migration" class="tab-pane">
-                        <div class="result-card">
-                            <h3>Migration Path Analysis</h3>
-                            <p>Click "Calculate ROI" to view migration path analysis.</p>
-                        </div>
+                        <!-- Migration path content -->
                     </div>
                 </div>
             </div>
         </main>
 
         <footer class="app-footer">
-            <p>© 2025 Portnox - Network Security Solutions</p>
+            <p>Â© 2025 Portnox - Network Security Solutions</p>
             <div class="footer-links">
                 <a href="#">Privacy Policy</a>
                 <a href="#">Terms of Service</a>
@@ -370,7 +348,7 @@
         </div>
     </div>
 
-    <!-- JavaScript files - order matters! -->
+    <!-- JavaScript files -->
     <script src="js/utils/helpers.js"></script>
     <script src="js/vendors/vendor-data.js"></script>
     <script src="js/components/ui-controller.js"></script>
