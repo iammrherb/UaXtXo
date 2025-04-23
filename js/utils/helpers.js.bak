@@ -135,7 +135,7 @@ function toggleVisibility(elementId) {
 }
 
 // Function to set active tab
-window.setActiveTab = function(tabId) {
+function setActiveTab(tabId) {
   // Hide all tab panes
   document.querySelectorAll('.tab-pane').forEach(pane => {
     pane.classList.remove('active');
@@ -159,7 +159,7 @@ window.setActiveTab = function(tabId) {
 }
 
 // Function to set active sub tab
-window.setActiveSubTab = function(subtabId) {
+function setActiveSubTab(subtabId) {
   // Hide all sub tab panes
   document.querySelectorAll('.sub-tab-pane').forEach(pane => {
     pane.classList.remove('active');
