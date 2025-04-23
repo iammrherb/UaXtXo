@@ -428,17 +428,3 @@ class UIController {
     }
   }
 }
-
-//
-// Fallback tab toggle (in case helpers.js fails)
-//
-document.querySelectorAll('.tab-button').forEach(btn => {
-  btn.addEventListener('click', e => {
-    const id = btn.getAttribute('data-tab');
-    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab-button').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    const target = document.getElementById(id);
-    if (target) target.classList.add('active');
-  });
-});
