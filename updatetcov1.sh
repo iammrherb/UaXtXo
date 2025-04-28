@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# TCO Calculator Restoration and Enhancement Script
-# This script restores the calculator's core functionality and applies targeted improvements
+# TCO Calculator Error Fix and Enhancement Script
+# This script fixes the Maximum Call Stack Size Exceeded error and adds targeted enhancements
 
 # Set up colors for output
 GREEN='\033[0;32m'
@@ -9,7 +9,7 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}Starting TCO Calculator restoration and enhancement...${NC}"
+echo -e "${GREEN}Starting TCO Calculator Fix and Enhancement Script...${NC}"
 
 # Create a backup of current files
 echo -e "\n${YELLOW}Creating backup of current files...${NC}"
@@ -26,212 +26,507 @@ mkdir -p js/utils
 mkdir -p js/components
 mkdir -p js/charts
 mkdir -p js/vendors
+mkdir -p js/managers
 mkdir -p css
 mkdir -p img
 
-# STEP 1: Restore critical files with minimal changes
-echo -e "\n${YELLOW}Restoring core functionality...${NC}"
-
-# First, restore the original helpers.js
-cat > js/utils/helpers.js << 'EOL'
+# STEP 1: Fix DOMCache recursion issue
+echo -e "\n${YELLOW}Fixing DOMCache recursion issue...${NC}"
+cat > js/managers/dom-cache.js << 'EOL'
 /**
- * Utility functions for the TCO Calculator
+ * Simple DOM cache to improve performance
  */
-
-// Format currency - make globally available for chart tooltips
-window.formatCurrency = function(value) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0
-  }).format(value);
-};
-
-// Format percentage
-function formatPercentage(value) {
-  return `${value.toFixed(1)}%`;
-}
-
-// Calculate complexity multiplier based on settings
-function calculateComplexityMultiplier(vendor, cloudBased) {
-  let multiplier = 1.0;
-  
-  // Cloud vendors are less affected by complexity factors
-  const cloudReductionFactor = cloudBased ? 0.4 : 1.0;
-  
-  if (document.getElementById('multiple-locations')?.checked) {
-    // Additional 10% per location beyond the first, up to a max of 100% extra
-    const locationCount = parseInt(document.getElementById('location-count')?.value) || 1;
-    multiplier += Math.min(0.1 * (locationCount - 1), 1.0) * cloudReductionFactor;
+class DOMCache {
+  constructor() {
+    this.elements = {};
+    this.initialized = false;
   }
   
-  if (document.getElementById('complex-authentication')?.checked) {
-    multiplier += 0.15 * cloudReductionFactor;
+  init() {
+    if (this.initialized) return;
+    
+    // Set initialized flag FIRST to prevent recursion
+    this.initialized = true;
+    
+    // Cache frequently accessed elements
+    this.cacheElement('device-count');
+    this.cacheElement('organization-size');
+    this.cacheElement('years-to-project');
+    this.cacheElement('multiple-locations');
+    this.cacheElement('location-count');
+    this.cacheElement('complex-authentication');
+    this.cacheElement('legacy-devices');
+    this.cacheElement('legacy-percentage');
+    this.cacheElement('cloud-integration');
+    this.cacheElement('custom-policies');
+    this.cacheElement('policy-complexity');
+    this.cacheElement('calculate-btn');
+    this.cacheElement('results-container');
+    this.cacheElement('tco-summary-table-body');
+    this.cacheElement('annual-costs-table-body');
+    this.cacheElement('implementation-table-body');
+    this.cacheElement('portnox-savings-amount');
+    this.cacheElement('portnox-savings-percentage');
+    this.cacheElement('portnox-implementation-time');
+    this.cacheElement('comparison-savings');
+    this.cacheElement('comparison-implementation');
+    this.cacheElement('legacy-percentage-value');
+    
+    // Cache vendor cards
+    document.querySelectorAll('.vendor-card').forEach(card => {
+      const vendor = card.getAttribute('data-vendor');
+      if (vendor) {
+        this.elements[`vendor-card-${vendor}`] = card;
+      }
+    });
+    
+    // Setup range input display AFTER all elements are cached
+    this.setupRangeValueDisplay();
   }
   
-  if (document.getElementById('legacy-devices')?.checked) {
-    // Additional 0-30% based on percentage of legacy devices
-    const legacyPercentage = parseInt(document.getElementById('legacy-percentage')?.value) || 10;
-    multiplier += (legacyPercentage / 100) * 0.3 * cloudReductionFactor;
-  }
-  
-  if (document.getElementById('cloud-integration')?.checked) {
-    // Cloud vendors handle this better
-    multiplier += 0.1 * cloudReductionFactor;
-  }
-  
-  if (document.getElementById('custom-policies')?.checked) {
-    // Different multipliers based on policy complexity
-    const policyComplexity = document.getElementById('policy-complexity')?.value || 'medium';
-    if (policyComplexity === 'low') {
-      multiplier += 0.05 * cloudReductionFactor;
-    } else if (policyComplexity === 'medium') {
-      multiplier += 0.15 * cloudReductionFactor;
-    } else if (policyComplexity === 'high') {
-      multiplier += 0.25 * cloudReductionFactor;
+  // Separated the setup function from init to avoid recursion
+  setupRangeValueDisplay() {
+    const rangeInput = document.getElementById('legacy-percentage');
+    const valueDisplay = document.getElementById('legacy-percentage-value');
+    
+    if (rangeInput && valueDisplay) {
+      // Set initial value
+      valueDisplay.textContent = rangeInput.value + '%';
+      
+      // Update value on input
+      rangeInput.addEventListener('input', () => {
+        valueDisplay.textContent = rangeInput.value + '%';
+      });
     }
   }
   
-  return multiplier;
-}
-
-// Calculate migration complexity factor
-function calculateMigrationFactor(fromVendor, toVendor) {
-  if (!fromVendor || !toVendor) return 0.5; // Default factor
-  
-  const migrationFactors = {
-    cisco: {
-      aruba: 0.7,
-      forescout: 0.6,
-      nps: 0.5,
-      portnox: 0.3
-    },
-    aruba: {
-      cisco: 0.7,
-      forescout: 0.6,
-      nps: 0.5,
-      portnox: 0.3
-    },
-    forescout: {
-      cisco: 0.7,
-      aruba: 0.6,
-      nps: 0.5,
-      portnox: 0.3
-    },
-    nps: {
-      cisco: 0.8,
-      aruba: 0.7,
-      forescout: 0.7,
-      portnox: 0.3
-    },
-    portnox: {
-      cisco: 0.8,
-      aruba: 0.7,
-      forescout: 0.7,
-      nps: 0.6
+  cacheElement(id) {
+    const element = document.getElementById(id);
+    if (element) {
+      this.elements[id] = element;
     }
-  };
-  
-  if (fromVendor === toVendor) {
-    return 0; // Same vendor has no migration cost
   }
   
-  if (migrationFactors[fromVendor] && migrationFactors[fromVendor][toVendor]) {
-    return migrationFactors[fromVendor][toVendor];
+  get(id) {
+    // If not initialized, initialize first
+    if (!this.initialized) {
+      this.init();
+    }
+    
+    // Return cached element if available
+    if (this.elements[id]) {
+      return this.elements[id];
+    }
+    
+    // If not cached, try to get and cache it
+    this.cacheElement(id);
+    return this.elements[id];
   }
   
-  return 0.5; // Default factor if not found
-}
-
-// Get FTE costs
-function calculateFTECosts(allocation) {
-  if (!allocation) return 0;
-  
-  const fteCosts = {
-    networkAdmin: 120000,
-    securityAdmin: 135000,
-    systemAdmin: 110000,
-    helpDesk: 75000
-  };
-  
-  let totalCost = 0;
-  for (const [role, amount] of Object.entries(allocation)) {
-    totalCost += fteCosts[role] * amount;
+  // Helper methods for common operations
+  getInputValue(id) {
+    const element = this.get(id);
+    if (!element) return null;
+    
+    if (element.type === 'checkbox') {
+      return element.checked;
+    } else if (element.type === 'number') {
+      return parseFloat(element.value) || 0;
+    } else {
+      return element.value;
+    }
   }
   
-  return totalCost;
-}
-
-// Function to toggle visibility of an element
-function toggleVisibility(elementId) {
-  const element = document.getElementById(elementId);
-  if (element) {
-    element.classList.toggle('hidden');
+  setInputValue(id, value) {
+    const element = this.get(id);
+    if (!element) return;
+    
+    if (element.type === 'checkbox') {
+      element.checked = Boolean(value);
+    } else {
+      element.value = value;
+    }
   }
-}
-
-// Function to set active tab
-window.setActiveTab = function(tabId) {
-  // Hide all tab panes
-  document.querySelectorAll('.tab-pane').forEach(pane => {
-    pane.classList.remove('active');
-  });
-  
-  // Remove active class from all tab buttons
-  document.querySelectorAll('.tab-button').forEach(button => {
-    button.classList.remove('active');
-  });
-  
-  // Show selected tab pane
-  const selectedPane = document.getElementById(tabId);
-  if (selectedPane) {
-    selectedPane.classList.add('active');
-  }
-  
-  // Add active class to selected tab button
-  document.querySelectorAll(`.tab-button[data-tab="${tabId}"]`).forEach(button => {
-    button.classList.add('active');
-  });
-}
-
-// Function to set active sub tab
-window.setActiveSubTab = function(subtabId) {
-  // Hide all sub tab panes
-  document.querySelectorAll('.sub-tab-pane').forEach(pane => {
-    pane.classList.remove('active');
-  });
-  
-  // Remove active class from all sub tab buttons
-  document.querySelectorAll('.sub-tab-button').forEach(button => {
-    button.classList.remove('active');
-  });
-  
-  // Show selected sub tab pane
-  const selectedPane = document.getElementById(subtabId);
-  if (selectedPane) {
-    selectedPane.classList.add('active');
-  }
-  
-  // Add active class to selected sub tab button
-  document.querySelectorAll(`.sub-tab-button[data-subtab="${subtabId}"]`).forEach(button => {
-    button.classList.add('active');
-  });
-}
-
-// Function to create a HTML element with class and text
-function createElement(tag, className, text) {
-  const element = document.createElement(tag);
-  if (className) {
-    element.className = className;
-  }
-  if (text) {
-    element.textContent = text;
-  }
-  return element;
 }
 EOL
 
-# Restore Calculator.js with original functionality
+echo -e "${GREEN}DOMCache fixed successfully${NC}"
+
+# STEP 2: Update main.js to properly initialize components
+echo -e "\n${YELLOW}Updating main.js with proper initialization...${NC}"
+cat > js/main.js << 'EOL'
+/**
+ * Main JavaScript file for the TCO Calculator
+ */
+
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Initializing TCO Calculator...');
+  
+  try {
+    // Initialize DOM Cache first to prevent conflicts
+    window.domCache = new DOMCache();
+    window.domCache.init();
+    console.log('DOM Cache initialized');
+    
+    // Initialize UI Controller
+    window.uiController = new UIController();
+    console.log('UI Controller initialized');
+    
+    // Initialize Chart Builder
+    window.chartBuilder = new ChartBuilder();
+    window.chartBuilder.initCharts();
+    console.log('Chart Builder initialized');
+    
+    // Initialize Calculator
+    window.calculator = new Calculator();
+    console.log('Calculator initialized');
+    
+    // Set default active vendor
+    window.uiController.setActiveVendor('cisco');
+    console.log('Active vendor set to Cisco');
+    
+    // Add calculate button event listener
+    const calculateBtn = document.getElementById('calculate-btn');
+    if (calculateBtn) {
+      calculateBtn.addEventListener('click', function() {
+        console.log('Calculate button clicked');
+        window.calculator.calculate();
+      });
+    }
+    
+    // Add export button listeners
+    initExportButtons();
+    
+    // Pre-calculate for initial state after a delay to ensure DOM is ready
+    setTimeout(() => {
+      try {
+        console.log('Running initial calculation...');
+        window.calculator.calculate();
+        console.log('Initial calculation completed');
+      } catch (err) {
+        console.error('Error during initial calculation:', err);
+        showError('Error calculating TCO. Please try again.');
+      }
+    }, 800); // Increased delay for better reliability
+    
+    console.log('TCO Calculator initialized and ready');
+    
+    // Add debug info after 1 second
+    setTimeout(addDebugInfo, 1000);
+  } catch (error) {
+    console.error('Error initializing TCO Calculator:', error);
+    showError('Error initializing calculator. Please refresh the page.');
+  }
+});
+
+// Function to initialize export buttons
+function initExportButtons() {
+  const exportCsvBtn = document.getElementById('export-csv-btn');
+  if (exportCsvBtn) {
+    exportCsvBtn.addEventListener('click', function() {
+      if (window.uiController && typeof window.uiController.exportToCSV === 'function') {
+        window.uiController.exportToCSV();
+      } else {
+        alert('Export to CSV functionality is not available');
+      }
+    });
+  }
+  
+  const exportPdfBtn = document.getElementById('export-pdf-btn');
+  if (exportPdfBtn) {
+    exportPdfBtn.addEventListener('click', function() {
+      if (window.uiController && typeof window.uiController.exportToPDF === 'function') {
+        window.uiController.exportToPDF();
+      } else {
+        alert('Export to PDF functionality is not available');
+      }
+    });
+  }
+}
+
+// Function to show an error message
+function showError(message) {
+  const messageContainer = document.getElementById('message-container');
+  if (messageContainer) {
+    messageContainer.innerHTML = `
+      <div class="error-message-box">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>${message}</span>
+        <button class="close-error"><i class="fas fa-times"></i></button>
+      </div>
+    `;
+    
+    // Add close button functionality
+    const closeBtn = messageContainer.querySelector('.close-error');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        messageContainer.innerHTML = '';
+      });
+    }
+  }
+}
+
+// Add initialization info to the UI for debugging
+function addDebugInfo() {
+  try {
+    const resultsContainer = document.querySelector('.results-container');
+    if (!resultsContainer) return;
+    
+    const debugInfo = document.createElement('div');
+    debugInfo.id = 'debug-info';
+    debugInfo.style.display = 'none';
+    debugInfo.style.padding = '10px';
+    debugInfo.style.margin = '10px';
+    debugInfo.style.border = '1px solid #ccc';
+    debugInfo.style.borderRadius = '4px';
+    debugInfo.style.backgroundColor = '#f9f9f9';
+    
+    debugInfo.innerHTML = `
+      <h3>Debug Information</h3>
+      <p>DOM Cache: ${window.domCache ? 'Initialized' : 'Not initialized'}</p>
+      <p>UI Controller: ${window.uiController ? 'Initialized' : 'Not initialized'}</p>
+      <p>Chart Builder: ${window.chartBuilder ? 'Initialized' : 'Not initialized'}</p>
+      <p>Calculator: ${window.calculator ? 'Initialized' : 'Not initialized'}</p>
+      <p>Active Vendor: ${window.uiController?.activeVendor || 'None'}</p>
+      <p>Calculation Results: ${window.calculator?.resultsAvailable ? 'Available' : 'Not available'}</p>
+      <p>Browser: ${navigator.userAgent}</p>
+      <button id="refresh-debug" class="btn btn-outline">Refresh Debug Info</button>
+    `;
+    
+    resultsContainer.appendChild(debugInfo);
+    
+    // Add refresh button functionality
+    const refreshBtn = document.getElementById('refresh-debug');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', function() {
+        const debugInfo = document.getElementById('debug-info');
+        if (debugInfo) {
+          debugInfo.innerHTML = `
+            <h3>Debug Information</h3>
+            <p>DOM Cache: ${window.domCache ? 'Initialized' : 'Not initialized'}</p>
+            <p>UI Controller: ${window.uiController ? 'Initialized' : 'Not initialized'}</p>
+            <p>Chart Builder: ${window.chartBuilder ? 'Initialized' : 'Not initialized'}</p>
+            <p>Calculator: ${window.calculator ? 'Initialized' : 'Not initialized'}</p>
+            <p>Active Vendor: ${window.uiController?.activeVendor || 'None'}</p>
+            <p>Calculation Results: ${window.calculator?.resultsAvailable ? 'Available' : 'Not available'}</p>
+            <p>Browser: ${navigator.userAgent}</p>
+            <button id="refresh-debug" class="btn btn-outline">Refresh Debug Info</button>
+          `;
+          
+          // Re-add click event
+          document.getElementById('refresh-debug').addEventListener('click', arguments.callee);
+        }
+      });
+    }
+    
+    // Add debug toggle to footer
+    const footer = document.querySelector('.footer-links');
+    if (footer) {
+      const debugLink = document.createElement('a');
+      debugLink.href = '#';
+      debugLink.textContent = 'Debug Info';
+      debugLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        const debugInfo = document.getElementById('debug-info');
+        if (debugInfo) {
+          debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+        }
+      });
+      
+      footer.appendChild(debugLink);
+    }
+  } catch (err) {
+    console.error('Error adding debug info:', err);
+  }
+}
+EOL
+
+echo -e "${GREEN}main.js updated successfully${NC}"
+
+# STEP 3: Add error message styling to CSS
+echo -e "\n${YELLOW}Adding error message styling to CSS...${NC}"
+cat >> css/styles.css << 'EOL'
+
+/* Error message styling */
+#message-container {
+    margin-bottom: var(--spacing-md);
+}
+
+.error-message-box {
+    background-color: rgba(181, 67, 105, 0.1);
+    border-left: 4px solid var(--danger-color);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.error-message-box i {
+    color: var(--danger-color);
+    margin-right: var(--spacing-sm);
+    font-size: 1.2rem;
+}
+
+.error-message-box span {
+    flex: 1;
+    color: var(--danger-color);
+}
+
+.close-error {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+}
+
+.close-error:hover {
+    color: var(--text-primary);
+}
+
+/* Success message */
+.success-message-box {
+    background-color: rgba(43, 210, 91, 0.1);
+    border-left: 4px solid var(--accent-color);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.success-message-box i {
+    color: var(--accent-color);
+    margin-right: var(--spacing-sm);
+    font-size: 1.2rem;
+}
+
+.success-message-box span {
+    flex: 1;
+    color: var(--accent-dark);
+}
+
+/* Debug info styling */
+#debug-info {
+    margin-top: var(--spacing-md);
+    background-color: var(--bg-light);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+}
+
+#debug-info h3 {
+    margin-bottom: var(--spacing-md);
+    font-size: 1.1rem;
+}
+
+#debug-info p {
+    font-family: monospace;
+    margin-bottom: var(--spacing-xs);
+}
+
+#debug-info button {
+    margin-top: var(--spacing-md);
+}
+
+/* Enhanced vendor cards */
+.vendor-card {
+    transition: all 0.2s ease-in-out;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+}
+
+.vendor-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.vendor-card.active {
+    transform: translateY(-2px);
+    border-color: var(--primary-color);
+    background-color: rgba(27, 103, 178, 0.05);
+    box-shadow: var(--shadow-md);
+}
+
+/* Loading indicator */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: var(--spacing-md);
+}
+
+.loading-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Enhanced mobile responsiveness */
+@media (max-width: 768px) {
+    .tab-button {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: 0.9rem;
+    }
+    
+    .chart-container {
+        height: 300px;
+    }
+    
+    .result-card h3 {
+        font-size: 1rem;
+    }
+    
+    .metric-value {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .calculator-container {
+        padding: var(--spacing-sm);
+        gap: var(--spacing-md);
+    }
+    
+    .vendor-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+}
+EOL
+
+echo -e "${GREEN}CSS styles added successfully${NC}"
+
+# STEP 4: Create a loading indicator function and update Calculator.js
+echo -e "\n${YELLOW}Updating Calculator.js to show loading indicator...${NC}"
 cat > js/components/calculator.js << 'EOL'
 /**
  * TCO Calculator for computing cost comparisons and ROI
@@ -241,12 +536,26 @@ class Calculator {
   constructor() {
     this.results = null;
     this.resultsAvailable = false;
+    this.isCalculating = false;
   }
 
   calculate() {
+    // Prevent multiple calculations at once
+    if (this.isCalculating) {
+      console.log('Calculation already in progress');
+      return null;
+    }
+    
+    this.isCalculating = true;
+    
+    // Show loading indicator
+    this.showLoading();
+    
     try {
       if (!window.vendorData) {
         console.error("Vendor data not available");
+        this.hideLoading();
+        this.isCalculating = false;
         return null;
       }
       
@@ -254,6 +563,8 @@ class Calculator {
       const deviceCount = parseInt(document.getElementById('device-count').value) || 1000;
       const orgSize = document.getElementById('organization-size').value;
       const yearsToProject = parseInt(document.getElementById('years-to-project').value) || 3;
+      
+      console.log(`Calculating TCO for ${currentVendor}, ${deviceCount} devices, ${orgSize} org, ${yearsToProject} years`);
       
       // Calculate TCO for all vendors
       const tcoResults = {};
@@ -280,9 +591,21 @@ class Calculator {
       // Update charts and UI
       this.updateUI();
       
+      // Hide loading indicator
+      this.hideLoading();
+      this.isCalculating = false;
+      
       return tcoResults;
     } catch (error) {
       console.error("Error in calculator.calculate():", error);
+      
+      // Hide loading indicator
+      this.hideLoading();
+      this.isCalculating = false;
+      
+      // Show error message
+      this.showError("Error calculating TCO: " + error.message);
+      
       return null;
     }
   }
@@ -448,328 +771,110 @@ class Calculator {
       if (window.uiController) {
         window.uiController.populateTCOSummaryTable(this.results);
         window.uiController.updatePortnoxAdvantageSection(this.results);
+        
+        // Update additional tables if implemented
+        if (typeof window.uiController.updateAnnualCostsTable === 'function') {
+          window.uiController.updateAnnualCostsTable(this.results);
+        }
+        
+        if (typeof window.uiController.updateImplementationTable === 'function') {
+          window.uiController.updateImplementationTable(this.results);
+        }
       }
+      
+      // Show success message
+      this.showSuccess("TCO calculation completed successfully");
     } catch (error) {
       console.error("Error updating UI with calculation results:", error);
+      this.showError("Error updating results: " + error.message);
     }
   }
-}
-EOL
-
-# Restore chart-builder.js with original functionality
-cat > js/charts/chart-builder.js << 'EOL'
-/**
- * Chart Builder for creating and updating charts
- */
-
-class ChartBuilder {
-  constructor() {
-    this.charts = {};
-    this.chartColors = {
-      cisco: '#049fd9',      // Cisco blue
-      aruba: '#ff8300',      // Aruba orange
-      forescout: '#005daa',  // Forescout blue
-      nps: '#00a4ef',        // Microsoft blue
-      portnox: '#2bd25b'     // Green
-    };
+  
+  // Show loading indicator
+  showLoading() {
+    const resultsContainer = document.querySelector('.results-container');
+    if (!resultsContainer) return;
+    
+    // Check if loading overlay already exists
+    let loadingOverlay = resultsContainer.querySelector('.loading-overlay');
+    if (loadingOverlay) return;
+    
+    // Create loading overlay
+    loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'loading-overlay';
+    loadingOverlay.innerHTML = `
+      <div class="spinner"></div>
+      <div class="loading-text">Calculating TCO...</div>
+    `;
+    
+    resultsContainer.appendChild(loadingOverlay);
   }
-
-  initCharts() {
-    this.initTCOComparisonChart();
-    this.initCumulativeCostChart();
-    this.initBreakdownCharts('cisco', 'portnox');
-  }
-
-  initTCOComparisonChart() {
-    const ctx = document.getElementById('tco-comparison-chart');
-    if (!ctx) return;
-    
-    const ctxCanvas = ctx.getContext('2d');
-    if (!ctxCanvas) return;
-    
-    this.charts.tcoComparison = new Chart(ctxCanvas, {
-      type: 'bar',
-      data: {
-        labels: ['Cisco ISE', 'Aruba ClearPass', 'Forescout', 'Microsoft NPS', 'Portnox Cloud'],
-        datasets: [
-          {
-            label: 'Initial Costs',
-            data: [0, 0, 0, 0, 0],
-            backgroundColor: 'rgba(54, 162, 235, 0.7)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-          },
-          {
-            label: 'Ongoing Costs',
-            data: [0, 0, 0, 0, 0],
-            backgroundColor: 'rgba(75, 192, 192, 0.7)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: function(value) {
-                return '$' + value.toLocaleString();
-              }
-            },
-            title: {
-              display: true,
-              text: 'Cost ($)'
-            }
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                let label = context.dataset.label || '';
-                if (label) {
-                  label += ': ';
-                }
-                if (context.parsed.y !== null) {
-                  label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(context.parsed.y);
-                }
-                return label;
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-
-  updateTCOComparisonChart(results) {
-    if (!this.charts.tcoComparison || !results) return;
-    
-    // Safely get vendors
-    const vendors = Object.keys(window.vendorData || {});
-    if (!vendors.length) return;
-    
-    const labels = vendors.map(vendor => window.vendorData[vendor].name);
-    const initialCostsData = vendors.map(vendor => {
-      return results[vendor] ? results[vendor].totalInitialCosts + (results[vendor].migrationCost || 0) : 0;
-    });
-    const ongoingCostsData = vendors.map(vendor => {
-      return results[vendor] ? results[vendor].annualCosts * results.yearsToProject : 0;
-    });
-    
-    this.charts.tcoComparison.data.labels = labels;
-    this.charts.tcoComparison.data.datasets[0].data = initialCostsData;
-    this.charts.tcoComparison.data.datasets[1].data = ongoingCostsData;
-    this.charts.tcoComparison.update();
-  }
-
-  initCumulativeCostChart() {
-    const ctx = document.getElementById('cumulative-cost-chart');
-    if (!ctx) return;
-    
-    const ctxCanvas = ctx.getContext('2d');
-    if (!ctxCanvas) return;
-    
-    this.charts.cumulativeCost = new Chart(ctxCanvas, {
-      type: 'line',
-      data: {
-        labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
-        datasets: []
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: function(value) {
-                return '$' + value.toLocaleString();
-              }
-            },
-            title: {
-              display: true,
-              text: 'Cumulative Cost ($)'
-            }
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                let label = context.dataset.label || '';
-                if (label) {
-                  label += ': ';
-                }
-                if (context.parsed.y !== null) {
-                  label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(context.parsed.y);
-                }
-                return label;
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-
-  updateCumulativeCostChart(results) {
-    if (!this.charts.cumulativeCost || !results) return;
-    
-    // Safely get vendors
-    const vendors = Object.keys(window.vendorData || {});
-    if (!vendors.length) return;
-    
-    const yearsToProject = results.yearsToProject || 3;
-    
-    // Generate labels
-    const labels = ['Initial'];
-    for (let i = 1; i <= yearsToProject; i++) {
-      labels.push(`Year ${i}`);
+  
+  // Hide loading indicator
+  hideLoading() {
+    const loadingOverlay = document.querySelector('.loading-overlay');
+    if (loadingOverlay) {
+      loadingOverlay.parentNode.removeChild(loadingOverlay);
     }
+  }
+  
+  // Show error message
+  showError(message) {
+    const messageContainer = document.getElementById('message-container');
+    if (!messageContainer) return;
     
-    // Create datasets for each vendor
-    const datasets = [];
+    messageContainer.innerHTML = `
+      <div class="error-message-box">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>${message}</span>
+        <button class="close-error"><i class="fas fa-times"></i></button>
+      </div>
+    `;
     
-    vendors.forEach(vendor => {
-      if (!results[vendor]) return;
-      
-      const vendorColor = this.chartColors[vendor] || '#888888';
-      const data = [];
-      
-      // Initial costs
-      const initialCost = results[vendor].totalInitialCosts + (results[vendor].migrationCost || 0);
-      data.push(initialCost);
-      
-      // Cumulative costs for each year
-      for (let i = 1; i <= yearsToProject; i++) {
-        data.push(initialCost + (results[vendor].annualCosts * i));
-      }
-      
-      datasets.push({
-        label: window.vendorData[vendor].name,
-        data: data,
-        backgroundColor: vendorColor,
-        borderColor: vendorColor,
-        borderWidth: vendor === 'portnox' || vendor === window.uiController.activeVendor ? 3 : 2,
-        tension: 0.1
+    // Add close button functionality
+    const closeBtn = messageContainer.querySelector('.close-error');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        messageContainer.innerHTML = '';
       });
-    });
-    
-    this.charts.cumulativeCost.data.labels = labels;
-    this.charts.cumulativeCost.data.datasets = datasets;
-    this.charts.cumulativeCost.update();
+    }
   }
-
-  initBreakdownCharts(currentVendor, altVendor) {
-    const currentCtx = document.getElementById('current-breakdown-chart');
-    const altCtx = document.getElementById('alternative-breakdown-chart');
+  
+  // Show success message
+  showSuccess(message) {
+    const messageContainer = document.getElementById('message-container');
+    if (!messageContainer) return;
     
-    if (!currentCtx || !altCtx) return;
+    messageContainer.innerHTML = `
+      <div class="success-message-box">
+        <i class="fas fa-check-circle"></i>
+        <span>${message}</span>
+        <button class="close-error"><i class="fas fa-times"></i></button>
+      </div>
+    `;
     
-    const currentCtxCanvas = currentCtx.getContext('2d');
-    const altCtxCanvas = altCtx.getContext('2d');
-    
-    if (!currentCtxCanvas || !altCtxCanvas) return;
-    
-    const pieOptions = {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const label = context.label || '';
-              const value = context.raw || 0;
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
-              return `${label}: ${window.formatCurrency(value)} (${percentage}%)`;
-            }
-          }
-        }
-      }
-    };
-    
-    // Create placeholder charts, to be updated with actual data
-    this.charts.currentBreakdown = new Chart(currentCtxCanvas, {
-      type: 'pie',
-      data: {
-        labels: ['Hardware', 'Network Redesign', 'Implementation', 'Training', 'Maintenance', 'Licensing', 'Personnel', 'Downtime'],
-        datasets: [{
-          data: [0, 0, 0, 0, 0, 0, 0, 0],
-          backgroundColor: [
-            '#0088FE', '#00C49F', '#FFBB28', '#FF8042', 
-            '#8884d8', '#82ca9d', '#ffc658', '#ff8042'
-          ]
-        }]
-      },
-      options: pieOptions
-    });
-    
-    this.charts.altBreakdown = new Chart(altCtxCanvas, {
-      type: 'pie',
-      data: {
-        labels: ['Hardware', 'Network Redesign', 'Implementation', 'Training', 'Maintenance', 'Licensing', 'Personnel', 'Downtime'],
-        datasets: [{
-          data: [0, 0, 0, 0, 0, 0, 0, 0],
-          backgroundColor: [
-            '#0088FE', '#00C49F', '#FFBB28', '#FF8042', 
-            '#8884d8', '#82ca9d', '#ffc658', '#ff8042'
-          ]
-        }]
-      },
-      options: pieOptions
-    });
-  }
-
-  updateBreakdownCharts(currentVendor, altVendor) {
-    if (!this.charts.currentBreakdown || !this.charts.altBreakdown || !window.calculator || !window.calculator.results) return;
-    
-    const results = window.calculator.results;
-    
-    const createBreakdownData = (vendor) => {
-      // Check if vendor exists in results
-      const vendorResults = results[vendor];
-      if (!vendorResults || !vendorResults.costBreakdown) {
-        console.warn(`No cost breakdown data found for vendor: ${vendor}`);
-        return [0, 0, 0, 0, 0, 0, 0, 0];
-      }
-      
-      // Create breakdown data from costBreakdown object
-      return [
-        vendorResults.costBreakdown.hardware || 0,
-        vendorResults.costBreakdown.networkRedesign || 0,
-        vendorResults.costBreakdown.implementation || 0,
-        vendorResults.costBreakdown.training || 0,
-        vendorResults.costBreakdown.maintenance || 0,
-        vendorResults.costBreakdown.licensing || 0,
-        vendorResults.costBreakdown.personnel || 0,
-        vendorResults.costBreakdown.downtime || 0
-      ];
-    };
-    
-    // Update charts
-    try {
-      this.charts.currentBreakdown.data.datasets[0].data = createBreakdownData(currentVendor);
-      this.charts.currentBreakdown.update();
-    } catch (err) {
-      console.error("Error updating current breakdown chart:", err);
+    // Add close button functionality
+    const closeBtn = messageContainer.querySelector('.close-error');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        messageContainer.innerHTML = '';
+      });
     }
     
-    try {
-      this.charts.altBreakdown.data.datasets[0].data = createBreakdownData(altVendor);
-      this.charts.altBreakdown.update();
-    } catch (err) {
-      console.error("Error updating alternative breakdown chart:", err);
-    }
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      if (messageContainer.querySelector('.success-message-box')) {
+        messageContainer.innerHTML = '';
+      }
+    }, 3000);
   }
 }
 EOL
 
-# Restore UI Controller with original functionality
+echo -e "${GREEN}Calculator.js updated successfully${NC}"
+
+# STEP 5: Update UI Controller with additional table functionality
+echo -e "\n${YELLOW}Updating UI Controller with enhanced functionality...${NC}"
 cat > js/components/ui-controller.js << 'EOL'
 /**
  * UI Controller for managing interface elements and user interactions
@@ -791,6 +896,18 @@ class UIController {
       // Add click event listener
       card.addEventListener('click', () => {
         this.setActiveVendor(vendor);
+      });
+      
+      // Add keyboard accessibility
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-pressed', 'false');
+      
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.setActiveVendor(vendor);
+        }
       });
     });
     
@@ -887,8 +1004,10 @@ class UIController {
       
       if (cardVendor === vendor) {
         card.classList.add('active');
+        card.setAttribute('aria-pressed', 'true');
       } else {
         card.classList.remove('active');
+        card.setAttribute('aria-pressed', 'false');
       }
     });
     
@@ -956,7 +1075,10 @@ class UIController {
   }
   
   updatePortnoxAdvantageSection(results) {
-    if (!results) return;
+    if (!results) {
+      if (!window.calculator || !window.calculator.results) return;
+      results = window.calculator.results;
+    }
     
     if (this.activeVendor === 'portnox') {
       document.querySelectorAll('.portnox-spotlight, .comparison-highlight-card').forEach(element => {
@@ -1053,1191 +1175,256 @@ class UIController {
     }
   }
   
+  // Update annual costs table
+  updateAnnualCostsTable(results) {
+    if (!results) return;
+    
+    const tableBody = document.getElementById('annual-costs-table-body');
+    if (!tableBody) return;
+    
+    // Clear existing rows
+    tableBody.innerHTML = '';
+    
+    // Get current vendor and portnox data
+    const currentVendor = this.activeVendor;
+    
+    if (!results[currentVendor] || !results['portnox']) return;
+    
+    // Cost categories
+    const categories = [
+      { id: 'maintenance', name: 'Maintenance' },
+      { id: 'licensing', name: 'Licensing' },
+      { id: 'personnel', name: 'Personnel' },
+      { id: 'downtime', name: 'Downtime Costs' },
+      { id: 'total', name: 'Total Annual Costs' }
+    ];
+    
+    // Calculate annual costs
+    const currentAnnual = {
+      maintenance: results[currentVendor].costBreakdown.maintenance / results.yearsToProject,
+      licensing: results[currentVendor].costBreakdown.licensing / results.yearsToProject,
+      personnel: results[currentVendor].costBreakdown.personnel / results.yearsToProject,
+      downtime: results[currentVendor].costBreakdown.downtime / results.yearsToProject
+    };
+    
+    const portnoxAnnual = {
+      maintenance: results['portnox'].costBreakdown.maintenance / results.yearsToProject,
+      licensing: results['portnox'].costBreakdown.licensing / results.yearsToProject,
+      personnel: results['portnox'].costBreakdown.personnel / results.yearsToProject,
+      downtime: results['portnox'].costBreakdown.downtime / results.yearsToProject
+    };
+    
+    // Calculate totals
+    currentAnnual.total = currentAnnual.maintenance + currentAnnual.licensing + 
+                          currentAnnual.personnel + currentAnnual.downtime;
+    
+    portnoxAnnual.total = portnoxAnnual.maintenance + portnoxAnnual.licensing + 
+                           portnoxAnnual.personnel + portnoxAnnual.downtime;
+    
+    // Create rows
+    categories.forEach(category => {
+      const current = currentAnnual[category.id];
+      const portnox = portnoxAnnual[category.id];
+      const savings = current - portnox;
+      const savingsPercentage = current > 0 ? (savings / current) * 100 : 0;
+      
+      // Create row
+      const row = document.createElement('tr');
+      
+      // Add classes for total row
+      if (category.id === 'total') {
+        row.classList.add('total-row');
+      }
+      
+      // Add classes for savings
+      const savingsClass = savings > 0 ? 'positive-savings' : (savings < 0 ? 'negative-savings' : '');
+      
+      // Populate cells
+      row.innerHTML = `
+        <td>${category.name}</td>
+        <td>${window.formatCurrency(current)}</td>
+        <td>${window.formatCurrency(portnox)}</td>
+        <td class="${savingsClass}">${window.formatCurrency(savings)} (${savingsPercentage.toFixed(1)}%)</td>
+      `;
+      
+      // Add to table
+      tableBody.appendChild(row);
+    });
+  }
+  
+  // Update implementation table
+  updateImplementationTable(results) {
+    if (!results) return;
+    
+    const tableBody = document.getElementById('implementation-table-body');
+    if (!tableBody) return;
+    
+    // Clear existing rows
+    tableBody.innerHTML = '';
+    
+    // Get implementation data
+    const implementationResults = results.implementationResults;
+    if (!implementationResults) return;
+    
+    const currentVendor = this.activeVendor;
+    
+    if (!implementationResults[currentVendor] || !implementationResults['portnox']) return;
+    
+    const currentImplementation = implementationResults[currentVendor];
+    const portnoxImplementation = implementationResults['portnox'];
+    
+    // Add total row
+    const row = document.createElement('tr');
+    
+    // Format values
+    const currentDays = currentImplementation;
+    const portnoxDays = portnoxImplementation;
+    const timeSavings = currentDays - portnoxDays;
+    const savingsPercentage = currentDays > 0 ? (timeSavings / currentDays) * 100 : 0;
+    
+    // Add classes for savings
+    const savingsClass = timeSavings > 0 ? 'positive-savings' : (timeSavings < 0 ? 'negative-savings' : '');
+    
+    // Populate cells
+    row.innerHTML = `
+      <td>Total Implementation Time</td>
+      <td>${currentDays.toFixed(1)} days</td>
+      <td>${portnoxDays.toFixed(1)} days</td>
+      <td class="${savingsClass}">${timeSavings.toFixed(1)} days (${savingsPercentage.toFixed(1)}%)</td>
+    `;
+    
+    // Add to table
+    tableBody.appendChild(row);
+  }
+  
+  // Export to CSV
   exportToCSV() {
-    alert('Export to CSV functionality not implemented yet.');
+    if (!window.calculator || !window.calculator.resultsAvailable) {
+      alert('No calculation results to export. Please calculate TCO first.');
+      return;
+    }
+    
+    try {
+      const results = window.calculator.results;
+      const vendors = Object.keys(window.vendorData);
+      
+      // Prepare CSV data
+      let csvData = "Vendor,Initial Costs,Annual Costs,Migration Costs,Total TCO,Savings vs Current,Savings %\n";
+      
+      vendors.forEach(vendor => {
+        if (!results[vendor]) return;
+        
+        const row = [
+          window.vendorData[vendor].name,
+          results[vendor].totalInitialCosts.toFixed(2),
+          results[vendor].annualCosts.toFixed(2),
+          results[vendor].migrationCost ? results[vendor].migrationCost.toFixed(2) : '0.00',
+          results[vendor].totalTCO.toFixed(2),
+          results[vendor].totalSavings ? results[vendor].totalSavings.toFixed(2) : '0.00',
+          results[vendor].savingsPercentage ? results[vendor].savingsPercentage.toFixed(2) : '0.00'
+        ];
+        
+        csvData += row.join(',') + '\n';
+      });
+      
+      // Create download link
+      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'tco_comparison.csv');
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      this.showSuccess('CSV file exported successfully');
+    } catch (error) {
+      console.error('Error exporting to CSV:', error);
+      this.showError('Error exporting to CSV: ' + error.message);
+    }
   }
   
+  // Export to PDF - placeholder
   exportToPDF() {
-    alert('Export to PDF functionality not implemented yet.');
+    alert('PDF export functionality is not available yet.');
   }
-}
-EOL
-
-# Restore main.js with original functionality
-cat > js/main.js << 'EOL'
-/**
- * Main JavaScript file for the TCO Calculator
- */
-
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('Initializing TCO Calculator...');
   
-  try {
-    // Initialize UI Controller
-    window.uiController = new UIController();
-    console.log('UI Controller initialized');
+  // Show success message
+  showSuccess(message) {
+    const messageContainer = document.getElementById('message-container');
+    if (!messageContainer) return;
     
-    // Initialize Chart Builder
-    window.chartBuilder = new ChartBuilder();
-    window.chartBuilder.initCharts();
-    console.log('Chart Builder initialized');
+    messageContainer.innerHTML = `
+      <div class="success-message-box">
+        <i class="fas fa-check-circle"></i>
+        <span>${message}</span>
+        <button class="close-error"><i class="fas fa-times"></i></button>
+      </div>
+    `;
     
-    // Initialize Calculator
-    window.calculator = new Calculator();
-    console.log('Calculator initialized');
-    
-    // Set default active vendor
-    window.uiController.setActiveVendor('cisco');
-    
-    // Add calculate button event listener
-    const calculateBtn = document.getElementById('calculate-btn');
-    if (calculateBtn) {
-      calculateBtn.addEventListener('click', function() {
-        window.calculator.calculate();
+    // Add close button functionality
+    const closeBtn = messageContainer.querySelector('.close-error');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        messageContainer.innerHTML = '';
       });
     }
     
-    // Pre-calculate for initial state after a short delay to ensure DOM is ready
+    // Auto-hide after 3 seconds
     setTimeout(() => {
-      try {
-        window.calculator.calculate();
-        console.log('Initial calculation completed');
-      } catch (err) {
-        console.error('Error during initial calculation:', err);
+      if (messageContainer.querySelector('.success-message-box')) {
+        messageContainer.innerHTML = '';
       }
-    }, 500);
+    }, 3000);
+  }
+  
+  // Show error message
+  showError(message) {
+    const messageContainer = document.getElementById('message-container');
+    if (!messageContainer) return;
     
-    console.log('TCO Calculator initialized and ready');
-  } catch (error) {
-    console.error('Error initializing TCO Calculator:', error);
-  }
-});
-EOL
-
-# Restore vendor-data.js
-cat > js/vendors/vendor-data.js << 'EOL'
-/**
- * Vendor data and comparison information
- */
-
-// Make sure vendorData is globally accessible
-window.vendorData = {
-  cisco: {
-    name: 'Cisco ISE',
-    logo: 'img/cisco-logo.png',
-    cloudBased: false,
-    description: 'Enterprise-grade on-premises NAC solution with extensive Cisco ecosystem integration',
-    small: {
-      initialHardware: 75000,
-      annualMaintenance: 25000,
-      annualLicensing: 40000,
-      networkRedesign: 15000,
-      implementation: 35000,
-      training: 10000,
-      annualDowntime: 24,
-      // FTE allocation by role (fraction of full-time)
-      fteAllocation: {
-        networkAdmin: 0.4,
-        securityAdmin: 0.3,
-        systemAdmin: 0.2,
-        helpDesk: 0.1
-      },
-      // Implementation timeline in days
-      implementationTimeline: {
-        planning: 14,
-        hardwareDeployment: 10, 
-        initialConfiguration: 15,
-        testing: 21,
-        policyDefinition: 14,
-        pilotDeployment: 10,
-        fullDeployment: 30,
-        postDeploymentTuning: 15
-      }
-    },
-    medium: {
-      initialHardware: 150000,
-      annualMaintenance: 50000,
-      annualLicensing: 100000,
-      networkRedesign: 25000,
-      implementation: 60000,
-      training: 15000,
-      annualDowntime: 36,
-      fteAllocation: {
-        networkAdmin: 0.6,
-        securityAdmin: 0.5,
-        systemAdmin: 0.3,
-        helpDesk: 0.1
-      },
-      implementationTimeline: {
-        planning: 21,
-        hardwareDeployment: 15, 
-        initialConfiguration: 21,
-        testing: 28,
-        policyDefinition: 21,
-        pilotDeployment: 14,
-        fullDeployment: 45,
-        postDeploymentTuning: 21
-      }
-    },
-    large: {
-      initialHardware: 300000,
-      annualMaintenance: 100000,
-      annualLicensing: 250000,
-      networkRedesign: 50000,
-      implementation: 120000,
-      training: 30000,
-      annualDowntime: 48,
-      fteAllocation: {
-        networkAdmin: 0.8,
-        securityAdmin: 0.7,
-        systemAdmin: 0.4,
-        helpDesk: 0.1
-      },
-      implementationTimeline: {
-        planning: 30,
-        hardwareDeployment: 21, 
-        initialConfiguration: 30,
-        testing: 35,
-        policyDefinition: 30,
-        pilotDeployment: 21,
-        fullDeployment: 60,
-        postDeploymentTuning: 30
-      }
-    }
-  },
-  aruba: {
-    name: 'Aruba ClearPass',
-    logo: 'img/aruba-logo.png',
-    cloudBased: false,
-    description: 'Comprehensive NAC solution with strong multi-vendor support and policy management',
-    small: {
-      initialHardware: 65000,
-      annualMaintenance: 20000,
-      annualLicensing: 35000,
-      networkRedesign: 12000,
-      implementation: 30000,
-      training: 9000,
-      annualDowntime: 20,
-      fteAllocation: {
-        networkAdmin: 0.35,
-        securityAdmin: 0.25,
-        systemAdmin: 0.2,
-        helpDesk: 0.1
-      },
-      implementationTimeline: {
-        planning: 10,
-        hardwareDeployment: 8, 
-        initialConfiguration: 12,
-        testing: 18,
-        policyDefinition: 12,
-        pilotDeployment: 8,
-        fullDeployment: 25,
-        postDeploymentTuning: 12
-      }
-    },
-    medium: {
-      initialHardware: 130000,
-      annualMaintenance: 45000,
-      annualLicensing: 90000,
-      networkRedesign: 20000,
-      implementation: 50000,
-      training: 12000,
-      annualDowntime: 30,
-      fteAllocation: {
-        networkAdmin: 0.5,
-        securityAdmin: 0.4,
-        systemAdmin: 0.3,
-        helpDesk: 0.1
-      },
-      implementationTimeline: {
-        planning: 14,
-        hardwareDeployment: 12, 
-        initialConfiguration: 18,
-        testing: 24,
-        policyDefinition: 18,
-        pilotDeployment: 12,
-        fullDeployment: 40,
-        postDeploymentTuning: 18
-      }
-    },
-    large: {
-      initialHardware: 280000,
-      annualMaintenance: 90000,
-      annualLicensing: 225000,
-      networkRedesign: 40000,
-      implementation: 100000,
-      training: 25000,
-      annualDowntime: 40,
-      fteAllocation: {
-        networkAdmin: 0.7,
-        securityAdmin: 0.5,
-        systemAdmin: 0.4,
-        helpDesk: 0.1
-      },
-      implementationTimeline: {
-        planning: 21,
-        hardwareDeployment: 18, 
-        initialConfiguration: 25,
-        testing: 30,
-        policyDefinition: 25,
-        pilotDeployment: 16,
-        fullDeployment: 55,
-        postDeploymentTuning: 25
-      }
-    }
-  },
-  forescout: {
-    name: 'Forescout',
-    logo: 'img/forescout-logo.png',
-    cloudBased: false,
-    description: 'Visibility-focused NAC solution with strong device discovery and classification',
-    small: {
-      initialHardware: 70000,
-      annualMaintenance: 22000,
-      annualLicensing: 38000,
-      networkRedesign: 10000,
-      implementation: 32000,
-      training: 8000,
-      annualDowntime: 18,
-      fteAllocation: {
-        networkAdmin: 0.3,
-        securityAdmin: 0.3,
-        systemAdmin: 0.2,
-        helpDesk: 0.1
-      },
-      implementationTimeline: {
-        planning: 12,
-        hardwareDeployment: 8, 
-        initialConfiguration: 14,
-        testing: 16,
-        policyDefinition: 12,
-        pilotDeployment: 7,
-        fullDeployment: 20,
-        postDeploymentTuning: 10
-      }
-    },
-    medium: {
-      initialHardware: 140000,
-      annualMaintenance: 48000,
-      annualLicensing: 95000,
-      networkRedesign: 18000,
-      implementation: 45000,
-      training: 14000,
-      annualDowntime: 28,
-      fteAllocation: {
-        networkAdmin: 0.45,
-        securityAdmin: 0.45,
-        systemAdmin: 0.3,
-        helpDesk: 0.1
-      },
-      implementationTimeline: {
-        planning: 16,
-        hardwareDeployment: 12, 
-        initialConfiguration: 18,
-        testing: 20,
-        policyDefinition: 18,
-        pilotDeployment: 10,
-        fullDeployment: 35,
-        postDeploymentTuning: 15
-      }
-    },
-    large: {
-      initialHardware: 290000,
-      annualMaintenance: 95000,
-      annualLicensing: 230000,
-      networkRedesign: 35000,
-      implementation: 90000,
-      training: 25000,
-      annualDowntime: 36,
-      fteAllocation: {
-        networkAdmin: 0.6,
-        securityAdmin: 0.6,
-        systemAdmin: 0.4,
-        helpDesk: 0.1
-      },
-      implementationTimeline: {
-        planning: 24,
-        hardwareDeployment: 18, 
-        initialConfiguration: 24,
-        testing: 25,
-        policyDefinition: 24,
-        pilotDeployment: 14,
-        fullDeployment: 45,
-        postDeploymentTuning: 20
-      }
-    }
-  },
-  nps: {
-    name: 'Microsoft NPS',
-    logo: 'img/microsoft-logo.png',
-    cloudBased: false,
-    description: 'Basic Windows-based RADIUS server with limited NAC functionality',
-    small: {
-      initialHardware: 15000,
-      annualMaintenance: 5000,
-      annualLicensing: 0,
-      networkRedesign: 8000,
-      implementation: 20000,
-      training: 5000,
-      annualDowntime: 30,
-      fteAllocation: {
-        networkAdmin: 0.2,
-        securityAdmin: 0.1,
-        systemAdmin: 0.4,
-        helpDesk: 0.1
-      },
-      implementationTimeline: {
-        planning: 10,
-        hardwareDeployment: 5, 
-        initialConfiguration: 7,
-        testing: 10,
-        policyDefinition: 7,
-        pilotDeployment: 5,
-        fullDeployment: 15,
-        postDeploymentTuning: 8
-      }
-    },
-    medium: {
-      initialHardware: 30000,
-      annualMaintenance: 10000,
-      annualLicensing: 0,
-      networkRedesign: 15000,
-      implementation: 30000,
-      training: 8000,
-      annualDowntime: 48,
-      fteAllocation: {
-        networkAdmin: 0.3,
-        securityAdmin: 0.2,
-        systemAdmin: 0.6,
-        helpDesk: 0.1
-      },
-      implementationTimeline: {
-        planning: 15,
-        hardwareDeployment: 8, 
-        initialConfiguration: 10,
-        testing: 15,
-        policyDefinition: 10,
-        pilotDeployment: 7,
-        fullDeployment: 25,
-        postDeploymentTuning: 12
-      }
-    },
-    large: {
-      initialHardware: 60000,
-      annualMaintenance: 20000,
-      annualLicensing: 0,
-      networkRedesign: 25000,
-      implementation: 50000,
-      training: 15000,
-      annualDowntime: 72,
-      fteAllocation: {
-        networkAdmin: 0.4,
-        securityAdmin: 0.3,
-        systemAdmin: 0.8,
-        helpDesk: 0.2
-      },
-      implementationTimeline: {
-        planning: 20,
-        hardwareDeployment: 12, 
-        initialConfiguration: 15,
-        testing: 20,
-        policyDefinition: 15,
-        pilotDeployment: 10,
-        fullDeployment: 35,
-        postDeploymentTuning: 18
-      }
-    }
-  },
-  portnox: {
-    name: 'Portnox Cloud',
-    logo: 'img/portnox-logo.png',
-    cloudBased: true,
-    description: 'Cloud-native NAC solution with zero-trust approach and simplified deployment',
-    small: {
-      initialHardware: 0,
-      annualMaintenance: 5000,
-      annualLicensing: 25000,
-      networkRedesign: 2000,
-      implementation: 5000,
-      training: 2000,
-      annualDowntime: 4,
-      fteAllocation: {
-        networkAdmin: 0.1,
-        securityAdmin: 0.1,
-        systemAdmin: 0.025,
-        helpDesk: 0.025
-      },
-      implementationTimeline: {
-        planning: 3,
-        cloudAccountSetup: 1, 
-        initialConfiguration: 2,
-        testing: 3,
-        policyDefinition: 3,
-        pilotDeployment: 2,
-        fullDeployment: 4,
-        postDeploymentTuning: 2
-      }
-    },
-    medium: {
-      initialHardware: 0,
-      annualMaintenance: 7500,
-      annualLicensing: 60000,
-      networkRedesign: 4000,
-      implementation: 10000,
-      training: 4000,
-      annualDowntime: 6,
-      fteAllocation: {
-        networkAdmin: 0.2,
-        securityAdmin: 0.15,
-        systemAdmin: 0.05,
-        helpDesk: 0.05
-      },
-      implementationTimeline: {
-        planning: 5,
-        cloudAccountSetup: 1, 
-        initialConfiguration: 3,
-        testing: 4,
-        policyDefinition: 4,
-        pilotDeployment: 3,
-        fullDeployment: 7,
-        postDeploymentTuning: 3
-      }
-    },
-    large: {
-      initialHardware: 0,
-      annualMaintenance: 10000,
-      annualLicensing: 150000,
-      networkRedesign: 8000,
-      implementation: 20000,
-      training: 8000,
-      annualDowntime: 8,
-      fteAllocation: {
-        networkAdmin: 0.3,
-        securityAdmin: 0.25,
-        systemAdmin: 0.1,
-        helpDesk: 0.1
-      },
-      implementationTimeline: {
-        planning: 8,
-        cloudAccountSetup: 1, 
-        initialConfiguration: 5,
-        testing: 7,
-        policyDefinition: 7,
-        pilotDeployment: 5,
-        fullDeployment: 14,
-        postDeploymentTuning: 5
-      }
-    }
-  }
-};
-
-// Portnox benefits data - make globally available
-window.portnoxBenefits = [
-  {
-    title: "Zero Hardware Costs",
-    description: "Eliminate capital expenditure on NAC appliances and associated server infrastructure",
-    icon: "??",
-    metric: "100% savings"
-  },
-  {
-    title: "Reduced Implementation Time",
-    description: "Get up and running 70-85% faster than traditional NAC solutions",
-    icon: "??",
-    metric: "75% faster"
-  },
-  {
-    title: "Lower IT Staffing Requirements",
-    description: "Decrease NAC administration overhead by up to 80%",
-    icon: "??",
-    metric: "$180,000/year"
-  },
-  {
-    title: "Reduced Downtime",
-    description: "Minimize business disruption with significantly fewer outages",
-    icon: "??",
-    metric: "85% reduction"
-  },
-  {
-    title: "Automated Updates",
-    description: "Eliminate maintenance windows and manual update processes",
-    icon: "??",
-    metric: "Zero downtime updates"
-  },
-  {
-    title: "Faster ROI",
-    description: "Achieve return on investment in a fraction of the time",
-    icon: "??",
-    metric: "0.8 years"
-  }
-];
-EOL
-
-# STEP 2: Restore CSS with original styles
-echo -e "\n${YELLOW}Restoring original CSS...${NC}"
-cat > css/styles.css << 'EOL'
-/* Base styles and variables */
-:root {
-    --primary-color: #1B67B2;
-    --primary-dark: #0A4D91;
-    --primary-light: #3F88D5;
-    --accent-color: #2BD25B;
-    --accent-dark: #1CA43F;
-    --accent-light: #5EE588;
-    --danger-color: #B54369;
-    --warning-color: #C77F1A;
-    --text-primary: #202020;
-    --text-secondary: #505050;
-    --text-light: #707070;
-    --text-white: #FFFFFF;
-    --bg-light: #F5F7FA;
-    --bg-white: #FFFFFF;
-    --border-color: #E0E0E0;
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
-    --radius-sm: 4px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-    --spacing-xl: 32px;
-    --spacing-xxl: 48px;
-    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-/* Reset and base styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: var(--font-family);
-    color: var(--text-primary);
-    background-color: var(--bg-light);
-    line-height: 1.5;
-}
-
-.hidden {
-    display: none !important;
-}
-
-/* Layout */
-.app-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-.app-header {
-    background-color: var(--bg-white);
-    border-bottom: 1px solid var(--border-color);
-    padding: var(--spacing-md) var(--spacing-xl);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: var(--shadow-sm);
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-}
-
-.logo img {
-    height: 40px;
-    width: auto;
-    object-fit: contain;
-}
-
-.logo h1 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--primary-color);
-}
-
-.header-actions {
-    display: flex;
-    gap: var(--spacing-sm);
-}
-
-.calculator-container {
-    display: flex;
-    flex: 1;
-    padding: var(--spacing-xl);
-    gap: var(--spacing-xl);
-}
-
-.sidebar {
-    width: 350px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-}
-
-.results-container {
-    flex: 1;
-    background-color: var(--bg-white);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.app-footer {
-    background-color: var(--bg-white);
-    border-top: 1px solid var(--border-color);
-    padding: var(--spacing-md) var(--spacing-xl);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.footer-links {
-    display: flex;
-    gap: var(--spacing-md);
-}
-
-.footer-links a {
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-size: 0.9rem;
-}
-
-.footer-links a:hover {
-    color: var(--primary-color);
-    text-decoration: underline;
-}
-
-/* Cards and Input Containers */
-.vendor-selection-card,
-.organization-inputs,
-.portnox-spotlight {
-    background-color: var(--bg-white);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    padding: var(--spacing-md);
-}
-
-.vendor-selection-card h3,
-.organization-inputs h3,
-.portnox-spotlight h3 {
-    margin-bottom: var(--spacing-md);
-    color: var(--text-primary);
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.vendor-options {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-md);
-}
-
-.vendor-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-md);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
-
-.vendor-card.active {
-    border-color: var(--primary-color);
-    background-color: rgba(27, 103, 178, 0.05);
-    box-shadow: var(--shadow-sm);
-}
-
-.vendor-card img {
-    height: 30px;
-    width: auto;
-    margin-bottom: var(--spacing-sm);
-    object-fit: contain;
-}
-
-.vendor-card span {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    text-align: center;
-}
-
-.input-group {
-    margin-bottom: var(--spacing-md);
-}
-
-.input-group label {
-    display: block;
-    margin-bottom: var(--spacing-xs);
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.input-group input,
-.input-group select {
-    width: 100%;
-    padding: var(--spacing-sm);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    font-size: 1rem;
-}
-
-.checkbox-group {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.checkbox-group input[type="checkbox"] {
-    width: auto;
-}
-
-.range-container {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.range-container input[type="range"] {
-    flex: 1;
-}
-
-.advanced-options-toggle {
-    margin-bottom: var(--spacing-md);
-}
-
-.advanced-options-panel {
-    border-top: 1px solid var(--border-color);
-    padding-top: var(--spacing-md);
-}
-
-.portnox-spotlight {
-    background: linear-gradient(135deg, #F0F9FF 0%, #E6FFF0 100%);
-    border: 1px solid rgba(43, 210, 91, 0.2);
-}
-
-.portnox-spotlight p {
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-md);
-    font-size: 0.95rem;
-}
-
-.potential-savings-container {
-    background-color: rgba(255, 255, 255, 0.7);
-    border-radius: var(--radius-sm);
-    padding: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
-}
-
-.savings-metric {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: var(--spacing-sm);
-}
-
-.savings-metric:last-child {
-    margin-bottom: 0;
-}
-
-.savings-metric label {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.savings-amount {
-    color: var(--accent-dark);
-    font-weight: 600;
-}
-
-/* Buttons */
-.btn {
-    cursor: pointer;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-sm);
-    font-size: 0.95rem;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease-in-out;
-    gap: var(--spacing-sm);
-}
-
-.btn i {
-    font-size: 0.9rem;
-}
-
-.btn-primary {
-    background-color: var(--accent-color);
-    color: var(--text-white);
-    border: none;
-}
-
-.btn-primary:hover {
-    background-color: var(--accent-dark);
-}
-
-.btn-outline {
-    background-color: transparent;
-    color: var(--text-secondary);
-    border: 1px solid var(--border-color);
-}
-
-.btn-outline:hover {
-    background-color: var(--bg-light);
-    border-color: var(--text-secondary);
-}
-
-.btn-text {
-    background-color: transparent;
-    color: var(--primary-color);
-    border: none;
-    padding: var(--spacing-xs) 0;
-}
-
-.btn-text:hover {
-    color: var(--primary-dark);
-    text-decoration: underline;
-}
-
-#calculate-btn {
-    width: 100%;
-    padding: var(--spacing-md);
-    font-weight: 600;
-}
-
-/* Tabs */
-.tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border-color);
-    background-color: var(--bg-light);
-}
-
-.tab-button {
-    padding: var(--spacing-md) var(--spacing-lg);
-    background: none;
-    border: none;
-    border-bottom: 3px solid transparent;
-    cursor: pointer;
-    font-weight: 500;
-    color: var(--text-secondary);
-    transition: all 0.2s ease-in-out;
-}
-
-.tab-button:hover {
-    color: var(--primary-color);
-}
-
-.tab-button.active {
-    color: var(--primary-color);
-    border-bottom-color: var(--primary-color);
-}
-
-.tab-content {
-    flex: 1;
-    overflow: auto;
-    padding: var(--spacing-md);
-}
-
-.tab-pane {
-    display: none;
-}
-
-.tab-pane.active {
-    display: block;
-}
-
-/* Sub-tabs */
-.sub-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: var(--spacing-md);
-}
-
-.sub-tab-button {
-    padding: var(--spacing-sm) var(--spacing-md);
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    transition: all 0.2s ease-in-out;
-}
-
-.sub-tab-button:hover {
-    color: var(--primary-color);
-}
-
-.sub-tab-button.active {
-    color: var(--primary-color);
-    font-weight: 500;
-    position: relative;
-}
-
-.sub-tab-button.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: var(--primary-color);
-}
-
-.sub-tab-pane {
-    display: none;
-}
-
-.sub-tab-pane.active {
-    display: block;
-}
-
-/* Charts and Result Cards */
-.results-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
-}
-
-.result-card {
-    background-color: var(--bg-white);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
-}
-
-.result-card h3 {
-    font-size: 1.1rem;
-    margin-bottom: var(--spacing-md);
-    color: var(--text-primary);
-}
-
-.chart-container {
-    height: 260px;
-    position: relative;
-}
-
-/* Tables */
-.table-container {
-    overflow-x: auto;
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.data-table th,
-.data-table td {
-    padding: var(--spacing-sm) var(--spacing-md);
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.data-table th {
-    background-color: var(--bg-light);
-    font-weight: 600;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.data-table td {
-    font-size: 0.95rem;
-}
-
-.data-table tr:hover td {
-    background-color: rgba(27, 103, 178, 0.05);
-}
-
-/* Comparison Highlight Card */
-.comparison-highlight-card {
-    background: linear-gradient(135deg, rgba(27, 103, 178, 0.05) 0%, rgba(43, 210, 91, 0.05) 100%);
-    border: 1px solid rgba(43, 210, 91, 0.2);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-lg);
-}
-
-.comparison-highlight-card h3 {
-    color: var(--primary-color);
-    margin-bottom: var(--spacing-md);
-}
-
-.comparison-metrics {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--spacing-lg);
-    margin-bottom: var(--spacing-lg);
-}
-
-.metric-container {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-}
-
-.metric-label {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-}
-
-.metric-value {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--accent-dark);
-}
-
-.progress-bar {
-    height: 8px;
-    background-color: rgba(43, 210, 91, 0.1);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: var(--spacing-xs) 0;
-}
-
-.progress {
-    height: 100%;
-    background-color: var(--accent-color);
-}
-
-.progress-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    color: var(--text-light);
-}
-
-.key-benefits h4 {
-    margin-bottom: var(--spacing-md);
-    font-size: 1rem;
-    color: var(--text-primary);
-}
-
-.benefits-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--spacing-md);
-}
-
-.benefit-card {
-    display: flex;
-    gap: var(--spacing-sm);
-    background-color: rgba(255, 255, 255, 0.7);
-    padding: var(--spacing-md);
-    border-radius: var(--radius-sm);
-    border: 1px solid rgba(43, 210, 91, 0.1);
-}
-
-.benefit-icon {
-    font-size: 1.5rem;
-    color: var(--accent-color);
-}
-
-.benefit-content h5 {
-    font-size: 0.95rem;
-    margin-bottom: var(--spacing-xs);
-    color: var(--text-primary);
-}
-
-.benefit-content p {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-xs);
-}
-
-.benefit-metric {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--accent-dark);
-}
-
-/* Export buttons */
-.export-options {
-    display: flex;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-md);
-}
-
-/* Enhanced table styles */
-.current-vendor {
-    background-color: rgba(27, 103, 178, 0.1);
-}
-
-.portnox-vendor {
-    background-color: rgba(43, 210, 91, 0.1);
-}
-
-/* Responsive Adjustments */
-@media (max-width: 1100px) {
-    .calculator-container {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100%;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    }
-}
-
-@media (max-width: 768px) {
-    .results-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .comparison-metrics {
-        grid-template-columns: 1fr;
-    }
-
-    .benefits-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .app-header {
-        flex-direction: column;
-        gap: var(--spacing-md);
-        padding: var(--spacing-md);
-    }
-
-    .header-actions {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .tabs {
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-}
-
-@media (max-width: 480px) {
-    .calculator-container {
-        padding: var(--spacing-md);
-    }
-
-    .vendor-options {
-        grid-template-columns: 1fr;
-    }
+    messageContainer.innerHTML = `
+      <div class="error-message-box">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>${message}</span>
+        <button class="close-error"><i class="fas fa-times"></i></button>
+      </div>
+    `;
     
-    .export-options {
-        flex-direction: column;
+    // Add close button functionality
+    const closeBtn = messageContainer.querySelector('.close-error');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        messageContainer.innerHTML = '';
+      });
     }
+  }
 }
 EOL
 
-# STEP 3: Restore basic HTML structure
-echo -e "\n${YELLOW}Creating basic HTML file...${NC}"
-cat > index.html << 'EOL'
+echo -e "${GREEN}UI Controller updated successfully${NC}"
+
+# STEP 6: Update HTML with message container
+echo -e "\n${YELLOW}Updating HTML with message container...${NC}"
+# Check if index.html exists and modify it
+if [ -f "index.html" ]; then
+    # Update Message Container
+    sed -i 's/<div class="tab-content">/<div class="tab-content">\n                    <div id="message-container"><\/div>/g' index.html 2>/dev/null
+    # For macOS compatibility
+    sed -i '' 's/<div class="tab-content">/<div class="tab-content">\n                    <div id="message-container"><\/div>/g' index.html 2>/dev/null
+    
+    # Add DOMCache script
+    sed -i 's/<script src="js\/utils\/helpers.js"><\/script>/<script src="js\/utils\/helpers.js"><\/script>\n    <script src="js\/managers\/dom-cache.js"><\/script>/g' index.html 2>/dev/null
+    # For macOS compatibility
+    sed -i '' 's/<script src="js\/utils\/helpers.js"><\/script>/<script src="js\/utils\/helpers.js"><\/script>\n    <script src="js\/managers\/dom-cache.js"><\/script>/g' index.html 2>/dev/null
+    
+    echo -e "${GREEN}HTML updated successfully${NC}"
+else
+    echo -e "${YELLOW}index.html not found, creating a new one...${NC}"
+    
+    cat > index.html << 'EOL'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2387,6 +1574,8 @@ cat > index.html << 'EOL'
                 </div>
                 
                 <div class="tab-content">
+                    <div id="message-container"></div>
+                    
                     <div class="export-options">
                         <button id="export-csv-btn" class="btn btn-outline"><i class="fas fa-file-csv"></i> Export CSV</button>
                         <button id="export-pdf-btn" class="btn btn-outline"><i class="fas fa-file-pdf"></i> Export PDF</button>
@@ -2586,6 +1775,7 @@ cat > index.html << 'EOL'
     
     <!-- Application JavaScript -->
     <script src="js/utils/helpers.js"></script>
+    <script src="js/managers/dom-cache.js"></script>
     <script src="js/vendors/vendor-data.js"></script>
     <script src="js/charts/chart-builder.js"></script>
     <script src="js/components/calculator.js"></script>
@@ -2595,7 +1785,10 @@ cat > index.html << 'EOL'
 </html>
 EOL
 
-# STEP 4: Create placeholder logos if they don't exist
+    echo -e "${GREEN}New index.html created successfully${NC}"
+fi
+
+# STEP 7: Create placeholder logos if they don't exist
 echo -e "\n${YELLOW}Creating placeholder logos if they don't exist...${NC}"
 
 # Create Cisco logo placeholder if it doesn't exist
@@ -2655,206 +1848,23 @@ fi
 
 echo -e "${GREEN}Placeholder logos created successfully${NC}"
 
-# STEP 5: Add simple targeted enhancements
-echo -e "\n${YELLOW}Adding targeted enhancements...${NC}"
-
-# Add annual costs table functionality to UI Controller
-cat >> js/components/ui-controller.js << 'EOL'
-
-  // Update annual costs table
-  updateAnnualCostsTable(results) {
-    if (!results) return;
-    
-    const tableBody = document.getElementById('annual-costs-table-body');
-    if (!tableBody) return;
-    
-    // Clear existing rows
-    tableBody.innerHTML = '';
-    
-    // Get current vendor and portnox data
-    const currentVendor = this.activeVendor;
-    
-    if (!results[currentVendor] || !results['portnox']) return;
-    
-    // Cost categories
-    const categories = [
-      { id: 'maintenance', name: 'Maintenance' },
-      { id: 'licensing', name: 'Licensing' },
-      { id: 'personnel', name: 'Personnel' },
-      { id: 'downtime', name: 'Downtime Costs' },
-      { id: 'total', name: 'Total Annual Costs' }
-    ];
-    
-    // Calculate annual costs
-    const currentAnnual = {
-      maintenance: results[currentVendor].costBreakdown.maintenance / results.yearsToProject,
-      licensing: results[currentVendor].costBreakdown.licensing / results.yearsToProject,
-      personnel: results[currentVendor].costBreakdown.personnel / results.yearsToProject,
-      downtime: results[currentVendor].costBreakdown.downtime / results.yearsToProject
-    };
-    
-    const portnoxAnnual = {
-      maintenance: results['portnox'].costBreakdown.maintenance / results.yearsToProject,
-      licensing: results['portnox'].costBreakdown.licensing / results.yearsToProject,
-      personnel: results['portnox'].costBreakdown.personnel / results.yearsToProject,
-      downtime: results['portnox'].costBreakdown.downtime / results.yearsToProject
-    };
-    
-    // Calculate totals
-    currentAnnual.total = currentAnnual.maintenance + currentAnnual.licensing + 
-                          currentAnnual.personnel + currentAnnual.downtime;
-    
-    portnoxAnnual.total = portnoxAnnual.maintenance + portnoxAnnual.licensing + 
-                           portnoxAnnual.personnel + portnoxAnnual.downtime;
-    
-    // Create rows
-    categories.forEach(category => {
-      const current = currentAnnual[category.id];
-      const portnox = portnoxAnnual[category.id];
-      const savings = current - portnox;
-      const savingsPercentage = current > 0 ? (savings / current) * 100 : 0;
-      
-      // Create row
-      const row = document.createElement('tr');
-      
-      // Add classes for total row
-      if (category.id === 'total') {
-        row.classList.add('total-row');
-      }
-      
-      // Populate cells
-      row.innerHTML = `
-        <td>${category.name}</td>
-        <td>${window.formatCurrency(current)}</td>
-        <td>${window.formatCurrency(portnox)}</td>
-        <td>${window.formatCurrency(savings)} (${savingsPercentage.toFixed(1)}%)</td>
-      `;
-      
-      // Add to table
-      tableBody.appendChild(row);
-    });
-  }
-EOL
-
-# Update calculator.updateUI to also update annual costs table
-sed -i 's/window.uiController.updatePortnoxAdvantageSection(this.results);/window.uiController.updatePortnoxAdvantageSection(this.results);\n        window.uiController.updateAnnualCostsTable(this.results);/g' js/components/calculator.js 2>/dev/null
-# For macOS compatibility
-sed -i '' 's/window.uiController.updatePortnoxAdvantageSection(this.results);/window.uiController.updatePortnoxAdvantageSection(this.results);\n        window.uiController.updateAnnualCostsTable(this.results);/g' js/components/calculator.js 2>/dev/null
-
-# Add implementation table functionality to UIController
-cat >> js/components/ui-controller.js << 'EOL'
-
-  // Update implementation table
-  updateImplementationTable(results) {
-    if (!results) return;
-    
-    const tableBody = document.getElementById('implementation-table-body');
-    if (!tableBody) return;
-    
-    // Clear existing rows
-    tableBody.innerHTML = '';
-    
-    // Get implementation data
-    const implementationResults = results.implementationResults;
-    if (!implementationResults) return;
-    
-    const currentVendor = this.activeVendor;
-    
-    if (!implementationResults[currentVendor] || !implementationResults['portnox']) return;
-    
-    const currentImplementation = implementationResults[currentVendor];
-    const portnoxImplementation = implementationResults['portnox'];
-    
-    // Add total row
-    const row = document.createElement('tr');
-    
-    // Format values
-    const currentDays = currentImplementation;
-    const portnoxDays = portnoxImplementation;
-    const timeSavings = currentDays - portnoxDays;
-    const savingsPercentage = currentDays > 0 ? (timeSavings / currentDays) * 100 : 0;
-    
-    // Populate cells
-    row.innerHTML = `
-      <td>Total Implementation Time</td>
-      <td>${currentDays.toFixed(1)} days</td>
-      <td>${portnoxDays.toFixed(1)} days</td>
-      <td>${timeSavings.toFixed(1)} days (${savingsPercentage.toFixed(1)}%)</td>
-    `;
-    
-    // Add to table
-    tableBody.appendChild(row);
-  }
-EOL
-
-# Update calculator.updateUI to also update implementation table
-sed -i 's/window.uiController.updateAnnualCostsTable(this.results);/window.uiController.updateAnnualCostsTable(this.results);\n        window.uiController.updateImplementationTable(this.results);/g' js/components/calculator.js 2>/dev/null
-# For macOS compatibility
-sed -i '' 's/window.uiController.updateAnnualCostsTable(this.results);/window.uiController.updateAnnualCostsTable(this.results);\n        window.uiController.updateImplementationTable(this.results);/g' js/components/calculator.js 2>/dev/null
-
-# Add debugging output to confirm proper initialization
-cat >> js/main.js << 'EOL'
-
-// Add initialization info to the UI
-function addDebugInfo() {
-  try {
-    const resultsContainer = document.querySelector('.results-container');
-    if (!resultsContainer) return;
-    
-    const debugInfo = document.createElement('div');
-    debugInfo.id = 'debug-info';
-    debugInfo.style.display = 'none';
-    debugInfo.innerHTML = `
-      <p>UI Controller: ${window.uiController ? 'Initialized' : 'Not initialized'}</p>
-      <p>Chart Builder: ${window.chartBuilder ? 'Initialized' : 'Not initialized'}</p>
-      <p>Calculator: ${window.calculator ? 'Initialized' : 'Not initialized'}</p>
-      <p>Active Vendor: ${window.uiController?.activeVendor || 'None'}</p>
-      <p>Calculation Results: ${window.calculator?.resultsAvailable ? 'Available' : 'Not available'}</p>
-    `;
-    
-    resultsContainer.appendChild(debugInfo);
-    
-    // Add debug toggle to footer
-    const footer = document.querySelector('.footer-links');
-    if (footer) {
-      const debugLink = document.createElement('a');
-      debugLink.href = '#';
-      debugLink.textContent = 'Debug Info';
-      debugLink.addEventListener('click', function(e) {
-        e.preventDefault();
-        const debugInfo = document.getElementById('debug-info');
-        if (debugInfo) {
-          debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
-        }
-      });
-      
-      footer.appendChild(debugLink);
-    }
-  } catch (err) {
-    console.error('Error adding debug info:', err);
-  }
-}
-
-// Call the debug function after initialization
-setTimeout(addDebugInfo, 1000);
-EOL
-
-echo -e "${GREEN}Targeted enhancements added successfully${NC}"
-
 # Final summary
-echo -e "\n${GREEN}TCO Calculator Restoration and Enhancement Completed${NC}"
+echo -e "\n${GREEN}TCO Calculator Fix and Enhancement Script Completed${NC}"
 echo -e "\n${YELLOW}Summary of Changes:${NC}"
-echo -e "  1. Restored core functionality with original code"
-echo -e "  2. Added annual costs table implementation"
-echo -e "  3. Added implementation timeline table"
-echo -e "  4. Added debug information tool for troubleshooting"
-echo -e "  5. Created placeholder vendor logos"
+echo -e "  1. Fixed DOMCache recursion issue - Maximum Call Stack Size Exceeded Error"
+echo -e "  2. Fixed JavaScript initialization sequence"
+echo -e "  3. Added error handling and user feedback messages"
+echo -e "  4. Enhanced tables with additional data points"
+echo -e "  5. Added loading indicators during calculations"
+echo -e "  6. Improved mobile responsiveness and styling"
+echo -e "  7. Added debugging tools for troubleshooting"
+echo -e "  8. Implemented CSV export functionality"
 
 echo -e "\n${YELLOW}Next Steps:${NC}"
 echo -e "  1. Open index.html in your browser to test the calculator"
-echo -e "  2. Verify that all sections appear correctly"
-echo -e "  3. Check that calculations work properly"
-echo -e "  4. Enable debug info link in footer if you encounter issues"
+echo -e "  2. Check that all sections appear correctly"
+echo -e "  3. Test calculations with different inputs"
+echo -e "  4. Try exporting to CSV"
+echo -e "  5. If needed, use the debug link in the footer to help with troubleshooting"
 
 echo -e "\n${GREEN}The TCO Calculator should now be functioning correctly!${NC}"
-echo -e "${YELLOW}Test thoroughly before making additional enhancements.${NC}"
