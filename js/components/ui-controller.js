@@ -1,43 +1,16 @@
 /**
- * Enhanced UI Controller for managing user interface interactions and state
+ * UI Controller for managing interface elements and user interactions
  */
 
 class UIController {
   constructor() {
     this.activeVendor = null;
-    this.isInitialized = false;
-    this.eventListeners = {};
-    this.sensitivityAnalysis = {
-      enabled: false,
-      factors: {
-        deviceCount: [0.5, 1, 1.5, 2],
-        yearsToProject: [1, 3, 5, 10],
-        complexity: [0.75, 1, 1.25, 1.5]
-      }
-    };
-    
     this.init();
   }
   
   init() {
-    if (this.isInitialized) return;
-    
     // Initialize vendor selection
-    this.initVendorSelection();
-    
-    // Initialize export buttons
-    this.initExportButtons();
-    
-    // Set default active vendor
-    this.setActiveVendor('cisco');
-    
-    this.isInitialized = true;
-  }
-  
-  initVendorSelection() {
-    const vendorCards = document.querySelectorAll('.vendor-card');
-    
-    vendorCards.forEach(card => {
+    document.querySelectorAll('.vendor-card').forEach(card => {
       const vendor = card.getAttribute('data-vendor');
       
       if (!vendor) return;
@@ -59,96 +32,105 @@ class UIController {
         }
       });
     });
-  }
-  
-  initExportButtons() {
-    const exportCsvBtn = document.getElementById('export-csv-btn');
-    const exportPdfBtn = document.getElementById('export-pdf-btn');
     
-    if (exportCsvBtn) {
-      exportCsvBtn.addEventListener('click', () => {
-        this.exportToCSV();
+    // Initialize advanced options toggle
+    const advancedOptionsToggle = document.querySelector('.advanced-options-toggle button');
+    const advancedOptionsPanel = document.getElementById('advanced-options-panel');
+    
+    if (advancedOptionsToggle && advancedOptionsPanel) {
+      advancedOptionsToggle.addEventListener('click', () => {
+        toggleVisibility('advanced-options-panel');
+        
+        // Update the icon
+        const icon = advancedOptionsToggle.querySelector('i');
+        if (icon) {
+          if (advancedOptionsPanel.classList.contains('hidden')) {
+            icon.className = 'fas fa-angle-down';
+          } else {
+            icon.className = 'fas fa-angle-up';
+          }
+        }
       });
     }
     
-    if (exportPdfBtn) {
-      exportPdfBtn.addEventListener('click', () => {
-        this.exportToPDF();
+    // Initialize tab navigation
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const tabId = button.getAttribute('data-tab');
+        if (tabId) {
+          window.setActiveTab(tabId);
+        }
       });
-    }
-  }
-  
-  // Export to CSV
-  exportToCSV() {
-    if (!window.calculator || !window.calculator.resultsAvailable) {
-      if (window.notificationManager) {
-        window.notificationManager.warn('No calculation results to export. Please calculate TCO first.');
-      }
-      return;
+    });
+    
+    // Initialize sub-tab navigation
+    document.querySelectorAll('.sub-tab-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const subtabId = button.getAttribute('data-subtab');
+        if (subtabId) {
+          window.setActiveSubTab(subtabId);
+        }
+      });
+    });
+    
+    // Initialize range input value displays
+    document.getElementById('legacy-percentage')?.addEventListener('input', (e) => {
+      const value = e.target.value;
+      document.getElementById('legacy-percentage-value').textContent = `${value}%`;
+    });
+    
+    // Initialize conditional displays
+    document.getElementById('multiple-locations')?.addEventListener('change', function() {
+      const locationCountInput = document.getElementById('location-count').closest('.input-group');
+      locationCountInput.style.display = this.checked ? 'block' : 'none';
+    });
+    
+    document.getElementById('legacy-devices')?.addEventListener('change', function() {
+      const legacyPercentageInput = document.getElementById('legacy-percentage').closest('.input-group');
+      legacyPercentageInput.style.display = this.checked ? 'block' : 'none';
+    });
+    
+    document.getElementById('custom-policies')?.addEventListener('change', function() {
+      const policyComplexityInput = document.getElementById('policy-complexity').closest('.input-group');
+      policyComplexityInput.style.display = this.checked ? 'block' : 'none';
+    });
+    
+    // Set initial states for conditional inputs
+    const multipleLocations = document.getElementById('multiple-locations');
+    if (multipleLocations) {
+      const locationCountInput = document.getElementById('location-count').closest('.input-group');
+      locationCountInput.style.display = multipleLocations.checked ? 'block' : 'none';
     }
     
-    try {
-      // Export TCO summary table
-      const exported = window.exportTableToCSV('tco-summary-table', `nac-tco-comparison-${new Date().toISOString().slice(0, 10)}.csv`);
-      
-      if (exported && window.notificationManager) {
-        window.notificationManager.success('TCO comparison exported to CSV successfully');
-      }
-    } catch (error) {
-      console.error('Error exporting to CSV:', error);
-      
-      if (window.notificationManager) {
-        window.notificationManager.error(`Error exporting to CSV: ${error.message}`);
-      }
-    }
-  }
-  
-  // Export to PDF
-  exportToPDF() {
-    if (!window.calculator || !window.calculator.resultsAvailable) {
-      if (window.notificationManager) {
-        window.notificationManager.warn('No calculation results to export. Please calculate TCO first.');
-      }
-      return;
+    const legacyDevices = document.getElementById('legacy-devices');
+    if (legacyDevices) {
+      const legacyPercentageInput = document.getElementById('legacy-percentage').closest('.input-group');
+      legacyPercentageInput.style.display = legacyDevices.checked ? 'block' : 'none';
     }
     
-    try {
-      if (window.notificationManager) {
-        window.notificationManager.info('Preparing PDF export...');
-      }
-      
-      // This is a placeholder for PDF export functionality
-      // Would normally use a library like jsPDF or html2pdf
-      
-      alert('PDF export functionality is not implemented in this version. Please use CSV export instead.');
-      
-      if (window.notificationManager) {
-        window.notificationManager.warn('PDF export is not fully implemented yet');
-      }
-    } catch (error) {
-      console.error('Error exporting to PDF:', error);
-      
-      if (window.notificationManager) {
-        window.notificationManager.error(`Error exporting to PDF: ${error.message}`);
-      }
+    const customPolicies = document.getElementById('custom-policies');
+    if (customPolicies) {
+      const policyComplexityInput = document.getElementById('policy-complexity').closest('.input-group');
+      policyComplexityInput.style.display = customPolicies.checked ? 'block' : 'none';
     }
   }
   
-  // Set active vendor
   setActiveVendor(vendor) {
-    // Skip if already active
     if (this.activeVendor === vendor) return;
     
-    const oldVendor = this.activeVendor;
     this.activeVendor = vendor;
     
     // Update vendor cards UI
     document.querySelectorAll('.vendor-card').forEach(card => {
       const cardVendor = card.getAttribute('data-vendor');
-      const isActive = cardVendor === vendor;
       
-      card.classList.toggle('active', isActive);
-      card.setAttribute('aria-pressed', isActive.toString());
+      if (cardVendor === vendor) {
+        card.classList.add('active');
+        card.setAttribute('aria-pressed', 'true');
+      } else {
+        card.classList.remove('active');
+        card.setAttribute('aria-pressed', 'false');
+      }
     });
     
     // Update charts if results are available
@@ -159,11 +141,12 @@ class UIController {
     // Update comparison section
     this.updatePortnoxAdvantageSection();
     
-    // Trigger event
-    this.triggerEvent('vendorChanged', { oldVendor, newVendor: vendor });
+    // Recalculate if results are available
+    if (window.calculator && window.calculator.resultsAvailable) {
+      window.calculator.calculate();
+    }
   }
   
-  // Populate TCO summary table
   populateTCOSummaryTable(results) {
     if (!results) return;
     
@@ -213,6 +196,107 @@ class UIController {
     });
   }
   
+  updatePortnoxAdvantageSection(results) {
+    if (!results) {
+      if (!window.calculator || !window.calculator.results) return;
+      results = window.calculator.results;
+    }
+    
+    if (this.activeVendor === 'portnox') {
+      document.querySelectorAll('.portnox-spotlight, .comparison-highlight-card').forEach(element => {
+        element.classList.add('hidden');
+      });
+      return;
+    } else {
+      document.querySelectorAll('.portnox-spotlight, .comparison-highlight-card').forEach(element => {
+        element.classList.remove('hidden');
+      });
+    }
+    
+    if (!results[this.activeVendor] || !results['portnox']) return;
+    
+    // Calculate savings
+    const totalSavings = results['portnox'].totalSavings;
+    const savingsPercentage = results['portnox'].savingsPercentage;
+    
+    // Update savings display
+    const savingsAmountElement = document.getElementById('portnox-savings-amount');
+    if (savingsAmountElement) {
+      savingsAmountElement.textContent = window.formatCurrency(totalSavings);
+    }
+    
+    const savingsPercentageElement = document.getElementById('portnox-savings-percentage');
+    if (savingsPercentageElement) {
+      savingsPercentageElement.textContent = `${savingsPercentage.toFixed(1)}%`;
+    }
+    
+    // Calculate implementation time savings
+    const implementationResults = results.implementationResults;
+    
+    if (implementationResults && implementationResults[this.activeVendor] && implementationResults['portnox']) {
+      const currentImplementation = implementationResults[this.activeVendor];
+      const portnoxImplementation = implementationResults['portnox'];
+      
+      const timeSavings = currentImplementation - portnoxImplementation;
+      const timeSavingsPercentage = currentImplementation > 0 
+        ? (timeSavings / currentImplementation) * 100 
+        : 0;
+      
+      const implementationTimeElement = document.getElementById('portnox-implementation-time');
+      if (implementationTimeElement) {
+        implementationTimeElement.textContent = `${timeSavingsPercentage.toFixed(1)}%`;
+      }
+    }
+    
+    // Update comparison section
+    const comparisonSavingsElement = document.getElementById('comparison-savings');
+    if (comparisonSavingsElement) {
+      comparisonSavingsElement.textContent = window.formatCurrency(totalSavings);
+    }
+    
+    const savingsProgressBar = document.querySelector('.comparison-metrics:first-child .progress');
+    if (savingsProgressBar) {
+      savingsProgressBar.style.width = `${Math.min(100, savingsPercentage)}%`;
+    }
+    
+    const savingsProgressLabels = document.querySelector('.comparison-metrics:first-child .progress-labels');
+    if (savingsProgressLabels) {
+      savingsProgressLabels.innerHTML = `
+        <span>0%</span>
+        <span>${savingsPercentage.toFixed(1)}% Savings</span>
+      `;
+    }
+    
+    // Update implementation progress
+    if (implementationResults && implementationResults[this.activeVendor] && implementationResults['portnox']) {
+      const currentImplementation = implementationResults[this.activeVendor];
+      const portnoxImplementation = implementationResults['portnox'];
+      
+      const timeSavings = currentImplementation - portnoxImplementation;
+      const timeSavingsPercentage = currentImplementation > 0 
+        ? (timeSavings / currentImplementation) * 100 
+        : 0;
+      
+      const comparisonImplementationElement = document.getElementById('comparison-implementation');
+      if (comparisonImplementationElement) {
+        comparisonImplementationElement.textContent = `${timeSavingsPercentage.toFixed(1)}%`;
+      }
+      
+      const implementationProgressBar = document.querySelector('.comparison-metrics:nth-child(2) .progress');
+      if (implementationProgressBar) {
+        implementationProgressBar.style.width = `${Math.min(100, timeSavingsPercentage)}%`;
+      }
+      
+      const implementationProgressLabels = document.querySelector('.comparison-metrics:nth-child(2) .progress-labels');
+      if (implementationProgressLabels) {
+        implementationProgressLabels.innerHTML = `
+          <span>0%</span>
+          <span>${timeSavingsPercentage.toFixed(1)}% Faster</span>
+        `;
+      }
+    }
+  }
+  
   // Update annual costs table
   updateAnnualCostsTable(results) {
     if (!results) return;
@@ -225,7 +309,6 @@ class UIController {
     
     // Get current vendor and portnox data
     const currentVendor = this.activeVendor;
-    const currentVendorName = window.vendorData[currentVendor]?.name || 'Current';
     
     if (!results[currentVendor] || !results['portnox']) return;
     
@@ -283,7 +366,7 @@ class UIController {
         <td>${category.name}</td>
         <td>${window.formatCurrency(current)}</td>
         <td>${window.formatCurrency(portnox)}</td>
-        <td class="${savingsClass}">${window.formatCurrency(savings)} (${window.formatPercentage(savingsPercentage)})</td>
+        <td class="${savingsClass}">${window.formatCurrency(savings)} (${savingsPercentage.toFixed(1)}%)</td>
       `;
       
       // Add to table
@@ -306,270 +389,138 @@ class UIController {
     if (!implementationResults) return;
     
     const currentVendor = this.activeVendor;
-    const currentVendorName = window.vendorData[currentVendor]?.name || 'Current';
     
     if (!implementationResults[currentVendor] || !implementationResults['portnox']) return;
     
     const currentImplementation = implementationResults[currentVendor];
     const portnoxImplementation = implementationResults['portnox'];
     
-    // Get all phases
-    const allPhases = new Set();
-    
-    // Add current vendor phases
-    for (const phase in currentImplementation.phases) {
-      allPhases.add(phase);
-    }
-    
-    // Add portnox phases
-    for (const phase in portnoxImplementation.phases) {
-      allPhases.add(phase);
-    }
-    
-    // Create rows for each phase
-    Array.from(allPhases).forEach(phaseId => {
-      // Format phase name from camelCase to Title Case
-      const phaseName = phaseId
-        .replace(/([A-Z])/g, ' $1')
-        .replace(/^./, str => str.toUpperCase());
-      
-      const currentDays = currentImplementation.phases[phaseId] || 0;
-      const portnoxDays = portnoxImplementation.phases[phaseId] || 0;
-      const timeSavings = currentDays - portnoxDays;
-      const savingsPercentage = currentDays > 0 ? (timeSavings / currentDays) * 100 : 0;
-      
-      // Create row
-      const row = document.createElement('tr');
-      
-      // Add classes for savings
-      const savingsClass = timeSavings > 0 ? 'positive-savings' : (timeSavings < 0 ? 'negative-savings' : '');
-      
-      // Populate cells
-      row.innerHTML = `
-        <td>${phaseName}</td>
-        <td>${currentDays.toFixed(1)} days</td>
-        <td>${portnoxDays.toFixed(1)} days</td>
-        <td class="${savingsClass}">${timeSavings.toFixed(1)} days (${savingsPercentage.toFixed(1)}%)</td>
-      `;
-      
-      // Add to table
-      tableBody.appendChild(row);
-    });
-    
     // Add total row
-    const totalCurrentDays = currentImplementation.totalDays || 0;
-    const totalPortnoxDays = portnoxImplementation.totalDays || 0;
-    const totalTimeSavings = totalCurrentDays - totalPortnoxDays;
-    const totalSavingsPercentage = totalCurrentDays > 0 ? (totalTimeSavings / totalCurrentDays) * 100 : 0;
+    const row = document.createElement('tr');
     
-    // Create total row
-    const totalRow = document.createElement('tr');
-    totalRow.classList.add('total-row');
+    // Format values
+    const currentDays = currentImplementation;
+    const portnoxDays = portnoxImplementation;
+    const timeSavings = currentDays - portnoxDays;
+    const savingsPercentage = currentDays > 0 ? (timeSavings / currentDays) * 100 : 0;
     
     // Add classes for savings
-    const totalSavingsClass = totalTimeSavings > 0 ? 'positive-savings' : (totalTimeSavings < 0 ? 'negative-savings' : '');
+    const savingsClass = timeSavings > 0 ? 'positive-savings' : (timeSavings < 0 ? 'negative-savings' : '');
     
     // Populate cells
-    totalRow.innerHTML = `
-      <td><strong>Total Implementation Time</strong></td>
-      <td><strong>${totalCurrentDays.toFixed(1)} days</strong></td>
-      <td><strong>${totalPortnoxDays.toFixed(1)} days</strong></td>
-      <td class="${totalSavingsClass}"><strong>${totalTimeSavings.toFixed(1)} days (${totalSavingsPercentage.toFixed(1)}%)</strong></td>
+    row.innerHTML = `
+      <td>Total Implementation Time</td>
+      <td>${currentDays.toFixed(1)} days</td>
+      <td>${portnoxDays.toFixed(1)} days</td>
+      <td class="${savingsClass}">${timeSavings.toFixed(1)} days (${savingsPercentage.toFixed(1)}%)</td>
     `;
     
     // Add to table
-    tableBody.appendChild(totalRow);
+    tableBody.appendChild(row);
   }
   
-  // Update Portnox advantage section
-  updatePortnoxAdvantageSection(results) {
-    if (!results) return;
-    
-    const currentVendor = this.activeVendor;
-    
-    // Skip if current vendor is portnox
-    if (currentVendor === 'portnox') {
-      document.querySelectorAll('.portnox-spotlight, .comparison-highlight-card').forEach(element => {
-        element.classList.add('hidden');
-      });
+  // Export to CSV
+  exportToCSV() {
+    if (!window.calculator || !window.calculator.resultsAvailable) {
+      alert('No calculation results to export. Please calculate TCO first.');
       return;
-    } else {
-      document.querySelectorAll('.portnox-spotlight, .comparison-highlight-card').forEach(element => {
-        element.classList.remove('hidden');
+    }
+    
+    try {
+      const results = window.calculator.results;
+      const vendors = Object.keys(window.vendorData);
+      
+      // Prepare CSV data
+      let csvData = "Vendor,Initial Costs,Annual Costs,Migration Costs,Total TCO,Savings vs Current,Savings %\n";
+      
+      vendors.forEach(vendor => {
+        if (!results[vendor]) return;
+        
+        const row = [
+          window.vendorData[vendor].name,
+          results[vendor].totalInitialCosts.toFixed(2),
+          results[vendor].annualCosts.toFixed(2),
+          results[vendor].migrationCost ? results[vendor].migrationCost.toFixed(2) : '0.00',
+          results[vendor].totalTCO.toFixed(2),
+          results[vendor].totalSavings ? results[vendor].totalSavings.toFixed(2) : '0.00',
+          results[vendor].savingsPercentage ? results[vendor].savingsPercentage.toFixed(2) : '0.00'
+        ];
+        
+        csvData += row.join(',') + '\n';
+      });
+      
+      // Create download link
+      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'tco_comparison.csv');
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      this.showSuccess('CSV file exported successfully');
+    } catch (error) {
+      console.error('Error exporting to CSV:', error);
+      this.showError('Error exporting to CSV: ' + error.message);
+    }
+  }
+  
+  // Export to PDF - placeholder
+  exportToPDF() {
+    alert('PDF export functionality is not available yet.');
+  }
+  
+  // Show success message
+  showSuccess(message) {
+    const messageContainer = document.getElementById('message-container');
+    if (!messageContainer) return;
+    
+    messageContainer.innerHTML = `
+      <div class="success-message-box">
+        <i class="fas fa-check-circle"></i>
+        <span>${message}</span>
+        <button class="close-error"><i class="fas fa-times"></i></button>
+      </div>
+    `;
+    
+    // Add close button functionality
+    const closeBtn = messageContainer.querySelector('.close-error');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        messageContainer.innerHTML = '';
       });
     }
     
-    if (!results[currentVendor] || !results['portnox']) return;
-    
-    // Get comparison data
-    const currentResult = results[currentVendor];
-    const portnoxResult = results['portnox'];
-    
-    // Calculate savings
-    const totalSavings = portnoxResult.totalSavings;
-    const savingsPercentage = portnoxResult.savingsPercentage;
-    
-    // Calculate implementation time savings
-    const implementationResults = results.implementationResults;
-    
-    if (implementationResults && implementationResults[currentVendor] && implementationResults['portnox']) {
-      const currentImplementation = implementationResults[currentVendor];
-      const portnoxImplementation = implementationResults['portnox'];
-      
-      const timeSavings = currentImplementation.totalDays - portnoxImplementation.totalDays;
-      const timeSavingsPercentage = currentImplementation.totalDays > 0 
-        ? (timeSavings / currentImplementation.totalDays) * 100 
-        : 0;
-      
-      // Update implementation time display
-      const implementationTimeElement = document.getElementById('portnox-implementation-time');
-      if (implementationTimeElement) {
-        implementationTimeElement.textContent = `${timeSavingsPercentage.toFixed(1)}%`;
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      if (messageContainer.querySelector('.success-message-box')) {
+        messageContainer.innerHTML = '';
       }
-      
-      // Update comparison implementation display
-      const comparisonImplementationElement = document.getElementById('comparison-implementation');
-      if (comparisonImplementationElement) {
-        comparisonImplementationElement.textContent = `${timeSavingsPercentage.toFixed(1)}%`;
-      }
-      
-      // Update progress bar
-      const progressBar = document.querySelector('.comparison-metrics .progress');
-      if (progressBar) {
-        progressBar.style.width = `${Math.min(100, timeSavingsPercentage)}%`;
-      }
-      
-      // Update progress labels
-      const progressLabels = document.querySelector('.comparison-metrics .progress-labels');
-      if (progressLabels) {
-        progressLabels.innerHTML = `
-          <span>0%</span>
-          <span>${timeSavingsPercentage.toFixed(1)}% Faster</span>
-        `;
-      }
-    }
-    
-    // Update savings display
-    const savingsAmountElement = document.getElementById('portnox-savings-amount');
-    if (savingsAmountElement) {
-      savingsAmountElement.textContent = window.formatCurrency(totalSavings);
-    }
-    
-    const savingsPercentageElement = document.getElementById('portnox-savings-percentage');
-    if (savingsPercentageElement) {
-      savingsPercentageElement.textContent = `${savingsPercentage.toFixed(1)}%`;
-    }
-    
-    // Update comparison savings display
-    const comparisonSavingsElement = document.getElementById('comparison-savings');
-    if (comparisonSavingsElement) {
-      comparisonSavingsElement.textContent = window.formatCurrency(totalSavings);
-    }
-    
-    // Update savings progress bar
-    const savingsProgressBar = document.querySelector('.comparison-metrics:first-child .progress');
-    if (savingsProgressBar) {
-      savingsProgressBar.style.width = `${Math.min(100, savingsPercentage)}%`;
-    }
-    
-    // Update savings progress labels
-    const savingsProgressLabels = document.querySelector('.comparison-metrics:first-child .progress-labels');
-    if (savingsProgressLabels) {
-      savingsProgressLabels.innerHTML = `
-        <span>0%</span>
-        <span>${savingsPercentage.toFixed(1)}% Savings</span>
-      `;
-    }
+    }, 3000);
   }
   
-  // Run sensitivity analysis
-  runSensitivityAnalysis() {
-    if (!this.sensitivityAnalysis.enabled || !window.calculator) return null;
+  // Show error message
+  showError(message) {
+    const messageContainer = document.getElementById('message-container');
+    if (!messageContainer) return;
     
-    const baselineResults = window.calculator.results;
-    if (!baselineResults) return null;
+    messageContainer.innerHTML = `
+      <div class="error-message-box">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>${message}</span>
+        <button class="close-error"><i class="fas fa-times"></i></button>
+      </div>
+    `;
     
-    // Store original input values
-    const originalInputs = {
-      deviceCount: document.getElementById('device-count').value,
-      yearsToProject: document.getElementById('years-to-project').value
-    };
-    
-    const analysisResults = {
-      deviceCount: {},
-      yearsToProject: {},
-      complexity: {}
-    };
-    
-    // Run analysis for device count variations
-    this.sensitivityAnalysis.factors.deviceCount.forEach(factor => {
-      const deviceCount = Math.round(originalInputs.deviceCount * factor);
-      document.getElementById('device-count').value = deviceCount;
-      
-      // Calculate TCO with new device count
-      const results = window.calculator.calculate();
-      
-      // Store results
-      analysisResults.deviceCount[factor] = {
-        deviceCount,
-        results: window.deepCopy(results)
-      };
-    });
-    
-    // Restore original device count
-    document.getElementById('device-count').value = originalInputs.deviceCount;
-    
-    // Run analysis for years to project variations
-    this.sensitivityAnalysis.factors.yearsToProject.forEach(years => {
-      document.getElementById('years-to-project').value = years;
-      
-      // Calculate TCO with new years
-      const results = window.calculator.calculate();
-      
-      // Store results
-      analysisResults.yearsToProject[years] = {
-        years,
-        results: window.deepCopy(results)
-      };
-    });
-    
-    // Restore original years to project
-    document.getElementById('years-to-project').value = originalInputs.yearsToProject;
-    
-    // Recalculate with original values
-    window.calculator.calculate();
-    
-    return analysisResults;
-  }
-  
-  // Event system
-  on(eventName, callback) {
-    if (!this.eventListeners[eventName]) {
-      this.eventListeners[eventName] = [];
+    // Add close button functionality
+    const closeBtn = messageContainer.querySelector('.close-error');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        messageContainer.innerHTML = '';
+      });
     }
-    
-    this.eventListeners[eventName].push(callback);
-    return this;
-  }
-  
-  off(eventName, callback) {
-    if (!this.eventListeners[eventName]) return this;
-    
-    if (callback) {
-      this.eventListeners[eventName] = this.eventListeners[eventName]
-        .filter(cb => cb !== callback);
-    } else {
-      this.eventListeners[eventName] = [];
-    }
-    
-    return this;
-  }
-  
-  triggerEvent(eventName, data) {
-    if (!this.eventListeners[eventName]) return;
-    
-    this.eventListeners[eventName].forEach(callback => {
-      callback(data);
-    });
   }
 }
