@@ -272,8 +272,94 @@ class EnhancedSensitivityAnalyzer {
         
         const currentVendorTCO1 = current.calculationResults[analysisResults.vendor]?.totalTCO || 0;
         const portnoxTCO1 = current.calculationResults['portnox']?.totalTCO || 0;
-		# Continuing the enhanced-sensitivity.js file:
-cat >> js/components/enhanced-sensitivity.js << 'EOF'
+        
+        const currentVendorTCO2 = next.calculationResults[analysisResults.vendor]?.totalTCO || 0;
+        const portnoxTCO2 = next.calculationResults['portnox']?.totalTCO || 0;
+        
+        // Check if the difference changes sign between these points
+        const diff1 = currentVendorTCO1 - portnoxTCO1;
+        const diff2 = currentVendorTCO2 - portnoxTCO2;
+        
+        if ((diff1 <= 0 && diff2 > 0) || (diff1 >= 0 && diff2 < 0)) {
+          // Breakeven point found between these values
+          // Use linear interpolation to estimate the exact breakeven point
+          const ratio = Math.abs(diff1) / (Math.abs(diff1) + Math.abs(diff2));
+          const breakevenValue = current.dataPoint + ratio * (next.dataPoint - current.dataPoint);
+          
+          breakevenPoints[analysisResults.vendor] = {
+            value: breakevenValue,
+            unit: this.getVariableUnit(analysisResults.variable)
+          };
+          
+          break;
+        }
+      }
+    }
+    
+    // If "all" vendors selected, calculate breakeven for each vendor
+    if (analysisResults.vendor === 'all') {
+      const vendorNames = Object.keys(analysisResults.results[0].calculationResults).filter(
+        name => name !== 'portnox' && name !== 'yearsToProject' && name !== 'deviceCount' && name !== 'orgSize'
+      );
+      
+      vendorNames.forEach(vendor => {
+        const results = analysisResults.results;
+        
+        // Find where the lines cross
+        for (let i = 0; i < results.length - 1; i++) {
+          const current = results[i];
+          const next = results[i + 1];
+          
+          const vendorTCO1 = current.calculationResults[vendor]?.totalTCO || 0;
+          const portnoxTCO1 = current.calculationResults['portnox']?.totalTCO || 0;
+          
+          const vendorTCO2 = next.calculationResults[vendor]?.totalTCO || 0;
+          const portnoxTCO2 = next.calculationResults['portnox']?.totalTCO || 0;
+          
+          // Check if the difference changes sign between these points
+          const diff1 = vendorTCO1 - portnoxTCO1;
+          const diff2 = vendorTCO2 - portnoxTCO2;
+          
+          if ((diff1 <= 0 && diff2 > 0) || (diff1 >= 0 && diff2 < 0)) {
+            // Breakeven point found between these values
+            // Use linear interpolation to estimate the exact breakeven point
+            const ratio = Math.abs(diff1) / (Math.abs(diff1) + Math.abs(diff2));
+            const breakevenValue = current.dataPoint + ratio * (next.dataPoint - current.dataPoint);
+            
+            breakevenPoints[vendor] = {
+              value: breakevenValue,
+              unit: this.getVariableUnit(analysisResults.variable)
+            };
+          }
+        }
+      });
+    }
+    
+    return breakevenPoints;
+  }
+  
+  getVariableUnit(variable) {
+    switch (variable) {
+      case 'deviceCount':
+        return 'devices';
+      case 'legacyPercentage':
+        return '%';
+      case 'locationCount':
+        return 'locations';
+      case 'yearsToProject':
+        return 'years';
+      case 'hardwareCost':
+      case 'licensingCost':
+      case 'maintenanceCost':
+      case 'fteCost':
+      case 'implementationCost':
+        return 'multiplier';
+      case 'downtimeCost':
+        return '$/hour';
+      default:
+        return '';
+    }
+  }
   
   saveOriginalValues() {
     return {
@@ -434,9 +520,6 @@ cat >> js/components/enhanced-sensitivity.js << 'EOF'
       this.updateBreakevenAnalysis();
     }
     
-    // Add or update insights section
-    this.updateInsightsSection();
-    
     // Show success message
     this.showSuccess("Sensitivity analysis completed successfully");
   }
@@ -476,33 +559,28 @@ cat >> js/components/enhanced-sensitivity.js << 'EOF'
       });
     });
     
-    // Create annotations object for breakeven points
-    const annotations = {};
-    
     // Add breakeven markers if available
     if (this.results.includeBreakeven && this.results.breakevenPoints) {
+      // Add breakeven annotations
+      const annotations = {};
       Object.entries(this.results.breakevenPoints).forEach(([vendor, point], index) => {
-        // Find the position in the X-axis array
-        const positionIndex = this.findClosestDataPointIndex(point.value);
-        if (positionIndex !== -1) {
-          annotations[`breakeven-${vendor}`] = {
-            type: 'line',
-            xMin: positionIndex,
-            xMax: positionIndex,
-            borderColor: 'rgba(255, 0, 0, 0.5)',
-            borderWidth: 2,
-            borderDash: [5, 5],
-            label: {
-              content: `${window.vendorData[vendor]?.name || vendor} Breakeven`,
-              enabled: true,
-              position: 'top',
-              backgroundColor: 'rgba(255, 0, 0, 0.7)',
-              font: {
-                size: 10
-              }
+        annotations[`breakeven-${vendor}`] = {
+          type: 'line',
+          xMin: point.value,
+          xMax: point.value,
+          borderColor: 'rgba(255, 0, 0, 0.5)',
+          borderWidth: 2,
+          borderDash: [5, 5],
+          label: {
+            content: `${window.vendorData[vendor]?.name || vendor} Breakeven`,
+            enabled: true,
+            position: 'top',
+            backgroundColor: 'rgba(255, 0, 0, 0.7)',
+            font: {
+              size: 10
             }
-          };
-        }
+          }
+        };
       });
     }
     
@@ -512,7 +590,9 @@ cat >> js/components/enhanced-sensitivity.js << 'EOF'
       this.charts.sensitivity.data.datasets = datasets;
       
       // Update annotations if they exist
-      if (this.charts.sensitivity.options.plugins.annotation) {
+      if (this.charts.sensitivity.options.plugins.annotation && 
+          this.results.includeBreakeven && 
+          this.results.breakevenPoints) {
         this.charts.sensitivity.options.plugins.annotation.annotations = annotations;
       }
       
@@ -563,7 +643,7 @@ cat >> js/components/enhanced-sensitivity.js << 'EOF'
       };
       
       // Add annotation plugin if breakeven points available
-      if (this.results.includeBreakeven && Object.keys(annotations).length > 0) {
+      if (this.results.includeBreakeven && this.results.breakevenPoints) {
         chartOptions.plugins.annotation = {
           annotations: annotations
         };
@@ -578,24 +658,6 @@ cat >> js/components/enhanced-sensitivity.js << 'EOF'
         options: chartOptions
       });
     }
-  }
-  
-  findClosestDataPointIndex(value) {
-    if (!this.results || !this.results.dataPoints) return -1;
-    
-    const dataPoints = this.results.dataPoints;
-    let closestIndex = -1;
-    let minDiff = Number.MAX_VALUE;
-    
-    dataPoints.forEach((point, index) => {
-      const diff = Math.abs(point - value);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestIndex = index;
-      }
-    });
-    
-    return closestIndex;
   }
   
   updateSavingsImpactChart() {
@@ -659,12 +721,9 @@ cat >> js/components/enhanced-sensitivity.js << 'EOF'
     if (this.charts.savingsImpact) {
       this.charts.savingsImpact.data.labels = labels;
       this.charts.savingsImpact.data.datasets = datasets;
-      
-      // Update annotations
-      if (this.charts.savingsImpact.options.plugins.annotation) {
-        this.charts.savingsImpact.options.plugins.annotation.annotations = annotations;
-      }
-      
+      this.charts.savingsImpact.options.plugins.annotation = {
+        annotations: annotations
+      };
       this.charts.savingsImpact.update();
     } else {
       this.charts.savingsImpact = new Chart(ctx, {
@@ -772,117 +831,29 @@ cat >> js/components/enhanced-sensitivity.js << 'EOF'
     container.classList.remove('hidden');
   }
   
-  updateInsightsSection() {
-    const container = document.getElementById('sensitivity-insights');
-    if (!container) return;
-    
-    // Clear container
-    container.innerHTML = '';
-    
-    // Create insights
-    const insights = this.generateInsights();
-    
-    // Create insights HTML
-    let html = `
-      <h4>Analysis Insights</h4>
-      <div class="sensitivity-insights-list">
-    `;
-    
-    // Add insight items
-    insights.forEach(insight => {
-      html += `
-        <div class="sensitivity-insight-item">
-          <div class="sensitivity-insight-icon">
-            <i class="fas fa-lightbulb"></i>
-          </div>
-          <div class="sensitivity-insight-text">${insight}</div>
-        </div>
-      `;
-    });
-    
-    // Close container
-    html += `
-      </div>
-    `;
-    
-    // Set container content
-    container.innerHTML = html;
-    container.classList.remove('hidden');
-  }
-  
-  generateInsights() {
-    if (!this.results) return [];
-    
-    const insights = [];
-    const variable = this.results.variable;
-    
-    // Check if there's data for Portnox and at least one other vendor
-    const hasPortnox = this.results.results.some(r => r.calculationResults.portnox);
-    const hasOtherVendors = this.results.vendor === 'all' || 
-                           (this.results.vendor !== 'portnox' && 
-                            this.results.results.some(r => r.calculationResults[this.results.vendor]));
-    
-    if (!hasPortnox || !hasOtherVendors) {
-      insights.push("Analysis shows how TCO varies with changes in " + this.getVariableLabel(variable).toLowerCase() + ".");
-      return insights;
+  formatBreakevenValue(value, unit) {
+    if (unit === 'devices' || unit === 'locations') {
+      return `${Math.round(value).toLocaleString()} ${unit}`;
+    } else if (unit === '%') {
+      return `${value.toFixed(1)}${unit}`;
+    } else if (unit === 'years') {
+      const years = Math.floor(value);
+      const months = Math.round((value - years) * 12);
+      
+      if (months === 0) {
+        return `${years} ${years === 1 ? 'year' : 'years'}`;
+      } else if (years === 0) {
+        return `${months} ${months === 1 ? 'month' : 'months'}`;
+      } else {
+        return `${years} ${years === 1 ? 'year' : 'years'}, ${months} ${months === 1 ? 'month' : 'months'}`;
+      }
+    } else if (unit === 'multiplier') {
+      return `${value.toFixed(2)}×`;
+    } else if (unit === '$/hour') {
+      return `$${value.toFixed(0)}/hour`;
+    } else {
+      return value.toString();
     }
-    
-    // Generate variable-specific insights
-    switch (variable) {
-      case 'deviceCount':
-        insights.push("As device count increases, cloud-based solutions like Portnox show better cost scaling compared to on-premises solutions.");
-        insights.push("Hardware-based solutions show steeper cost increases with larger device counts due to capacity limitations and hardware scaling.");
-        
-        // Check for crossover points
-        if (this.results.breakevenPoints && Object.keys(this.results.breakevenPoints).length > 0) {
-          insights.push("The analysis identified specific device count thresholds where different solutions become more cost-effective than others.");
-        }
-        break;
-        
-      case 'yearsToProject':
-        insights.push("Longer projection periods tend to favor solutions with lower operational costs over initial investment costs.");
-        insights.push("Cloud solutions like Portnox typically show increasing value over time as operational savings accumulate.");
-        insights.push("On-premises solutions often have higher long-term costs due to hardware refresh cycles and ongoing maintenance.");
-        break;
-        
-      case 'locationCount':
-        insights.push("Multi-location deployments significantly increase costs for on-premises solutions due to hardware requirements at each site.");
-        insights.push("Cloud-based solutions maintain more consistent TCO regardless of location count since they require no on-site hardware.");
-        insights.push("The cost difference between cloud and on-premises solutions grows proportionally with the number of locations.");
-        break;
-        
-      case 'legacyPercentage':
-        insights.push("Higher percentages of legacy devices typically increase management complexity and costs across all solutions.");
-        insights.push("Cloud-based solutions often handle legacy device integration more cost-effectively due to centralized policy management.");
-        break;
-        
-      case 'hardwareCost':
-        insights.push("Hardware cost variations have minimal impact on cloud solutions but significantly affect on-premises TCO.");
-        insights.push("Even with substantial hardware discounts, cloud solutions often maintain a TCO advantage due to eliminated infrastructure needs.");
-        break;
-        
-      case 'licensingCost':
-        insights.push("Licensing costs affect all solutions, but their impact varies based on licensing models.");
-        insights.push("Subscription-based models provide more predictable costs when licensing fees fluctuate.");
-        break;
-        
-      case 'fteCost':
-        insights.push("Higher IT staff costs amplify the savings from solutions requiring less administrative overhead.");
-        insights.push("Cloud solutions typically require less staff time for maintenance and operations compared to on-premises alternatives.");
-        insights.push("As IT personnel costs increase, the ROI for cloud-based solutions improves correspondingly.");
-        break;
-        
-      default:
-        insights.push("This sensitivity analysis provides insights into how changes in " + this.getVariableLabel(variable).toLowerCase() + " affect total cost of ownership.");
-        insights.push("Cloud-based NAC solutions typically show more stable TCO across varying parameters compared to on-premises alternatives.");
-    }
-    
-    // Add breakeven insights if available
-    if (this.results.breakevenPoints && Object.keys(this.results.breakevenPoints).length > 0) {
-      insights.push("The analysis identified specific breakeven points where different solutions have equal TCO. These thresholds are critical for decision-making.");
-    }
-    
-    return insights;
   }
   
   updateDataTable() {
@@ -974,7 +945,7 @@ cat >> js/components/enhanced-sensitivity.js << 'EOF'
     });
     
     // Add special row for breakeven points if available
-    if (this.results.includeBreakeven && this.results.breakevenPoints && Object.keys(this.results.breakevenPoints).length > 0) {
+    if (this.results.includeBreakeven && this.results.breakevenPoints) {
       const breakevenRow = document.createElement('tr');
       breakevenRow.className = 'breakeven-row';
       
@@ -1011,104 +982,6 @@ cat >> js/components/enhanced-sensitivity.js << 'EOF'
       }
       
       tableBody.appendChild(breakevenRow);
-    }
-  }
-  
-  formatBreakevenValue(value, unit) {
-    if (unit === 'devices' || unit === 'locations') {
-      return `${Math.round(value).toLocaleString()} ${unit}`;
-    } else if (unit === '%') {
-      return `${value.toFixed(1)}${unit}`;
-    } else if (unit === 'years') {
-      const years = Math.floor(value);
-      const months = Math.round((value - years) * 12);
-      
-      if (months === 0) {
-        return `${years} ${years === 1 ? 'year' : 'years'}`;
-      } else if (years === 0) {
-        return `${months} ${months === 1 ? 'month' : 'months'}`;
-      } else {
-        return `${years} ${years === 1 ? 'year' : 'years'}, ${months} ${months === 1 ? 'month' : 'months'}`;
-      }
-    } else if (unit === 'multiplier') {
-      return `${value.toFixed(2)}×`;
-    } else if (unit === '$/hour') {
-      return `$${value.toFixed(0)}/hour`;
-    } else {
-      return value.toString();
-    }
-  }
-  
-  formatDataPoint(variable, value) {
-    switch (variable) {
-      case 'deviceCount':
-        return window.formatNumber(value) + ' devices';
-      case 'legacyPercentage':
-        return value + '%';
-      case 'locationCount':
-        return window.formatNumber(value) + ' locations';
-      case 'yearsToProject':
-        return value + ' years';
-      case 'hardwareCost':
-      case 'licensingCost':
-      case 'maintenanceCost':
-      case 'fteCost':
-      case 'implementationCost':
-        return value.toFixed(2) + '×';
-      case 'downtimeCost':
-        return '$' + value.toFixed(0) + '/hour';
-      default:
-        return value.toString();
-    }
-  }
-  
-  getVariableLabel(variable) {
-    switch (variable) {
-      case 'deviceCount':
-        return 'Device Count';
-      case 'legacyPercentage':
-        return 'Legacy Device Percentage';
-      case 'locationCount':
-        return 'Number of Locations';
-      case 'yearsToProject':
-        return 'Years to Project';
-      case 'hardwareCost':
-        return 'Hardware Cost Multiplier';
-      case 'licensingCost':
-        return 'Licensing Cost Multiplier';
-      case 'maintenanceCost':
-        return 'Maintenance Cost Multiplier';
-      case 'fteCost':
-        return 'FTE Cost Multiplier';
-      case 'implementationCost':
-        return 'Implementation Cost Multiplier';
-      case 'downtimeCost':
-        return 'Downtime Cost ($/hour)';
-      default:
-        return variable;
-    }
-  }
-  
-  getVariableUnit(variable) {
-    switch (variable) {
-      case 'deviceCount':
-        return 'devices';
-      case 'legacyPercentage':
-        return '%';
-      case 'locationCount':
-        return 'locations';
-      case 'yearsToProject':
-        return 'years';
-      case 'hardwareCost':
-      case 'licensingCost':
-      case 'maintenanceCost':
-      case 'fteCost':
-      case 'implementationCost':
-        return 'multiplier';
-      case 'downtimeCost':
-        return '$/hour';
-      default:
-        return '';
     }
   }
   
@@ -1535,7 +1408,6 @@ cat >> js/components/enhanced-sensitivity.js << 'EOF'
       
       // Add breakeven analysis if available
       if (this.results.includeBreakeven && this.results.breakevenPoints && Object.keys(this.results.breakevenPoints).length > 0) {
-        let yPosition;
         if (doc.autoTable.previous.finalY > 200) {
           doc.addPage();
           yPosition = 20;
@@ -1570,8 +1442,7 @@ cat >> js/components/enhanced-sensitivity.js << 'EOF'
         });
       }
       
-      // Add insights
-      let yPosition;
+      // Add recommendations
       if (doc.autoTable.previous.finalY > 200) {
         doc.addPage();
         yPosition = 20;
@@ -1583,8 +1454,34 @@ cat >> js/components/enhanced-sensitivity.js << 'EOF'
       doc.setTextColor(0, 0, 0);
       doc.text('Analysis Insights', 20, yPosition);
       
-      // Generate insights for the report
-      const insights = this.generateInsights();
+      let insights = [];
+      
+      // Generate insights based on the variable
+      switch (this.results.variable) {
+        case 'deviceCount':
+          insights.push('Device count has a direct impact on hardware and licensing costs, especially for on-premises solutions.');
+          if (vendors.includes('portnox')) {
+            insights.push('Cloud-based solutions like Portnox show better cost scaling with increasing device counts due to elimination of hardware requirements.');
+          }
+          break;
+        case 'yearsToProject':
+          insights.push('Longer projection periods tend to favor solutions with lower operational costs over initial investment costs.');
+          if (vendors.includes('portnox')) {
+            insights.push('Portnox Cloud shows increasing value over time as operational savings accumulate and on-premises hardware reaches replacement cycles.');
+          }
+          break;
+        case 'locationCount':
+          if (vendors.includes('portnox')) {
+            insights.push('Multi-location deployments significantly increase costs for on-premises solutions due to hardware requirements at each site.');
+            insights.push('Portnox Cloud maintains consistent TCO regardless of location count since it requires no on-site hardware.');
+          }
+          break;
+        default:
+          insights.push('This sensitivity analysis provides insights into how changes in key parameters affect total cost of ownership.');
+          if (vendors.includes('portnox')) {
+            insights.push('Cloud-based NAC solutions typically show more stable TCO across varying parameters compared to on-premises alternatives.');
+          }
+      }
       
       // Add insights text
       let insightY = yPosition + 10;
@@ -1610,6 +1507,56 @@ cat >> js/components/enhanced-sensitivity.js << 'EOF'
     } catch (error) {
       console.error('Error exporting PDF:', error);
       this.showError('Error exporting PDF: ' + error.message);
+    }
+  }
+  
+  formatDataPoint(variable, value) {
+    switch (variable) {
+      case 'deviceCount':
+        return window.formatNumber(value) + ' devices';
+      case 'legacyPercentage':
+        return value + '%';
+      case 'locationCount':
+        return window.formatNumber(value) + ' locations';
+      case 'yearsToProject':
+        return value + ' years';
+      case 'hardwareCost':
+      case 'licensingCost':
+      case 'maintenanceCost':
+      case 'fteCost':
+      case 'implementationCost':
+        return value.toFixed(2) + '×';
+      case 'downtimeCost':
+        return '$' + value.toFixed(0) + '/hour';
+      default:
+        return value.toString();
+    }
+  }
+  
+  getVariableLabel(variable) {
+    switch (variable) {
+      case 'deviceCount':
+        return 'Device Count';
+      case 'legacyPercentage':
+        return 'Legacy Device Percentage';
+      case 'locationCount':
+        return 'Number of Locations';
+      case 'yearsToProject':
+        return 'Years to Project';
+      case 'hardwareCost':
+        return 'Hardware Cost Multiplier';
+      case 'licensingCost':
+        return 'Licensing Cost Multiplier';
+      case 'maintenanceCost':
+        return 'Maintenance Cost Multiplier';
+      case 'fteCost':
+        return 'FTE Cost Multiplier';
+      case 'implementationCost':
+        return 'Implementation Cost Multiplier';
+      case 'downtimeCost':
+        return 'Downtime Cost ($/hour)';
+      default:
+        return variable;
     }
   }
   
