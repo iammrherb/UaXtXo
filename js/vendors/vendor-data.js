@@ -330,6 +330,168 @@ window.vendorData = {
       }
     }
   },
+  fortinac: {
+    name: 'FortiNAC',
+    logo: 'img/fortinac-logo.png',
+    cloudBased: false,
+    description: 'Network access control solution with strong security ecosystem integration',
+    small: {
+      initialHardware: 68000,
+      annualMaintenance: 21000,
+      annualLicensing: 36000,
+      networkRedesign: 11000,
+      implementation: 30000,
+      training: 8500,
+      annualDowntime: 19,
+      fteAllocation: {
+        networkAdmin: 0.35,
+        securityAdmin: 0.3,
+        systemAdmin: 0.2,
+        helpDesk: 0.1
+      },
+      implementationTimeline: {
+        planning: 11,
+        hardwareDeployment: 9, 
+        initialConfiguration: 12,
+        testing: 18,
+        policyDefinition: 13,
+        pilotDeployment: 8,
+        fullDeployment: 22,
+        postDeploymentTuning: 12
+      }
+    },
+    medium: {
+      initialHardware: 135000,
+      annualMaintenance: 46000,
+      annualLicensing: 92000,
+      networkRedesign: 19000,
+      implementation: 48000,
+      training: 14000,
+      annualDowntime: 26,
+      fteAllocation: {
+        networkAdmin: 0.48,
+        securityAdmin: 0.45,
+        systemAdmin: 0.25,
+        helpDesk: 0.1
+      },
+      implementationTimeline: {
+        planning: 15,
+        hardwareDeployment: 12, 
+        initialConfiguration: 18,
+        testing: 21,
+        policyDefinition: 17,
+        pilotDeployment: 11,
+        fullDeployment: 35,
+        postDeploymentTuning: 16
+      }
+    },
+    large: {
+      initialHardware: 275000,
+      annualMaintenance: 92000,
+      annualLicensing: 220000,
+      networkRedesign: 38000,
+      implementation: 95000,
+      training: 24000,
+      annualDowntime: 34,
+      fteAllocation: {
+        networkAdmin: 0.65,
+        securityAdmin: 0.55,
+        systemAdmin: 0.38,
+        helpDesk: 0.1
+      },
+      implementationTimeline: {
+        planning: 22,
+        hardwareDeployment: 17, 
+        initialConfiguration: 24,
+        testing: 28,
+        policyDefinition: 22,
+        pilotDeployment: 15,
+        fullDeployment: 50,
+        postDeploymentTuning: 22
+      }
+    }
+  },
+  securew2: {
+    name: 'SecureW2',
+    logo: 'img/securew2-logo.png',
+    cloudBased: true,
+    description: 'Cloud-based certificate and identity management with NAC capabilities',
+    small: {
+      initialHardware: 5000,
+      annualMaintenance: 8000,
+      annualLicensing: 28000,
+      networkRedesign: 4000,
+      implementation: 8000,
+      training: 3000,
+      annualDowntime: 6,
+      fteAllocation: {
+        networkAdmin: 0.15,
+        securityAdmin: 0.15,
+        systemAdmin: 0.05,
+        helpDesk: 0.03
+      },
+      implementationTimeline: {
+        planning: 4,
+        cloudAccountSetup: 1, 
+        initialConfiguration: 3,
+        testing: 4,
+        policyDefinition: 4,
+        pilotDeployment: 3,
+        fullDeployment: 5,
+        postDeploymentTuning: 3
+      }
+    },
+    medium: {
+      initialHardware: 8000,
+      annualMaintenance: 10000,
+      annualLicensing: 65000,
+      networkRedesign: 6000,
+      implementation: 15000,
+      training: 5000,
+      annualDowntime: 8,
+      fteAllocation: {
+        networkAdmin: 0.25,
+        securityAdmin: 0.2,
+        systemAdmin: 0.08,
+        helpDesk: 0.05
+      },
+      implementationTimeline: {
+        planning: 6,
+        cloudAccountSetup: 1, 
+        initialConfiguration: 4,
+        testing: 6,
+        policyDefinition: 5,
+        pilotDeployment: 4,
+        fullDeployment: 8,
+        postDeploymentTuning: 4
+      }
+    },
+    large: {
+      initialHardware: 12000,
+      annualMaintenance: 15000,
+      annualLicensing: 160000,
+      networkRedesign: 10000,
+      implementation: 25000,
+      training: 10000,
+      annualDowntime: 10,
+      fteAllocation: {
+        networkAdmin: 0.35,
+        securityAdmin: 0.3,
+        systemAdmin: 0.15,
+        helpDesk: 0.12
+      },
+      implementationTimeline: {
+        planning: 9,
+        cloudAccountSetup: 1, 
+        initialConfiguration: 7,
+        testing: 8,
+        policyDefinition: 8,
+        pilotDeployment: 6,
+        fullDeployment: 15,
+        postDeploymentTuning: 7
+      }
+    }
+  },
   portnox: {
     name: 'Portnox Cloud',
     logo: 'img/portnox-logo.png',
@@ -418,37 +580,97 @@ window.portnoxBenefits = [
   {
     title: "Zero Hardware Costs",
     description: "Eliminate capital expenditure on NAC appliances and associated server infrastructure",
-    icon: "??",
+    icon: "coins",
     metric: "100% savings"
   },
   {
     title: "Reduced Implementation Time",
     description: "Get up and running 70-85% faster than traditional NAC solutions",
-    icon: "??",
+    icon: "rocket",
     metric: "75% faster"
   },
   {
     title: "Lower IT Staffing Requirements",
     description: "Decrease NAC administration overhead by up to 80%",
-    icon: "??",
+    icon: "user-cog",
     metric: "$180,000/year"
   },
   {
     title: "Reduced Downtime",
     description: "Minimize business disruption with significantly fewer outages",
-    icon: "??",
+    icon: "business-time",
     metric: "85% reduction"
   },
   {
     title: "Automated Updates",
     description: "Eliminate maintenance windows and manual update processes",
-    icon: "??",
+    icon: "cloud-upload-alt",
     metric: "Zero downtime updates"
   },
   {
     title: "Faster ROI",
     description: "Achieve return on investment in a fraction of the time",
-    icon: "??",
+    icon: "chart-line",
     metric: "0.8 years"
   }
 ];
+
+// Enhanced migration factor data
+window.migrationFactors = {
+  cisco: {
+    aruba: 0.7,
+    forescout: 0.6,
+    nps: 0.5,
+    fortinac: 0.65,
+    securew2: 0.4,
+    portnox: 0.3
+  },
+  aruba: {
+    cisco: 0.7,
+    forescout: 0.6,
+    nps: 0.5,
+    fortinac: 0.6,
+    securew2: 0.4,
+    portnox: 0.3
+  },
+  forescout: {
+    cisco: 0.7,
+    aruba: 0.6,
+    nps: 0.5,
+    fortinac: 0.6,
+    securew2: 0.4,
+    portnox: 0.3
+  },
+  nps: {
+    cisco: 0.8,
+    aruba: 0.7,
+    forescout: 0.7,
+    fortinac: 0.7,
+    securew2: 0.5,
+    portnox: 0.3
+  },
+  fortinac: {
+    cisco: 0.7,
+    aruba: 0.6,
+    forescout: 0.6,
+    nps: 0.5,
+    securew2: 0.4,
+    portnox: 0.3
+  },
+  securew2: {
+    cisco: 0.6,
+    aruba: 0.6,
+    forescout: 0.6,
+    nps: 0.5,
+    fortinac: 0.5,
+    portnox: 0.2
+  },
+  portnox: {
+    cisco: 0.8,
+    aruba: 0.7,
+    forescout: 0.7,
+    nps: 0.6,
+    fortinac: 0.7,
+    securew2: 0.3
+  }
+};

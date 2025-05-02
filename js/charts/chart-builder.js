@@ -1,6 +1,6 @@
 /**
  * Enhanced Chart Builder for creating and updating charts
- * Includes better mobile responsiveness and accessibility
+ * Includes better mobile responsiveness, accessibility, and radar chart for feature comparison
  */
 
 class ChartBuilder {
@@ -53,6 +53,8 @@ class ChartBuilder {
       aruba: '#ff8300',      // Aruba orange
       forescout: '#005daa',  // Forescout blue
       nps: '#00a4ef',        // Microsoft blue
+      fortinac: '#ee3124',   // FortiNAC red
+      securew2: '#8bc53f',   // SecureW2 green
       portnox: '#2bd25b',    // Portnox green
       neutral: '#888888'     // Neutral gray
     };
@@ -83,27 +85,20 @@ class ChartBuilder {
   }
   
   updateAllCharts() {
-    if (this.charts.tcoComparison) {
-      this.charts.tcoComparison.update();
-    }
-    
-    if (this.charts.cumulativeCost) {
-      this.charts.cumulativeCost.update();
-    }
-    
-    if (this.charts.currentBreakdown) {
-      this.charts.currentBreakdown.update();
-    }
-    
-    if (this.charts.altBreakdown) {
-      this.charts.altBreakdown.update();
-    }
+    Object.values(this.charts).forEach(chart => {
+      if (chart && typeof chart.update === 'function') {
+        chart.update();
+      }
+    });
   }
   
   initCharts() {
     this.initTCOComparisonChart();
     this.initCumulativeCostChart();
     this.initBreakdownCharts('cisco', 'portnox');
+    this.initFeatureComparisonChart();
+    this.initImplementationComparisonChart();
+    this.initROIChart();
   }
   
   initTCOComparisonChart() {
@@ -123,11 +118,11 @@ class ChartBuilder {
     const chartConfig = {
       type: 'bar',
       data: {
-        labels: ['Cisco ISE', 'Aruba ClearPass', 'Forescout', 'Microsoft NPS', 'Portnox Cloud'],
+        labels: ['Cisco ISE', 'Aruba ClearPass', 'Forescout', 'Microsoft NPS', 'FortiNAC', 'SecureW2', 'Portnox Cloud'],
         datasets: [
           {
             label: 'Initial Costs',
-            data: [0, 0, 0, 0, 0],
+            data: [0, 0, 0, 0, 0, 0, 0],
             backgroundColor: 'rgba(54, 162, 235, 0.7)',
             borderColor: 'rgba(54, 162, 235, 1)',
             borderWidth: 1,
@@ -135,7 +130,7 @@ class ChartBuilder {
           },
           {
             label: 'Migration Costs',
-            data: [0, 0, 0, 0, 0],
+            data: [0, 0, 0, 0, 0, 0, 0],
             backgroundColor: 'rgba(255, 159, 64, 0.7)',
             borderColor: 'rgba(255, 159, 64, 1)',
             borderWidth: 1,
@@ -143,7 +138,7 @@ class ChartBuilder {
           },
           {
             label: 'Ongoing Costs',
-            data: [0, 0, 0, 0, 0],
+            data: [0, 0, 0, 0, 0, 0, 0],
             backgroundColor: 'rgba(75, 192, 192, 0.7)',
             borderColor: 'rgba(75, 192, 192, 1)',
             borderWidth: 1,
@@ -573,81 +568,302 @@ class ChartBuilder {
     }
   }
   
-  // Additional method to create implementation timeline chart
-  createImplementationChart(containerId, currentVendor, alternativeVendor) {
-    const ctx = document.getElementById(containerId);
+  // Add new feature comparison radar chart
+  initFeatureComparisonChart() {
+    const ctx = document.getElementById('feature-comparison-chart');
     if (!ctx) {
-      console.warn(`Implementation chart canvas element not found: ${containerId}`);
-      return null;
+      console.warn('Feature comparison chart canvas element not found');
+      return;
     }
     
     const ctxCanvas = ctx.getContext('2d');
     if (!ctxCanvas) {
-      console.warn(`Could not get 2D context for implementation chart: ${containerId}`);
-      return null;
+      console.warn('Could not get 2D context for feature comparison chart');
+      return;
     }
     
-    const results = window.calculator?.results;
-    if (!results || !results.implementationResults) {
-      console.warn('Implementation results not available');
-      return null;
-    }
-    
-    const currentImplementation = results.implementationResults[currentVendor];
-    const altImplementation = results.implementationResults[alternativeVendor];
-    
-    if (!currentImplementation || !altImplementation) {
-      console.warn('Implementation data not available for one or both vendors');
-      return null;
-    }
-    
-    // Get implementation phases
-    const phases = [];
-    for (const phase in currentImplementation.phases) {
-      if (!phases.includes(phase)) {
-        phases.push(phase);
+    // Define feature scores for each vendor (1-5 scale)
+    const featureScores = {
+      cisco: {
+        'Security': 4.5, 
+        'Ease of Deployment': 2.5, 
+        'Scalability': 4.0, 
+        'Cost Efficiency': 2.0, 
+        'Visibility': 4.0, 
+        'Integration': 4.5
+      },
+      aruba: {
+        'Security': 4.0, 
+        'Ease of Deployment': 3.0, 
+        'Scalability': 4.0, 
+        'Cost Efficiency': 2.5, 
+        'Visibility': 4.0, 
+        'Integration': 4.0
+      },
+      forescout: {
+        'Security': 4.0, 
+        'Ease of Deployment': 2.5, 
+        'Scalability': 3.5, 
+        'Cost Efficiency': 2.0, 
+        'Visibility': 5.0, 
+        'Integration': 3.5
+      },
+      nps: {
+        'Security': 3.0, 
+        'Ease of Deployment': 3.5, 
+        'Scalability': 2.5, 
+        'Cost Efficiency': 4.5, 
+        'Visibility': 2.0, 
+        'Integration': 2.5
+      },
+      fortinac: {
+        'Security': 4.2, 
+        'Ease of Deployment': 3.0, 
+        'Scalability': 3.8, 
+        'Cost Efficiency': 2.5, 
+        'Visibility': 4.0, 
+        'Integration': 4.3
+      },
+      securew2: {
+        'Security': 4.0, 
+        'Ease of Deployment': 4.5, 
+        'Scalability': 3.5, 
+        'Cost Efficiency': 3.5, 
+        'Visibility': 3.0, 
+        'Integration': 3.2
+      },
+      portnox: {
+        'Security': 4.2, 
+        'Ease of Deployment': 4.8, 
+        'Scalability': 4.0, 
+        'Cost Efficiency': 4.5, 
+        'Visibility': 4.0, 
+        'Integration': 4.0
       }
+    };
+    
+    // Get feature names
+    const features = Object.keys(featureScores.cisco);
+    
+    // Initialize datasets
+    const datasets = [];
+    
+    // Only include current vendor and Portnox initially
+    const currentVendor = window.uiController ? window.uiController.activeVendor : 'cisco';
+    
+    // Add current vendor dataset
+    if (featureScores[currentVendor]) {
+      datasets.push({
+        label: window.vendorData[currentVendor]?.name || 'Current Vendor',
+        data: features.map(f => featureScores[currentVendor][f]),
+        backgroundColor: `${this.chartColors[currentVendor]}40`,
+        borderColor: this.chartColors[currentVendor],
+        borderWidth: 2,
+        pointBackgroundColor: this.chartColors[currentVendor],
+        pointRadius: 4
+      });
     }
     
-    for (const phase in altImplementation.phases) {
-      if (!phases.includes(phase)) {
-        phases.push(phase);
-      }
-    }
-    
-    // Prepare data
-    const currentData = phases.map(phase => currentImplementation.phases[phase] || 0);
-    const altData = phases.map(phase => altImplementation.phases[phase] || 0);
-    
-    // Format phase labels for display
-    const formattedPhases = phases.map(phase => {
-      // Convert camelCase to Title Case
-      return phase
-        .replace(/([A-Z])/g, ' $1')
-        .replace(/^./, str => str.toUpperCase());
+    // Add Portnox dataset
+    datasets.push({
+      label: 'Portnox Cloud',
+      data: features.map(f => featureScores.portnox[f]),
+      backgroundColor: `${this.chartColors.portnox}40`,
+      borderColor: this.chartColors.portnox,
+      borderWidth: 2,
+      pointBackgroundColor: this.chartColors.portnox,
+      pointRadius: 4
     });
     
     // Create chart
-    const chart = new Chart(ctxCanvas, {
+    this.charts.featureComparison = new Chart(ctxCanvas, {
+      type: 'radar',
+      data: {
+        labels: features,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            angleLines: {
+              display: true
+            },
+            suggestedMin: 0,
+            suggestedMax: 5,
+            ticks: {
+              stepSize: 1,
+              callback: function(value) {
+                return value === 0 ? '' : value;
+              }
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'bottom'
+          },
+          title: {
+            display: true,
+            text: 'Feature Comparison',
+            font: {
+              size: 16
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.dataset.label + ': ' + context.raw + '/5';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  updateFeatureComparisonChart(currentVendor) {
+    if (!this.charts.featureComparison) {
+      console.warn('Feature comparison chart not available');
+      return;
+    }
+    
+    // Define feature scores for each vendor (1-5 scale)
+    const featureScores = {
+      cisco: {
+        'Security': 4.5, 
+        'Ease of Deployment': 2.5, 
+        'Scalability': 4.0, 
+        'Cost Efficiency': 2.0, 
+        'Visibility': 4.0, 
+        'Integration': 4.5
+      },
+      aruba: {
+        'Security': 4.0, 
+        'Ease of Deployment': 3.0, 
+        'Scalability': 4.0, 
+        'Cost Efficiency': 2.5, 
+        'Visibility': 4.0, 
+        'Integration': 4.0
+      },
+      forescout: {
+        'Security': 4.0, 
+        'Ease of Deployment': 2.5, 
+        'Scalability': 3.5, 
+        'Cost Efficiency': 2.0, 
+        'Visibility': 5.0, 
+        'Integration': 3.5
+      },
+      nps: {
+        'Security': 3.0, 
+        'Ease of Deployment': 3.5, 
+        'Scalability': 2.5, 
+        'Cost Efficiency': 4.5, 
+        'Visibility': 2.0, 
+        'Integration': 2.5
+      },
+      fortinac: {
+        'Security': 4.2, 
+        'Ease of Deployment': 3.0, 
+        'Scalability': 3.8, 
+        'Cost Efficiency': 2.5, 
+        'Visibility': 4.0, 
+        'Integration': 4.3
+      },
+      securew2: {
+        'Security': 4.0, 
+        'Ease of Deployment': 4.5, 
+        'Scalability': 3.5, 
+        'Cost Efficiency': 3.5, 
+        'Visibility': 3.0, 
+        'Integration': 3.2
+      },
+      portnox: {
+        'Security': 4.2, 
+        'Ease of Deployment': 4.8, 
+        'Scalability': 4.0, 
+        'Cost Efficiency': 4.5, 
+        'Visibility': 4.0, 
+        'Integration': 4.0
+      }
+    };
+    
+    const features = Object.keys(featureScores.cisco);
+    
+    // Create dataset for current vendor
+    const datasets = [];
+    
+    if (featureScores[currentVendor]) {
+      datasets.push({
+        label: window.vendorData[currentVendor]?.name || 'Current Vendor',
+        data: features.map(f => featureScores[currentVendor][f]),
+        backgroundColor: `${this.chartColors[currentVendor]}40`,
+        borderColor: this.chartColors[currentVendor],
+        borderWidth: 2,
+        pointBackgroundColor: this.chartColors[currentVendor],
+        pointRadius: 4
+      });
+    }
+    
+    // Add Portnox dataset
+    datasets.push({
+      label: 'Portnox Cloud',
+      data: features.map(f => featureScores.portnox[f]),
+      backgroundColor: `${this.chartColors.portnox}40`,
+      borderColor: this.chartColors.portnox,
+      borderWidth: 2,
+      pointBackgroundColor: this.chartColors.portnox,
+      pointRadius: 4
+    });
+    
+    // Update chart
+    this.charts.featureComparison.data.datasets = datasets;
+    this.charts.featureComparison.update();
+  }
+  
+  // New implementation comparison chart
+  initImplementationComparisonChart() {
+    const ctx = document.getElementById('implementation-comparison-chart');
+    if (!ctx) {
+      console.warn('Implementation comparison chart canvas element not found');
+      return;
+    }
+    
+    const ctxCanvas = ctx.getContext('2d');
+    if (!ctxCanvas) {
+      console.warn('Could not get 2D context for implementation comparison chart');
+      return;
+    }
+    
+    // Get all vendors
+    const vendors = Object.keys(window.vendorData || {});
+    
+    // Get implementation times in days (using medium size as default)
+    const implementationTimes = vendors.map(vendor => {
+      if (!window.vendorData[vendor] || !window.vendorData[vendor].medium || !window.vendorData[vendor].medium.implementationTimeline) {
+        return 0;
+      }
+      
+      const timeline = window.vendorData[vendor].medium.implementationTimeline;
+      return Object.values(timeline).reduce((a, b) => a + b, 0);
+    });
+    
+    // Prepare background colors
+    const backgroundColors = vendors.map(vendor => this.chartColors[vendor] || this.chartColors.neutral);
+    
+    // Create chart
+    this.charts.implementationComparison = new Chart(ctxCanvas, {
       type: 'bar',
       data: {
-        labels: formattedPhases,
-        datasets: [
-          {
-            label: window.vendorData[currentVendor]?.name || 'Current Solution',
-            data: currentData,
-            backgroundColor: this.chartColors[currentVendor] || this.chartColors.neutral,
-            borderColor: this.chartColors[currentVendor] || this.chartColors.neutral,
-            borderWidth: 1
-          },
-          {
-            label: window.vendorData[alternativeVendor]?.name || 'Alternative Solution',
-            data: altData,
-            backgroundColor: this.chartColors[alternativeVendor] || this.chartColors.neutral,
-            borderColor: this.chartColors[alternativeVendor] || this.chartColors.neutral,
-            borderWidth: 1
-          }
-        ]
+        labels: vendors.map(vendor => window.vendorData[vendor]?.name || vendor),
+        datasets: [{
+          label: 'Implementation Time (Days)',
+          data: implementationTimes,
+          backgroundColor: backgroundColors,
+          borderColor: backgroundColors,
+          borderWidth: 1
+        }]
       },
       options: {
         ...this.chartDefaults,
@@ -665,13 +881,174 @@ class ChartBuilder {
           ...this.chartDefaults.plugins,
           title: {
             display: true,
-            text: 'Implementation Timeline Comparison',
+            text: 'Implementation Time Comparison',
             font: {
               size: 16
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.dataset.label + ': ' + context.raw + ' days';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  updateImplementationComparisonChart(results) {
+    if (!this.charts.implementationComparison) {
+      console.warn('Implementation comparison chart not available');
+      return;
+    }
+    
+    const currentVendor = window.uiController ? window.uiController.activeVendor : null;
+    
+    // If we have actual implementation results, use those
+    if (results && results.implementationResults) {
+      const vendors = Object.keys(results.implementationResults);
+      
+      const implementationTimes = vendors.map(vendor => {
+        return results.implementationResults[vendor] || 0;
+      });
+      
+      const backgroundColors = vendors.map(vendor => {
+        const baseColor = this.chartColors[vendor] || this.chartColors.neutral;
+        return vendor === currentVendor ? baseColor : `${baseColor}80`;
+      });
+      
+      this.charts.implementationComparison.data.labels = vendors.map(vendor => window.vendorData[vendor]?.name || vendor);
+      this.charts.implementationComparison.data.datasets[0].data = implementationTimes;
+      this.charts.implementationComparison.data.datasets[0].backgroundColor = backgroundColors;
+      this.charts.implementationComparison.data.datasets[0].borderColor = backgroundColors;
+    } else {
+      // Use default implementation times from vendor data
+      const vendors = Object.keys(window.vendorData || {});
+      
+      const orgSize = document.getElementById('organization-size')?.value || 'medium';
+      
+      // Get implementation times in days
+      const implementationTimes = vendors.map(vendor => {
+        if (!window.vendorData[vendor] || !window.vendorData[vendor][orgSize] || !window.vendorData[vendor][orgSize].implementationTimeline) {
+          return 0;
+        }
+        
+        const timeline = window.vendorData[vendor][orgSize].implementationTimeline;
+        return Object.values(timeline).reduce((a, b) => a + b, 0);
+      });
+      
+      // Prepare background colors
+      const backgroundColors = vendors.map(vendor => {
+        const baseColor = this.chartColors[vendor] || this.chartColors.neutral;
+        return vendor === currentVendor ? baseColor : `${baseColor}80`;
+      });
+      
+      this.charts.implementationComparison.data.labels = vendors.map(vendor => window.vendorData[vendor]?.name || vendor);
+      this.charts.implementationComparison.data.datasets[0].data = implementationTimes;
+      this.charts.implementationComparison.data.datasets[0].backgroundColor = backgroundColors;
+      this.charts.implementationComparison.data.datasets[0].borderColor = backgroundColors;
+    }
+    
+    // Update indexAxis based on mobile state
+    this.charts.implementationComparison.options.indexAxis = this.isMobile ? 'y' : 'x';
+    
+    // Update chart
+    this.charts.implementationComparison.update();
+  }
+  
+  // New ROI chart
+  initROIChart() {
+    const ctx = document.getElementById('roi-chart');
+    if (!ctx) {
+      console.warn('ROI chart canvas element not found');
+      return;
+    }
+    
+    const ctxCanvas = ctx.getContext('2d');
+    if (!ctxCanvas) {
+      console.warn('Could not get 2D context for ROI chart');
+      return;
+    }
+    
+    // Initialize with empty data
+    this.charts.roi = new Chart(ctxCanvas, {
+      type: 'line',
+      data: {
+        labels: ['Initial', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'],
+        datasets: [
+          {
+            label: 'Status Quo Costs',
+            data: [],
+            borderColor: this.chartColors.neutral,
+            backgroundColor: `${this.chartColors.neutral}20`,
+            borderWidth: 2,
+            fill: true
+          },
+          {
+            label: 'Portnox Costs',
+            data: [],
+            borderColor: this.chartColors.portnox,
+            backgroundColor: `${this.chartColors.portnox}20`,
+            borderWidth: 2,
+            fill: true
+          },
+          {
+            label: 'Cumulative Savings',
+            data: [],
+            borderColor: '#28a745',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            fill: false,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        ...this.chartDefaults,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Cumulative Cost ($)'
             },
-            padding: {
-              top: 10,
-              bottom: 20
+            ticks: {
+              callback: function(value) {
+                return '$' + value.toLocaleString();
+              }
+            }
+          },
+          y1: {
+            beginAtZero: true,
+            position: 'right',
+            grid: {
+              drawOnChartArea: false
+            },
+            title: {
+              display: true,
+              text: 'Cumulative Savings ($)'
+            },
+            ticks: {
+              callback: function(value) {
+                return '$' + value.toLocaleString();
+              }
+            }
+          }
+        },
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          ...this.chartDefaults.plugins,
+          title: {
+            display: true,
+            text: 'Return on Investment Analysis',
+            font: {
+              size: 16
             }
           },
           tooltip: {
@@ -682,7 +1059,7 @@ class ChartBuilder {
                   label += ': ';
                 }
                 if (context.parsed.y !== null) {
-                  label += context.parsed.y.toFixed(1) + ' days';
+                  label += '$' + context.parsed.y.toLocaleString();
                 }
                 return label;
               }
@@ -691,7 +1068,90 @@ class ChartBuilder {
         }
       }
     });
+  }
+  
+  updateROIChart(results) {
+    if (!this.charts.roi || !results) {
+      console.warn('ROI chart or results not available');
+      return;
+    }
     
-    return chart;
+    const currentVendor = window.uiController ? window.uiController.activeVendor : null;
+    
+    if (!currentVendor || !results[currentVendor] || !results['portnox']) {
+      console.warn('Missing data for ROI chart');
+      return;
+    }
+    
+    // Project for 5 years
+    const years = 5;
+    
+    // Calculate cumulative costs for current vendor and Portnox
+    const currentVendorData = [];
+    const portnoxData = [];
+    const savingsData = [];
+    
+    // Calculate breakeven point
+    const currentInitialCost = results[currentVendor].totalInitialCosts;
+    const portnoxInitialCost = results['portnox'].totalInitialCosts + results['portnox'].migrationCost;
+    const currentAnnualCost = results[currentVendor].annualCosts;
+    const portnoxAnnualCost = results['portnox'].annualCosts;
+    
+    // Initial costs
+    currentVendorData.push(currentInitialCost);
+    portnoxData.push(portnoxInitialCost);
+    savingsData.push(0);
+    
+    // Project costs and savings
+    let cumulativeSavings = currentInitialCost - portnoxInitialCost;
+    
+    for (let i = 1; i <= years; i++) {
+      const currentTotal = currentInitialCost + (currentAnnualCost * i);
+      const portnoxTotal = portnoxInitialCost + (portnoxAnnualCost * i);
+      
+      cumulativeSavings += (currentAnnualCost - portnoxAnnualCost);
+      
+      currentVendorData.push(currentTotal);
+      portnoxData.push(portnoxTotal);
+      savingsData.push(cumulativeSavings);
+    }
+    
+    // Update chart data
+    this.charts.roi.data.datasets[0].data = currentVendorData;
+    this.charts.roi.data.datasets[0].label = `${window.vendorData[currentVendor]?.name || 'Current'} Costs`;
+    this.charts.roi.data.datasets[0].borderColor = this.chartColors[currentVendor] || this.chartColors.neutral;
+    this.charts.roi.data.datasets[0].backgroundColor = `${this.chartColors[currentVendor] || this.chartColors.neutral}20`;
+    
+    this.charts.roi.data.datasets[1].data = portnoxData;
+    this.charts.roi.data.datasets[2].data = savingsData;
+    
+    // Calculate breakeven point if savings exist
+    if (cumulativeSavings > 0) {
+      const yearlySavings = currentAnnualCost - portnoxAnnualCost;
+      const initialDiff = portnoxInitialCost - currentInitialCost;
+      
+      // Only calculate if there are annual savings
+      if (yearlySavings > 0) {
+        const breakEvenYears = initialDiff > 0 ? initialDiff / yearlySavings : 0;
+        
+        // Update chart title with breakeven point if relevant
+        if (breakEvenYears > 0) {
+          const breakEvenText = breakEvenYears < 1 ? 
+            `${Math.round(breakEvenYears * 12)} months` : 
+            `${breakEvenYears.toFixed(1)} years`;
+          
+          this.charts.roi.options.plugins.title.text = `Return on Investment Analysis (Breakeven: ${breakEvenText})`;
+        } else {
+          this.charts.roi.options.plugins.title.text = 'Return on Investment Analysis (Immediate Savings)';
+        }
+      } else {
+        this.charts.roi.options.plugins.title.text = 'Return on Investment Analysis';
+      }
+    } else {
+      this.charts.roi.options.plugins.title.text = 'Return on Investment Analysis';
+    }
+    
+    // Update chart
+    this.charts.roi.update();
   }
 }

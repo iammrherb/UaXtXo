@@ -1321,3 +1321,108 @@ body {
         height: 250px;
     }
 }
+/* Enhanced styles for NAC TCO Calculator */
+
+/* Feature comparison chart container */
+.feature-legend {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.feature-note {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Migration strategy phases */
+.migration-phases {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.phase {
+    display: flex;
+    gap: var(--spacing-md);
+    background-color: var(--bg-white);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--primary-color);
+}
+
+.phase-icon {
+    font-size: 1.75rem;
+    color: var(--primary-color);
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.phase-content {
+    flex: 1;
+}
+
+.phase-content h4 {
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.phase-content p {
+    color: var(--text-secondary);
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
+/* Phase rows in implementation table */
+.phase-name {
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+/* Cloud vs On-Premises comparison table */
+.comparison-table-container {
+    overflow-x: auto;
+}
+
+.comparison-table-container .data-table {
+    min-width: 100%;
+    border-collapse: collapse;
+}
+
+.comparison-table-container .data-table th,
+.comparison-table-container .data-table td {
+    padding: var(--spacing-md);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.comparison-table-container .data-table th {
+    background-color: var(--bg-light);
+    font-weight: 600;
+}
+
+.comparison-table-container .data-table th:nth-child(3) {
+    color: var(--accent-color);
+}
+
+.comparison-table-container .data-table tr td:nth-child(3) {
+    color: var(--accent-dark);
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .phase {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        align-items: flex-start;
+    }
+    
+    .migration-phases {
+        gap: var(--spacing-md);
+    }
+}
