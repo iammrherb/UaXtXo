@@ -1,0 +1,81 @@
+/* Enhanced branding colors for Portnox Total Cost Analysis */
+:root {
+    --primary-color: #05547C;
+    --primary-dark: #033E5B;
+    --primary-light: #1B8DC0;
+    --accent-color: #65BD44;
+    --accent-dark: #4D9132;
+    --accent-light: #8ED070;
+    --danger-color: #B54369;
+    --warning-color: #F7941D;
+    --text-primary: #202020;
+    --text-secondary: #505050;
+    --text-light: #707070;
+    --text-white: #FFFFFF;
+}
+
+/* Logo adjustments */
+.logo img {
+  height: 45px;
+  width: auto;
+  object-fit: contain;
+  transition: all 0.2s ease;
+}
+
+.logo h1 {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+  margin-left: 15px;
+}
+
+/* Update header & button colors */
+.app-header {
+  border-bottom-color: var(--accent-color);
+}
+
+.btn-primary {
+  background-color: var(--accent-color);
+  border-color: var(--accent-dark);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-dark);
+}
+
+.tab-button.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--accent-color);
+}
+
+/* Update comparison highlight card */
+.comparison-highlight-card {
+  background: linear-gradient(135deg, rgba(5, 84, 124, 0.1) 0%, rgba(101, 189, 68, 0.1) 100%);
+  border: 1px solid rgba(101, 189, 68, 0.3);
+}
+
+.metric-value {
+  color: var(--accent-color);
+}
+
+.progress {
+  background-color: var(--accent-color);
+}
+
+/* Benefit icons */
+.benefit-icon {
+  color: var(--accent-color);
+}
+
+.benefit-content h5 {
+  color: var(--primary-color);
+}
+
+.benefit-metric {
+  color: var(--accent-color);
+}
+
+/* Enhanced chart colors */
+.chart-container {
+  --chart-primary: var(--primary-color);
+  --chart-secondary: var(--accent-color);
+}
