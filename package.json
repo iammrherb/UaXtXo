@@ -1,0 +1,42 @@
+{
+  "name": "uaxtxo",
+  "version": "1.0.0",
+  "description": "A comprehensive web application to calculate and compare the Total Cost of Ownership (TCO) and Return on Investment (ROI) for Portnox Network Access Control (NAC) solutions versus competitors.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iammrherb/UaXtXo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iammrherb/UaXtXo/issues"
+  },
+  "homepage": "https://github.com/iammrherb/UaXtXo#readme",
+  "dependencies": {
+    "bootstrap": "^5.2.3",
+    "chart.js": "^3.9.1",
+    "chartjs-plugin-annotation": "^2.1.0",
+    "chartjs-plugin-datalabels": "^2.2.0",
+    "intro.js": "^6.0.0",
+    "jquery": "^3.6.4",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.5.28",
+    "papaparse": "^5.3.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.27.1",
+    "@babel/preset-env": "^7.27.1",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "sass": "^1.87.0",
+    "sass-loader": "^16.0.5",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.99.7",
+    "webpack-cli": "^6.0.1"
+  }
+}
