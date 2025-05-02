@@ -1,5 +1,6 @@
 /**
- * TCO Calculator for computing cost comparisons and ROI
+ * Enhanced TCO Calculator for computing cost comparisons and ROI
+ * Updated to support FortiNAC and SecureW2
  */
 
 class Calculator {
@@ -130,7 +131,7 @@ class Calculator {
       // Calculate migration cost (if different from current vendor)
       let migrationCost = 0;
       if (vendor !== currentVendor) {
-        const migrationFactor = calculateMigrationFactor(currentVendor, vendor);
+        const migrationFactor = this.getMigrationFactor(currentVendor, vendor);
         migrationCost = implementation * complexityMultiplier * migrationFactor;
       }
       
@@ -226,6 +227,19 @@ class Calculator {
     }
   }
 
+  getMigrationFactor(fromVendor, toVendor) {
+    // Use global migration factors if available
+    if (window.migrationFactors && 
+        window.migrationFactors[fromVendor] && 
+        window.migrationFactors[fromVendor][toVendor]) {
+      return window.migrationFactors[fromVendor][toVendor];
+    }
+    
+    // Fallback to default migration factors
+    return window.calculateMigrationFactor ? 
+      window.calculateMigrationFactor(fromVendor, toVendor) : 0.5;
+  }
+
   updateUI() {
     try {
       if (!this.results) return;
@@ -235,6 +249,19 @@ class Calculator {
         window.chartBuilder.updateTCOComparisonChart(this.results);
         window.chartBuilder.updateCumulativeCostChart(this.results);
         window.chartBuilder.updateBreakdownCharts(window.uiController.activeVendor, 'portnox');
+        
+        // Update new charts if they exist
+        if (typeof window.chartBuilder.updateFeatureComparisonChart === 'function') {
+          window.chartBuilder.updateFeatureComparisonChart(window.uiController.activeVendor);
+        }
+        
+        if (typeof window.chartBuilder.updateImplementationComparisonChart === 'function') {
+          window.chartBuilder.updateImplementationComparisonChart(this.results);
+        }
+        
+        if (typeof window.chartBuilder.updateROIChart === 'function') {
+          window.chartBuilder.updateROIChart(this.results);
+        }
       }
       
       // Update TCO summary table

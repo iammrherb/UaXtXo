@@ -1,5 +1,6 @@
 /**
- * UI Controller for managing interface elements and user interactions
+ * Enhanced UI Controller for managing interface elements and user interactions
+ * Updated to support FortiNAC and SecureW2
  */
 
 class UIController {
@@ -136,6 +137,21 @@ class UIController {
     // Update charts if results are available
     if (window.chartBuilder && window.calculator && window.calculator.resultsAvailable) {
       window.chartBuilder.updateBreakdownCharts(vendor, 'portnox');
+      
+      // Update feature comparison chart if available
+      if (typeof window.chartBuilder.updateFeatureComparisonChart === 'function') {
+        window.chartBuilder.updateFeatureComparisonChart(vendor);
+      }
+      
+      // Update implementation comparison chart if available
+      if (typeof window.chartBuilder.updateImplementationComparisonChart === 'function') {
+        window.chartBuilder.updateImplementationComparisonChart(window.calculator.results);
+      }
+      
+      // Update ROI chart if available
+      if (typeof window.chartBuilder.updateROIChart === 'function') {
+        window.chartBuilder.updateROIChart(window.calculator.results);
+      }
     }
     
     // Update comparison section
@@ -295,6 +311,30 @@ class UIController {
         `;
       }
     }
+    
+    // Update benefit cards with actual icons
+    if (window.portnoxBenefits) {
+      const benefitsGrid = document.querySelector('.benefits-grid');
+      if (benefitsGrid) {
+        benefitsGrid.innerHTML = '';
+        
+        window.portnoxBenefits.forEach(benefit => {
+          const benefitCard = document.createElement('div');
+          benefitCard.className = 'benefit-card';
+          
+          benefitCard.innerHTML = `
+            <div class="benefit-icon"><i class="fas fa-${benefit.icon}"></i></div>
+            <div class="benefit-content">
+              <h5>${benefit.title}</h5>
+              <p>${benefit.description}</p>
+              <span class="benefit-metric">${benefit.metric}</span>
+            </div>
+          `;
+          
+          benefitsGrid.appendChild(benefitCard);
+        });
+      }
+    }
   }
   
   // Update annual costs table
@@ -417,6 +457,60 @@ class UIController {
     
     // Add to table
     tableBody.appendChild(row);
+    
+    // Add detailed phase breakdown if available
+    if (window.vendorData[currentVendor] && window.vendorData['portnox']) {
+      const orgSize = results.orgSize || 'medium';
+      
+      if (window.vendorData[currentVendor][orgSize] && 
+          window.vendorData[currentVendor][orgSize].implementationTimeline &&
+          window.vendorData['portnox'][orgSize].implementationTimeline) {
+        
+        const currentTimeline = window.vendorData[currentVendor][orgSize].implementationTimeline;
+        const portnoxTimeline = window.vendorData['portnox'][orgSize].implementationTimeline;
+        
+        // Get all unique phases
+        const allPhases = new Set();
+        Object.keys(currentTimeline).forEach(phase => allPhases.add(phase));
+        Object.keys(portnoxTimeline).forEach(phase => allPhases.add(phase));
+        
+        // Create complexity multiplier for accurate timing
+        const currentComplexity = window.calculateComplexityMultiplier(currentVendor, window.vendorData[currentVendor].cloudBased);
+        const portnoxComplexity = window.calculateComplexityMultiplier('portnox', true);
+        
+        // Add phase rows
+        Array.from(allPhases).forEach(phase => {
+          const phaseRow = document.createElement('tr');
+          
+          // Format phase name
+          const phaseName = phase
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/^./, str => str.toUpperCase());
+          
+          // Get phase duration
+          const currentPhaseDays = (currentTimeline[phase] || 0) * currentComplexity;
+          const portnoxPhaseDays = (portnoxTimeline[phase] || 0) * portnoxComplexity;
+          
+          // Calculate savings
+          const phaseTimeSavings = currentPhaseDays - portnoxPhaseDays;
+          const phaseSavingsPercentage = currentPhaseDays > 0 ? (phaseTimeSavings / currentPhaseDays) * 100 : 0;
+          
+          // Add classes for savings
+          const phaseSavingsClass = phaseTimeSavings > 0 ? 'positive-savings' : (phaseTimeSavings < 0 ? 'negative-savings' : '');
+          
+          // Populate cells
+          phaseRow.innerHTML = `
+            <td class="phase-name">— ${phaseName}</td>
+            <td>${currentPhaseDays.toFixed(1)} days</td>
+            <td>${portnoxPhaseDays.toFixed(1)} days</td>
+            <td class="${phaseSavingsClass}">${phaseTimeSavings.toFixed(1)} days (${phaseSavingsPercentage.toFixed(1)}%)</td>
+          `;
+          
+          // Add to table
+          tableBody.appendChild(phaseRow);
+        });
+      }
+    }
   }
   
   // Export to CSV

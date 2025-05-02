@@ -38,6 +38,9 @@
                             <span>Forescout</span>
                         </div>
                         <div class="vendor-card" data-vendor="nps" role="radio" aria-checked="false" tabindex="0">
+                            <img src="img/microsoft-logo.png" alt="Microsoft">
+                            <span>Microsoft NPS</span>
+                        </div>
                         <div class="vendor-card" data-vendor="fortinac" role="radio" aria-checked="false" tabindex="0">
                             <img src="img/fortinac-logo.png" alt="FortiNAC">
                             <span>FortiNAC</span>
@@ -45,9 +48,6 @@
                         <div class="vendor-card" data-vendor="securew2" role="radio" aria-checked="false" tabindex="0">
                             <img src="img/securew2-logo.png" alt="SecureW2">
                             <span>SecureW2</span>
-                        </div>
-                            <img src="img/microsoft-logo.png" alt="Microsoft">
-                            <span>Microsoft NPS</span>
                         </div>
                     </div>
                 </div>
@@ -193,10 +193,11 @@
                     <button class="tab-button active" id="tab-comparison" role="tab" aria-selected="true" aria-controls="comparison-tab" data-tab="comparison-tab" tabindex="0">Comparison</button>
                     <button class="tab-button" id="tab-details" role="tab" aria-selected="false" aria-controls="details-tab" data-tab="details-tab" tabindex="-1">Details</button>
                     <button class="tab-button" id="tab-implementation" role="tab" aria-selected="false" aria-controls="implementation-tab" data-tab="implementation-tab" tabindex="-1">Implementation</button>
+                    <button class="tab-button" id="tab-features" role="tab" aria-selected="false" aria-controls="features-tab" data-tab="features-tab" tabindex="-1">Features</button>
+                    <button class="tab-button" id="tab-roi" role="tab" aria-selected="false" aria-controls="roi-tab" data-tab="roi-tab" tabindex="-1">ROI</button>
                 </div>
                 
                 <div class="tab-content">
-                    <div id="message-container"></div>
                     <div id="message-container"></div>
                     <div class="export-options">
                         <button id="export-csv-btn" class="btn btn-outline"><i class="fas fa-file-csv"></i> Export CSV</button>
@@ -255,7 +256,6 @@
                                         <span>0% Savings</span>
                                     </div>
                                 </div>
-                                
                                 <div class="metric-container">
                                     <span class="metric-label">Implementation Time Reduction</span>
                                     <span id="comparison-implementation" class="metric-value">0%</span>
@@ -272,41 +272,7 @@
                             <div class="key-benefits">
                                 <h4>Key Benefits</h4>
                                 <div class="benefits-grid">
-                                    <div class="benefit-card">
-                                        <div class="benefit-icon"><i class="fas fa-coins"></i></div>
-                                        <div class="benefit-content">
-                                            <h5>Zero Hardware Costs</h5>
-                                            <p>Cloud-native solution eliminates infrastructure expenses</p>
-                                            <span class="benefit-metric">100% hardware savings</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="benefit-card">
-                                        <div class="benefit-icon"><i class="fas fa-rocket"></i></div>
-                                        <div class="benefit-content">
-                                            <h5>Rapid Deployment</h5>
-                                            <p>Get up and running in days instead of months</p>
-                                            <span class="benefit-metric">75% faster implementation</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="benefit-card">
-                                        <div class="benefit-icon"><i class="fas fa-user-cog"></i></div>
-                                        <div class="benefit-content">
-                                            <h5>Lower IT Burden</h5>
-                                            <p>Reduce administrative overhead significantly</p>
-                                            <span class="benefit-metric">80% less staff time</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="benefit-card">
-                                        <div class="benefit-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                                        <div class="benefit-content">
-                                            <h5>Automatic Updates</h5>
-                                            <p>Always up-to-date without maintenance windows</p>
-                                            <span class="benefit-metric">Zero downtime updates</span>
-                                        </div>
-                                    </div>
+                                    <!-- Populated dynamically by JavaScript -->
                                 </div>
                             </div>
                         </div>
@@ -361,6 +327,13 @@
                     <div id="implementation-tab" class="tab-pane" role="tabpanel" aria-labelledby="tab-implementation">
                         <div class="result-card">
                             <h3>Implementation Timeline Comparison</h3>
+                            <div class="chart-container" aria-label="Implementation Comparison Chart">
+                                <canvas id="implementation-comparison-chart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <h3>Implementation Breakdown</h3>
                             <div class="table-container">
                                 <table class="data-table">
                                     <caption class="sr-only">Implementation Timeline Comparison Between Current Solution and Portnox Cloud</caption>
@@ -376,6 +349,108 @@
                                         <!-- Populated by JavaScript -->
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="features-tab" class="tab-pane" role="tabpanel" aria-labelledby="tab-features">
+                        <div class="result-card">
+                            <h3>Feature Comparison</h3>
+                            <div class="chart-container" aria-label="Feature Comparison Chart" style="height: 400px;">
+                                <canvas id="feature-comparison-chart"></canvas>
+                            </div>
+                            <div class="feature-legend">
+                                <p class="feature-note">Feature scores based on analysis of vendor documentation, product reviews, and customer feedback.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <h3>Cloud vs On-Premises Comparison</h3>
+                            <div class="comparison-table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Feature</th>
+                                            <th>On-Premises NAC</th>
+                                            <th>Cloud-Native NAC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Infrastructure Costs</td>
+                                            <td>High (servers, appliances, etc.)</td>
+                                            <td>Minimal to None</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Deployment Time</td>
+                                            <td>Weeks to Months</td>
+                                            <td>Days to Weeks</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Scalability</td>
+                                            <td>Requires Additional Hardware</td>
+                                            <td>Elastic Scaling</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Updates & Maintenance</td>
+                                            <td>Manual, Scheduled Downtime</td>
+                                            <td>Automatic, Zero Downtime</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Remote Access</td>
+                                            <td>Requires VPN or Complex Setup</td>
+                                            <td>Native, Secure Cloud Access</td>
+                                        </tr>
+                                        <tr>
+                                            <td>IT Overhead</td>
+                                            <td>High (0.5-2.0 FTE)</td>
+                                            <td>Low (0.1-0.5 FTE)</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="roi-tab" class="tab-pane" role="tabpanel" aria-labelledby="tab-roi">
+                        <div class="result-card">
+                            <h3>Return on Investment Analysis</h3>
+                            <div class="chart-container" aria-label="ROI Analysis Chart" style="height: 400px;">
+                                <canvas id="roi-chart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <h3>Migration Strategy</h3>
+                            <div class="migration-phases">
+                                <div class="phase">
+                                    <div class="phase-icon"><i class="fas fa-search"></i></div>
+                                    <div class="phase-content">
+                                        <h4>Assessment & Planning</h4>
+                                        <p>Define scope, evaluate current infrastructure, set project timeline, and identify stakeholders.</p>
+                                    </div>
+                                </div>
+                                <div class="phase">
+                                    <div class="phase-icon"><i class="fas fa-project-diagram"></i></div>
+                                    <div class="phase-content">
+                                        <h4>Pilot Deployment</h4>
+                                        <p>Implement Portnox Cloud in a controlled environment to validate deployment, test policies, and train administrators.</p>
+                                    </div>
+                                </div>
+                                <div class="phase">
+                                    <div class="phase-icon"><i class="fas fa-users"></i></div>
+                                    <div class="phase-content">
+                                        <h4>Phased Rollout</h4>
+                                        <p>Deploy to non-critical segments first, then gradually expand to more sensitive areas based on pilot learnings.</p>
+                                    </div>
+                                </div>
+                                <div class="phase">
+                                    <div class="phase-icon"><i class="fas fa-chart-line"></i></div>
+                                    <div class="phase-content">
+                                        <h4>Full Adoption & Optimization</h4>
+                                        <p>Complete organization-wide deployment, refine policies, and optimize configurations for maximum effectiveness.</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -401,7 +476,6 @@
     <!-- Core JavaScript -->
     <script src="js/utils/helpers.js"></script>
     <script src="js/managers/dom-cache.js"></script>
-    <script src="js/managers/dom-cache.js"></script>
     <script src="js/managers/tab-manager.js"></script>
     <script src="js/managers/validation-manager.js"></script>
     <script src="js/managers/notification-manager.js"></script>
@@ -417,3 +491,14 @@
     <script src="js/main.js"></script>
 </body>
 </html>
+# Move the new index.html file into place
+mv index.html.new index.html
+
+echo "NAC TCO Calculator Enhancement Script completed successfully!"
+echo "The script has updated the calculator with FortiNAC and SecureW2 support,"
+echo "as well as added new visualizations like Feature Radar Chart and ROI Analysis."
+echo ""
+echo "NOTE: You'll need to replace the FortiNAC and SecureW2 logo placeholders with actual logo files."
+
+# Make the script executable
+chmod +x Update-Vendors.sh
