@@ -515,6 +515,626 @@ class UIController {
   
   // Export to CSV
   exportToCSV() {
+  exportToPDF() {
+    if (!window.jspdf || !window.calculator || !window.calculator.results) {
+      console.warn('PDF export functionality not available or no results to export');
+      window.notificationManager?.warn('PDF export functionality not available or no results to export');
+      return false;
+    }
+    
+    try {
+      // Create new PDF document
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Add title
+      doc.setFontSize(20);
+      doc.setTextColor(27, 103, 178); // Primary color
+      doc.text('NAC Solution TCO Comparison Report', 105, 20, { align: 'center' });
+      
+      // Add date
+      doc.setFontSize(10);
+      doc.setTextColor(80, 80, 80); // Gray
+      const date = new Date().toLocaleDateString();
+      doc.text(`Generated on ${date}`, 105, 30, { align: 'center' });
+      
+      // Add organization info
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      const results = window.calculator.results;
+      doc.text(`Organization Size: ${results.orgSize.charAt(0).toUpperCase() + results.orgSize.slice(1)}`, 20, 45);
+      doc.text(`Device Count: ${results.deviceCount.toLocaleString()}`, 20, 52);
+      doc.text(`Years Projected: ${results.yearsToProject}`, 20, 59);
+      
+      // Add TCO summary table
+      doc.setFontSize(14);
+      doc.text('TCO Summary', 20, 75);
+      
+      const vendors = Object.keys(window.vendorData);
+      const summaryTableData = vendors.map(vendor => {
+        const result = results[vendor];
+        if (!result) return null;
+        
+        return [
+          window.vendorData[vendor].name,
+          window.formatCurrency(result.totalInitialCosts),
+          window.formatCurrency(result.annualCosts),
+          window.formatCurrency(result.migrationCost),
+          window.formatCurrency(result.totalTCO)
+        ];
+      }).filter(row => row !== null);
+      
+      // Add table headers
+      const summaryHeaders = [
+        { header: 'Vendor', dataKey: 'vendor' },
+        { header: 'Initial Costs', dataKey: 'initial' },
+        { header: 'Annual Costs', dataKey: 'annual' },
+        { header: 'Migration Costs', dataKey: 'migration' },
+        { header: 'Total TCO', dataKey: 'total' }
+      ];
+      
+      doc.autoTable({
+        head: [summaryHeaders.map(h => h.header)],
+        body: summaryTableData,
+        startY: 80,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [27, 103, 178],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [240, 240, 240]
+        },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 35, halign: 'right' },
+          2: { cellWidth: 35, halign: 'right' },
+          3: { cellWidth: 35, halign: 'right' },
+          4: { cellWidth: 35, halign: 'right' }
+        }
+      });
+      
+      // Get current Y position
+      let currentY = doc.previousAutoTable.finalY + 15;
+      
+      // Add savings comparison
+      doc.setFontSize(14);
+      doc.text('Portnox Cloud Savings Analysis', 20, currentY);
+      currentY += 10;
+      
+      const currentVendor = window.uiController.activeVendor;
+      const currentVendorName = window.vendorData[currentVendor].name;
+      const portnoxResult = results['portnox'];
+      
+      if (portnoxResult && results[currentVendor]) {
+        const savings = portnoxResult.totalSavings;
+        const savingsPercentage = portnoxResult.savingsPercentage;
+        
+        doc.setFontSize(12);
+        doc.text(`Comparison to ${currentVendorName}:`, 20, currentY);
+        currentY += 7;
+        
+        doc.text(`Total Savings: ${window.formatCurrency(savings)}`, 30, currentY);
+        currentY += 7;
+        
+        doc.text(`Savings Percentage: ${savingsPercentage.toFixed(1)}%`, 30, currentY);
+        currentY += 7;
+        
+        doc.text(`Annual Savings: ${window.formatCurrency(portnoxResult.annualSavings)}`, 30, currentY);
+        currentY += 15;
+      }
+      
+      // Add implementation comparison section if data available
+      if (results.implementationResults) {
+        doc.setFontSize(14);
+        doc.text('Implementation Time Comparison', 20, currentY);
+        currentY += 10;
+        
+        const implementationData = vendors.map(vendor => {
+          const implTime = results.implementationResults[vendor] || 0;
+          return [
+            window.vendorData[vendor].name,
+            `${implTime.toFixed(1)} days`,
+            vendor === 'portnox' ? '—' : `${((results.implementationResults['portnox'] / implTime) * 100).toFixed(1)}%`
+          ];
+        });
+        
+        doc.autoTable({
+          head: [['Vendor', 'Implementation Time', 'Portnox Time Ratio']],
+          body: implementationData,
+          startY: currentY,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [43, 210, 91], // Accent color
+            textColor: [255, 255, 255],
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: {
+            fillColor: [240, 240, 240]
+          }
+        });
+        
+        currentY = doc.previousAutoTable.finalY + 15;
+      }
+      
+      // Add cost breakdown for current vendor
+      doc.setFontSize(14);
+      doc.text(`${currentVendorName} Cost Breakdown`, 20, currentY);
+      currentY += 10;
+      
+      if (results[currentVendor] && results[currentVendor].costBreakdown) {
+        const breakdown = results[currentVendor].costBreakdown;
+        const breakdownData = Object.entries(breakdown).map(([key, value]) => {
+          let category = key.charAt(0).toUpperCase() + key.slice(1);
+          return [category, window.formatCurrency(value)];
+        });
+        
+        // Sort by cost (highest first)
+        breakdownData.sort((a, b) => {
+          const aValue = parseFloat(a[1].replace(/[^0-9.-]+/g, ""));
+          const bValue = parseFloat(b[1].replace(/[^0-9.-]+/g, ""));
+          return bValue - aValue;
+        });
+        
+        doc.autoTable({
+          head: [['Cost Category', 'Amount']],
+          body: breakdownData,
+          startY: currentY,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [80, 80, 80],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: {
+            fillColor: [240, 240, 240]
+          },
+          columnStyles: {
+            0: { cellWidth: 80 },
+            1: { cellWidth: 80, halign: 'right' }
+          }
+        });
+        
+        currentY = doc.previousAutoTable.finalY + 15;
+      }
+      
+      // Add footer
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text('Portnox Cloud NAC Solution TCO Calculator', 20, 285);
+        doc.text(`Page ${i} of ${pageCount}`, 180, 285);
+      }
+      
+      // Save PDF
+      doc.save(`NAC_TCO_Comparison_${date.replace(/\//g, '-')}.pdf`);
+      
+      // Show success message
+      window.notificationManager?.success('PDF report generated successfully');
+      return true;
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      window.notificationManager?.error('Error generating PDF: ' + error.message);
+      return false;
+    }
+  }
+
+  exportToPDF() {
+    if (!window.jspdf || !window.calculator || !window.calculator.results) {
+      console.warn('PDF export functionality not available or no results to export');
+      window.notificationManager?.warn('PDF export functionality not available or no results to export');
+      return false;
+    }
+    
+    try {
+      // Create new PDF document
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Add title
+      doc.setFontSize(20);
+      doc.setTextColor(27, 103, 178); // Primary color
+      doc.text('NAC Solution TCO Comparison Report', 105, 20, { align: 'center' });
+      
+      // Add date
+      doc.setFontSize(10);
+      doc.setTextColor(80, 80, 80); // Gray
+      const date = new Date().toLocaleDateString();
+      doc.text(`Generated on ${date}`, 105, 30, { align: 'center' });
+      
+      // Add organization info
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      const results = window.calculator.results;
+      doc.text(`Organization Size: ${results.orgSize.charAt(0).toUpperCase() + results.orgSize.slice(1)}`, 20, 45);
+      doc.text(`Device Count: ${results.deviceCount.toLocaleString()}`, 20, 52);
+      doc.text(`Years Projected: ${results.yearsToProject}`, 20, 59);
+      
+      // Add TCO summary table
+      doc.setFontSize(14);
+      doc.text('TCO Summary', 20, 75);
+      
+      const vendors = Object.keys(window.vendorData);
+      const summaryTableData = vendors.map(vendor => {
+        const result = results[vendor];
+        if (!result) return null;
+        
+        return [
+          window.vendorData[vendor].name,
+          window.formatCurrency(result.totalInitialCosts),
+          window.formatCurrency(result.annualCosts),
+          window.formatCurrency(result.migrationCost),
+          window.formatCurrency(result.totalTCO)
+        ];
+      }).filter(row => row !== null);
+      
+      // Add table headers
+      const summaryHeaders = [
+        { header: 'Vendor', dataKey: 'vendor' },
+        { header: 'Initial Costs', dataKey: 'initial' },
+        { header: 'Annual Costs', dataKey: 'annual' },
+        { header: 'Migration Costs', dataKey: 'migration' },
+        { header: 'Total TCO', dataKey: 'total' }
+      ];
+      
+      doc.autoTable({
+        head: [summaryHeaders.map(h => h.header)],
+        body: summaryTableData,
+        startY: 80,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [27, 103, 178],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [240, 240, 240]
+        },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 35, halign: 'right' },
+          2: { cellWidth: 35, halign: 'right' },
+          3: { cellWidth: 35, halign: 'right' },
+          4: { cellWidth: 35, halign: 'right' }
+        }
+      });
+      
+      // Get current Y position
+      let currentY = doc.previousAutoTable.finalY + 15;
+      
+      // Add savings comparison
+      doc.setFontSize(14);
+      doc.text('Portnox Cloud Savings Analysis', 20, currentY);
+      currentY += 10;
+      
+      const currentVendor = window.uiController.activeVendor;
+      const currentVendorName = window.vendorData[currentVendor].name;
+      const portnoxResult = results['portnox'];
+      
+      if (portnoxResult && results[currentVendor]) {
+        const savings = portnoxResult.totalSavings;
+        const savingsPercentage = portnoxResult.savingsPercentage;
+        
+        doc.setFontSize(12);
+        doc.text(`Comparison to ${currentVendorName}:`, 20, currentY);
+        currentY += 7;
+        
+        doc.text(`Total Savings: ${window.formatCurrency(savings)}`, 30, currentY);
+        currentY += 7;
+        
+        doc.text(`Savings Percentage: ${savingsPercentage.toFixed(1)}%`, 30, currentY);
+        currentY += 7;
+        
+        doc.text(`Annual Savings: ${window.formatCurrency(portnoxResult.annualSavings)}`, 30, currentY);
+        currentY += 15;
+      }
+      
+      // Add implementation comparison section if data available
+      if (results.implementationResults) {
+        doc.setFontSize(14);
+        doc.text('Implementation Time Comparison', 20, currentY);
+        currentY += 10;
+        
+        const implementationData = vendors.map(vendor => {
+          const implTime = results.implementationResults[vendor] || 0;
+          return [
+            window.vendorData[vendor].name,
+            `${implTime.toFixed(1)} days`,
+            vendor === 'portnox' ? '—' : `${((results.implementationResults['portnox'] / implTime) * 100).toFixed(1)}%`
+          ];
+        });
+        
+        doc.autoTable({
+          head: [['Vendor', 'Implementation Time', 'Portnox Time Ratio']],
+          body: implementationData,
+          startY: currentY,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [43, 210, 91], // Accent color
+            textColor: [255, 255, 255],
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: {
+            fillColor: [240, 240, 240]
+          }
+        });
+        
+        currentY = doc.previousAutoTable.finalY + 15;
+      }
+      
+      // Add cost breakdown for current vendor
+      doc.setFontSize(14);
+      doc.text(`${currentVendorName} Cost Breakdown`, 20, currentY);
+      currentY += 10;
+      
+      if (results[currentVendor] && results[currentVendor].costBreakdown) {
+        const breakdown = results[currentVendor].costBreakdown;
+        const breakdownData = Object.entries(breakdown).map(([key, value]) => {
+          let category = key.charAt(0).toUpperCase() + key.slice(1);
+          return [category, window.formatCurrency(value)];
+        });
+        
+        // Sort by cost (highest first)
+        breakdownData.sort((a, b) => {
+          const aValue = parseFloat(a[1].replace(/[^0-9.-]+/g, ""));
+          const bValue = parseFloat(b[1].replace(/[^0-9.-]+/g, ""));
+          return bValue - aValue;
+        });
+        
+        doc.autoTable({
+          head: [['Cost Category', 'Amount']],
+          body: breakdownData,
+          startY: currentY,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [80, 80, 80],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: {
+            fillColor: [240, 240, 240]
+          },
+          columnStyles: {
+            0: { cellWidth: 80 },
+            1: { cellWidth: 80, halign: 'right' }
+          }
+        });
+        
+        currentY = doc.previousAutoTable.finalY + 15;
+      }
+      
+      // Add footer
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text('Portnox Cloud NAC Solution TCO Calculator', 20, 285);
+        doc.text(`Page ${i} of ${pageCount}`, 180, 285);
+      }
+      
+      // Save PDF
+      doc.save(`NAC_TCO_Comparison_${date.replace(/\//g, '-')}.pdf`);
+      
+      // Show success message
+      window.notificationManager?.success('PDF report generated successfully');
+      return true;
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      window.notificationManager?.error('Error generating PDF: ' + error.message);
+      return false;
+    }
+  }
+
+  exportToPDF() {
+    if (!window.jspdf || !window.calculator || !window.calculator.results) {
+      console.warn('PDF export functionality not available or no results to export');
+      window.notificationManager?.warn('PDF export functionality not available or no results to export');
+      return false;
+    }
+    
+    try {
+      // Create new PDF document
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Add title
+      doc.setFontSize(20);
+      doc.setTextColor(27, 103, 178); // Primary color
+      doc.text('NAC Solution TCO Comparison Report', 105, 20, { align: 'center' });
+      
+      // Add date
+      doc.setFontSize(10);
+      doc.setTextColor(80, 80, 80); // Gray
+      const date = new Date().toLocaleDateString();
+      doc.text(`Generated on ${date}`, 105, 30, { align: 'center' });
+      
+      // Add organization info
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      const results = window.calculator.results;
+      doc.text(`Organization Size: ${results.orgSize.charAt(0).toUpperCase() + results.orgSize.slice(1)}`, 20, 45);
+      doc.text(`Device Count: ${results.deviceCount.toLocaleString()}`, 20, 52);
+      doc.text(`Years Projected: ${results.yearsToProject}`, 20, 59);
+      
+      // Add TCO summary table
+      doc.setFontSize(14);
+      doc.text('TCO Summary', 20, 75);
+      
+      const vendors = Object.keys(window.vendorData);
+      const summaryTableData = vendors.map(vendor => {
+        const result = results[vendor];
+        if (!result) return null;
+        
+        return [
+          window.vendorData[vendor].name,
+          window.formatCurrency(result.totalInitialCosts),
+          window.formatCurrency(result.annualCosts),
+          window.formatCurrency(result.migrationCost),
+          window.formatCurrency(result.totalTCO)
+        ];
+      }).filter(row => row !== null);
+      
+      // Add table headers
+      const summaryHeaders = [
+        { header: 'Vendor', dataKey: 'vendor' },
+        { header: 'Initial Costs', dataKey: 'initial' },
+        { header: 'Annual Costs', dataKey: 'annual' },
+        { header: 'Migration Costs', dataKey: 'migration' },
+        { header: 'Total TCO', dataKey: 'total' }
+      ];
+      
+      doc.autoTable({
+        head: [summaryHeaders.map(h => h.header)],
+        body: summaryTableData,
+        startY: 80,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [27, 103, 178],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [240, 240, 240]
+        },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 35, halign: 'right' },
+          2: { cellWidth: 35, halign: 'right' },
+          3: { cellWidth: 35, halign: 'right' },
+          4: { cellWidth: 35, halign: 'right' }
+        }
+      });
+      
+      // Get current Y position
+      let currentY = doc.previousAutoTable.finalY + 15;
+      
+      // Add savings comparison
+      doc.setFontSize(14);
+      doc.text('Portnox Cloud Savings Analysis', 20, currentY);
+      currentY += 10;
+      
+      const currentVendor = window.uiController.activeVendor;
+      const currentVendorName = window.vendorData[currentVendor].name;
+      const portnoxResult = results['portnox'];
+      
+      if (portnoxResult && results[currentVendor]) {
+        const savings = portnoxResult.totalSavings;
+        const savingsPercentage = portnoxResult.savingsPercentage;
+        
+        doc.setFontSize(12);
+        doc.text(`Comparison to ${currentVendorName}:`, 20, currentY);
+        currentY += 7;
+        
+        doc.text(`Total Savings: ${window.formatCurrency(savings)}`, 30, currentY);
+        currentY += 7;
+        
+        doc.text(`Savings Percentage: ${savingsPercentage.toFixed(1)}%`, 30, currentY);
+        currentY += 7;
+        
+        doc.text(`Annual Savings: ${window.formatCurrency(portnoxResult.annualSavings)}`, 30, currentY);
+        currentY += 15;
+      }
+      
+      // Add implementation comparison section if data available
+      if (results.implementationResults) {
+        doc.setFontSize(14);
+        doc.text('Implementation Time Comparison', 20, currentY);
+        currentY += 10;
+        
+        const implementationData = vendors.map(vendor => {
+          const implTime = results.implementationResults[vendor] || 0;
+          return [
+            window.vendorData[vendor].name,
+            `${implTime.toFixed(1)} days`,
+            vendor === 'portnox' ? '—' : `${((results.implementationResults['portnox'] / implTime) * 100).toFixed(1)}%`
+          ];
+        });
+        
+        doc.autoTable({
+          head: [['Vendor', 'Implementation Time', 'Portnox Time Ratio']],
+          body: implementationData,
+          startY: currentY,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [43, 210, 91], // Accent color
+            textColor: [255, 255, 255],
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: {
+            fillColor: [240, 240, 240]
+          }
+        });
+        
+        currentY = doc.previousAutoTable.finalY + 15;
+      }
+      
+      // Add cost breakdown for current vendor
+      doc.setFontSize(14);
+      doc.text(`${currentVendorName} Cost Breakdown`, 20, currentY);
+      currentY += 10;
+      
+      if (results[currentVendor] && results[currentVendor].costBreakdown) {
+        const breakdown = results[currentVendor].costBreakdown;
+        const breakdownData = Object.entries(breakdown).map(([key, value]) => {
+          let category = key.charAt(0).toUpperCase() + key.slice(1);
+          return [category, window.formatCurrency(value)];
+        });
+        
+        // Sort by cost (highest first)
+        breakdownData.sort((a, b) => {
+          const aValue = parseFloat(a[1].replace(/[^0-9.-]+/g, ""));
+          const bValue = parseFloat(b[1].replace(/[^0-9.-]+/g, ""));
+          return bValue - aValue;
+        });
+        
+        doc.autoTable({
+          head: [['Cost Category', 'Amount']],
+          body: breakdownData,
+          startY: currentY,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [80, 80, 80],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: {
+            fillColor: [240, 240, 240]
+          },
+          columnStyles: {
+            0: { cellWidth: 80 },
+            1: { cellWidth: 80, halign: 'right' }
+          }
+        });
+        
+        currentY = doc.previousAutoTable.finalY + 15;
+      }
+      
+      // Add footer
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text('Portnox Cloud NAC Solution TCO Calculator', 20, 285);
+        doc.text(`Page ${i} of ${pageCount}`, 180, 285);
+      }
+      
+      // Save PDF
+      doc.save(`NAC_TCO_Comparison_${date.replace(/\//g, '-')}.pdf`);
+      
+      // Show success message
+      window.notificationManager?.success('PDF report generated successfully');
+      return true;
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      window.notificationManager?.error('Error generating PDF: ' + error.message);
+      return false;
+    }
+  }
     if (!window.calculator || !window.calculator.resultsAvailable) {
       alert('No calculation results to export. Please calculate TCO first.');
       return;

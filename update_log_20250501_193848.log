@@ -1,0 +1,15 @@
+[0;32m[2025-05-01 19:38:48] [INFO] ======================================================[0m
+[0;32m[2025-05-01 19:38:48] [INFO]   NAC Solution TCO Calculator Comprehensive Update[0m
+[0;32m[2025-05-01 19:38:48] [INFO] ======================================================[0m
+[0;32m[2025-05-01 19:38:48] [INFO] Checking and installing required tools...[0m
+[0;32m[2025-05-01 19:38:48] [INFO] All required tools are available.[0m
+[0;32m[2025-05-01 19:38:48] [INFO] Creating backup of current application...[0m
+[0;32m[2025-05-01 19:38:48] [INFO] Backup created at: /home/iamrad/Projects/github/UaXtXo/backups/20250501_193848[0m
+[0;32m[2025-05-01 19:38:48] [INFO] Creating temporary directory for updates...[0m
+[0;32m[2025-05-01 19:38:48] [INFO] Fixing missing chart canvases in HTML...[0m
+[0;32m[2025-05-01 19:38:48] [INFO] Fixed missing chart canvases in HTML.[0m
+[0;32m[2025-05-01 19:38:48] [INFO] Adding configurable cost options and extending advanced settings...[0m
+[0;32m[2025-05-01 19:38:48] [INFO] Added configurable cost options and extended advanced settings.[0m
+[0;32m[2025-05-01 19:38:48] [INFO] Creating or updating sensitivity analysis page...[0m
+[0;32m[2025-05-01 19:38:49] [INFO] Created sensitivity analysis page with all required JavaScript files.[0m
+[0;32m[2025-05-01 19:38:49] [INFO] Downloading and optimizing vendor logos...[0m
