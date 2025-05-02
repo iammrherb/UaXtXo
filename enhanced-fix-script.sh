@@ -1,3 +1,602 @@
+#!/bin/bash
+# Enhanced NAC TCO Calculator Fix Script
+# This script resolves all identified issues including logo problems, chart loading,
+# class redeclaration, and enhances visuals and comparison information
+
+# Color formatting
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}╔════════════════════════════════════════════════════════╗${NC}"
+echo -e "${BLUE}║         Enhanced NAC TCO Calculator Fix Script         ║${NC}"
+echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
+
+# Create necessary directories
+mkdir -p img
+mkdir -p js/components
+
+# 1. Fix logo issues - create a proper Portnox logo in SVG format
+echo -e "\n${YELLOW}[1/7] Creating proper logo files...${NC}"
+
+# Create SVG Portnox logo
+cat > img/logo.svg << 'EOL'
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="50" viewBox="0 0 200 50">
+  <style>
+    .logo-text { fill: #1B67B2; font-family: Arial, sans-serif; font-weight: bold; }
+    .accent { fill: #2BD25B; }
+  </style>
+  <rect x="5" y="10" width="30" height="30" rx="5" fill="#1B67B2"/>
+  <circle cx="20" cy="25" r="8" fill="#2BD25B"/>
+  <text x="45" y="32" class="logo-text" font-size="20">Portnox</text>
+  <path class="accent" d="M45 35 h75" stroke="#2BD25B" stroke-width="2"/>
+</svg>
+EOL
+
+# Convert SVG to PNG using node.js or a data URL approach if available
+cat > img/create-logo-png.js << 'EOL'
+// Node.js script to create a PNG from SVG (only used if available)
+const fs = require('fs');
+const { createCanvas, loadImage } = require('canvas');
+
+// Create a data URL for the logo which will be used as a fallback
+const svgContent = fs.readFileSync('img/logo.svg', 'utf8');
+const dataUrl = `data:image/svg+xml;base64,${Buffer.from(svgContent).toString('base64')}`;
+
+// Write this to a JavaScript file that can be included
+fs.writeFileSync('img/logo-fallback.js', `
+// Fallback for logo loading
+document.addEventListener('DOMContentLoaded', function() {
+  const logoImg = document.querySelector('.logo img');
+  if (logoImg) {
+    logoImg.onerror = function() {
+      this.onerror = null;
+      this.src = "${dataUrl}";
+    };
+  }
+});
+`);
+
+try {
+  // Try to create a PNG if canvas is available
+  const canvas = createCanvas(200, 50);
+  const ctx = canvas.getContext('2d');
+  
+  // Draw the logo (simplified version)
+  ctx.fillStyle = '#1B67B2';
+  ctx.fillRect(5, 10, 30, 30);
+  
+  ctx.fillStyle = '#2BD25B';
+  ctx.beginPath();
+  ctx.arc(20, 25, 8, 0, Math.PI * 2);
+  ctx.fill();
+  
+  ctx.fillStyle = '#1B67B2';
+  ctx.font = 'bold 20px Arial';
+  ctx.fillText('Portnox', 45, 32);
+  
+  ctx.strokeStyle = '#2BD25B';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(45, 35);
+  ctx.lineTo(120, 35);
+  ctx.stroke();
+  
+  const buffer = canvas.toBuffer('image/png');
+  fs.writeFileSync('img/logo.png', buffer);
+  console.log('Created logo.png successfully');
+} catch (e) {
+  console.log('Could not create PNG - will use SVG fallback instead');
+}
+EOL
+
+# Create an HTML fallback mechanism
+cat > img/logo-fallback.html << 'EOL'
+<!-- Include this right after the opening <body> tag -->
+<script>
+// Immediate execution to handle logo loading
+(function() {
+  // Create base64 encoded SVG
+  const svgLogo = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="50" viewBox="0 0 200 50"><style>.logo-text{fill:#1B67B2;font-family:Arial,sans-serif;font-weight:bold}.accent{fill:#2BD25B}</style><rect x="5" y="10" width="30" height="30" rx="5" fill="#1B67B2"/><circle cx="20" cy="25" r="8" fill="#2BD25B"/><text x="45" y="32" class="logo-text" font-size="20">Portnox</text><path class="accent" d="M45 35 h75" stroke="#2BD25B" stroke-width="2"/></svg>';
+  const svgDataUrl = 'data:image/svg+xml;base64,' + btoa(svgLogo);
+  
+  // Set up a listener to replace broken logo
+  document.addEventListener('DOMContentLoaded', function() {
+    const logoImg = document.querySelector('.logo img');
+    if (logoImg) {
+      logoImg.onerror = function() {
+        console.log('Logo image failed to load, applying SVG replacement');
+        this.onerror = null;
+        this.src = svgDataUrl;
+      };
+    }
+  });
+})();
+</script>
+EOL
+
+# Adjust logo size in HTML
+if [ -f "index.html" ]; then
+  # Update logo image reference to use SVG where available
+  sed -i 's/<img src="img\/logo.png" alt="Portnox Logo"[^>]*>/<img src="img\/logo.svg" onerror="this.src='\''img\/logo.png'\''" alt="Portnox Logo" style="height:40px; width:auto;">/' index.html
+  
+  # Insert the fallback script right after <body> tag
+  sed -i '/<body>/r img/logo-fallback.html' index.html
+  
+  # Adjust logo styles
+  cat > css/logo-fixes.css << 'EOL'
+/* Logo enhancements */
+.logo img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  transition: all 0.2s ease;
+}
+
+.logo h1 {
+  margin-left: 10px;
+  color: #1B67B2;
+  font-size: 1.5rem;
+}
+
+/* Vendor card logo enhancements */
+.vendor-card img {
+  height: 40px; /* Increased from 30px */
+  width: auto;
+  max-width: 90%;
+  margin-bottom: var(--spacing-md);
+  object-fit: contain;
+  transition: all 0.3s ease;
+}
+
+/* Specific adjustments for certain vendor logos */
+.vendor-card[data-vendor="aruba"] img,
+.vendor-card[data-vendor="forescout"] img {
+  height: 45px; /* Even larger for these specific vendors */
+}
+
+/* Improve logo display in report generation */
+.report-header-logo {
+  height: 50px;
+  width: auto;
+}
+EOL
+
+  # Add the CSS file to the HTML
+  sed -i '/<link rel="stylesheet" href="css\/styles.css">/a \  <link rel="stylesheet" href="css\/logo-fixes.css">' index.html
+  
+  echo -e "${GREEN}✓ Updated logo handling in HTML and added CSS enhancements${NC}"
+else
+  echo -e "${RED}✗ index.html not found - cannot update logo references${NC}"
+fi
+
+# 2. Fix Calculator class redeclaration issue
+echo -e "\n${YELLOW}[2/7] Fixing Calculator class redeclaration issue...${NC}"
+cat > js/components/calculator.js << 'EOL'
+/**
+ * TCO Calculator Class
+ * Enhanced implementation with proper class declaration to avoid redeclaration issues
+ */
+// Check if Calculator class already exists to prevent redeclaration
+if (typeof Calculator === 'undefined') {
+  class Calculator {
+    constructor() {
+      this.results = null;
+      this.resultsAvailable = false;
+    }
+    
+    /**
+     * Calculate TCO for all vendors
+     */
+    calculate() {
+      try {
+        // Show loading indicator
+        if (window.loadingManager) {
+          window.loadingManager.show('results-container', 'Calculating TCO...');
+        }
+        
+        // Validate inputs
+        if (!this.validateInputs()) {
+          // Hide loading indicator
+          if (window.loadingManager) {
+            window.loadingManager.hide('results-container');
+          }
+          
+          if (window.notificationManager) {
+            window.notificationManager.error('Please check the input values and try again.');
+          }
+          
+          return false;
+        }
+        
+        // Get values from form
+        const deviceCount = parseInt(document.getElementById('device-count').value) || 1000;
+        const orgSize = document.getElementById('organization-size').value;
+        const yearsToProject = parseInt(document.getElementById('years-to-project').value) || 3;
+        const currentVendor = window.uiController ? window.uiController.activeVendor : 'cisco';
+        
+        // Calculate TCO for all vendors
+        const results = {
+          deviceCount,
+          orgSize,
+          yearsToProject,
+          multipleLocations: document.getElementById('multiple-locations').checked,
+          locationCount: parseInt(document.getElementById('location-count').value) || 1,
+          complexAuthentication: document.getElementById('complex-authentication').checked,
+          legacyDevices: document.getElementById('legacy-devices').checked,
+          legacyPercentage: parseInt(document.getElementById('legacy-percentage').value) || 0,
+          cloudIntegration: document.getElementById('cloud-integration').checked,
+          customPolicies: document.getElementById('custom-policies').checked,
+          policyComplexity: document.getElementById('policy-complexity').value
+        };
+        
+        // Calculate vendor TCOs
+        Object.keys(window.vendorData).forEach(vendor => {
+          const vendorResult = this.calculateVendorTCO(vendor, currentVendor, orgSize, deviceCount, yearsToProject);
+          vendorResult.vendorName = window.vendorData[vendor].name;
+          results[vendor] = vendorResult;
+        });
+        
+        // Calculate implementation times
+        const implementationResults = {};
+        Object.keys(window.vendorData).forEach(vendor => {
+          const vendorData = window.vendorData[vendor];
+          if (vendorData[orgSize] && vendorData[orgSize].implementationTimeline) {
+            const timeline = vendorData[orgSize].implementationTimeline;
+            implementationResults[vendor] = Object.values(timeline).reduce((a, b) => a + b, 0);
+          }
+        });
+        results.implementationResults = implementationResults;
+        
+        // Store results
+        this.results = results;
+        this.resultsAvailable = true;
+        
+        // Hide loading indicator
+        if (window.loadingManager) {
+          window.loadingManager.hide('results-container');
+        }
+        
+        // Update UI
+        if (window.uiController) {
+          window.uiController.updateResults(results);
+        }
+        
+        // Update charts
+        if (window.chartBuilder) {
+          window.chartBuilder.updateTCOComparisonChart(results);
+          window.chartBuilder.updateCumulativeCostChart(results);
+          window.chartBuilder.updateBreakdownCharts(currentVendor, 'portnox');
+          window.chartBuilder.updateFeatureComparisonChart(currentVendor);
+          window.chartBuilder.updateImplementationComparisonChart(results);
+          window.chartBuilder.updateROIChart(results);
+        }
+        
+        // Update benefit cards
+        this.updateBenefitCards(results);
+        
+        // Show success notification
+        if (window.notificationManager) {
+          window.notificationManager.success('TCO calculation completed successfully');
+        }
+        
+        return true;
+      } catch (error) {
+        console.error('Error calculating TCO:', error);
+        
+        // Hide loading indicator
+        if (window.loadingManager) {
+          window.loadingManager.hide('results-container');
+        }
+        
+        // Show error notification
+        if (window.notificationManager) {
+          window.notificationManager.error('Error calculating TCO: ' + error.message);
+        } else {
+          alert('Error calculating TCO: ' + error.message);
+        }
+        
+        return false;
+      }
+    }
+    
+    /**
+     * Validate form inputs
+     */
+    validateInputs() {
+      // Check if validation manager is available
+      if (window.validationManager) {
+        return window.validationManager.validateAll();
+      }
+      
+      // Simple validation if validation manager is not available
+      let isValid = true;
+      
+      const deviceCount = document.getElementById('device-count');
+      if (!deviceCount || isNaN(deviceCount.value) || deviceCount.value <= 0) {
+        console.error('Invalid device count');
+        isValid = false;
+      }
+      
+      const yearsToProject = document.getElementById('years-to-project');
+      if (!yearsToProject || isNaN(yearsToProject.value) || yearsToProject.value <= 0 || yearsToProject.value > 10) {
+        console.error('Invalid years to project');
+        isValid = false;
+      }
+      
+      // Check location count if multiple locations is selected
+      const multipleLocations = document.getElementById('multiple-locations');
+      const locationCount = document.getElementById('location-count');
+      if (multipleLocations && multipleLocations.checked && locationCount) {
+        if (isNaN(locationCount.value) || locationCount.value < 2) {
+          console.error('Invalid location count');
+          isValid = false;
+        }
+      }
+      
+      return isValid;
+    }
+    
+    /**
+     * Calculate TCO for a specific vendor
+     */
+    calculateVendorTCO(vendor, currentVendor, orgSize, deviceCount, yearsToProject) {
+      try {
+        if (!window.vendorData[vendor] || !window.vendorData[vendor][orgSize]) {
+          console.error(`Invalid vendor or organization size: ${vendor}, ${orgSize}`);
+          return {
+            totalTCO: 0,
+            totalInitialCosts: 0,
+            annualCosts: 0,
+            migrationCost: 0,
+            totalSavings: 0,
+            savingsPercentage: 0,
+            annualSavings: 0,
+            costBreakdown: {
+              hardware: 0,
+              networkRedesign: 0,
+              implementation: 0,
+              training: 0,
+              maintenance: 0,
+              licensing: 0,
+              personnel: 0,
+              downtime: 0
+            }
+          };
+        }
+        
+        const vendorInfo = window.vendorData[vendor][orgSize];
+        const complexityMultiplier = window.calculateComplexityMultiplier(vendor, window.vendorData[vendor].cloudBased);
+        
+        // Get cost multipliers from custom settings if available
+        const customHardwareMultiplier = parseFloat(document.getElementById('custom-hardware-cost')?.value) || 1.0;
+        const customLicensingMultiplier = parseFloat(document.getElementById('custom-licensing-cost')?.value) || 1.0;
+        const customMaintenanceMultiplier = parseFloat(document.getElementById('custom-maintenance-cost')?.value) || 1.0;
+        const customImplementationMultiplier = parseFloat(document.getElementById('custom-implementation-cost')?.value) || 1.0;
+        const customTrainingMultiplier = parseFloat(document.getElementById('training-cost-multiplier')?.value) || 1.0;
+        
+        // Get custom FTE costs if available
+        const customNetworkAdminSalary = parseFloat(document.getElementById('network-admin-salary')?.value) || 120000;
+        const customSecurityAdminSalary = parseFloat(document.getElementById('security-admin-salary')?.value) || 135000;
+        const customSystemAdminSalary = parseFloat(document.getElementById('system-admin-salary')?.value) || 110000;
+        const customHelpdeskSalary = parseFloat(document.getElementById('helpdesk-salary')?.value) || 75000;
+        
+        // Get custom downtime cost if available
+        const customDowntimeCost = parseFloat(document.getElementById('downtime-cost')?.value) || 5000;
+        
+        // Calculate initial costs with custom multipliers
+        const initialHardware = vendorInfo.initialHardware * customHardwareMultiplier;
+        const networkRedesign = vendorInfo.networkRedesign;
+        const implementation = vendorInfo.implementation * customImplementationMultiplier;
+        const training = vendorInfo.training * customTrainingMultiplier;
+        
+        const totalInitialCosts = (initialHardware + networkRedesign + implementation + training) * complexityMultiplier;
+        
+        // Calculate annual costs with custom multipliers
+        const annualMaintenance = vendorInfo.annualMaintenance * customMaintenanceMultiplier;
+        const annualLicensing = vendorInfo.annualLicensing * customLicensingMultiplier;
+        
+        // Use custom FTE costs for calculation
+        const fteCosts = {
+          networkAdmin: customNetworkAdminSalary,
+          securityAdmin: customSecurityAdminSalary,
+          systemAdmin: customSystemAdminSalary,
+          helpDesk: customHelpdeskSalary
+        };
+        
+        let fteCost = 0;
+        for (const [role, amount] of Object.entries(vendorInfo.fteAllocation)) {
+          fteCost += fteCosts[role] * amount;
+        }
+        
+        const downtimeCost = vendorInfo.annualDowntime * customDowntimeCost;
+        
+        const annualCosts = (annualMaintenance + annualLicensing + fteCost + downtimeCost) * complexityMultiplier;
+        
+        // Calculate TCO
+        const totalTCO = totalInitialCosts + (annualCosts * yearsToProject);
+        
+        // Calculate migration cost (if different from current vendor)
+        let migrationCost = 0;
+        if (vendor !== currentVendor) {
+          const migrationFactor = this.getMigrationFactor(currentVendor, vendor);
+          migrationCost = implementation * complexityMultiplier * migrationFactor;
+        }
+        
+        // Calculate savings vs current solution
+        let totalSavings = 0;
+        let savingsPercentage = 0;
+        let annualSavings = 0;
+        
+        if (vendor !== currentVendor) {
+          const currentVendorInfo = window.vendorData[currentVendor][orgSize];
+          const currentComplexity = window.calculateComplexityMultiplier(currentVendor, window.vendorData[currentVendor].cloudBased);
+          
+          // Apply the same custom multipliers to current vendor for fair comparison
+          const currentInitialHardware = currentVendorInfo.initialHardware * customHardwareMultiplier;
+          const currentNetworkRedesign = currentVendorInfo.networkRedesign;
+          const currentImplementation = currentVendorInfo.implementation * customImplementationMultiplier;
+          const currentTraining = currentVendorInfo.training * customTrainingMultiplier;
+          
+          const currentInitial = (currentInitialHardware + currentNetworkRedesign + 
+                                currentImplementation + currentTraining) * currentComplexity;
+          
+          const currentAnnualMaintenance = currentVendorInfo.annualMaintenance * customMaintenanceMultiplier;
+          const currentAnnualLicensing = currentVendorInfo.annualLicensing * customLicensingMultiplier;
+          
+          // Calculate current FTE cost with custom salaries
+          let currentFteCost = 0;
+          for (const [role, amount] of Object.entries(currentVendorInfo.fteAllocation)) {
+            currentFteCost += fteCosts[role] * amount;
+          }
+          
+          const currentDowntimeCost = currentVendorInfo.annualDowntime * customDowntimeCost;
+          
+          const currentAnnual = (currentAnnualMaintenance + currentAnnualLicensing + 
+                                currentFteCost + currentDowntimeCost) * currentComplexity;
+          
+          const currentTCO = currentInitial + (currentAnnual * yearsToProject);
+          
+          totalSavings = currentTCO - totalTCO - migrationCost;
+          savingsPercentage = currentTCO > 0 ? (totalSavings / currentTCO) * 100 : 0;
+          annualSavings = currentAnnual - annualCosts;
+        }
+        
+        // Create cost breakdown
+        const costBreakdown = {
+          hardware: initialHardware * complexityMultiplier,
+          networkRedesign: networkRedesign * complexityMultiplier,
+          implementation: implementation * complexityMultiplier,
+          training: training * complexityMultiplier,
+          maintenance: annualMaintenance * yearsToProject * complexityMultiplier,
+          licensing: annualLicensing * yearsToProject * complexityMultiplier,
+          personnel: fteCost * yearsToProject * complexityMultiplier,
+          downtime: downtimeCost * yearsToProject * complexityMultiplier
+        };
+        
+        return {
+          totalTCO,
+          totalInitialCosts,
+          annualCosts,
+          migrationCost,
+          totalSavings,
+          savingsPercentage,
+          annualSavings,
+          costBreakdown,
+          hardwareCost: initialHardware * complexityMultiplier,
+          networkRedesignCost: networkRedesign * complexityMultiplier,
+          implementationCost: implementation * complexityMultiplier,
+          trainingCost: training * complexityMultiplier,
+          migrationCost,
+          maintenanceCost: annualMaintenance * complexityMultiplier,
+          licensingCost: annualLicensing * complexityMultiplier,
+          fteCost: fteCost * complexityMultiplier,
+          annualDowntimeCost: downtimeCost * complexityMultiplier,
+          totalCosts: totalTCO + migrationCost,
+          // Add benefit indicators for on-prem vs cloud comparison
+          cloudBenefits: {
+            hardwareElimination: window.vendorData[vendor].cloudBased ? 100 : 0,
+            maintenanceReduction: window.vendorData[vendor].cloudBased ? 75 : 0,
+            deploymentSpeed: window.vendorData[vendor].cloudBased ? 4 : 1,
+            scalabilityScore: window.vendorData[vendor].cloudBased ? 5 : 2,
+            updatesScore: window.vendorData[vendor].cloudBased ? 5 : 2,
+            remoteAccessScore: window.vendorData[vendor].cloudBased ? 5 : 3
+          }
+        };
+      } catch (error) {
+        console.error(`Error calculating TCO for vendor ${vendor}:`, error);
+        return {
+          totalTCO: 0,
+          totalInitialCosts: 0,
+          annualCosts: 0,
+          migrationCost: 0,
+          totalSavings: 0,
+          savingsPercentage: 0,
+          annualSavings: 0,
+          costBreakdown: {
+            hardware: 0,
+            networkRedesign: 0,
+            implementation: 0,
+            training: 0,
+            maintenance: 0,
+            licensing: 0,
+            personnel: 0,
+            downtime: 0
+          }
+        };
+      }
+    }
+    
+    /**
+     * Get migration factor between vendors
+     */
+    getMigrationFactor(fromVendor, toVendor) {
+      if (!fromVendor || !toVendor) return 0.5;
+      
+      if (window.migrationFactors && 
+          window.migrationFactors[fromVendor] && 
+          window.migrationFactors[fromVendor][toVendor]) {
+        return window.migrationFactors[fromVendor][toVendor];
+      }
+      
+      return 0.5; // Default factor
+    }
+    
+    /**
+     * Update benefit cards in UI
+     */
+    updateBenefitCards(results) {
+      if (!window.portnoxBenefits || !results) return;
+      
+      const benefitsGrid = document.querySelector('.benefits-grid');
+      if (!benefitsGrid) return;
+      
+      benefitsGrid.innerHTML = '';
+      
+      window.portnoxBenefits.forEach(benefit => {
+        const card = document.createElement('div');
+        card.className = 'benefit-card';
+        
+        const icon = document.createElement('div');
+        icon.className = 'benefit-icon';
+        icon.innerHTML = `<i class="fas fa-${benefit.icon}"></i>`;
+        
+        const content = document.createElement('div');
+        content.className = 'benefit-content';
+        
+        const title = document.createElement('h5');
+        title.textContent = benefit.title;
+        
+        const description = document.createElement('p');
+        description.textContent = benefit.description;
+        
+        const metric = document.createElement('div');
+        metric.className = 'benefit-metric';
+        metric.textContent = benefit.metric;
+        
+        content.appendChild(title);
+        content.appendChild(description);
+        content.appendChild(metric);
+        
+        card.appendChild(icon);
+        card.appendChild(content);
+        
+        benefitsGrid.appendChild(card);
+      });
+    }
+  }
+  
+  // Assign the Calculator class to the window
+  window.Calculator = Calculator;
+}
+EOL
+echo -e "${GREEN}✓ Fixed Calculator class redeclaration issue${NC}"
+
+# 3. Fix UI Controller redeclaration issue
+echo -e "\n${YELLOW}[3/7] Fixing UIController class issues...${NC}"
+cat > js/components/ui-controller.js << 'EOL'
 /**
  * UI Controller Class for TCO Calculator
  * Enhanced version with improved report generation
@@ -1377,3 +1976,685 @@ if (typeof UIController === 'undefined') {
   // Assign the UIController class to the window
   window.UIController = UIController;
 }
+EOL
+echo -e "${GREEN}✓ Fixed UIController class redeclaration issue${NC}"
+
+# 4. Add enhanced chart capabilities for ROI and feature comparison
+echo -e "\n${YELLOW}[4/7] Enhancing chart implementations...${NC}"
+cat > js/chart-enhancements.js << 'EOL'
+/**
+ * Chart enhancement functions for the NAC TCO Calculator
+ * Ensures all charts are properly initialized and rendered
+ */
+document.addEventListener('DOMContentLoaded', function() {
+  // Fix for chart canvas elements not being found
+  function ensureChartCanvases() {
+    // List of required chart canvas IDs
+    const requiredCharts = [
+      'tco-comparison-chart',
+      'cumulative-cost-chart',
+      'current-breakdown-chart',
+      'alternative-breakdown-chart',
+      'feature-comparison-chart',
+      'implementation-comparison-chart',
+      'roi-chart'
+    ];
+    
+    // Check each canvas and create if missing
+    requiredCharts.forEach(chartId => {
+      if (!document.getElementById(chartId)) {
+        console.log(`Creating missing chart canvas: ${chartId}`);
+        
+        // Find container - if not found, create a container in the results section
+        let container = document.querySelector(`.chart-container:has(#${chartId})`);
+        if (!container) {
+          // Find a parent container to append to
+          const resultsSection = document.querySelector('.results-grid') || document.querySelector('.results-container');
+          if (!resultsSection) return;
+          
+          // Create a new result card
+          const card = document.createElement('div');
+          card.className = 'result-card';
+          
+          // Create title based on chart ID
+          const title = document.createElement('h3');
+          title.textContent = chartId.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ').replace('Chart', '');
+          
+          // Create chart container
+          container = document.createElement('div');
+          container.className = 'chart-container';
+          
+          // Assemble card
+          card.appendChild(title);
+          card.appendChild(container);
+          
+          // Add to results section
+          resultsSection.appendChild(card);
+        }
+        
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.id = chartId;
+        container.appendChild(canvas);
+      }
+    });
+    
+    console.log('All chart canvases are available');
+  }
+  
+  // Fix for ROI chart specifically
+  function ensureROIChart() {
+    const chartBuilder = window.chartBuilder;
+    if (!chartBuilder) return;
+    
+    if (!chartBuilder.charts.roi) {
+      // Try to initialize ROI chart
+      try {
+        chartBuilder.initROIChart();
+        console.log('ROI chart initialized');
+      } catch (e) {
+        console.error('Error initializing ROI chart:', e);
+      }
+    }
+  }
+  
+  // Wait for chart builder to be initialized
+  function waitForChartBuilder(callback, attempts = 0) {
+    if (window.chartBuilder) {
+      callback();
+    } else if (attempts < 10) {
+      setTimeout(() => waitForChartBuilder(callback, attempts + 1), 500);
+    } else {
+      console.error('Chart builder not available after multiple attempts');
+    }
+  }
+  
+  // Run chart fixes
+  waitForChartBuilder(() => {
+    ensureChartCanvases();
+    ensureROIChart();
+    
+    // Update charts if results are available
+    if (window.calculator && window.calculator.resultsAvailable) {
+      const results = window.calculator.results;
+      const activeVendor = window.uiController ? window.uiController.activeVendor : 'cisco';
+      
+      window.chartBuilder.updateTCOComparisonChart(results);
+      window.chartBuilder.updateCumulativeCostChart(results);
+      window.chartBuilder.updateBreakdownCharts(activeVendor, 'portnox');
+      window.chartBuilder.updateFeatureComparisonChart(activeVendor);
+      window.chartBuilder.updateImplementationComparisonChart(results);
+      window.chartBuilder.updateROIChart(results);
+    }
+  });
+});
+EOL
+
+# Add chart enhancement script to index.html
+if [ -f "index.html" ]; then
+  # Add the script before the closing body tag
+  sed -i 's/<\/body>/  <script src="js\/chart-enhancements.js"><\/script>\n<\/body>/' index.html
+  echo -e "${GREEN}✓ Added chart enhancement script to index.html${NC}"
+else
+  echo -e "${RED}✗ index.html not found - cannot add chart enhancement script${NC}"
+fi
+
+# 5. Enhance On-Prem vs Cloud comparison section
+echo -e "\n${YELLOW}[5/7] Enhancing On-Prem vs Cloud comparison...${NC}"
+cat > css/comparison-enhancements.css << 'EOL'
+/* Enhanced styling for Cloud vs. On-Premises comparison */
+.comparison-table-container {
+  margin-bottom: 20px;
+}
+
+.comparison-table-container .data-table th {
+  background-color: #1B67B2;
+  color: white;
+  padding: 12px;
+}
+
+.comparison-table-container .data-table th:nth-child(3) {
+  background-color: #2BD25B;
+}
+
+.comparison-table-container .data-table tr td:nth-child(3) {
+  color: #1CA43F;
+  font-weight: 500;
+}
+
+.cloud-benefit {
+  position: relative;
+}
+
+.cloud-benefit::before {
+  content: "✓";
+  color: #2BD25B;
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.architecture-diagram-container {
+  margin-top: 30px;
+}
+
+.architecture-diagram {
+  width: 100%;
+  height: 300px;
+  margin-bottom: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.architecture-notes {
+  padding-left: 20px;
+  margin-top: 10px;
+}
+
+.architecture-notes li {
+  margin-bottom: 5px;
+  color: #505050;
+}
+
+/* Enhanced industry metrics styling */
+.industry-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.industry-metric {
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  padding: 15px;
+  border-left: 4px solid #1B67B2;
+}
+
+.industry-metric h4 {
+  color: #1B67B2;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+.industry-metric ul {
+  padding-left: 20px;
+  margin-bottom: 0;
+}
+
+.industry-details {
+  margin-top: 15px;
+  padding: 15px;
+  border-top: 1px solid #e0e0e0;
+  color: #505050;
+}
+
+/* Key comparison metrics card enhancement */
+.comparison-highlight-card {
+  background: linear-gradient(135deg, rgba(27, 103, 178, 0.1) 0%, rgba(43, 210, 91, 0.1) 100%);
+  border: 1px solid rgba(43, 210, 91, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.comparison-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.metric-container {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.metric-label {
+  font-size: 1rem;
+  color: #1B67B2;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.metric-value {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #2BD25B;
+  margin-bottom: 10px;
+}
+
+.progress-bar {
+  height: 8px;
+  background-color: rgba(43, 210, 91, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.progress {
+  height: 100%;
+  background-color: #2BD25B;
+  border-radius: 4px;
+  transition: width 1s ease-in-out;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #707070;
+}
+
+/* Benefits grid enhancement */
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.benefit-card {
+  display: flex;
+  gap: 15px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(43, 210, 91, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.benefit-icon {
+  font-size: 1.8rem;
+  color: #2BD25B;
+  min-width: 30px;
+  text-align: center;
+}
+
+.benefit-content h5 {
+  font-size: 1rem;
+  margin-bottom: 5px;
+  color: #1B67B2;
+  font-weight: 600;
+}
+
+.benefit-content p {
+  font-size: 0.9rem;
+  color: #505050;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.benefit-metric {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2BD25B;
+}
+
+/* View-specific styling */
+.financial-view .results-container {
+  /* Financial view specific styles */
+}
+
+.executive-view .results-container {
+  /* Executive view specific styles */
+}
+
+.technical-view .results-container {
+  /* Technical view specific styles */
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .comparison-metrics,
+  .benefits-grid,
+  .industry-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .benefit-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .benefit-icon {
+    margin-bottom: 10px;
+  }
+}
+EOL
+
+# Add the CSS file to the HTML
+if [ -f "index.html" ]; then
+  sed -i '/<link rel="stylesheet" href="css\/styles.css">/a \  <link rel="stylesheet" href="css\/comparison-enhancements.css">' index.html
+  echo -e "${GREEN}✓ Added comparison enhancement styles to index.html${NC}"
+else
+  echo -e "${RED}✗ index.html not found - cannot add comparison enhancement styles${NC}"
+fi
+
+# 6. Enhance report generation
+echo -e "\n${YELLOW}[6/7] Adding enhanced report generation...${NC}"
+cat > js/reports/report-enhancement.js << 'EOL'
+/**
+ * Enhanced report generation for different user views
+ */
+document.addEventListener('DOMContentLoaded', function() {
+  // Fix for missing report-type selector
+  const reportTypeSelector = document.getElementById('report-type');
+  if (!reportTypeSelector) {
+    const exportOptions = document.querySelector('.export-options');
+    if (exportOptions) {
+      // Create report type selector
+      const select = document.createElement('select');
+      select.id = 'report-type';
+      select.className = 'form-select';
+      
+      // Add options
+      const options = [
+        { value: 'complete', label: 'Complete Report' },
+        { value: 'executive', label: 'Executive Summary' },
+        { value: 'financial', label: 'Financial Analysis' },
+        { value: 'technical', label: 'Technical Report' }
+      ];
+      
+      options.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option.value;
+        opt.textContent = option.label;
+        select.appendChild(opt);
+      });
+      
+      // Add to export options
+      exportOptions.appendChild(select);
+      console.log('Added report type selector');
+    }
+  }
+  
+  // Fix for PDF report generation
+  if (typeof window.PDFReportGenerator === 'undefined') {
+    // Basic implementation of PDFReportGenerator
+    class BasicPDFReportGenerator {
+      constructor() {
+        // Check if jsPDF is available
+        if (typeof jsPDF === 'undefined') {
+          console.warn('jsPDF library not available');
+        }
+      }
+      
+      generateReport(results, currentVendor, reportType = 'complete') {
+        if (!results || !results[currentVendor] || !results['portnox']) {
+          throw new Error('Invalid results data');
+        }
+        
+        // Create PDF document
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4',
+          compress: true
+        });
+        
+        // Add title and header
+        doc.setFontSize(20);
+        doc.setTextColor(27, 103, 178); // Primary color
+        
+        let title = 'NAC Solution TCO Analysis';
+        switch (reportType) {
+          case 'executive':
+            title = 'NAC Solution Executive Summary';
+            break;
+          case 'financial':
+            title = 'NAC Solution Financial Analysis';
+            break;
+          case 'technical':
+            title = 'NAC Solution Technical Report';
+            break;
+        }
+        
+        doc.text(title, 105, 20, { align: 'center' });
+        
+        doc.setFontSize(12);
+        doc.setTextColor(100, 100, 100); // Gray
+        doc.text(`Comparing ${results[currentVendor].vendorName} vs. Portnox Cloud`, 105, 30, { align: 'center' });
+        doc.text(`Generated ${new Date().toLocaleDateString()}`, 105, 38, { align: 'center' });
+        
+        // Add organization info
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text('Organization Details', 20, 50);
+        
+        // Add organization details
+        doc.setFontSize(10);
+        doc.text(`Device Count: ${results.deviceCount}`, 20, 60);
+        doc.text(`Organization Size: ${results.orgSize.charAt(0).toUpperCase() + results.orgSize.slice(1)}`, 20, 67);
+        doc.text(`Years Projected: ${results.yearsToProject}`, 20, 74);
+        
+        // Add basic cost comparison
+        doc.setFontSize(14);
+        doc.setTextColor(27, 103, 178);
+        doc.text('Cost Comparison', 20, 90);
+        
+        // Add simple table with TCO
+        const currentVendorResults = results[currentVendor];
+        const portnoxResults = results['portnox'];
+        
+        const headers = ['Cost Component', currentVendorResults.vendorName, 'Portnox Cloud', 'Savings'];
+        const data = [
+          ['Initial Costs', 
+            window.formatCurrency(currentVendorResults.totalInitialCosts), 
+            window.formatCurrency(portnoxResults.totalInitialCosts),
+            window.formatCurrency(currentVendorResults.totalInitialCosts - portnoxResults.totalInitialCosts)
+          ],
+          ['Ongoing Costs', 
+            window.formatCurrency(currentVendorResults.annualCosts * results.yearsToProject), 
+            window.formatCurrency(portnoxResults.annualCosts * results.yearsToProject),
+            window.formatCurrency(currentVendorResults.annualCosts * results.yearsToProject - portnoxResults.annualCosts * results.yearsToProject)
+          ],
+          ['Total TCO', 
+            window.formatCurrency(currentVendorResults.totalCosts), 
+            window.formatCurrency(portnoxResults.totalCosts),
+            window.formatCurrency(portnoxResults.totalSavings)
+          ]
+        ];
+        
+        // Add table
+        doc.autoTable({
+          head: [headers],
+          body: data,
+          startY: 95,
+          theme: 'grid',
+          styles: {
+            fontSize: 9
+          },
+          headStyles: {
+            fillColor: [27, 103, 178],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold'
+          }
+        });
+        
+        // Add footer with page number
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.setFontSize(10);
+          doc.setTextColor(100, 100, 100);
+          doc.text('Portnox Cloud NAC Solution', 20, 285);
+          doc.text(`Page ${i} of ${pageCount}`, 180, 285);
+        }
+        
+        return doc;
+      }
+    }
+    
+    // Register the generator
+    window.PDFReportGenerator = BasicPDFReportGenerator;
+    console.log('Registered basic PDF report generator');
+  }
+});
+EOL
+
+# Add report enhancement script to index.html
+if [ -f "index.html" ]; then
+  # Add the script before the closing body tag
+  sed -i 's/<\/body>/  <script src="js\/reports\/report-enhancement.js"><\/script>\n<\/body>/' index.html
+  echo -e "${GREEN}✓ Added report enhancement script to index.html${NC}"
+else
+  echo -e "${RED}✗ index.html not found - cannot add report enhancement script${NC}"
+fi
+
+# 7. Ensure proper script loading order and prevent multiple initializations
+echo -e "\n${YELLOW}[7/7] Updating script loading order in index.html...${NC}"
+if [ -f "index.html" ]; then
+  # Create initialization order fix script
+  cat > js/init-order-fix.js << 'EOL'
+/**
+ * Initialization order fix for TCO Calculator
+ * Ensures components are initialized in the correct order and only once
+ */
+document.addEventListener('DOMContentLoaded', function() {
+  // Component initialization status tracking
+  window._initStatus = {
+    domCache: false,
+    tabManager: false,
+    notificationManager: false,
+    loadingManager: false,
+    validationManager: false,
+    uiController: false,
+    chartBuilder: false,
+    calculator: false
+  };
+  
+  // Original console.log to preserve logging
+  const originalConsoleLog = console.log;
+  
+  // Override console.log to track initializations
+  console.log = function() {
+    const message = arguments[0];
+    
+    // Check for initialization messages
+    if (typeof message === 'string') {
+      if (message.includes('DOM Cache initialized')) {
+        window._initStatus.domCache = true;
+      } else if (message.includes('Tab Manager initialized')) {
+        window._initStatus.tabManager = true;
+      } else if (message.includes('Notification Manager initialized')) {
+        window._initStatus.notificationManager = true;
+      } else if (message.includes('Loading Manager initialized')) {
+        window._initStatus.loadingManager = true;
+      } else if (message.includes('Validation Manager initialized')) {
+        window._initStatus.validationManager = true;
+      } else if (message.includes('UI Controller initialized')) {
+        window._initStatus.uiController = true;
+      } else if (message.includes('Chart Builder initialized')) {
+        window._initStatus.chartBuilder = true;
+      } else if (message.includes('Calculator initialized')) {
+        window._initStatus.calculator = true;
+      }
+    }
+    
+    // Call original console.log
+    return originalConsoleLog.apply(console, arguments);
+  };
+  
+  // Initialize components if not already initialized
+  setTimeout(function() {
+    // Check and initialize each component
+    if (!window._initStatus.domCache && !window.domCache) {
+      console.log('DOM Cache not initialized, initializing now...');
+      window.domCache = new DOMCache();
+      window.domCache.init();
+      console.log('DOM Cache initialized');
+    }
+    
+    if (!window._initStatus.tabManager && !window.tabManager) {
+      console.log('Tab Manager not initialized, initializing now...');
+      window.tabManager = new TabManager();
+      console.log('Tab Manager initialized');
+    }
+    
+    if (!window._initStatus.notificationManager && !window.notificationManager) {
+      console.log('Notification Manager not initialized, initializing now...');
+      window.notificationManager = new NotificationManager();
+      console.log('Notification Manager initialized');
+    }
+    
+    if (!window._initStatus.loadingManager && !window.loadingManager) {
+      console.log('Loading Manager not initialized, initializing now...');
+      window.loadingManager = new LoadingManager();
+      console.log('Loading Manager initialized');
+    }
+    
+    if (!window._initStatus.validationManager && !window.validationManager) {
+      console.log('Validation Manager not initialized, initializing now...');
+      window.validationManager = new ValidationManager();
+      console.log('Validation Manager initialized');
+    }
+    
+    if (!window._initStatus.uiController && !window.uiController) {
+      console.log('UI Controller not initialized, initializing now...');
+      window.uiController = new UIController();
+      console.log('UI Controller initialized');
+    }
+    
+    if (!window._initStatus.chartBuilder && !window.chartBuilder) {
+      console.log('Chart Builder not initialized, initializing now...');
+      window.chartBuilder = new ChartBuilder();
+      window.chartBuilder.initCharts();
+      console.log('Chart Builder initialized');
+    }
+    
+    if (!window._initStatus.calculator && !window.calculator) {
+      console.log('Calculator not initialized, initializing now...');
+      window.calculator = new Calculator();
+      console.log('Calculator initialized');
+    }
+    
+    // Set default active vendor if not already set
+    if (window.uiController && !window.uiController.activeVendor) {
+      window.uiController.setActiveVendor('cisco');
+      console.log('Active vendor set to Cisco');
+    }
+    
+    // Run initial calculation if needed and not already running
+    if (window.calculator && !window._calculationRunning) {
+      window._calculationRunning = true;
+      console.log('Running initial calculation...');
+      try {
+        window.calculator.calculate();
+        console.log('Initial calculation completed');
+      } catch (err) {
+        console.error('Error during initial calculation:', err);
+        if (window.notificationManager) {
+          window.notificationManager.error('Error calculating TCO. Please try again.');
+        }
+      }
+      window._calculationRunning = false;
+    }
+  }, 500); // Delay to ensure all scripts are loaded
+});
+EOL
+
+  # Add the script to index.html
+  sed -i 's/<script src="js\/main.js"><\/script>/<script src="js\/init-order-fix.js"><\/script>\n  <script src="js\/main.js"><\/script>/' index.html
+  echo -e "${GREEN}✓ Added initialization order fix script to index.html${NC}"
+else
+  echo -e "${RED}✗ index.html not found - cannot add initialization order fix script${NC}"
+fi
+
+echo -e "\n${GREEN}✅ Enhanced fix script completed successfully!${NC}"
+echo -e "The following issues have been fixed:"
+echo -e "  1. Created SVG and fallback logo handling to ensure logos display properly"
+echo -e "  2. Fixed Calculator class redeclaration issue"
+echo -e "  3. Fixed UIController class redeclaration issue"
+echo -e "  4. Enhanced chart implementations with dynamic canvas creation"
+echo -e "  5. Improved On-Prem vs Cloud comparison with better visuals"
+echo -e "  6. Enhanced report generation for different views"
+echo -e "  7. Fixed script loading order and initialization issues"
+echo -e "\nPlease refresh your application to see the changes."
