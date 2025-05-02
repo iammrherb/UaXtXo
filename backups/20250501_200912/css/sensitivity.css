@@ -1,0 +1,64 @@
+/* Styles specific to the Sensitivity Analysis page */
+
+.sensitivity-container {
+    display: flex;
+    flex: 1;
+    padding: var(--spacing-xl);
+    gap: var(--spacing-xl);
+}
+
+.parameter-card,
+.instructions-card {
+    background-color: var(--bg-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.parameter-card h3,
+.instructions-card h3 {
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.instructions-card ol {
+    padding-left: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+.instructions-card li {
+    margin-bottom: var(--spacing-xs);
+}
+
+.instructions-card p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+#sensitivity-btn {
+    width: 100%;
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    font-weight: 600;
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1100px) {
+    .sensitivity-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+    }
+}
