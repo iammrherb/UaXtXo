@@ -317,3 +317,21 @@ function addChartDebugInfo() {
   chartInfo.innerHTML = chartInfoContent;
   debugInfo.appendChild(chartInfo);
 }
+// Sensitivity analysis button
+document.addEventListener('DOMContentLoaded', function() {
+  const sensitivityBtn = document.getElementById('sensitivity-analysis-btn');
+  if (sensitivityBtn) {
+    sensitivityBtn.addEventListener('click', function() {
+      window.location.href = 'sensitivity.html';
+    });
+  }
+});
+// Sensitivity analysis button
+document.addEventListener('DOMContentLoaded', function() {
+  var btn = document.getElementById('sensitivity-analysis-btn');
+  if (btn) { 
+    btn.addEventListener('click', function() { 
+      window.location.href = 'sensitivity.html'; 
+    }); 
+  }
+});
