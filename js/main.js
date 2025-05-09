@@ -1,3 +1,15 @@
+// ModernCharts fallback
+if (typeof ModernCharts === 'undefined') {
+  window.ModernCharts = {
+    initialize: function() {
+      console.log('Using ChartBuilder instead of ModernCharts');
+      if (typeof ChartBuilder !== 'undefined') {
+        ChartBuilder.initializeCharts();
+      }
+    }
+  };
+}
+
 /**
  * Main Application JavaScript for NAC Architecture Designer Pro
  * Handles core functionality, theme switching, and component coordination
@@ -238,7 +250,7 @@ const NACDesignerApp = (function() {
   // Initialize charts
   function initCharts() {
     if (typeof ModernCharts === 'undefined') {
-      console.warn('ModernCharts not available');
+      console.warn('ModernCharts functionality will be handled by ChartBuilder');
       return;
     }
     
