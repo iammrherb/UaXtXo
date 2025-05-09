@@ -173,6 +173,733 @@ const NACDesignerApp = (function() {
   }
   
   // Set selected vendor
+// Chart data for each vendor
+const vendorChartData = {
+  cisco: {
+    tcoComparison: {
+      labels: ['Year 1', 'Year 2', 'Year 3', 'Total'],
+      datasets: [
+        {
+          label: 'Cisco ISE',
+          backgroundColor: '#1173b1',
+          data: [125000, 85000, 85000, 295000]
+        },
+        {
+          label: 'Portnox Cloud',
+          backgroundColor: '#5fc27e',
+          data: [65000, 48000, 48000, 161000]
+        }
+      ]
+    },
+    cumulativeCost: {
+      labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
+      datasets: [
+        {
+          label: 'Cisco ISE',
+          borderColor: '#1173b1',
+          backgroundColor: 'rgba(17, 115, 177, 0.1)',
+          data: [75000, 125000, 210000, 295000]
+        },
+        {
+          label: 'Portnox Cloud',
+          borderColor: '#5fc27e',
+          backgroundColor: 'rgba(95, 194, 126, 0.1)',
+          data: [35000, 65000, 113000, 161000]
+        }
+      ]
+    },
+    currentBreakdown: {
+      labels: ['Hardware', 'Software', 'Implementation', 'Maintenance', 'Personnel'],
+      datasets: [
+        {
+          data: [50000, 75000, 45000, 45000, 80000],
+          backgroundColor: [
+            '#36a2eb',
+            '#ff6384',
+            '#4bc0c0',
+            '#ff9f40',
+            '#9966ff'
+          ]
+        }
+      ]
+    },
+    alternativeBreakdown: {
+      labels: ['Software Subscription', 'Implementation', 'Maintenance', 'Personnel'],
+      datasets: [
+        {
+          data: [80000, 20000, 15000, 46000],
+          backgroundColor: [
+            '#5fc27e',
+            '#4bc0c0',
+            '#ff9f40',
+            '#9966ff'
+          ]
+        }
+      ]
+    },
+    implementationComparison: {
+      labels: ['Infrastructure Setup', 'Software Deployment', 'Configuration', 'Testing', 'Training', 'Total'],
+      datasets: [
+        {
+          label: 'Cisco ISE (days)',
+          backgroundColor: '#1173b1',
+          data: [15, 10, 30, 20, 10, 85]
+        },
+        {
+          label: 'Portnox Cloud (days)',
+          backgroundColor: '#5fc27e',
+          data: [0, 5, 10, 10, 5, 30]
+        }
+      ]
+    },
+    featureComparison: {
+      labels: ['Ease of Deployment', 'Scalability', 'Multi-Location Support', 'Legacy Device Support', 'Cloud Integration', 'Total Cost of Ownership'],
+      datasets: [
+        {
+          label: 'Cisco ISE',
+          backgroundColor: 'rgba(17, 115, 177, 0.5)',
+          data: [2, 3, 4, 4, 2, 2]
+        },
+        {
+          label: 'Portnox Cloud',
+          backgroundColor: 'rgba(95, 194, 126, 0.5)',
+          data: [5, 5, 5, 4, 5, 5]
+        }
+      ]
+    },
+    roi: {
+      labels: ['Year 1', 'Year 2', 'Year 3'],
+      datasets: [
+        {
+          label: 'Cumulative Savings',
+          backgroundColor: '#5fc27e',
+          borderColor: '#4ca368',
+          data: [60000, 134000, 195000]
+        },
+        {
+          type: 'line',
+          label: 'ROI %',
+          backgroundColor: 'rgba(95, 194, 126, 0)',
+          borderColor: '#ff6384',
+          data: [171, 383, 557],
+          yAxisID: 'y1'
+        }
+      ]
+    }
+  },
+  aruba: {
+    tcoComparison: {
+      labels: ['Year 1', 'Year 2', 'Year 3', 'Total'],
+      datasets: [
+        {
+          label: 'Aruba ClearPass',
+          backgroundColor: '#1173b1',
+          data: [115000, 78000, 78000, 271000]
+        },
+        {
+          label: 'Portnox Cloud',
+          backgroundColor: '#5fc27e',
+          data: [62000, 45000, 45000, 152000]
+        }
+      ]
+    },
+    cumulativeCost: {
+      labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
+      datasets: [
+        {
+          label: 'Aruba ClearPass',
+          borderColor: '#1173b1',
+          backgroundColor: 'rgba(17, 115, 177, 0.1)',
+          data: [70000, 115000, 193000, 271000]
+        },
+        {
+          label: 'Portnox Cloud',
+          borderColor: '#5fc27e',
+          backgroundColor: 'rgba(95, 194, 126, 0.1)',
+          data: [32000, 62000, 107000, 152000]
+        }
+      ]
+    },
+    currentBreakdown: {
+      labels: ['Hardware', 'Software', 'Implementation', 'Maintenance', 'Personnel'],
+      datasets: [
+        {
+          data: [45000, 70000, 40000, 40000, 76000],
+          backgroundColor: [
+            '#36a2eb',
+            '#ff6384',
+            '#4bc0c0',
+            '#ff9f40',
+            '#9966ff'
+          ]
+        }
+      ]
+    },
+    alternativeBreakdown: {
+      labels: ['Software Subscription', 'Implementation', 'Maintenance', 'Personnel'],
+      datasets: [
+        {
+          data: [75000, 18000, 15000, 44000],
+          backgroundColor: [
+            '#5fc27e',
+            '#4bc0c0',
+            '#ff9f40',
+            '#9966ff'
+          ]
+        }
+      ]
+    },
+    implementationComparison: {
+      labels: ['Infrastructure Setup', 'Software Deployment', 'Configuration', 'Testing', 'Training', 'Total'],
+      datasets: [
+        {
+          label: 'Aruba ClearPass (days)',
+          backgroundColor: '#1173b1',
+          data: [12, 10, 28, 18, 10, 78]
+        },
+        {
+          label: 'Portnox Cloud (days)',
+          backgroundColor: '#5fc27e',
+          data: [0, 5, 10, 8, 5, 28]
+        }
+      ]
+    },
+    featureComparison: {
+      labels: ['Ease of Deployment', 'Scalability', 'Multi-Location Support', 'Legacy Device Support', 'Cloud Integration', 'Total Cost of Ownership'],
+      datasets: [
+        {
+          label: 'Aruba ClearPass',
+          backgroundColor: 'rgba(17, 115, 177, 0.5)',
+          data: [3, 3, 4, 4, 3, 3]
+        },
+        {
+          label: 'Portnox Cloud',
+          backgroundColor: 'rgba(95, 194, 126, 0.5)',
+          data: [5, 5, 5, 4, 5, 5]
+        }
+      ]
+    },
+    roi: {
+      labels: ['Year 1', 'Year 2', 'Year 3'],
+      datasets: [
+        {
+          label: 'Cumulative Savings',
+          backgroundColor: '#5fc27e',
+          borderColor: '#4ca368',
+          data: [53000, 119000, 185000]
+        },
+        {
+          type: 'line',
+          label: 'ROI %',
+          backgroundColor: 'rgba(95, 194, 126, 0)',
+          borderColor: '#ff6384',
+          data: [165, 371, 578],
+          yAxisID: 'y1'
+        }
+      ]
+    }
+  },
+  forescout: {
+    tcoComparison: {
+      labels: ['Year 1', 'Year 2', 'Year 3', 'Total'],
+      datasets: [
+        {
+          label: 'Forescout',
+          backgroundColor: '#1173b1',
+          data: [130000, 90000, 90000, 310000]
+        },
+        {
+          label: 'Portnox Cloud',
+          backgroundColor: '#5fc27e',
+          data: [65000, 48000, 48000, 161000]
+        }
+      ]
+    },
+    cumulativeCost: {
+      labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
+      datasets: [
+        {
+          label: 'Forescout',
+          borderColor: '#1173b1',
+          backgroundColor: 'rgba(17, 115, 177, 0.1)',
+          data: [80000, 130000, 220000, 310000]
+        },
+        {
+          label: 'Portnox Cloud',
+          borderColor: '#5fc27e',
+          backgroundColor: 'rgba(95, 194, 126, 0.1)',
+          data: [35000, 65000, 113000, 161000]
+        }
+      ]
+    },
+    currentBreakdown: {
+      labels: ['Hardware', 'Software', 'Implementation', 'Maintenance', 'Personnel'],
+      datasets: [
+        {
+          data: [55000, 80000, 50000, 45000, 80000],
+          backgroundColor: [
+            '#36a2eb',
+            '#ff6384',
+            '#4bc0c0',
+            '#ff9f40',
+            '#9966ff'
+          ]
+        }
+      ]
+    },
+    alternativeBreakdown: {
+      labels: ['Software Subscription', 'Implementation', 'Maintenance', 'Personnel'],
+      datasets: [
+        {
+          data: [80000, 20000, 15000, 46000],
+          backgroundColor: [
+            '#5fc27e',
+            '#4bc0c0',
+            '#ff9f40',
+            '#9966ff'
+          ]
+        }
+      ]
+    },
+    implementationComparison: {
+      labels: ['Infrastructure Setup', 'Software Deployment', 'Configuration', 'Testing', 'Training', 'Total'],
+      datasets: [
+        {
+          label: 'Forescout (days)',
+          backgroundColor: '#1173b1',
+          data: [15, 12, 35, 25, 12, 99]
+        },
+        {
+          label: 'Portnox Cloud (days)',
+          backgroundColor: '#5fc27e',
+          data: [0, 5, 10, 10, 5, 30]
+        }
+      ]
+    },
+    featureComparison: {
+      labels: ['Ease of Deployment', 'Scalability', 'Multi-Location Support', 'Legacy Device Support', 'Cloud Integration', 'Total Cost of Ownership'],
+      datasets: [
+        {
+          label: 'Forescout',
+          backgroundColor: 'rgba(17, 115, 177, 0.5)',
+          data: [2, 3, 4, 5, 2, 1]
+        },
+        {
+          label: 'Portnox Cloud',
+          backgroundColor: 'rgba(95, 194, 126, 0.5)',
+          data: [5, 5, 5, 4, 5, 5]
+        }
+      ]
+    },
+    roi: {
+      labels: ['Year 1', 'Year 2', 'Year 3'],
+      datasets: [
+        {
+          label: 'Cumulative Savings',
+          backgroundColor: '#5fc27e',
+          borderColor: '#4ca368',
+          data: [65000, 149000, 234000]
+        },
+        {
+          type: 'line',
+          label: 'ROI %',
+          backgroundColor: 'rgba(95, 194, 126, 0)',
+          borderColor: '#ff6384',
+          data: [185, 425, 668],
+          yAxisID: 'y1'
+        }
+      ]
+    }
+  },
+  nps: {
+    tcoComparison: {
+      labels: ['Year 1', 'Year 2', 'Year 3', 'Total'],
+      datasets: [
+        {
+          label: 'Microsoft NPS',
+          backgroundColor: '#1173b1',
+          data: [80000, 60000, 60000, 200000]
+        },
+        {
+          label: 'Portnox Cloud',
+          backgroundColor: '#5fc27e',
+          data: [60000, 45000, 45000, 150000]
+        }
+      ]
+    },
+    cumulativeCost: {
+      labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
+      datasets: [
+        {
+          label: 'Microsoft NPS',
+          borderColor: '#1173b1',
+          backgroundColor: 'rgba(17, 115, 177, 0.1)',
+          data: [40000, 80000, 140000, 200000]
+        },
+        {
+          label: 'Portnox Cloud',
+          borderColor: '#5fc27e',
+          backgroundColor: 'rgba(95, 194, 126, 0.1)',
+          data: [30000, 60000, 105000, 150000]
+        }
+      ]
+    },
+    currentBreakdown: {
+      labels: ['Hardware', 'Software', 'Implementation', 'Maintenance', 'Personnel'],
+      datasets: [
+        {
+          data: [30000, 20000, 35000, 35000, 80000],
+          backgroundColor: [
+            '#36a2eb',
+            '#ff6384',
+            '#4bc0c0',
+            '#ff9f40',
+            '#9966ff'
+          ]
+        }
+      ]
+    },
+    alternativeBreakdown: {
+      labels: ['Software Subscription', 'Implementation', 'Maintenance', 'Personnel'],
+      datasets: [
+        {
+          data: [75000, 18000, 15000, 42000],
+          backgroundColor: [
+            '#5fc27e',
+            '#4bc0c0',
+            '#ff9f40',
+            '#9966ff'
+          ]
+        }
+      ]
+    },
+    implementationComparison: {
+      labels: ['Infrastructure Setup', 'Software Deployment', 'Configuration', 'Testing', 'Training', 'Total'],
+      datasets: [
+        {
+          label: 'Microsoft NPS (days)',
+          backgroundColor: '#1173b1',
+          data: [10, 5, 35, 25, 15, 90]
+        },
+        {
+          label: 'Portnox Cloud (days)',
+          backgroundColor: '#5fc27e',
+          data: [0, 5, 10, 8, 5, 28]
+        }
+      ]
+    },
+    featureComparison: {
+      labels: ['Ease of Deployment', 'Scalability', 'Multi-Location Support', 'Legacy Device Support', 'Cloud Integration', 'Total Cost of Ownership'],
+      datasets: [
+        {
+          label: 'Microsoft NPS',
+          backgroundColor: 'rgba(17, 115, 177, 0.5)',
+          data: [2, 2, 2, 3, 3, 3]
+        },
+        {
+          label: 'Portnox Cloud',
+          backgroundColor: 'rgba(95, 194, 126, 0.5)',
+          data: [5, 5, 5, 4, 5, 5]
+        }
+      ]
+    },
+    roi: {
+      labels: ['Year 1', 'Year 2', 'Year 3'],
+      datasets: [
+        {
+          label: 'Cumulative Savings',
+          backgroundColor: '#5fc27e',
+          borderColor: '#4ca368',
+          data: [20000, 50000, 80000]
+        },
+        {
+          type: 'line',
+          label: 'ROI %',
+          backgroundColor: 'rgba(95, 194, 126, 0)',
+          borderColor: '#ff6384',
+          data: [66, 166, 266],
+          yAxisID: 'y1'
+        }
+      ]
+    }
+  },
+  fortinac: {
+    tcoComparison: {
+      labels: ['Year 1', 'Year 2', 'Year 3', 'Total'],
+      datasets: [
+        {
+          label: 'FortiNAC',
+          backgroundColor: '#1173b1',
+          data: [110000, 75000, 75000, 260000]
+        },
+        {
+          label: 'Portnox Cloud',
+          backgroundColor: '#5fc27e',
+          data: [62000, 45000, 45000, 152000]
+        }
+      ]
+    },
+    cumulativeCost: {
+      labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
+      datasets: [
+        {
+          label: 'FortiNAC',
+          borderColor: '#1173b1',
+          backgroundColor: 'rgba(17, 115, 177, 0.1)',
+          data: [65000, 110000, 185000, 260000]
+        },
+        {
+          label: 'Portnox Cloud',
+          borderColor: '#5fc27e',
+          backgroundColor: 'rgba(95, 194, 126, 0.1)',
+          data: [32000, 62000, 107000, 152000]
+        }
+      ]
+    },
+    currentBreakdown: {
+      labels: ['Hardware', 'Software', 'Implementation', 'Maintenance', 'Personnel'],
+      datasets: [
+        {
+          data: [40000, 65000, 40000, 40000, 75000],
+          backgroundColor: [
+            '#36a2eb',
+            '#ff6384',
+            '#4bc0c0',
+            '#ff9f40',
+            '#9966ff'
+          ]
+        }
+      ]
+    },
+    alternativeBreakdown: {
+      labels: ['Software Subscription', 'Implementation', 'Maintenance', 'Personnel'],
+      datasets: [
+        {
+          data: [75000, 18000, 15000, 44000],
+          backgroundColor: [
+            '#5fc27e',
+            '#4bc0c0',
+            '#ff9f40',
+            '#9966ff'
+          ]
+        }
+      ]
+    },
+    implementationComparison: {
+      labels: ['Infrastructure Setup', 'Software Deployment', 'Configuration', 'Testing', 'Training', 'Total'],
+      datasets: [
+        {
+          label: 'FortiNAC (days)',
+          backgroundColor: '#1173b1',
+          data: [12, 8, 25, 18, 10, 73]
+        },
+        {
+          label: 'Portnox Cloud (days)',
+          backgroundColor: '#5fc27e',
+          data: [0, 5, 10, 8, 5, 28]
+        }
+      ]
+    },
+    featureComparison: {
+      labels: ['Ease of Deployment', 'Scalability', 'Multi-Location Support', 'Legacy Device Support', 'Cloud Integration', 'Total Cost of Ownership'],
+      datasets: [
+        {
+          label: 'FortiNAC',
+          backgroundColor: 'rgba(17, 115, 177, 0.5)',
+          data: [3, 3, 3, 4, 3, 3]
+        },
+        {
+          label: 'Portnox Cloud',
+          backgroundColor: 'rgba(95, 194, 126, 0.5)',
+          data: [5, 5, 5, 4, 5, 5]
+        }
+      ]
+    },
+    roi: {
+      labels: ['Year 1', 'Year 2', 'Year 3'],
+      datasets: [
+        {
+          label: 'Cumulative Savings',
+          backgroundColor: '#5fc27e',
+          borderColor: '#4ca368',
+          data: [48000, 108000, 168000]
+        },
+        {
+          type: 'line',
+          label: 'ROI %',
+          backgroundColor: 'rgba(95, 194, 126, 0)',
+          borderColor: '#ff6384',
+          data: [150, 337, 525],
+          yAxisID: 'y1'
+        }
+      ]
+    }
+  },
+  securew2: {
+    tcoComparison: {
+      labels: ['Year 1', 'Year 2', 'Year 3', 'Total'],
+      datasets: [
+        {
+          label: 'SecureW2',
+          backgroundColor: '#1173b1',
+          data: [85000, 65000, 65000, 215000]
+        },
+        {
+          label: 'Portnox Cloud',
+          backgroundColor: '#5fc27e',
+          data: [60000, 45000, 45000, 150000]
+        }
+      ]
+    },
+    cumulativeCost: {
+      labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
+      datasets: [
+        {
+          label: 'SecureW2',
+          borderColor: '#1173b1',
+          backgroundColor: 'rgba(17, 115, 177, 0.1)',
+          data: [45000, 85000, 150000, 215000]
+        },
+        {
+          label: 'Portnox Cloud',
+          borderColor: '#5fc27e',
+          backgroundColor: 'rgba(95, 194, 126, 0.1)',
+          data: [30000, 60000, 105000, 150000]
+        }
+      ]
+    },
+    currentBreakdown: {
+      labels: ['Hardware', 'Software', 'Implementation', 'Maintenance', 'Personnel'],
+      datasets: [
+        {
+          data: [10000, 50000, 35000, 35000, 85000],
+          backgroundColor: [
+            '#36a2eb',
+            '#ff6384',
+            '#4bc0c0',
+            '#ff9f40',
+            '#9966ff'
+          ]
+        }
+      ]
+    },
+    alternativeBreakdown: {
+      labels: ['Software Subscription', 'Implementation', 'Maintenance', 'Personnel'],
+      datasets: [
+        {
+          data: [75000, 18000, 15000, 42000],
+          backgroundColor: [
+            '#5fc27e',
+            '#4bc0c0',
+            '#ff9f40',
+            '#9966ff'
+          ]
+        }
+      ]
+    },
+    implementationComparison: {
+      labels: ['Infrastructure Setup', 'Software Deployment', 'Configuration', 'Testing', 'Training', 'Total'],
+      datasets: [
+        {
+          label: 'SecureW2 (days)',
+          backgroundColor: '#1173b1',
+          data: [5, 8, 28, 18, 10, 69]
+        },
+        {
+          label: 'Portnox Cloud (days)',
+          backgroundColor: '#5fc27e',
+          data: [0, 5, 10, 8, 5, 28]
+        }
+      ]
+    },
+    featureComparison: {
+      labels: ['Ease of Deployment', 'Scalability', 'Multi-Location Support', 'Legacy Device Support', 'Cloud Integration', 'Total Cost of Ownership'],
+      datasets: [
+        {
+          label: 'SecureW2',
+          backgroundColor: 'rgba(17, 115, 177, 0.5)',
+          data: [4, 3, 3, 2, 4, 3]
+        },
+        {
+          label: 'Portnox Cloud',
+          backgroundColor: 'rgba(95, 194, 126, 0.5)',
+          data: [5, 5, 5, 4, 5, 5]
+        }
+      ]
+    },
+    roi: {
+      labels: ['Year 1', 'Year 2', 'Year 3'],
+      datasets: [
+        {
+          label: 'Cumulative Savings',
+          backgroundColor: '#5fc27e',
+          borderColor: '#4ca368',
+          data: [25000, 65000, 105000]
+        },
+        {
+          type: 'line',
+          label: 'ROI %',
+          backgroundColor: 'rgba(95, 194, 126, 0)',
+          borderColor: '#ff6384',
+          data: [83, 216, 350],
+          yAxisID: 'y1'
+        }
+      ]
+    }
+  }
+};
+
+// Add this to the window object
+window.vendorChartData = vendorChartData;
+
+// Function to update charts for a selected vendor
+function updateChartsForVendor(vendor) {
+  console.log('Updating charts for vendor:', vendor);
+  
+  // Check if vendor data exists
+  if (!vendorChartData[vendor]) {
+    console.error('No chart data available for vendor:', vendor);
+    return;
+  }
+  
+  // Get chart data for the selected vendor
+  const chartData = vendorChartData[vendor];
+  
+  // Update each chart with the vendor-specific data
+  if (window.chartBuilder) {
+    try {
+      // TCO Comparison chart
+      window.chartBuilder.updateChart('tco-comparison-chart', chartData.tcoComparison);
+      
+      // Cumulative Cost chart
+      window.chartBuilder.updateChart('cumulative-cost-chart', chartData.cumulativeCost);
+      
+      // Current Breakdown chart
+      window.chartBuilder.updateChart('current-breakdown-chart', chartData.currentBreakdown);
+      
+      // Alternative Breakdown chart
+      window.chartBuilder.updateChart('alternative-breakdown-chart', chartData.alternativeBreakdown);
+      
+      // Implementation Comparison chart
+      window.chartBuilder.updateChart('implementation-comparison-chart', chartData.implementationComparison);
+      
+      // Feature Comparison chart
+      window.chartBuilder.updateChart('feature-comparison-chart', chartData.featureComparison);
+      
+      // ROI chart
+      window.chartBuilder.updateChart('roi-chart', chartData.roi);
+      
+      console.log('All charts updated successfully for vendor:', vendor);
+    } catch (error) {
+      console.error('Error updating charts:', error);
+    }
+  } else {
+    console.error('ChartBuilder not available. Charts could not be updated.');
+  }
+}
+
+// Export the function
+window.updateChartsForVendor = updateChartsForVendor;
   function setSelectedVendor(vendorId) {
     config.selectedVendor = vendorId;
     
@@ -262,10 +989,6 @@ const NACDesignerApp = (function() {
   }
   
   // Update charts for a specific vendor
-  function updateChartsForVendor(vendorId) {
-    if (typeof ModernCharts === 'undefined') return;
-    
-    console.log(`Updating charts for vendor: ${vendorId}`);
     
     // Sample data - in a real application, this would come from your data service
     const tcoChartData = generateTCOChartData(vendorId);
