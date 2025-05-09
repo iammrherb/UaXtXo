@@ -1,250 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sensitivity Analysis - Portnox Total Cost Analysis</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/enhanced/branding.css">
-  <link rel="stylesheet" href="css/enhanced/visuals.css">
-  <link rel="stylesheet" href="css/enhanced/sensitivity.css">
-  <link rel="icon" type="image/png" href="img/favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Zero Trust NAC Architecture Designer Pro - Sensitivity Analysis">
+    <title>Sensitivity Analysis - Total Cost Analyzer | Zero Trust NAC Architecture Designer Pro</title>
+    
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Core CSS -->
+    
+    <link rel="icon" type="image/png" href="img/favicon.png">
+  <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
-  <div class="app-container">
-    <header class="app-header">
-      <div class="logo">
-        <img src="img/portnox-logo.svg" onerror="this.src='img/portnox-logo.png'" alt="Portnox Logo">
-        <h1>Portnox Total Cost Analysis</h1>
-      </div>
-      <div class="header-actions">
-        <button id="return-to-calculator" class="btn btn-outline btn-sm">
-          <i class="fas fa-arrow-left"></i> Return to Calculator
-        </button>
-        <button id="guided-tour-btn" class="btn btn-outline btn-sm">
-          <i class="fas fa-question-circle"></i> Help
-        </button>
-      </div>
-    </header>
-
-    <div class="calculator-container">
-      <div class="sidebar">
-        <div id="message-container"></div>
-
-        <!-- Parameter configuration card -->
-        <div class="parameter-card">
-          <h3>Sensitivity Parameters</h3>
-          <p>Configure the parameters for sensitivity analysis.</p>
-          
-          <div class="input-group">
-            <label for="param-variable">Variable to Analyze</label>
-            <select id="param-variable" class="form-select">
-              <option value="deviceCount">Device Count</option>
-              <option value="legacyPercentage">Legacy Device Percentage</option>
-              <option value="locationCount">Number of Locations</option>
-              <option value="yearsToProject">Years to Project</option>
-              <option value="hardwareCost">Hardware Cost Multiplier</option>
-              <option value="licensingCost">Licensing Cost Multiplier</option>
-              <option value="maintenanceCost">Maintenance Cost Multiplier</option>
-              <option value="implementationCost">Implementation Cost Multiplier</option>
-              <option value="fteCost">Personnel Cost Multiplier</option>
-              <option value="downtimeCost">Downtime Cost ($/hour)</option>
-            </select>
-          </div>
-          
-          <div class="parameter-description" id="parameter-description">
-            Analyze how changes in the total number of devices affect TCO and relative savings. More devices typically increase hardware and licensing costs for on-premises solutions.
-          </div>
-          
-          <div class="input-group">
-            <label for="param-vendor">Vendor to Analyze</label>
-            <select id="param-vendor" class="form-select">
-              <option value="all">All Vendors</option>
-              <option value="cisco">Cisco ISE</option>
-              <option value="aruba">Aruba ClearPass</option>
-              <option value="forescout">Forescout</option>
-              <option value="nps">Microsoft NPS</option>
-              <option value="fortinac">FortiNAC</option>
-              <option value="securew2">SecureW2</option>
-              <option value="portnox">Portnox Cloud</option>
-            </select>
-          </div>
-          
-          <div class="options-grid">
-            <div class="input-group">
-              <label for="param-min">Minimum Value</label>
-              <input type="number" id="param-min" value="500" step="any">
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <img src="img/portnox-logo.png" alt="Portnox Logo">
+                <h1>Zero Trust NAC Architecture Designer Pro</h1>
             </div>
+            <div class="header-actions">
+                <button id="sensitivity-help-btn" class="btn btn-outline btn-sm">
+                    <i class="fas fa-question-circle"></i> Help
+                </button>
+                <button id="return-to-calculator" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Return to Calculator
+                </button>
+            </div>
+        </header>
+
+        <div class="calculator-container">
+            <div id="message-container"></div>
             
-            <div class="input-group">
-              <label for="param-max">Maximum Value</label>
-              <input type="number" id="param-max" value="2000" step="any">
-            </div>
-            
-            <div class="input-group">
-              <label for="param-steps">Steps</label>
-              <input type="number" id="param-steps" value="10" min="2" max="20">
-            </div>
-          </div>
-          
-          <div class="input-group checkbox-group">
-            <input type="checkbox" id="include-breakeven" checked>
-            <label for="include-breakeven">Calculate breakeven points</label>
-          </div>
-          
-          <div class="input-group checkbox-group">
-            <input type="checkbox" id="compare-to-no-nac">
-            <label for="compare-to-no-nac">Compare to no NAC solution</label>
-          </div>
-          
-          <button id="sensitivity-btn" class="btn btn-primary">
-            <i class="fas fa-chart-line"></i> Run Sensitivity Analysis
-          </button>
-        </div>
-        
-        <!-- Instructions card -->
-        <div class="instructions-card">
-          <h3>How to Use Sensitivity Analysis</h3>
-          <ol>
-            <li>Select the variable you want to analyze</li>
-            <li>Choose which vendor(s) to include in the analysis</li>
-            <li>Specify the range of values to test</li>
-            <li>Run the analysis to see how the variable affects TCO</li>
-            <li>Review charts, tables and breakeven analysis</li>
-            <li>Save scenarios to compare different analyses</li>
-          </ol>
-          <p>Sensitivity analysis helps identify how specific factors impact the total cost of ownership. This is valuable for making informed decisions based on your organization's specific priorities and risk factors.</p>
-        </div>
-        
-        <!-- Scenario management -->
-        <div class="scenarios-card">
-          <h3>Scenario Management</h3>
-          <div class="scenario-controls">
-            <button id="add-scenario-btn" class="btn btn-outline">
-              <i class="fas fa-save"></i> Save Current Scenario
-            </button>
-            <button id="clear-scenarios-btn" class="btn btn-outline">
-              <i class="fas fa-trash"></i> Clear All Scenarios
-            </button>
-          </div>
-          
-          <div class="export-options">
-            <button id="export-sensitivity-csv-btn" class="btn btn-outline">
-              <i class="fas fa-file-csv"></i> Export to CSV
-            </button>
-            <button id="export-sensitivity-pdf-btn" class="btn btn-outline">
-              <i class="fas fa-file-pdf"></i> Export to PDF
-            </button>
-          </div>
-        </div>
-      </div>
+            <div class="sensitivity-container">
+                <div class="sidebar">
+                    <!-- Parameter configuration card -->
+                    <div class="parameter-card">
+                        <h3>Sensitivity Parameters</h3>
+                        <p>Configure the parameters for sensitivity analysis.</p>
+                        
+                        <div class="input-group">
+                            <label for="param-variable">Variable to Analyze</label>
+                            <select id="param-variable" class="form-select">
+                                <option value="deviceCount">Device Count</option>
+                                <option value="legacyPercentage">Legacy Device Percentage</option>
+                                <option value="locationCount">Number of Locations</option>
+                                <option value="yearsToProject">Years to Project</option>
+                                <option value="hardwareCost">Hardware Cost Multiplier</option>
+                                <option value="licensingCost">Licensing Cost Multiplier</option>
+                                <option value="maintenanceCost">Maintenance Cost Multiplier</option>
+                                <option value="implementationCost">Implementation Cost Multiplier</option>
+                                <option value="fteCost">Personnel Cost Multiplier</option>
+                                <option value="downtimeCost">Downtime Cost ($/hour)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="parameter-description" id="parameter-description">
+                            Analyze how changes in the total number of devices affect TCO and relative savings.
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="param-vendor">Vendor to Analyze</label>
+                            <select id="param-vendor" class="form-select">
+                                <option value="all">All Vendors</option>
+                                <option value="cisco">Cisco ISE</option>
+                                <option value="aruba">Aruba ClearPass</option>
+                                <option value="forescout">Forescout</option>
+                                <option value="nps">Microsoft NPS</option>
+                                <option value="fortinac">FortiNAC</option>
+                                <option value="securew2">SecureW2</option>
+                                <option value="portnox">Portnox Cloud</option>
+                            </select>
+                        </div>
+                        
+                        <div class="options-grid">
+                            <div class="input-group">
+                                <label for="param-min">Minimum Value</label>
+                                <input type="number" id="param-min" value="100" step="any">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="param-max">Maximum Value</label>
+                                <input type="number" id="param-max" value="5000" step="any">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="param-steps">Steps</label>
+                                <input type="number" id="param-steps" value="10" min="2" max="20">
+                            </div>
+                        </div>
+                        
+                        <div class="input-group checkbox-group">
+                            <input type="checkbox" id="include-breakeven" checked>
+                            <label for="include-breakeven">Calculate breakeven points</label>
+                        </div>
+                        
+                        <div class="input-group checkbox-group">
+                            <input type="checkbox" id="compare-to-no-nac">
+                            <label for="compare-to-no-nac">Compare to No NAC Scenario</label>
+                        </div>
+                        
+                        <button id="sensitivity-btn" class="btn btn-primary">
+                            <i class="fas fa-chart-line"></i> Run Sensitivity Analysis
+                        </button>
+                    </div>
+                    
+                    <!-- Instructions card -->
+                    <div class="instructions-card">
+                        <h3>How to Use Sensitivity Analysis</h3>
+                        <ol>
+                            <li>Select the variable you want to analyze</li>
+                            <li>Choose which vendor(s) to include in the analysis</li>
+                            <li>Specify the range of values to test</li>
+                            <li>Run the analysis to see how the variable affects TCO</li>
+                        </ol>
+                        <p>Sensitivity analysis helps identify how specific factors impact the total cost of ownership.</p>
+                    </div>
+                    
+                    <!-- Export options -->
+                    <div class="export-card">
+                        <h3>Export Results</h3>
+                        <div class="export-options">
+                            <button id="export-sensitivity-csv-btn" class="btn btn-outline">
+                                <i class="fas fa-file-csv"></i> Export to CSV
+                            </button>
+                            <button id="export-sensitivity-pdf-btn" class="btn btn-outline">
+                                <i class="fas fa-file-pdf"></i> Export to PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-      <div class="results-container">
-        <h2>Sensitivity Analysis Results</h2>
-        
-        <!-- Sensitivity charts -->
-        <div class="sensitivity-charts">
-          <div class="chart-wrapper">
-            <div class="chart-title">TCO Sensitivity Analysis</div>
-            <div class="chart-description">
-              This chart shows how changes in the analyzed variable affect the Total Cost of Ownership for each vendor.
+                <div class="results-container">
+                    <h2>Sensitivity Analysis Results</h2>
+                    
+                    <!-- Sensitivity charts -->
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <h3>TCO Sensitivity Analysis</h3>
+                            <div class="chart-container">
+                                <canvas id="sensitivity-chart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <h3>Savings Impact Analysis</h3>
+                            <div class="chart-container">
+                                <canvas id="savings-impact-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Breakeven analysis -->
+                    <div id="breakeven-container" class="result-card hidden">
+                        <h3>Breakeven Analysis</h3>
+                        <div class="breakeven-grid" id="breakeven-grid">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Data table -->
+                    <div class="result-card">
+                        <h3>Detailed Results Table</h3>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr id="sensitivity-table-header">
+                                        <th scope="col">Parameter Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sensitivity-table-body">
+                                    <!-- Table rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="chart-container">
-              <canvas id="sensitivity-chart"></canvas>
-            </div>
-          </div>
-          
-          <div class="chart-wrapper">
-            <div class="chart-title">Portnox Savings Impact</div>
-            <div class="chart-description">
-              This chart shows how changes in the analyzed variable affect the percentage savings when using Portnox Cloud.
-            </div>
-            <div class="chart-container">
-              <canvas id="savings-impact-chart"></canvas>
-            </div>
-          </div>
         </div>
+
+        <footer class="app-footer">
+            <div class="copyright">
+                &copy; 2025 Portnox | All Rights Reserved
+            </div>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact Us</a>
+            </div>
+        </footer>
         
-        <!-- Breakeven analysis -->
-        <div id="breakeven-container" class="hidden"></div>
-        
-        <!-- Sensitivity insights -->
-        <div id="sensitivity-insights" class="sensitivity-insights hidden"></div>
-        
-        <!-- Scenarios list -->
-        <div id="scenarios-container" class="hidden"></div>
-        
-        <!-- Data table -->
-        <div class="result-card">
-          <h3>Detailed Results Table</h3>
-          <div class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr id="sensitivity-table-header">
-                  <th scope="col">Variable</th>
-                </tr>
-              </thead>
-              <tbody id="sensitivity-table-body">
-                <!-- Table rows will be populated by JavaScript -->
-              </tbody>
-            </table>
-          </div>
+        <!-- Help Modal -->
+        <div id="sensitivity-help-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Sensitivity Analysis - Help</h2>
+                <span class="close-button" id="sensitivity-help-modal-close">&times;</span>
+                <div class="modal-body">
+                    <h3>What is Sensitivity Analysis?</h3>
+                    <p>Sensitivity analysis helps you understand how changes in specific variables affect the Total Cost of Ownership (TCO) of different NAC solutions.</p>
+                    
+                    <h3>How to Use</h3>
+                    <ol>
+                        <li><strong>Select Variable</strong> - Choose which parameter you want to analyze (e.g., Device Count, Years to Project, etc.)</li>
+                        <li><strong>Choose Vendor</strong> - Select a specific vendor to compare against Portnox Cloud or "All Vendors" for a comprehensive comparison</li>
+                        <li><strong>Set Range</strong> - Define the minimum and maximum values for your analysis</li>
+                        <li><strong>Set Steps</strong> - Specify how many data points to calculate within your range</li>
+                        <li><strong>Optional Settings</strong> - Choose whether to calculate breakeven points and compare to a No-NAC scenario</li>
+                        <li><strong>Run Analysis</strong> - Click "Run Sensitivity Analysis" to generate results</li>
+                    </ol>
+                    
+                    <h3>Understanding the Results</h3>
+                    <ul>
+                        <li><strong>TCO Sensitivity Chart</strong> - Shows how TCO changes for each vendor as the parameter varies</li>
+                        <li><strong>Savings Impact Chart</strong> - Displays how the percentage savings with Portnox changes across the parameter range</li>
+                        <li><strong>Breakeven Analysis</strong> - Identifies the specific parameter values where different solutions become more cost-effective than others</li>
+                        <li><strong>Detailed Table</strong> - Provides the raw data for all calculations</li>
+                    </ul>
+                    
+                    <h3>Tips for Effective Analysis</h3>
+                    <ul>
+                        <li>Use sensitivity analysis to identify which parameters have the biggest impact on TCO</li>
+                        <li>Focus on parameters that are most uncertain or variable in your environment</li>
+                        <li>Pay attention to breakeven points to understand where cost advantages shift between solutions</li>
+                        <li>Export results for inclusion in business cases and budget planning</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button id="sensitivity-help-modal-close-btn" class="btn btn-primary">Close</button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-
-    <footer class="app-footer">
-      <div class="footer-info">
-        &copy; 2025 Portnox. All rights reserved.
-      </div>
-      <div class="footer-links">
-        <a href="#" target="_blank">Privacy Policy</a>
-        <a href="#" target="_blank">Terms of Service</a>
-        <a href="#" target="_blank">Contact Us</a>
-      </div>
-    </footer>
-  </div>
-
-  <!-- JavaScript Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js"></script>
-
-  <!-- Application JavaScript -->
-  <script src="img/portnox-logo-base64.js"></script>
-  <script src="js/vendors/vendor-data.js"></script>
-  <script src="js/utils/helpers.js"></script>
-  <script src="js/managers/dom-cache.js"></script>
-  <script src="js/managers/validation-manager.js"></script>
-  <script src="js/managers/loading-manager.js"></script>
-  <script src="js/managers/notification-manager.js"></script>
-  <script src="js/managers/tab-manager.js"></script>
-  <script src="js/charts/chart-builder.js"></script>
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
+    <!-- Core JavaScript -->
+    
+    <!-- Managers -->
+    
+    <!-- Features -->
+    
+    <!-- Charts -->
+    
+    <!-- Main Sensitivity Script -->
+  <script src="js/core/helpers.js"></script>
+  <script src="js/core/dom.js"></script>
+  <script src="js/core/validation.js"></script>
+  <script src="js/managers/loading.js"></script>
+  <script src="js/managers/notification.js"></script>
+  <script src="js/managers/tab.js"></script>
+  <script src="js/data/vendors.js"></script>
+  <script src="js/components/charts.js"></script>
   <script src="js/components/calculator.js"></script>
-  <script src="js/components/ui-controller.js"></script>
-  <script src="js/components/enhanced-sensitivity.js"></script>
+  <script src="js/components/sensitivity.js"></script>
+  <script src="js/components/ui.js"></script>
   <script src="js/sensitivity.js"></script>
-  
-  <script>
-    // Initialize page
-    document.addEventListener('DOMContentLoaded', function() {
-      // Return to calculator button
-      document.getElementById('return-to-calculator').addEventListener('click', function() {
-        window.location.href = 'index.html';
-      });
-      
-      // Initialize sensitivity analysis
-      if (window.enhancedSensitivityAnalyzer) {
-        // Update range defaults for initial variable
-        window.enhancedSensitivityAnalyzer.updateRangeDefaults('deviceCount');
-      }
-    });
-  </script>
 </body>
 </html>

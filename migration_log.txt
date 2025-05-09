@@ -1,0 +1,4 @@
+NAC Architecture Designer Pro Migration Log - Fri May  9 11:18:26 AM CDT 2025
+==================================================
+[INFO] Starting migration process...
+[ERROR] Source directory does not exist: ./current
