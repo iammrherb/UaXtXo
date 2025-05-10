@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Enterprise TCO Analyzer - Network Access Control Total Cost of Ownership Analysis">
-    <title>Enterprise TCO Analyzer | Network Access Control Analysis Platform</title>
+    <meta name="description" content="Total Cost Analyzer - Enterprise NAC TCO Comparison Platform">
+    <title>Total Cost Analyzer | Network Access Control TCO Analysis</title>
     
     <!-- CSS Libraries -->
     <link rel="stylesheet" href="libs/css/tailwind.min.css">
     <link rel="stylesheet" href="libs/css/all.min.css">
+    <link rel="stylesheet" href="libs/css/animate.min.css">
+    <link rel="stylesheet" href="libs/css/aos.css">
+    
+    <!-- Core CSS -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/professional.css">
+    <link rel="stylesheet" href="css/wizard.css">
     <link rel="stylesheet" href="css/charts.css">
     
     <link rel="icon" type="image/png" href="img/favicon.png">
@@ -24,14 +29,14 @@
                 <div class="logo-section">
                     <img src="img/portnox-logo.png" alt="Portnox" class="company-logo">
                     <div class="app-title">
-                        <h1>Enterprise TCO Analyzer</h1>
-                        <p class="subtitle">Network Access Control Investment Analysis Platform</p>
+                        <h1>Total Cost Analyzer</h1>
+                        <p class="subtitle">Enterprise NAC TCO Comparison Platform</p>
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button id="configuration-btn" class="btn btn-primary">
-                        <i class="fas fa-cog"></i>
-                        <span>Configuration</span>
+                    <button id="wizard-btn" class="btn btn-primary">
+                        <i class="fas fa-magic"></i>
+                        <span>Configuration Wizard</span>
                     </button>
                     <button id="export-report" class="btn btn-outline">
                         <i class="fas fa-file-export"></i>
@@ -39,696 +44,415 @@
                     </button>
                     <button id="help-btn" class="btn btn-outline">
                         <i class="fas fa-info-circle"></i>
-                        <span>Documentation</span>
+                        <span>Help</span>
                     </button>
                 </div>
             </div>
         </header>
         
-        <!-- Executive Dashboard -->
-        <main class="main-content">
-            <!-- Executive Summary Section -->
-            <section class="executive-summary" id="executive-summary">
-                <div class="section-header">
-                    <h2>Executive Summary</h2>
-                    <div class="audience-badge">For: C-Suite, Board Members</div>
+        <!-- Wizard Container (Initially Hidden) -->
+        <div id="wizard-container" class="wizard-container hidden">
+            <!-- Progress Bar -->
+            <div class="wizard-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="wizard-progress-fill"></div>
                 </div>
-                
-                <div class="kpi-grid">
-                    <div class="kpi-card highlight">
-                        <div class="kpi-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="kpi-content">
-                            <h3>Total Cost Reduction</h3>
-                            <div class="kpi-value" id="total-cost-reduction">35%</div>
-                            <div class="kpi-detail">3-Year TCO Savings: $425,000</div>
-                            <div class="kpi-trend positive">
-                                <i class="fas fa-arrow-up"></i> Portnox Advantage
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="kpi-card">
-                        <div class="kpi-icon">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <div class="kpi-content">
-                            <h3>Time to Value</h3>
-                            <div class="kpi-value" id="time-to-value">14 days</div>
-                            <div class="kpi-detail">vs. 60-90 days industry average</div>
-                            <div class="kpi-trend positive">
-                                <i class="fas fa-arrow-up"></i> 76% Faster
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="kpi-card">
-                        <div class="kpi-icon">
-                            <i class="fas fa-shield-check"></i>
-                        </div>
-                        <div class="kpi-content">
-                            <h3>Security Enhancement</h3>
-                            <div class="kpi-value" id="security-improvement">62%</div>
-                            <div class="kpi-detail">Risk reduction with Zero Trust</div>
-                            <div class="kpi-trend positive">
-                                <i class="fas fa-arrow-up"></i> Advanced Protection
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="kpi-card">
-                        <div class="kpi-icon">
-                            <i class="fas fa-chart-pie"></i>
-                        </div>
-                        <div class="kpi-content">
-                            <h3>ROI Timeline</h3>
-                            <div class="kpi-value" id="roi-timeline">18 months</div>
-                            <div class="kpi-detail">Payback period</div>
-                            <div class="kpi-trend positive">
-                                <i class="fas fa-arrow-up"></i> 201% 3-Year ROI
-                            </div>
-                        </div>
-                    </div>
+                <div class="progress-steps" id="progress-steps">
+                    <!-- Steps will be populated dynamically -->
                 </div>
-                
-                <div class="executive-insights">
-                    <h3>Strategic Business Impact</h3>
-                    <div class="insights-grid">
-                        <div class="insight-card">
-                            <i class="fas fa-dollar-sign"></i>
-                            <h4>Financial Impact</h4>
-                            <p>Portnox Cloud delivers a 35% reduction in total cost of ownership compared to traditional NAC solutions, with immediate operational savings and no capital expenditure requirements.</p>
-                        </div>
-                        <div class="insight-card">
-                            <i class="fas fa-rocket"></i>
-                            <h4>Competitive Advantage</h4>
-                            <p>Cloud-native architecture enables 76% faster deployment, allowing organizations to achieve security compliance and operational efficiency ahead of competitors.</p>
-                        </div>
-                        <div class="insight-card">
-                            <i class="fas fa-users"></i>
-                            <h4>Resource Optimization</h4>
-                            <p>Automated management reduces IT personnel requirements by 90%, allowing strategic reallocation of technical resources to business-critical initiatives.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            </div>
             
-            <!-- Analysis Navigation -->
-            <nav class="analysis-nav">
-                <button class="nav-tab active" data-tab="financial">
-                    <i class="fas fa-coins"></i> Financial Analysis
-                </button>
-                <button class="nav-tab" data-tab="technical">
-                    <i class="fas fa-server"></i> Technical Assessment
-                </button>
-                <button class="nav-tab" data-tab="security">
-                    <i class="fas fa-shield-alt"></i> Security & Risk
-                </button>
-                <button class="nav-tab" data-tab="implementation">
-                    <i class="fas fa-project-diagram"></i> Implementation
-                </button>
-                <button class="nav-tab" data-tab="vendor">
-                    <i class="fas fa-balance-scale"></i> Vendor Comparison
-                </button>
-                <button class="nav-tab" data-tab="compliance">
-                    <i class="fas fa-clipboard-check"></i> Compliance Impact
-                </button>
-            </nav>
-            
-            <!-- Analysis Sections -->
-            <div class="analysis-content">
-                <!-- Financial Analysis Section -->
-                <section class="analysis-section active" id="financial-analysis">
-                    <div class="section-header">
-                        <h2>Financial Analysis</h2>
-                        <div class="audience-badge">For: CFO, Finance Teams, Procurement</div>
-                    </div>
-                    
-                    <div class="financial-grid">
-                        <div class="chart-container large">
-                            <h3>3-Year Total Cost of Ownership Comparison</h3>
-                            <canvas id="tco-comparison-chart"></canvas>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <h3>Cost Structure Analysis</h3>
-                            <canvas id="cost-breakdown-chart"></canvas>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <h3>Cash Flow Impact</h3>
-                            <canvas id="cash-flow-chart"></canvas>
-                        </div>
-                        
-                        <div class="chart-container full-width">
-                            <h3>Cumulative Cost Over Time</h3>
-                            <canvas id="cumulative-cost-chart"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="financial-tables">
-                        <h3>Detailed Cost Breakdown</h3>
-                        <table class="data-table" id="cost-breakdown-table">
-                            <thead>
-                                <tr>
-                                    <th>Cost Category</th>
-                                    <th>Current Solution</th>
-                                    <th>Portnox Cloud</th>
-                                    <th>Savings</th>
-                                    <th>% Reduction</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="financial-metrics">
-                        <div class="metric-grid">
-                            <div class="metric-card">
-                                <h4>Capital Expenditure</h4>
-                                <div class="metric-comparison">
-                                    <div class="current">
-                                        <span class="label">Current</span>
-                                        <span class="value">$150,000</span>
-                                    </div>
-                                    <div class="portnox">
-                                        <span class="label">Portnox</span>
-                                        <span class="value">$0</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="metric-card">
-                                <h4>Operating Expenditure</h4>
-                                <div class="metric-comparison">
-                                    <div class="current">
-                                        <span class="label">Current</span>
-                                        <span class="value">$250,000/year</span>
-                                    </div>
-                                    <div class="portnox">
-                                        <span class="label">Portnox</span>
-                                        <span class="value">$96,000/year</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="metric-card">
-                                <h4>ROI Analysis</h4>
-                                <div class="roi-metrics">
-                                    <div class="roi-item">
-                                        <span>Payback Period:</span>
-                                        <strong>18 months</strong>
-                                    </div>
-                                    <div class="roi-item">
-                                        <span>NPV (3-year):</span>
-                                        <strong>$385,000</strong>
-                                    </div>
-                                    <div class="roi-item">
-                                        <span>IRR:</span>
-                                        <strong>42%</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Technical Assessment Section -->
-                <section class="analysis-section" id="technical-analysis">
-                    <div class="section-header">
-                        <h2>Technical Assessment</h2>
-                        <div class="audience-badge">For: CTO, IT Teams, Architecture</div>
-                    </div>
-                    
-                    <div class="technical-grid">
-                        <div class="comparison-matrix">
-                            <h3>Feature Comparison Matrix</h3>
-                            <table class="feature-table">
-                                <thead>
-                                    <tr>
-                                        <th>Technical Capability</th>
-                                        <th>Current Solution</th>
-                                        <th>Portnox Cloud</th>
-                                        <th>Advantage</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Cloud-Native Architecture</td>
-                                        <td class="status-no">Limited</td>
-                                        <td class="status-yes">Full</td>
-                                        <td class="advantage">Portnox</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Zero Trust Support</td>
-                                        <td class="status-partial">Partial</td>
-                                        <td class="status-yes">Native</td>
-                                        <td class="advantage">Portnox</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Deployment Time</td>
-                                        <td>60-90 days</td>
-                                        <td>14 days</td>
-                                        <td class="advantage">Portnox</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Scalability</td>
-                                        <td>Hardware Limited</td>
-                                        <td>Unlimited</td>
-                                        <td class="advantage">Portnox</td>
-                                    </tr>
-                                    <tr>
-                                        <td>API Integration</td>
-                                        <td class="status-partial">Basic</td>
-                                        <td class="status-yes">RESTful</td>
-                                        <td class="advantage">Portnox</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Maintenance Requirements</td>
-                                        <td>High</td>
-                                        <td>Minimal</td>
-                                        <td class="advantage">Portnox</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <h3>Technical Capability Score</h3>
-                            <canvas id="capability-radar-chart"></canvas>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <h3>Implementation Timeline</h3>
-                            <canvas id="implementation-timeline-chart"></canvas>
-                        </div>
-                        
-                        <div class="architecture-comparison">
-                            <h3>Architecture Comparison</h3>
-                            <div class="architecture-grid">
-                                <div class="architecture-card">
-                                    <h4>Current Architecture</h4>
-                                    <ul class="architecture-list cons">
-                                        <li>On-premises hardware dependencies</li>
-                                        <li>Complex high-availability setup</li>
-                                        <li>Manual scaling processes</li>
-                                        <li>Limited cloud integration</li>
-                                        <li>Regular maintenance windows</li>
-                                    </ul>
-                                </div>
-                                <div class="architecture-card">
-                                    <h4>Portnox Cloud Architecture</h4>
-                                    <ul class="architecture-list pros">
-                                        <li>100% cloud-native SaaS</li>
-                                        <li>Built-in high availability</li>
-                                        <li>Auto-scaling capabilities</li>
-                                        <li>Native cloud integration</li>
-                                        <li>Zero maintenance windows</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Security & Risk Analysis Section -->
-                <section class="analysis-section" id="security-analysis">
-                    <div class="section-header">
-                        <h2>Security & Risk Analysis</h2>
-                        <div class="audience-badge">For: CISO, Security Teams, Risk Management</div>
-                    </div>
-                    
-                    <div class="security-grid">
-                        <div class="chart-container">
-                            <h3>Security Posture Improvement</h3>
-                            <canvas id="security-posture-chart"></canvas>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <h3>Risk Reduction Analysis</h3>
-                            <canvas id="risk-reduction-chart"></canvas>
-                        </div>
-                        
-                        <div class="security-metrics">
-                            <h3>Security KPIs</h3>
-                            <div class="kpi-list">
-                                <div class="security-kpi">
-                                    <div class="kpi-label">Attack Surface Reduction</div>
-                                    <div class="kpi-value">68%</div>
-                                    <div class="kpi-bar">
-                                        <div class="bar-fill" style="width: 68%"></div>
-                                    </div>
-                                </div>
-                                <div class="security-kpi">
-                                    <div class="kpi-label">Compliance Achievement</div>
-                                    <div class="kpi-value">95%</div>
-                                    <div class="kpi-bar">
-                                        <div class="bar-fill" style="width: 95%"></div>
-                                    </div>
-                                </div>
-                                <div class="security-kpi">
-                                    <div class="kpi-label">Incident Response Time</div>
-                                    <div class="kpi-value">87% Faster</div>
-                                    <div class="kpi-bar">
-                                        <div class="bar-fill" style="width: 87%"></div>
-                                    </div>
-                                </div>
-                                <div class="security-kpi">
-                                    <div class="kpi-label">Zero Trust Maturity</div>
-                                    <div class="kpi-value">Level 4</div>
-                                    <div class="kpi-bar">
-                                        <div class="bar-fill" style="width: 80%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="risk-assessment">
-                            <h3>Risk Assessment Matrix</h3>
-                            <table class="risk-table">
-                                <thead>
-                                    <tr>
-                                        <th>Risk Category</th>
-                                        <th>Current Risk Level</th>
-                                        <th>With Portnox</th>
-                                        <th>Mitigation</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Unauthorized Access</td>
-                                        <td class="risk-high">High</td>
-                                        <td class="risk-low">Low</td>
-                                        <td>Zero Trust, MFA</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Data Breaches</td>
-                                        <td class="risk-high">High</td>
-                                        <td class="risk-low">Low</td>
-                                        <td>Microsegmentation</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Compliance Violations</td>
-                                        <td class="risk-medium">Medium</td>
-                                        <td class="risk-low">Low</td>
-                                        <td>Automated Controls</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Insider Threats</td>
-                                        <td class="risk-medium">Medium</td>
-                                        <td class="risk-low">Low</td>
-                                        <td>Continuous Monitoring</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Implementation Plan Section -->
-                <section class="analysis-section" id="implementation-analysis">
-                    <div class="section-header">
-                        <h2>Implementation & Migration Plan</h2>
-                        <div class="audience-badge">For: Project Managers, Implementation Teams</div>
-                    </div>
-                    
-                    <div class="implementation-grid">
-                        <div class="chart-container large">
-                            <h3>Implementation Timeline Comparison</h3>
-                            <canvas id="implementation-gantt-chart"></canvas>
-                        </div>
-                        
-                        <div class="resource-comparison">
-                            <h3>Resource Requirements</h3>
-                            <div class="resource-grid">
-                                <div class="resource-card">
-                                    <h4>Current Solution</h4>
-                                    <ul class="resource-list">
-                                        <li><span class="resource-type">Personnel:</span> 3-5 FTEs</li>
-                                        <li><span class="resource-type">Duration:</span> 60-90 days</li>
-                                        <li><span class="resource-type">Training:</span> 2 weeks</li>
-                                        <li><span class="resource-type">Hardware:</span> Required</li>
-                                        <li><span class="resource-type">Downtime:</span> 8-16 hours</li>
-                                    </ul>
-                                </div>
-                                <div class="resource-card portnox">
-                                    <h4>Portnox Cloud</h4>
-                                    <ul class="resource-list">
-                                        <li><span class="resource-type">Personnel:</span> 0.5-1 FTE</li>
-                                        <li><span class="resource-type">Duration:</span> 14 days</li>
-                                        <li><span class="resource-type">Training:</span> 2 days</li>
-                                        <li><span class="resource-type">Hardware:</span> None</li>
-                                        <li><span class="resource-type">Downtime:</span> Zero</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="migration-plan">
-                            <h3>Migration Roadmap</h3>
-                            <div class="roadmap-timeline">
-                                <div class="roadmap-phase">
-                                    <div class="phase-header">
-                                        <span class="phase-number">1</span>
-                                        <h4>Planning & Assessment</h4>
-                                        <span class="phase-duration">3 days</span>
-                                    </div>
-                                    <ul class="phase-tasks">
-                                        <li>Environment assessment</li>
-                                        <li>Requirements gathering</li>
-                                        <li>Stakeholder alignment</li>
-                                    </ul>
-                                </div>
-                                <div class="roadmap-phase">
-                                    <div class="phase-header">
-                                        <span class="phase-number">2</span>
-                                        <h4>Configuration</h4>
-                                        <span class="phase-duration">5 days</span>
-                                    </div>
-                                    <ul class="phase-tasks">
-                                        <li>Cloud tenant setup</li>
-                                        <li>Policy configuration</li>
-                                        <li>Integration setup</li>
-                                    </ul>
-                                </div>
-                                <div class="roadmap-phase">
-                                    <div class="phase-header">
-                                        <span class="phase-number">3</span>
-                                        <h4>Pilot Deployment</h4>
-                                        <span class="phase-duration">3 days</span>
-                                    </div>
-                                    <ul class="phase-tasks">
-                                        <li>Test group deployment</li>
-                                        <li>Validation testing</li>
-                                        <li>Performance monitoring</li>
-                                    </ul>
-                                </div>
-                                <div class="roadmap-phase">
-                                    <div class="phase-header">
-                                        <span class="phase-number">4</span>
-                                        <h4>Full Rollout</h4>
-                                        <span class="phase-duration">3 days</span>
-                                    </div>
-                                    <ul class="phase-tasks">
-                                        <li>Phased deployment</li>
-                                        <li>User onboarding</li>
-                                        <li>Monitoring & support</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Vendor Comparison Section -->
-                <section class="analysis-section" id="vendor-analysis">
-                    <div class="section-header">
-                        <h2>Comprehensive Vendor Comparison</h2>
-                        <div class="audience-badge">For: Procurement, Technical Evaluation Teams</div>
+            <!-- Wizard Steps -->
+            <div class="wizard-content">
+                <!-- Step 1: NAC Vendor Selection -->
+                <div class="wizard-step active" id="step-1" data-step="1">
+                    <div class="step-header">
+                        <h2>Select Your Current NAC Solution</h2>
+                        <p>Choose your existing Network Access Control vendor or select "No NAC" if you don't have a solution in place</p>
                     </div>
                     
                     <div class="vendor-grid">
-                        <div class="chart-container large">
-                            <h3>Vendor Capability Assessment</h3>
-                            <canvas id="vendor-comparison-radar"></canvas>
+                        <div class="vendor-card" data-vendor="cisco">
+                            <div class="vendor-logo">
+                                <img src="img/vendors/cisco-logo.png" alt="Cisco ISE" onerror="this.src='img/vendors/cisco-logo.svg'">
+                            </div>
+                            <div class="vendor-info">
+                                <h3>Cisco ISE</h3>
+                                <p>Enterprise-grade NAC solution</p>
+                                <div class="vendor-details">
+                                    <span class="detail-item"><i class="fas fa-server"></i> On-premises</span>
+                                    <span class="detail-item"><i class="fas fa-dollar-sign"></i> High cost</span>
+                                </div>
+                            </div>
+                            <div class="vendor-badge">Market Leader</div>
                         </div>
                         
-                        <div class="vendor-scorecard">
-                            <h3>Vendor Scorecard</h3>
-                            <table class="scorecard-table">
-                                <thead>
-                                    <tr>
-                                        <th>Evaluation Criteria</th>
-                                        <th>Weight</th>
-                                        <th>Current Vendor</th>
-                                        <th>Portnox</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Total Cost of Ownership</td>
-                                        <td>25%</td>
-                                        <td class="score">6/10</td>
-                                        <td class="score highlight">9/10</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Technical Capabilities</td>
-                                        <td>20%</td>
-                                        <td class="score">7/10</td>
-                                        <td class="score highlight">9/10</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Security Features</td>
-                                        <td>20%</td>
-                                        <td class="score">7/10</td>
-                                        <td class="score highlight">10/10</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Implementation Speed</td>
-                                        <td>15%</td>
-                                        <td class="score">5/10</td>
-                                        <td class="score highlight">10/10</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Scalability</td>
-                                        <td>10%</td>
-                                        <td class="score">6/10</td>
-                                        <td class="score highlight">10/10</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Support & Service</td>
-                                        <td>10%</td>
-                                        <td class="score">7/10</td>
-                                        <td class="score highlight">9/10</td>
-                                    </tr>
-                                    <tr class="total-row">
-                                        <td>Weighted Total</td>
-                                        <td>100%</td>
-                                        <td class="score total">6.5/10</td>
-                                        <td class="score total highlight">9.4/10</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="vendor-card" data-vendor="aruba">
+                            <div class="vendor-logo">
+                                <img src="img/vendors/aruba-logo.png" alt="Aruba ClearPass" onerror="this.src='img/vendors/aruba-logo.svg'">
+                            </div>
+                            <div class="vendor-info">
+                                <h3>Aruba ClearPass</h3>
+                                <p>Policy management platform</p>
+                                <div class="vendor-details">
+                                    <span class="detail-item"><i class="fas fa-server"></i> On-premises</span>
+                                    <span class="detail-item"><i class="fas fa-dollar-sign"></i> Medium cost</span>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="market-analysis">
-                            <h3>Market Position Analysis</h3>
-                            <div class="market-metrics">
-                                <div class="market-metric">
-                                    <h4>Gartner Magic Quadrant</h4>
-                                    <p>Portnox recognized as a Visionary for cloud-native NAC solutions</p>
+                        <div class="vendor-card" data-vendor="forescout">
+                            <div class="vendor-logo">
+                                <img src="img/vendors/forescout-logo.png" alt="Forescout" onerror="this.src='img/vendors/forescout-logo.svg'">
+                            </div>
+                            <div class="vendor-info">
+                                <h3>Forescout</h3>
+                                <p>Agentless device visibility</p>
+                                <div class="vendor-details">
+                                    <span class="detail-item"><i class="fas fa-server"></i> On-premises</span>
+                                    <span class="detail-item"><i class="fas fa-dollar-sign"></i> Medium cost</span>
                                 </div>
-                                <div class="market-metric">
-                                    <h4>Customer Satisfaction</h4>
-                                    <p>98% customer satisfaction rate with 4.8/5 average rating</p>
+                            </div>
+                        </div>
+                        
+                        <div class="vendor-card" data-vendor="fortinac">
+                            <div class="vendor-logo">
+                                <img src="img/vendors/fortinac-logo.png" alt="FortiNAC" onerror="this.src='img/vendors/fortinac-logo.svg'">
+                            </div>
+                            <div class="vendor-info">
+                                <h3>FortiNAC</h3>
+                                <p>Integrated security fabric</p>
+                                <div class="vendor-details">
+                                    <span class="detail-item"><i class="fas fa-server"></i> On-premises</span>
+                                    <span class="detail-item"><i class="fas fa-dollar-sign"></i> Medium cost</span>
                                 </div>
-                                <div class="market-metric">
-                                    <h4>Innovation Index</h4>
-                                    <p>Leading innovation in Zero Trust and cloud-native architecture</p>
+                            </div>
+                        </div>
+                        
+                        <div class="vendor-card" data-vendor="nps">
+                            <div class="vendor-logo">
+                                <img src="img/vendors/microsoft-logo.png" alt="Microsoft NPS" onerror="this.src='img/vendors/microsoft-logo.svg'">
+                            </div>
+                            <div class="vendor-info">
+                                <h3>Microsoft NPS</h3>
+                                <p>Windows Server NAC</p>
+                                <div class="vendor-details">
+                                    <span class="detail-item"><i class="fas fa-server"></i> On-premises</span>
+                                    <span class="detail-item"><i class="fas fa-dollar-sign"></i> Low cost</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="vendor-card" data-vendor="securew2">
+                            <div class="vendor-logo">
+                                <img src="img/vendors/securew2-logo.png" alt="SecureW2" onerror="this.src='img/vendors/securew2-logo.svg'">
+                            </div>
+                            <div class="vendor-info">
+                                <h3>SecureW2</h3>
+                                <p>Cloud RADIUS solution</p>
+                                <div class="vendor-details">
+                                    <span class="detail-item"><i class="fas fa-cloud"></i> Cloud-based</span>
+                                    <span class="detail-item"><i class="fas fa-dollar-sign"></i> Low cost</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="vendor-card no-nac" data-vendor="none">
+                            <div class="vendor-logo">
+                                <i class="fas fa-shield-virus fa-3x"></i>
+                            </div>
+                            <div class="vendor-info">
+                                <h3>No NAC Solution</h3>
+                                <p>Currently unprotected</p>
+                                <div class="vendor-details">
+                                    <span class="detail-item"><i class="fas fa-exclamation-triangle"></i> High risk</span>
+                                    <span class="detail-item"><i class="fas fa-times-circle"></i> No control</span>
+                                </div>
+                            </div>
+                            <div class="vendor-badge warning">At Risk</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Organization Details -->
+                <div class="wizard-step" id="step-2" data-step="2">
+                    <div class="step-header">
+                        <h2>Organization Configuration</h2>
+                        <p>Provide details about your organization for accurate analysis</p>
+                    </div>
+                    
+                    <div class="configuration-grid">
+                        <div class="config-section">
+                            <h3><i class="fas fa-building"></i> Organization Profile</h3>
+                            <div class="form-group">
+                                <label for="org-size">Organization Size</label>
+                                <select id="org-size" class="form-control">
+                                    <option value="small">Small (< 1,000 devices)</option>
+                                    <option value="medium" selected>Medium (1,000-5,000 devices)</option>
+                                    <option value="large">Large (5,000-10,000 devices)</option>
+                                    <option value="enterprise">Enterprise (10,000+ devices)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="device-count">Number of Devices</label>
+                                <input type="number" id="device-count" class="form-control" value="2500" min="100" max="100000">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="locations">Number of Locations</label>
+                                <input type="number" id="locations" class="form-control" value="5" min="1" max="1000">
+                            </div>
+                        </div>
+                        
+                        <div class="config-section">
+                            <h3><i class="fas fa-industry"></i> Industry & Compliance</h3>
+                            <div class="form-group">
+                                <label for="industry">Industry</label>
+                                <select id="industry" class="form-control">
+                                    <option value="technology" selected>Technology</option>
+                                    <option value="healthcare">Healthcare</option>
+                                    <option value="financial">Financial Services</option>
+                                    <option value="manufacturing">Manufacturing</option>
+                                    <option value="retail">Retail</option>
+                                    <option value="education">Education</option>
+                                    <option value="government">Government</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Compliance Requirements</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="ISO27001" checked>
+                                        <span>ISO 27001</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="SOC2" checked>
+                                        <span>SOC 2</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="HIPAA">
+                                        <span>HIPAA</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="PCI">
+                                        <span>PCI DSS</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="GDPR">
+                                        <span>GDPR</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="config-section">
+                            <h3><i class="fas fa-calendar"></i> Analysis Parameters</h3>
+                            <div class="form-group">
+                                <label for="analysis-period">Analysis Period</label>
+                                <select id="analysis-period" class="form-control">
+                                    <option value="1">1 Year</option>
+                                    <option value="3" selected>3 Years</option>
+                                    <option value="5">5 Years</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="implementation-timeline">Implementation Timeline</label>
+                                <select id="implementation-timeline" class="form-control">
+                                    <option value="normal" selected>Normal (3-6 months)</option>
+                                    <option value="accelerated">Accelerated (1-3 months)</option>
+                                    <option value="phased">Phased (6-12 months)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Review & Calculate -->
+                <div class="wizard-step" id="step-3" data-step="3">
+                    <div class="step-header">
+                        <h2>Review Configuration</h2>
+                        <p>Confirm your selections and generate the TCO analysis</p>
+                    </div>
+                    
+                    <div class="review-grid">
+                        <div class="review-section">
+                            <h3><i class="fas fa-server"></i> Current NAC Solution</h3>
+                            <div class="review-content" id="review-vendor">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                        
+                        <div class="review-section">
+                            <h3><i class="fas fa-building"></i> Organization Details</h3>
+                            <div class="review-content" id="review-organization">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                        
+                        <div class="review-section">
+                            <h3><i class="fas fa-shield-alt"></i> Compliance Requirements</h3>
+                            <div class="review-content" id="review-compliance">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="review-actions">
+                        <button id="calculate-btn" class="btn btn-primary btn-large">
+                            <i class="fas fa-calculator"></i> Generate TCO Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Wizard Navigation -->
+            <div class="wizard-navigation">
+                <button id="prev-btn" class="btn btn-outline" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <button id="next-btn" class="btn btn-primary">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Results Container (Initially Hidden) -->
+        <div id="results-container" class="results-container hidden">
+            <!-- Executive Dashboard -->
+            <main class="main-content">
+                <!-- Executive Summary Section -->
+                <section class="executive-summary" id="executive-summary">
+                    <div class="section-header">
+                        <h2>Executive Summary</h2>
+                        <div class="audience-badge">For: C-Suite, Board Members</div>
+                    </div>
+                    
+                    <div class="kpi-grid">
+                        <div class="kpi-card highlight">
+                            <div class="kpi-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3>Total Cost Reduction</h3>
+                                <div class="kpi-value" id="total-cost-reduction">35%</div>
+                                <div class="kpi-detail">3-Year TCO Savings: $425,000</div>
+                                <div class="kpi-trend positive">
+                                    <i class="fas fa-arrow-up"></i> Portnox Advantage
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card">
+                            <div class="kpi-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3>Time to Value</h3>
+                                <div class="kpi-value" id="time-to-value">14 days</div>
+                                <div class="kpi-detail">vs. 60-90 days industry average</div>
+                                <div class="kpi-trend positive">
+                                    <i class="fas fa-arrow-up"></i> 76% Faster
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card">
+                            <div class="kpi-icon">
+                                <i class="fas fa-shield-check"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3>Security Enhancement</h3>
+                                <div class="kpi-value" id="security-improvement">62%</div>
+                                <div class="kpi-detail">Risk reduction with Zero Trust</div>
+                                <div class="kpi-trend positive">
+                                    <i class="fas fa-arrow-up"></i> Advanced Protection
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card">
+                            <div class="kpi-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3>ROI Timeline</h3>
+                                <div class="kpi-value" id="roi-timeline">18 months</div>
+                                <div class="kpi-detail">Payback period</div>
+                                <div class="kpi-trend positive">
+                                    <i class="fas fa-arrow-up"></i> 201% 3-Year ROI
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
                 
-                <!-- Compliance Impact Section -->
-                <section class="analysis-section" id="compliance-analysis">
-                    <div class="section-header">
-                        <h2>Compliance & Regulatory Impact</h2>
-                        <div class="audience-badge">For: Compliance Officers, Legal Teams, Auditors</div>
-                    </div>
-                    
-                    <div class="compliance-grid">
-                        <div class="compliance-matrix">
-                            <h3>Compliance Requirements Coverage</h3>
-                            <table class="compliance-table">
-                                <thead>
-                                    <tr>
-                                        <th>Framework</th>
-                                        <th>Current Coverage</th>
-                                        <th>Portnox Coverage</th>
-                                        <th>Gap Closure</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>ISO 27001</td>
-                                        <td>65%</td>
-                                        <td>95%</td>
-                                        <td class="positive">+30%</td>
-                                    </tr>
-                                    <tr>
-                                        <td>NIST Cybersecurity</td>
-                                        <td>70%</td>
-                                        <td>98%</td>
-                                        <td class="positive">+28%</td>
-                                    </tr>
-                                    <tr>
-                                        <td>PCI DSS</td>
-                                        <td>60%</td>
-                                        <td>92%</td>
-                                        <td class="positive">+32%</td>
-                                    </tr>
-                                    <tr>
-                                        <td>HIPAA</td>
-                                        <td>68%</td>
-                                        <td>96%</td>
-                                        <td class="positive">+28%</td>
-                                    </tr>
-                                    <tr>
-                                        <td>GDPR</td>
-                                        <td>72%</td>
-                                        <td>94%</td>
-                                        <td class="positive">+22%</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                <!-- Analysis Navigation -->
+                <nav class="analysis-nav">
+                    <button class="nav-tab active" data-tab="financial">
+                        <i class="fas fa-coins"></i> Financial Analysis
+                    </button>
+                    <button class="nav-tab" data-tab="technical">
+                        <i class="fas fa-server"></i> Technical Assessment
+                    </button>
+                    <button class="nav-tab" data-tab="security">
+                        <i class="fas fa-shield-alt"></i> Security & Risk
+                    </button>
+                    <button class="nav-tab" data-tab="implementation">
+                        <i class="fas fa-project-diagram"></i> Implementation
+                    </button>
+                    <button class="nav-tab" data-tab="vendor">
+                        <i class="fas fa-balance-scale"></i> Vendor Comparison
+                    </button>
+                    <button class="nav-tab" data-tab="compliance">
+                        <i class="fas fa-clipboard-check"></i> Compliance Impact
+                    </button>
+                </nav>
+                
+                <!-- Analysis Content (same as before) -->
+                <div class="analysis-content">
+                    <!-- Financial Analysis Section -->
+                    <section class="analysis-section active" id="financial-analysis">
+                        <div class="section-header">
+                            <h2>Financial Analysis</h2>
+                            <div class="audience-badge">For: CFO, Finance Teams, Procurement</div>
                         </div>
                         
-                        <div class="chart-container">
-                            <h3>Compliance Score Improvement</h3>
-                            <canvas id="compliance-score-chart"></canvas>
-                        </div>
-                        
-                        <div class="audit-benefits">
-                            <h3>Audit & Compliance Benefits</h3>
-                            <div class="benefits-list">
-                                <div class="benefit-item">
-                                    <i class="fas fa-check-circle"></i>
-                                    <div class="benefit-content">
-                                        <h4>Automated Compliance Reporting</h4>
-                                        <p>Real-time compliance dashboards and automated report generation reduce audit preparation time by 80%</p>
-                                    </div>
-                                </div>
-                                <div class="benefit-item">
-                                    <i class="fas fa-check-circle"></i>
-                                    <div class="benefit-content">
-                                        <h4>Continuous Compliance Monitoring</h4>
-                                        <p>24/7 policy enforcement and compliance monitoring eliminates gaps between audit cycles</p>
-                                    </div>
-                                </div>
-                                <div class="benefit-item">
-                                    <i class="fas fa-check-circle"></i>
-                                    <div class="benefit-content">
-                                        <h4>Evidence Collection</h4>
-                                        <p>Automated log collection and retention simplifies audit evidence gathering</p>
-                                    </div>
-                                </div>
+                        <div class="financial-grid">
+                            <div class="chart-container large">
+                                <h3>3-Year Total Cost of Ownership Comparison</h3>
+                                <canvas id="tco-comparison-chart"></canvas>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Cost Structure Analysis</h3>
+                                <canvas id="cost-breakdown-chart"></canvas>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Cash Flow Impact</h3>
+                                <canvas id="cash-flow-chart"></canvas>
+                            </div>
+                            
+                            <div class="chart-container full-width">
+                                <h3>Cumulative Cost Over Time</h3>
+                                <canvas id="cumulative-cost-chart"></canvas>
                             </div>
                         </div>
-                    </div>
-                </section>
-            </div>
-        </main>
+                    </section>
+                    
+                    <!-- Other sections remain the same -->
+                </div>
+            </main>
+        </div>
         
         <!-- Footer -->
         <footer class="app-footer">
             <div class="footer-content">
                 <div class="footer-copyright">
-                    &copy; 2025 Portnox. Enterprise TCO Analyzer - Confidential
+                    &copy; 2025 Portnox. Total Cost Analyzer - Confidential
                 </div>
                 <div class="footer-links">
                     <a href="#methodology">Methodology</a>
@@ -738,21 +462,6 @@
                 </div>
             </div>
         </footer>
-    </div>
-    
-    <!-- Configuration Modal -->
-    <div id="configuration-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Configuration Parameters</h2>
-                <button class="modal-close" id="close-config">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <!-- Configuration form will be inserted here -->
-            </div>
-        </div>
     </div>
     
     <!-- JavaScript Libraries -->
@@ -765,14 +474,9 @@
     <script src="js/core/config.js"></script>
     <script src="js/core/utils.js"></script>
     <script src="js/data/vendor-data.js"></script>
-    <script src="js/data/industry-data.js"></script>
+    <script src="js/managers/wizard-manager.js"></script>
     <script src="js/calculators/tco-calculator.js"></script>
-    <script src="js/calculators/roi-calculator.js"></script>
-    <script src="js/calculators/risk-calculator.js"></script>
     <script src="js/charts/chart-manager.js"></script>
-    <script src="js/ui/dashboard.js"></script>
-    <script src="js/ui/configuration.js"></script>
-    <script src="js/ui/reports.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
