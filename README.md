@@ -1,82 +1,70 @@
-# NAC Architecture Designer Pro - Ultimate Enhancement
+# NAC Architecture Designer Pro - Enhanced Edition
 
-This project provides a comprehensive set of enhancements for the Zero Trust NAC Architecture Designer Pro application, adding cutting-edge visualizations, interactive UI components, and extended features for TCO/ROI analysis, feature comparison, industry-specific analysis, and compliance mapping.
+An enhanced Zero Trust NAC Architecture Designer with stunning visuals, animations, and improved user experience.
 
 ## Features
 
-### Enhanced Visualizations
-- Interactive charts with animations and tooltips
-- Advanced data visualizations for TCO, ROI, and FTE analysis
-- Industry and compliance comparison charts
-- Rich sensitivity analysis tools
+- 🎨 Modern, responsive UI with dark mode support
+- 📊 Enhanced charts with animations and interactions
+- 🚀 Smooth transitions and micro-interactions
+- 📱 Mobile-friendly design
+- 🔍 Advanced sensitivity analysis
+- 📄 Comprehensive reporting capabilities
+- 🎯 Vendor comparison with visual metrics
+- 💡 Smart tooltips and guided workflow
 
-### Modern UI Framework
-- Clean, responsive design
-- Tab-based navigation between features
-- Improved form elements and interactive components
-- Modern iconography and typography
+## Setup
 
-### Enhanced Wizard
-- Step-by-step solution selection process
-- Interactive progress tracking
-- Detailed recommendations based on user inputs
-- Integration with TCO analysis
+1. **Clone or download this repository**
 
-### Industry & Compliance
-- Industry-specific analysis with tailored recommendations
-- Comprehensive compliance framework mapping
-- Visual comparison across vendors for each industry and compliance framework
-
-### Feature Comparison
-- Enhanced feature comparison visualizations
-- Detailed Portnox advantage explanations
-- Visual indicators for feature differentiation
-
-### Migration Planning
-- Timeline visualization for migration planning
-- Resource allocation mapping
-- Visual implementation comparison
-
-## Installation
-
-1. Clone the repository or download the files
-2. Run the enhancement script:
+2. **Install dependencies (optional, for development)**
+   ```bash
+   npm install
    ```
-   ./enhance-nac-pro.sh
+
+3. **Start the development server**
+   ```bash
+   # Using Python
+   python3 server.py
+   
+   # Or using Node.js
+   npm run serve
    ```
-3. Launch the application:
-   ```
-   ./launch.sh
-   ```
-4. Open a browser and navigate to: http://localhost:8080/index.html
 
-## Components
+4. **Open your browser** to `http://localhost:8080`
 
-- **Enhanced Chart Builder**: Advanced visualization capabilities
-- **Modern UI Framework**: Clean, responsive design system
-- **Industry & Compliance Manager**: Industry-specific analysis and compliance mapping
-- **Enhanced Wizard**: Step-by-step solution selection
-- **App Integrator**: Navigation and component integration
+## Development Scripts
 
-## Libraries Used
+- `npm run lint` - Run ESLint on all JavaScript files
+- `npm run lint:fix` - Fix ESLint issues automatically
+- `npm run format` - Format code with Prettier
+- `npm run build` - Run linting and formatting
 
-- **Chart.js**: Core visualization library
-- **D3.js**: Advanced data visualizations
-- **ECharts**: Complex interactive charts
-- **ApexCharts**: Modern, responsive charts
-- **GSAP**: Animation library
-- **CountUp.js**: Numeric animation
-- **Math.js**: Mathematical calculations
-- **Remixicon**: Modern icon set
-- **Inter & Poppins**: Professional typography
+## Project Structure
 
-## Browser Compatibility
+```
+├── css/               # Stylesheets
+├── js/               # JavaScript modules
+│   ├── core/         # Core utilities
+│   ├── managers/     # State management
+│   ├── components/   # UI components
+│   ├── charts/       # Chart configurations
+│   ├── data/         # Data models
+│   └── reports/      # Report generators
+├── libs/             # Third-party libraries
+├── img/              # Images and icons
+├── data/             # Static data files
+├── index.html        # Main application
+└── sensitivity.html  # Sensitivity analysis page
+```
 
-- Chrome: Full Support
-- Firefox: Full Support
-- Edge: Full Support
-- Safari: Full Support
+## Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
 
 ## License
 
-Copyright © 2025 Portnox | All Rights Reserved
+MIT License - see LICENSE file for details.

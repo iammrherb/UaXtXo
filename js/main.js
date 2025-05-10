@@ -1,1342 +1,246 @@
-// ModernCharts fallback
-if (typeof ModernCharts === 'undefined') {
-  window.ModernCharts = {
-    initialize: function() {
-      console.log('Using ChartBuilder instead of ModernCharts');
-      if (typeof ChartBuilder !== 'undefined') {
-        ChartBuilder.initializeCharts();
-      }
+// Enhanced NAC Architecture Designer Pro - Main Entry Point
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Initializing NAC Architecture Designer Pro...');
+    
+    // Initialize enhanced UI components
+    EnhancedUI.init();
+    
+    // Initialize particle background
+    if (document.getElementById('particles-js')) {
+        EnhancedCharts.initParticleBackground();
     }
-  };
-}
-
-/**
- * Main Application JavaScript for NAC Architecture Designer Pro
- * Handles core functionality, theme switching, and component coordination
- */
-
-const NACDesignerApp = (function() {
-  // Configuration
-  let config = {
-    darkMode: false,
-    selectedVendor: 'cisco',
-    currentIndustry: 'healthcare',
-    deviceCount: 1000,
-    implementationTimeframe: '3-years',
-    complianceFrameworks: ['hipaa', 'pci-dss', 'nist-csf', 'gdpr', 'iso27001']
-  };
-  
-  // DOM Elements
-  let elements = {
-    darkModeToggle: null,
-    vendorSelectors: null,
-    chartContainers: null,
-    tabButtons: null,
-    tabContents: null
-  };
-  
-  // Initialize application
-  function init() {
-    // Get DOM elements
-    cacheElements();
     
-    // Setup event listeners
-    setupEventListeners();
-    
-    // Check for dark mode preference
-    checkDarkModePreference();
+    // Initialize animations
+    EnhancedCharts.initAnimations();
     
     // Initialize vendor selection
-    initVendorSelection();
+    initializeVendorSelection();
     
-    // Initialize tabs
-    initTabs();
+    // Initialize wizard navigation
+    initializeWizard();
     
-    // Initialize charts (if ModernCharts is available)
-    initCharts();
+    // Initialize form handlers
+    initializeFormHandlers();
     
-    // Add startup animation
-    addStartupAnimation();
+    // Initialize chart defaults
+    Chart.defaults.plugins.datalabels = {
+        display: false
+    };
     
-    console.log('NAC Designer Pro initialized');
-  }
-  
-  // Cache DOM elements
-  function cacheElements() {
-    elements.darkModeToggle = document.querySelector('#dark-mode-toggle');
-    elements.vendorSelectors = document.querySelectorAll('.vendor-selector');
-    elements.chartContainers = document.querySelectorAll('.chart-container');
-    elements.tabButtons = document.querySelectorAll('.tab-button');
-    elements.tabContents = document.querySelectorAll('.tab-content');
-  }
-  
-  // Setup event listeners
-  function setupEventListeners() {
-    // Dark mode toggle
-    if (elements.darkModeToggle) {
-      elements.darkModeToggle.addEventListener('click', toggleDarkMode);
-    }
+    console.log('✅ NAC Architecture Designer Pro initialized successfully!');
+});
+
+// Vendor selection handler
+function initializeVendorSelection() {
+    const vendorCards = document.querySelectorAll('.vendor-card');
     
-    // Vendor selectors
-    if (elements.vendorSelectors) {
-      elements.vendorSelectors.forEach(selector => {
-        selector.addEventListener('click', handleVendorSelection);
-      });
-    }
-    
-    // Tab buttons
-    if (elements.tabButtons) {
-      elements.tabButtons.forEach(button => {
-        button.addEventListener('click', handleTabClick);
-      });
-    }
-    
-    // Listen for wizard completion
-    document.addEventListener('wizardComplete', handleWizardCompletion);
-    
-    // Listen for window resize
-    window.addEventListener('resize', handleResize);
-  }
-  
-  // Check if user prefers dark mode
-  function checkDarkModePreference() {
-    // Check localStorage first
-    const storedPreference = localStorage.getItem('darkMode');
-    
-    if (storedPreference) {
-      setDarkMode(storedPreference === 'true');
-    } else {
-      // Check system preference
-      const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setDarkMode(prefersDarkMode);
-    }
-  }
-  
-  // Toggle dark mode
-  function toggleDarkMode() {
-    setDarkMode(!config.darkMode);
-  }
-  
-  // Set dark mode state
-  function setDarkMode(isDarkMode) {
-    config.darkMode = isDarkMode;
-    
-    // Update DOM
-    if (isDarkMode) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
-    
-    // Update toggle if exists
-    if (elements.darkModeToggle) {
-      const icon = elements.darkModeToggle.querySelector('i');
-      if (icon) {
-        if (isDarkMode) {
-          icon.classList.remove('fa-moon');
-          icon.classList.add('fa-sun');
-        } else {
-          icon.classList.remove('fa-sun');
-          icon.classList.add('fa-moon');
-        }
-      }
-    }
-    
-    // Save preference to localStorage
-    localStorage.setItem('darkMode', isDarkMode);
-    
-    // Dispatch event for other components
-    const event = new CustomEvent('darkModeChanged', {
-      detail: { isDarkMode: isDarkMode }
+    vendorCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const vendorId = card.getAttribute('data-vendor');
+            
+            // Remove selection from all cards
+            vendorCards.forEach(c => c.classList.remove('selected'));
+            
+            // Add selection to clicked card
+            card.classList.add('selected');
+            
+            // Update vendor info
+            updateVendorInfo(vendorId);
+            
+            // Enable next button
+            updateWizardNavigation();
+            
+            // Show notification
+            EnhancedUI.showNotification(`Selected ${VendorData.getVendor(vendorId)?.name || 'vendor'}`, 'success');
+        });
     });
-    
-    document.dispatchEvent(event);
-    
-    // Update charts if ModernCharts is available
-    if (typeof ModernCharts !== 'undefined' && ModernCharts.updateDarkMode) {
-      ModernCharts.updateDarkMode(isDarkMode);
-    }
-  }
-  
-  // Initialize vendor selection
-  function initVendorSelection() {
-    // Set initial vendor
-    setSelectedVendor(config.selectedVendor);
-  }
-  
-  // Handle vendor selection
-  function handleVendorSelection(event) {
-    const vendorId = event.currentTarget.dataset.vendor;
-    if (vendorId) {
-      setSelectedVendor(vendorId);
-    }
-  }
-  
-  // Set selected vendor
-// Chart data for each vendor
-const vendorChartData = {
-  cisco: {
-    tcoComparison: {
-      labels: ['Year 1', 'Year 2', 'Year 3', 'Total'],
-      datasets: [
-        {
-          label: 'Cisco ISE',
-          backgroundColor: '#1173b1',
-          data: [125000, 85000, 85000, 295000]
-        },
-        {
-          label: 'Portnox Cloud',
-          backgroundColor: '#5fc27e',
-          data: [65000, 48000, 48000, 161000]
-        }
-      ]
-    },
-    cumulativeCost: {
-      labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
-      datasets: [
-        {
-          label: 'Cisco ISE',
-          borderColor: '#1173b1',
-          backgroundColor: 'rgba(17, 115, 177, 0.1)',
-          data: [75000, 125000, 210000, 295000]
-        },
-        {
-          label: 'Portnox Cloud',
-          borderColor: '#5fc27e',
-          backgroundColor: 'rgba(95, 194, 126, 0.1)',
-          data: [35000, 65000, 113000, 161000]
-        }
-      ]
-    },
-    currentBreakdown: {
-      labels: ['Hardware', 'Software', 'Implementation', 'Maintenance', 'Personnel'],
-      datasets: [
-        {
-          data: [50000, 75000, 45000, 45000, 80000],
-          backgroundColor: [
-            '#36a2eb',
-            '#ff6384',
-            '#4bc0c0',
-            '#ff9f40',
-            '#9966ff'
-          ]
-        }
-      ]
-    },
-    alternativeBreakdown: {
-      labels: ['Software Subscription', 'Implementation', 'Maintenance', 'Personnel'],
-      datasets: [
-        {
-          data: [80000, 20000, 15000, 46000],
-          backgroundColor: [
-            '#5fc27e',
-            '#4bc0c0',
-            '#ff9f40',
-            '#9966ff'
-          ]
-        }
-      ]
-    },
-    implementationComparison: {
-      labels: ['Infrastructure Setup', 'Software Deployment', 'Configuration', 'Testing', 'Training', 'Total'],
-      datasets: [
-        {
-          label: 'Cisco ISE (days)',
-          backgroundColor: '#1173b1',
-          data: [15, 10, 30, 20, 10, 85]
-        },
-        {
-          label: 'Portnox Cloud (days)',
-          backgroundColor: '#5fc27e',
-          data: [0, 5, 10, 10, 5, 30]
-        }
-      ]
-    },
-    featureComparison: {
-      labels: ['Ease of Deployment', 'Scalability', 'Multi-Location Support', 'Legacy Device Support', 'Cloud Integration', 'Total Cost of Ownership'],
-      datasets: [
-        {
-          label: 'Cisco ISE',
-          backgroundColor: 'rgba(17, 115, 177, 0.5)',
-          data: [2, 3, 4, 4, 2, 2]
-        },
-        {
-          label: 'Portnox Cloud',
-          backgroundColor: 'rgba(95, 194, 126, 0.5)',
-          data: [5, 5, 5, 4, 5, 5]
-        }
-      ]
-    },
-    roi: {
-      labels: ['Year 1', 'Year 2', 'Year 3'],
-      datasets: [
-        {
-          label: 'Cumulative Savings',
-          backgroundColor: '#5fc27e',
-          borderColor: '#4ca368',
-          data: [60000, 134000, 195000]
-        },
-        {
-          type: 'line',
-          label: 'ROI %',
-          backgroundColor: 'rgba(95, 194, 126, 0)',
-          borderColor: '#ff6384',
-          data: [171, 383, 557],
-          yAxisID: 'y1'
-        }
-      ]
-    }
-  },
-  aruba: {
-    tcoComparison: {
-      labels: ['Year 1', 'Year 2', 'Year 3', 'Total'],
-      datasets: [
-        {
-          label: 'Aruba ClearPass',
-          backgroundColor: '#1173b1',
-          data: [115000, 78000, 78000, 271000]
-        },
-        {
-          label: 'Portnox Cloud',
-          backgroundColor: '#5fc27e',
-          data: [62000, 45000, 45000, 152000]
-        }
-      ]
-    },
-    cumulativeCost: {
-      labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
-      datasets: [
-        {
-          label: 'Aruba ClearPass',
-          borderColor: '#1173b1',
-          backgroundColor: 'rgba(17, 115, 177, 0.1)',
-          data: [70000, 115000, 193000, 271000]
-        },
-        {
-          label: 'Portnox Cloud',
-          borderColor: '#5fc27e',
-          backgroundColor: 'rgba(95, 194, 126, 0.1)',
-          data: [32000, 62000, 107000, 152000]
-        }
-      ]
-    },
-    currentBreakdown: {
-      labels: ['Hardware', 'Software', 'Implementation', 'Maintenance', 'Personnel'],
-      datasets: [
-        {
-          data: [45000, 70000, 40000, 40000, 76000],
-          backgroundColor: [
-            '#36a2eb',
-            '#ff6384',
-            '#4bc0c0',
-            '#ff9f40',
-            '#9966ff'
-          ]
-        }
-      ]
-    },
-    alternativeBreakdown: {
-      labels: ['Software Subscription', 'Implementation', 'Maintenance', 'Personnel'],
-      datasets: [
-        {
-          data: [75000, 18000, 15000, 44000],
-          backgroundColor: [
-            '#5fc27e',
-            '#4bc0c0',
-            '#ff9f40',
-            '#9966ff'
-          ]
-        }
-      ]
-    },
-    implementationComparison: {
-      labels: ['Infrastructure Setup', 'Software Deployment', 'Configuration', 'Testing', 'Training', 'Total'],
-      datasets: [
-        {
-          label: 'Aruba ClearPass (days)',
-          backgroundColor: '#1173b1',
-          data: [12, 10, 28, 18, 10, 78]
-        },
-        {
-          label: 'Portnox Cloud (days)',
-          backgroundColor: '#5fc27e',
-          data: [0, 5, 10, 8, 5, 28]
-        }
-      ]
-    },
-    featureComparison: {
-      labels: ['Ease of Deployment', 'Scalability', 'Multi-Location Support', 'Legacy Device Support', 'Cloud Integration', 'Total Cost of Ownership'],
-      datasets: [
-        {
-          label: 'Aruba ClearPass',
-          backgroundColor: 'rgba(17, 115, 177, 0.5)',
-          data: [3, 3, 4, 4, 3, 3]
-        },
-        {
-          label: 'Portnox Cloud',
-          backgroundColor: 'rgba(95, 194, 126, 0.5)',
-          data: [5, 5, 5, 4, 5, 5]
-        }
-      ]
-    },
-    roi: {
-      labels: ['Year 1', 'Year 2', 'Year 3'],
-      datasets: [
-        {
-          label: 'Cumulative Savings',
-          backgroundColor: '#5fc27e',
-          borderColor: '#4ca368',
-          data: [53000, 119000, 185000]
-        },
-        {
-          type: 'line',
-          label: 'ROI %',
-          backgroundColor: 'rgba(95, 194, 126, 0)',
-          borderColor: '#ff6384',
-          data: [165, 371, 578],
-          yAxisID: 'y1'
-        }
-      ]
-    }
-  },
-  forescout: {
-    tcoComparison: {
-      labels: ['Year 1', 'Year 2', 'Year 3', 'Total'],
-      datasets: [
-        {
-          label: 'Forescout',
-          backgroundColor: '#1173b1',
-          data: [130000, 90000, 90000, 310000]
-        },
-        {
-          label: 'Portnox Cloud',
-          backgroundColor: '#5fc27e',
-          data: [65000, 48000, 48000, 161000]
-        }
-      ]
-    },
-    cumulativeCost: {
-      labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
-      datasets: [
-        {
-          label: 'Forescout',
-          borderColor: '#1173b1',
-          backgroundColor: 'rgba(17, 115, 177, 0.1)',
-          data: [80000, 130000, 220000, 310000]
-        },
-        {
-          label: 'Portnox Cloud',
-          borderColor: '#5fc27e',
-          backgroundColor: 'rgba(95, 194, 126, 0.1)',
-          data: [35000, 65000, 113000, 161000]
-        }
-      ]
-    },
-    currentBreakdown: {
-      labels: ['Hardware', 'Software', 'Implementation', 'Maintenance', 'Personnel'],
-      datasets: [
-        {
-          data: [55000, 80000, 50000, 45000, 80000],
-          backgroundColor: [
-            '#36a2eb',
-            '#ff6384',
-            '#4bc0c0',
-            '#ff9f40',
-            '#9966ff'
-          ]
-        }
-      ]
-    },
-    alternativeBreakdown: {
-      labels: ['Software Subscription', 'Implementation', 'Maintenance', 'Personnel'],
-      datasets: [
-        {
-          data: [80000, 20000, 15000, 46000],
-          backgroundColor: [
-            '#5fc27e',
-            '#4bc0c0',
-            '#ff9f40',
-            '#9966ff'
-          ]
-        }
-      ]
-    },
-    implementationComparison: {
-      labels: ['Infrastructure Setup', 'Software Deployment', 'Configuration', 'Testing', 'Training', 'Total'],
-      datasets: [
-        {
-          label: 'Forescout (days)',
-          backgroundColor: '#1173b1',
-          data: [15, 12, 35, 25, 12, 99]
-        },
-        {
-          label: 'Portnox Cloud (days)',
-          backgroundColor: '#5fc27e',
-          data: [0, 5, 10, 10, 5, 30]
-        }
-      ]
-    },
-    featureComparison: {
-      labels: ['Ease of Deployment', 'Scalability', 'Multi-Location Support', 'Legacy Device Support', 'Cloud Integration', 'Total Cost of Ownership'],
-      datasets: [
-        {
-          label: 'Forescout',
-          backgroundColor: 'rgba(17, 115, 177, 0.5)',
-          data: [2, 3, 4, 5, 2, 1]
-        },
-        {
-          label: 'Portnox Cloud',
-          backgroundColor: 'rgba(95, 194, 126, 0.5)',
-          data: [5, 5, 5, 4, 5, 5]
-        }
-      ]
-    },
-    roi: {
-      labels: ['Year 1', 'Year 2', 'Year 3'],
-      datasets: [
-        {
-          label: 'Cumulative Savings',
-          backgroundColor: '#5fc27e',
-          borderColor: '#4ca368',
-          data: [65000, 149000, 234000]
-        },
-        {
-          type: 'line',
-          label: 'ROI %',
-          backgroundColor: 'rgba(95, 194, 126, 0)',
-          borderColor: '#ff6384',
-          data: [185, 425, 668],
-          yAxisID: 'y1'
-        }
-      ]
-    }
-  },
-  nps: {
-    tcoComparison: {
-      labels: ['Year 1', 'Year 2', 'Year 3', 'Total'],
-      datasets: [
-        {
-          label: 'Microsoft NPS',
-          backgroundColor: '#1173b1',
-          data: [80000, 60000, 60000, 200000]
-        },
-        {
-          label: 'Portnox Cloud',
-          backgroundColor: '#5fc27e',
-          data: [60000, 45000, 45000, 150000]
-        }
-      ]
-    },
-    cumulativeCost: {
-      labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
-      datasets: [
-        {
-          label: 'Microsoft NPS',
-          borderColor: '#1173b1',
-          backgroundColor: 'rgba(17, 115, 177, 0.1)',
-          data: [40000, 80000, 140000, 200000]
-        },
-        {
-          label: 'Portnox Cloud',
-          borderColor: '#5fc27e',
-          backgroundColor: 'rgba(95, 194, 126, 0.1)',
-          data: [30000, 60000, 105000, 150000]
-        }
-      ]
-    },
-    currentBreakdown: {
-      labels: ['Hardware', 'Software', 'Implementation', 'Maintenance', 'Personnel'],
-      datasets: [
-        {
-          data: [30000, 20000, 35000, 35000, 80000],
-          backgroundColor: [
-            '#36a2eb',
-            '#ff6384',
-            '#4bc0c0',
-            '#ff9f40',
-            '#9966ff'
-          ]
-        }
-      ]
-    },
-    alternativeBreakdown: {
-      labels: ['Software Subscription', 'Implementation', 'Maintenance', 'Personnel'],
-      datasets: [
-        {
-          data: [75000, 18000, 15000, 42000],
-          backgroundColor: [
-            '#5fc27e',
-            '#4bc0c0',
-            '#ff9f40',
-            '#9966ff'
-          ]
-        }
-      ]
-    },
-    implementationComparison: {
-      labels: ['Infrastructure Setup', 'Software Deployment', 'Configuration', 'Testing', 'Training', 'Total'],
-      datasets: [
-        {
-          label: 'Microsoft NPS (days)',
-          backgroundColor: '#1173b1',
-          data: [10, 5, 35, 25, 15, 90]
-        },
-        {
-          label: 'Portnox Cloud (days)',
-          backgroundColor: '#5fc27e',
-          data: [0, 5, 10, 8, 5, 28]
-        }
-      ]
-    },
-    featureComparison: {
-      labels: ['Ease of Deployment', 'Scalability', 'Multi-Location Support', 'Legacy Device Support', 'Cloud Integration', 'Total Cost of Ownership'],
-      datasets: [
-        {
-          label: 'Microsoft NPS',
-          backgroundColor: 'rgba(17, 115, 177, 0.5)',
-          data: [2, 2, 2, 3, 3, 3]
-        },
-        {
-          label: 'Portnox Cloud',
-          backgroundColor: 'rgba(95, 194, 126, 0.5)',
-          data: [5, 5, 5, 4, 5, 5]
-        }
-      ]
-    },
-    roi: {
-      labels: ['Year 1', 'Year 2', 'Year 3'],
-      datasets: [
-        {
-          label: 'Cumulative Savings',
-          backgroundColor: '#5fc27e',
-          borderColor: '#4ca368',
-          data: [20000, 50000, 80000]
-        },
-        {
-          type: 'line',
-          label: 'ROI %',
-          backgroundColor: 'rgba(95, 194, 126, 0)',
-          borderColor: '#ff6384',
-          data: [66, 166, 266],
-          yAxisID: 'y1'
-        }
-      ]
-    }
-  },
-  fortinac: {
-    tcoComparison: {
-      labels: ['Year 1', 'Year 2', 'Year 3', 'Total'],
-      datasets: [
-        {
-          label: 'FortiNAC',
-          backgroundColor: '#1173b1',
-          data: [110000, 75000, 75000, 260000]
-        },
-        {
-          label: 'Portnox Cloud',
-          backgroundColor: '#5fc27e',
-          data: [62000, 45000, 45000, 152000]
-        }
-      ]
-    },
-    cumulativeCost: {
-      labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
-      datasets: [
-        {
-          label: 'FortiNAC',
-          borderColor: '#1173b1',
-          backgroundColor: 'rgba(17, 115, 177, 0.1)',
-          data: [65000, 110000, 185000, 260000]
-        },
-        {
-          label: 'Portnox Cloud',
-          borderColor: '#5fc27e',
-          backgroundColor: 'rgba(95, 194, 126, 0.1)',
-          data: [32000, 62000, 107000, 152000]
-        }
-      ]
-    },
-    currentBreakdown: {
-      labels: ['Hardware', 'Software', 'Implementation', 'Maintenance', 'Personnel'],
-      datasets: [
-        {
-          data: [40000, 65000, 40000, 40000, 75000],
-          backgroundColor: [
-            '#36a2eb',
-            '#ff6384',
-            '#4bc0c0',
-            '#ff9f40',
-            '#9966ff'
-          ]
-        }
-      ]
-    },
-    alternativeBreakdown: {
-      labels: ['Software Subscription', 'Implementation', 'Maintenance', 'Personnel'],
-      datasets: [
-        {
-          data: [75000, 18000, 15000, 44000],
-          backgroundColor: [
-            '#5fc27e',
-            '#4bc0c0',
-            '#ff9f40',
-            '#9966ff'
-          ]
-        }
-      ]
-    },
-    implementationComparison: {
-      labels: ['Infrastructure Setup', 'Software Deployment', 'Configuration', 'Testing', 'Training', 'Total'],
-      datasets: [
-        {
-          label: 'FortiNAC (days)',
-          backgroundColor: '#1173b1',
-          data: [12, 8, 25, 18, 10, 73]
-        },
-        {
-          label: 'Portnox Cloud (days)',
-          backgroundColor: '#5fc27e',
-          data: [0, 5, 10, 8, 5, 28]
-        }
-      ]
-    },
-    featureComparison: {
-      labels: ['Ease of Deployment', 'Scalability', 'Multi-Location Support', 'Legacy Device Support', 'Cloud Integration', 'Total Cost of Ownership'],
-      datasets: [
-        {
-          label: 'FortiNAC',
-          backgroundColor: 'rgba(17, 115, 177, 0.5)',
-          data: [3, 3, 3, 4, 3, 3]
-        },
-        {
-          label: 'Portnox Cloud',
-          backgroundColor: 'rgba(95, 194, 126, 0.5)',
-          data: [5, 5, 5, 4, 5, 5]
-        }
-      ]
-    },
-    roi: {
-      labels: ['Year 1', 'Year 2', 'Year 3'],
-      datasets: [
-        {
-          label: 'Cumulative Savings',
-          backgroundColor: '#5fc27e',
-          borderColor: '#4ca368',
-          data: [48000, 108000, 168000]
-        },
-        {
-          type: 'line',
-          label: 'ROI %',
-          backgroundColor: 'rgba(95, 194, 126, 0)',
-          borderColor: '#ff6384',
-          data: [150, 337, 525],
-          yAxisID: 'y1'
-        }
-      ]
-    }
-  },
-  securew2: {
-    tcoComparison: {
-      labels: ['Year 1', 'Year 2', 'Year 3', 'Total'],
-      datasets: [
-        {
-          label: 'SecureW2',
-          backgroundColor: '#1173b1',
-          data: [85000, 65000, 65000, 215000]
-        },
-        {
-          label: 'Portnox Cloud',
-          backgroundColor: '#5fc27e',
-          data: [60000, 45000, 45000, 150000]
-        }
-      ]
-    },
-    cumulativeCost: {
-      labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
-      datasets: [
-        {
-          label: 'SecureW2',
-          borderColor: '#1173b1',
-          backgroundColor: 'rgba(17, 115, 177, 0.1)',
-          data: [45000, 85000, 150000, 215000]
-        },
-        {
-          label: 'Portnox Cloud',
-          borderColor: '#5fc27e',
-          backgroundColor: 'rgba(95, 194, 126, 0.1)',
-          data: [30000, 60000, 105000, 150000]
-        }
-      ]
-    },
-    currentBreakdown: {
-      labels: ['Hardware', 'Software', 'Implementation', 'Maintenance', 'Personnel'],
-      datasets: [
-        {
-          data: [10000, 50000, 35000, 35000, 85000],
-          backgroundColor: [
-            '#36a2eb',
-            '#ff6384',
-            '#4bc0c0',
-            '#ff9f40',
-            '#9966ff'
-          ]
-        }
-      ]
-    },
-    alternativeBreakdown: {
-      labels: ['Software Subscription', 'Implementation', 'Maintenance', 'Personnel'],
-      datasets: [
-        {
-          data: [75000, 18000, 15000, 42000],
-          backgroundColor: [
-            '#5fc27e',
-            '#4bc0c0',
-            '#ff9f40',
-            '#9966ff'
-          ]
-        }
-      ]
-    },
-    implementationComparison: {
-      labels: ['Infrastructure Setup', 'Software Deployment', 'Configuration', 'Testing', 'Training', 'Total'],
-      datasets: [
-        {
-          label: 'SecureW2 (days)',
-          backgroundColor: '#1173b1',
-          data: [5, 8, 28, 18, 10, 69]
-        },
-        {
-          label: 'Portnox Cloud (days)',
-          backgroundColor: '#5fc27e',
-          data: [0, 5, 10, 8, 5, 28]
-        }
-      ]
-    },
-    featureComparison: {
-      labels: ['Ease of Deployment', 'Scalability', 'Multi-Location Support', 'Legacy Device Support', 'Cloud Integration', 'Total Cost of Ownership'],
-      datasets: [
-        {
-          label: 'SecureW2',
-          backgroundColor: 'rgba(17, 115, 177, 0.5)',
-          data: [4, 3, 3, 2, 4, 3]
-        },
-        {
-          label: 'Portnox Cloud',
-          backgroundColor: 'rgba(95, 194, 126, 0.5)',
-          data: [5, 5, 5, 4, 5, 5]
-        }
-      ]
-    },
-    roi: {
-      labels: ['Year 1', 'Year 2', 'Year 3'],
-      datasets: [
-        {
-          label: 'Cumulative Savings',
-          backgroundColor: '#5fc27e',
-          borderColor: '#4ca368',
-          data: [25000, 65000, 105000]
-        },
-        {
-          type: 'line',
-          label: 'ROI %',
-          backgroundColor: 'rgba(95, 194, 126, 0)',
-          borderColor: '#ff6384',
-          data: [83, 216, 350],
-          yAxisID: 'y1'
-        }
-      ]
-    }
-  }
-};
-
-// Add this to the window object
-window.vendorChartData = vendorChartData;
-
-// Function to update charts for a selected vendor
-function updateChartsForVendor(vendor) {
-  console.log('Updating charts for vendor:', vendor);
-  
-  // Check if vendor data exists
-  if (!vendorChartData[vendor]) {
-    console.error('No chart data available for vendor:', vendor);
-    return;
-  }
-  
-  // Get chart data for the selected vendor
-  const chartData = vendorChartData[vendor];
-  
-  // Update each chart with the vendor-specific data
-  if (window.chartBuilder) {
-    try {
-      // TCO Comparison chart
-      window.chartBuilder.updateChart('tco-comparison-chart', chartData.tcoComparison);
-      
-      // Cumulative Cost chart
-      window.chartBuilder.updateChart('cumulative-cost-chart', chartData.cumulativeCost);
-      
-      // Current Breakdown chart
-      window.chartBuilder.updateChart('current-breakdown-chart', chartData.currentBreakdown);
-      
-      // Alternative Breakdown chart
-      window.chartBuilder.updateChart('alternative-breakdown-chart', chartData.alternativeBreakdown);
-      
-      // Implementation Comparison chart
-      window.chartBuilder.updateChart('implementation-comparison-chart', chartData.implementationComparison);
-      
-      // Feature Comparison chart
-      window.chartBuilder.updateChart('feature-comparison-chart', chartData.featureComparison);
-      
-      // ROI chart
-      window.chartBuilder.updateChart('roi-chart', chartData.roi);
-      
-      console.log('All charts updated successfully for vendor:', vendor);
-    } catch (error) {
-      console.error('Error updating charts:', error);
-    }
-  } else {
-    console.error('ChartBuilder not available. Charts could not be updated.');
-  }
 }
 
-// Export the function
-window.updateChartsForVendor = updateChartsForVendor;
-  function setSelectedVendor(vendorId) {
-    config.selectedVendor = vendorId;
+// Update vendor information display
+function updateVendorInfo(vendorId) {
+    const vendor = VendorData.getVendor(vendorId);
+    const infoBox = document.getElementById('vendor-info');
+    const infoTitle = document.getElementById('vendor-info-title');
+    const infoDescription = document.getElementById('vendor-info-description');
     
-    // Update UI
-    if (elements.vendorSelectors) {
-      elements.vendorSelectors.forEach(selector => {
-        if (selector.dataset.vendor === vendorId) {
-          selector.classList.add('active');
-        } else {
-          selector.classList.remove('active');
-        }
-      });
-    }
-    
-    // Update charts
-    updateChartsForVendor(vendorId);
-    
-    // Update vendor comparison
-    updateVendorComparison(vendorId);
-  }
-  
-  // Initialize tabs
-  function initTabs() {
-    // Set first tab as active
-    if (elements.tabButtons && elements.tabButtons.length > 0) {
-      const firstTab = elements.tabButtons[0];
-      const tabId = firstTab.dataset.tab;
-      
-      firstTab.classList.add('active');
-      
-      if (tabId && elements.tabContents) {
-        const tabContent = document.querySelector(`#${tabId}`);
-        if (tabContent) {
-          tabContent.classList.add('active');
-        }
-      }
-    }
-  }
-  
-  // Handle tab click
-  function handleTabClick(event) {
-    const tabButton = event.currentTarget;
-    const tabId = tabButton.dataset.tab;
-    
-    if (!tabId) return;
-    
-    // Update active tab button
-    if (elements.tabButtons) {
-      elements.tabButtons.forEach(button => {
-        button.classList.remove('active');
-      });
-    }
-    
-    tabButton.classList.add('active');
-    
-    // Update active tab content
-    if (elements.tabContents) {
-      elements.tabContents.forEach(content => {
-        content.classList.remove('active');
-      });
-      
-      const tabContent = document.querySelector(`#${tabId}`);
-      if (tabContent) {
-        tabContent.classList.add('active');
+    if (vendor && infoBox) {
+        infoTitle.textContent = vendor.name;
+        infoDescription.textContent = vendor.description;
+        infoBox.classList.remove('hidden');
         
-        // Add animation
-        tabContent.classList.add('fade-in');
-        setTimeout(() => {
-          tabContent.classList.remove('fade-in');
-        }, 500);
-      }
+        // Animate info box
+        gsap.from(infoBox, {
+            opacity: 0,
+            y: 20,
+            duration: 0.5,
+            ease: 'power2.out'
+        });
     }
-  }
-  
-  // Initialize charts
-  function initCharts() {
-    if (typeof ModernCharts === 'undefined') {
-      console.warn('ModernCharts functionality will be handled by ChartBuilder');
-      return;
-    }
-    
-    // Initialize ModernCharts
-    ModernCharts.setup();
-    
-    // Update charts for selected vendor
-    updateChartsForVendor(config.selectedVendor);
-  }
-  
-  // Update charts for a specific vendor
-    
-    // Sample data - in a real application, this would come from your data service
-    const tcoChartData = generateTCOChartData(vendorId);
-    const cumulativeChartData = generateCumulativeChartData(vendorId);
-    const featureChartData = generateFeatureChartData(vendorId);
-    const implementationChartData = generateImplementationChartData(vendorId);
-    const roiChartData = generateROIChartData(vendorId);
-    
-    // Update TCO Comparison Chart
-    const tcoComparisonChart = document.getElementById('tco-comparison-chart');
-    if (tcoComparisonChart && ModernCharts.charts.tcoComparison) {
-      ModernCharts.charts.tcoComparison(tcoComparisonChart, tcoChartData);
-    }
-    
-    // Update Cumulative Cost Chart
-    const cumulativeCostChart = document.getElementById('cumulative-cost-chart');
-    if (cumulativeCostChart && ModernCharts.charts.cumulativeCost) {
-      ModernCharts.charts.cumulativeCost(cumulativeCostChart, cumulativeChartData);
-    }
-    
-    // Update Feature Comparison Chart
-    const featureComparisonChart = document.getElementById('feature-comparison-chart');
-    if (featureComparisonChart && ModernCharts.charts.featureComparison) {
-      ModernCharts.charts.featureComparison(featureComparisonChart, featureChartData);
-    }
-    
-    // Update Implementation Comparison Chart
-    const implementationComparisonChart = document.getElementById('implementation-comparison-chart');
-    if (implementationComparisonChart && ModernCharts.charts.implementationComparison) {
-      ModernCharts.charts.implementationComparison(implementationComparisonChart, implementationChartData);
-    }
-    
-    // Update ROI Chart
-    const roiChart = document.getElementById('roi-chart');
-    if (roiChart && ModernCharts.charts.roi) {
-      ModernCharts.charts.roi(roiChart, roiChartData);
-    }
-    
-    // Update Cost Breakdown Charts
-    updateCostBreakdownCharts(vendorId);
-    
-    // Update Risk Analysis
-    updateRiskAnalysis(vendorId);
-    
-    // Update Compliance Matrix
-    updateComplianceMatrix(vendorId);
-  }
-  
-  // Update vendor comparison
-  function updateVendorComparison(vendorId) {
-    // Update vendor comparison card if VendorAdvantages is available
-    if (typeof VendorAdvantages !== 'undefined' && VendorAdvantages.createVendorComparisonCard) {
-      VendorAdvantages.createVendorComparisonCard('#vendor-comparison-container', vendorId);
-    }
-    
-    // Update feature matrix if VendorAdvantages is available
-    if (typeof VendorAdvantages !== 'undefined' && VendorAdvantages.createFeatureMatrixTable) {
-      VendorAdvantages.createFeatureMatrixTable('#feature-matrix-container', ['portnox', vendorId]);
-    }
-    
-    // Update implementation timeline if VendorAdvantages is available
-    if (typeof VendorAdvantages !== 'undefined' && VendorAdvantages.createImplementationTimeline) {
-      VendorAdvantages.createImplementationTimeline('#implementation-timeline-container', vendorId);
-    }
-  }
-  
-  // Update cost breakdown charts
-  function updateCostBreakdownCharts(vendorId) {
-    if (typeof ModernCharts === 'undefined') return;
-    
-    // Generate data
-    const currentBreakdownData = generateCostBreakdownData(vendorId);
-    const portnoxBreakdownData = generateCostBreakdownData('portnox');
-    
-    // Update Current Solution Breakdown Chart
-    const currentBreakdownChart = document.getElementById('current-breakdown-chart');
-    if (currentBreakdownChart && ModernCharts.charts.costBreakdown) {
-      ModernCharts.charts.costBreakdown(currentBreakdownChart, currentBreakdownData);
-    }
-    
-    // Update Portnox Breakdown Chart
-    const portnoxBreakdownChart = document.getElementById('alternative-breakdown-chart');
-    if (portnoxBreakdownChart && ModernCharts.charts.costBreakdown) {
-      ModernCharts.charts.costBreakdown(portnoxBreakdownChart, portnoxBreakdownData);
-    }
-  }
-  
-  // Update risk analysis
-  function updateRiskAnalysis(vendorId) {
-    // Skip if RiskAnalysis is not available
-    if (typeof RiskAnalysis === 'undefined') return;
-    
-    // Map vendor to NAC type
-    let nacType = 'traditional-nac';
-    if (vendorId === 'portnox' || vendorId === 'securew2') {
-      nacType = 'cloud-nac';
-    } else if (vendorId === 'noNac') {
-      nacType = 'no-nac';
-    }
-    
-    // Update risk table
-    RiskAnalysis.createRiskTable('#risk-table-container', nacType);
-    
-    // Update risk summary
-    RiskAnalysis.createRiskSummary('#risk-summary-container', nacType);
-    
-    // Update breach impact visualization
-    RiskAnalysis.createBreachImpactVisualization('#breach-impact-container', ['no-nac', nacType]);
-    
-    // Update risk heatmap if ModernCharts is available
-    if (typeof ModernCharts !== 'undefined' && ModernCharts.charts.riskHeatmap) {
-      const riskHeatmapData = RiskAnalysis.createRiskHeatmapData(nacType);
-      ModernCharts.charts.riskHeatmap('#risk-heatmap-container', riskHeatmapData);
-    }
-  }
-  
-  // Update compliance matrix
-  function updateComplianceMatrix(vendorId) {
-    // Skip if ComplianceFrameworks is not available
-    if (typeof ComplianceFrameworks === 'undefined') return;
-    
-    // Create compliance matrix
-    ComplianceFrameworks.createComplianceMatrix('#compliance-matrix-container', ['portnox', vendorId]);
-    
-    // Create industry compliance
-    ComplianceFrameworks.createIndustryCompliance('#industry-compliance-container', config.currentIndustry);
-    
-    // Create framework details for HIPAA (default)
-    ComplianceFrameworks.createFrameworkDetailsCard('#framework-details-container', 'hipaa');
-  }
-  
-  // Handle wizard completion
-  function handleWizardCompletion(event) {
-    console.log('Wizard completed');
-    
-    // Show results section
-    const resultsSection = document.querySelector('#results-section');
-    if (resultsSection) {
-      resultsSection.classList.remove('hidden');
-      
-      // Add animation
-      resultsSection.classList.add('fade-in');
-      setTimeout(() => {
-        resultsSection.classList.remove('fade-in');
-      }, 500);
-      
-      // Scroll to results
-      resultsSection.scrollIntoView({ behavior: 'smooth' });
-    }
-    
-    // Hide wizard section
-    const wizardSection = document.querySelector('#wizard-section');
-    if (wizardSection) {
-      wizardSection.classList.add('hidden');
-    }
-  }
-  
-  // Handle window resize
-  function handleResize() {
-    // Update charts if ModernCharts is available
-    if (typeof ModernCharts !== 'undefined') {
-      console.log('Resizing charts');
-      
-      // Force chart updates
-      updateChartsForVendor(config.selectedVendor);
-    }
-  }
-  
-  // Add startup animation
-  function addStartupAnimation() {
-    const header = document.querySelector('header');
-    const main = document.querySelector('main');
-    
-    if (header) {
-      header.classList.add('fade-in');
-      setTimeout(() => {
-        header.classList.remove('fade-in');
-      }, 500);
-    }
-    
-    if (main) {
-      main.classList.add('fade-in-delay-1');
-      setTimeout(() => {
-        main.classList.remove('fade-in-delay-1');
-      }, 800);
-    }
-  }
-  
-  // Data Generation Functions - Example implementations, replace with real data
-  
-  function generateTCOChartData(vendorId) {
-    // Example data - replace with actual calculations
-    return {
-      labels: ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'],
-      datasets: [
-        {
-          label: 'Current Solution',
-          data: [250000, 190000, 180000, 170000, 165000],
-          backgroundColor: '#ef4444',
-          borderColor: '#ef4444',
-          borderWidth: 1
-        },
-        {
-          label: 'Portnox Cloud',
-          data: [80000, 85000, 85000, 85000, 85000],
-          backgroundColor: '#3b82f6',
-          borderColor: '#3b82f6',
-          borderWidth: 1
-        }
-      ]
-    };
-  }
-  
-  function generateCumulativeChartData(vendorId) {
-    // Example data - replace with actual calculations
-    return {
-      labels: ['Initial', 'Year 1', 'Year 2', 'Year 3'],
-      datasets: [
-        {
-          label: 'Current Solution',
-          data: [250000, 440000, 630000, 800000],
-          backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          borderColor: '#ef4444',
-          borderWidth: 2,
-          tension: 0.4,
-          fill: true
-        },
-        {
-          label: 'Portnox Cloud',
-          data: [25000, 110000, 195000, 280000],
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-          borderColor: '#3b82f6',
-          borderWidth: 2,
-          tension: 0.4,
-          fill: true
-        }
-      ]
-    };
-  }
-  
-  function generateCostBreakdownData(vendorId) {
-    if (vendorId === 'portnox') {
-      return {
-        labels: ['Setup', 'Subscription', 'Services', 'Support'],
-        datasets: [{
-          data: [25000, 160000, 45000, 20000],
-          backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'],
-          borderWidth: 0
-        }]
-      };
-    } else {
-      return {
-        labels: ['Hardware', 'Software', 'Services', 'Support'],
-        datasets: [{
-          data: [250000, 190000, 180000, 100000],
-          backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'],
-          borderWidth: 0
-        }]
-      };
-    }
-  }
-  
-  function generateFeatureChartData(vendorId) {
-    // Example data - replace with actual ratings
-    return {
-      labels: ['Deployment Speed', 'Maintenance', 'Scalability', 'Cloud Integration', 'Device Discovery', 'Authentication', 'Policy Management'],
-      datasets: [
-        {
-          label: 'Current Solution',
-          data: [3, 4, 6, 4, 7, 8, 7],
-          backgroundColor: 'rgba(239, 68, 68, 0.2)',
-          borderColor: '#ef4444',
-          borderWidth: 2,
-          pointBackgroundColor: '#ef4444'
-        },
-        {
-          label: 'Portnox Cloud',
-          data: [9, 9, 9, 10, 8, 8, 8],
-          backgroundColor: 'rgba(59, 130, 246, 0.2)',
-          borderColor: '#3b82f6',
-          borderWidth: 2,
-          pointBackgroundColor: '#3b82f6'
-        }
-      ]
-    };
-  }
-  
-  function generateImplementationChartData(vendorId) {
-    // Example data - replace with actual timelines
-    return {
-      labels: ['Hardware Setup', 'Software Install', 'Configuration', 'Testing', 'Deployment', 'Training'],
-      datasets: [
-        {
-          label: 'Current Solution',
-          data: [30, 14, 21, 14, 30, 7],
-          backgroundColor: '#ef4444',
-          borderColor: '#ef4444',
-          borderWidth: 1
-        },
-        {
-          label: 'Portnox Cloud',
-          data: [0, 1, 2, 1, 2, 1],
-          backgroundColor: '#3b82f6',
-          borderColor: '#3b82f6',
-          borderWidth: 1
-        }
-      ]
-    };
-  }
-  
-  function generateROIChartData(vendorId) {
-    // Example data - replace with actual ROI calculations
-    return {
-      labels: ['Year 1', 'Year 2', 'Year 3'],
-      datasets: [
-        {
-          label: 'Cumulative Savings',
-          data: [140000, 335000, 520000],
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-          borderColor: '#10b981',
-          borderWidth: 2,
-          tension: 0.4,
-          fill: true
-        },
-        {
-          label: 'Implementation Cost',
-          data: [25000, 25000, 25000],
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-          borderColor: '#3b82f6',
-          borderWidth: 2,
-          tension: 0.4,
-          fill: true
-        }
-      ]
-    };
-  }
-  
-  // Public API
-  return {
-    init: init,
-    setDarkMode: setDarkMode,
-    setSelectedVendor: setSelectedVendor,
-    updateChartsForVendor: updateChartsForVendor,
-    config: config
-  };
-})();
+}
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-  NACDesignerApp.init();
-});
+// Initialize wizard navigation
+function initializeWizard() {
+    const steps = document.querySelectorAll('.wizard-step-content');
+    let currentStep = 0;
+    
+    const nextBtn = document.getElementById('next-step');
+    const prevBtn = document.getElementById('prev-step');
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (validateCurrentStep()) {
+                goToStep(currentStep + 1);
+            }
+        });
+    }
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            goToStep(currentStep - 1);
+        });
+    }
+    
+    function goToStep(stepIndex) {
+        if (stepIndex >= 0 && stepIndex < steps.length) {
+            // Hide current step
+            steps[currentStep].classList.remove('active');
+            
+            // Show new step
+            steps[stepIndex].classList.add('active');
+            currentStep = stepIndex;
+            
+            // Update navigation
+            updateWizardNavigation();
+            
+            // Animate step transition
+            gsap.from(steps[stepIndex], {
+                opacity: 0,
+                x: 50,
+                duration: 0.5,
+                ease: 'power2.out'
+            });
+        }
+    }
+    
+    function validateCurrentStep() {
+        // Add validation logic for each step
+        switch(currentStep) {
+            case 0: // Vendor selection
+                return document.querySelector('.vendor-card.selected') !== null;
+            case 1: // Industry selection
+                return document.getElementById('industry-selector').value !== 'none';
+            case 2: // Organization details
+                return validateOrganizationForm();
+            default:
+                return true;
+        }
+    }
+}
+
+// Update wizard navigation buttons
+function updateWizardNavigation() {
+    const nextBtn = document.getElementById('next-step');
+    const prevBtn = document.getElementById('prev-step');
+    const currentStep = document.querySelector('.wizard-step-content.active');
+    
+    if (nextBtn) {
+        nextBtn.disabled = !validateCurrentStep();
+    }
+    
+    if (prevBtn) {
+        prevBtn.style.display = currentStep?.previousElementSibling ? 'inline-flex' : 'none';
+    }
+}
+
+// Initialize form handlers
+function initializeFormHandlers() {
+    // Organization size handler
+    const orgSizeSelect = document.getElementById('organization-size');
+    if (orgSizeSelect) {
+        orgSizeSelect.addEventListener('change', updateDeviceCountRange);
+    }
+    
+    // Multiple locations handler
+    const multipleLocations = document.getElementById('multiple-locations');
+    const locationCountContainer = document.getElementById('location-count-container');
+    
+    if (multipleLocations && locationCountContainer) {
+        multipleLocations.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                locationCountContainer.classList.remove('hidden');
+                gsap.from(locationCountContainer, {
+                    opacity: 0,
+                    height: 0,
+                    duration: 0.3,
+                    ease: 'power2.out'
+                });
+            } else {
+                gsap.to(locationCountContainer, {
+                    opacity: 0,
+                    height: 0,
+                    duration: 0.3,
+                    ease: 'power2.in',
+                    onComplete: () => {
+                        locationCountContainer.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    }
+    
+    // Legacy devices handler
+    const legacyDevices = document.getElementById('legacy-devices');
+    const legacyPercentageContainer = document.getElementById('legacy-percentage-container');
+    
+    if (legacyDevices && legacyPercentageContainer) {
+        legacyDevices.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                legacyPercentageContainer.classList.remove('hidden');
+                gsap.from(legacyPercentageContainer, {
+                    opacity: 0,
+                    height: 0,
+                    duration: 0.3,
+                    ease: 'power2.out'
+                });
+            } else {
+                gsap.to(legacyPercentageContainer, {
+                    opacity: 0,
+                    height: 0,
+                    duration: 0.3,
+                    ease: 'power2.in',
+                    onComplete: () => {
+                        legacyPercentageContainer.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    }
+}
+
+// Validate organization form
+function validateOrganizationForm() {
+    const deviceCount = document.getElementById('device-count').value;
+    return deviceCount && parseInt(deviceCount) > 0;
+}
+
+// Update device count range based on organization size
+function updateDeviceCountRange(e) {
+    const deviceCountInput = document.getElementById('device-count');
+    const size = e.target.value;
+    
+    const ranges = {
+        small: { min: 100, max: 1000, default: 500 },
+        medium: { min: 1000, max: 5000, default: 2500 },
+        large: { min: 5000, max: 50000, default: 10000 }
+    };
+    
+    if (deviceCountInput && ranges[size]) {
+        deviceCountInput.min = ranges[size].min;
+        deviceCountInput.max = ranges[size].max;
+        deviceCountInput.value = ranges[size].default;
+    }
+}
+
+// Export functions for use in other modules
+window.updateVendorInfo = updateVendorInfo;
+window.updateWizardNavigation = updateWizardNavigation;
