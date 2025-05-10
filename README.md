@@ -1,4 +1,4 @@
-# NAC Architecture Designer Pro - Enhanced Edition
+# Portnox Total Cost Analyzer - Enhanced Edition
 
 An enhanced Zero Trust NAC Architecture Designer with stunning visuals, animations, and improved user experience.
 
