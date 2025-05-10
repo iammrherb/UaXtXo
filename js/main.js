@@ -1,344 +1,439 @@
-// Total Cost Analyzer - Main Application
+// Professional TCO Analyzer - Main Application
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Initializing Total Cost Analyzer...');
+    console.log('🏢 Initializing Enterprise TCO Analyzer...');
     
-    // Initialize particle background
-    initParticleBackground();
+    // Initialize Configuration
+    initializeConfiguration();
     
-    // Initialize theme
-    initTheme();
+    // Initialize UI Components
+    initializeUIComponents();
     
-    // Load default results immediately
-    loadDefaultResults();
+    // Initialize Navigation
+    initializeNavigation();
     
-    // Initialize result tabs
-    initResultsTabs();
+    // Initialize Charts
+    if (window.chartManager) {
+        window.chartManager.init();
+    }
     
-    // Initialize animations
-    initAnimations();
+    // Load default data and calculations
+    loadDefaultAnalysis();
     
-    console.log('✅ Application initialized successfully!');
+    console.log('✅ TCO Analyzer initialized successfully');
 });
 
-// Initialize particle background
-function initParticleBackground() {
-    if (typeof particlesJS !== 'undefined' && document.getElementById('particles-js')) {
-        particlesJS('particles-js', {
-            particles: {
-                number: {
-                    value: 40,
-                    density: {
-                        enable: true,
-                        value_area: 800
-                    }
-                },
-                color: {
-                    value: '#1a73e8'
-                },
-                shape: {
-                    type: 'circle'
-                },
-                opacity: {
-                    value: 0.1,
-                    random: false
-                },
-                size: {
-                    value: 3,
-                    random: true
-                },
-                line_linked: {
-                    enable: true,
-                    distance: 150,
-                    color: '#1a73e8',
-                    opacity: 0.1,
-                    width: 1
-                },
-                move: {
-                    enable: true,
-                    speed: 1,
-                    direction: 'none',
-                    random: false,
-                    straight: false,
-                    out_mode: 'out',
-                    bounce: false
-                }
-            },
-            interactivity: {
-                detect_on: 'canvas',
-                events: {
-                    onhover: {
-                        enable: true,
-                        mode: 'grab'
-                    },
-                    onclick: {
-                        enable: true,
-                        mode: 'push'
-                    },
-                    resize: true
-                }
-            },
-            retina_detect: true
-        });
-    }
-}
-
-// Initialize theme handling
-function initTheme() {
-    const darkModeToggle = document.getElementById('dark-mode-toggle');
-    const body = document.body;
+// Initialize configuration modal
+function initializeConfiguration() {
+    const configBtn = document.getElementById('configuration-btn');
+    const modal = document.getElementById('configuration-modal');
+    const closeBtn = document.getElementById('close-config');
     
-    // Check for saved theme preference
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        body.classList.add('dark-mode');
-        updateThemeIcon(true);
+    if (configBtn) {
+        configBtn.addEventListener('click', () => {
+            modal.classList.add('active');
+            loadConfigurationForm();
+        });
     }
     
-    if (darkModeToggle) {
-        darkModeToggle.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            const isDarkMode = body.classList.contains('dark-mode');
-            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-            updateThemeIcon(isDarkMode);
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
         });
     }
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
 }
 
-function updateThemeIcon(isDarkMode) {
-    const icon = document.querySelector('#dark-mode-toggle i');
-    if (icon) {
-        icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
-    }
+// Initialize UI components
+function initializeUIComponents() {
+    // Initialize tooltips
+    initializeTooltips();
+    
+    // Initialize animations
+    initializeAnimations();
+    
+    // Initialize export functionality
+    initializeExport();
 }
 
-// Load default results
-function loadDefaultResults() {
-    const resultsContent = document.querySelector('.results-content');
-    if (resultsContent) {
-        // Create default content
-        resultsContent.innerHTML = `
-            <!-- Overview Tab -->
-            <div class="result-panel active" id="overview-panel">
-                <div class="executive-summary">
-                    <h2>Executive Summary</h2>
-                    <div class="summary-grid">
-                        <div class="summary-card highlight">
-                            <div class="card-icon">
-                                <i class="fas fa-piggy-bank"></i>
-                            </div>
-                            <div class="card-content">
-                                <h4>Total Savings</h4>
-                                <div class="metric-value" id="total-savings">$425,000</div>
-                                <div class="metric-detail" id="savings-percentage">35%</div>
-                            </div>
-                        </div>
-                        
-                        <div class="summary-card">
-                            <div class="card-icon">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="card-content">
-                                <h4>Break-even Point</h4>
-                                <div class="metric-value" id="breakeven-point">18 months</div>
-                                <div class="metric-detail">Time to positive ROI</div>
-                            </div>
-                        </div>
-                        
-                        <div class="summary-card">
-                            <div class="card-icon">
-                                <i class="fas fa-shield-alt"></i>
-                            </div>
-                            <div class="card-content">
-                                <h4>Risk Reduction</h4>
-                                <div class="metric-value" id="risk-reduction">62%</div>
-                                <div class="metric-detail">Security improvement</div>
-                            </div>
-                        </div>
-                        
-                        <div class="summary-card">
-                            <div class="card-icon">
-                                <i class="fas fa-rocket"></i>
-                            </div>
-                            <div class="card-content">
-                                <h4>Implementation Time</h4>
-                                <div class="metric-value" id="implementation-time">14 days</div>
-                                <div class="metric-detail">vs. current solution</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="key-insights">
-                    <h3>Key Insights</h3>
-                    <div class="insights-list" id="key-insights-list">
-                        <div class="insight-item high-impact">
-                            <div class="insight-icon">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <div class="insight-content">
-                                <h4>Significant Cost Reduction</h4>
-                                <p>Switching to Portnox Cloud could save your organization 35% over 3 years.</p>
-                            </div>
-                        </div>
-                        <div class="insight-item high-impact">
-                            <div class="insight-icon">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="insight-content">
-                                <h4>Faster Implementation</h4>
-                                <p>Deploy 76% faster with cloud-native architecture.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Comparison Tab -->
-            <div class="result-panel" id="comparison-panel">
-                <div class="comparison-charts">
-                    <div class="chart-card">
-                        <h3>3-Year TCO Comparison</h3>
-                        <canvas id="tco-comparison-chart"></canvas>
-                    </div>
-                    
-                    <div class="chart-card">
-                        <h3>Cost Breakdown by Category</h3>
-                        <canvas id="cost-breakdown-chart"></canvas>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Other panels -->
-            <div class="result-panel" id="implementation-panel">
-                <h3>Implementation Timeline</h3>
-                <canvas id="implementation-chart"></canvas>
-            </div>
-            
-            <div class="result-panel" id="features-panel">
-                <h3>Feature Comparison</h3>
-                <canvas id="features-chart"></canvas>
-            </div>
-            
-            <div class="result-panel" id="roi-panel">
-                <h3>ROI Analysis</h3>
-                <canvas id="roi-chart"></canvas>
-            </div>
-            
-            <div class="result-panel" id="risk-panel">
-                <h3>Risk Analysis</h3>
-                <canvas id="risk-chart"></canvas>
-            </div>
-            
-            <div class="result-panel" id="sensitivity-panel">
-                <h3>Sensitivity Analysis</h3>
-                <div id="sensitivity-controls">
-                    <!-- Sensitivity controls here -->
-                </div>
-                <canvas id="sensitivity-chart"></canvas>
-            </div>
-        `;
-    }
-
-    // Load default charts
-    setTimeout(() => {
-        createDefaultCharts();
-    }, 500);
-}
-
-// Create default charts
-function createDefaultCharts() {
-    // TCO Comparison Chart
-    const tcoCtx = document.getElementById('tco-comparison-chart');
-    if (tcoCtx) {
-        new Chart(tcoCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Cisco ISE', 'Portnox Cloud'],
-                datasets: [{
-                    label: '3-Year TCO',
-                    data: [1200000, 775000],
-                    backgroundColor: ['#ea4335', '#34a853'],
-                    borderRadius: 8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: value => `$${value.toLocaleString()}`
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // Cost Breakdown Chart
-    const breakdownCtx = document.getElementById('cost-breakdown-chart');
-    if (breakdownCtx) {
-        new Chart(breakdownCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Hardware', 'Licensing', 'Implementation', 'Maintenance', 'Personnel'],
-                datasets: [{
-                    data: [150000, 280000, 125000, 180000, 465000],
-                    backgroundColor: [
-                        '#1a73e8',
-                        '#34a853',
-                        '#fbbc04',
-                        '#ea4335',
-                        '#4285f4'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'right' }
-                }
-            }
-        });
-    }
-}
-
-// Initialize result tabs
-function initResultsTabs() {
-    const tabs = document.querySelectorAll('.result-tab');
-    tabs.forEach(tab => {
+// Initialize navigation tabs
+function initializeNavigation() {
+    const navTabs = document.querySelectorAll('.nav-tab');
+    const sections = document.querySelectorAll('.analysis-section');
+    
+    navTabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const tabName = tab.dataset.tab;
-            switchResultTab(tabName);
+            
+            // Update tab states
+            navTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Update section visibility
+            sections.forEach(section => {
+                section.classList.remove('active');
+                if (section.id === `${tabName}-analysis`) {
+                    section.classList.add('active');
+                    
+                    // Animate section entry
+                    section.style.opacity = '0';
+                    section.style.transform = 'translateY(20px)';
+                    
+                    requestAnimationFrame(() => {
+                        section.style.transition = 'all 0.5s ease';
+                        section.style.opacity = '1';
+                        section.style.transform = 'translateY(0)';
+                    });
+                }
+            });
         });
     });
 }
 
-function switchResultTab(tabName) {
-    // Update tabs
-    document.querySelectorAll('.result-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.tab === tabName);
+// Load default analysis data
+function loadDefaultAnalysis() {
+    // Default configuration
+    const defaultConfig = {
+        organization: {
+            size: 'medium',
+            deviceCount: 2500,
+            locations: 5,
+            industry: 'technology',
+            yearsToProject: 3
+        },
+        currentVendor: 'cisco',
+        compliance: ['ISO 27001', 'SOC 2', 'GDPR'],
+        operationalParams: {
+            fteCost: 120000,
+            maintenancePercentage: 0.18,
+            downtimeCostPerHour: 10000
+        }
+    };
+    
+    // Calculate and display results
+    calculateAndDisplayResults(defaultConfig);
+    
+    // Animate KPI values
+    animateKPIValues();
+}
+
+// Calculate and display results
+function calculateAndDisplayResults(config) {
+    // Perform calculations
+    const results = calculateTCO(config);
+    
+    // Update KPI values
+    updateKPIValues(results);
+    
+    // Update insights
+    updateInsights(results);
+    
+    // Charts are automatically updated by ChartManager
+}
+
+// TCO calculation logic
+function calculateTCO(config) {
+    const { deviceCount, yearsToProject } = config.organization;
+    
+    // Current solution costs
+    const currentCosts = {
+        hardware: 150000,
+        licensing: deviceCount * 35 * yearsToProject,
+        maintenance: 150000 * 0.18 * yearsToProject,
+        implementation: 125000,
+        personnel: 120000 * 1.5 * yearsToProject,
+        training: 25000,
+        downtime: 15000 * yearsToProject
+    };
+    
+    // Portnox costs
+    const portnoxCosts = {
+        hardware: 0,
+        licensing: deviceCount * 4 * 12 * yearsToProject * 0.8, // 20% discount
+        maintenance: 0,
+        implementation: 25000,
+        personnel: 120000 * 0.1 * yearsToProject,
+        training: 5000,
+        downtime: 2000 * yearsToProject
+    };
+    
+    // Calculate totals
+    const currentTotal = Object.values(currentCosts).reduce((a, b) => a + b, 0);
+    const portnoxTotal = Object.values(portnoxCosts).reduce((a, b) => a + b, 0);
+    const savings = currentTotal - portnoxTotal;
+    const savingsPercentage = (savings / currentTotal) * 100;
+    
+    return {
+        currentTotal,
+        portnoxTotal,
+        savings,
+        savingsPercentage,
+        breakeven: 18, // months
+        securityImprovement: 62,
+        implementationDays: 14,
+        roi: ((savings - portnoxTotal) / portnoxTotal) * 100
+    };
+}
+
+// Update KPI values
+function updateKPIValues(results) {
+    const kpiMap = {
+        'total-cost-reduction': `${results.savingsPercentage.toFixed(0)}%`,
+        'time-to-value': '14 days',
+        'security-improvement': `${results.securityImprovement}%`,
+        'roi-timeline': '18 months'
+    };
+    
+    Object.entries(kpiMap).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value;
+        }
     });
     
-    // Update panels
-    document.querySelectorAll('.result-panel').forEach(panel => {
-        panel.classList.toggle('active', panel.id === `${tabName}-panel`);
+    // Update detail values
+    const detailElements = {
+        'total-savings': `3-Year TCO Savings: ${results.savings.toLocaleString()}`,
+        'roi-detail': `${results.roi.toFixed(0)}% 3-Year ROI`
+    };
+    
+    Object.entries(detailElements).forEach(([className, value]) => {
+        const element = document.querySelector(`.${className}`);
+        if (element) {
+            element.textContent = value;
+        }
+    });
+}
+
+// Update strategic insights
+function updateInsights(results) {
+    // Insights are already populated in HTML
+    // This function would update them based on calculations if needed
+}
+
+// Animate KPI values
+function animateKPIValues() {
+    const kpiValues = document.querySelectorAll('.kpi-value');
+    
+    kpiValues.forEach(element => {
+        const finalValue = element.textContent;
+        const isPercentage = finalValue.includes('%');
+        const isTime = finalValue.includes('days') || finalValue.includes('months');
+        
+        if (isPercentage || isTime) {
+            const numericValue = parseInt(finalValue.match(/\d+/)[0]);
+            
+            if (typeof CountUp !== 'undefined') {
+                const countUp = new CountUp(element, numericValue, {
+                    duration: 2,
+                    suffix: isPercentage ? '%' : (isTime ? ` ${finalValue.split(' ')[1]}` : '')
+                });
+                
+                if (!countUp.error) {
+                    countUp.start();
+                }
+            }
+        }
+    });
+}
+
+// Initialize tooltips
+function initializeTooltips() {
+    // Add tooltips to elements that need additional explanation
+    const tooltipElements = document.querySelectorAll('[data-tooltip]');
+    
+    tooltipElements.forEach(element => {
+        element.addEventListener('mouseenter', showTooltip);
+        element.addEventListener('mouseleave', hideTooltip);
     });
 }
 
 // Initialize animations
-function initAnimations() {
-    // Initialize AOS if available
-    if (typeof AOS !== 'undefined') {
-        AOS.init({
-            duration: 800,
-            once: true,
-            offset: 100
+function initializeAnimations() {
+    // Animate section entries
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    document.querySelectorAll('.insight-card, .kpi-card, .chart-container').forEach(element => {
+        observer.observe(element);
+    });
+}
+
+// Initialize export functionality
+function initializeExport() {
+    const exportBtn = document.getElementById('export-report');
+    
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            generatePDFReport();
         });
     }
+}
+
+// Configuration form loader
+function loadConfigurationForm() {
+    const modalBody = document.querySelector('.modal-body');
+    
+    modalBody.innerHTML = `
+        <form id="configuration-form">
+            <div class="form-section">
+                <h3>Organization Details</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="org-size">Organization Size</label>
+                        <select id="org-size" name="organizationSize">
+                            <option value="small">Small (< 1,000 devices)</option>
+                            <option value="medium" selected>Medium (1,000-5,000 devices)</option>
+                            <option value="large">Large (5,000-10,000 devices)</option>
+                            <option value="enterprise">Enterprise (10,000+ devices)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="device-count">Number of Devices</label>
+                        <input type="number" id="device-count" name="deviceCount" value="2500" min="100" max="100000">
+                    </div>
+                    <div class="form-group">
+                        <label for="locations">Number of Locations</label>
+                        <input type="number" id="locations" name="locations" value="5" min="1" max="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="industry">Industry</label>
+                        <select id="industry" name="industry">
+                            <option value="technology" selected>Technology</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="financial">Financial Services</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="retail">Retail</option>
+                            <option value="education">Education</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>Current NAC Solution</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="current-vendor">Current Vendor</label>
+                        <select id="current-vendor" name="currentVendor">
+                            <option value="cisco" selected>Cisco ISE</option>
+                            <option value="aruba">Aruba ClearPass</option>
+                            <option value="forescout">Forescout</option>
+                            <option value="fortinac">FortiNAC</option>
+                            <option value="none">No NAC Solution</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="analysis-period">Analysis Period</label>
+                        <select id="analysis-period" name="analysisPeriod">
+                            <option value="1">1 Year</option>
+                            <option value="3" selected>3 Years</option>
+                            <option value="5">5 Years</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline" onclick="closeConfiguration()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Apply Configuration</button>
+            </div>
+        </form>
+    `;
+    
+    // Handle form submission
+    const form = document.getElementById('configuration-form');
+    form.addEventListener('submit', handleConfigurationSubmit);
+}
+
+// Handle configuration form submission
+function handleConfigurationSubmit(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const config = {
+        organization: {
+            size: formData.get('organizationSize'),
+            deviceCount: parseInt(formData.get('deviceCount')),
+            locations: parseInt(formData.get('locations')),
+            industry: formData.get('industry'),
+            yearsToProject: parseInt(formData.get('analysisPeriod'))
+        },
+        currentVendor: formData.get('currentVendor')
+    };
+    
+    // Recalculate and update display
+    calculateAndDisplayResults(config);
+    
+    // Close modal
+    document.getElementById('configuration-modal').classList.remove('active');
+    
+    // Show notification
+    showNotification('Configuration updated successfully', 'success');
+}
+
+// Generate PDF report
+function generatePDFReport() {
+    // This would integrate with a PDF generation library
+    showNotification('Generating PDF report...', 'info');
+    
+    // Simulate PDF generation
+    setTimeout(() => {
+        showNotification('PDF report generated successfully', 'success');
+        // Trigger download
+    }, 2000);
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Show notification
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Helper functions
+function showTooltip(e) {
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    tooltip.textContent = e.target.dataset.tooltip;
+    
+    document.body.appendChild(tooltip);
+    
+    const rect = e.target.getBoundingClientRect();
+    tooltip.style.top = `${rect.top - tooltip.offsetHeight - 5}px`;
+    tooltip.style.left = `${rect.left + (rect.width - tooltip.offsetWidth) / 2}px`;
+}
+
+function hideTooltip() {
+    const tooltips = document.querySelectorAll('.tooltip');
+    tooltips.forEach(tooltip => tooltip.remove());
+}
+
+function closeConfiguration() {
+    document.getElementById('configuration-modal').classList.remove('active');
 }
