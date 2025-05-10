@@ -361,6 +361,7 @@ function updateDeviceCountDisplay() {
 }
 
 function updateFormState() {
+    if (!window.wizardManager) { window.wizardManager = new WizardManager(); }
     const orgData = wizardManager.getOrganizationData();
     stateManager.setOrganization(orgData);
     updateNavigationState();
@@ -598,4 +599,9 @@ function updateNavigationState() {
     if (nextBtn) {
         nextBtn.disabled = !wizardManager.validateCurrentStep();
     }
+}
+
+// Initialize wizard manager if not already initialized
+if (!window.wizardManager) {
+    window.wizardManager = new WizardManager();
 }
