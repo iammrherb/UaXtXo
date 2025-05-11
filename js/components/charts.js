@@ -1442,9 +1442,3 @@ console.log('Chart Builder initialized and available as window.chartBuilder');
   
   console.log('Chart fix installed successfully');
 })();
-
-// Add missing createCharts function
-ChartBuilder.prototype.createCharts = function() {
-    console.log('Creating charts via createCharts()...');
-    this.initCharts();
-};
