@@ -22,8 +22,6 @@
     
     <link rel="icon" type="image/png" href="img/favicon.svg">
     <link rel="stylesheet" href="css/chart-styles.css">
-    <script src="js/canvas-fixer.js"></script>
-    <script src="js/data-integration.js"></script>
 </head>
 <body>
     <!-- Particle Background -->
@@ -730,8 +728,6 @@
     <script src="js/data/processors/feature-comparison-processor.js"></script>
     <script src="js/app-controller.js"></script>
     <script src="js/init.js"></script>
-    <script src="js/wizard-fix.js"></script>
-    <script src="js/final-patch.js"></script>
 </body>
 </html>
 

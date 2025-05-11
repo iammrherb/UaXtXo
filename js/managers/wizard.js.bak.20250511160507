@@ -890,7 +890,7 @@ class WizardManager {
         Object.entries(metrics).forEach(([id, config]) => {
             const element = document.getElementById(id);
             if (element) {
-                const countUp = typeof CountUp !== "undefined" ? new CountUp(element, config.value, {
+                const countUp = new CountUp(element, config.value, {
                     duration: 2,
                     prefix: config.prefix,
                     suffix: config.suffix,
@@ -899,7 +899,7 @@ class WizardManager {
                 });
                 
                 if (!countUp.error) {
-                    countUp.start() : null;
+                    countUp.start();
                 } else {
                     element.textContent = `${config.prefix}${config.value}${config.suffix}`;
                 }
