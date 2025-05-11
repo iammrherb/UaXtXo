@@ -1,0 +1,315 @@
+/**
+ * Enhanced Wizard Manager
+ * Manages the multi-step wizard for TCO calculation
+ */
+class WizardManager {
+    constructor() {
+        this.currentStep = 1;
+        this.totalSteps = 5;
+        this.formData = {
+            currentVendor: null,
+            organization: {
+                size: 'medium',
+                deviceCount: 1000,
+                userCount: 100,
+                locationCount: 1,
+                multiLocation: false
+            },
+            industry: null,
+            complianceFrameworks: [],
+            costConfig: {},
+            yearsToProject: 3
+        };
+        
+        this.init();
+    }
+    
+    init() {
+        this.setupEventListeners();
+        this.createWizardUI();
+    }
+    
+    setupEventListeners() {
+        // Wizard open button
+        const wizardBtn = document.getElementById('wizard-btn');
+        if (wizardBtn) {
+            wizardBtn.addEventListener('click', () => this.openWizard());
+        }
+        
+        // Skip button
+        const skipBtn = document.getElementById('skip-wizard');
+        if (skipBtn) {
+            skipBtn.addEventListener('click', () => this.skipWizard());
+        }
+    }
+    
+    createWizardUI() {
+        // Create wizard overlay if it doesn't exist
+        if (!document.getElementById('wizard-overlay')) {
+            const wizardHTML = `
+                <div id="wizard-overlay" class="wizard-overlay">
+                    <div class="wizard-container">
+                        <div class="wizard-header">
+                            <h2>Zero Trust NAC TCO Calculator</h2>
+                            <button class="wizard-close" id="wizard-close">&times;</button>
+                        </div>
+                        
+                        <div class="wizard-progress">
+                            <div class="wizard-steps">
+                                ${this.createProgressSteps()}
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 20%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="wizard-content">
+                            ${this.createWizardSteps()}
+                        </div>
+                        
+                        <div class="wizard-navigation">
+                            <button class="btn-skip" id="skip-wizard">Skip Wizard</button>
+                            <div class="wizard-nav-buttons">
+                                <button class="btn-wizard btn-wizard-secondary" id="wizard-prev" disabled>Previous</button>
+                                <button class="btn-wizard btn-wizard-primary" id="wizard-next">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', wizardHTML);
+            
+            // Setup event listeners
+            document.getElementById('wizard-close').addEventListener('click', () => this.closeWizard());
+            document.getElementById('wizard-prev').addEventListener('click', () => this.previousStep());
+            document.getElementById('wizard-next').addEventListener('click', () => this.nextStep());
+            document.getElementById('skip-wizard').addEventListener('click', () => this.skipWizard());
+        }
+    }
+    
+    createProgressSteps() {
+        const steps = [
+            'Vendor Selection',
+            'Organization Details',
+            'Industry & Compliance',
+            'Cost Configuration',
+            'Review & Calculate'
+        ];
+        
+        return steps.map((step, index) => `
+            <div class="wizard-step ${index + 1 === this.currentStep ? 'active' : ''}" data-step="${index + 1}">
+                <div class="step-number">${index + 1}</div>
+               <div class="step-title">${step}</div>
+           </div>
+       `).join('');
+   }
+   
+   createWizardSteps() {
+       return `
+           <!-- Step 1: Vendor Selection -->
+           <div class="wizard-step-content active" data-step="1">
+               <h3>Select Your Current NAC Solution</h3>
+               <p>Choose your existing Network Access Control vendor or select "No NAC" if you don't have a solution.</p>
+               
+               <div class="vendor-grid">
+                   ${this.createVendorCards()}
+               </div>
+           </div>
+           
+           <!-- Step 2: Organization Details -->
+           <div class="wizard-step-content" data-step="2">
+               <h3>Organization Details</h3>
+               <p>Tell us about your organization to customize the TCO analysis.</p>
+               
+               <div class="form-grid">
+                   <div class="form-group">
+                       <label for="org-size">Organization Size</label>
+                       <select id="org-size" class="form-control">
+                           <option value="small">Small (< 1,000 devices)</option>
+                           <option value="medium" selected>Medium (1,000-5,000 devices)</option>
+                           <option value="large">Large (5,000+ devices)</option>
+                       </select>
+                   </div>
+                   
+                   <div class="form-group">
+                       <label for="device-count">Number of Devices</label>
+                       <input type="number" id="device-count" class="form-control" value="1000" min="10" max="100000">
+                       <small class="help-text">Total number of devices to manage</small>
+                   </div>
+                   
+                   <div class="form-group">
+                       <label for="user-count">Number of Users</label>
+                       <input type="number" id="user-count" class="form-control" value="100" min="1" max="10000">
+                       <small class="help-text">Number of IT administrators</small>
+                   </div>
+                   
+                   <div class="form-group">
+                       <label for="location-count">Number of Locations</label>
+                       <input type="number" id="location-count" class="form-control" value="1" min="1" max="1000">
+                       <small class="help-text">Physical locations or sites</small>
+                   </div>
+                   
+                   <div class="form-group">
+                       <label>
+                           <input type="checkbox" id="multi-location">
+                           Multiple Locations
+                       </label>
+                       <small class="help-text">Check if you have multiple physical locations</small>
+                   </div>
+               </div>
+           </div>
+           
+           <!-- Step 3: Industry & Compliance -->
+           <div class="wizard-step-content" data-step="3">
+               <h3>Industry & Compliance</h3>
+               <p>Select your industry and compliance requirements for accurate cost analysis.</p>
+               
+               <h4>Select Your Industry</h4>
+               <div class="industry-grid">
+                   ${this.createIndustryCards()}
+               </div>
+               
+               <h4>Compliance Requirements</h4>
+               <div class="compliance-grid">
+                   ${this.createComplianceCards()}
+               </div>
+           </div>
+           
+           <!-- Step 4: Cost Configuration -->
+           <div class="wizard-step-content" data-step="4">
+               <h3>Cost Configuration</h3>
+               <p>Customize cost parameters for accurate TCO calculation.</p>
+               
+               <div class="cost-config-section">
+                   <h4>Personnel Costs</h4>
+                   <div class="cost-input-group">
+                       <div class="cost-input">
+                           <label for="avg-salary">Average IT Salary</label>
+                           <span class="currency-symbol">$</span>
+                           <input type="number" id="avg-salary" value="85000" min="30000" max="200000">
+                       </div>
+                       <div class="cost-input">
+                           <label for="benefits-multiplier">Benefits Multiplier</label>
+                           <input type="number" id="benefits-multiplier" value="1.3" min="1" max="2" step="0.1">
+                       </div>
+                   </div>
+               </div>
+               
+               <div class="cost-config-section">
+                   <h4>Infrastructure Costs</h4>
+                   <div class="cost-input-group">
+                       <div class="cost-input">
+                           <label for="hardware-refresh">Hardware Refresh Cycle (years)</label>
+                           <input type="number" id="hardware-refresh" value="3" min="1" max="7">
+                       </div>
+                       <div class="cost-input">
+                           <label for="network-upgrade">Network Upgrade Budget</label>
+                           <span class="currency-symbol">$</span>
+                           <input type="number" id="network-upgrade" value="50000" min="0" max="500000">
+                       </div>
+                   </div>
+               </div>
+               
+               <div class="cost-config-section">
+                   <h4>Portnox Pricing</h4>
+                   <div class="range-input">
+                       <label for="portnox-pricing">Price per Device (Monthly)</label>
+                       <input type="range" id="portnox-pricing" min="2" max="10" value="5" step="0.5">
+                       <div class="range-value">$<span id="portnox-price-value">5.00</span></div>
+                   </div>
+                   
+                   <div class="range-input">
+                       <label for="volume-discount">Volume Discount</label>
+                       <input type="range" id="volume-discount" min="0" max="50" value="0" step="5">
+                       <div class="range-value"><span id="volume-discount-value">0</span>%</div>
+                   </div>
+               </div>
+               
+               <div class="cost-config-section">
+                   <h4>Implementation Preferences</h4>
+                   <div class="cost-input-group">
+                       <div class="cost-input">
+                           <label for="implementation-speed">Implementation Speed</label>
+                           <select id="implementation-speed" class="form-control">
+                               <option value="standard">Standard</option>
+                               <option value="accelerated">Accelerated (+20% cost)</option>
+                               <option value="phased">Phased (-10% cost)</option>
+                           </select>
+                       </div>
+                       <div class="cost-input">
+                           <label for="professional-services">Professional Services</label>
+                           <select id="professional-services" class="form-control">
+                               <option value="none">None</option>
+                               <option value="basic">Basic</option>
+                               <option value="premium">Premium</option>
+                           </select>
+                       </div>
+                   </div>
+               </div>
+           </div>
+           
+           <!-- Step 5: Review & Calculate -->
+           <div class="wizard-step-content" data-step="5">
+               <h3>Review Your Configuration</h3>
+               <p>Please review your selections before generating the TCO analysis.</p>
+               
+               <div class="review-grid">
+                   <div class="summary-section">
+                       <h5>Current Solution</h5>
+                       <div class="summary-item">
+                           <span>Vendor:</span>
+                           <span id="review-vendor">Not selected</span>
+                       </div>
+                   </div>
+                   
+                   <div class="summary-section">
+                       <h5>Organization</h5>
+                       <div class="summary-item">
+                           <span>Size:</span>
+                           <span id="review-size">Medium</span>
+                       </div>
+                       <div class="summary-item">
+                           <span>Devices:</span>
+                           <span id="review-devices">1,000</span>
+                       </div>
+                       <div class="summary-item">
+                           <span>Locations:</span>
+                           <span id="review-locations">1</span>
+                       </div>
+                   </div>
+                   
+                   <div class="summary-section">
+                       <h5>Industry & Compliance</h5>
+                       <div class="summary-item">
+                           <span>Industry:</span>
+                           <span id="review-industry">Not selected</span>
+                       </div>
+                       <div class="summary-item">
+                           <span>Frameworks:</span>
+                           <span id="review-compliance">None selected</span>
+                       </div>
+                   </div>
+                   
+                   <div class="summary-section">
+                       <h5>Cost Configuration</h5>
+                       <div class="summary-item">
+                           <span>Analysis Period:</span>
+                           <span id="review-years">3 years</span>
+                       </div>
+                       <div class="summary-item">
+                           <span>Portnox Price:</span>
+                           <span id="review-price">$5.00/device/month</span>
+                       </div>
+                   </div>
+               </div>
+               
+               <div class="calculate-section">
+                   <button class="btn-wizard btn-wizard-primary btn-large animate-pulse" id="calculate-tco">
+                       <i class="fas fa-calculator"></i> Calculate TCO
+                   </button>
+               </div>
+           </div>
+       `;
+   }
+   

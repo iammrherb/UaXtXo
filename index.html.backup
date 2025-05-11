@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NAC Total Cost Analyzer - Comprehensive Network Access Control TCO Analysis Platform">
+    <title>Total Cost Analyzer | Network Access Control TCO Comparison</title>
+    
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="libs/css/tailwind.min.css">
+    <!-- Use CDN for Font Awesome to avoid font loading issues -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/professional.css">
+    <link rel="stylesheet" href="css/charts.css">
+    <link rel="stylesheet" href="css/wizard.css">
+    
+    <link rel="icon" type="image/png" href="img/favicon.png">
+</head>
+<body>
+    <!-- Main Application Container -->
+    <div class="app-container">
+        <!-- Professional Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="img/portnox-logo.png" alt="Portnox" class="company-logo">
+                    <div class="app-title">
+                        <h1>Total Cost Analyzer</h1>
+                        <p class="subtitle">Network Access Control TCO Comparison Platform</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="launch-wizard" class="btn btn-primary">
+                        <i class="fas fa-magic"></i>
+                        <span>Launch TCO Wizard</span>
+                    </button>
+                    <button id="skip-to-dashboard" class="btn btn-outline">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Skip to Dashboard</span>
+                    </button>
+                    <button id="export-report" class="btn btn-outline">
+                        <i class="fas fa-file-export"></i>
+                        <span>Export Analysis</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- TCO Wizard Modal -->
+        <div id="tco-wizard-modal" class="wizard-modal hidden">
+            <div class="wizard-container">
+                <div class="wizard-header">
+                    <h2>NAC Total Cost of Ownership Analysis Wizard</h2>
+                    <button id="wizard-close" class="wizard-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="wizard-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="wizard-progress-fill"></div>
+                    </div>
+                    <div class="progress-steps" id="wizard-progress-steps">
+                        <!-- Progress steps will be inserted here -->
+                    </div>
+                </div>
+                
+                <div class="wizard-content" id="wizard-content">
+                    <!-- Wizard steps will be inserted here -->
+                </div>
+                
+                <div class="wizard-footer">
+                    <button id="wizard-prev" class="btn btn-outline" style="display: none;">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <button id="wizard-next" class="btn btn-primary">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Executive Dashboard -->
+        <main class="main-content" id="dashboard-content" style="display: none;">
+            <!-- Dashboard content remains the same as before -->
+            <section class="executive-summary" id="executive-summary">
+                <div class="section-header">
+                    <h2>Executive Summary</h2>
+                    <div class="audience-badge">Multi-Vendor TCO Comparison</div>
+                </div>
+                
+                <div id="vendor-comparison-info" class="comparison-info">
+                    <!-- Selected vendors will be displayed here -->
+                </div>
+                
+                <div class="kpi-grid" id="kpi-grid">
+                    <!-- KPIs will be dynamically populated based on selected vendors -->
+                </div>
+                
+                <!-- Rest of dashboard sections -->
+            </section>
+            
+            <!-- Analysis Navigation -->
+            <nav class="analysis-nav">
+                <button class="nav-tab active" data-tab="financial">
+                    <i class="fas fa-coins"></i> Financial Analysis
+                </button>
+                <button class="nav-tab" data-tab="technical">
+                    <i class="fas fa-server"></i> Technical Assessment
+                </button>
+                <button class="nav-tab" data-tab="security">
+                    <i class="fas fa-shield-alt"></i> Security & Risk
+                </button>
+                <button class="nav-tab" data-tab="implementation">
+                    <i class="fas fa-project-diagram"></i> Implementation
+                </button>
+                <button class="nav-tab" data-tab="vendor">
+                    <i class="fas fa-balance-scale"></i> Vendor Comparison
+                </button>
+                <button class="nav-tab" data-tab="compliance">
+                    <i class="fas fa-clipboard-check"></i> Compliance Impact
+                </button>
+                <button class="nav-tab" data-tab="sensitivity">
+                    <i class="fas fa-sliders-h"></i> Sensitivity Analysis
+                </button>
+            </nav>
+            
+            <!-- Analysis Sections -->
+            <div class="analysis-content">
+                <!-- All analysis sections will be here -->
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-copyright">
+                    &copy; 2025 Portnox. NAC Total Cost Analyzer - Confidential
+                </div>
+                <div class="footer-links">
+                    <a href="#methodology">Methodology</a>
+                    <a href="#assumptions">Assumptions</a>
+                    <a href="#contact">Contact Sales</a>
+                    <a href="#support">Technical Support</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- JavaScript Libraries -->
+    <script src="libs/js/chart.min.js"></script>
+    <script src="libs/js/chartjs-plugin-datalabels.min.js"></script>
+    <script src="libs/js/gsap.min.js"></script>
+    <script src="libs/js/countUp.min.js"></script>
+    
+    <!-- Application Scripts -->
+    <script src="js/core/config.js"></script>
+    <script src="js/core/utils.js"></script>
+    <script src="js/data/vendor-data.js"></script>
+    <script src="js/data/industry-data.js"></script>
+    <script src="js/data/compliance-data.js"></script>
+    <script src="js/calculators/tco-calculator.js"></script>
+    <script src="js/calculators/roi-calculator.js"></script>
+    <script src="js/calculators/risk-calculator.js"></script>
+    <script src="js/calculators/sensitivity-calculator.js"></script>
+    <script src="js/charts/chart-manager.js"></script>
+    <script src="js/ui/wizard.js"></script>
+    <script src="js/ui/dashboard.js"></script>
+    <script src="js/ui/configuration.js"></script>
+    <script src="js/ui/reports.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

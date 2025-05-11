@@ -1,0 +1,26 @@
+{
+    "vendors": {
+        "cisco": {
+            "name": "Cisco ISE",
+            "type": "on-premises",
+            "baseCost": 150000
+        },
+        "portnox": {
+            "name": "Portnox Cloud",
+            "type": "cloud",
+            "baseCost": 50000
+        }
+    },
+    "industries": {
+        "healthcare": {
+            "name": "Healthcare",
+            "compliance": ["HIPAA", "HITECH"],
+            "multiplier": 1.2
+        },
+        "finance": {
+            "name": "Financial Services",
+            "compliance": ["PCI DSS", "SOX"],
+            "multiplier": 1.3
+        }
+    }
+}

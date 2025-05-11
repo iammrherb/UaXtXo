@@ -1,0 +1,778 @@
+/* Professional and Enhanced Styles */
+
+/* Enhanced Typography */
+.display-heading {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    background: linear-gradient(135deg, var(--primary-color), var(--success-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+}
+
+.section-heading {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.section-heading::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    border-radius: 2px;
+}
+
+/* Enhanced Card Designs */
+.pro-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pro-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.pro-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.pro-card:hover::before {
+    transform: scaleX(1);
+}
+
+/* Gradient Backgrounds */
+.gradient-bg {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.primary-gradient {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #155a9a 100%);
+}
+
+.success-gradient {
+    background: linear-gradient(135deg, var(--success-color) 0%, #25a84c 100%);
+}
+
+/* Executive Dashboard Enhancements */
+.executive-summary {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    padding: 3rem;
+    border-radius: 16px;
+    margin-bottom: 3rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+}
+
+.executive-insights {
+    margin-top: 3rem;
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.insight-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border-top: 4px solid transparent;
+}
+
+.insight-card:nth-child(1) {
+    border-top-color: var(--primary-color);
+}
+
+.insight-card:nth-child(2) {
+    border-top-color: var(--success-color);
+}
+
+.insight-card:nth-child(3) {
+    border-top-color: var(--info-color);
+}
+
+.insight-card i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.insight-card h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+}
+
+.insight-card p {
+    color: var(--secondary-color);
+    line-height: 1.6;
+}
+
+/* Enhanced Charts */
+.chart-container {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.chart-container.large {
+    grid-column: span 2;
+}
+
+.chart-container.full-width {
+    grid-column: 1 / -1;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.chart-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.chart-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.chart-action {
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chart-action:hover {
+    background: var(--light-color);
+    border-color: var(--primary-color);
+}
+
+/* Financial Grid */
+.financial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+/* Metric Cards */
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.metric-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.metric-card h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-bottom: 1.5rem;
+}
+
+.metric-comparison {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.metric-comparison > div {
+    flex: 1;
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.metric-comparison .current {
+    background: #fee2e2;
+}
+
+.metric-comparison .portnox {
+    background: #d1fae5;
+}
+
+.metric-comparison .label {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+}
+
+.metric-comparison .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.metric-comparison .current .value {
+    color: var(--danger-color);
+}
+
+.metric-comparison .portnox .value {
+    color: var(--success-color);
+}
+
+/* Technical Assessment */
+.technical-grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.comparison-matrix {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.feature-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.feature-table th,
+.feature-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.feature-table th {
+    background: var(--light-color);
+    font-weight: 600;
+    color: var(--dark-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.feature-table tr:hover {
+    background: #f9fafb;
+}
+
+.status-yes {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.status-no {
+    color: var(--danger-color);
+    font-weight: 600;
+}
+
+.status-partial {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+.advantage {
+    color: var(--success-color);
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Architecture Comparison */
+.architecture-comparison {
+    margin-top: 2rem;
+}
+
+.architecture-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.architecture-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.architecture-card h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+}
+
+.architecture-list {
+    list-style: none;
+    padding: 0;
+}
+
+.architecture-list li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: flex-start;
+}
+
+.architecture-list li:last-child {
+    border-bottom: none;
+}
+
+.architecture-list li::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    margin-top: 0.5rem;
+    flex-shrink: 0;
+}
+
+.architecture-list.pros li::before {
+    background: var(--success-color);
+}
+
+.architecture-list.cons li::before {
+    background: var(--danger-color);
+}
+
+/* Security Analysis */
+.security-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+}
+
+.security-metrics {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.kpi-list {
+    margin-top: 1rem;
+}
+
+.security-kpi {
+    margin-bottom: 1.5rem;
+}
+
+.kpi-label {
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--success-color);
+    margin-bottom: 0.5rem;
+}
+
+.kpi-bar {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    border-radius: 4px;
+    transition: width 0.8s ease;
+}
+
+/* Risk Assessment */
+.risk-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.risk-table th,
+.risk-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.risk-high {
+    color: var(--danger-color);
+    font-weight: 600;
+}
+
+.risk-medium {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+.risk-low {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+/* Implementation Timeline */
+.implementation-grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.resource-comparison {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.resource-card {
+    padding: 1.5rem;
+    border-radius: 8px;
+    background: var(--light-color);
+}
+
+.resource-card.portnox {
+    background: #d1fae5;
+}
+
+.resource-card h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+}
+
+.resource-list {
+    list-style: none;
+    padding: 0;
+}
+
+.resource-list li {
+    padding: 0.5rem 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.resource-type {
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+/* Migration Roadmap */
+.migration-plan {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.roadmap-timeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.roadmap-phase {
+    position: relative;
+    padding: 1.5rem;
+    background: var(--light-color);
+    border-radius: 8px;
+}
+
+.phase-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.phase-number {
+    width: 32px;
+    height: 32px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-right: 1rem;
+}
+
+.phase-header h4 {
+    flex: 1;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.phase-duration {
+    font-size: 0.875rem;
+    color: var(--secondary-color);
+    font-weight: 500;
+}
+
+.phase-tasks {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.phase-tasks li {
+    padding: 0.5rem 0;
+    color: var(--secondary-color);
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.phase-tasks li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--success-color);
+    font-weight: 700;
+}
+
+/* Vendor Scorecard */
+.vendor-scorecard {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.scorecard-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.scorecard-table th,
+.scorecard-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.scorecard-table th {
+    background: var(--light-color);
+    font-weight: 600;
+}
+
+.score {
+    font-weight: 600;
+    text-align: center;
+}
+
+.score.highlight {
+    color: var(--success-color);
+}
+
+.total-row {
+    background: var(--light-color);
+    font-weight: 700;
+}
+
+/* Market Analysis */
+.market-analysis {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.market-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.market-metric {
+    padding: 1.5rem;
+    background: var(--light-color);
+    border-radius: 8px;
+}
+
+.market-metric h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+}
+
+/* Compliance Matrix */
+.compliance-grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.compliance-matrix {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.compliance-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.compliance-table th,
+.compliance-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.positive {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+/* Audit Benefits */
+.audit-benefits {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.benefits-list {
+    margin-top: 1rem;
+}
+
+.benefit-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--light-color);
+    border-radius: 8px;
+}
+
+.benefit-item i {
+    font-size: 1.5rem;
+    color: var(--success-color);
+    flex-shrink: 0;
+}
+
+.benefit-content h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--dark-color);
+}
+
+.benefit-content p {
+    color: var(--secondary-color);
+    margin: 0;
+}
+
+/* Animations */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-slide-up {
+    animation: slideInUp 0.6s ease forwards;
+}
+
+/* Staggered animations */
+.stagger-item {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.stagger-item.animate {
+    animation: slideInUp 0.6s ease forwards;
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .app-header,
+    .app-footer,
+    .header-actions,
+    .analysis-nav {
+        display: none !important;
+    }
+    
+    .main-content {
+        padding: 0;
+        max-width: 100%;
+    }
+    
+    .chart-container {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    
+    .section-header {
+        break-after: avoid;
+        page-break-after: avoid;
+    }
+}
