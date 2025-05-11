@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="css/animations.css">
     
     <link rel="icon" type="image/png" href="img/favicon.svg">
+    <link rel="stylesheet" href="css/chart-styles.css">
 </head>
 <body>
     <!-- Particle Background -->
@@ -461,6 +462,39 @@
                 
                 <!-- Results Content -->
                 <div class="results-content">
+                <!-- Comparison Tab -->
+                <div class="result-panel" id="comparison-panel">
+                    <div class="comparison-charts">
+                        <div class="chart-grid">
+                            <div class="chart-card">
+                                <h3>3-Year TCO Comparison</h3>
+                                <canvas id="tco-comparison-chart"></canvas>
+                            </div>
+
+                            <div class="chart-card">
+                                <h3>Current Solution Cost Breakdown</h3>
+                                <canvas id="current-breakdown-chart"></canvas>
+                            </div>
+
+                            <div class="chart-card">
+                                <h3>Portnox Cloud Cost Breakdown</h3>
+                                <canvas id="alternative-breakdown-chart"></canvas>
+                            </div>
+
+                            <div class="chart-card">
+                                <h3>Cumulative Cost Over Time</h3>
+                                <canvas id="cumulative-cost-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="comparison-table">
+                        <h3>Detailed Cost Comparison</h3>
+                        <table id="cost-comparison-table" class="data-table">
+                            <!-- Table populated dynamically -->
+                        </table>
+                    </div>
+                </div>
                     <!-- Overview Tab -->
                     <div class="result-panel active" id="overview-panel">
                         <div class="executive-summary">
@@ -521,12 +555,6 @@
                     </div>
                     
                     <!-- Comparison Tab -->
-                    <div class="result-panel" id="comparison-panel">
-                        <div class="comparison-charts">
-                            <div class="chart-card">
-                                <h3>3-Year TCO Comparison</h3>
-                                <canvas id="tco-comparison-chart"></canvas>
-                            </div>
                             
                             <div class="chart-card">
                                 <h3>Cost Breakdown by Category</h3>
@@ -694,5 +722,120 @@
     
     <!-- Main Application -->
     <script src="js/main.js"></script>
+    <script src="js/components/charts/chart-manager.js"></script>
+    <script src="js/data/processors/tco-calculator.js"></script>
+    <script src="js/data/processors/industry-compliance-processor.js"></script>
+    <script src="js/data/processors/feature-comparison-processor.js"></script>
+    <script src="js/app-controller.js"></script>
+    <script src="js/init.js"></script>
 </body>
 </html>
+
+                <!-- Implementation Tab -->
+                <div class="result-panel" id="implementation-panel">
+                    <div class="implementation-content">
+                        <div class="chart-card">
+                            <h3>Implementation Timeline Comparison</h3>
+                            <canvas id="implementation-comparison-chart"></canvas>
+                        </div>
+
+                        <div class="implementation-details">
+                            <h3>Implementation Roadmap</h3>
+                            <div id="implementation-roadmap">
+                                <!-- Roadmap populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features Tab -->
+                <div class="result-panel" id="features-panel">
+                    <div class="features-content">
+                        <div class="chart-card">
+                            <h3>Feature Comparison</h3>
+                            <canvas id="feature-comparison-chart"></canvas>
+                        </div>
+
+                        <div class="features-matrix">
+                            <h3>Detailed Feature Matrix</h3>
+                            <table id="features-matrix-table" class="data-table">
+                                <!-- Table populated dynamically -->
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROI Tab -->
+                <div class="result-panel" id="roi-panel">
+                    <div class="roi-content">
+                        <div class="chart-card">
+                            <h3>ROI Analysis</h3>
+                            <canvas id="roi-chart"></canvas>
+                        </div>
+
+                        <div class="roi-details">
+                            <h3>ROI Breakdown</h3>
+                            <div id="roi-breakdown">
+                                <!-- ROI details populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Tab -->
+                <div class="result-panel" id="risk-panel">
+                    <div class="risk-content">
+                        <div class="risk-matrix">
+                            <h3>Risk Assessment Matrix</h3>
+                            <div id="risk-matrix">
+                                <!-- Risk matrix populated dynamically -->
+                            </div>
+                        </div>
+
+                        <div class="risk-mitigation">
+                            <h3>Risk Mitigation Strategies</h3>
+                            <div id="risk-mitigation-strategies">
+                                <!-- Strategies populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sensitivity Tab -->
+                <div class="result-panel" id="sensitivity-panel">
+                    <div class="sensitivity-content">
+                        <div class="sensitivity-controls">
+                            <h3>Sensitivity Analysis Parameters</h3>
+                            <div class="parameter-grid">
+                                <div class="parameter-card">
+                                    <label for="sensitivity-variable">Variable to Analyze</label>
+                                    <select id="sensitivity-variable" class="form-select">
+                                        <option value="deviceCount">Device Count</option>
+                                        <option value="cost">Cost per Device</option>
+                                        <option value="fte">FTE Requirements</option>
+                                        <option value="implementation">Implementation Time</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="parameter-card">
+                                    <label>Value Range</label>
+                                    <div class="range-inputs">
+                                        <input type="number" id="sensitivity-min" class="form-input" placeholder="Min">
+                                        <input type="number" id="sensitivity-max" class="form-input" placeholder="Max">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button id="run-sensitivity" class="btn btn-primary">
+                                Run Sensitivity Analysis
+                            </button>
+                        </div>
+                        
+                        <div class="sensitivity-results">
+                            <div class="chart-card">
+                                <h3>Sensitivity Analysis Results</h3>
+                                <canvas id="sensitivity-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
