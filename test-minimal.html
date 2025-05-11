@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head><title>System Test</title></head>
+<body>
+    <h1>NAC Analyzer Test</h1>
+    <h2>Image Tests</h2>
+    <div id="image-tests"></div>
+    <h2>Pages</h2>
+    <ul>
+        <li><a href="simple-dashboard.html">Simple Dashboard</a></li>
+        <li><a href="vendor-comparison.html">Vendor Comparison</a></li>
+    </ul>
+    
+    <script>
+        const images = [
+            'img/portnox-logo.png',
+            'img/vendors/portnox-logo.png',
+            'img/vendors/cisco-logo.png',
+            'img/vendors/aruba-logo.png',
+            'img/vendors/no-nac-icon.png',
+            'img/vendors/no-nac-icon.svg'
+        ];
+        
+        const container = document.getElementById('image-tests');
+        
+        images.forEach(src => {
+            const img = new Image();
+            const div = document.createElement('div');
+            img.src = src;
+            img.width = 50;
+            img.onload = () => {
+                div.innerHTML = `✓ ${src} - loaded`;
+                div.style.color = 'green';
+            };
+            img.onerror = () => {
+                div.innerHTML = `✗ ${src} - failed`;
+                div.style.color = 'red';
+            };
+            container.appendChild(div);
+            container.appendChild(img);
+        });
+    </script>
+</body>
+</html>

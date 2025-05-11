@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Logo Test</title>
+    <style>
+        .logo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .logo-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        img {
+            max-width: 120px;
+            max-height: 60px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vendor Logo Test</h1>
+    <div class="logo-grid">
+        <div class="logo-card">
+            <h3>Cisco</h3>
+            <img src="img/vendors/cisco-logo.png" onerror="this.onerror=null; this.src='img/vendors/default-logo.png';">
+        </div>
+        <div class="logo-card">
+            <h3>Aruba</h3>
+            <img src="img/vendors/aruba-logo.png" onerror="this.onerror=null; this.src='img/vendors/default-logo.png';">
+        </div>
+        <div class="logo-card">
+            <h3>Forescout</h3>
+            <img src="img/vendors/forescout-logo.png" onerror="this.onerror=null; this.src='img/vendors/default-logo.png';">
+        </div>
+        <div class="logo-card">
+            <h3>Portnox</h3>
+            <img src="img/vendors/portnox-logo.png" onerror="this.onerror=null; this.src='img/vendors/default-logo.png';">
+        </div>
+        <div class="logo-card">
+            <h3>Microsoft NPS</h3>
+            <img src="img/vendors/microsoft-logo.png" onerror="this.onerror=null; this.src='img/vendors/default-logo.png';">
+        </div>
+        <div class="logo-card">
+            <h3>Default</h3>
+            <img src="img/vendors/default-logo.png">
+        </div>
+    </div>
+</body>
+</html>

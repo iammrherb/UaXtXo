@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NAC TCO Analyzer - Integration Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        button { margin: 5px; padding: 10px; cursor: pointer; }
+        .status { margin-top: 10px; padding: 10px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .wizard-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; }
+        .wizard-overlay.hidden { display: none; }
+        .wizard-container { position: relative; width: 90%; max-width: 1000px; background: white; margin: 50px auto; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h1>NAC TCO Analyzer - Integration Test</h1>
+    
+    <div class="test-section">
+        <h2>Module Status</h2>
+        <button onclick="checkModules()">Check Modules</button>
+        <div id="module-status" class="status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Wizard Test</h2>
+        <button onclick="testWizard()">Open Wizard</button>
+        <button onclick="NACDebug.showWizardState()">Show Wizard State</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Dashboard Test</h2>
+        <button onclick="testDashboard()">Show Dashboard</button>
+        <button onclick="NACDebug.showDashboardState()">Show Dashboard State</button>
+        <button onclick="NACDebug.simulateWizardComplete()">Simulate Wizard Complete</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Logo Test</h2>
+        <button onclick="testLogos()">Test Logo Loading</button>
+        <button onclick="clearLogoCache()">Clear Logo Cache</button>
+        <div id="logo-test"></div>
+    </div>
+    
+    <script>
+        function checkModules() {
+            const status = document.getElementById('module-status');
+            try {
+                const modules = window.NACAnalyzer ? Object.keys(window.NACAnalyzer.modules) : [];
+                status.className = 'status success';
+                status.innerHTML = `Loaded modules: ${modules.join(', ') || 'None'}`;
+            } catch (error) {
+                status.className = 'status error';
+                status.innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        function testWizard() {
+            if (typeof TCOWizard !== 'undefined') {
+                TCOWizard.openWizard();
+            } else {
+                alert('TCO Wizard not loaded');
+            }
+        }
+        
+        function testDashboard() {
+            if (typeof DashboardIntegration !== 'undefined') {
+                DashboardIntegration.showDashboard();
+            } else {
+                alert('Dashboard Integration not loaded');
+            }
+        }
+        
+        function testLogos() {
+            const vendors = ['portnox', 'cisco', 'aruba', 'invalid-vendor'];
+            const container = document.getElementById('logo-test');
+            container.innerHTML = '';
+            
+            vendors.forEach(vendor => {
+                const img = document.createElement('img');
+                img.width = 100;
+                img.style.margin = '5px';
+                img.title = vendor;
+                img.setAttribute('data-vendor-logo', vendor);
+                container.appendChild(img);
+            });
+            
+            if (typeof LogoLoader !== 'undefined') {
+                LogoLoader.loadAllVendorLogos();
+            }
+        }
+        
+        function clearLogoCache() {
+            if (typeof LogoLoader !== 'undefined' && LogoLoader.clearFailedLoads) {
+                LogoLoader.clearFailedLoads();
+                console.log('Logo cache cleared');
+            }
+        }
+    </script>
+    
+    <!-- Load the main application -->
+    <script src="js/core/preloader.js"></script>
+    <script src="js/wizards/tco-wizard.js"></script>
+    <script src="js/ui/logo-loader.js"></script>
+    <script src="js/ui/dashboard-integration.js"></script>
+    <script src="js/core/debug-helper.js"></script>
+</body>
+</html>

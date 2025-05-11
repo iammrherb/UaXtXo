@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vendor Comparison</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .vendor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .vendor-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .vendor-card:hover {
+            background: #f0f0f0;
+        }
+        .vendor-logo {
+            width: 100px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+        .vendor-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .vendor-type {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>NAC Vendor Comparison</h1>
+    
+    <div class="vendor-grid">
+        <div class="vendor-card">
+            <img src="img/vendors/portnox-logo.png" alt="Portnox" class="vendor-logo">
+            <div class="vendor-name">Portnox Cloud</div>
+            <div class="vendor-type">Cloud-Native</div>
+            <div>TCO: $215K</div>
+        </div>
+        
+        <div class="vendor-card">
+            <img src="img/vendors/cisco-logo.png" alt="Cisco" class="vendor-logo">
+            <div class="vendor-name">Cisco ISE</div>
+            <div class="vendor-type">On-Premises</div>
+            <div>TCO: $615K</div>
+        </div>
+        
+        <div class="vendor-card">
+            <img src="img/vendors/aruba-logo.png" alt="Aruba" class="vendor-logo">
+            <div class="vendor-name">Aruba ClearPass</div>
+            <div class="vendor-type">On-Premises</div>
+            <div>TCO: $505K</div>
+        </div>
+        
+        <div class="vendor-card">
+            <img src="img/vendors/forescout-logo.png" alt="Forescout" class="vendor-logo">
+            <div class="vendor-name">Forescout</div>
+            <div class="vendor-type">On-Premises</div>
+            <div>TCO: $577K</div>
+        </div>
+        
+        <div class="vendor-card">
+            <img src="img/vendors/no-nac-icon.png" alt="No NAC" class="vendor-logo">
+            <div class="vendor-name">No NAC Solution</div>
+            <div class="vendor-type">None</div>
+            <div>Risk: High</div>
+        </div>
+    </div>
+    
+    <p><a href="simple-dashboard.html">Back to Dashboard</a></p>
+</body>
+</html>
