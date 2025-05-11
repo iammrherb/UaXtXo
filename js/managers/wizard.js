@@ -896,7 +896,7 @@ class WizardManager {
                     suffix: config.suffix,
                     separator: ',',
                     decimal: '.'
-                });
+                }),
                 
                 if (!countUp.error) {
                     countUp.start() : null;
