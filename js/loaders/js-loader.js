@@ -1,116 +1,66 @@
 /**
- * JavaScript Loader
- * Ensures proper loading order for all scripts
+ * JS Loader - Handles script loading sequence for the TCO Analyzer
  */
 (function() {
     console.log("JS Loader: Initializing script loading sequence");
     
     // List of scripts to load in order
     const scripts = [
-        // Core libraries first
-        'libs/js/chart.min.js',
-        'libs/js/chartjs-plugin-datalabels.min.js',
-        'libs/js/d3.min.js',
-        'libs/js/gsap.min.js',
-        'libs/js/lodash.min.js',
-        
-        // Core utilities
-        'js/core/helpers.js',
-        'js/core/dom.js',
-        'js/core/validation.js',
-        
-        // Data modules
-        'js/data/enhanced-vendors.js',
-        'js/data/industry.js',
-        'js/data/compliance.js',
-        'js/vendor-comparisons/vendor-advantages.js',
-        
-        // Data processors
-        'js/data/processors/tco-calculator.js',
-        'js/data/processors/industry-compliance-processor.js',
-        'js/data/processors/feature-comparison-processor.js',
-        
-        // Component managers
-        'js/components/charts/chart-manager.js',
-        'js/managers/state.js',
-        
-        // Wizard and fixes
-        'js/wizards/tco-wizard.js',
-        'js/wizard-fix.js',
-        
-        // Implementation-specific fixes
-        'js/fixes/implementation-fix.js',
-        
-        // Final initialization
-        'js/final-patch.js'
+        // Fix scripts
+        "js/fixes/chart-destroyer.js",
+        "js/fixes/implementation-fix.js"
     ];
     
-    // Counter to track loaded scripts
+    // Keep track of loaded scripts
     let loadedScripts = 0;
     
-    // Function to load a script
+    // Check if script is already loaded
+    function isScriptLoaded(src) {
+        return document.querySelector(`script[src="${src}"]`) !== null;
+    }
+    
+    // Load a script
     function loadScript(src) {
-        return new Promise((resolve, reject) => {
-            // Check if script is already loaded
-            const existingScript = document.querySelector(`script[src="${src}"]`);
-            if (existingScript) {
-                console.log(`Script already loaded: ${src}`);
-                resolve();
-                return;
-            }
-            
-            // Create script element
-            const script = document.createElement('script');
-            script.src = src;
-            script.async = false; // Maintain order
-            
-            // Set up load handlers
-            script.onload = () => {
-                console.log(`Loaded script: ${src}`);
-                loadedScripts++;
-                updateLoadingProgress();
-                resolve();
-            };
-            
-            script.onerror = () => {
-                console.error(`Failed to load script: ${src}`);
-                reject(new Error(`Failed to load ${src}`));
-            };
-            
-            // Add to document
-            document.head.appendChild(script);
-        });
-    }
-    
-    // Function to update loading progress
-    function updateLoadingProgress() {
-        const progress = Math.round((loadedScripts / scripts.length) * 100);
-        console.log(`Loading progress: ${progress}%`);
-        
-        // You can add visual loading indicator here
-    }
-    
-    // Function to load all scripts in sequence
-    async function loadScriptsInOrder() {
-        for (const src of scripts) {
-            try {
-                await loadScript(src);
-            } catch (error) {
-                console.error(`Error loading script sequence: ${error.message}`);
-                // Continue loading other scripts even if one fails
-            }
+        if (isScriptLoaded(src)) {
+            console.log(`Script already loaded: ${src}`);
+            loadedScripts++;
+            updateProgress();
+            loadNextScript();
+            return;
         }
         
-        console.log("JS Loader: All scripts loaded successfully");
-        
-        // Trigger application initialization
-        if (typeof window.initApplication === 'function') {
-            window.initApplication();
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = function() {
+            console.log(`Loaded script: ${src}`);
+            loadedScripts++;
+            updateProgress();
+            loadNextScript();
+        };
+        script.onerror = function() {
+            console.error(`Failed to load script: ${src}`);
+            loadedScripts++;
+            updateProgress();
+            loadNextScript();
+        };
+        document.body.appendChild(script);
+    }
+    
+    // Update loading progress
+    function updateProgress() {
+        const progress = Math.floor((loadedScripts / scripts.length) * 100);
+        console.log(`Loading progress: ${progress}%`);
+    }
+    
+    // Load the next script in the queue
+    function loadNextScript() {
+        if (loadedScripts < scripts.length) {
+            loadScript(scripts[loadedScripts]);
         } else {
-            console.log("Application initialized through individual scripts");
+            console.log("JS Loader: All scripts loaded successfully");
         }
     }
     
     // Start loading scripts
-    loadScriptsInOrder();
+    loadNextScript();
 })();
