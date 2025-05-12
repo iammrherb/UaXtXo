@@ -192,7 +192,7 @@ console.log("Final Patch: Starting application patches...");
         }
         
         // Show TCO Results button at the bottom
-        const showResultsBtn = document.querySelector('button.btn.btn-primary:contains("Show TCO Results")');
+        const showResultsBtn = document.getElementById('calculate-btn');
         if (showResultsBtn) {
             // Remove existing event listeners by cloning and replacing
             const newShowResultsBtn = showResultsBtn.cloneNode(true);
