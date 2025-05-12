@@ -1,10 +1,19 @@
 /**
  * TCO Calculator
- * Accurate Total Cost of Ownership calculation engine
+ * Comprehensive Total Cost of Ownership calculation engine with all vendors
  */
 class TCOCalculator {
     constructor() {
-        // Base cost factors from research data
+        // Initialize with default values
+        this.initializeDefaults();
+        console.log("TCO Calculator initialized");
+    }
+    
+    /**
+     * Initialize default values for TCO calculator
+     */
+    initializeDefaults() {
+        // Base cost factors
         this.costFactors = {
             cisco: {
                 hardware: { base: 50000, perDevice: 40 },
@@ -48,12 +57,40 @@ class TCOCalculator {
                 maintenance: { percentage: 0.15, perDevice: 0 },
                 personnel: { fte: 0.3, fteAnnualCost: 120000 }
             },
+            juniper: {
+                hardware: { base: 15000, perDevice: 20 },
+                software: { base: 10000, perDevice: 45 },
+                implementation: { base: 25000, perDevice: 6 },
+                maintenance: { percentage: 0.15, perDevice: 0 },
+                personnel: { fte: 0.6, fteAnnualCost: 120000 }
+            },
+            arista: {
+                hardware: { base: 30000, perDevice: 30 },
+                software: { base: 15000, perDevice: 65 },
+                implementation: { base: 35000, perDevice: 8 },
+                maintenance: { percentage: 0.15, perDevice: 0 },
+                personnel: { fte: 0.8, fteAnnualCost: 120000 }
+            },
+            foxpass: {
+                hardware: { base: 0, perDevice: 0 },
+                software: { base: 3000, perDevice: 25 },
+                implementation: { base: 5000, perDevice: 2 },
+                maintenance: { percentage: 0.08, perDevice: 0 },
+                personnel: { fte: 0.2, fteAnnualCost: 120000 }
+            },
             portnox: {
                 hardware: { base: 0, perDevice: 0 },
                 software: { base: 0, perDevice: 48 },
                 implementation: { base: 5000, perDevice: 1 },
                 maintenance: { percentage: 0, perDevice: 0 },
                 personnel: { fte: 0.2, fteAnnualCost: 120000 }
+            },
+            noNac: {
+                hardware: { base: 0, perDevice: 0 },
+                software: { base: 0, perDevice: 0 },
+                implementation: { base: 0, perDevice: 0 },
+                maintenance: { percentage: 0, perDevice: 0 },
+                personnel: { fte: 0.1, fteAnnualCost: 120000 }
             }
         };
         
@@ -117,18 +154,50 @@ class TCOCalculator {
             byod: 1.15
         };
         
-        // Implementation timelines (days)
-        this.implementationTimelines = {
-            cisco: { base: 90, perThousandDevices: 15 },
-            aruba: { base: 60, perThousandDevices: 12 },
-            forescout: { base: 60, perThousandDevices: 10 },
-            fortinac: { base: 45, perThousandDevices: 8 },
-            nps: { base: 15, perThousandDevices: 5 },
-            securew2: { base: 10, perThousandDevices: 3 },
-            portnox: { base: 3, perThousandDevices: 1 }
-        };
+        // Implementation timelines - using data from EnhancedVendors if available
+        this.implementationTimelines = {};
         
-        console.log("TCO Calculator initialized");
+        // Use EnhancedVendors data if available
+        if (window.EnhancedVendors && EnhancedVendors.getTotalImplementationDays) {
+            const vendors = Object.keys(this.costFactors);
+            
+            vendors.forEach(vendorId => {
+                const totalDays = EnhancedVendors.getTotalImplementationDays(vendorId) || 0;
+                
+                // We need to calculate base and per-thousand-devices values
+                // For simplicity, we'll use a formula that approximates the data
+                // Base is for 1000 devices, and per-thousand is the increase for each 1000 devices
+                
+                let base = totalDays;
+                let perThousandDevices = totalDays * 0.2; // 20% increase per thousand devices
+                
+                // Adjust for portnox which has very short implementation
+                if (vendorId === 'portnox') {
+                    base = totalDays;
+                    perThousandDevices = totalDays * 0.5; // 50% increase per thousand devices
+                }
+                
+                this.implementationTimelines[vendorId] = {
+                    base,
+                    perThousandDevices
+                };
+            });
+        } else {
+            // Fallback implementation timelines
+            this.implementationTimelines = {
+                cisco: { base: 90, perThousandDevices: 15 },
+                aruba: { base: 60, perThousandDevices: 12 },
+                forescout: { base: 60, perThousandDevices: 10 },
+                fortinac: { base: 45, perThousandDevices: 8 },
+                nps: { base: 15, perThousandDevices: 5 },
+                securew2: { base: 10, perThousandDevices: 3 },
+                juniper: { base: 30, perThousandDevices: 6 },
+                arista: { base: 75, perThousandDevices: 12 },
+                foxpass: { base: 10, perThousandDevices: 2 },
+                portnox: { base: 3, perThousandDevices: 1 },
+                noNac: { base: 0, perThousandDevices: 0 }
+            };
+        }
     }
     
     /**
@@ -186,11 +255,11 @@ class TCOCalculator {
         
         // Calculate hardware costs
         const hardwareCost = (vendor.hardware.base * scaleFactor * complexityMultiplier) + 
-                             (vendor.hardware.perDevice * calculationParams.deviceCount);
+                            (vendor.hardware.perDevice * calculationParams.deviceCount);
         
         // Calculate software costs with discount
         const baseSoftwareCost = (vendor.software.base * scaleFactor * complexityMultiplier) + 
-                                 (vendor.software.perDevice * calculationParams.deviceCount * calculationParams.years);
+                                (vendor.software.perDevice * calculationParams.deviceCount * calculationParams.years);
         const softwareCost = baseSoftwareCost * (1 - (calculationParams.discountPercentage / 100));
         
         // Calculate implementation costs
@@ -254,14 +323,14 @@ class TCOCalculator {
         // Different distribution based on vendor
         let phasePercentages;
         
-        if (vendorId === 'portnox' || vendorId === 'securew2') {
+        if (vendorId === 'portnox' || vendorId === 'securew2' || vendorId === 'foxpass') {
             // Cloud-native implementation phases
             phasePercentages = {
-                planning: 0.15,
+                planning: 0.20,
                 hardware: 0,
                 software: 0.10,
                 integration: 0.20,
-                policy: 0.25,
+                policy: 0.20,
                 testing: 0.15,
                 deployment: 0.10,
                 training: 0.05
@@ -292,7 +361,43 @@ class TCOCalculator {
             };
         }
         
-        // Calculate days for each phase
+        // Get actual phase durations from EnhancedVendors if available
+        if (window.EnhancedVendors && EnhancedVendors.implementationTimeline && EnhancedVendors.implementationTimeline.phases) {
+            const timeline = EnhancedVendors.implementationTimeline.phases;
+            const phases = {};
+            
+            // Map EnhancedVendors phases to our phase names
+            const phaseMapping = {
+                'Planning & Design': 'planning',
+                'Hardware Procurement': 'hardware',
+                'Software Installation': 'software',
+                'Network Integration': 'integration',
+                'Policy Configuration': 'policy',
+                'Testing & Validation': 'testing',
+                'Deployment & Rollout': 'deployment',
+                'Knowledge Transfer': 'training'
+            };
+            
+            // Calculate days for each phase using actual proportions from EnhancedVendors
+            let totalPhasesDays = 0;
+            timeline.forEach(phase => {
+                const phaseName = phaseMapping[phase.name];
+                const phaseDays = phase[vendorId]?.days || 0;
+                totalPhasesDays += phaseDays;
+                phases[phaseName] = phaseDays;
+            });
+            
+            // If we have actual phase data, adjust it to match our total days
+            if (totalPhasesDays > 0) {
+                Object.keys(phases).forEach(phaseName => {
+                    phases[phaseName] = Math.ceil((phases[phaseName] / totalPhasesDays) * totalDays);
+                });
+                
+                return phases;
+            }
+        }
+        
+        // Calculate days for each phase using standard percentages
         return {
             planning: Math.ceil(totalDays * phasePercentages.planning),
             hardware: Math.ceil(totalDays * phasePercentages.hardware),
@@ -315,7 +420,7 @@ class TCOCalculator {
         const totalSavings = currentTCO.costs.total - portnoxTCO.costs.total;
         const savingsPercentage = (totalSavings / currentTCO.costs.total) * 100;
         const initialInvestment = portnoxTCO.costs.implementation + 
-                                 (portnoxTCO.costs.software / portnoxTCO.years);  // First-year software cost
+                                (portnoxTCO.costs.software / portnoxTCO.years);  // First-year software cost
         
         // Calculate monthly costs and savings for breakeven analysis
         const currentMonthlyCost = currentTCO.costs.total / (currentTCO.years * 12);
@@ -362,7 +467,7 @@ class TCOCalculator {
      * @returns {object} Comprehensive comparison
      */
     calculateComparison(params) {
-        const vendors = ['cisco', 'aruba', 'forescout', 'fortinac', 'nps', 'securew2', 'portnox'];
+        const vendors = ['cisco', 'aruba', 'forescout', 'fortinac', 'nps', 'securew2', 'juniper', 'arista', 'foxpass', 'portnox'];
         const results = {};
         
         // Calculate TCO for each vendor
@@ -370,11 +475,16 @@ class TCOCalculator {
             results[vendorId] = this.calculateVendorTCO(vendorId, params);
         });
         
+        // Additionally calculate noNac if relevant
+        if (params.selectedVendor === 'noNac') {
+            results.noNac = this.calculateVendorTCO('noNac', params);
+        }
+        
         // Find selected vendor and calculate ROI
         const selectedVendor = params.selectedVendor || 'cisco';
         let roi = null;
         
-        if (vendors.includes(selectedVendor) && selectedVendor !== 'portnox') {
+        if ((vendors.includes(selectedVendor) || selectedVendor === 'noNac') && selectedVendor !== 'portnox') {
             roi = this.calculateROI(results[selectedVendor], results['portnox']);
         }
         
@@ -384,6 +494,26 @@ class TCOCalculator {
             results: results,
             selectedVendor: selectedVendor,
             roi: roi,
+            vendors: vendors,
+            tcoData: vendors.reduce((acc, vendorId) => {
+                acc[vendorId] = results[vendorId].costs.total;
+                return acc;
+            }, {}),
+            costBreakdowns: {
+                ...vendors.reduce((acc, vendorId) => {
+                    const breakdown = {};
+                    const costs = results[vendorId].costs;
+                    
+                    Object.keys(costs).forEach(costType => {
+                        if (costType !== 'total') {
+                            breakdown[costType] = costs[costType];
+                        }
+                    });
+                    
+                    acc[vendorId] = breakdown;
+                    return acc;
+                }, {})
+            },
             implementationComparison: this.generateImplementationComparison(results),
             sensitivityAnalysis: this.generateSensitivityAnalysis(params)
         };
@@ -494,13 +624,17 @@ class TCOCalculator {
         const portnoxTCO = comparison.results.portnox;
         const roi = comparison.roi;
         
+        // Get vendor name for display
+        const vendorName = window.EnhancedVendors?.vendors[selectedVendor]?.name || 
+                            selectedVendor.charAt(0).toUpperCase() + selectedVendor.slice(1);
+        
         const insights = [];
         
         // TCO insights
         insights.push({
             category: 'Cost Savings',
             title: `${Math.round(roi.savingsPercentage)}% Lower TCO with Portnox Cloud`,
-            description: `Portnox Cloud delivers a 3-year TCO of $${Math.round(portnoxTCO.costs.total).toLocaleString()}, representing a ${Math.round(roi.savingsPercentage)}% reduction compared to ${selectedVendor.charAt(0).toUpperCase() + selectedVendor.slice(1)}'s $${Math.round(selectedTCO.costs.total).toLocaleString()}.`,
+            description: `Portnox Cloud delivers a 3-year TCO of $${Math.round(portnoxTCO.costs.total).toLocaleString()}, representing a ${Math.round(roi.savingsPercentage)}% reduction compared to ${vendorName}'s $${Math.round(selectedTCO.costs.total).toLocaleString()}.`,
             icon: 'piggy-bank'
         });
         
@@ -511,7 +645,7 @@ class TCOCalculator {
         insights.push({
             category: 'Implementation',
             title: `${implementationSavingsPercent}% Faster Deployment Time`,
-            description: `Portnox Cloud can be deployed in ${portnoxTCO.implementationTimeline.days} days compared to ${selectedTCO.implementationTimeline.days} days for ${selectedVendor.charAt(0).toUpperCase() + selectedVendor.slice(1)}, accelerating time-to-value by ${implementationSavingsDays} days (${implementationSavingsPercent}%).`,
+            description: `Portnox Cloud can be deployed in ${portnoxTCO.implementationTimeline.days} days compared to ${selectedTCO.implementationTimeline.days} days for ${vendorName}, accelerating time-to-value by ${implementationSavingsDays} days (${implementationSavingsPercent}%).`,
             icon: 'rocket'
         });
         
@@ -522,7 +656,7 @@ class TCOCalculator {
             insights.push({
                 category: 'Infrastructure',
                 title: 'Zero Hardware Requirements',
-                description: `Portnox Cloud eliminates the need for dedicated hardware appliances, which represent ${hardwarePercentage}% of ${selectedVendor.charAt(0).toUpperCase() + selectedVendor.slice(1)}'s total cost ($${Math.round(selectedTCO.costs.hardware).toLocaleString()}).`,
+                description: `Portnox Cloud eliminates the need for dedicated hardware appliances, which represent ${hardwarePercentage}% of ${vendorName}'s total cost ($${Math.round(selectedTCO.costs.hardware).toLocaleString()}).`,
                 icon: 'server'
             });
         }
@@ -534,7 +668,7 @@ class TCOCalculator {
         insights.push({
             category: 'Operational Efficiency',
             title: `${personnelSavingsPercent}% Lower IT Resource Requirements`,
-            description: `Portnox Cloud requires ${personnelSavingsPercent}% less IT staff time to manage, reducing operational costs by $${Math.round(personnelSavings).toLocaleString()} over three years compared to ${selectedVendor.charAt(0).toUpperCase() + selectedVendor.slice(1)}.`,
+            description: `Portnox Cloud requires ${personnelSavingsPercent}% less IT staff time to manage, reducing operational costs by $${Math.round(personnelSavings).toLocaleString()} over three years compared to ${vendorName}.`,
             icon: 'users'
         });
         
@@ -558,11 +692,62 @@ class TCOCalculator {
             icon: 'chart-line'
         });
         
+        // Add appropriate vendor-specific insights
+        if (window.EnhancedVendors?.getPortnoxAdvantages) {
+            const advantages = window.EnhancedVendors.getPortnoxAdvantages(selectedVendor);
+            
+            if (advantages && advantages.length > 0) {
+                // Add one insight from each category
+                const categoriesUsed = new Set();
+                
+                advantages.forEach(category => {
+                    // Only add one insight per category
+                    if (!categoriesUsed.has(category.category) && category.items && category.items.length > 0) {
+                        categoriesUsed.add(category.category);
+                        
+                        // Get an item from this category
+                        const item = category.items[0];
+                        
+                        // Map category to icon
+                        const categoryIcons = {
+                            'Deployment & Implementation': 'rocket',
+                            'Operational Costs': 'dollar-sign',
+                            'Management & Maintenance': 'cogs',
+                            'Scalability & Flexibility': 'expand-alt',
+                            'Capabilities & Features': 'star',
+                            'Management & Administration': 'sliders-h',
+                            'Scalability & Performance': 'tachometer-alt',
+                            'Security & Compliance': 'shield-alt',
+                            'Platform Architecture': 'microchip',
+                            'Deployment & Integration': 'plug',
+                            'Device Management': 'mobile-alt',
+                            'Cost Structure': 'money-bill-wave',
+                            'NAC Capabilities': 'network-wired',
+                            'Device Visibility': 'eye',
+                            'Operational Simplicity': 'tasks',
+                            'Cost Efficiency': 'hand-holding-usd',
+                            'Implementation & Adoption': 'project-diagram',
+                            'Cloud Architecture': 'cloud',
+                            'Vendor Neutrality': 'handshake',
+                            'Enterprise Readiness': 'building'
+                        };
+                        
+                        insights.push({
+                            category: category.category,
+                            title: item,
+                            description: `When compared to ${vendorName}, Portnox Cloud offers: ${category.items.join(', ')}`,
+                            icon: categoryIcons[category.category] || 'star'
+                        });
+                    }
+                });
+            }
+        }
+        
         return insights;
     }
 }
 
-// Initialize TCO Calculator
+// Initialize TCO Calculator when page loads
 document.addEventListener('DOMContentLoaded', function() {
     window.tcoCalculator = new TCOCalculator();
 });

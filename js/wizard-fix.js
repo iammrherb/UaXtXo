@@ -1,12 +1,13 @@
 /**
  * Wizard Fix - Ensures proper loading and functionality of the TCO Wizard
+ * Prevents double-loading and provides loading verification
  */
 console.log("Wizard Fix: Applying patches to wizard functionality...");
 
 (function() {
-    // Function to check if wizard.js is loaded
+    // Check if wizard is already loaded
     function isWizardLoaded() {
-        return typeof TCOWizard !== 'undefined';
+        return typeof TCOWizard !== 'undefined' && TCOWizard !== null;
     }
     
     // Function to load wizard.js if not loaded
@@ -45,7 +46,10 @@ console.log("Wizard Fix: Applying patches to wizard functionality...");
                 TCOWizard.init();
                 console.log("Wizard initialized successfully");
                 
-                // Fix any potential issues with the wizard navigation
+                // Remove any duplicate initialization attempts
+                removeDuplicateWizards();
+                
+                // Fix wizard navigation
                 fixWizardNavigation();
             }
         } else {
@@ -53,7 +57,21 @@ console.log("Wizard Fix: Applying patches to wizard functionality...");
         }
     }
     
-    // Function to fix wizard navigation
+    // Remove any duplicate wizard instances
+    function removeDuplicateWizards() {
+        const wizardOverlays = document.querySelectorAll('.wizard-overlay');
+        
+        if (wizardOverlays.length > 1) {
+            console.warn(`Found ${wizardOverlays.length} wizard overlays, removing duplicates`);
+            
+            // Keep only the first wizard overlay
+            for (let i = 1; i < wizardOverlays.length; i++) {
+                wizardOverlays[i].parentNode.removeChild(wizardOverlays[i]);
+            }
+        }
+    }
+    
+    // Function to fix wizard navigation buttons
     function fixWizardNavigation() {
         const prevButton = document.getElementById('wizard-prev');
         const nextButton = document.getElementById('wizard-next');
