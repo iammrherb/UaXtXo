@@ -189,7 +189,7 @@ class ApplicationController {
     });
     
     document.getElementById('consulting-rate')?.addEventListener('input', (e) => {
-      thindexndexs.state.formData.consultingRate = parseInt(e.target.value)i
+      this.state.formData.consultingRate = parseInt(e.target.value)i
 cat >> js/app-controller.js << 'EOL'
       this.state.formData.consultingRate = parseInt(e.target.value) || 2000;
       e.target.nextElementSibling.textContent = `$${this.state.formData.consultingRate.toLocaleString()}`;
