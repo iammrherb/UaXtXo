@@ -8,7 +8,11 @@
     const scripts = [
         // Fix scripts
         "js/fixes/chart-destroyer.js",
-        "js/fixes/implementation-fix.js"
+        "js/fixes/implementation-fix.js",
+        
+        // Enhancement scripts
+        "js/vendor-comparisons/vendor-advantages.js",
+        "js/charts/enhanced/chart-enhancer.js"
     ];
     
     // Keep track of loaded scripts
@@ -58,6 +62,17 @@
             loadScript(scripts[loadedScripts]);
         } else {
             console.log("JS Loader: All scripts loaded successfully");
+            
+            // Initialize the application
+            if (window.AppController && typeof window.AppController.initialize === 'function') {
+                window.AppController.initialize();
+            } else {
+                console.log("Application initialized through individual scripts");
+                
+                // Create event to notify that all scripts are loaded
+                const event = new CustomEvent('js-loader-complete');
+                document.dispatchEvent(event);
+            }
         }
     }
     

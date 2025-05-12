@@ -165,7 +165,7 @@ const WizardController = (function() {
                 
             case 'industry-compliance':
                 // Check if an industry is selected
-                isValid = document.getElementById('industry-selector').value !== 'none';
+                isValid = document.getElementById('industry-select').value !== '';
                 if (!isValid) {
                     showValidationError('Please select your industry to continue.');
                 }
@@ -234,8 +234,7 @@ const WizardController = (function() {
             vendorSelection: getSelectedVendor(),
             industry: getSelectedIndustry(),
             deviceCount: document.getElementById('device-count')?.value,
-            yearsToProject: document.getElementById('years-to-project')?.value,
-            // Add other fields as needed
+            yearsToProject: document.getElementById('years-to-project')?.value
         };
         
         localStorage.setItem('wizardState', JSON.stringify(state));
@@ -256,7 +255,7 @@ const WizardController = (function() {
                 
                 // Restore industry
                 if (state.industry) {
-                    document.getElementById('industry-selector').value = state.industry;
+                    document.getElementById('industry-select').value = state.industry;
                 }
                 
                 // Restore other fields
@@ -286,7 +285,7 @@ const WizardController = (function() {
     }
     
     function getSelectedIndustry() {
-        return document.getElementById('industry-selector')?.value;
+        return document.getElementById('industry-select')?.value;
     }
     
     // Select a vendor
