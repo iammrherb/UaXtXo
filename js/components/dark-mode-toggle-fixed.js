@@ -45,7 +45,7 @@
     const storedPreference = localStorage.getItem(storage.darkMode);
     
     // Set initial state
-    if (storedPreference === 'true' || (storedPreference === null && prefersDarkMode)) {
+    if (storedPreference == 'true' || (storedPreference == null && prefersDarkMode)) {
       enableDarkMode(false);
     } else {
       disableDarkMode(false);
@@ -63,7 +63,7 @@
     // Listen for system preference changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
       // Only change if no user preference is stored
-      if (localStorage.getItem(storage.darkMode) === null) {
+      if (localStorage.getItem(storage.darkMode) == null) {
         if (e.matches) {
           enableDarkMode(true);
         } else {
@@ -151,7 +151,7 @@
   // Update charts for theme
   function updateCharts(isDark) {
     // Use ModernCharts if available
-    if (window.ModernCharts && typeof window.ModernCharts.updateDarkMode === 'function') {
+    if (window.ModernCharts && typeof window.ModernCharts.updateDarkMode == 'function') {
       try {
         window.ModernCharts.updateDarkMode(isDark);
       } catch (error) {

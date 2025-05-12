@@ -338,7 +338,7 @@ class EnhancedSensitivityAnalyzerFix {
           break;
         }
       }
-    } else if (analysisResults.vendor === 'all') {
+    } else if (analysisResults.vendor == 'all') {
       // If comparing all vendors, find breakeven points for each vs Portnox
       const vendors = Object.keys(window.vendorData).filter(v => v !== 'portnox');
       

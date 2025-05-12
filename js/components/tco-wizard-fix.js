@@ -31,7 +31,7 @@
     
     // Ensure button is visible
     newButton.style.display = 'flex';
-    if (newButton.textContent.trim() === "") {
+    if (newButton.textContent.trim() == "") {
       newButton.innerHTML = '<i class="fas fa-magic"></i> TCO Wizard';
     }
     
@@ -255,7 +255,7 @@
     
     // Close when clicking outside
     window.addEventListener('click', function(e) {
-      if (e.target === modal) {
+      if (e.target == modal) {
         modal.style.display = 'none';
       }
     });
@@ -301,7 +301,7 @@
         if (stepNumber < currentStep) {
           s.classList.remove('active');
           s.classList.add('completed');
-        } else if (stepNumber === currentStep) {
+        } else if (stepNumber == currentStep) {
           s.classList.add('active');
           s.classList.remove('completed');
         } else {
@@ -312,7 +312,7 @@
       // Update content visibility
       contents.forEach(content => {
         const contentStep = parseInt(content.getAttribute('data-step'));
-        if (contentStep === currentStep) {
+        if (contentStep == currentStep) {
           content.classList.add('active');
         } else {
           content.classList.remove('active');
@@ -320,9 +320,9 @@
       });
       
       // Update buttons
-      prevButton.disabled = currentStep === 1;
+      prevButton.disabled = currentStep == 1;
       
-      if (currentStep === totalSteps) {
+      if (currentStep == totalSteps) {
         nextButton.style.display = 'none';
         finishButton.style.display = 'inline-flex';
         updateResultsPreview();
@@ -337,11 +337,11 @@
     
     // Handle special steps
     function handleSpecialSteps() {
-      if (currentStep === 1) {
+      if (currentStep == 1) {
         populateVendorGrid();
-      } else if (currentStep === 2) {
+      } else if (currentStep == 2) {
         setupIndustrySelector();
-      } else if (currentStep === 5) {
+      } else if (currentStep == 5) {
         updateResultsPreview();
       }
     }

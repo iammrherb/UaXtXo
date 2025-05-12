@@ -890,10 +890,10 @@ const ChartsManager = (function() {
                 currentData.push(currentAnnual / 12 * i);
                 
                 // Portnox: initial implementation cost plus monthly costs
-                portnoxData.push(i === 0 ? portnoxImplementation : portnoxImplementation + (portnoxAnnual / 12 * i));
+                portnoxData.push(i == 0 ? portnoxImplementation : portnoxImplementation + (portnoxAnnual / 12 * i));
                 
                 // Break-even line: horizontal line at break-even point
-                breakEvenLine.push(i === 0 ? 0 : null);
+                breakEvenLine.push(i == 0 ? 0 : null);
             }
             
             // Set break-even point

@@ -110,7 +110,7 @@
         
         // Update tab pane visibility
         allTabPanes.forEach(pane => {
-          if (pane.id === tabId) {
+          if (pane.id == tabId) {
             pane.classList.add('active');
           } else {
             pane.classList.remove('active');

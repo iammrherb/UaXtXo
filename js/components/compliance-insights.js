@@ -20,7 +20,7 @@ class ComplianceInsights {
     // Listen for tab changes to update content when compliance tab is shown
     if (window.tabManager) {
       window.tabManager.on('tabChanged', (data) => {
-        if (data.tabId === 'compliance-tab') {
+        if (data.tabId == 'compliance-tab') {
           this.refreshComplianceInsights();
         }
       });
@@ -28,7 +28,7 @@ class ComplianceInsights {
   }
   
   updateComplianceInsights(industryKey) {
-    if (!industryKey || industryKey === 'none' || !window.enhancedIndustryTemplates) {
+    if (!industryKey || industryKey == 'none' || !window.enhancedIndustryTemplates) {
       return;
     }
     
@@ -286,7 +286,7 @@ class ComplianceInsights {
     
     // Add keyboard accessibility
     newTab.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key == 'Enter' || e.key == ' ') {
         e.preventDefault();
         if (window.tabManager) {
           window.tabManager.setActiveTab('compliance-tab');

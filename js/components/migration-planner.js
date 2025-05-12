@@ -491,7 +491,7 @@ class MigrationPlanner {
     
     switch (size) {
       case 'small':
-        return `${min} ${min === 1 ? 'week' : 'weeks'}`;
+        return `${min} ${min == 1 ? 'week' : 'weeks'}`;
       case 'large':
         return `${max}-${max + 2} weeks`;
       default: // medium

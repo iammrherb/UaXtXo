@@ -380,7 +380,7 @@ class CostConfigurationManager {
     }
     
     // Run calculation if calculator is available
-    if (window.calculator && typeof window.calculator.calculate === 'function') {
+    if (window.calculator && typeof window.calculator.calculate == 'function') {
       window.calculator.calculate();
     }
   }
@@ -432,7 +432,7 @@ class CostConfigurationManager {
     });
     
     // Run calculation if calculator is available
-    if (window.calculator && typeof window.calculator.calculate === 'function') {
+    if (window.calculator && typeof window.calculator.calculate == 'function') {
       window.calculator.calculate();
     }
     

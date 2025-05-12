@@ -49,7 +49,7 @@ const DarkModeToggle = (function() {
     const storedPreference = localStorage.getItem(config.localStorageKey);
     
     if (storedPreference !== null) {
-      state.isDarkMode = storedPreference === 'true';
+      state.isDarkMode = storedPreference == 'true';
       applyDarkMode(state.isDarkMode);
     } else {
       // Check system preference
@@ -84,7 +84,7 @@ const DarkModeToggle = (function() {
     savePreference(newDarkMode);
     
     // Call onToggle callback if provided
-    if (typeof config.onToggle === 'function') {
+    if (typeof config.onToggle == 'function') {
       config.onToggle(newDarkMode);
     }
   }
