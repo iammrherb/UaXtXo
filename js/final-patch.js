@@ -1,5 +1,6 @@
 /**
- * Final Patch - Ensures all components are properly initialized
+ * Final Patch - Ensures all components are properly initialized and integrated
+ * This is the final initialization step for the application
  */
 console.log("Final Patch: Starting application patches...");
 
@@ -18,8 +19,13 @@ console.log("Final Patch: Starting application patches...");
         // Initialize wizard
         if (typeof TCOWizard !== 'undefined') {
             if (typeof TCOWizard.init === 'function') {
-                TCOWizard.init();
-                console.log("TCO Wizard initialized");
+                // Check if wizard is already initialized
+                if (!document.querySelector('.wizard-overlay')) {
+                    TCOWizard.init();
+                    console.log("TCO Wizard initialized");
+                } else {
+                    console.log("TCO Wizard already initialized");
+                }
             } else {
                 console.warn("TCOWizard.init is not a function");
             }
@@ -32,6 +38,11 @@ console.log("Final Patch: Starting application patches...");
         
         // Initialize industry compliance panel
         initializeIndustryCompliancePanel();
+        
+        // Update summary metrics if on results page
+        if (!document.getElementById('results-container').classList.contains('hidden')) {
+            updateSummaryMetrics();
+        }
         
         console.log("All components initialized");
     }
@@ -49,6 +60,23 @@ console.log("Final Patch: Starting application patches...");
             
             // Add event listener
             newWizardBtn.addEventListener('click', function() {
+                if (typeof TCOWizard !== 'undefined' && typeof TCOWizard.openWizard === 'function') {
+                    TCOWizard.openWizard();
+                } else {
+                    console.warn("TCOWizard.openWizard is not a function");
+                }
+            });
+        }
+        
+        // TCO Wizard button in header
+        const tcoWizardBtn = document.querySelector('button.btn[title="TCO Wizard"]');
+        if (tcoWizardBtn) {
+            // Remove existing event listeners by cloning and replacing
+            const newTcoWizardBtn = tcoWizardBtn.cloneNode(true);
+            tcoWizardBtn.parentNode.replaceChild(newTcoWizardBtn, tcoWizardBtn);
+            
+            // Add event listener
+            newTcoWizardBtn.addEventListener('click', function() {
                 if (typeof TCOWizard !== 'undefined' && typeof TCOWizard.openWizard === 'function') {
                     TCOWizard.openWizard();
                 } else {
@@ -163,7 +191,109 @@ console.log("Final Patch: Starting application patches...");
             });
         }
         
+        // Show TCO Results button at the bottom
+        const showResultsBtn = document.querySelector('button.btn.btn-primary:contains("Show TCO Results")');
+        if (showResultsBtn) {
+            // Remove existing event listeners by cloning and replacing
+            const newShowResultsBtn = showResultsBtn.cloneNode(true);
+            showResultsBtn.parentNode.replaceChild(newShowResultsBtn, showResultsBtn);
+            
+            // Add event listener
+            newShowResultsBtn.addEventListener('click', function() {
+                // Show loading overlay
+                const loadingOverlay = document.getElementById('loading-overlay');
+                if (loadingOverlay) {
+                    loadingOverlay.classList.add('active');
+                }
+                
+                // Simulate calculation process
+                setTimeout(function() {
+                    // Hide loading overlay
+                    if (loadingOverlay) {
+                        loadingOverlay.classList.remove('active');
+                    }
+                    
+                    // Hide wizard container
+                    const wizardContainer = document.getElementById('wizard-container');
+                    if (wizardContainer) {
+                        wizardContainer.classList.add('hidden');
+                    }
+                    
+                    // Show results container
+                    const resultsContainer = document.getElementById('results-container');
+                    if (resultsContainer) {
+                        resultsContainer.classList.remove('hidden');
+                    }
+                    
+                    // Reinitialize charts
+                    if (window.chartManager) {
+                        window.chartManager.initializeCharts();
+                    }
+                    
+                    // Update summary metrics
+                    updateSummaryMetrics();
+                }, 1500);
+            });
+        }
+        
+        // Vendor cards in wizard step 1
+        const vendorCards = document.querySelectorAll('.vendor-card');
+        vendorCards.forEach(card => {
+            // Remove existing event listeners by cloning and replacing
+            const newCard = card.cloneNode(true);
+            card.parentNode.replaceChild(newCard, card);
+            
+            // Add event listener
+            newCard.addEventListener('click', function() {
+                // Remove active class from all cards
+                vendorCards.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked card
+                this.classList.add('active');
+                
+                // Update vendor preview
+                updateVendorPreview(this.getAttribute('data-vendor'));
+            });
+        });
+        
         console.log("Event listeners initialized");
+    }
+    
+    // Function to update vendor preview
+    function updateVendorPreview(vendorId) {
+        // Get vendor information
+        const EnhancedVendors = window.EnhancedVendors || {};
+        const vendor = EnhancedVendors.getVendor ? EnhancedVendors.getVendor(vendorId) : null;
+        
+        // Get preview container
+        const previewContainer = document.getElementById('vendor-preview');
+        if (!previewContainer || !vendor) return;
+        
+        // Create preview content
+        let previewHTML = `
+            <div class="vendor-details">
+                <h3>${vendor.name}</h3>
+                <p>${vendor.description}</p>
+                <div class="vendor-specs">
+                    <div class="spec-item">
+                        <div class="spec-label">Deployment Type</div>
+                        <div class="spec-value">${vendor.type}</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Implementation Time</div>
+                        <div class="spec-value">${vendor.deploymentTime}</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Implementation Complexity</div>
+                        <div class="spec-value">${vendor.complexity}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Update preview container
+        previewContainer.innerHTML = previewHTML;
+        previewContainer.classList.remove('hidden');
     }
     
     // Function to update summary metrics in the Executive Summary
@@ -176,28 +306,28 @@ console.log("Final Patch: Starting application patches...");
         
         vendorCards.forEach(card => {
             if (card.classList.contains('active')) {
-                selectedVendor = card.getAttribute('data-vendor');
+                selectedVendor = card.getAttribute('data-vendor') || 'cisco';
             }
         });
         
         // Get device count
-        const deviceCount = parseInt(document.getElementById('device-count').value) || 2500;
+        const deviceCount = parseInt(document.getElementById('device-count')?.value) || 2500;
         
         // Calculate metrics based on selected vendor using TCO calculator
         if (window.tcoCalculator) {
             // Get params
             const params = {
-                deviceCount: deviceCount,
-                years: parseInt(document.getElementById('years-to-project').value) || 3,
-                organizationSize: document.getElementById('organization-size').value || 'medium',
-                industry: document.getElementById('industry-select').value || 'technology',
-                locations: parseInt(document.getElementById('locations').value) || 1,
-                cloudIntegration: document.getElementById('cloud-integration').checked,
-                legacyDevices: document.getElementById('legacy-devices').checked,
-                byod: document.getElementById('byod-support').checked,
-                selectedVendor: selectedVendor,
-                fteCost: parseFloat(document.getElementById('fte-cost').value) || 120000,
-                discountPercentage: parseFloat(document.getElementById('portnox-discount').value) || 0
+                selectedVendor,
+                deviceCount,
+                years: parseInt(document.getElementById('years-to-project')?.value) || 3,
+                organizationSize: document.getElementById('organization-size')?.value || 'medium',
+                industry: document.getElementById('industry-select')?.value || 'technology',
+                locations: parseInt(document.getElementById('locations')?.value) || 1,
+                cloudIntegration: document.getElementById('cloud-integration')?.checked || false,
+                legacyDevices: document.getElementById('legacy-devices')?.checked || false,
+                byod: document.getElementById('byod-support')?.checked || false,
+                fteCost: parseFloat(document.getElementById('fte-cost')?.value) || 120000,
+                discountPercentage: parseFloat(document.getElementById('portnox-discount')?.value) || 0
             };
             
             // Calculate comparison
@@ -262,8 +392,15 @@ console.log("Final Patch: Starting application patches...");
             'fortinac': 55,
             'nps': 30,
             'securew2': 45,
-            'noNac': 70  // Highest reduction when moving from no NAC
+            'noNac': 70,  // Highest reduction when moving from no NAC
+            'juniper': 56,
+            'arista': 54,
+            'foxpass': 42,
+            'portnox': 65
         };
+        
+        // Default to cisco if vendor not found
+        const vendorReduction = baseReduction[vendor] || baseReduction['cisco'];
         
         // Scale factor based on device count
         let scaleFactor = 1.0;
@@ -279,7 +416,7 @@ console.log("Final Patch: Starting application patches...");
         }
         
         // Calculate risk reduction
-        return Math.min(95, Math.round(baseReduction[vendor] * scaleFactor));
+        return Math.min(95, Math.round(vendorReduction * scaleFactor));
     }
     
     // Function to initialize industry compliance panel
@@ -295,16 +432,22 @@ console.log("Final Patch: Starting application patches...");
         // Initialize compliance matrix
         const complianceMatrixContainer = document.getElementById('compliance-matrix-container');
         if (complianceMatrixContainer) {
-            // Sample compliance frameworks data
-            const frameworks = [
-                { id: 'hipaa', name: 'HIPAA', description: 'Health Insurance Portability and Accountability Act' },
-                { id: 'pci', name: 'PCI DSS', description: 'Payment Card Industry Data Security Standard' },
-                { id: 'gdpr', name: 'GDPR', description: 'General Data Protection Regulation' },
-                { id: 'nist', name: 'NIST CSF', description: 'NIST Cybersecurity Framework' },
-                { id: 'cmmc', name: 'CMMC', description: 'Cybersecurity Maturity Model Certification' }
-            ];
+            // Get Enhanced Vendors for compliance data
+            const EnhancedVendors = window.EnhancedVendors || {};
+            const ComplianceFrameworks = window.ComplianceFrameworks || {};
             
-            // Sample compliance coverage data
+            // Sample compliance frameworks data if not available
+            const frameworks = ComplianceFrameworks.getAllFrameworks 
+                ? ComplianceFrameworks.getAllFrameworks() 
+                : [
+                    { id: 'hipaa', name: 'HIPAA', description: 'Health Insurance Portability and Accountability Act' },
+                    { id: 'pci', name: 'PCI DSS', description: 'Payment Card Industry Data Security Standard' },
+                    { id: 'gdpr', name: 'GDPR', description: 'General Data Protection Regulation' },
+                    { id: 'nist', name: 'NIST CSF', description: 'NIST Cybersecurity Framework' },
+                    { id: 'cmmc', name: 'CMMC', description: 'Cybersecurity Maturity Model Certification' }
+                ];
+            
+            // Sample compliance coverage data if not available
             const complianceCoverage = {
                 cisco: { hipaa: 'full', pci: 'full', gdpr: 'partial', nist: 'full', cmmc: 'full' },
                 aruba: { hipaa: 'full', pci: 'full', gdpr: 'partial', nist: 'full', cmmc: 'partial' },
@@ -312,8 +455,25 @@ console.log("Final Patch: Starting application patches...");
                 fortinac: { hipaa: 'partial', pci: 'full', gdpr: 'partial', nist: 'partial', cmmc: 'partial' },
                 nps: { hipaa: 'partial', pci: 'partial', gdpr: 'none', nist: 'partial', cmmc: 'none' },
                 securew2: { hipaa: 'partial', pci: 'partial', gdpr: 'partial', nist: 'partial', cmmc: 'partial' },
+                juniper: { hipaa: 'partial', pci: 'partial', gdpr: 'partial', nist: 'partial', cmmc: 'partial' },
+                arista: { hipaa: 'partial', pci: 'partial', gdpr: 'partial', nist: 'partial', cmmc: 'partial' },
+                foxpass: { hipaa: 'partial', pci: 'partial', gdpr: 'partial', nist: 'partial', cmmc: 'none' },
                 portnox: { hipaa: 'full', pci: 'full', gdpr: 'full', nist: 'full', cmmc: 'full' }
             };
+            
+            // If ComplianceFrameworks available, use its data
+            if (ComplianceFrameworks.frameworks) {
+                frameworks.forEach(fw => {
+                    const frameworkId = fw.id;
+                    
+                    Object.keys(complianceCoverage).forEach(vendorId => {
+                        const vendorSupport = ComplianceFrameworks.frameworks[frameworkId]?.vendorSupport?.[vendorId];
+                        if (vendorSupport) {
+                            complianceCoverage[vendorId][frameworkId] = vendorSupport;
+                        }
+                    });
+                });
+            }
             
             // Create compliance matrix table
             let complianceTableHTML = `
@@ -337,7 +497,7 @@ console.log("Final Patch: Starting application patches...");
                         <td>
                             <div class="tooltip-modern">
                                 ${framework.name}
-                                <div class="tooltip-content">${framework.description}</div>
+                                <div class="tooltip-content">${framework.description || framework.fullName || ''}</div>
                             </div>
                         </td>
                 `;
@@ -374,68 +534,76 @@ console.log("Final Patch: Starting application patches...");
         // Initialize industry requirements
         const industryRequirementsContainer = document.getElementById('industry-requirements-container');
         if (industryRequirementsContainer) {
-            // Sample industry requirements data
-            const industryRequirements = {
-                healthcare: [
-                    { title: 'Device Identification', description: 'Healthcare facilities require robust medical device identification to maintain inventory for compliance with safety and regulatory requirements.' },
-                    { title: 'PHI Protection', description: 'HIPAA-compliant segmentation of networks handling Protected Health Information (PHI) must be implemented.' },
-                    { title: 'Legacy Device Support', description: 'Support for legacy medical devices and operating systems is essential as equipment often has 10+ year lifecycles.' }
-                ],
-                financial: [
-                    { title: 'Transaction Security', description: 'Financial institutions must isolate transaction processing systems from general network traffic.' },
-                    { title: 'Audit Trail', description: 'Detailed audit trails of all access events for compliance with financial regulations and forensic analysis.' },
-                    { title: 'Multi-Factor Authentication', description: 'Strong authentication for all access to financial systems and customer data.' }
-                ],
-                government: [
-                    { title: 'Classification Compliance', description: 'Network segmentation based on data classification levels per government security standards.' },
-                    { title: 'FIPS Compliance', description: 'Federal Information Processing Standards (FIPS) validated cryptographic modules for authentication.' },
-                    { title: 'Continuous Monitoring', description: 'Real-time monitoring and alert mechanisms for suspicious activities.' }
-                ],
-                retail: [
-                    { title: 'POS Protection', description: 'Point-of-Sale systems must be isolated from general network traffic and the internet.' },
-                    { title: 'PCI Compliance', description: 'Payment Card Industry Data Security Standard (PCI DSS) compliant network segmentation.' },
-                    { title: 'Customer WiFi', description: 'Secure guest wireless access that cannot reach internal systems.' }
-                ],
-                manufacturing: [
-                    { title: 'OT/IT Convergence', description: 'Secure integration between operational technology networks and information technology systems.' },
-                    { title: 'Industrial Device Support', description: 'Support for industrial protocols and legacy automation equipment.' },
-                    { title: 'Production Continuity', description: 'Zero-impact authentication that won\'t disrupt production processes.' }
-                ],
-                technology: [
-                    { title: 'Dev Environment Protection', description: 'Secure isolation of development, testing, and production environments.' },
-                    { title: 'API Security', description: 'Security controls for system-to-system API access and data exchange.' },
-                    { title: 'BYOD Support', description: 'Secure support for employee personal devices without compromising corporate data.' }
-                ],
-                education: [
-                    { title: 'Open Access Balance', description: 'Balance between academic freedom and network security with flexible access policies.' },
-                    { title: 'BYOD Management', description: 'Support for diverse student and faculty devices across campus.' },
-                    { title: 'Research Network Protection', description: 'Isolation of research networks from general academic and administrative systems.' }
-                ],
-                energy: [
-                    { title: 'Critical Infrastructure Protection', description: 'Specialized protection for energy delivery systems and SCADA networks.' },
-                    { title: 'Regulatory Compliance', description: 'Compliance with energy sector regulations including NERC CIP requirements.' },
-                    { title: 'Legacy System Support', description: 'Support for industrial control systems with long operational lifecycles.' }
-                ]
-            };
+            // Get industry data
+            const IndustryData = window.IndustryData || {};
             
             // Get selected industry from wizard
             const industrySelect = document.getElementById('industry-select');
             const selectedIndustry = industrySelect ? industrySelect.value : 'technology';
             
+            // Get industry requirements
+            const industryInfo = IndustryData.getIndustry ? IndustryData.getIndustry(selectedIndustry) : null;
+            
             // Create industry requirements HTML
             let requirementsHTML = '';
             
-            if (industryRequirements[selectedIndustry]) {
-                industryRequirements[selectedIndustry].forEach(req => {
+            if (industryInfo && industryInfo.keyRequirements) {
+                industryInfo.keyRequirements.forEach(req => {
                     requirementsHTML += `
                         <div class="industry-requirement-card">
-                            <h4>${req.title}</h4>
-                            <p>${req.description}</p>
+                            <h4>${req}</h4>
                         </div>
                     `;
                 });
             } else {
-                requirementsHTML = '<p>No specific requirements found for the selected industry.</p>';
+                // Sample requirements as fallback
+                const sampleRequirements = {
+                    healthcare: [
+                        'Medical device identification and security',
+                        'PHI protection and HIPAA compliance',
+                        'Legacy device support for medical equipment',
+                        'Segmentation between clinical and guest networks',
+                        'Real-time access for emergency scenarios'
+                    ],
+                    financial: [
+                        'Transaction processing system isolation',
+                        'Detailed audit trails for compliance',
+                        'Multi-factor authentication for all access',
+                        'Branch office integration and management',
+                        'Third-party access controls'
+                    ],
+                    technology: [
+                        'Developer environment protection',
+                        'API and system-to-system security',
+                        'BYOD and remote work support',
+                        'Cloud resource access control',
+                        'Intellectual property protection'
+                    ],
+                    government: [
+                        'Classification-based network segmentation',
+                        'FIPS-validated cryptographic modules',
+                        'Continuous monitoring and audit trails',
+                        'Public access management',
+                        'Integration with government identity systems'
+                    ],
+                    retail: [
+                        'POS system isolation and protection',
+                        'PCI DSS compliance for payment processing',
+                        'Guest WiFi segmentation',
+                        'IoT device management (cameras, sensors)',
+                        'Multi-location management'
+                    ]
+                };
+                
+                const requirements = sampleRequirements[selectedIndustry] || sampleRequirements.technology;
+                
+                requirements.forEach(req => {
+                    requirementsHTML += `
+                        <div class="industry-requirement-card">
+                            <h4>${req}</h4>
+                        </div>
+                    `;
+                });
             }
             
             industryRequirementsContainer.innerHTML = requirementsHTML;
