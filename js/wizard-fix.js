@@ -1,52 +1,125 @@
 /**
- * Wizard Fix Script
- * Provides fixes for the wizard component
+ * Wizard Fix - Ensures proper loading and functionality of the TCO Wizard
  */
-document.addEventListener('DOMContentLoaded', function() {
-  console.log("Wizard Fix: Applying patches to wizard functionality...");
-  
-  // Check if wizard.js has been loaded
-  if (typeof window.wizardManager !== 'undefined') {
-    // Fix CountUp reference in updateSummaryMetrics
-    const originalUpdateSummaryMetrics = window.wizardManager.updateSummaryMetrics;
+console.log("Wizard Fix: Applying patches to wizard functionality...");
+
+(function() {
+    // Function to check if wizard.js is loaded
+    function isWizardLoaded() {
+        return typeof TCOWizard !== 'undefined';
+    }
     
-    window.wizardManager.updateSummaryMetrics = function(results) {
-      try {
-        if (typeof CountUp !== 'undefined') {
-          // Use original method if CountUp is available
-          originalUpdateSummaryMetrics.call(this, results);
-        } else {
-          // Fallback implementation
-          console.log("Using fallback for updating metrics (CountUp not available)");
-          
-          // Simple function to update metrics directly
-          const updateMetric = function(id, value, prefix, suffix) {
-            const element = document.getElementById(id);
-            if (element) {
-              if (typeof value === 'number') {
-                element.textContent = prefix + value.toLocaleString() + suffix;
-              } else {
-                element.textContent = prefix + value + suffix;
-              }
-            }
-          };
-          
-          // Update metrics if results are available
-          if (results) {
-            updateMetric('total-savings', Math.round(results.savings.total), '$', '');
-            updateMetric('savings-percentage', Math.round(results.savings.percentage), '', '%');
-            updateMetric('breakeven-point', results.breakeven.month > 0 ? results.breakeven.month : 'Immediate', '', ' months');
-            updateMetric('risk-reduction', Math.round(results.riskReduction), '', '%');
-            updateMetric('implementation-time', '75% less', '', '');
-          }
+    // Function to load wizard.js if not loaded
+    function loadWizardScript() {
+        if (isWizardLoaded()) {
+            console.log("Wizard script is already loaded");
+            return Promise.resolve();
         }
-      } catch (error) {
-        console.error("Error updating summary metrics:", error);
-      }
-    };
+        
+        return new Promise((resolve, reject) => {
+            console.log("Loading wizard script...");
+            const script = document.createElement('script');
+            script.src = 'js/wizards/tco-wizard.js';
+            script.onload = () => {
+                console.log("Wizard script loaded successfully");
+                resolve();
+            };
+            script.onerror = () => {
+                console.error("Failed to load wizard script");
+                reject(new Error("Failed to load wizard script"));
+            };
+            document.head.appendChild(script);
+        });
+    }
     
-    console.log("Wizard Fix: Applied patches to wizard functionality");
-  } else {
-    console.warn("Wizard Fix: wizard.js not loaded, patches not applied");
-  }
-});
+    // Function to initialize wizard if not already initialized
+    function initializeWizard() {
+        if (isWizardLoaded()) {
+            console.log("Initializing TCO Wizard...");
+            
+            // Check if wizard is already initialized
+            if (document.querySelector('.wizard-overlay')) {
+                console.log("Wizard is already initialized");
+            } else {
+                // Initialize the wizard
+                TCOWizard.init();
+                console.log("Wizard initialized successfully");
+                
+                // Fix any potential issues with the wizard navigation
+                fixWizardNavigation();
+            }
+        } else {
+            console.error("Cannot initialize wizard: TCOWizard is not defined");
+        }
+    }
+    
+    // Function to fix wizard navigation
+    function fixWizardNavigation() {
+        const prevButton = document.getElementById('wizard-prev');
+        const nextButton = document.getElementById('wizard-next');
+        
+        if (prevButton && nextButton) {
+            // Ensure event listeners are properly attached
+            const newPrevButton = prevButton.cloneNode(true);
+            const newNextButton = nextButton.cloneNode(true);
+            
+            prevButton.parentNode.replaceChild(newPrevButton, prevButton);
+            nextButton.parentNode.replaceChild(newNextButton, nextButton);
+            
+            newPrevButton.addEventListener('click', function() {
+                if (TCOWizard && typeof TCOWizard.goToPreviousStep === 'function') {
+                    TCOWizard.goToPreviousStep();
+                }
+            });
+            
+            newNextButton.addEventListener('click', function() {
+                if (TCOWizard && typeof TCOWizard.goToNextStep === 'function') {
+                    TCOWizard.goToNextStep();
+                }
+            });
+            
+            console.log("Wizard navigation fixed");
+        } else {
+            console.warn("Wizard navigation buttons not found");
+        }
+    }
+    
+    // Fix wizard steps
+    function fixWizardSteps() {
+        const wizardSteps = document.querySelectorAll('.wizard-step');
+        if (wizardSteps.length > 0) {
+            wizardSteps.forEach((step, index) => {
+                // Ensure data-step attribute is correctly set
+                step.setAttribute('data-step', index + 1);
+                
+                // Remove active class from all steps except the first
+                if (index === 0) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+            console.log("Wizard steps fixed");
+        } else {
+            console.warn("Wizard steps not found");
+        }
+    }
+    
+    // Load and initialize wizard when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load the wizard script if not already loaded
+        loadWizardScript()
+            .then(() => {
+                // Initialize the wizard
+                initializeWizard();
+                
+                // Fix wizard steps
+                fixWizardSteps();
+                
+                console.log("Wizard Fix: Patches applied successfully");
+            })
+            .catch(error => {
+                console.error("Wizard Fix: Error applying patches:", error);
+            });
+    });
+})();
