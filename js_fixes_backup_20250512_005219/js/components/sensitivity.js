@@ -440,7 +440,7 @@ const SensitivityAnalyzer = (function() {
             case 'deviceCount':
                 return value.toLocaleString();
             case 'cost':
-        return 0; // Fixed syntax error
+                return ' + value.toFixed(2);
             case 'fte':
                 return value.toFixed(2);
             case 'implementation':
