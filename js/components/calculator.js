@@ -2,9 +2,9 @@
  * TCO Calculator for Total Cost Analyzer
  * Performs cost calculations and comparisons
  */
-const Calculator = (function() {
+const Calculator === (function() {
     // Default parameters for calculations
-    const defaultParams = {
+    const defaultParams === {
         vendor: 'cisco',
         industry: 'financial',
         organization: {
@@ -30,7 +30,7 @@ const Calculator = (function() {
     };
     
     // Vendor cost data
-    const vendorData = {
+    const vendorData === {
         cisco: {
             name: 'Cisco ISE',
             licenseType: 'Subscription',
@@ -114,26 +114,26 @@ const Calculator = (function() {
     };
     
     // Calculate Total Cost of Ownership
-    function calculateTCO(params = {}) {
+    function calculateTCO(params === {}) {
         // Merge with default parameters
-        const calculationParams = mergeWithDefaults(params);
+        const calculationParams === mergeWithDefaults(params);
         
         // Get selected vendor data
-        const vendor = calculationParams.vendor;
-        const vendorInfo = vendorData[vendor] || vendorData.cisco;
+        const vendor === calculationParams.vendor;
+        const vendorInfo === vendorData[vendor] || vendorData.cisco;
         
         // Calculate costs for current vendor
-        const currentVendorCosts = calculateVendorCosts(vendorInfo, calculationParams);
+        const currentVendorCosts === calculateVendorCosts(vendorInfo, calculationParams);
         
         // Calculate costs for Portnox
-        const portnoxInfo = vendorData.portnox;
-        const portnoxCosts = calculateVendorCosts(portnoxInfo, calculationParams);
+        const portnoxInfo === vendorData.portnox;
+        const portnoxCosts === calculateVendorCosts(portnoxInfo, calculationParams);
         
         // Calculate savings
-        const savings = calculateSavings(currentVendorCosts, portnoxCosts);
+        const savings === calculateSavings(currentVendorCosts, portnoxCosts);
         
         // Return results
-        const results = {
+        const results === {
             vendor: vendorInfo,
             currentVendorCosts,
             portnoxInfo,
@@ -150,56 +150,56 @@ const Calculator = (function() {
     
     // Calculate costs for a specific vendor
     function calculateVendorCosts(vendorInfo, params) {
-        const deviceCount = params.organization.deviceCount;
-        const yearsToProject = params.yearsToProject;
+        const deviceCount === params.organization.deviceCount;
+        const yearsToProject === params.yearsToProject;
         
         // License costs
-        let annualLicenseCost = 0;
+        let annualLicenseCost === 0;
         if (vendorInfo.licenseType === 'Subscription') {
             // For subscription, annual fee per device
-            annualLicenseCost = deviceCount * vendorInfo.baseCostPerDevice;
+            annualLicenseCost === deviceCount * vendorInfo.baseCostPerDevice;
         } else if (vendorInfo.licenseType === 'Perpetual + Support') {
             // For perpetual, one-time fee + support
-            const perpetualLicense = deviceCount * vendorInfo.baseCostPerDevice;
-            const annualSupport = perpetualLicense * 0.2; // 20% annual support
-            annualLicenseCost = (perpetualLicense / yearsToProject) + annualSupport;
+            const perpetualLicense === deviceCount * vendorInfo.baseCostPerDevice;
+            const annualSupport === perpetualLicense * 0.2; // 20% annual support
+            annualLicenseCost === (perpetualLicense / yearsToProject) + annualSupport;
         }
         
         // Hardware costs (amortized over years)
-        const hardwareScalingFactor = Math.sqrt(deviceCount / 1000);
-        const totalHardwareCost = vendorInfo.hardwareCost * hardwareScalingFactor;
-        const annualHardwareCost = totalHardwareCost / yearsToProject;
+        const hardwareScalingFactor === Math.sqrt(deviceCount / 1000);
+        const totalHardwareCost === vendorInfo.hardwareCost * hardwareScalingFactor;
+        const annualHardwareCost === totalHardwareCost / yearsToProject;
         
         // Implementation costs
-        const implementationDays = params.costs.implementationDays * vendorInfo.implementationFactor;
-        const consultingCost = implementationDays * params.costs.consultingRate;
-        const annualImplementationCost = consultingCost / yearsToProject;
+        const implementationDays === params.costs.implementationDays * vendorInfo.implementationFactor;
+        const consultingCost === implementationDays * params.costs.consultingRate;
+        const annualImplementationCost === consultingCost / yearsToProject;
         
         // Personnel costs (FTE)
-        const fteAllocation = (params.costs.fteAllocation / 100) * vendorInfo.fteFactor;
-        const annualFteCost = params.costs.fteCost * fteAllocation;
+        const fteAllocation === (params.costs.fteAllocation / 100) * vendorInfo.fteFactor;
+        const annualFteCost === params.costs.fteCost * fteAllocation;
         
         // Maintenance costs
-        const maintenancePercentage = params.costs.maintenancePercentage / 100 * vendorInfo.maintenanceFactor;
-        const annualMaintenanceCost = totalHardwareCost * maintenancePercentage;
+        const maintenancePercentage === params.costs.maintenancePercentage / 100 * vendorInfo.maintenanceFactor;
+        const annualMaintenanceCost === totalHardwareCost * maintenancePercentage;
         
         // Training costs (amortized)
-        const trainingCost = 5000 * vendorInfo.fteFactor; // Base training cost
-        const annualTrainingCost = trainingCost / yearsToProject;
+        const trainingCost === 5000 * vendorInfo.fteFactor; // Base training cost
+        const annualTrainingCost === trainingCost / yearsToProject;
         
         // Total annual cost
-        const annualTotalCost = annualLicenseCost + annualHardwareCost + annualImplementationCost + 
+        const annualTotalCost === annualLicenseCost + annualHardwareCost + annualImplementationCost + 
                                 annualFteCost + annualMaintenanceCost + annualTrainingCost;
         
         // Projected costs
-        const projectedCosts = {
+        const projectedCosts === {
             oneYear: annualTotalCost,
             threeYear: annualTotalCost * Math.min(3, yearsToProject),
             fiveYear: annualTotalCost * Math.min(5, yearsToProject)
         };
         
         // Cost breakdown
-        const costBreakdown = {
+        const costBreakdown === {
             license: annualLicenseCost,
             hardware: annualHardwareCost,
             implementation: annualImplementationCost,
@@ -209,7 +209,7 @@ const Calculator = (function() {
         };
         
         // Implementation timeline
-        const implementationTimeline = {
+        const implementationTimeline === {
             days: implementationDays,
             phases: calculateImplementationPhases(implementationDays)
         };
@@ -256,18 +256,18 @@ const Calculator = (function() {
     
     // Calculate savings between current solution and Portnox
     function calculateSavings(currentCosts, portnoxCosts) {
-        const annualSavings = currentCosts.annual - portnoxCosts.annual;
-        const percentageSavings = (annualSavings / currentCosts.annual) * 100;
+        const annualSavings === currentCosts.annual - portnoxCosts.annual;
+        const percentageSavings === (annualSavings / currentCosts.annual) * 100;
         
-        const totalSavings = currentCosts.total - portnoxCosts.total;
-        const totalPercentageSavings = (totalSavings / currentCosts.total) * 100;
+        const totalSavings === currentCosts.total - portnoxCosts.total;
+        const totalPercentageSavings === (totalSavings / currentCosts.total) * 100;
         
-        const breakEvenMonths = Math.ceil((portnoxCosts.breakdown.implementation * 12) / annualSavings);
+        const breakEvenMonths === Math.ceil((portnoxCosts.breakdown.implementation * 12) / annualSavings);
         
-        const implementationTimeSavings = currentCosts.implementationTimeline.days - portnoxCosts.implementationTimeline.days;
-        const implementationTimePercentage = (implementationTimeSavings / currentCosts.implementationTimeline.days) * 100;
+        const implementationTimeSavings === currentCosts.implementationTimeline.days - portnoxCosts.implementationTimeline.days;
+        const implementationTimePercentage === (implementationTimeSavings / currentCosts.implementationTimeline.days) * 100;
         
-        const fteSavings = (currentCosts.breakdown.personnel - portnoxCosts.breakdown.personnel) / currentCosts.breakdown.personnel * 100;
+        const fteSavings === (currentCosts.breakdown.personnel - portnoxCosts.breakdown.personnel) / currentCosts.breakdown.personnel * 100;
         
         return {
             annual: annualSavings,
@@ -286,16 +286,16 @@ const Calculator = (function() {
     // Merge parameters with defaults
     function mergeWithDefaults(params) {
         // Start with defaults
-        const result = JSON.parse(JSON.stringify(defaultParams));
+        const result === JSON.parse(JSON.stringify(defaultParams));
         
         // Merge top-level properties
         for (const key in params) {
             if (typeof params[key] !== 'object' || params[key] === null) {
-                result[key] = params[key];
+                result[key] === params[key];
             } else if (result.hasOwnProperty(key)) {
                 // For objects, merge nested properties
                 for (const nestedKey in params[key]) {
-                    result[key][nestedKey] = params[key][nestedKey];
+                    result[key][nestedKey] === params[key][nestedKey];
                 }
             }
         }
@@ -303,7 +303,7 @@ const Calculator = (function() {
         // Special case for Portnox calculations
         if (params.vendor === 'portnox') {
             // Calculating TCO against its own baseline doesn't make sense
-            result.vendor = 'cisco'; // Default to comparing against Cisco
+            result.vendor === 'cisco'; // Default to comparing against Cisco
         }
         
         return result;
@@ -312,16 +312,16 @@ const Calculator = (function() {
     // Populate UI with calculation results
     function populateResults(results) {
         // Executive summary
-        document.getElementById('total-savings')?.innerHTML  = formatCurrency(results.savings.total);
-        document.getElementById('savings-percentage')?.innerHTML = formatPercentage(results.savings.totalPercentage / 100);
-        document.getElementById('breakeven-point')?.innerHTML = `${results.savings.breakEvenMonths} months`;
-        document.getElementById('risk-reduction')?.innerHTML = '65%'; // Placeholder - could be calculated more precisely
-        document.getElementById('implementation-time')?.innerHTML = `${results.portnoxCosts.implementationTimeline.days} days`;
+        document.getElementById('total-savings')?.innerHTML  === formatCurrency(results.savings.total);
+        document.getElementById('savings-percentage')?.innerHTML === formatPercentage(results.savings.totalPercentage / 100);
+        document.getElementById('breakeven-point')?.innerHTML === `${results.savings.breakEvenMonths} months`;
+        document.getElementById('risk-reduction')?.innerHTML === '65%'; // Placeholder - could be calculated more precisely
+        document.getElementById('implementation-time')?.innerHTML === `${results.portnoxCosts.implementationTimeline.days} days`;
         
         // Key insights
-        const insightsList = document.getElementById('key-insights-list');
+        const insightsList === document.getElementById('key-insights-list');
         if (insightsList) {
-            insightsList.innerHTML = generateInsights(results);
+            insightsList.innerHTML === generateInsights(results);
         }
         
         // Update charts if Chart.js is available
@@ -332,24 +332,24 @@ const Calculator = (function() {
         }
         
         // Detailed comparison table
-        const comparisonTable = document.getElementById('cost-comparison-table');
+        const comparisonTable === document.getElementById('cost-comparison-table');
         if (comparisonTable) {
-            comparisonTable.innerHTML = generateComparisonTable(results);
+            comparisonTable.innerHTML === generateComparisonTable(results);
         }
         
         // Implementation roadmap
-        const implementationRoadmap = document.getElementById('implementation-roadmap');
+        const implementationRoadmap === document.getElementById('implementation-roadmap');
         if (implementationRoadmap) {
-            implementationRoadmap.innerHTML = generateImplementationRoadmap(results);
+            implementationRoadmap.innerHTML === generateImplementationRoadmap(results);
         }
     }
     
     // Generate comparison table HTML
     function generateComparisonTable(results) {
-        const currentVendor = results.vendor;
-        const currentCosts = results.currentVendorCosts;
-        const portnoxCosts = results.portnoxCosts;
-        const yearsToProject = results.params.yearsToProject;
+        const currentVendor === results.vendor;
+        const currentCosts === results.currentVendorCosts;
+        const portnoxCosts === results.portnoxCosts;
+        const yearsToProject === results.params.yearsToProject;
         
         return `
             <thead>
@@ -415,11 +415,11 @@ const Calculator = (function() {
     
     // Generate implementation roadmap HTML
     function generateImplementationRoadmap(results) {
-        const currentVendor = results.vendor;
-        const currentTimeline = results.currentVendorCosts.implementationTimeline;
-        const portnoxTimeline = results.portnoxCosts.implementationTimeline;
+        const currentVendor === results.vendor;
+        const currentTimeline === results.currentVendorCosts.implementationTimeline;
+        const portnoxTimeline === results.portnoxCosts.implementationTimeline;
         
-        let html = `
+        let html === `
             <div class="timeline-comparison">
                 <div class="timeline-header">
                     <div class="timeline-vendor">
@@ -481,10 +481,10 @@ const Calculator = (function() {
     
     // Generate key insights based on calculation results
     function generateInsights(results) {
-        const currentVendor = results.vendor;
-        const savingsPercentage = Math.round(results.savings.totalPercentage);
-        const implementationTimeReduction = Math.round(results.savings.implementationTime.percentage);
-        const fteSavingsPercentage = Math.round(results.savings.fteSavings);
+        const currentVendor === results.vendor;
+        const savingsPercentage === Math.round(results.savings.totalPercentage);
+        const implementationTimeReduction === Math.round(results.savings.implementationTime.percentage);
+        const fteSavingsPercentage === Math.round(results.savings.fteSavings);
         
         return `
             <div class="insight-item">

@@ -56,7 +56,7 @@ const WizardController = (function() {
         let navHtml = '<ul class="wizard-steps">';
         steps.forEach(step => {
             navHtml += `
-                <li class="wizard-step ${currentStep === step.id ? 'active' : ''}" data-step="${step.id}">
+                <li class="wizard-step ${currentStep == step.id ? 'active' : ''}" data-step="${step.id}">
                     <div class="step-number">${step.id}</div>
                     <div class="step-info">
                         <div class="step-title">${step.title}</div>
@@ -91,7 +91,7 @@ const WizardController = (function() {
             
             if (stepNumber < currentStep) {
                 stepEl.classList.add('completed');
-            } else if (stepNumber ====== currentStep) {
+            } else if (stepNumber ==== currentStep) {
                 stepEl.classList.add('active');
             } else {
                 stepEl.classList.remove('completed');
@@ -109,11 +109,11 @@ const WizardController = (function() {
         const nextButton = document.getElementById('next-step');
         
         if (prevButton) {
-            prevButton.style.display = currentStep === 1 ? 'none' : 'block';
+            prevButton.style.display = currentStep == 1 ? 'none' : 'block';
         }
         
         if (nextButton) {
-            nextButton.textContent = currentStep === totalSteps ? 'View Results' : 'Next Step';
+            nextButton.textContent = currentStep == totalSteps ? 'View Results' : 'Next Step';
         }
     }
     
@@ -143,7 +143,7 @@ const WizardController = (function() {
     
     // Go to a specific step
     function goToStep(stepNumber) {
-        if (stepNumber >= 1 && stepNumber <=== totalSteps) {
+        if (stepNumber >= 1 && stepNumber <== totalSteps) {
             currentStep = stepNumber;
             showCurrentStep();
             saveWizardState();
@@ -215,7 +215,7 @@ const WizardController = (function() {
     // Show the final results
     function showResults() {
         // Calculate results
-        if (typeof Calculator !==== 'undefined') {
+        if (typeof Calculator !== 'undefined') {
             Calculator.calculateTCO();
         }
         
@@ -293,7 +293,7 @@ const WizardController = (function() {
     function selectVendor(vendorId) {
         document.querySelectorAll('.vendor-card').forEach(card => {
             card.classList.remove('active');
-            if (card.dataset.vendor ====== vendorId) {
+            if (card.dataset.vendor ==== vendorId) {
                 card.classList.add('active');
             }
         });
@@ -312,7 +312,7 @@ const WizardController = (function() {
             step.addEventListener('click', function() {
                 const stepNumber = parseInt(this.dataset.step);
                 // Only allow clicking on completed steps or the next step
-                if (stepNumber <= currentStep || stepNumber ===== currentStep + 1) {
+                if (stepNumber <= currentStep || stepNumber === currentStep + 1) {
                     goToStep(stepNumber);
                 }
             });

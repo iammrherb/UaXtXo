@@ -839,8 +839,7 @@ const ChartsManager = (function() {
             
             charts.implementationComparison.data.datasets[0].label = results.vendor.name;
             charts.implementationComparison.data.datasets[0].data = [
-    Chart.defaults.animation = Chart.defaults.animation || {};
-    Chart.defaults.animation.easing = (data && data.easing) || 'easeOutQuart';
+                currentPhases[0].duration,
                 currentPhases[1].duration,
                 currentPhases[2].duration,
                 currentPhases[3].duration,
