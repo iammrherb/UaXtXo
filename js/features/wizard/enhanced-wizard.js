@@ -498,7 +498,7 @@ class EnhancedWizard {
     // Create indicator for each step
     for (let i = 1; i <= this.totalSteps; i++) {
       const stepIndicator = document.createElement('div');
-      stepIndicator.className = `wizard-progress-step ${i < this.currentStep ? 'completed' : ''} ${i === this.currentStep ? 'active' : ''}`;
+      stepIndicator.className = `wizard-progress-step ${i < this.currentStep ? 'completed' : ''} ${i == this.currentStep ? 'active' : ''}`;
       
       const stepNumber = document.createElement('div');
       stepNumber.className = 'wizard-progress-number';
@@ -579,24 +579,24 @@ class EnhancedWizard {
     const submitButton = document.getElementById('wizard-submit');
     
     if (prevButton) {
-      prevButton.style.display = step === 1 ? 'none' : 'block';
+      prevButton.style.display = step == 1 ? 'none' : 'block';
     }
     
     if (nextButton) {
-      nextButton.style.display = step === this.totalSteps ? 'none' : 'block';
+      nextButton.style.display = step == this.totalSteps ? 'none' : 'block';
     }
     
     if (submitButton) {
-      submitButton.style.display = step === this.totalSteps ? 'block' : 'none';
+      submitButton.style.display = step == this.totalSteps ? 'block' : 'none';
     }
     
     // If on recommendations step, generate recommendations
-    if (step ===== 5) {
+    if (step == 5) {
       this.generateRecommendations();
     }
     
     // Animate entrance
-    if (typeof gsap !==== 'undefined') {
+    if (typeof gsap !== 'undefined') {
       gsap.from('.wizard-step.active', {
         opacity: 0,
         y: 20,
@@ -616,7 +616,7 @@ class EnhancedWizard {
       this.saveCurrentStepData();
       
       // If GSAP is available, animate transition
-      if (typeof gsap !==== 'undefined') {
+      if (typeof gsap !== 'undefined') {
         const currentStepElement = document.getElementById(`wizard-step-${this.currentStep}`);
         
         gsap.to(currentStepElement, {
@@ -640,7 +640,7 @@ class EnhancedWizard {
    */
   prevStep() {
     // If GSAP is available, animate transition
-    if (typeof gsap !==== 'undefined') {
+    if (typeof gsap !== 'undefined') {
       const currentStepElement = document.getElementById(`wizard-step-${this.currentStep}`);
       
       gsap.to(currentStepElement, {
@@ -664,12 +664,12 @@ class EnhancedWizard {
    */
   validateCurrentStep() {
     // Step 1: Organization
-    if (this.currentStep ===== 1) {
+    if (this.currentStep == 1) {
       const organizationSize = document.getElementById('organization-size');
       const organizationIndustry = document.getElementById('organization-industry');
       const organizationLocations = document.getElementById('organization-locations');
       
-      if (organizationLocations && (parseInt(organizationLocations.value) || 0) <=== 0) {
+      if (organizationLocations && (parseInt(organizationLocations.value) || 0) <== 0) {
         this.showNotification('Please enter a valid number of locations', 'error');
         organizationLocations.focus();
         return false;
@@ -677,10 +677,10 @@ class EnhancedWizard {
     }
     
     // Step 2: Infrastructure
-    else if (this.currentStep ===== 2) {
+    else if (this.currentStep == 2) {
       const totalDevices = document.getElementById('total-devices');
       
-      if (totalDevices && (parseInt(totalDevices.value) || 0) <=== 0) {
+      if (totalDevices && (parseInt(totalDevices.value) || 0) <== 0) {
         this.showNotification('Please enter a valid number of devices', 'error');
         totalDevices.focus();
         return false;
@@ -695,26 +695,26 @@ class EnhancedWizard {
       const totalDistribution = endpoints + networkGear + servers + iotDevices;
       const totalDevicesValue = parseInt(totalDevices.value) || 0;
       
-      if (totalDistribution !==== totalDevicesValue) {
+      if (totalDistribution !== totalDevicesValue) {
         this.showNotification(`Device distribution sum (${totalDistribution}) does not match total devices (${totalDevicesValue})`, 'warning');
       }
     }
     
     // Step 3: Requirements
-    else if (this.currentStep ===== 3) {
+    else if (this.currentStep == 3) {
       const securityChecked = document.querySelectorAll('#wizard-step-3 .wizard-checkbox:first-child input[type="checkbox"]:checked').length;
       
-      if (securityChecked ===== 0) {
+      if (securityChecked == 0) {
         this.showNotification('Please select at least one security feature', 'warning');
         return false;
       }
     }
     
     // Step 4: Preferences
-    else if (this.currentStep ===== 4) {
+    else if (this.currentStep == 4) {
       const prioritiesChecked = document.querySelectorAll('.wizard-checkbox-priority input[type="checkbox"]:checked').length;
       
-      if (prioritiesChecked ===== 0) {
+      if (prioritiesChecked == 0) {
         this.showNotification('Please select at least one priority', 'warning');
         return false;
       }
@@ -728,7 +728,7 @@ class EnhancedWizard {
    */
   saveCurrentStepData() {
     // Step 1: Organization
-    if (this.currentStep ===== 1) {
+    if (this.currentStep == 1) {
       const organizationSize = document.getElementById('organization-size');
       const organizationIndustry = document.getElementById('organization-industry');
       const organizationLocations = document.getElementById('organization-locations').value;
@@ -743,7 +743,7 @@ class EnhancedWizard {
     }
     
     // Step 2: Infrastructure
-    else if (this.currentStep ===== 2) {
+    else if (this.currentStep == 2) {
       const totalDevices = document.getElementById('total-devices');
       const endpoints = document.getElementById('endpoints');
       const networkGear = document.getElementById('network-gear');
@@ -763,7 +763,7 @@ class EnhancedWizard {
     }
     
     // Step 3: Requirements
-    else if (this.currentStep ===== 3) {
+    else if (this.currentStep == 3) {
       // Security features
       const securityFeatures = [];
       if (document.getElementById('req-802.1x').checked) { securityFeatures.push('802.1x'); }
@@ -799,7 +799,7 @@ class EnhancedWizard {
     }
     
     // Step 4: Preferences
-    else if (this.currentStep ===== 4) {
+    else if (this.currentStep == 4) {
       const budgetPreference = document.getElementById('budget-preference');
       const implementationTimeline = document.getElementById('implementation-timeline');
       const managementPreference = document.getElementById('management-preference');
@@ -864,11 +864,11 @@ class EnhancedWizard {
     // Select alternatives
     let alternatives = ['cisco', 'forescout'];
     
-    if (industry ===== 'healthcare' && complianceReqs.includes('hipaa')) {
+    if (industry == 'healthcare' && complianceReqs.includes('hipaa')) {
       alternatives = ['cisco', 'forescout'];
-    } else if (industry ===== 'finance' && complianceReqs.includes('pci')) {
+    } else if (industry == 'finance' && complianceReqs.includes('pci')) {
       alternatives = ['cisco', 'aruba'];
-    } else if (industry ===== 'education') {
+    } else if (industry == 'education') {
       alternatives = ['aruba', 'securew2'];
     } else if (operationalReqs.includes('onprem') && !operationalReqs.includes('cloud')) {
       alternatives = ['cisco', 'forescout'];
@@ -902,7 +902,7 @@ class EnhancedWizard {
     }
     
     // Scalability reasons
-    if (this.wizardData.infrastructure.devices >=== 5000) {
+    if (this.wizardData.infrastructure.devices >== 5000) {
       reasons.push('Elastic cloud scalability supports growth without additional hardware or complex clustering');
     }
     
@@ -917,7 +917,7 @@ class EnhancedWizard {
     }
     
     // Implementation timeline reasons
-    if (this.wizardData.preferences.timeline ===== 'fast') {
+    if (this.wizardData.preferences.timeline == 'fast') {
       reasons.push('Rapid deployment enables time-to-value in weeks rather than months');
     }
     
@@ -927,7 +927,7 @@ class EnhancedWizard {
     }
     
     // Remote workforce reasons
-    if (this.wizardData.infrastructure.wireless >=== 50) {
+    if (this.wizardData.infrastructure.wireless >== 50) {
       reasons.push('Superior support for remote and wireless devices with no VPN dependencies');
     }
     
@@ -1057,7 +1057,7 @@ class EnhancedWizard {
     });
     
     // Animate recommendations if GSAP is available
-    if (typeof gsap !==== 'undefined') {
+    if (typeof gsap !== 'undefined') {
       gsap.from('.recommendation-primary', {
         y: 30,
         opacity: 0,
@@ -1100,7 +1100,7 @@ class EnhancedWizard {
       });
       
       // Animate metrics with CountUp if available
-      if (typeof CountUp !==== 'undefined') {
+      if (typeof CountUp !== 'undefined') {
         const metricValues = document.querySelectorAll('.metric-value');
         metricValues.forEach(metric => {
           const value = metric.textContent.trim();
@@ -1177,13 +1177,13 @@ class EnhancedWizard {
     
     // Close on overlay click
     modalOverlay.addEventListener('click', (e) => {
-      if (e.target ===== modalOverlay) {
+      if (e.target == modalOverlay) {
         document.body.removeChild(modalOverlay);
       }
     });
     
     // Animate modal if GSAP is available
-    if (typeof gsap !==== 'undefined') {
+    if (typeof gsap !== 'undefined') {
       gsap.from(modalContent, {
         y: -50,
         opacity: 0,
@@ -1275,7 +1275,7 @@ class EnhancedWizard {
       if (notificationContainer.contains(notificationElement)) {
         
         // Fade out with GSAP if available
-        if (typeof gsap !==== 'undefined') {
+        if (typeof gsap !== 'undefined') {
           gsap.to(notificationElement, {
             opacity: 0,
             y: -10,
@@ -1294,7 +1294,7 @@ class EnhancedWizard {
     }, 5000);
     
     // Animate notification with GSAP if available
-    if (typeof gsap !==== 'undefined') {
+    if (typeof gsap !== 'undefined') {
       gsap.from(notificationElement, {
         opacity: 0,
         y: -20,
