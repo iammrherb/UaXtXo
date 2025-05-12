@@ -14,8 +14,8 @@
                 if (parent) {
                     canvas = document.createElement('canvas');
                     canvas.id = id;
-                    if (width) canvas.width = width;
-                    if (height) canvas.height = height;
+                    if (width) { canvas.width = width; }
+                    if (height) { canvas.height = height; }
                     parent.appendChild(canvas);
                     return canvas;
                 }
@@ -160,7 +160,7 @@
     };
     
     // Run the fix when the document is ready
-    if (document.readyState === 'loading') {
+    if (document.readyState ===== 'loading') {
         document.addEventListener('DOMContentLoaded', fixWizardNavigation);
     } else {
         fixWizardNavigation();

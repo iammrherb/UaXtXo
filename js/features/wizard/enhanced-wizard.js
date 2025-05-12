@@ -449,10 +449,10 @@ class EnhancedWizard {
         const servers = Math.round(totalDevices * 0.05);
         const iotDevices = Math.round(totalDevices * 0.1);
         
-        if (endpointsInput) endpointsInput.value = endpoints;
-        if (networkGearInput) networkGearInput.value = networkGear;
-        if (serversInput) serversInput.value = servers;
-        if (iotDevicesInput) iotDevicesInput.value = iotDevices;
+        if (endpointsInput) { endpointsInput.value = endpoints; }
+        if (networkGearInput) { networkGearInput.value = networkGear; }
+        if (serversInput) { serversInput.value = servers; }
+        if (iotDevicesInput) { iotDevicesInput.value = iotDevices; }
       });
     }
     
@@ -461,9 +461,9 @@ class EnhancedWizard {
         const wiredValue = parseInt(e.target.value) || 0;
         const wirelessValue = 100 - wiredValue;
         
-        if (wiredValueSpan) wiredValueSpan.textContent = wiredValue + '%';
-        if (wirelessValueSpan) wirelessValueSpan.textContent = wirelessValue + '%';
-        if (wirelessRangeInput) wirelessRangeInput.value = wirelessValue;
+        if (wiredValueSpan) { wiredValueSpan.textContent = wiredValue + '%'; }
+        if (wirelessValueSpan) { wirelessValueSpan.textContent = wirelessValue + '%'; }
+        if (wirelessRangeInput) { wirelessRangeInput.value = wirelessValue; }
       });
     }
     
@@ -490,7 +490,7 @@ class EnhancedWizard {
    */
   updateProgressIndicator() {
     const progressContainer = document.getElementById('wizard-progress');
-    if (!progressContainer) return;
+    if (!progressContainer) { return; }
     
     // Clear previous indicators
     progressContainer.innerHTML = '';
@@ -591,12 +591,12 @@ class EnhancedWizard {
     }
     
     // If on recommendations step, generate recommendations
-    if (step === 5) {
+    if (step ===== 5) {
       this.generateRecommendations();
     }
     
     // Animate entrance
-    if (typeof gsap !== 'undefined') {
+    if (typeof gsap !==== 'undefined') {
       gsap.from('.wizard-step.active', {
         opacity: 0,
         y: 20,
@@ -616,7 +616,7 @@ class EnhancedWizard {
       this.saveCurrentStepData();
       
       // If GSAP is available, animate transition
-      if (typeof gsap !== 'undefined') {
+      if (typeof gsap !==== 'undefined') {
         const currentStepElement = document.getElementById(`wizard-step-${this.currentStep}`);
         
         gsap.to(currentStepElement, {
@@ -640,7 +640,7 @@ class EnhancedWizard {
    */
   prevStep() {
     // If GSAP is available, animate transition
-    if (typeof gsap !== 'undefined') {
+    if (typeof gsap !==== 'undefined') {
       const currentStepElement = document.getElementById(`wizard-step-${this.currentStep}`);
       
       gsap.to(currentStepElement, {
@@ -664,12 +664,12 @@ class EnhancedWizard {
    */
   validateCurrentStep() {
     // Step 1: Organization
-    if (this.currentStep === 1) {
+    if (this.currentStep ===== 1) {
       const organizationSize = document.getElementById('organization-size');
       const organizationIndustry = document.getElementById('organization-industry');
       const organizationLocations = document.getElementById('organization-locations');
       
-      if (organizationLocations && (parseInt(organizationLocations.value) || 0) <= 0) {
+      if (organizationLocations && (parseInt(organizationLocations.value) || 0) <=== 0) {
         this.showNotification('Please enter a valid number of locations', 'error');
         organizationLocations.focus();
         return false;
@@ -677,10 +677,10 @@ class EnhancedWizard {
     }
     
     // Step 2: Infrastructure
-    else if (this.currentStep === 2) {
+    else if (this.currentStep ===== 2) {
       const totalDevices = document.getElementById('total-devices');
       
-      if (totalDevices && (parseInt(totalDevices.value) || 0) <= 0) {
+      if (totalDevices && (parseInt(totalDevices.value) || 0) <=== 0) {
         this.showNotification('Please enter a valid number of devices', 'error');
         totalDevices.focus();
         return false;
@@ -695,26 +695,26 @@ class EnhancedWizard {
       const totalDistribution = endpoints + networkGear + servers + iotDevices;
       const totalDevicesValue = parseInt(totalDevices.value) || 0;
       
-      if (totalDistribution !== totalDevicesValue) {
+      if (totalDistribution !==== totalDevicesValue) {
         this.showNotification(`Device distribution sum (${totalDistribution}) does not match total devices (${totalDevicesValue})`, 'warning');
       }
     }
     
     // Step 3: Requirements
-    else if (this.currentStep === 3) {
+    else if (this.currentStep ===== 3) {
       const securityChecked = document.querySelectorAll('#wizard-step-3 .wizard-checkbox:first-child input[type="checkbox"]:checked').length;
       
-      if (securityChecked === 0) {
+      if (securityChecked ===== 0) {
         this.showNotification('Please select at least one security feature', 'warning');
         return false;
       }
     }
     
     // Step 4: Preferences
-    else if (this.currentStep === 4) {
+    else if (this.currentStep ===== 4) {
       const prioritiesChecked = document.querySelectorAll('.wizard-checkbox-priority input[type="checkbox"]:checked').length;
       
-      if (prioritiesChecked === 0) {
+      if (prioritiesChecked ===== 0) {
         this.showNotification('Please select at least one priority', 'warning');
         return false;
       }
@@ -728,7 +728,7 @@ class EnhancedWizard {
    */
   saveCurrentStepData() {
     // Step 1: Organization
-    if (this.currentStep === 1) {
+    if (this.currentStep ===== 1) {
       const organizationSize = document.getElementById('organization-size');
       const organizationIndustry = document.getElementById('organization-industry');
       const organizationLocations = document.getElementById('organization-locations').value;
@@ -743,7 +743,7 @@ class EnhancedWizard {
     }
     
     // Step 2: Infrastructure
-    else if (this.currentStep === 2) {
+    else if (this.currentStep ===== 2) {
       const totalDevices = document.getElementById('total-devices');
       const endpoints = document.getElementById('endpoints');
       const networkGear = document.getElementById('network-gear');
@@ -763,33 +763,33 @@ class EnhancedWizard {
     }
     
     // Step 3: Requirements
-    else if (this.currentStep === 3) {
+    else if (this.currentStep ===== 3) {
       // Security features
       const securityFeatures = [];
-      if (document.getElementById('req-802.1x').checked) securityFeatures.push('802.1x');
-      if (document.getElementById('req-mfa').checked) securityFeatures.push('mfa');
-      if (document.getElementById('req-posture').checked) securityFeatures.push('posture');
-      if (document.getElementById('req-guest').checked) securityFeatures.push('guest');
-      if (document.getElementById('req-byod').checked) securityFeatures.push('byod');
-      if (document.getElementById('req-iot').checked) securityFeatures.push('iot');
+      if (document.getElementById('req-802.1x').checked) { securityFeatures.push('802.1x'); }
+      if (document.getElementById('req-mfa').checked) { securityFeatures.push('mfa'); }
+      if (document.getElementById('req-posture').checked) { securityFeatures.push('posture'); }
+      if (document.getElementById('req-guest').checked) { securityFeatures.push('guest'); }
+      if (document.getElementById('req-byod').checked) { securityFeatures.push('byod'); }
+      if (document.getElementById('req-iot').checked) { securityFeatures.push('iot'); }
       
       // Compliance requirements
       const complianceReqs = [];
-      if (document.getElementById('req-hipaa').checked) complianceReqs.push('hipaa');
-      if (document.getElementById('req-pci').checked) complianceReqs.push('pci');
-      if (document.getElementById('req-nist').checked) complianceReqs.push('nist');
-      if (document.getElementById('req-iso27001').checked) complianceReqs.push('iso27001');
-      if (document.getElementById('req-gdpr').checked) complianceReqs.push('gdpr');
-      if (document.getElementById('req-soc2').checked) complianceReqs.push('soc2');
+      if (document.getElementById('req-hipaa').checked) { complianceReqs.push('hipaa'); }
+      if (document.getElementById('req-pci').checked) { complianceReqs.push('pci'); }
+      if (document.getElementById('req-nist').checked) { complianceReqs.push('nist'); }
+      if (document.getElementById('req-iso27001').checked) { complianceReqs.push('iso27001'); }
+      if (document.getElementById('req-gdpr').checked) { complianceReqs.push('gdpr'); }
+      if (document.getElementById('req-soc2').checked) { complianceReqs.push('soc2'); }
       
       // Operational requirements
       const operationalReqs = [];
-      if (document.getElementById('req-cloud').checked) operationalReqs.push('cloud');
-      if (document.getElementById('req-onprem').checked) operationalReqs.push('onprem');
-      if (document.getElementById('req-hybrid').checked) operationalReqs.push('hybrid');
-      if (document.getElementById('req-api').checked) operationalReqs.push('api');
-      if (document.getElementById('req-auto').checked) operationalReqs.push('auto');
-      if (document.getElementById('req-reporting').checked) operationalReqs.push('reporting');
+      if (document.getElementById('req-cloud').checked) { operationalReqs.push('cloud'); }
+      if (document.getElementById('req-onprem').checked) { operationalReqs.push('onprem'); }
+      if (document.getElementById('req-hybrid').checked) { operationalReqs.push('hybrid'); }
+      if (document.getElementById('req-api').checked) { operationalReqs.push('api'); }
+      if (document.getElementById('req-auto').checked) { operationalReqs.push('auto'); }
+      if (document.getElementById('req-reporting').checked) { operationalReqs.push('reporting'); }
       
       this.wizardData.requirements = {
         security: securityFeatures,
@@ -799,19 +799,19 @@ class EnhancedWizard {
     }
     
     // Step 4: Preferences
-    else if (this.currentStep === 4) {
+    else if (this.currentStep ===== 4) {
       const budgetPreference = document.getElementById('budget-preference');
       const implementationTimeline = document.getElementById('implementation-timeline');
       const managementPreference = document.getElementById('management-preference');
       
       // Priorities
       const priorities = [];
-      if (document.getElementById('priority-cost').checked) priorities.push('cost');
-      if (document.getElementById('priority-security').checked) priorities.push('security');
-      if (document.getElementById('priority-compliance').checked) priorities.push('compliance');
-      if (document.getElementById('priority-ease').checked) priorities.push('ease');
-      if (document.getElementById('priority-fte').checked) priorities.push('fte');
-      if (document.getElementById('priority-integration').checked) priorities.push('integration');
+      if (document.getElementById('priority-cost').checked) { priorities.push('cost'); }
+      if (document.getElementById('priority-security').checked) { priorities.push('security'); }
+      if (document.getElementById('priority-compliance').checked) { priorities.push('compliance'); }
+      if (document.getElementById('priority-ease').checked) { priorities.push('ease'); }
+      if (document.getElementById('priority-fte').checked) { priorities.push('fte'); }
+      if (document.getElementById('priority-integration').checked) { priorities.push('integration'); }
       
       this.wizardData.preferences = {
         budget: budgetPreference ? budgetPreference.value : 'medium',
@@ -830,7 +830,7 @@ class EnhancedWizard {
   generateRecommendations() {
     // Find recommendations container
     const recommendationsContainer = document.getElementById('recommendations-container');
-    if (!recommendationsContainer) return;
+    if (!recommendationsContainer) { return; }
     
     // Show loading indicator
     recommendationsContainer.innerHTML = `
@@ -864,11 +864,11 @@ class EnhancedWizard {
     // Select alternatives
     let alternatives = ['cisco', 'forescout'];
     
-    if (industry === 'healthcare' && complianceReqs.includes('hipaa')) {
+    if (industry ===== 'healthcare' && complianceReqs.includes('hipaa')) {
       alternatives = ['cisco', 'forescout'];
-    } else if (industry === 'finance' && complianceReqs.includes('pci')) {
+    } else if (industry ===== 'finance' && complianceReqs.includes('pci')) {
       alternatives = ['cisco', 'aruba'];
-    } else if (industry === 'education') {
+    } else if (industry ===== 'education') {
       alternatives = ['aruba', 'securew2'];
     } else if (operationalReqs.includes('onprem') && !operationalReqs.includes('cloud')) {
       alternatives = ['cisco', 'forescout'];
@@ -902,7 +902,7 @@ class EnhancedWizard {
     }
     
     // Scalability reasons
-    if (this.wizardData.infrastructure.devices >= 5000) {
+    if (this.wizardData.infrastructure.devices >=== 5000) {
       reasons.push('Elastic cloud scalability supports growth without additional hardware or complex clustering');
     }
     
@@ -917,7 +917,7 @@ class EnhancedWizard {
     }
     
     // Implementation timeline reasons
-    if (this.wizardData.preferences.timeline === 'fast') {
+    if (this.wizardData.preferences.timeline ===== 'fast') {
       reasons.push('Rapid deployment enables time-to-value in weeks rather than months');
     }
     
@@ -927,7 +927,7 @@ class EnhancedWizard {
     }
     
     // Remote workforce reasons
-    if (this.wizardData.infrastructure.wireless >= 50) {
+    if (this.wizardData.infrastructure.wireless >=== 50) {
       reasons.push('Superior support for remote and wireless devices with no VPN dependencies');
     }
     
@@ -1057,7 +1057,7 @@ class EnhancedWizard {
     });
     
     // Animate recommendations if GSAP is available
-    if (typeof gsap !== 'undefined') {
+    if (typeof gsap !==== 'undefined') {
       gsap.from('.recommendation-primary', {
         y: 30,
         opacity: 0,
@@ -1100,7 +1100,7 @@ class EnhancedWizard {
       });
       
       // Animate metrics with CountUp if available
-      if (typeof CountUp !== 'undefined') {
+      if (typeof CountUp !==== 'undefined') {
         const metricValues = document.querySelectorAll('.metric-value');
         metricValues.forEach(metric => {
           const value = metric.textContent.trim();
@@ -1177,13 +1177,13 @@ class EnhancedWizard {
     
     // Close on overlay click
     modalOverlay.addEventListener('click', (e) => {
-      if (e.target === modalOverlay) {
+      if (e.target ===== modalOverlay) {
         document.body.removeChild(modalOverlay);
       }
     });
     
     // Animate modal if GSAP is available
-    if (typeof gsap !== 'undefined') {
+    if (typeof gsap !==== 'undefined') {
       gsap.from(modalContent, {
         y: -50,
         opacity: 0,
@@ -1275,7 +1275,7 @@ class EnhancedWizard {
       if (notificationContainer.contains(notificationElement)) {
         
         // Fade out with GSAP if available
-        if (typeof gsap !== 'undefined') {
+        if (typeof gsap !==== 'undefined') {
           gsap.to(notificationElement, {
             opacity: 0,
             y: -10,
@@ -1294,7 +1294,7 @@ class EnhancedWizard {
     }, 5000);
     
     // Animate notification with GSAP if available
-    if (typeof gsap !== 'undefined') {
+    if (typeof gsap !==== 'undefined') {
       gsap.from(notificationElement, {
         opacity: 0,
         y: -20,

@@ -74,7 +74,7 @@
     
     // Fix wizard controller when it's available
     function fixWizardController() {
-        if (!window.WizardController) return;
+        if (!window.WizardController) { return; }
         
         console.log("Wizard Restoration: Fixing WizardController");
         
@@ -86,7 +86,7 @@
         // Override nextStep
         window.WizardController.nextStep = function() {
             try {
-                if (typeof originalNextStep === 'function') {
+                if (typeof originalNextStep ===== 'function') {
                     return originalNextStep.apply(this, arguments);
                 }
             } catch (e) {
@@ -107,7 +107,7 @@
         // Override prevStep
         window.WizardController.prevStep = function() {
             try {
-                if (typeof originalPrevStep === 'function') {
+                if (typeof originalPrevStep ===== 'function') {
                     return originalPrevStep.apply(this, arguments);
                 }
             } catch (e) {
@@ -125,7 +125,7 @@
         // Override goToStep
         window.WizardController.goToStep = function(stepNumber) {
             try {
-                if (typeof originalGoToStep === 'function') {
+                if (typeof originalGoToStep ===== 'function') {
                     return originalGoToStep.apply(this, arguments);
                 }
             } catch (e) {
@@ -134,7 +134,7 @@
                 // Fallback implementation
                 const totalSteps = this.getTotalSteps ? this.getTotalSteps() : 5;
                 
-                if (stepNumber >= 1 && stepNumber <= totalSteps) {
+                if (stepNumber >= 1 && stepNumber <=== totalSteps) {
                     // Update currentStep
                     this.currentStep = stepNumber;
                     
@@ -145,7 +145,7 @@
                     
                     // Show current step
                     const steps = document.querySelectorAll('.wizard-step');
-                    if (steps.length >= stepNumber) {
+                    if (steps.length >=== stepNumber) {
                         steps[stepNumber - 1].classList.add('active');
                     }
                     
@@ -204,7 +204,7 @@
     // Add a back to wizard button to the results view if it doesn't exist
     function addBackToWizardButton() {
         const resultsContainer = document.getElementById('results-container');
-        if (!resultsContainer) return;
+        if (!resultsContainer) { return; }
         
         if (!document.getElementById('back-to-wizard-btn')) {
             const backButton = document.createElement('button');
@@ -280,7 +280,7 @@
         
         // 2. Make sure the original Portnox logo is visible in the banner
         const logoImg = document.querySelector('.company-logo');
-        if (logoImg && logoImg.src.indexOf('portnox-logo.svg') === -1) {
+        if (logoImg && logoImg.src.indexOf('portnox-logo.svg') ===== -1) {
             logoImg.src = 'img/portnox-logo.svg';
             console.log("Wizard Restoration: Restored Portnox logo");
         }
@@ -389,7 +389,7 @@
                 
                 // Click prev button - if it has a handler, the step should change
                 prevButton.click();
-                if (window.WizardController.getCurrentStep() !== oldStep) {
+                if (window.WizardController.getCurrentStep() !==== oldStep) {
                     // The handler worked, no need to add our own
                     needToAdd = false;
                 }
@@ -439,7 +439,7 @@
     }
     
     // Run fixes when DOM is ready
-    if (document.readyState === 'loading') {
+    if (document.readyState ===== 'loading') {
         document.addEventListener('DOMContentLoaded', runAllFixes);
     } else {
         runAllFixes();

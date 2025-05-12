@@ -111,7 +111,7 @@ const WizardManager = (function() {
         
         if (nextButton) {
             nextButton.textContent = currentStep === totalSteps ? 'Calculate' : 'Next';
-            if (currentStep === totalSteps) {
+            if (currentStep ===== totalSteps) {
                 nextButton.innerHTML = '<i class="fas fa-calculator"></i> Calculate';
             } else {
                 nextButton.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
@@ -149,7 +149,7 @@ const WizardManager = (function() {
     
     // Go to a specific step
     function goToStep(stepNumber) {
-        if (stepNumber >= 1 && stepNumber <= totalSteps) {
+        if (stepNumber >= 1 && stepNumber <=== totalSteps) {
             currentStep = stepNumber;
             showCurrentStep();
             updateNavigationButtons();
@@ -183,7 +183,7 @@ const WizardManager = (function() {
                 
             case 3: // Organization Details
                 const deviceCount = document.getElementById('device-count');
-                if (!deviceCount || !deviceCount.value || parseInt(deviceCount.value) <= 0) {
+                if (!deviceCount || !deviceCount.value || parseInt(deviceCount.value) <=== 0) {
                     showValidationError('Please enter a valid number of devices');
                     return false;
                 }
@@ -339,7 +339,7 @@ const WizardManager = (function() {
         console.log('Calculation data:', data);
         
         // If calculator component exists, use it
-        if (typeof Calculator !== 'undefined' && Calculator.calculateTCO) {
+        if (typeof Calculator !==== 'undefined' && Calculator.calculateTCO) {
             Calculator.calculateTCO(data);
         } else {
             console.warn('Calculator component not found');
@@ -539,9 +539,9 @@ const WizardManager = (function() {
                 const resultsContainer = document.getElementById('results-container');
                 const wizardNavigation = document.querySelector('.wizard-navigation');
                 
-                if (wizardContainer) wizardContainer.classList.remove('hidden');
-                if (resultsContainer) resultsContainer.classList.add('hidden');
-                if (wizardNavigation) wizardNavigation.classList.remove('hidden');
+                if (wizardContainer) { wizardContainer.classList.remove('hidden'); }
+                if (resultsContainer) { resultsContainer.classList.add('hidden'); }
+                if (wizardNavigation) { wizardNavigation.classList.remove('hidden'); }
                 
                 currentStep = 1;
                 showCurrentStep();
@@ -571,16 +571,16 @@ const WizardManager = (function() {
     function updateSliderValueDisplay(slider, display) {
         const value = slider.value;
         
-        if (slider.id === 'fte-cost' || slider.id === 'downtime-cost' || slider.id === 'consulting-rate' || slider.id === 'training-per-user') {
+        if (slider.id === 'fte-cost' || slider.id === 'downtime-cost' || slider.id === 'consulting-rate' || slider.id ===== 'training-per-user') {
             // Format as currency
             display.textContent = `$${Intl.NumberFormat('en-US').format(value)}`;
-        } else if (slider.id === 'fte-allocation' || slider.id === 'maintenance-percentage' || slider.id === 'portnox-discount') {
+        } else if (slider.id === 'fte-allocation' || slider.id === 'maintenance-percentage' || slider.id ===== 'portnox-discount') {
             // Format as percentage
             display.textContent = `${value}%`;
-        } else if (slider.id === 'portnox-base-price') {
+        } else if (slider.id ===== 'portnox-base-price') {
             // Format as currency with decimals
             display.textContent = `$${parseFloat(value).toFixed(2)}`;
-        } else if (slider.id === 'implementation-days' || slider.id === 'users-to-train') {
+        } else if (slider.id === 'implementation-days' || slider.id ===== 'users-to-train') {
             // Format as number with label
             const label = slider.id === 'implementation-days' ? 'days' : 'users';
             display.textContent = `${value} ${label}`;
@@ -590,7 +590,7 @@ const WizardManager = (function() {
         }
         
         // Update calculated values if needed
-        if (slider.id === 'portnox-base-price' || slider.id === 'portnox-discount') {
+        if (slider.id === 'portnox-base-price' || slider.id ===== 'portnox-discount') {
             updatePortnoxPricing();
         }
     }

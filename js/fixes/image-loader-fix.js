@@ -1,43 +1,35 @@
-// Fix vendor logo loading issues
+/**
+ * Image loader fix
+ * Ensures vendor logos load correctly
+ */
 document.addEventListener('DOMContentLoaded', function() {
-    // Function to handle image loading errors
-    function handleImageError(img) {
-        const vendorName = img.closest('.vendor-card')?.dataset?.vendor || 'unknown';
-        console.warn(`Failed to load image for vendor: ${vendorName}`);
-        
-        // Set appropriate fallback image based on vendor
-        switch(vendorName) {
-            case 'cisco':
-                img.src = 'img/vendors/fallback/cisco.png';
-                break;
-            case 'aruba':
-                img.src = 'img/vendors/fallback/aruba.png';
-                break;
-            case 'forescout':
-                img.src = 'img/vendors/fallback/forescout.png';
-                break;
-            case 'fortinac':
-                img.src = 'img/vendors/fallback/fortinac.png';
-                break;
-            case 'nps':
-                img.src = 'img/vendors/fallback/microsoft.png';
-                break;
-            case 'securew2':
-                img.src = 'img/vendors/fallback/securew2.png';
-                break;
-            default:
-                // Default vendor icon
-                img.src = 'img/vendors/fallback/generic-vendor.png';
-        }
-    }
-    
-    // Apply error handling to all vendor images
+    // Fix vendor logo images
     document.querySelectorAll('.vendor-card img').forEach(img => {
-        img.onerror = function() { handleImageError(this); };
+        // Add error handler
+        img.onerror = function() {
+            console.warn(`Failed to load image: ${this.src}`);
+            
+            // Extract vendor ID from parent card if possible
+            const vendorCard = this.closest('.vendor-card');
+            const vendorId = vendorCard ? vendorCard.dataset.vendor : '';
+            
+            // Try to fix the path
+            if (this.src.includes('svg')) {
+                // Try PNG instead
+                this.src = this.src.replace('.svg', '.png');
+            } else if (vendorId) {
+                // Try direct path to vendor folder
+                this.src = `img/vendors/${vendorId}-logo.png`;
+            }
+        };
         
-        // Force reload
+        // Force reload to trigger error handler if needed
         const currentSrc = img.src;
         img.src = '';
-        img.src = currentSrc;
+        setTimeout(() => {
+            img.src = currentSrc;
+        }, 0);
     });
+    
+    console.log('Image loader fix applied');
 });

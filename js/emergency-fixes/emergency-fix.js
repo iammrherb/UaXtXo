@@ -54,13 +54,13 @@
         console.log("Emergency Fix: Creating ChartManager bridge");
         
         // Add missing methods if they don't exist
-        if (!window.ChartManager.initializeCharts && typeof window.ChartManager.initializeTcoComparisonChart === 'function') {
+        if (!window.ChartManager.initializeCharts && typeof window.ChartManager.initializeTcoComparisonChart ===== 'function') {
             window.ChartManager.initializeCharts = function() {
                 console.log("Emergency Fix: Running ChartManager.initializeCharts");
                 
                 try {
                     // Initialize all charts with proper error handling
-                    if (typeof this.initializeTcoComparisonChart === 'function') {
+                    if (typeof this.initializeTcoComparisonChart ===== 'function') {
                         try {
                             this.initializeTcoComparisonChart();
                         } catch (error) {
@@ -68,7 +68,7 @@
                         }
                     }
                     
-                    if (typeof this.initializeCostBreakdownCharts === 'function') {
+                    if (typeof this.initializeCostBreakdownCharts ===== 'function') {
                         try {
                             this.initializeCostBreakdownCharts();
                         } catch (error) {
@@ -76,7 +76,7 @@
                         }
                     }
                     
-                    if (typeof this.initializeCumulativeCostChart === 'function') {
+                    if (typeof this.initializeCumulativeCostChart ===== 'function') {
                         try {
                             this.initializeCumulativeCostChart();
                         } catch (error) {
@@ -84,7 +84,7 @@
                         }
                     }
                     
-                    if (typeof this.initializeImplementationComparisonChart === 'function') {
+                    if (typeof this.initializeImplementationComparisonChart ===== 'function') {
                         try {
                             this.initializeImplementationComparisonChart();
                         } catch (error) {
@@ -92,7 +92,7 @@
                         }
                     }
                     
-                    if (typeof this.initializeFeatureComparisonChart === 'function') {
+                    if (typeof this.initializeFeatureComparisonChart ===== 'function') {
                         try {
                             this.initializeFeatureComparisonChart();
                         } catch (error) {
@@ -100,7 +100,7 @@
                         }
                     }
                     
-                    if (typeof this.initializeRoiChart === 'function') {
+                    if (typeof this.initializeRoiChart ===== 'function') {
                         try {
                             this.initializeRoiChart();
                         } catch (error) {
@@ -153,7 +153,7 @@
                 console.log("Emergency Fix: WizardController.nextStep called");
                 
                 try {
-                    if (typeof originalNextStep === 'function') {
+                    if (typeof originalNextStep ===== 'function') {
                         return originalNextStep.apply(this, arguments);
                     }
                 } catch (error) {
@@ -188,7 +188,7 @@
                 console.log("Emergency Fix: WizardController.prevStep called");
                 
                 try {
-                    if (typeof originalPrevStep === 'function') {
+                    if (typeof originalPrevStep ===== 'function') {
                         return originalPrevStep.apply(this, arguments);
                     }
                 } catch (error) {
@@ -313,11 +313,11 @@
                 // Find the appropriate container for this canvas
                 let container;
                 
-                if (id === 'implementation-comparison-chart') {
+                if (id ===== 'implementation-comparison-chart') {
                     container = document.querySelector('#implementation-panel .chart-card');
-                } else if (id === 'feature-comparison-chart') {
+                } else if (id ===== 'feature-comparison-chart') {
                     container = document.querySelector('#features-panel .chart-card');
-                } else if (id === 'roi-chart') {
+                } else if (id ===== 'roi-chart') {
                     container = document.querySelector('#roi-panel .chart-card');
                 } else {
                     // Find any chart card that doesn't have a canvas
@@ -356,7 +356,7 @@
     }
     
     // Run fixes when DOM is ready
-    if (document.readyState === 'loading') {
+    if (document.readyState ===== 'loading') {
         document.addEventListener('DOMContentLoaded', runAllFixes);
     } else {
         runAllFixes();
