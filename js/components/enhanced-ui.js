@@ -1,410 +1,253 @@
-// Enhanced UI Components with animations and interactions
-const EnhancedUI = {
-    // Initialize all UI enhancements
-    init() {
-        this.initTheme();
-        this.initTooltips();
-        this.initModals();
-        this.initFormEnhancements();
-        this.initNotifications();
-        this.initLoadingStates();
-        this.initScrollEffects();
-    },
-
-    // Theme management
-    initTheme() {
-        const themeToggle = document.getElementById('dark-mode-toggle');
-        const body = document.body;
+/**
+ * Enhanced UI Component for Total Cost Analyzer
+ * Handles UI interactions and enhancements
+ */
+const EnhancedUI = (function() {
+    // Initialize enhanced UI components
+    function init() {
+        console.log('Initializing enhanced UI...');
         
-        // Check for saved theme preference
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            body.classList.add('dark-mode');
-            this.updateThemeIcon(true);
-        }
+        initDarkMode();
+        initModalHandlers();
+        initTooltips();
+        initAnimations();
+        initParticles();
         
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                body.classList.toggle('dark-mode');
-                const isDarkMode = body.classList.contains('dark-mode');
-                localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-                this.updateThemeIcon(isDarkMode);
-            });
-        }
-    },
+        console.log('Enhanced UI initialized');
+    }
     
-    updateThemeIcon(isDarkMode) {
-        const icon = document.querySelector('#dark-mode-toggle i');
-        if (icon) {
-            icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+    // Initialize dark mode toggle
+    function initDarkMode() {
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        if (!darkModeToggle) return;
+        
+        // Check for saved preference
+        const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
+        if (darkModeEnabled) {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
         }
-    },
-
-    // Enhanced tooltips
-    initTooltips() {
-        const tooltips = document.querySelectorAll('.tooltip');
-        tooltips.forEach(tooltip => {
-            tooltip.addEventListener('mouseenter', (e) => {
-                const text = tooltip.querySelector('.tooltip-text');
-                if (text) {
-                    gsap.to(text, {
-                        opacity: 1,
-                        y: -5,
-                        duration: 0.3,
-                        ease: 'power2.out'
-                    });
-                }
-            });
+        
+        // Toggle dark mode on click
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
             
-            tooltip.addEventListener('mouseleave', (e) => {
-                const text = tooltip.querySelector('.tooltip-text');
-                if (text) {
-                    gsap.to(text, {
-                        opacity: 0,
-                        y: 0,
-                        duration: 0.3,
-                        ease: 'power2.in'
-                    });
-                }
-            });
-        });
-    },
-
-    // Enhanced modals
-    initModals() {
-        const modals = document.querySelectorAll('.modal');
-        
-        modals.forEach(modal => {
-            const closeButtons = modal.querySelectorAll('.close-button, [data-close-modal]');
+            localStorage.setItem('darkMode', isDarkMode);
+            darkModeToggle.innerHTML = isDarkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
             
-            closeButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    this.closeModal(modal);
-                });
-            });
-            
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    this.closeModal(modal);
-                }
-            });
-        });
-    },
-    
-    openModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.add('active');
-            gsap.from(modal.querySelector('.modal-content'), {
-                scale: 0.9,
-                opacity: 0,
-                duration: 0.3,
-                ease: 'power2.out'
-            });
-        }
-    },
-    
-    closeModal(modal) {
-        gsap.to(modal.querySelector('.modal-content'), {
-            scale: 0.9,
-            opacity: 0,
-            duration: 0.3,
-            ease: 'power2.in',
-            onComplete: () => {
-                modal.classList.remove('active');
-            }
-        });
-    },
-
-    // Form enhancements
-    initFormEnhancements() {
-        // Enhanced select dropdowns
-        const selects = document.querySelectorAll('select');
-        selects.forEach(select => {
-            select.addEventListener('change', (e) => {
-                gsap.to(select, {
-                    scale: 1.02,
-                    duration: 0.1,
-                    yoyo: true,
-                    repeat: 1,
-                    ease: 'power2.inOut'
-                });
-            });
-        });
-        
-        // Enhanced input fields
-        const inputs = document.querySelectorAll('input, textarea');
-        inputs.forEach(input => {
-            input.addEventListener('focus', (e) => {
-                gsap.to(input, {
-                    borderColor: getComputedStyle(document.documentElement)
-                        .getPropertyValue('--color-primary'),
-                    duration: 0.3,
-                    ease: 'power2.out'
-                });
-            });
-            
-            input.addEventListener('blur', (e) => {
-                gsap.to(input, {
-                    borderColor: getComputedStyle(document.documentElement)
-                        .getPropertyValue('--border-color'),
-                    duration: 0.3,
-                    ease: 'power2.in'
-                });
-            });
-        });
-        
-        // Range sliders
-        const ranges = document.querySelectorAll('input[type="range"]');
-        ranges.forEach(range => {
-            const updateRangeValue = () => {
-                const value = range.value;
-                const max = range.max;
-                const percentage = (value / max) * 100;
-                const valueDisplay = range.parentElement.querySelector('.range-value');
-                
-                if (valueDisplay) {
-                    valueDisplay.textContent = value;
-                    gsap.to(valueDisplay, {
-                        x: `${percentage}%`,
-                        duration: 0.1,
-                        ease: 'power2.out'
-                    });
-                }
-            };
-            
-            range.addEventListener('input', updateRangeValue);
-            updateRangeValue();
-        });
-    },
-
-    // Notification system
-    initNotifications() {
-        this.notificationQueue = [];
-        this.notificationContainer = document.createElement('div');
-        this.notificationContainer.className = 'notification-container';
-        document.body.appendChild(this.notificationContainer);
-    },
-    
-    showNotification(message, type = 'info', duration = 3000) {
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        
-        const icon = this.getNotificationIcon(type);
-        notification.innerHTML = `
-            <i class="${icon}"></i>
-            <span>${message}</span>
-            <button class="notification-close">&times;</button>
-        `;
-        
-        this.notificationContainer.appendChild(notification);
-        
-        // Animate in
-        gsap.from(notification, {
-            x: 100,
-            opacity: 0,
-            duration: 0.3,
-            ease: 'power2.out'
-        });
-        
-        // Close button
-        notification.querySelector('.notification-close').addEventListener('click', () => {
-            this.removeNotification(notification);
-        });
-        
-        // Auto remove
-        setTimeout(() => {
-            this.removeNotification(notification);
-        }, duration);
-    },
-    
-    removeNotification(notification) {
-        gsap.to(notification, {
-            x: 100,
-            opacity: 0,
-            duration: 0.3,
-            ease: 'power2.in',
-            onComplete: () => {
-                notification.remove();
-            }
-        });
-    },
-    
-    getNotificationIcon(type) {
-        const icons = {
-            success: 'fas fa-check-circle',
-            error: 'fas fa-exclamation-circle',
-            warning: 'fas fa-exclamation-triangle',
-            info: 'fas fa-info-circle'
-        };
-        return icons[type] || icons.info;
-    },
-
-    // Loading states
-    initLoadingStates() {
-        // Create loading overlay
-        this.loadingOverlay = document.createElement('div');
-        this.loadingOverlay.className = 'loading-overlay';
-        this.loadingOverlay.innerHTML = `
-            <div class="loading-spinner">
-                <div class="spinner-ring"></div>
-                <div class="spinner-ring"></div>
-                <div class="spinner-ring"></div>
-                <div class="spinner-text">Loading...</div>
-            </div>
-        `;
-        document.body.appendChild(this.loadingOverlay);
-    },
-    
-    showLoading(message = 'Loading...') {
-        const spinnerText = this.loadingOverlay.querySelector('.spinner-text');
-        spinnerText.textContent = message;
-        
-        this.loadingOverlay.classList.add('active');
-        gsap.from(this.loadingOverlay.querySelector('.loading-spinner'), {
-            scale: 0.8,
-            opacity: 0,
-            duration: 0.3,
-            ease: 'power2.out'
-        });
-    },
-    
-    hideLoading() {
-        gsap.to(this.loadingOverlay.querySelector('.loading-spinner'), {
-            scale: 0.8,
-            opacity: 0,
-            duration: 0.3,
-            ease: 'power2.in',
-            onComplete: () => {
-                this.loadingOverlay.classList.remove('active');
-            }
-        });
-    },
-
-    // Scroll effects
-    initScrollEffects() {
-        // Smooth scroll
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    gsap.to(window, {
-                        duration: 0.8,
-                        scrollTo: target,
-                        ease: 'power2.inOut'
-                    });
-                }
-            });
-        });
-        
-        // Back to top button
-        const backToTop = document.createElement('button');
-        backToTop.className = 'back-to-top';
-        backToTop.innerHTML = '<i class="fas fa-chevron-up"></i>';
-        document.body.appendChild(backToTop);
-        
-        window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 300) {
-                backToTop.classList.add('visible');
-            } else {
-                backToTop.classList.remove('visible');
-            }
-        });
-        
-        backToTop.addEventListener('click', () => {
-            gsap.to(window, {
-                duration: 0.8,
-                scrollTo: 0,
-                ease: 'power2.inOut'
-            });
-        });
-    },
-
-    // Animate numbers
-    animateNumbers(element, endValue, options = {}) {
-        const defaults = {
-            duration: 2,
-            prefix: '',
-            suffix: '',
-            decimals: 0,
-            separator: ','
-        };
-        
-        const settings = { ...defaults, ...options };
-        
-        const countUp = new CountUp(element, endValue, {
-            duration: settings.duration,
-            useEasing: true,
-            useGrouping: true,
-            separator: settings.separator,
-            decimal: '.',
-            decimalPlaces: settings.decimals,
-            prefix: settings.prefix,
-            suffix: settings.suffix
-        });
-        
-        if (!countUp.error) {
-            countUp.start();
-        } else {
-            console.error(countUp.error);
-        }
-    },
-
-    // Progress bar animation
-    animateProgressBar(element, percentage, duration = 1000) {
-        const progress = element.querySelector('.progress');
-        if (progress) {
-            gsap.to(progress, {
-                width: `${percentage}%`,
-                duration: duration / 1000,
-                ease: 'power2.out'
-            });
-        }
-    },
-
-    // Tab animation
-    switchTab(tabId, contentId) {
-        const tabs = document.querySelectorAll('.tab-button');
-        const contents = document.querySelectorAll('.tab-pane');
-        
-        tabs.forEach(tab => {
-            if (tab.getAttribute('data-tab') === contentId) {
-                tab.classList.add('active');
-            } else {
-                tab.classList.remove('active');
-            }
-        });
-        
-        contents.forEach(content => {
-            if (content.id === contentId) {
-                gsap.fromTo(content, 
-                    {
-                        opacity: 0,
-                        x: 20
-                    },
-                    {
-                        opacity: 1,
-                        x: 0,
-                        duration: 0.3,
-                        display: 'block',
-                        ease: 'power2.out'
-                    }
-                );
-            } else {
-                gsap.to(content, {
-                    opacity: 0,
-                    x: -20,
-                    duration: 0.3,
-                    ease: 'power2.in',
-                    onComplete: () => {
-                        content.style.display = 'none';
-                    }
-                });
+            // Update charts if they exist
+            if (typeof ChartsManager !== 'undefined' && ChartsManager.updateCharts) {
+                ChartsManager.updateCharts();
             }
         });
     }
-};
+    
+    // Initialize modal handlers
+    function initModalHandlers() {
+        // Help modal
+        const helpBtn = document.getElementById('help-btn');
+        const helpModal = document.getElementById('help-modal');
+        
+        if (helpBtn && helpModal) {
+            // Open modal
+            helpBtn.addEventListener('click', () => {
+                helpModal.classList.add('active');
+            });
+            
+            // Close modal on X button click
+            const closeBtn = helpModal.querySelector('.modal-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    helpModal.classList.remove('active');
+                });
+            }
+            
+            // Close modal on click outside
+            helpModal.addEventListener('click', (e) => {
+                if (e.target === helpModal) {
+                    helpModal.classList.remove('active');
+                }
+            });
+            
+            // Close modal on ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && helpModal.classList.contains('active')) {
+                    helpModal.classList.remove('active');
+                }
+            });
+        }
+    }
+    
+    // Initialize tooltips
+    function initTooltips() {
+        const tooltipElements = document.querySelectorAll('[data-tooltip]');
+        
+        tooltipElements.forEach(element => {
+            const tooltipText = element.dataset.tooltip;
+            
+            // Create tooltip element
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = tooltipText;
+            
+            // Show tooltip on hover
+            element.addEventListener('mouseenter', () => {
+                document.body.appendChild(tooltip);
+                
+                // Position tooltip
+                const rect = element.getBoundingClientRect();
+                tooltip.style.top = rect.bottom + 10 + 'px';
+                tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+                
+                // Animate in
+                setTimeout(() => {
+                    tooltip.classList.add('active');
+                }, 10);
+            });
+            
+            // Hide tooltip
+            element.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('active');
+                
+                // Remove after animation
+                setTimeout(() => {
+                    if (tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                    }
+                }, 200);
+            });
+        });
+    }
+    
+    // Initialize animations
+    function initAnimations() {
+        // Use AOS for scroll animations if available
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true
+            });
+        }
+        
+        // Use GSAP for card animations if available
+        if (typeof gsap !== 'undefined') {
+            // Vendor card animations
+            const vendorCards = document.querySelectorAll('.vendor-card');
+            if (vendorCards.length) {
+                gsap.from(vendorCards, {
+                    y: 30,
+                    opacity: 0,
+                    stagger: 0.1,
+                    duration: 0.6,
+                    ease: 'power2.out'
+                });
+            }
+            
+            // Form card animations
+            const formCards = document.querySelectorAll('.form-card');
+            if (formCards.length) {
+                gsap.from(formCards, {
+                    y: 20,
+                    opacity: 0,
+                    stagger: 0.1,
+                    duration: 0.5,
+                    ease: 'power2.out'
+                });
+            }
+        }
+    }
+    
+    // Initialize particles background
+    function initParticles() {
+        if (typeof particlesJS !== 'undefined') {
+            particlesJS('particles-js', {
+                particles: {
+                    number: {
+                        value: 80,
+                        density: {
+                            enable: true,
+                            value_area: 800
+                        }
+                    },
+                    color: {
+                        value: '#1B67B2'
+                    },
+                    shape: {
+                        type: 'circle',
+                        stroke: {
+                            width: 0,
+                            color: '#000000'
+                        }
+                    },
+                    opacity: {
+                        value: 0.3,
+                        random: false,
+                        anim: {
+                            enable: false
+                        }
+                    },
+                    size: {
+                        value: 3,
+                        random: true,
+                        anim: {
+                            enable: false
+                        }
+                    },
+                    line_linked: {
+                        enable: true,
+                        distance: 150,
+                        color: '#1B67B2',
+                        opacity: 0.2,
+                        width: 1
+                    },
+                    move: {
+                        enable: true,
+                        speed: 2,
+                        direction: 'none',
+                        random: false,
+                        straight: false,
+                        out_mode: 'out',
+                        bounce: false,
+                        attract: {
+                            enable: false
+                        }
+                    }
+                },
+                interactivity: {
+                    detect_on: 'canvas',
+                    events: {
+                        onhover: {
+                            enable: true,
+                            mode: 'grab'
+                        },
+                        onclick: {
+                            enable: false
+                        },
+                        resize: true
+                    },
+                    modes: {
+                        grab: {
+                            distance: 140,
+                            line_linked: {
+                                opacity: 0.5
+                            }
+                        }
+                    }
+                },
+                retina_detect: true
+            });
+        }
+    }
+    
+    // Public API
+    return {
+        init
+    };
+})();
 
-// Export for use in other modules
-window.EnhancedUI = EnhancedUI;
+// Initialize enhanced UI when document is ready
+document.addEventListener('DOMContentLoaded', function() {
+    EnhancedUI.init();
+});

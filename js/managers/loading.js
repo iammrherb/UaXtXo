@@ -1,59 +1,53 @@
-// Loading Manager
-if (!window.LoadingManager) {
-    class LoadingManagerClass {
-        constructor() {
-            this.overlay = null;
-            this.init();
-        }
-
-        init() {
-            this.createOverlay();
-        }
-
-        createOverlay() {
-            this.overlay = document.getElementById('loading-overlay');
-            if (!this.overlay) {
-                this.overlay = document.createElement('div');
-                this.overlay.id = 'loading-overlay';
-                this.overlay.className = 'loading-overlay';
-                this.overlay.innerHTML = `
-                    <div class="loading-spinner">
-                        <div class="spinner"></div>
-                        <p>Loading...</p>
-                    </div>
-                `;
-                document.body.appendChild(this.overlay);
+/**
+ * Loading Manager for Total Cost Analyzer
+ * Handles loading indicators and transitions
+ */
+const LoadingManager = (function() {
+    // Show loading overlay
+    function showLoading(message = 'Loading...') {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingMessage = loadingOverlay?.querySelector('p');
+        
+        if (loadingOverlay) {
+            if (loadingMessage) {
+                loadingMessage.textContent = message;
             }
-        }
-
-        show(message = 'Loading...') {
-            const text = this.overlay.querySelector('p');
-            if (text) {
-                text.textContent = message;
-            }
-
-            this.overlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        hide() {
-            this.overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        async withLoading(asyncFunction, message = 'Loading...') {
-            this.show(message);
-            try {
-                const result = await asyncFunction();
-                this.hide();
-                return result;
-            } catch (error) {
-                this.hide();
-                throw error;
-            }
+            loadingOverlay.classList.add('active');
         }
     }
-
-    // Initialize loading manager
-    window.LoadingManager = new LoadingManagerClass();
-}
+    
+    // Hide loading overlay
+    function hideLoading() {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.classList.remove('active');
+        }
+    }
+    
+    // Show loading indicator in a specific container
+    function showLoadingInContainer(containerId, message = 'Loading...') {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        // Create loading indicator
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'container-loading';
+        loadingIndicator.innerHTML = `
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <p>${message}</p>
+            </div>
+        `;
+        
+        // Clear container and add loading indicator
+        container.innerHTML = '';
+        container.appendChild(loadingIndicator);
+    }
+    
+    // Public API
+    return {
+        showLoading,
+        hideLoading,
+        showLoadingInContainer
+    };
+})();
