@@ -312,7 +312,7 @@ const Calculator = (function() {
     // Populate UI with calculation results
     function populateResults(results) {
         // Executive summary
-        document.getElementById('total-savings')?.innerHTML  = formatCurrency(results.savings.total);
+        document.getElementById('total-savings')?.innerHTML = formatCurrency(results.savings.total);
         document.getElementById('savings-percentage')?.innerHTML = formatPercentage(results.savings.totalPercentage / 100);
         document.getElementById('breakeven-point')?.innerHTML = `${results.savings.breakEvenMonths} months`;
         document.getElementById('risk-reduction')?.innerHTML = '65%'; // Placeholder - could be calculated more precisely
