@@ -1,0 +1,14 @@
+Application Structure Map (Sun May 11 06:59:32 PM CDT 2025)
+------------------------------------
+[MISSING] /home/iamrad/Projects/github/UaXtXo/current/js/chart.js
+[MISSING] /home/iamrad/Projects/github/UaXtXo/current/js/charts.js
+[MISSING] /home/iamrad/Projects/github/UaXtXo/current/js/chart-manager.js
+[FOUND] /home/iamrad/Projects/github/UaXtXo/current/js/canvas-fixer.js
+[FOUND] /home/iamrad/Projects/github/UaXtXo/current/js/chart-fix.js
+[MISSING] /home/iamrad/Projects/github/UaXtXo/current/js/wizard.js
+[MISSING] /home/iamrad/Projects/github/UaXtXo/current/js/wizard-manager.js
+[FOUND] /home/iamrad/Projects/github/UaXtXo/current/js/wizard-fix.js
+[FOUND] /home/iamrad/Projects/github/UaXtXo/current/js/data-integration.js
+[FOUND] /home/iamrad/Projects/github/UaXtXo/current/js/app-controller.js
+[FOUND] /home/iamrad/Projects/github/UaXtXo/current/js/main.js
+[FOUND] /home/iamrad/Projects/github/UaXtXo/current/js/init.js
