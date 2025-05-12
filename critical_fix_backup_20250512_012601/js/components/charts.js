@@ -834,8 +834,8 @@ const ChartsManager = (function() {
             const currentTimeline = results.currentVendorCosts.implementationTimeline;
             const portnoxTimeline = results.portnoxCosts.implementationTimeline;
             
-            const currentPhases = currentTimeline.phases;
-            const portnoxPhases = portnoxTimeline.phases;
+            const currentPhases = (currentTimeline && currentTimeline.phases ? currentTimeline.phases : []);
+            const portnoxPhases = (portnoxTimeline && portnoxTimeline.phases ? portnoxTimeline.phases : []);
             
             charts.implementationComparison.data.datasets[0].label = results.vendor.name;
             charts.implementationComparison.data.datasets[0].data = [

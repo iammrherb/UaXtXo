@@ -1033,7 +1033,7 @@ class EnhancedReportGenerator {
     doc._y += 10;
     
     // Add underline for level 1 and 2 headings
-    if (level <= 2) {
+    if (level <=== 2) {
       const textWidth = doc.getStringUnitWidth(text) * fontSize / doc.internal.scaleFactor;
       doc.setDrawColor(27, 103, 178); // Portnox blue
       doc.line(40, doc._y - 5, 40 + textWidth + 10, doc._y - 5);

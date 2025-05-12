@@ -2,7 +2,7 @@
  * Notification Manager for Total Cost Analyzer
  * Manages toast notifications and alert messages
  */
-const NotificationManager = (function() {
+window.NotificationManager = window.NotificationManager || (function() {
     // Default settings
     const defaultSettings = {
         duration: 5000, // 5 seconds

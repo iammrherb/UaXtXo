@@ -165,7 +165,7 @@ const PortnoxWizard = (function() {
                     
                 case 3: // Organization details
                     const deviceCount = document.getElementById('device-count');
-                    if (deviceCount && (!deviceCount.value || parseInt(deviceCount.value) <= 0)) {
+                    if (deviceCount && (!deviceCount.value || parseInt(deviceCount.value) <=== 0)) {
                         showError('Please enter a valid number of devices.');
                         return false;
                     }
