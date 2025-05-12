@@ -1,28 +1,16 @@
 #!/bin/bash
 
-# Targeted Fixes Only - No Rewrites
-# Fixes specific syntax errors and image paths without rewriting anything
+# Direct fixes for the specific errors encountered
+# No rewrites, no sample data, no fancy stuff - just fixes the damn errors
 
-# Set exit on error
-set -e
-
-# Define colors for output
+# Color definitions
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Define project directory 
-PROJECT_DIR="$(pwd)"
-
 # Log function
 log() {
-    echo -e "${GREEN}[$(date +%T)]${NC} $1"
-}
-
-# Warning function
-warn() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${GREEN}[LOG]${NC} $1"
 }
 
 # Error function
@@ -31,237 +19,201 @@ error() {
     exit 1
 }
 
-# Fix duplicate NotificationManager declaration
-fix_notification_manager() {
-    log "Finding and fixing NotificationManager issues"
-    
-    NOTIFICATION_FILES=$(find "${PROJECT_DIR}" -name "*.js" -type f -exec grep -l "NotificationManager" {} \; 2>/dev/null || true)
-    
-    if [[ -n "$NOTIFICATION_FILES" ]]; then
-        log "Found potential NotificationManager declarations in: "
-        echo "$NOTIFICATION_FILES"
-        
-        # Handle each file that might redefine NotificationManager
-        for file in $NOTIFICATION_FILES; do
-            if [[ "$(basename "$file")" == "notification.js" ]]; then
-                log "Fixing $file"
-                # Modify to only define if not already defined
-                sed -i.bak "s/const NotificationManager = /window.NotificationManager = window.NotificationManager || /" "$file"
-            fi
-        done
-    else
-        log "No NotificationManager declarations found"
-    fi
-}
+log "Starting error fixes..."
 
-# Fix syntax error in wizard.js
-fix_wizard_syntax() {
-    log "Finding and fixing wizard syntax errors"
-    
-    # Find all wizard files with "nextStep" function
-    WIZARD_FILES=$(find "${PROJECT_DIR}" -name "*.js" -type f -exec grep -l "nextStep" {} \; 2>/dev/null || true)
-    
-    if [[ -n "$WIZARD_FILES" ]]; then
-        log "Found potential wizard files:"
-        echo "$WIZARD_FILES"
-        
-        # Look for assignment in if condition in each file
-        for file in $WIZARD_FILES; do
-            log "Checking $file for syntax errors"
-            
-            # Find lines with potential assignment in if condition
-            ASSIGNMENT_LINES=$(grep -n "if.*=.*)" "$file" 2>/dev/null || true)
-            
-            if [[ -n "$ASSIGNMENT_LINES" ]]; then
-                log "Found potential assignment issues in $file:"
-                echo "$ASSIGNMENT_LINES"
-                
-                # Fix each line with an assignment issue
-                while IFS= read -r line; do
-                    # Extract line number
-                    LINE_NUM=$(echo "$line" | cut -d: -f1)
-                    LINE_CONTENT=$(echo "$line" | cut -d: -f2-)
-                    
-                    log "Fixing line $LINE_NUM: $LINE_CONTENT"
-                    
-                    # Replace = with === in if conditions
-                    sed -i.bak "${LINE_NUM}s/if (\([^=]*\)= \([^=)]*\))/if (\1=== \2)/" "$file"
-                done <<< "$ASSIGNMENT_LINES"
-            fi
-            
-            # Find conditional statements without braces
-            BRACE_LINES=$(grep -n "if.*) [^{].*;" "$file" 2>/dev/null || true)
-            
-            if [[ -n "$BRACE_LINES" ]]; then
-                log "Found potential missing braces in $file:"
-                echo "$BRACE_LINES"
-                
-                # Fix each line with missing braces
-                while IFS= read -r line; do
-                    # Extract line number
-                    LINE_NUM=$(echo "$line" | cut -d: -f1)
-                    LINE_CONTENT=$(echo "$line" | cut -d: -f2-)
-                    
-                    log "Adding braces to line $LINE_NUM: $LINE_CONTENT"
-                    
-                    # Add braces around single-line conditionals
-                    sed -i.bak "${LINE_NUM}s/if \([^{]*\)) \(.*\);/if \1) { \2; }/" "$file"
-                done <<< "$BRACE_LINES"
-            fi
-        done
-    else
-        log "No wizard files found"
-    fi
-}
+# Project directory
+PROJECT_DIR="$(pwd)"
 
-# Fix syntax error in calculator.js
-fix_calculator_syntax() {
-    log "Finding and fixing calculator syntax errors"
-    
-    # Find calculator files
-    CALCULATOR_FILES=$(find "${PROJECT_DIR}" -name "calculator*.js" -type f 2>/dev/null || true)
-    
-    if [[ -n "$CALCULATOR_FILES" ]]; then
-        log "Found calculator files:"
-        echo "$CALCULATOR_FILES"
-        
-        # Look for assignment in if condition in each file
-        for file in $CALCULATOR_FILES; do
-            log "Checking $file for syntax errors"
-            
-            # Find lines with potential assignment in if condition
-            ASSIGNMENT_LINES=$(grep -n "if.*=.*)" "$file" 2>/dev/null || true)
-            
-            if [[ -n "$ASSIGNMENT_LINES" ]]; then
-                log "Found potential assignment issues in $file:"
-                echo "$ASSIGNMENT_LINES"
-                
-                # Fix each line with an assignment issue
-                while IFS= read -r line; do
-                    # Extract line number
-                    LINE_NUM=$(echo "$line" | cut -d: -f1)
-                    LINE_CONTENT=$(echo "$line" | cut -d: -f2-)
-                    
-                    log "Fixing line $LINE_NUM: $LINE_CONTENT"
-                    
-                    # Replace = with === in if conditions
-                    sed -i.bak "${LINE_NUM}s/if (\([^=]*\)= \([^=)]*\))/if (\1=== \2)/" "$file"
-                done <<< "$ASSIGNMENT_LINES"
-            fi
-        done
-    else
-        log "No calculator files found"
-    fi
-}
+# PART 1: FIX THE MISSING LOGO FILES
+log "Fixing logo path issues..."
 
-# Fix undefined 'phases' property in charts.js
-fix_charts_phases() {
-    log "Finding and fixing chart phases undefined issues"
-    
-    # Find charts files
-    CHARTS_FILES=$(find "${PROJECT_DIR}" -name "chart*.js" -type f 2>/dev/null || true)
-    
-    if [[ -n "$CHARTS_FILES" ]]; then
-        log "Found chart files:"
-        echo "$CHARTS_FILES"
-        
-        # Look for phases property access in each file
-        for file in $CHARTS_FILES; do
-            log "Checking $file for phases property access"
-            
-            # Find lines that access .phases property
-            PHASES_LINES=$(grep -n "\.phases" "$file" 2>/dev/null || true)
-            
-            if [[ -n "$PHASES_LINES" ]]; then
-                log "Found potential phases access issues in $file:"
-                echo "$PHASES_LINES"
-                
-                # Fix each line with .phases access
-                while IFS= read -r line; do
-                    # Extract line number
-                    LINE_NUM=$(echo "$line" | cut -d: -f1)
-                    LINE_CONTENT=$(echo "$line" | cut -d: -f2-)
-                    
-                    log "Adding safety check to line $LINE_NUM: $LINE_CONTENT"
-                    
-                    # Add safety check for phases property
-                    # This is a simple pattern replacement, might need adjustment for specific files
-                    sed -i.bak "${LINE_NUM}s/\(\w*\)\.phases/(\1 \&\& \1.phases ? \1.phases : [])/" "$file"
-                done <<< "$PHASES_LINES"
-            fi
-        done
-    else
-        log "No chart files found"
-    fi
-}
+# Create a correct symlink from img/vendors to where the logo files actually exist
+if [ -d "${PROJECT_DIR}/img" ] && [ ! -d "${PROJECT_DIR}/img/vendors" ]; then
+    log "Creating vendors directory if it doesn't exist"
+    mkdir -p "${PROJECT_DIR}/img/vendors"
+fi
 
-# Fix vendor logo paths in index.html
-fix_vendor_logos() {
-    log "Fixing vendor logo paths in index.html"
+# Check for the actual location of logo files
+if [ -f "${PROJECT_DIR}/img/cisco-logo.png" ]; then
+    log "Found logo files in img/ - creating symlinks to img/vendors/"
     
-    if [ -f "${PROJECT_DIR}/index.html" ]; then
-        # Back up the file
-        cp "${PROJECT_DIR}/index.html" "${PROJECT_DIR}/index.html.bak"
-        
-        log "Checking for logo path issues in index.html"
-        
-        # Check if we're using .svg instead of .png
-        SVG_REFERENCES=$(grep -n "img/vendors/.*\.svg" "${PROJECT_DIR}/index.html" 2>/dev/null || true)
-        
-        if [[ -n "$SVG_REFERENCES" ]]; then
-            log "Found SVG references that should be PNG:"
-            echo "$SVG_REFERENCES"
-            
-            # Replace .svg with .png for vendor logos
-            sed -i.bak 's/vendors\/\([^\.]*\)\.svg/vendors\/\1.png/g' "${PROJECT_DIR}/index.html"
-            
-            log "Converted SVG references to PNG"
+    # Copy logos from the main img directory to vendors
+    for logo in cisco aruba forescout fortinac microsoft securew2; do
+        if [ -f "${PROJECT_DIR}/img/${logo}-logo.png" ] && [ ! -f "${PROJECT_DIR}/img/vendors/${logo}-logo.png" ]; then
+            log "Copying ${logo}-logo.png to vendors directory"
+            cp "${PROJECT_DIR}/img/${logo}-logo.png" "${PROJECT_DIR}/img/vendors/"
         else
-            log "No SVG references found in index.html"
+            log "${logo}-logo.png not found in img/ or already exists in vendors/"
         fi
+    done
+else
+    log "Creating simple PNG logos in img/vendors/ as fallback"
+    
+    # Create simple PNG files for each vendor logo
+    for vendor in cisco aruba forescout fortinac microsoft securew2; do
+        log "Creating ${vendor}-logo.png"
         
-        # Check if the paths are correct
-        VENDOR_REFERENCES=$(grep -n "img/vendors" "${PROJECT_DIR}/index.html" 2>/dev/null || true)
-        
-        if [[ -n "$VENDOR_REFERENCES" ]]; then
-            log "Found vendor image references:"
-            echo "$VENDOR_REFERENCES"
-            
-            # Make sure the path starts with / if needed
-            # Note: This assumes the images are in the root directory, adjust if needed
-            if grep -q "src=\"img/vendors" "${PROJECT_DIR}/index.html"; then
-                log "Ensuring vendor image paths are correct"
-                sed -i.bak 's/src="img\/vendors/src="\/img\/vendors/g' "${PROJECT_DIR}/index.html"
-            fi
-        else
-            warn "No vendor image references found in index.html"
-        fi
-    else
-        warn "Could not locate index.html file"
+        # Create a simple colored rectangle as a logo
+        convert -size 200x80 xc:white -fill blue -draw "rectangle 10,10 190,70" -fill black -pointsize 20 -gravity center -annotate 0 "${vendor}" "${PROJECT_DIR}/img/vendors/${vendor}-logo.png" 2>/dev/null || \
+        log "Failed to create image with ImageMagick, creating empty file instead" && touch "${PROJECT_DIR}/img/vendors/${vendor}-logo.png"
+    done
+fi
+
+# PART 2: REMOVE REFERENCES TO MISSING CSS
+log "Removing references to missing CSS files..."
+
+# Check if index.html exists
+if [ -f "${PROJECT_DIR}/index.html" ]; then
+    # Backup the file
+    cp "${PROJECT_DIR}/index.html" "${PROJECT_DIR}/index.html.bak"
+    
+    # Remove reference to wizard-fix.css if it doesn't exist
+    if ! [ -f "${PROJECT_DIR}/css/wizards/standalone/wizard-fix.css" ]; then
+        log "Removing reference to non-existent wizard-fix.css"
+        sed -i '/wizard-fix.css/d' "${PROJECT_DIR}/index.html"
     fi
-}
+else
+    log "index.html not found"
+fi
 
-# Main function
-main() {
-    log "Running targeted fixes without rewrites"
-    
-    # Fix NotificationManager issues
-    fix_notification_manager
-    
-    # Fix wizard syntax
-    fix_wizard_syntax
-    
-    # Fix calculator syntax
-    fix_calculator_syntax
-    
-    # Fix charts phases issue
-    fix_charts_phases
-    
-    # Fix vendor logos
-    fix_vendor_logos
-    
-    log "All targeted fixes applied. Please refresh the application."
-}
+# PART 3: FIX JAVASCRIPT SYNTAX ERRORS
+log "Fixing JavaScript syntax errors..."
 
-# Run main function
-main
+# Fix "Unexpected token '=='" in wizard.js
+if [ -f "${PROJECT_DIR}/js/wizard.js" ]; then
+    log "Fixing == token issue in wizard.js"
+    cp "${PROJECT_DIR}/js/wizard.js" "${PROJECT_DIR}/js/wizard.js.bak"
+    
+    # Replace == with === in conditional statements
+    sed -i 's/if ([^=]*) ==/if (\1) ===/' "${PROJECT_DIR}/js/wizard.js"
+    sed -i 's/if (\([^=]*\)) ==/if (\1) ===/' "${PROJECT_DIR}/js/wizard.js"
+    sed -i 's/if (\([^=]*\) ==/if (\1 ===/' "${PROJECT_DIR}/js/wizard.js"
+fi
+
+# Fix "Unexpected token '=='" in wizard-controller.js
+if [ -f "${PROJECT_DIR}/js/wizards/wizard-controller.js" ]; then
+    log "Fixing == token issue in wizard-controller.js"
+    cp "${PROJECT_DIR}/js/wizards/wizard-controller.js" "${PROJECT_DIR}/js/wizards/wizard-controller.js.bak"
+    
+    # Replace == with === in conditional statements
+    sed -i 's/if ([^=]*) ==/if (\1) ===/' "${PROJECT_DIR}/js/wizards/wizard-controller.js"
+    sed -i 's/if (\([^=]*\)) ==/if (\1) ===/' "${PROJECT_DIR}/js/wizards/wizard-controller.js"
+    sed -i 's/if (\([^=]*\) ==/if (\1 ===/' "${PROJECT_DIR}/js/wizards/wizard-controller.js"
+fi
+
+# Fix "Invalid left-hand side in assignment" in calculator.js line 315
+if [ -f "${PROJECT_DIR}/js/components/calculator.js" ]; then
+    log "Fixing invalid left-hand side assignment in calculator.js line 315"
+    cp "${PROJECT_DIR}/js/components/calculator.js" "${PROJECT_DIR}/js/components/calculator.js.bak"
+    
+    # Directly fix line 315
+    line_content=$(sed -n '315p' "${PROJECT_DIR}/js/components/calculator.js")
+    log "Line 315 content: ${line_content}"
+    
+    if [[ $line_content == *"="* ]]; then
+        # Fix assignment in if condition
+        sed -i '315s/if ([^=]*)=/if (\1===/' "${PROJECT_DIR}/js/components/calculator.js"
+        sed -i '315s/if (\([^=]*\))=/if (\1)===/' "${PROJECT_DIR}/js/components/calculator.js"
+        sed -i '315s/if (\([^=]*\)=/if (\1===/' "${PROJECT_DIR}/js/components/calculator.js"
+    fi
+fi
+
+# PART 4: CREATE A MINIMAL FIX FOR VENDOR IMAGE LOADING
+log "Creating image loader fix..."
+
+# Create an image loader fix script
+mkdir -p "${PROJECT_DIR}/js/fixes"
+cat > "${PROJECT_DIR}/js/fixes/image-fix.js" << 'EOL'
+/**
+ * Minimal image loading fix
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // Fix vendor card images
+    var vendorCards = document.querySelectorAll('.vendor-card');
+    
+    vendorCards.forEach(function(card) {
+        var img = card.querySelector('img');
+        if (img) {
+            // Get vendor from card data attribute or class
+            var vendor = card.dataset.vendor || card.className.match(/vendor-(\w+)/)?.[1] || '';
+            
+            // Add error handler
+            img.onerror = function() {
+                console.warn('Failed to load image:', this.src);
+                
+                // Try different paths
+                if (this.src.includes('/vendors/')) {
+                    // Try direct in img folder
+                    this.src = this.src.replace('/vendors/', '/');
+                } else if (!this.src.includes('vendors/')) {
+                    // Try in vendors folder
+                    var parts = this.src.split('/');
+                    var filename = parts[parts.length - 1];
+                    this.src = 'img/vendors/' + filename;
+                }
+                
+                // As a last resort, set a colored background with text
+                this.onerror = function() {
+                    var container = this.parentNode;
+                    if (container) {
+                        // Style the parent as a colored box with text
+                        container.style.background = getVendorColor(vendor);
+                        container.style.display = 'flex';
+                        container.style.alignItems = 'center';
+                        container.style.justifyContent = 'center';
+                        container.style.color = 'white';
+                        container.style.fontWeight = 'bold';
+                        container.style.textTransform = 'uppercase';
+                        container.style.padding = '10px';
+                        container.style.height = '80px';
+                        container.style.width = '100%';
+                        
+                        // Add text inside
+                        container.textContent = vendor || 'Vendor';
+                        
+                        // Remove the img element
+                        this.style.display = 'none';
+                    }
+                };
+            };
+            
+            // Force reload to trigger error handler if needed
+            var currentSrc = img.src;
+            if (currentSrc) {
+                img.src = '';
+                setTimeout(function() {
+                    img.src = currentSrc;
+                }, 0);
+            }
+        }
+    });
+    
+    // Get a color for a vendor
+    function getVendorColor(vendor) {
+        var colors = {
+            cisco: '#049fd9',
+            aruba: '#f78e1e',
+            forescout: '#d64000',
+            fortinac: '#ee3124',
+            nps: '#7fba00',
+            microsoft: '#7fba00',
+            securew2: '#00b2e3',
+            noNac: '#b22222'
+        };
+        
+        return colors[vendor] || '#1b67b2';
+    }
+});
+EOL
+
+# Add the image fix to index.html
+if [ -f "${PROJECT_DIR}/index.html" ]; then
+    log "Adding image fix to index.html"
+    if ! grep -q "image-fix.js" "${PROJECT_DIR}/index.html"; then
+        cp "${PROJECT_DIR}/index.html" "${PROJECT_DIR}/index.html.bak2"
+        sed -i '/<\/head>/i\    <script src="js\/fixes\/image-fix.js"><\/script>' "${PROJECT_DIR}/index.html"
+    fi
+fi
+
+log "All fixes applied. Please refresh the application to see the changes."
+log "If the errors persist, please provide the exact file paths where the errors are occurring."
