@@ -112,7 +112,7 @@ const WizardController = (function() {
         }
         
         if (nextButton) {
-            nextButton.textContent = currentStep === totalSteps ? 'View Results' : 'Next Step';
+            nextButton.innerText = currentStep === totalSteps ? 'View Results' : 'Next Step';
         }
     }
     
