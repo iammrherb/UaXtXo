@@ -29,6 +29,8 @@
     
     <link rel="icon" type="image/png" href="img/favicon.svg">
     <script src="js/fixes/image-fix.js"></script>
+    <link rel="stylesheet" href="css/fixes/vendor-cards.css">
+    <link rel="stylesheet" href="css/fixes/charts-results.css">
 </head>
 <body>
     <!-- Particle Background -->
@@ -84,7 +86,11 @@
                     <div class="step-header">
                         <h2>Select Your Current NAC Solution</h2>
                         <p>Choose your existing NAC vendor or select "No NAC" if you don't have a solution in place</p>
-                    </div>
+                      <div id="wizard-navigation" class="wizard-navigation">
+    <button id="prev-step" class="btn btn-outline"><i class="fas fa-chevron-left"></i> Previous</button>
+    <button id="next-step" class="btn btn-primary">Next <i class="fas fa-chevron-right"></i></button>
+  </div>
+</div>
                     
                     <div class="vendor-grid">
                         <div class="vendor-card animate-card" data-vendor="cisco">
@@ -175,14 +181,6 @@
                         <h2>Industry & Compliance Requirements</h2>
                         <p>Select your industry to see relevant compliance frameworks and security requirements</p>
     <!-- Wizard Navigation -->
-    <div class="wizard-navigation">
-        <button id="prev-step" class="btn btn-outline">
-            <i class="fas fa-chevron-left"></i> Previous
-        </button>
-        <button id="next-step" class="btn btn-primary">
-            Next <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
                     </div>
 
                     
@@ -220,14 +218,6 @@
                         <h2>Organization Configuration</h2>
                         <p>Provide details about your organization to customize the analysis</p>
     <!-- Wizard Navigation -->
-    <div class="wizard-navigation">
-        <button id="prev-step" class="btn btn-outline">
-            <i class="fas fa-chevron-left"></i> Previous
-        </button>
-        <button id="next-step" class="btn btn-primary">
-            Next <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
                     </div>
 
                     
@@ -305,14 +295,6 @@
                         <h2>Advanced Cost Configuration</h2>
                         <p>Fine-tune cost parameters for more accurate analysis</p>
     <!-- Wizard Navigation -->
-    <div class="wizard-navigation">
-        <button id="prev-step" class="btn btn-outline">
-            <i class="fas fa-chevron-left"></i> Previous
-        </button>
-        <button id="next-step" class="btn btn-primary">
-            Next <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
                     </div>
 
                     
@@ -433,14 +415,6 @@
                         <h2>Review Configuration</h2>
                         <p>Review your inputs and calculate the TCO comparison</p>
     <!-- Wizard Navigation -->
-    <div class="wizard-navigation">
-        <button id="prev-step" class="btn btn-outline">
-            <i class="fas fa-chevron-left"></i> Previous
-        </button>
-        <button id="next-step" class="btn btn-primary">
-            Next <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
                     </div>
 
                     
@@ -888,5 +862,9 @@
 <script src="js/reports/enhanced-generator.js"></script>
 <script src="js/wizards/enhanced-vendor-cards.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/fixes/image-loader-fix.js"></script>
+    <script src="js/fixes/wizard-navigation-fix.js"></script>
+    <script src="js/fixes/vendor-cards-fix.js"></script>
+    <script src="js/fixes/chart-data-generator.js"></script>
 </body>
 </html>
