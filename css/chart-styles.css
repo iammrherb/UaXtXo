@@ -1,145 +1,421 @@
-/* Chart Styles */
-.chart-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+/**
+ * Enhanced chart styles for TCO Analyzer
+ */
+
+/* Chart card styling */
+.chart-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.chart-card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  height: 350px;
+.chart-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
 .chart-card h3 {
-  font-size: 1.1rem;
-  margin-top: 0;
-  margin-bottom: 1rem;
-  color: #333;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #1b67b2;
+    font-size: 1.25rem;
+    font-weight: 600;
 }
 
-canvas {
-  flex: 1;
-  width: 100% !important;
-  height: calc(100% - 40px) !important;
+.chart-card canvas {
+    width: 100% !important;
+    height: 300px !important;
 }
 
-/* Results Panels */
-.result-panel {
-  display: none;
-  animation: fadeIn 0.3s ease-in-out;
+/* Chart grid layout */
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 1.5rem;
 }
 
-.result-panel.active {
-  display: block;
+/* Animated comparison bars */
+.comparison-bar {
+    height: 24px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    position: relative;
+    overflow: hidden;
+    background-color: #f0f0f0;
 }
 
-/* Utilities */
-.hidden {
-  display: none !important;
+.comparison-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease-in-out;
 }
 
-/* Animation */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.comparison-bar-label {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
 }
 
-/* Data Table Styles */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
+.comparison-bar-value {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #333;
+    font-weight: 600;
 }
 
-.data-table th,
-.data-table td {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.data-table th {
-  background-color: #f5f5f5;
-  font-weight: 600;
-}
-
-.data-table tr:hover td {
-  background-color: #f9f9f9;
-}
-
-.data-table .total-row {
-  font-weight: 700;
-  background-color: #f5f5f5;
-}
-
-/* Rating Bars */
-.rating-bar {
-  height: 12px;
-  background-color: #e0e0e0;
-  border-radius: 6px;
-  margin-bottom: 5px;
-  overflow: hidden;
-}
-
-.rating-fill {
-  height: 100%;
-  background-color: #2e75b6;
-  border-radius: 6px;
-}
-
-/* Status Colors */
-.positive {
-  color: #70ad47;
-  font-weight: 600;
-}
-
-.negative {
-  color: #ed7d31;
-  font-weight: 600;
-}
-
-.neutral {
-  color: #7f7f7f;
-}
-
-/* Sensitivity Controls */
-.sensitivity-controls {
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.parameter-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.range-inputs {
-  display: flex;
-  gap: 1rem;
-}
-
-.range-inputs input {
-  flex: 1;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .chart-grid {
+/* Industry & Compliance styles */
+.industry-compliance-content {
+    display: grid;
     grid-template-columns: 1fr;
-  }
-  
-  .chart-card {
-    height: 300px;
-  }
+    gap: 1.5rem;
+}
+
+.industry-details, 
+.compliance-matrix {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+.industry-details h3,
+.compliance-matrix h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #1b67b2;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.industry-requirement-card {
+    border-left: 4px solid #1b67b2;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #f7f9fc;
+    border-radius: 0 4px 4px 0;
+}
+
+.industry-requirement-card h4 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.compliance-matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.compliance-matrix-table th,
+.compliance-matrix-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.compliance-matrix-table th {
+    background-color: #f7f9fc;
+    font-weight: 600;
+    color: #1b67b2;
+}
+
+.compliance-matrix-table td.compliance-full {
+    color: #16a34a;
+    font-weight: 500;
+}
+
+.compliance-matrix-table td.compliance-partial {
+    color: #f59e0b;
+    font-weight: 500;
+}
+
+.compliance-matrix-table td.compliance-none {
+    color: #dc2626;
+    font-weight: 500;
+}
+
+/* Implementation timeline styles */
+.implementation-roadmap {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.implementation-phase {
+    display: flex;
+    align-items: center;
+    background-color: #f7f9fc;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.implementation-phase-info {
+    padding: 1rem;
+    width: 200px;
+    flex-shrink: 0;
+}
+
+.implementation-phase-info h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.implementation-phase-info p {
+    margin: 0.25rem 0 0;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.implementation-phase-bars {
+    display: flex;
+    flex-grow: 1;
+    height: 30px;
+    align-items: center;
+    padding: 0 1rem;
+}
+
+.implementation-vendor-bar {
+    height: 20px;
+    border-radius: 4px;
+    position: relative;
+    transition: width 1s ease-in-out;
+}
+
+.implementation-vendor-bar-label {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Feature matrix styles */
+.feature-matrix {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.feature-matrix th,
+.feature-matrix td {
+    padding: 0.75rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.feature-matrix th:first-child,
+.feature-matrix td:first-child {
+    text-align: left;
+}
+
+.feature-matrix th {
+    background-color: #f7f9fc;
+    font-weight: 600;
+    color: #1b67b2;
+}
+
+.feature-matrix .category-row td {
+    background-color: #edf3f8;
+    font-weight: 600;
+    color: #1b67b2;
+}
+
+.feature-rating {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.feature-rating-10 {
+    background-color: #16a34a;
+}
+
+.feature-rating-8 {
+    background-color: #65a30d;
+}
+
+.feature-rating-6 {
+    background-color: #f59e0b;
+}
+
+.feature-rating-4 {
+    background-color: #f97316;
+}
+
+.feature-rating-2 {
+    background-color: #dc2626;
+}
+
+/* Tooltip styling */
+.tooltip-modern {
+    position: relative;
+    cursor: help;
+    border-bottom: 1px dotted #999;
+}
+
+.tooltip-content {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 0.5rem;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.8rem;
+    pointer-events: none;
+}
+
+.tooltip-modern:hover .tooltip-content {
+    visibility: visible;
+    opacity: 0.9;
+}
+
+/* Dark mode support */
+.dark-mode .chart-card,
+.dark-mode .industry-details,
+.dark-mode .compliance-matrix {
+    background-color: #1f2937;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .chart-card h3,
+.dark-mode .industry-details h3,
+.dark-mode .compliance-matrix h3 {
+    color: #60a5fa;
+}
+
+.dark-mode .industry-requirement-card {
+    background-color: #283548;
+    border-left-color: #60a5fa;
+}
+
+.dark-mode .industry-requirement-card h4 {
+    color: #f3f4f6;
+}
+
+.dark-mode .compliance-matrix-table th {
+    background-color: #283548;
+    color: #60a5fa;
+}
+
+.dark-mode .compliance-matrix-table td {
+    border-bottom-color: #374151;
+}
+
+.dark-mode .feature-matrix th {
+    background-color: #283548;
+    color: #60a5fa;
+}
+
+.dark-mode .feature-matrix .category-row td {
+    background-color: #283548;
+    color: #60a5fa;
+}
+
+/* ROI animation */
+@keyframes growBar {
+    from {
+        width: 0;
+    }
+    to {
+        width: var(--bar-width);
+    }
+}
+
+.animated-bar {
+    animation: growBar 1.5s ease-out forwards;
+    animation-delay: var(--animation-delay, 0s);
+}
+
+/* Loading and transitions */
+.chart-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.dark-mode .chart-loading {
+    background-color: rgba(31, 41, 55, 0.7);
+}
+
+.chart-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(27, 103, 178, 0.2);
+    border-radius: 50%;
+    border-top-color: #1b67b2;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chart-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-card canvas {
+        height: 250px !important;
+    }
+    
+    .implementation-phase {
+        flex-direction: column;
+    }
+    
+    .implementation-phase-info {
+        width: 100%;
+        padding: 0.75rem;
+    }
+    
+    .implementation-phase-bars {
+        width: 100%;
+        padding: 0.75rem;
+    }
 }

@@ -446,6 +446,7 @@
                         <button class="result-tab" data-tab="comparison">Cost Comparison</button>
                         <button class="result-tab" data-tab="implementation">Implementation</button>
                         <button class="result-tab" data-tab="features">Features</button>
+                        <button class="result-tab" data-tab="industry">Industry & Compliance</button>
                         <button class="result-tab" data-tab="roi">ROI Analysis</button>
                         <button class="result-tab" data-tab="risk">Risk Analysis</button>
                         <button class="result-tab" data-tab="sensitivity">Sensitivity</button>
@@ -733,11 +734,35 @@
     <script src="js/app-controller.js"></script>
     <script src="js/init.js"></script>
     <script src="js/wizard-fix.js"></script>
+    <script src="js/wizards/tco-wizard.js"></script>
     <script src="js/final-patch.js"></script>
 </body>
 </html>
 
                 <!-- Implementation Tab -->
+                <!-- Industry & Compliance Tab --> 
+                <div class="result-panel" id="industry-panel"> 
+                    <div class="industry-compliance-content"> 
+                        <div class="chart-card"> 
+                            <h3>Industry Compliance Framework Coverage</h3> 
+                            <canvas id="industry-compliance-chart"></canvas> 
+                        </div> 
+                        
+                        <div class="industry-details"> 
+                            <h3>Industry-Specific Requirements</h3> 
+                            <div id="industry-requirements-container"> 
+                                <!-- Industry requirements loaded dynamically --> 
+                            </div> 
+                        </div> 
+                        
+                        <div class="compliance-matrix"> 
+                            <h3>Detailed Compliance Matrix</h3> 
+                            <div id="compliance-matrix-container"> 
+                                <!-- Compliance matrix loaded dynamically --> 
+                            </div> 
+                        </div> 
+                    </div> 
+                </div>
                 <div class="result-panel" id="implementation-panel">
                     <div class="implementation-content">
                         <div class="chart-card">
