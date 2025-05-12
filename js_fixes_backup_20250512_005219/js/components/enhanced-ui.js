@@ -37,70 +37,8 @@ const EnhancedUI = (function() {
             darkModeToggle.innerHTML = isDarkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
             
             // Update charts if they exist
-            // Create dummy result data to prevent errors
-            const dummyResults = {
-                currentVendorCosts: {
-                    annual: 100000,
-                    breakdown: {
-                        license: 50000,
-                        hardware: 30000,
-                        implementation: 20000,
-                        personnel: 80000,
-                        maintenance: 15000,
-                        training: 5000
-                    }
-                },
-                portnoxCosts: {
-                    annual: 40000,
-                    breakdown: {
-                        license: 30000,
-                        hardware: 0,
-                        implementation: 5000,
-                        personnel: 20000,
-                        maintenance: 0,
-                        training: 5000
-                    }
-                },
-                vendor: { name: "Current Solution" },
-                savings: {
-                    total: 180000,
-                    percentage: 60,
-                    breakEvenMonths: 6
-                }
-            };
             if (typeof ChartsManager !== 'undefined' && ChartsManager.updateCharts) {
-            // Create dummy result data to prevent errors
-            const dummyResults = {
-                currentVendorCosts: {
-                    annual: 100000,
-                    breakdown: {
-                        license: 50000,
-                        hardware: 30000,
-                        implementation: 20000,
-                        personnel: 80000,
-                        maintenance: 15000,
-                        training: 5000
-                    }
-                },
-                portnoxCosts: {
-                    annual: 40000,
-                    breakdown: {
-                        license: 30000,
-                        hardware: 0,
-                        implementation: 5000,
-                        personnel: 20000,
-                        maintenance: 0,
-                        training: 5000
-                    }
-                },
-                vendor: { name: "Current Solution" },
-                savings: {
-                    total: 180000,
-                    percentage: 60,
-                    breakEvenMonths: 6
-                }
-            };
-                ChartsManager.updateCharts(dummyResults);
+                ChartsManager.updateCharts();
             }
         });
     }

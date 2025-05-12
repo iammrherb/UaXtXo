@@ -30,8 +30,7 @@ const ChartsManager = (function() {
     
     // Initialize charts
     function initCharts() {
-        destroyExistingCharts();
-    console.log('Initializing charts...');
+        console.log('Initializing charts...');
         
         // Configure Chart.js defaults
         if (typeof Chart !== 'undefined') {
@@ -48,34 +47,6 @@ const ChartsManager = (function() {
         }
         
         // Initialize TCO comparison chart
-    // Destroy existing charts before initialization to prevent "Canvas already in use" error
-    function destroyExistingCharts() {
-        if (window.Chart) {
-            const chartIds = [
-                "tco-comparison-chart",
-                "current-breakdown-chart",
-                "alternative-breakdown-chart",
-                "cumulative-cost-chart",
-                "feature-comparison-chart",
-                "implementation-comparison-chart",
-                "industry-compliance-chart",
-                "roi-chart",
-                "risk-analysis-chart",
-                "sensitivity-chart",
-                "sensitivity-chart-sidebar"
-            ];
-            
-            chartIds.forEach(id => {
-                const canvas = document.getElementById(id);
-                if (canvas) {
-                    const existingChart = Chart.getChart(canvas);
-                    if (existingChart) {
-                        existingChart.destroy();
-                    }
-                }
-            });
-        }
-    }
         initTcoComparisonChart();
         
         // Initialize breakdown charts
@@ -103,34 +74,6 @@ const ChartsManager = (function() {
     }
     
     // Initialize TCO comparison chart
-    // Destroy existing charts before initialization to prevent "Canvas already in use" error
-    function destroyExistingCharts() {
-        if (window.Chart) {
-            const chartIds = [
-                "tco-comparison-chart",
-                "current-breakdown-chart",
-                "alternative-breakdown-chart",
-                "cumulative-cost-chart",
-                "feature-comparison-chart",
-                "implementation-comparison-chart",
-                "industry-compliance-chart",
-                "roi-chart",
-                "risk-analysis-chart",
-                "sensitivity-chart",
-                "sensitivity-chart-sidebar"
-            ];
-            
-            chartIds.forEach(id => {
-                const canvas = document.getElementById(id);
-                if (canvas) {
-                    const existingChart = Chart.getChart(canvas);
-                    if (existingChart) {
-                        existingChart.destroy();
-                    }
-                }
-            });
-        }
-    }
     function initTcoComparisonChart() {
         const ctx = document.getElementById('tco-comparison-chart');
         if (!ctx) return;
