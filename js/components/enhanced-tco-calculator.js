@@ -302,7 +302,7 @@ const EnhancedTcoCalculator = (function() {
                 const currentValue = currentYear[vendorKey].cumulativeSavingsVsNoNac;
                 
                 // How far between years (0-1 represents progress through the year)
-                const yearFraction = prevValue === currentValue ? 
+                const yearFraction = prevValue == currentValue ? 
                     0.5 : // If values are the same (unlikely), assume middle of year
                     Math.abs(prevValue) / (Math.abs(prevValue) + currentValue);
                 
@@ -315,7 +315,7 @@ const EnhancedTcoCalculator = (function() {
         }
         
         // If no breakeven found within projection period
-        if (breakevenYear === null) {
+        if (breakevenYear == null) {
             return {
                 years: projection.length + 0.5, // Beyond projection period
                 description: `Beyond ${projection.length} years`,
@@ -330,9 +330,9 @@ const EnhancedTcoCalculator = (function() {
         let description;
         if (yearsToBreakeven < 1) {
             description = `${breakevenQuarter * 3} months`;
-        } else if (yearsToBreakeven === 1) {
+        } else if (yearsToBreakeven == 1) {
             description = "1 year";
-        } else if (Math.floor(yearsToBreakeven) === yearsToBreakeven) {
+        } else if (Math.floor(yearsToBreakeven) == yearsToBreakeven) {
             description = `${yearsToBreakeven} years`;
         } else {
             description = `${Math.floor(yearsToBreakeven)} years, ${breakevenQuarter * 3} months`;
@@ -409,19 +409,19 @@ const EnhancedTcoCalculator = (function() {
 // Initialize when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     // Check if required modules are available
-    if (typeof VendorComparison === 'undefined') {
+    if (typeof VendorComparison == 'undefined') {
         console.error('VendorComparison module not loaded. Enhanced TCO calculator will not function properly.');
     }
     
-    if (typeof IndustryData === 'undefined') {
+    if (typeof IndustryData == 'undefined') {
         console.error('IndustryData module not loaded. Enhanced TCO calculator will not function properly.');
     }
     
-    if (typeof ComplianceFrameworks === 'undefined') {
+    if (typeof ComplianceFrameworks == 'undefined') {
         console.error('ComplianceFrameworks module not loaded. Enhanced TCO calculator will not function properly.');
     }
     
-    if (typeof NoNacBaseline === 'undefined') {
+    if (typeof NoNacBaseline == 'undefined') {
         console.error('NoNacBaseline module not loaded. Enhanced TCO calculator will not function properly.');
     }
     

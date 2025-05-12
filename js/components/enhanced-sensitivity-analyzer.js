@@ -299,7 +299,7 @@ class EnhancedSensitivityAnalyzer {
           break;
         }
       }
-    } else if (analysisResults.vendor === 'all') {
+    } else if (analysisResults.vendor == 'all') {
       // If comparing all vendors, find breakeven points for each vs Portnox
       const vendors = Object.keys(window.vendorData).filter(v => v !== 'portnox');
       
@@ -603,7 +603,7 @@ cat >> js/components/enhanced-sensitivity-analyzer.js << 'EOL'
     const labels = this.results.dataPoints.map(dp => this.formatDataPoint(this.results.variable, dp));
     
     const datasets = [];
-    const vendors = this.results.vendor === 'all' ? 
+    const vendors = this.results.vendor == 'all' ? 
       Object.keys(window.vendorData) : 
       [this.results.vendor, 'portnox']; // Always include Portnox for comparison
     
@@ -693,7 +693,7 @@ cat >> js/components/enhanced-sensitivity-analyzer.js << 'EOL'
   
   getBreakevenAnnotations() {
     // If breakeven analysis is not enabled or no points found, return empty object
-    if (!this.results.breakevenPoints || Object.keys(this.results.breakevenPoints).length === 0) {
+    if (!this.results.breakevenPoints || Object.keys(this.results.breakevenPoints).length == 0) {
       return {};
     }
     
@@ -735,7 +735,7 @@ cat >> js/components/enhanced-sensitivity-analyzer.js << 'EOL'
     }
     
     // Only relevant when the vendor is not Portnox
-    if (this.results.vendor === 'portnox') {
+    if (this.results.vendor == 'portnox') {
       return;
     }
     
@@ -743,13 +743,13 @@ cat >> js/components/enhanced-sensitivity-analyzer.js << 'EOL'
     const labels = this.results.dataPoints.map(dp => this.formatDataPoint(this.results.variable, dp));
     
     const datasets = [];
-    const vendors = this.results.vendor === 'all' ? 
+    const vendors = this.results.vendor == 'all' ? 
       Object.keys(window.vendorData).filter(v => v !== 'portnox') : 
       [this.results.vendor];
     
     vendors.forEach(vendor => {
       // Skip Portnox as we're calculating savings vs. Portnox
-      if (vendor === 'portnox') return;
+      if (vendor == 'portnox') return;
       
       const vendorName = window.vendorData[vendor]?.name || vendor;
       const vendorColor = this.chartColors[vendor] || this.chartColors.neutral;
@@ -842,7 +842,7 @@ cat >> js/components/enhanced-sensitivity-analyzer.js << 'EOL'
     tableBody.innerHTML = '';
     
     // Add vendor columns to header
-    const vendors = this.results.vendor === 'all' ? 
+    const vendors = this.results.vendor == 'all' ? 
       Object.keys(window.vendorData) : 
       [this.results.vendor, 'portnox']; // Always include Portnox for comparison
     
@@ -1049,7 +1049,7 @@ cat >> js/components/enhanced-sensitivity-analyzer.js << 'EOL'
     // Clear container
     container.innerHTML = '';
     
-    if (this.scenarios.length === 0) {
+    if (this.scenarios.length == 0) {
       container.innerHTML = '<p>No saved scenarios</p>';
       return;
     }
@@ -1145,7 +1145,7 @@ cat >> js/components/enhanced-sensitivity-analyzer.js << 'EOL'
       csv.push(['Variable', this.getVariableLabel(this.results.variable)]);
       csv.push(['Range', `${this.results.minValue} to ${this.results.maxValue}`]);
       csv.push(['Steps', this.results.steps]);
-      csv.push(['Vendor(s)', this.results.vendor === 'all' ? 'All Vendors' : window.vendorData[this.results.vendor]?.name || this.results.vendor]);
+      csv.push(['Vendor(s)', this.results.vendor == 'all' ? 'All Vendors' : window.vendorData[this.results.vendor]?.name || this.results.vendor]);
       csv.push([]);
       
       // Add breakeven points if available
@@ -1166,7 +1166,7 @@ cat >> js/components/enhanced-sensitivity-analyzer.js << 'EOL'
       // Add table header row
       const headerRow = [this.getVariableLabel(this.results.variable)];
       
-      const vendors = this.results.vendor === 'all' ? 
+      const vendors = this.results.vendor == 'all' ? 
         Object.keys(window.vendorData) : 
         [this.results.vendor, 'portnox']; // Always include Portnox for comparison
       
@@ -1267,7 +1267,7 @@ cat >> js/components/enhanced-sensitivity-analyzer.js << 'EOL'
         doc.text(`Variable: ${this.getVariableLabel(this.results.variable)}`, 20, 55);
         doc.text(`Range: ${this.results.minValue} to ${this.results.maxValue}`, 20, 63);
         doc.text(`Steps: ${this.results.steps}`, 20, 71);
-        doc.text(`Vendor(s): ${this.results.vendor === 'all' ? 'All Vendors' : window.vendorData[this.results.vendor]?.name || this.results.vendor}`, 20, 79);
+        doc.text(`Vendor(s): ${this.results.vendor == 'all' ? 'All Vendors' : window.vendorData[this.results.vendor]?.name || this.results.vendor}`, 20, 79);
         
         // Add breakeven points if available
         if (this.results.breakevenPoints && Object.keys(this.results.breakevenPoints).length > 0) {
@@ -1312,7 +1312,7 @@ cat >> js/components/enhanced-sensitivity-analyzer.js << 'EOL'
         // Add header row
         const headerRow = [this.getVariableLabel(this.results.variable)];
         
-        const vendors = this.results.vendor === 'all' ?
+        const vendors = this.results.vendor == 'all' ?
           Object.keys(window.vendorData).slice(0, 3) : // Limit to first 3 vendors for PDF
           [this.results.vendor, 'portnox']; // Always include Portnox for comparison
         

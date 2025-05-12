@@ -347,7 +347,7 @@ const TCOWizard = (function() {
         
         steps.forEach(step => {
             navHTML += `
-                <li class="wizard-step ${currentStep === step.id ? 'active' : ''}" data-step="${step.id}">
+                <li class="wizard-step ${currentStep == step.id ? 'active' : ''}" data-step="${step.id}">
                     <div class="step-number">${step.id}</div>
                     <div class="step-info">
                         <div class="step-title">${step.title}</div>
@@ -377,7 +377,7 @@ const TCOWizard = (function() {
                 const stepNumber = parseInt(stepEl.dataset.step);
                 
                 // Only allow clicking on completed steps or the current step + 1
-                if (stepNumber < currentStep || stepNumber === currentStep + 1) {
+                if (stepNumber < currentStep || stepNumber == currentStep + 1) {
                     goToStep(stepNumber);
                 }
             }
@@ -676,7 +676,7 @@ const TCOWizard = (function() {
                 updateWizardUI();
                 
                 // Update review page if going to last step
-                if (currentStep === totalSteps) {
+                if (currentStep == totalSteps) {
                     updateReviewPage();
                 }
             }
@@ -705,7 +705,7 @@ const TCOWizard = (function() {
             updateWizardUI();
             
             // Update review page if going to last step
-            if (currentStep === totalSteps) {
+            if (currentStep == totalSteps) {
                 updateReviewPage();
             }
         }
@@ -719,7 +719,7 @@ const TCOWizard = (function() {
             
             step.classList.remove('active', 'completed');
             
-            if (stepId === currentStep) {
+            if (stepId == currentStep) {
                 step.classList.add('active');
             } else if (stepId < currentStep) {
                 step.classList.add('completed');
@@ -737,8 +737,8 @@ const TCOWizard = (function() {
         }
         
         // Update buttons
-        prevButton.style.display = currentStep === 1 ? 'none' : 'block';
-        nextButton.textContent = currentStep === totalSteps ? 'Calculate TCO' : 'Next';
+        prevButton.style.display = currentStep == 1 ? 'none' : 'block';
+        nextButton.textContent = currentStep == totalSteps ? 'Calculate TCO' : 'Next';
     }
     
     // Validate current step
@@ -829,21 +829,21 @@ const TCOWizard = (function() {
         // Pass data to calculator
         if (typeof window.Calculator !== 'undefined') {
             // Update calculator state
-            if (typeof window.Calculator.updateState === 'function') {
+            if (typeof window.Calculator.updateState == 'function') {
                 window.Calculator.updateState(wizardData);
             }
             
             // Calculate TCO
-            if (typeof window.Calculator.calculateTCO === 'function') {
+            if (typeof window.Calculator.calculateTCO == 'function') {
                 window.Calculator.calculateTCO();
             }
         } else if (typeof window.EnhancedCalculator !== 'undefined') {
             // Use EnhancedCalculator if available
-            if (typeof window.EnhancedCalculator.updateState === 'function') {
+            if (typeof window.EnhancedCalculator.updateState == 'function') {
                 window.EnhancedCalculator.updateState(wizardData);
             }
             
-            if (typeof window.EnhancedCalculator.calculateTCO === 'function') {
+            if (typeof window.EnhancedCalculator.calculateTCO == 'function') {
                 window.EnhancedCalculator.calculateTCO();
             }
         }

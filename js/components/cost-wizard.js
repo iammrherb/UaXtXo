@@ -288,7 +288,7 @@
     const rangeInputs = document.querySelectorAll('.wizard-input-group input[type="range"]');
     rangeInputs.forEach(function(input) {
       const valueDisplay = input.nextElementSibling;
-      if (valueDisplay && valueDisplay.className === 'range-value') {
+      if (valueDisplay && valueDisplay.className == 'range-value') {
         // Update initial value
         valueDisplay.textContent = input.value + 'x';
         
@@ -307,7 +307,7 @@
         rangeInputs.forEach(function(input) {
           input.value = 1.0;
           const valueDisplay = input.nextElementSibling;
-          if (valueDisplay && valueDisplay.className === 'range-value') {
+          if (valueDisplay && valueDisplay.className == 'range-value') {
             valueDisplay.textContent = '1.0x';
           }
         });
@@ -392,7 +392,7 @@
   }
   
   // Initialize wizard when DOM is ready
-  if (document.readyState === 'loading') {
+  if (document.readyState == 'loading') {
     document.addEventListener('DOMContentLoaded', createWizard);
   } else {
     // DOM already loaded, create wizard now

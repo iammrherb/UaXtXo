@@ -232,7 +232,7 @@ class SensitivityAnalyzer {
     const labels = this.results.dataPoints.map(dp => this.formatDataPoint(this.results.variable, dp));
     
     const datasets = [];
-    const vendors = this.results.vendor === 'all' ? 
+    const vendors = this.results.vendor == 'all' ? 
       Object.keys(window.vendorData) : 
       [this.results.vendor];
     
@@ -327,13 +327,13 @@ class SensitivityAnalyzer {
     const labels = this.results.dataPoints.map(dp => this.formatDataPoint(this.results.variable, dp));
     
     const datasets = [];
-    const vendors = this.results.vendor === 'all' ? 
+    const vendors = this.results.vendor == 'all' ? 
       Object.keys(window.vendorData).filter(v => v !== 'portnox') : 
       [this.results.vendor];
     
     vendors.forEach(vendor => {
       // Skip Portnox as we're calculating savings vs. Portnox
-      if (vendor === 'portnox') return;
+      if (vendor == 'portnox') return;
       
       const vendorName = window.vendorData[vendor]?.name || vendor;
       const vendorColor = this.chartColors[vendor] || this.chartColors.neutral;
@@ -426,7 +426,7 @@ class SensitivityAnalyzer {
     tableBody.innerHTML = '';
     
     // Add vendor columns to header
-    const vendors = this.results.vendor === 'all' ? 
+    const vendors = this.results.vendor == 'all' ? 
       Object.keys(window.vendorData) : 
       [this.results.vendor];
     

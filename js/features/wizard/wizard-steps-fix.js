@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (index + 1 < stepNumber) {
         progStep.classList.add('completed');
         progStep.classList.remove('active');
-      } else if (index + 1 === stepNumber) {
+      } else if (index + 1 == stepNumber) {
         progStep.classList.add('active');
         progStep.classList.remove('completed');
       } else {
@@ -37,12 +37,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const nextButton = document.getElementById('next-step');
     
     if (prevButton) {
-      prevButton.style.display = stepNumber === 1 ? 'none' : 'block';
+      prevButton.style.display = stepNumber == 1 ? 'none' : 'block';
     }
     
     if (nextButton) {
       const totalSteps = steps.length;
-      nextButton.textContent = stepNumber === totalSteps ? 'Generate Report' : 'Next Step';
+      nextButton.textContent = stepNumber == totalSteps ? 'Generate Report' : 'Next Step';
     }
   }
   

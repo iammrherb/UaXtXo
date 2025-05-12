@@ -3,7 +3,7 @@
  * Enhanced version with improved report generation
  */
 // Check if UIController class already exists to prevent redeclaration
-if (typeof UIController === 'undefined') {
+if (typeof UIController == 'undefined') {
   class UIController {
     constructor() {
       this.activeVendor = 'cisco';
@@ -26,7 +26,7 @@ if (typeof UIController === 'undefined') {
         
         // Keyboard accessibility
         card.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (e.key == 'Enter' || e.key == ' ') {
             e.preventDefault();
             const vendor = card.getAttribute('data-vendor');
             if (vendor) {
@@ -158,10 +158,10 @@ if (typeof UIController === 'undefined') {
       // Update UI
       document.querySelectorAll('.vendor-card').forEach(card => {
         const cardVendor = card.getAttribute('data-vendor');
-        card.classList.toggle('active', cardVendor === vendor);
+        card.classList.toggle('active', cardVendor == vendor);
         
         // Update ARIA attributes
-        if (cardVendor === vendor) {
+        if (cardVendor == vendor) {
           card.setAttribute('aria-selected', 'true');
         } else {
           card.setAttribute('aria-selected', 'false');
@@ -231,7 +231,7 @@ if (typeof UIController === 'undefined') {
       
       // If current active tab is not visible in this view, switch to first visible tab
       const activeTab = document.querySelector('.tab-button.active');
-      if (activeTab && activeTab.style.display === 'none') {
+      if (activeTab && activeTab.style.display == 'none') {
         const firstVisibleTab = document.querySelector('.tab-button:not([style*="display: none"])');
         if (firstVisibleTab && window.tabManager) {
           window.tabManager.setActiveTab(firstVisibleTab.getAttribute('data-tab'));
@@ -969,7 +969,7 @@ if (typeof UIController === 'undefined') {
       if (!metricsContainer) return;
       
       const selectedIndustry = document.getElementById('industry-selector')?.value;
-      if (!selectedIndustry || selectedIndustry === 'none' || !window.industryTemplates[selectedIndustry]) {
+      if (!selectedIndustry || selectedIndustry == 'none' || !window.industryTemplates[selectedIndustry]) {
         metricsContainer.classList.add('hidden');
         return;
       }
@@ -1013,7 +1013,7 @@ if (typeof UIController === 'undefined') {
      * Apply industry template
      */
     applyIndustryTemplate(templateKey) {
-      if (templateKey === 'none' || !window.industryTemplates) return;
+      if (templateKey == 'none' || !window.industryTemplates) return;
       
       const template = window.industryTemplates[templateKey];
       if (!template || !template.defaults) return;
@@ -1216,7 +1216,7 @@ if (typeof UIController === 'undefined') {
         
         // Column headers for vendors
         const vendors = Object.keys(results).filter(key => 
-          typeof results[key] === 'object' && 
+          typeof results[key] == 'object' && 
           results[key] !== null && 
           key !== 'implementationResults' &&
           window.vendorData[key]
@@ -1264,12 +1264,12 @@ if (typeof UIController === 'undefined') {
         const csvContent = csv.map(row => {
           return row.map(cell => {
             // Format numbers as currency if needed
-            if (typeof cell === 'number') {
+            if (typeof cell == 'number') {
               return window.formatCurrency(cell).replace(/\$/g, '');
             }
             
             // Escape commas in text
-            if (typeof cell === 'string' && cell.includes(',')) {
+            if (typeof cell == 'string' && cell.includes(',')) {
               return `"${cell}"`;
             }
             

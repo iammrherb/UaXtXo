@@ -45,7 +45,7 @@ class IndustrySelectorComponent {
    */
   handleIndustryChange(event) {
     const industryId = event.target.value;
-    if (industryId === 'none') {
+    if (industryId == 'none') {
       // Clear industry-specific content
       this.clearIndustryContent();
       return;
@@ -83,7 +83,7 @@ class IndustrySelectorComponent {
       const input = document.getElementById(id);
       if (!input) return;
       
-      if (input.type === 'checkbox') {
+      if (input.type == 'checkbox') {
         input.checked = value;
         
         // Trigger change event to show dependent fields
@@ -93,7 +93,7 @@ class IndustrySelectorComponent {
         input.value = value;
         
         // For range inputs, update the displayed value
-        if (input.type === 'range') {
+        if (input.type == 'range') {
           const valueDisplay = document.getElementById(`${id}-value`);
           if (valueDisplay) {
             valueDisplay.textContent = value + '%';
@@ -216,7 +216,7 @@ class IndustrySelectorComponent {
    */
   displayChallengesMitigated(challenges) {
     const container = document.getElementById('spotlight-insights');
-    if (!container || !challenges || challenges.length === 0) return;
+    if (!container || !challenges || challenges.length == 0) return;
     
     // Create challenges content
     let html = `

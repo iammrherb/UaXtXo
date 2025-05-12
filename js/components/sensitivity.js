@@ -69,6 +69,10 @@ const SensitivityAnalyzer = (function() {
     
     // Create sensitivity chart
     function createSensitivityChart(ctx) {
+  // Check if chart instance already exists and destroy it
+  if (window.chartInstances && window.chartInstances[chartId]) {
+    window.chartInstances[chartId].destroy();
+  }
         return new Chart(ctx, {
             type: 'line',
             data: {
@@ -270,7 +274,7 @@ const SensitivityAnalyzer = (function() {
         const activeVendor = document.querySelector('.vendor-card.active')?.dataset.vendor || defaultParams.vendor;
         
         // Determine which chart to use
-        const chart = chartId === 'sensitivity-chart-sidebar' ? sidebarChart : sensitivityChart;
+        const chart = chartId == 'sensitivity-chart-sidebar' ? sidebarChart : sensitivityChart;
         
         // Generate data points
         setTimeout(() => {
@@ -376,10 +380,10 @@ const SensitivityAnalyzer = (function() {
         
         // License costs
         let annualLicenseCost = 0;
-        if (vendorInfo.licenseType === 'Subscription') {
+        if (vendorInfo.licenseType == 'Subscription') {
             // For subscription, annual fee per device
             annualLicenseCost = deviceCount * vendorInfo.baseCostPerDevice;
-        } else if (vendorInfo.licenseType === 'Perpetual + Support') {
+        } else if (vendorInfo.licenseType == 'Perpetual + Support') {
             // For perpetual, one-time fee + support
             const perpetualLicense = deviceCount * vendorInfo.baseCostPerDevice;
             const annualSupport = perpetualLicense * 0.2; // 20% annual support

@@ -314,7 +314,7 @@ const EnhancedCalculator = (function() {
         const vendorFactors = vendorCostFactors[vendor];
         
         // Scale costs based on device count
-        const deviceScaleFactor = deviceCount / (orgSize === 'small' ? 500 : orgSize === 'medium' ? 2500 : 7500);
+        const deviceScaleFactor = deviceCount / (orgSize == 'small' ? 500 : orgSize == 'medium' ? 2500 : 7500);
         
         // Base costs
         let licensingCost = vendorFactors.licensingCost[orgSize] * deviceScaleFactor;
@@ -324,7 +324,7 @@ const EnhancedCalculator = (function() {
         // Adjust for multiple locations
         if (hasMultipleLocations) {
             // Hardware cost increases with locations for on-prem
-            if (vendorFactors.type === 'on-premise') {
+            if (vendorFactors.type == 'on-premise') {
                 hardwareCost *= (1 + (Math.log10(locationCount) * 0.5));
             }
             
@@ -344,7 +344,7 @@ const EnhancedCalculator = (function() {
         }
         
         // Adjust for cloud integration
-        if (cloudIntegration && vendorFactors.type === 'on-premise') {
+        if (cloudIntegration && vendorFactors.type == 'on-premise') {
             implementationCost *= 1.15; // 15% increase
             licensingCost *= 1.1; // 10% increase for cloud connectors
         }
@@ -365,7 +365,7 @@ const EnhancedCalculator = (function() {
         const totalMaintenanceCost = annualMaintenanceCost * yearsToProject;
         
         // Calculate FTE cost
-        const fteCostFactor = vendorFactors.fteCost[orgSize] * (deviceCount / (orgSize === 'small' ? 500 : orgSize === 'medium' ? 2500 : 7500));
+        const fteCostFactor = vendorFactors.fteCost[orgSize] * (deviceCount / (orgSize == 'small' ? 500 : orgSize == 'medium' ? 2500 : 7500));
         const annualFteCost = fteCostFactor * 140000; // $140,000 per FTE
         const totalFteCost = annualFteCost * yearsToProject;
         
@@ -442,9 +442,9 @@ const EnhancedCalculator = (function() {
         let implementationCost = 5000; // Base implementation cost
         
         // Scale implementation cost based on organization size
-        if (orgSize === 'medium') {
+        if (orgSize == 'medium') {
             implementationCost = 10000;
-        } else if (orgSize === 'large') {
+        } else if (orgSize == 'large') {
             implementationCost = 20000;
         }
         
@@ -473,13 +473,13 @@ const EnhancedCalculator = (function() {
         
         // Calculate FTE cost - much lower for cloud
         const fteCostFactor = 0.1; // Base 0.1 FTE for small
-        if (orgSize === 'medium') {
+        if (orgSize == 'medium') {
             fteCostFactor = 0.15;
-        } else if (orgSize === 'large') {
+        } else if (orgSize == 'large') {
             fteCostFactor = 0.2;
         }
         
-        const deviceScaleFactor = deviceCount / (orgSize === 'small' ? 500 : orgSize === 'medium' ? 2500 : 7500);
+        const deviceScaleFactor = deviceCount / (orgSize == 'small' ? 500 : orgSize == 'medium' ? 2500 : 7500);
         const annualFteCost = fteCostFactor * deviceScaleFactor * 140000; // $140,000 per FTE
         const totalFteCost = annualFteCost * yearsToProject;
         
@@ -491,9 +491,9 @@ const EnhancedCalculator = (function() {
         
         // Implementation time - much faster than traditional
         let implementationTime = 0.5; // 0.5 weeks for small
-        if (orgSize === 'medium') {
+        if (orgSize == 'medium') {
             implementationTime = 1;
-        } else if (orgSize === 'large') {
+        } else if (orgSize == 'large') {
             implementationTime = 2;
         }
         
@@ -506,7 +506,7 @@ const EnhancedCalculator = (function() {
             implementationTime *= 1.1;
         }
         
-        if (customPolicies && policyComplexity === 'high') {
+        if (customPolicies && policyComplexity == 'high') {
             implementationTime *= 1.1;
         }
         
@@ -542,7 +542,7 @@ const EnhancedCalculator = (function() {
         };
         
         // Calculate vendor costs
-        const currentVendorCosts = state.currentVendor === 'portnox' 
+        const currentVendorCosts = state.currentVendor == 'portnox' 
             ? calculatePortnoxCosts(params) 
             : calculateVendorCosts(state.currentVendor, params);
         
@@ -761,7 +761,7 @@ const EnhancedCalculator = (function() {
         for (let year = 1; year <= years; year++) {
             let yearCost = 0;
             
-            if (year === 1) {
+            if (year == 1) {
                 // First year includes one-time costs
                 yearCost += implementationCost + hardwareCost;
             }

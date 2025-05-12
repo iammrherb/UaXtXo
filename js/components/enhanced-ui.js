@@ -22,7 +22,7 @@ const EnhancedUI = (function() {
         if (!darkModeToggle) return;
         
         // Check for saved preference
-        const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
+        const darkModeEnabled = localStorage.getItem('darkMode') == 'true';
         if (darkModeEnabled) {
             document.body.classList.add('dark-mode');
             darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
@@ -127,14 +127,14 @@ const EnhancedUI = (function() {
             
             // Close modal on click outside
             helpModal.addEventListener('click', (e) => {
-                if (e.target === helpModal) {
+                if (e.target == helpModal) {
                     helpModal.classList.remove('active');
                 }
             });
             
             // Close modal on ESC key
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && helpModal.classList.contains('active')) {
+                if (e.key == 'Escape' && helpModal.classList.contains('active')) {
                     helpModal.classList.remove('active');
                 }
             });
