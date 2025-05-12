@@ -4,8 +4,54 @@
 (function() {
     console.log("Implementation Fix: Applying specific fixes for the TCO Analyzer");
     
+    // Create a canvas checker and creator
+    const CanvasManager = {
+        ensureCanvas: function(id, parentSelector, width, height) {
+            let canvas = document.getElementById(id);
+            if (!canvas) {
+                console.log(`Creating missing canvas: ${id}`);
+                const parent = document.querySelector(parentSelector);
+                if (parent) {
+                    canvas = document.createElement('canvas');
+                    canvas.id = id;
+                    if (width) canvas.width = width;
+                    if (height) canvas.height = height;
+                    parent.appendChild(canvas);
+                    return canvas;
+                }
+                console.warn(`Parent element not found for canvas: ${id}`);
+                return null;
+            }
+            return canvas;
+        },
+        
+        createMissingCanvases: function() {
+            // TCO comparison chart
+            this.ensureCanvas('tco-comparison-chart', '.chart-card:nth-child(1)');
+            
+            // Cumulative cost chart
+            this.ensureCanvas('cumulative-cost-chart', '.chart-card:nth-child(4)');
+            
+            // Breakdown charts
+            this.ensureCanvas('current-breakdown-chart', '.chart-card:nth-child(2)');
+            this.ensureCanvas('alternative-breakdown-chart', '.chart-card:nth-child(3)');
+            
+            // Implementation comparison chart
+            this.ensureCanvas('implementation-comparison-chart', '#implementation-panel .chart-card');
+            
+            // Feature comparison chart
+            this.ensureCanvas('feature-comparison-chart', '#features-panel .chart-card');
+            
+            // ROI chart
+            this.ensureCanvas('roi-chart', '#roi-panel .chart-card');
+        }
+    };
+    
     // Fix selector issue in final-patch.js
     document.addEventListener("DOMContentLoaded", function() {
+        // Create missing canvases
+        CanvasManager.createMissingCanvases();
+        
         // Fix button selector
         const showResultsBtn = document.getElementById('calculate-btn');
         if (showResultsBtn) {
@@ -14,6 +60,13 @@
                 if (resultsContainer) {
                     resultsContainer.classList.remove('hidden');
                     resultsContainer.scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Initialize charts if ChartManager is available
+                    if (window.ChartManager && window.ChartManager.initializeCharts) {
+                        setTimeout(() => {
+                            window.ChartManager.initializeCharts();
+                        }, 300);
+                    }
                 }
             });
             console.log("Implementation Fix: Added event listener to calculate button");
@@ -37,6 +90,50 @@
                     const panel = document.getElementById(`${tabId}-panel`);
                     if (panel) {
                         panel.classList.add('active');
+                        
+                        // Re-initialize charts for this panel
+                        if (window.ChartManager) {
+                            setTimeout(() => {
+                                // Create any missing canvases first
+                                CanvasManager.createMissingCanvases();
+                                
+                                // Reinitialize charts
+                                switch (tabId) {
+                                    case 'comparison':
+                                        if (window.ChartManager.initializeTcoComparisonChart) {
+                                            window.ChartManager.initializeTcoComparisonChart();
+                                        }
+                                        if (window.ChartManager.initializeCurrentBreakdownChart) {
+                                            window.ChartManager.initializeCurrentBreakdownChart();
+                                        }
+                                        if (window.ChartManager.initializeAlternativeBreakdownChart) {
+                                            window.ChartManager.initializeAlternativeBreakdownChart();
+                                        }
+                                        if (window.ChartManager.initializeCumulativeCostChart) {
+                                            window.ChartManager.initializeCumulativeCostChart();
+                                        }
+                                        break;
+                                        
+                                    case 'implementation':
+                                        if (window.ChartManager.initializeImplementationComparisonChart) {
+                                            window.ChartManager.initializeImplementationComparisonChart();
+                                        }
+                                        break;
+                                        
+                                    case 'features':
+                                        if (window.ChartManager.initializeFeatureComparisonChart) {
+                                            window.ChartManager.initializeFeatureComparisonChart();
+                                        }
+                                        break;
+                                        
+                                    case 'roi':
+                                        if (window.ChartManager.initializeRoiChart) {
+                                            window.ChartManager.initializeRoiChart();
+                                        }
+                                        break;
+                                }
+                            }, 100);
+                        }
                     }
                 });
             });
