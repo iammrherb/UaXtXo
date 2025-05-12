@@ -71,7 +71,7 @@ const WizardController = (function() {
     }
     
     // Show the current step
-    function showCurrentStep() { try {
+    function showCurrentStep() {
         // Hide all steps
         document.querySelectorAll('.wizard-step-content').forEach(step => {
             step.classList.remove('active');
@@ -100,7 +100,6 @@ const WizardController = (function() {
         
         // Update buttons
         updateNavigationButtons();
-        } catch (error) { console.error("Error in showCurrentStep:", error); }
     }
     
     // Update the navigation buttons based on current step

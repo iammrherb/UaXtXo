@@ -17,10 +17,8 @@
     <!-- Core CSS -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/wizard.css">
-    <link rel="stylesheet" href="css/fixes/wizard-enhanced.css">
     <link rel="stylesheet" href="css/containers.css">
     <link rel="stylesheet" href="css/animations.css">
-    <link rel="stylesheet" href="css/fixes/notifications-enhanced.css">
     <link rel="stylesheet" href="css/fixes/notifications.css">
     <link rel="stylesheet" href="css/fixes/enhanced-insights.css">
     <link rel="stylesheet" href="css/fixes/navigation-fix.css">
@@ -172,17 +170,7 @@
                     <div class="step-header">
                         <h2>Industry & Compliance Requirements</h2>
                         <p>Select your industry to see relevant compliance frameworks and security requirements</p>
-    <!-- Wizard Navigation -->
-    <div class="wizard-navigation">
-        <button id="prev-step" class="btn btn-outline">
-            <i class="fas fa-chevron-left"></i> Previous
-        </button>
-        <button id="next-step" class="btn btn-primary">
-            Next <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
                     </div>
-
                     
                     <div class="industry-container">
                         <div class="industry-selector-card">
@@ -217,17 +205,7 @@
                     <div class="step-header">
                         <h2>Organization Configuration</h2>
                         <p>Provide details about your organization to customize the analysis</p>
-    <!-- Wizard Navigation -->
-    <div class="wizard-navigation">
-        <button id="prev-step" class="btn btn-outline">
-            <i class="fas fa-chevron-left"></i> Previous
-        </button>
-        <button id="next-step" class="btn btn-primary">
-            Next <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
                     </div>
-
                     
                     <div class="organization-form">
                         <div class="form-grid">
@@ -302,17 +280,7 @@
                     <div class="step-header">
                         <h2>Advanced Cost Configuration</h2>
                         <p>Fine-tune cost parameters for more accurate analysis</p>
-    <!-- Wizard Navigation -->
-    <div class="wizard-navigation">
-        <button id="prev-step" class="btn btn-outline">
-            <i class="fas fa-chevron-left"></i> Previous
-        </button>
-        <button id="next-step" class="btn btn-primary">
-            Next <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
                     </div>
-
                     
                     <div class="cost-configuration">
                         <div class="cost-tabs">
@@ -430,17 +398,7 @@
                     <div class="step-header">
                         <h2>Review Configuration</h2>
                         <p>Review your inputs and calculate the TCO comparison</p>
-    <!-- Wizard Navigation -->
-    <div class="wizard-navigation">
-        <button id="prev-step" class="btn btn-outline">
-            <i class="fas fa-chevron-left"></i> Previous
-        </button>
-        <button id="next-step" class="btn btn-primary">
-            Next <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
                     </div>
-
                     
                     <div class="review-container">
                         <div class="review-grid">
@@ -805,7 +763,15 @@
         </footer>
     </div>
     
-<!-- Wizard Navigation moved inside each step -->
+    <!-- Wizard Navigation -->
+    <div class="wizard-navigation">
+        <button id="prev-step" class="btn btn-outline">
+            <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        <button id="next-step" class="btn btn-primary">
+            Next <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
     
     <!-- Modals -->
     <div id="help-modal" class="modal">
@@ -844,7 +810,6 @@
     <script src="libs/js/aos.js"></script>
     <script src="libs/js/particles.min.js"></script>
     <script src="js/utils/error-handler.js"></script>
-    <script src="js/utils/notification-manager.js"></script>
     <script src="libs/js/lodash.min.js"></script>
     <script src="libs/js/jspdf.umd.min.js"></script>
     <script src="libs/js/jspdf.plugin.autotable.min.js"></script>
@@ -858,7 +823,6 @@
     <script src="js/managers/loading.js"></script>
     <script src="js/managers/notification.js"></script>
     <script src="js/managers/wizard.js"></script>
-    <script src="js/wizards/new/wizard-implementation.js"></script>
     <script src="js/managers/state.js"></script>
     
     <!-- Components -->

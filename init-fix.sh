@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# Portnox Total Cost Analyzer Fix and Enhancement Script
-# This script fixes critical issues and enhances the Portnox TCO Analyzer application
-# Audience focus: Buyers, Executive Teams, Finance, Technical, Security and Compliance teams
+# Portnox TCO Analyzer Direct Syntax and Navigation Fixes
+# This script directly addresses the specific syntax errors and UI positioning issues
 
 # Set script to exit on error
 set -e
@@ -16,7 +15,7 @@ NC='\033[0m' # No Color
 
 # Define project directory (update this to your actual project path)
 PROJECT_DIR="$(pwd)"
-BACKUP_DIR="${PROJECT_DIR}/backup_$(date +%Y%m%d_%H%M%S)"
+BACKUP_DIR="${PROJECT_DIR}/syntax_fix_backup_$(date +%Y%m%d_%H%M%S)"
 
 # Log function
 log() {
@@ -39,228 +38,565 @@ create_backup() {
     log "Creating backup in ${BACKUP_DIR}"
     mkdir -p "${BACKUP_DIR}"
     
-    # Backup JavaScript files
-    mkdir -p "${BACKUP_DIR}/js/wizards" "${BACKUP_DIR}/js/components"
-    cp "${PROJECT_DIR}/js/wizards/wizard-controller.js" "${BACKUP_DIR}/js/wizards/" 2>/dev/null || warn "Could not backup wizard-controller.js"
-    cp "${PROJECT_DIR}/js/components/calculator.js" "${BACKUP_DIR}/js/components/" 2>/dev/null || warn "Could not backup calculator.js"
+    # Backup the specific files we're going to modify
+    mkdir -p "${BACKUP_DIR}/js/wizards" "${BACKUP_DIR}/js/components" "${BACKUP_DIR}/css"
     
-    # Backup CSS files
-    mkdir -p "${BACKUP_DIR}/css"
-    cp "${PROJECT_DIR}/css/wizard.css" "${BACKUP_DIR}/css/" 2>/dev/null || warn "Could not backup wizard.css"
+    # Backup wizard.js
+    if [ -f "${PROJECT_DIR}/js/wizards/wizard-controller.js" ]; then
+        cp "${PROJECT_DIR}/js/wizards/wizard-controller.js" "${BACKUP_DIR}/js/wizards/" || warn "Could not backup wizard-controller.js"
+    fi
     
-    # Backup vendor images
-    mkdir -p "${BACKUP_DIR}/img/vendors"
-    cp -r "${PROJECT_DIR}/img/vendors/"* "${BACKUP_DIR}/img/vendors/" 2>/dev/null || warn "Could not backup vendor images"
+    # Backup calculator.js
+    if [ -f "${PROJECT_DIR}/js/components/calculator.js" ]; then
+        cp "${PROJECT_DIR}/js/components/calculator.js" "${BACKUP_DIR}/js/components/" || warn "Could not backup calculator.js"
+    fi
+    
+    # Backup wizard.css
+    if [ -f "${PROJECT_DIR}/css/wizard.css" ]; then
+        cp "${PROJECT_DIR}/css/wizard.css" "${BACKUP_DIR}/css/" || warn "Could not backup wizard.css"
+    fi
+    
+    # Backup index.html
+    if [ -f "${PROJECT_DIR}/index.html" ]; then
+        cp "${PROJECT_DIR}/index.html" "${BACKUP_DIR}/" || warn "Could not backup index.html"
+    fi
     
     log "Backup completed"
 }
 
-# Fix JavaScript syntax errors
-fix_javascript_errors() {
-    log "Fixing JavaScript syntax errors..."
+# Fix specific syntax errors
+fix_syntax_errors() {
+    log "Fixing specific syntax errors in JavaScript files..."
     
-    # Fix wizard.js invalid left-hand side error (line 355)
+    # Fix wizard.js line 355
     if [ -f "${PROJECT_DIR}/js/wizards/wizard-controller.js" ]; then
-        sed -i.bak '355s/\(.*\)=/\1 =/' "${PROJECT_DIR}/js/wizards/wizard-controller.js" || \
-        warn "Could not fix wizard.js syntax error - manual fix needed at line 355"
+        log "Fixing wizard-controller.js line 355"
+        # Create a temporary file with the fixed content
+        awk 'NR==355 {gsub(/if \(currentStep == totalSteps\) nextButton.innerText = "View Results"/, "if (currentStep === totalSteps) { nextButton.innerText = \"View Results\"; }")} {print}' "${PROJECT_DIR}/js/wizards/wizard-controller.js" > "${PROJECT_DIR}/js/wizards/wizard-controller.js.fixed"
         
-        # Additional potential fixes for wizard.js
-        sed -i.bak 's/if (currentStep == totalSteps)/if (currentStep === totalSteps)/' "${PROJECT_DIR}/js/wizards/wizard-controller.js"
-        sed -i.bak 's/nextButton.innerText = currentStep === totalSteps/nextButton.textContent = currentStep === totalSteps/' "${PROJECT_DIR}/js/wizards/wizard-controller.js"
+        # Replace original with fixed version
+        mv "${PROJECT_DIR}/js/wizards/wizard-controller.js.fixed" "${PROJECT_DIR}/js/wizards/wizard-controller.js"
+        
+        # Additional fixes for wizard.js
+        log "Applying additional fixes to wizard-controller.js"
+        # Fix potential issue with event listener binding
+        sed -i.bak 's/nextButton.addEventListener("click", () => this.nextStep());/nextButton.addEventListener("click", () => { this.nextStep(); });/g' "${PROJECT_DIR}/js/wizards/wizard-controller.js"
+        sed -i.bak 's/prevButton.addEventListener("click", () => this.prevStep());/prevButton.addEventListener("click", () => { this.prevStep(); });/g' "${PROJECT_DIR}/js/wizards/wizard-controller.js"
+        
+        # Fix potential issue with showCurrentStep function
+        sed -i.bak 's/showCurrentStep() {/showCurrentStep() { try {/g' "${PROJECT_DIR}/js/wizards/wizard-controller.js"
+        sed -i.bak '/updateNavigationButtons();/a \ \ \ \ \ \ \ \ } catch (error) { console.error("Error in showCurrentStep:", error); }' "${PROJECT_DIR}/js/wizards/wizard-controller.js"
     else
         warn "Could not locate wizard-controller.js file"
     fi
     
-    # Fix calculator.js invalid left-hand side error (line 315)
+    # Fix calculator.js line 315
     if [ -f "${PROJECT_DIR}/js/components/calculator.js" ]; then
-        sed -i.bak '315s/\(.*\)=/\1 =/' "${PROJECT_DIR}/js/components/calculator.js" || \
-        warn "Could not fix calculator.js syntax error - manual fix needed at line 315"
+        log "Fixing calculator.js line 315"
+        # Create a temporary file with the fixed content
+        awk 'NR==315 {gsub(/if \(currentCost = 0\)/, "if (currentCost === 0)")} {print}' "${PROJECT_DIR}/js/components/calculator.js" > "${PROJECT_DIR}/js/components/calculator.js.fixed"
         
-        # Additional possible fixes for calculator.js
-        sed -i.bak 's/let result = {};/const result = {};/' "${PROJECT_DIR}/js/components/calculator.js"
+        # Replace original with fixed version
+        mv "${PROJECT_DIR}/js/components/calculator.js.fixed" "${PROJECT_DIR}/js/components/calculator.js"
+        
+        # Additional fixes for calculator.js
+        log "Applying additional fixes to calculator.js"
+        # Fix potential issue with event listener binding
+        sed -i.bak 's/calculateButton.addEventListener("click", () => this.calculateTCO());/calculateButton.addEventListener("click", () => { this.calculateTCO(); });/g' "${PROJECT_DIR}/js/components/calculator.js"
+        
+        # Fix potential issue with calculateTCO function
+        sed -i.bak 's/calculateTCO() {/calculateTCO() { try {/g' "${PROJECT_DIR}/js/components/calculator.js"
+        sed -i.bak '/updateUIWithResults(results);/a \ \ \ \ \ \ \ \ } catch (error) { console.error("Error in calculateTCO:", error); }' "${PROJECT_DIR}/js/components/calculator.js"
     else
         warn "Could not locate calculator.js file"
     fi
     
-    # Create additional fixes for wizard functionality
-    cat > "${PROJECT_DIR}/js/fixes/wizard-fixes.js" << 'EOL'
-// Wizard functionality fixes
-document.addEventListener('DOMContentLoaded', function() {
-    // Fix for Next button not working
-    const nextButton = document.getElementById('next-step');
-    const prevButton = document.getElementById('prev-step');
+    log "Syntax errors fixed"
+}
+
+# Create completely new wizard functionality to ensure it works
+create_new_wizard() {
+    log "Creating new wizard functionality..."
     
-    if (nextButton) {
-        // Remove existing event listeners
-        const newNextButton = nextButton.cloneNode(true);
-        if (nextButton.parentNode) {
-            nextButton.parentNode.replaceChild(newNextButton, nextButton);
+    # Create directory for the new wizard implementation
+    mkdir -p "${PROJECT_DIR}/js/wizards/new"
+    
+    # Create a completely new wizard implementation
+    cat > "${PROJECT_DIR}/js/wizards/new/wizard-implementation.js" << 'EOL'
+/**
+ * Portnox TCO Analyzer - New Wizard Implementation
+ * This is a complete rewrite of the wizard functionality to ensure it works correctly
+ */
+const TCOWizard = (function() {
+    // Private variables
+    let currentStep = 1;
+    const totalSteps = 5;
+    
+    // DOM elements
+    let wizardContainer;
+    let wizardSteps;
+    let prevButton;
+    let nextButton;
+    let stepIndicators;
+    
+    // Configuration
+    const config = {
+        selectors: {
+            container: '.wizard-container',
+            steps: '.wizard-step',
+            prevButton: '#prev-step',
+            nextButton: '#next-step',
+            progressBar: '#wizard-progress-fill',
+            stepIndicators: '.wizard-step-indicator'
+        },
+        classes: {
+            active: 'active',
+            completed: 'completed'
+        }
+    };
+    
+    // Initialize wizard
+    function init() {
+        console.log('Initializing TCO Wizard...');
+        
+        // Find DOM elements
+        wizardContainer = document.querySelector(config.selectors.container);
+        wizardSteps = document.querySelectorAll(config.selectors.steps);
+        prevButton = document.querySelector(config.selectors.prevButton);
+        nextButton = document.querySelector(config.selectors.nextButton);
+        stepIndicators = document.querySelectorAll(config.selectors.stepIndicators);
+        
+        if (!wizardContainer || !wizardSteps.length) {
+            console.error('Wizard container or steps not found');
+            return;
         }
         
-        // Add working event listener
-        newNextButton.addEventListener('click', function() {
-            if (typeof WizardController !== 'undefined' && WizardController.nextStep) {
-                WizardController.nextStep();
-            } else {
-                console.error('WizardController not found or nextStep method not available');
-            }
-        });
+        // Setup navigation
+        setupNavigation();
+        
+        // Show initial step
+        showStep(currentStep);
+        
+        // Setup event listeners for wizard interactions (vendor selection, etc.)
+        setupWizardInteractions();
+        
+        console.log('TCO Wizard initialized');
     }
     
-    if (prevButton) {
-        // Remove existing event listeners
-        const newPrevButton = prevButton.cloneNode(true);
-        if (prevButton.parentNode) {
-            prevButton.parentNode.replaceChild(newPrevButton, prevButton);
+    // Setup navigation buttons
+    function setupNavigation() {
+        if (prevButton) {
+            prevButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                goToPrevStep();
+            });
         }
         
-        // Add working event listener
-        newPrevButton.addEventListener('click', function() {
-            if (typeof WizardController !== 'undefined' && WizardController.prevStep) {
-                WizardController.prevStep();
-            } else {
-                console.error('WizardController not found or prevStep method not available');
-            }
-        });
+        if (nextButton) {
+            nextButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                goToNextStep();
+            });
+        }
+        
+        // Setup step indicators if they exist
+        if (stepIndicators && stepIndicators.length) {
+            stepIndicators.forEach(indicator => {
+                indicator.addEventListener('click', function() {
+                    const step = parseInt(this.dataset.step);
+                    if (step <= currentStep) {
+                        goToStep(step);
+                    }
+                });
+            });
+        }
     }
     
-    // Initialize wizard if not already initialized
-    if (typeof WizardController !== 'undefined' && WizardController.init) {
+    // Go to next step
+    function goToNextStep() {
+        if (validateCurrentStep()) {
+            if (currentStep < totalSteps) {
+                goToStep(currentStep + 1);
+            } else {
+                // This is the last step, perform final action (show results)
+                showResults();
+            }
+        }
+    }
+    
+    // Go to previous step
+    function goToPrevStep() {
+        if (currentStep > 1) {
+            goToStep(currentStep - 1);
+        }
+    }
+    
+    // Go to specific step
+    function goToStep(step) {
+        if (step < 1 || step > totalSteps) {
+            console.error('Invalid step number:', step);
+            return;
+        }
+        
+        currentStep = step;
+        showStep(currentStep);
+    }
+    
+    // Show specific step
+    function showStep(step) {
         try {
-            WizardController.init();
-            console.log('Wizard controller initialized successfully');
-        } catch (e) {
-            console.error('Error initializing wizard controller:', e);
+            // Hide all steps
+            wizardSteps.forEach(stepEl => {
+                stepEl.classList.remove(config.classes.active);
+            });
+            
+            // Show current step
+            const currentStepElement = wizardSteps[step - 1];
+            if (currentStepElement) {
+                currentStepElement.classList.add(config.classes.active);
+                
+                // Scroll to the step
+                currentStepElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            
+            // Update step indicators
+            updateStepIndicators();
+            
+            // Update navigation buttons
+            updateNavigationButtons();
+            
+            // Update progress bar if exists
+            updateProgressBar();
+            
+            console.log(`Showing step ${step} of ${totalSteps}`);
+        } catch (error) {
+            console.error('Error showing step:', error);
         }
     }
-});
-EOL
     
-    # Add script reference to index.html
-    if [ -f "${PROJECT_DIR}/index.html" ]; then
-        if ! grep -q "wizard-fixes.js" "${PROJECT_DIR}/index.html"; then
-            sed -i.bak '/<script src="js\/final-patch.js"><\/script>/a\    <script src="js\/fixes\/wizard-fixes.js"><\/script>' "${PROJECT_DIR}/index.html"
-        fi
-    else
-        warn "Could not locate index.html file"
-    fi
+    // Update step indicators
+    function updateStepIndicators() {
+        if (!stepIndicators || !stepIndicators.length) return;
+        
+        stepIndicators.forEach(indicator => {
+            const step = parseInt(indicator.dataset.step);
+            
+            indicator.classList.remove(config.classes.active, config.classes.completed);
+            
+            if (step === currentStep) {
+                indicator.classList.add(config.classes.active);
+            } else if (step < currentStep) {
+                indicator.classList.add(config.classes.completed);
+            }
+        });
+    }
     
-    log "JavaScript fixes applied"
-}
+    // Update navigation buttons
+    function updateNavigationButtons() {
+        if (prevButton) {
+            prevButton.disabled = currentStep === 1;
+            prevButton.style.display = currentStep === 1 ? 'none' : 'block';
+        }
+        
+        if (nextButton) {
+            nextButton.textContent = currentStep === totalSteps ? 'View Results' : 'Next';
+        }
+    }
+    
+    // Update progress bar
+    function updateProgressBar() {
+        const progressBar = document.querySelector(config.selectors.progressBar);
+        if (progressBar) {
+            const progress = (currentStep - 1) / (totalSteps - 1) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+    }
+    
+    // Validate current step before proceeding
+    function validateCurrentStep() {
+        try {
+            // Check which step we're on and validate accordingly
+            switch(currentStep) {
+                case 1:
+                    // Vendor selection
+                    const selectedVendor = document.querySelector('.vendor-card.active');
+                    if (!selectedVendor) {
+                        showValidationError('Please select a current NAC vendor or "No NAC" option');
+                        return false;
+                    }
+                    break;
+                
+                case 2:
+                    // Industry selection
+                    const industrySelect = document.getElementById('industry-select');
+                    if (industrySelect && !industrySelect.value) {
+                        showValidationError('Please select your industry');
+                        return false;
+                    }
+                    break;
+                    
+                case 3:
+                    // Organization details
+                    const deviceCount = document.getElementById('device-count');
+                    if (deviceCount && (!deviceCount.value || parseInt(deviceCount.value) <= 0)) {
+                        showValidationError('Please enter a valid device count');
+                        return false;
+                    }
+                    break;
+                    
+                // Add more validation as needed
+            }
+            
+            // If we get here, validation passed
+            return true;
+        } catch (error) {
+            console.error('Error validating step:', error);
+            return false;
+        }
+    }
+    
+    // Show validation error
+    function showValidationError(message) {
+        // Check if we have a notification manager
+        if (typeof NotificationManager !== 'undefined' && NotificationManager.showNotification) {
+            NotificationManager.showNotification({
+                title: 'Validation Error',
+                message: message,
+                type: 'error',
+                duration: 5000
+            });
+        } else {
+            // Fallback to alert
+            alert(message);
+        }
+    }
+    
+    // Show results
+    function showResults() {
+        console.log('Showing results...');
+        
+        // Hide wizard container
+        if (wizardContainer) {
+            wizardContainer.style.display = 'none';
+        }
+        
+        // Show results container
+        const resultsContainer = document.getElementById('results-container');
+        if (resultsContainer) {
+            resultsContainer.classList.remove('hidden');
+            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        // If we have a calculator, calculate the results
+        if (typeof Calculator !== 'undefined' && Calculator.calculateTCO) {
+            try {
+                Calculator.calculateTCO();
+            } catch (error) {
+                console.error('Error calculating TCO:', error);
+            }
+        }
+    }
+    
+    // Setup wizard interactions
+    function setupWizardInteractions() {
+        // Vendor selection
+        const vendorCards = document.querySelectorAll('.vendor-card');
+        vendorCards.forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove active class from all cards
+                vendorCards.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked card
+                this.classList.add('active');
+            });
+        });
+        
+        // Industry selection change
+        const industrySelect = document.getElementById('industry-select');
+        if (industrySelect) {
+            industrySelect.addEventListener('change', function() {
+                // Update compliance frameworks based on industry
+                updateComplianceFrameworks(this.value);
+            });
+        }
+    }
+    
+    // Update compliance frameworks based on selected industry
+    function updateComplianceFrameworks(industry) {
+        const frameworksContainer = document.getElementById('compliance-frameworks');
+        if (!frameworksContainer) return;
+        
+        // Show loading state
+        frameworksContainer.innerHTML = '<div class="loading">Loading compliance frameworks...</div>';
+        
+        // Map of industries to relevant compliance frameworks
+        const industryFrameworks = {
+            healthcare: ['HIPAA', 'HITRUST', 'NIST'],
+            financial: ['PCI DSS', 'SOX', 'GLBA', 'NIST'],
+            education: ['FERPA', 'COPPA', 'NIST'],
+            government: ['FISMA', 'FedRAMP', 'NIST'],
+            manufacturing: ['ISO 27001', 'NIST', 'CMMC'],
+            retail: ['PCI DSS', 'GDPR', 'CCPA'],
+            technology: ['ISO 27001', 'SOC 2', 'NIST'],
+            energy: ['NERC CIP', 'ISO 27001', 'NIST']
+        };
+        
+        // Get relevant frameworks for selected industry
+        const frameworks = industryFrameworks[industry] || [];
+        
+        if (frameworks.length === 0) {
+            frameworksContainer.innerHTML = '<div class="no-frameworks">No specific compliance frameworks for this industry</div>';
+            return;
+        }
+        
+        // Build HTML for frameworks
+        let html = '<div class="frameworks-grid">';
+        frameworks.forEach(framework => {
+            html += `
+                <div class="framework-card">
+                    <div class="framework-header">
+                        <h4>${framework}</h4>
+                        <div class="framework-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                    </div>
+                    <p>Portnox Cloud helps achieve compliance with ${framework} requirements.</p>
+                </div>
+            `;
+        });
+        html += '</div>';
+        
+        // Update container
+        frameworksContainer.innerHTML = html;
+    }
+    
+    // Public API
+    return {
+        init: init,
+        goToStep: goToStep,
+        goToNextStep: goToNextStep,
+        goToPrevStep: goToPrevStep,
+        getCurrentStep: function() { return currentStep; },
+        getTotalSteps: function() { return totalSteps; }
+    };
+})();
 
-# Fix vendor logo loading issues
-fix_vendor_logos() {
-    log "Fixing vendor logo loading issues..."
-    
-    # Ensure vendors directory exists
-    mkdir -p "${PROJECT_DIR}/img/vendors"
-    
-    # Create script to fix image loading
-    cat > "${PROJECT_DIR}/js/fixes/image-loader-fix.js" << 'EOL'
-// Fix vendor logo loading issues
+// Initialize wizard when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Function to handle image loading errors
-    function handleImageError(img) {
-        const vendorName = img.closest('.vendor-card')?.dataset?.vendor || 'unknown';
-        console.warn(`Failed to load image for vendor: ${vendorName}`);
-        
-        // Set appropriate fallback image based on vendor
-        switch(vendorName) {
-            case 'cisco':
-                img.src = 'img/vendors/fallback/cisco.png';
-                break;
-            case 'aruba':
-                img.src = 'img/vendors/fallback/aruba.png';
-                break;
-            case 'forescout':
-                img.src = 'img/vendors/fallback/forescout.png';
-                break;
-            case 'fortinac':
-                img.src = 'img/vendors/fallback/fortinac.png';
-                break;
-            case 'nps':
-                img.src = 'img/vendors/fallback/microsoft.png';
-                break;
-            case 'securew2':
-                img.src = 'img/vendors/fallback/securew2.png';
-                break;
-            default:
-                // Default vendor icon
-                img.src = 'img/vendors/fallback/generic-vendor.png';
-        }
-    }
-    
-    // Apply error handling to all vendor images
-    document.querySelectorAll('.vendor-card img').forEach(img => {
-        img.onerror = function() { handleImageError(this); };
-        
-        // Force reload
-        const currentSrc = img.src;
-        img.src = '';
-        img.src = currentSrc;
-    });
+    // Initialize the new wizard
+    TCOWizard.init();
 });
 EOL
     
-    # Create fallback directory and basic fallback images
-    mkdir -p "${PROJECT_DIR}/img/vendors/fallback"
-    
-    # Create a simple data URI-based fallback image for vendor logos
-    for vendor in cisco aruba forescout fortinac microsoft securew2 generic-vendor; do
-        # Create a simple SVG fallback image
-        cat > "${PROJECT_DIR}/img/vendors/fallback/${vendor}.png" << EOL
-<svg xmlns="http://www.w3.org/2000/svg" width="200" height="80" viewBox="0 0 200 80">
-  <rect width="200" height="80" fill="#f8f9fa" />
-  <text x="100" y="40" font-family="Arial" font-size="14" text-anchor="middle" dominant-baseline="middle">${vendor}</text>
-</svg>
-EOL
-    done
-    
-    # Add script reference to index.html
-    if [ -f "${PROJECT_DIR}/index.html" ]; then
-        if ! grep -q "image-loader-fix.js" "${PROJECT_DIR}/index.html"; then
-            sed -i.bak '/<script src="js\/final-patch.js"><\/script>/a\    <script src="js\/fixes\/image-loader-fix.js"><\/script>' "${PROJECT_DIR}/index.html"
-        fi
-    else
-        warn "Could not locate index.html file"
-    fi
-    
-    log "Vendor logo fixes applied"
+    # Create enhanced CSS for the wizard
+    cat > "${PROJECT_DIR}/css/fixes/wizard-enhanced.css" << 'EOL'
+/**
+ * Enhanced Wizard Styling
+ * Repositions navigation buttons to be directly under each step
+ */
+
+/* Wizard container styling */
+.wizard-container {
+    padding-bottom: 0 !important; /* Remove padding that was used for fixed navigation */
 }
 
-# Fix UI navigation and button placement
-fix_ui_navigation() {
-    log "Fixing UI navigation and button placement..."
-    
-    # Create CSS fixes
-    mkdir -p "${PROJECT_DIR}/css/fixes"
-    cat > "${PROJECT_DIR}/css/fixes/navigation-fix.css" << 'EOL'
-/* Fix navigation button placement and styling */
+/* Wizard step styling */
+.wizard-step {
+    position: relative;
+    padding-bottom: 70px; /* Add padding for the navigation */
+    margin-bottom: 2rem;
+}
+
+/* Navigation styling - positioned at the bottom of each step */
 .wizard-navigation {
+    position: relative !important; /* Override fixed positioning */
+    bottom: auto;
+    left: auto;
+    right: auto;
+    background-color: transparent;
+    border-top: none;
+    box-shadow: none;
+    padding: 1rem 0;
+    margin-top: 1.5rem;
+    z-index: 10;
+}
+
+/* Position the navigation at the bottom of each active step */
+.wizard-step.active .wizard-navigation {
     display: flex;
     justify-content: space-between;
-    padding: 1rem;
-    background-color: #fff;
-    border-top: 1px solid #e0e0e0;
-    position: fixed;
+    position: absolute !important;
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Hide navigation on inactive steps */
+.wizard-step:not(.active) .wizard-navigation {
+    display: none;
+}
+
+/* Ensure navigation buttons are appropriately styled */
 .wizard-navigation button {
     min-width: 120px;
     padding: 0.75rem 1.25rem;
+    border-radius: 0.375rem;
+    transition: all 0.3s ease;
 }
 
-/* Add padding to main container to prevent content from being hidden behind fixed navigation */
-.calculator-container {
-    padding-bottom: 80px;
+.wizard-navigation button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Ensure the vendor cards are properly displayed */
+/* Make sure wizard steps are properly hidden/shown */
+.wizard-step {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.wizard-step.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Step indicator styling */
+.wizard-progress {
+    margin-bottom: 2rem;
+}
+
+.wizard-step-indicator {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.wizard-step-indicator.completed {
+    color: #1b67b2;
+}
+
+.wizard-step-indicator.active {
+    font-weight: bold;
+    color: #1b67b2;
+}
+
+/* Progress bar styling */
+.progress-bar {
+    height: 6px;
+    background-color: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #1b67b2;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+/* Vendor cards styling */
 .vendor-card {
     cursor: pointer;
     transition: all 0.3s ease;
@@ -276,1021 +612,157 @@ fix_ui_navigation() {
     border-color: #1b67b2;
     background-color: rgba(27, 103, 178, 0.05);
 }
-
-/* Fix for wizard steps */
-.wizard-step {
-    display: none;
-}
-
-.wizard-step.active {
-    display: block;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
 EOL
     
-    # Add CSS reference to index.html
-    if [ -f "${PROJECT_DIR}/index.html" ]; then
-        if ! grep -q "navigation-fix.css" "${PROJECT_DIR}/index.html"; then
-            sed -i.bak '/<link rel="stylesheet" href="css\/animations.css">/a\    <link rel="stylesheet" href="css\/fixes\/navigation-fix.css">' "${PROJECT_DIR}/index.html"
-        fi
-    else
-        warn "Could not locate index.html file"
-    fi
-    
-    log "UI navigation fixes applied"
-}
-
-# Enhance chart visualizations
-enhance_charts() {
-    log "Enhancing chart visualizations..."
-    
-    # Create enhanced chart configurations
-    mkdir -p "${PROJECT_DIR}/js/charts/enhanced"
-    cat > "${PROJECT_DIR}/js/charts/enhanced/portnox-advantage-charts.js" << 'EOL'
+    # Create basic notification utility
+    cat > "${PROJECT_DIR}/js/utils/notification-manager.js" << 'EOL'
 /**
- * Enhanced chart configurations to highlight Portnox's competitive advantages
- * Designed for executive, financial, technical, security, and compliance audiences
+ * Notification Manager
+ * Simple utility for showing notifications
  */
-document.addEventListener('DOMContentLoaded', function() {
-    // Set Portnox-specific chart theme and colors
-    const portnoxColors = {
-        primary: '#1b67b2',
-        secondary: '#65BD44',
-        accent: '#05547C',
-        warning: '#f59e0b',
-        danger: '#ef4444',
-        neutral: '#64748b',
-        competitors: {
-            cisco: '#049fd9',
-            aruba: '#f78e1e',
-            forescout: '#d64000',
-            fortinac: '#ee3124',
-            nps: '#7fba00',
-            securew2: '#00b2e3'
-        }
+const NotificationManager = (function() {
+    // Default options
+    const defaults = {
+        type: 'info',
+        duration: 5000,
+        position: 'top-right'
     };
     
-    // Ensure Chart.js is available
-    if (typeof Chart === 'undefined') {
-        console.error('Chart.js not loaded');
-        return;
-    }
-    
-    // Set default chart options
-    Chart.defaults.font.family = '"Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-    Chart.defaults.color = '#333';
-    Chart.defaults.responsive = true;
-    Chart.defaults.maintainAspectRatio = false;
-    
-    // Custom plugin to add colored background to charts
-    const chartBackgroundPlugin = {
-        id: 'chartBackgroundPlugin',
-        beforeDraw: (chart) => {
-            const ctx = chart.canvas.getContext('2d');
-            ctx.save();
-            ctx.fillStyle = '#f8f9fa';
-            ctx.fillRect(0, 0, chart.width, chart.height);
-            ctx.restore();
+    // Show notification
+    function showNotification(options) {
+        // Merge with defaults
+        const settings = {...defaults, ...options};
+        
+        // Find or create container
+        let container = document.getElementById('notification-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'notification-container';
+            container.className = `notification-container ${settings.position}`;
+            document.body.appendChild(container);
         }
-    };
-    
-    // Register the plugin
-    Chart.register(chartBackgroundPlugin);
-    
-    // Enhanced TCO Comparison Chart
-    function createTcoComparisonChart() {
-        const ctx = document.getElementById('tco-comparison-chart');
-        if (!ctx) return;
         
-        // Sample data - will be replaced with actual data from calculations
-        const data = {
-            labels: ['Initial Cost', 'Implementation', 'Training', 'Maintenance', 'Staff', 'Total'],
-            datasets: [
-                {
-                    label: 'Current Solution',
-                    data: [100000, 75000, 30000, 50000, 120000, 375000],
-                    backgroundColor: portnoxColors.neutral,
-                    borderColor: portnoxColors.neutral,
-                    borderWidth: 1
-                },
-                {
-                    label: 'Portnox Cloud',
-                    data: [48000, 10000, 5000, 0, 30000, 93000],
-                    backgroundColor: portnoxColors.primary,
-                    borderColor: portnoxColors.primary,
-                    borderWidth: 1
-                }
-            ]
-        };
+        // Create notification
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${settings.type}`;
         
-        const options = {
-            indexAxis: 'y',
-            plugins: {
-                title: {
-                    display: true,
-                    text: '3-Year TCO Comparison',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    },
-                    padding: {
-                        top: 10,
-                        bottom: 30
-                    }
-                },
-                legend: {
-                    position: 'bottom'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.dataset.label}: $${context.raw.toLocaleString()}`;
-                        }
-                    }
-                },
-                datalabels: {
-                    color: '#fff',
-                    anchor: 'center',
-                    align: 'center',
-                    formatter: function(value) {
-                        if (value < 20000) return ''; // Don't show small values
-                        return '$' + (value/1000).toFixed(0) + 'K';
-                    },
-                    font: {
-                        weight: 'bold'
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    stacked: false,
-                    grid: {
-                        display: true,
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return '$' + value.toLocaleString();
-                        }
-                    }
-                },
-                y: {
-                    stacked: false,
-                    grid: {
-                        display: false
-                    }
-                }
-            }
-        };
-        
-        // Create chart if canvas exists
-        try {
-            new Chart(ctx, {
-                type: 'bar',
-                data: data,
-                options: options,
-                plugins: [ChartDataLabels]
-            });
-        } catch (e) {
-            console.error('Error creating TCO comparison chart:', e);
-        }
-    }
-    
-    // Feature Comparison Radar Chart
-    function createFeatureComparisonChart() {
-        const ctx = document.getElementById('feature-comparison-chart');
-        if (!ctx) return;
-        
-        // Sample data - will be replaced with actual data
-        const data = {
-            labels: [
-                'Deployment Speed', 
-                'Cloud Native', 
-                'Management Ease', 
-                'Automatic Updates',
-                'TCO', 
-                'Device Visibility',
-                'Multi-Vendor Support'
-            ],
-            datasets: [
-                {
-                    label: 'Portnox Cloud',
-                    data: [95, 100, 90, 100, 95, 90, 85],
-                    backgroundColor: 'rgba(27, 103, 178, 0.2)',
-                    borderColor: portnoxColors.primary,
-                    borderWidth: 2,
-                    pointBackgroundColor: portnoxColors.primary,
-                    pointRadius: 4
-                },
-                {
-                    label: 'Current Solution',
-                    data: [40, 30, 45, 35, 35, 70, 65],
-                    backgroundColor: 'rgba(100, 116, 139, 0.2)',
-                    borderColor: portnoxColors.neutral,
-                    borderWidth: 2,
-                    pointBackgroundColor: portnoxColors.neutral,
-                    pointRadius: 4
-                }
-            ]
-        };
-        
-        const options = {
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Feature Comparison',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    },
-                    padding: {
-                        top: 10,
-                        bottom: 30
-                    }
-                },
-                legend: {
-                    position: 'bottom'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.dataset.label}: ${context.raw}%`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                r: {
-                    angleLines: {
-                        display: true,
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    },
-                    ticks: {
-                        backdropColor: 'transparent',
-                        stepSize: 20
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    },
-                    suggestedMin: 0,
-                    suggestedMax: 100,
-                    pointLabels: {
-                        font: {
-                            size: 12
-                        }
-                    }
-                }
-            }
-        };
-        
-        // Create chart if canvas exists
-        try {
-            new Chart(ctx, {
-                type: 'radar',
-                data: data,
-                options: options
-            });
-        } catch (e) {
-            console.error('Error creating feature comparison chart:', e);
-        }
-    }
-    
-    // Implementation Timeline Comparison Chart
-    function createImplementationComparisonChart() {
-        const ctx = document.getElementById('implementation-comparison-chart');
-        if (!ctx) return;
-        
-        // Sample data - will be replaced with actual data
-        const data = {
-            labels: ['Hardware Procurement', 'Software Installation', 'Initial Configuration', 'Network Integration', 'Testing', 'Documentation', 'Staff Training', 'Go-Live'],
-            datasets: [
-                {
-                    label: 'Current Solution (Days)',
-                    data: [30, 14, 21, 14, 7, 7, 14, 5],
-                    backgroundColor: portnoxColors.neutral,
-                    borderColor: portnoxColors.neutral,
-                    borderWidth: 1,
-                    stack: 'Stack 0'
-                },
-                {
-                    label: 'Portnox Cloud (Days)',
-                    data: [0, 0.5, 1, 0.5, 1, 0.5, 1, 0.5],
-                    backgroundColor: portnoxColors.primary,
-                    borderColor: portnoxColors.primary,
-                    borderWidth: 1,
-                    stack: 'Stack 1'
-                }
-            ]
-        };
-        
-        const options = {
-            indexAxis: 'y',
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Implementation Timeline Comparison (Days)',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    },
-                    padding: {
-                        top: 10,
-                        bottom: 30
-                    }
-                },
-                legend: {
-                    position: 'bottom'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const days = context.raw;
-                            return `${context.dataset.label}: ${days} day${days !== 1 ? 's' : ''}`;
-                        }
-                    }
-                },
-                datalabels: {
-                    color: '#fff',
-                    anchor: 'center',
-                    align: 'center',
-                    formatter: function(value) {
-                        if (value < 3) return ''; // Don't show small values
-                        return value;
-                    },
-                    font: {
-                        weight: 'bold'
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    stacked: false,
-                    grid: {
-                        display: true,
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    },
-                    title: {
-                        display: true,
-                        text: 'Days'
-                    }
-                },
-                y: {
-                    stacked: false,
-                    grid: {
-                        display: false
-                    }
-                }
-            }
-        };
-        
-        // Create chart if canvas exists
-        try {
-            new Chart(ctx, {
-                type: 'bar',
-                data: data,
-                options: options,
-                plugins: [ChartDataLabels]
-            });
-        } catch (e) {
-            console.error('Error creating implementation comparison chart:', e);
-        }
-    }
-    
-    // ROI Analysis Chart
-    function createRoiAnalysisChart() {
-        const ctx = document.getElementById('roi-chart');
-        if (!ctx) return;
-        
-        // Sample data - will be replaced with actual data
-        const data = {
-            labels: ['Year 1', 'Year 2', 'Year 3'],
-            datasets: [
-                {
-                    label: 'Current Solution Cost',
-                    data: [125000, 125000, 125000],
-                    backgroundColor: portnoxColors.neutral,
-                    borderColor: portnoxColors.neutral,
-                    borderWidth: 1,
-                    type: 'bar'
-                },
-                {
-                    label: 'Portnox Cloud Cost',
-                    data: [48000, 30000, 15000],
-                    backgroundColor: portnoxColors.primary,
-                    borderColor: portnoxColors.primary,
-                    borderWidth: 1,
-                    type: 'bar'
-                },
-                {
-                    label: 'Cumulative Savings',
-                    data: [77000, 172000, 282000],
-                    borderColor: portnoxColors.secondary,
-                    backgroundColor: 'rgba(101, 189, 68, 0.2)',
-                    borderWidth: 2,
-                    type: 'line',
-                    fill: true,
-                    tension: 0.4,
-                    yAxisID: 'y1'
-                }
-            ]
-        };
-        
-        const options = {
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'ROI Analysis',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    },
-                    padding: {
-                        top: 10,
-                        bottom: 30
-                    }
-                },
-                legend: {
-                    position: 'bottom'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.dataset.label}: $${context.raw.toLocaleString()}`;
-                        }
-                    }
-                },
-                datalabels: {
-                    display: function(context) {
-                        return context.datasetIndex < 2; // Only show for bars
-                    },
-                    color: '#fff',
-                    anchor: 'center',
-                    align: 'center',
-                    formatter: function(value) {
-                        return '$' + (value/1000).toFixed(0) + 'K';
-                    },
-                    font: {
-                        weight: 'bold'
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    grid: {
-                        display: false
-                    }
-                },
-                y: {
-                    grid: {
-                        display: true,
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return '$' + value.toLocaleString();
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: 'Annual Cost'
-                    }
-                },
-                y1: {
-                    position: 'right',
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return '$' + value.toLocaleString();
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: 'Cumulative Savings'
-                    }
-                }
-            }
-        };
-        
-        // Create chart if canvas exists
-        try {
-            new Chart(ctx, {
-                type: 'bar',
-                data: data,
-                options: options,
-                plugins: [ChartDataLabels]
-            });
-        } catch (e) {
-            console.error('Error creating ROI analysis chart:', e);
-        }
-    }
-    
-    // Compliance Framework Coverage Chart
-    function createComplianceFrameworkChart() {
-        const ctx = document.getElementById('industry-compliance-chart');
-        if (!ctx) return;
-        
-        // Sample data - will be replaced with actual data
-        const data = {
-            labels: ['HIPAA', 'PCI DSS', 'NIST 800-53', 'GDPR', 'ISO 27001'],
-            datasets: [
-                {
-                    label: 'Portnox Cloud',
-                    data: [95, 90, 95, 90, 95],
-                    backgroundColor: 'rgba(27, 103, 178, 0.2)',
-                    borderColor: portnoxColors.primary,
-                    borderWidth: 2,
-                    pointBackgroundColor: portnoxColors.primary,
-                    pointRadius: 4
-                },
-                {
-                    label: 'Industry Average',
-                    data: [75, 70, 65, 60, 70],
-                    backgroundColor: 'rgba(100, 116, 139, 0.2)',
-                    borderColor: portnoxColors.neutral,
-                    borderWidth: 2,
-                    pointBackgroundColor: portnoxColors.neutral,
-                    pointRadius: 4
-                }
-            ]
-        };
-        
-        const options = {
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Compliance Framework Coverage',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    },
-                    padding: {
-                        top: 10,
-                        bottom: 30
-                    }
-                },
-                legend: {
-                    position: 'bottom'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.dataset.label}: ${context.raw}%`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                r: {
-                    angleLines: {
-                        display: true,
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    },
-                    ticks: {
-                        backdropColor: 'transparent',
-                        stepSize: 20
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    },
-                    suggestedMin: 0,
-                    suggestedMax: 100,
-                    pointLabels: {
-                        font: {
-                            size: 12
-                        }
-                    }
-                }
-            }
-        };
-        
-        // Create chart if canvas exists
-        try {
-            new Chart(ctx, {
-                type: 'radar',
-                data: data,
-                options: options
-            });
-        } catch (e) {
-            console.error('Error creating compliance framework chart:', e);
-        }
-    }
-    
-    // Create Key Insights section
-    function createKeyInsights() {
-        const insightsContainer = document.getElementById('key-insights-list');
-        if (!insightsContainer) return;
-        
-        // Insights based on Portnox competitive advantages
-        const insights = [
-            {
-                title: "Cost Efficiency",
-                content: "Portnox Cloud delivers a 40-60% lower TCO over 3 years compared to traditional NAC solutions by eliminating hardware costs, simplifying implementation, and reducing IT resource requirements."
-            },
-            {
-                title: "Implementation Speed",
-                content: "Deploy Portnox Cloud in hours to days versus the 2-6 month implementation timeline required for traditional NAC solutions, accelerating your security posture improvement and reducing project risk."
-            },
-            {
-                title: "Resource Optimization",
-                content: "Portnox requires approximately 80% less IT staffing compared to traditional NAC solutions, freeing your team to focus on strategic initiatives rather than system management."
-            },
-            {
-                title: "Cloud-Native Architecture",
-                content: "True cloud-native design eliminates infrastructure management, provides automatic scaling, and delivers continuous updates without maintenance windows or downtime."
-            },
-            {
-                title: "Advanced IoT Security",
-                content: "AI-powered device fingerprinting recognizes over 260,000 unique IoT devices across 27,000 brands with 95% accuracy, providing superior visibility and control."
-            }
-        ];
-        
-        // Create HTML for insights
-        let insightsHTML = '';
-        insights.forEach(insight => {
-            insightsHTML += `
-                <div class="insight-card">
-                    <div class="insight-header">
-                        <h4>${insight.title}</h4>
-                        <div class="insight-icon">
-                            <i class="fas fa-lightbulb"></i>
-                        </div>
-                    </div>
-                    <p>${insight.content}</p>
-                </div>
-            `;
-        });
+        // Add content
+        notification.innerHTML = `
+            <div class="notification-header">
+                <strong>${settings.title || 'Notification'}</strong>
+                <button type="button" class="notification-close">&times;</button>
+            </div>
+            <div class="notification-body">
+                ${settings.message || ''}
+            </div>
+        `;
         
         // Add to container
-        insightsContainer.innerHTML = insightsHTML;
+        container.appendChild(notification);
+        
+        // Add close handler
+        const closeButton = notification.querySelector('.notification-close');
+        if (closeButton) {
+            closeButton.addEventListener('click', function() {
+                removeNotification(notification);
+            });
+        }
+        
+        // Auto remove after duration
+        if (settings.duration) {
+            setTimeout(() => {
+                removeNotification(notification);
+            }, settings.duration);
+        }
+        
+        // Animate in
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+        
+        return notification;
     }
     
-    // Initialize charts when tabs are clicked
-    document.querySelectorAll('.result-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            const tabId = this.dataset.tab;
-            
-            // Initialize appropriate charts based on tab
-            switch(tabId) {
-                case 'overview':
-                    createKeyInsights();
-                    break;
-                case 'comparison':
-                    createTcoComparisonChart();
-                    break;
-                case 'implementation':
-                    createImplementationComparisonChart();
-                    break;
-                case 'features':
-                    createFeatureComparisonChart();
-                    break;
-                case 'industry':
-                    createComplianceFrameworkChart();
-                    break;
-                case 'roi':
-                    createRoiAnalysisChart();
-                    break;
+    // Remove notification
+    function removeNotification(notification) {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
             }
-        });
-    });
+        }, 300);
+    }
     
-    // Initialize default overview tab
-    createKeyInsights();
-});
-EOL
-    
-    # Create CSS for enhanced insights section
-    cat > "${PROJECT_DIR}/css/fixes/enhanced-insights.css" << 'EOL'
-/* Enhanced insights styling */
-.insight-card {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-left: 4px solid #1b67b2;
-}
-
-.insight-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-}
-
-.insight-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.insight-header h4 {
-    margin: 0;
-    color: #1b67b2;
-    font-weight: 600;
-}
-
-.insight-icon {
-    width: 36px;
-    height: 36px;
-    background-color: rgba(27, 103, 178, 0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.insight-icon i {
-    color: #1b67b2;
-    font-size: 1.2rem;
-}
-
-.insight-card p {
-    color: #4b5563;
-    margin: 0;
-    line-height: 1.6;
-}
-
-/* Executive summary styling */
-.summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.summary-card {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-}
-
-.summary-card.highlight {
-    background-color: #1b67b2;
-    color: white;
-}
-
-.summary-card.highlight h4,
-.summary-card.highlight .metric-value,
-.summary-card.highlight .metric-detail {
-    color: white;
-}
-
-.card-icon {
-    width: 48px;
-    height: 48px;
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 1rem;
-}
-
-.summary-card:not(.highlight) .card-icon {
-    background-color: rgba(27, 103, 178, 0.1);
-}
-
-.card-icon i {
-    color: white;
-    font-size: 1.5rem;
-}
-
-.summary-card:not(.highlight) .card-icon i {
-    color: #1b67b2;
-}
-
-.card-content {
-    flex: 1;
-}
-
-.summary-card h4 {
-    margin: 0 0 0.5rem 0;
-    font-size: 0.9rem;
-    color: #6b7280;
-}
-
-.metric-value {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #1b67b2;
-    margin-bottom: 0.25rem;
-}
-
-.metric-detail {
-    font-size: 0.85rem;
-    color: #6b7280;
-}
-EOL
-    
-    # Add script and CSS references to index.html
-    if [ -f "${PROJECT_DIR}/index.html" ]; then
-        if ! grep -q "portnox-advantage-charts.js" "${PROJECT_DIR}/index.html"; then
-            sed -i.bak '/<script src="js\/final-patch.js"><\/script>/a\    <script src="js\/charts\/enhanced\/portnox-advantage-charts.js"><\/script>' "${PROJECT_DIR}/index.html"
-        fi
-        
-        if ! grep -q "enhanced-insights.css" "${PROJECT_DIR}/index.html"; then
-            sed -i.bak '/<link rel="stylesheet" href="css\/animations.css">/a\    <link rel="stylesheet" href="css\/fixes\/enhanced-insights.css">' "${PROJECT_DIR}/index.html"
-        fi
-    else
-        warn "Could not locate index.html file"
-    fi
-    
-    log "Chart enhancements applied"
-}
-
-# Add error handling and debugging
-add_error_handling() {
-    log "Adding error handling and debugging support..."
-    
-    # Create error handling script
-    mkdir -p "${PROJECT_DIR}/js/utils"
-    cat > "${PROJECT_DIR}/js/utils/error-handler.js" << 'EOL'
-/**
- * Enhanced error handling and debugging support
- */
-(function() {
-    // Global error handler
-    window.addEventListener('error', function(event) {
-        console.error('Global error caught:', event.error);
-        
-        // Log to console with details
-        const errorDetails = {
-            message: event.message,
-            source: event.filename,
-            lineNumber: event.lineno,
-            columnNumber: event.colno,
-            stack: event.error ? event.error.stack : 'No stack trace available'
-        };
-        console.error('Error details:', errorDetails);
-        
-        // Show error toast if notification manager exists
-        if (typeof NotificationManager !== 'undefined' && NotificationManager.showNotification) {
-            NotificationManager.showNotification({
-                title: 'An error occurred',
-                message: `${event.message}. See console for details.`,
-                type: 'error',
-                duration: 5000
-            });
-        }
-        
-        return true; // Prevent default error handling
-    });
-    
-    // Unhandled promise rejection handler
-    window.addEventListener('unhandledrejection', function(event) {
-        console.error('Unhandled promise rejection:', event.reason);
-        
-        // Show error toast if notification manager exists
-        if (typeof NotificationManager !== 'undefined' && NotificationManager.showNotification) {
-            NotificationManager.showNotification({
-                title: 'Promise Rejection',
-                message: `${event.reason.message || 'Unknown error'}. See console for details.`,
-                type: 'error',
-                duration: 5000
-            });
-        }
-    });
-    
-    // Create debugging utilities
-    window.DebugUtils = {
-        // Enable this for verbose logging
-        verboseMode: false,
-        
-        // Log with timestamp
-        log: function(message, data) {
-            if (this.verboseMode) {
-                const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
-                console.log(`[${timestamp}] ${message}`, data || '');
+    // Clear all notifications
+    function clearAll() {
+        const container = document.getElementById('notification-container');
+        if (container) {
+            while (container.firstChild) {
+                container.removeChild(container.firstChild);
             }
-        },
-        
-        // Profile execution time
-        timeStart: function(label) {
-            console.time(label);
-        },
-        
-        timeEnd: function(label) {
-            console.timeEnd(label);
-        },
-        
-        // Inspect wizard state
-        inspectWizard: function() {
-            if (typeof WizardController !== 'undefined') {
-                console.log('Wizard state:', {
-                    currentStep: WizardController.getCurrentStep ? WizardController.getCurrentStep() : 'Not available',
-                    totalSteps: WizardController.getTotalSteps ? WizardController.getTotalSteps() : 'Not available'
-                });
-                
-                // Check for active step
-                const activeStep = document.querySelector('.wizard-step.active');
-                console.log('Active step element:', activeStep);
-            } else {
-                console.warn('WizardController not available');
-            }
-        },
-        
-        // Enable verbose logging
-        enableVerbose: function() {
-            this.verboseMode = true;
-            console.log('Verbose logging enabled');
-        },
-        
-        // Disable verbose logging
-        disableVerbose: function() {
-            this.verboseMode = false;
-            console.log('Verbose logging disabled');
         }
+    }
+    
+    // Public API
+    return {
+        showNotification,
+        clearAll
     };
-    
-    // Create notification element if not exists
-    if (!document.getElementById('toast-container')) {
-        const toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.className = 'toast-container';
-        document.body.appendChild(toastContainer);
-    }
-    
-    // Basic notification manager if not exists
-    if (typeof NotificationManager === 'undefined') {
-        window.NotificationManager = {
-            showNotification: function(options) {
-                const container = document.getElementById('toast-container');
-                if (!container) return;
-                
-                const toast = document.createElement('div');
-                toast.className = `toast toast-${options.type || 'info'}`;
-                
-                toast.innerHTML = `
-                    <div class="toast-header">
-                        <strong>${options.title || 'Notification'}</strong>
-                        <button type="button" class="toast-close">&times;</button>
-                    </div>
-                    <div class="toast-body">
-                        ${options.message || ''}
-                    </div>
-                `;
-                
-                // Add close handler
-                toast.querySelector('.toast-close').addEventListener('click', function() {
-                    container.removeChild(toast);
-                });
-                
-                // Add to container
-                container.appendChild(toast);
-                
-                // Auto remove after duration
-                if (options.duration) {
-                    setTimeout(() => {
-                        if (container.contains(toast)) {
-                            container.removeChild(toast);
-                        }
-                    }, options.duration);
-                }
-            }
-        };
-    }
-    
-    console.log('Error handling and debugging utilities initialized');
 })();
+
+// Add to global scope
+window.NotificationManager = NotificationManager;
 EOL
     
-    # Add basic notification styling
-    cat > "${PROJECT_DIR}/css/fixes/notifications.css" << 'EOL'
-/* Notification styling */
-.toast-container {
+    # Add notification styling
+    cat > "${PROJECT_DIR}/css/fixes/notifications-enhanced.css" << 'EOL'
+/**
+ * Enhanced Notification Styling
+ */
+.notification-container {
     position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.notification-container.top-right {
     top: 20px;
     right: 20px;
-    z-index: 9999;
-    max-width: 350px;
 }
 
-.toast {
+.notification-container.top-left {
+    top: 20px;
+    left: 20px;
+}
+
+.notification-container.bottom-right {
+    bottom: 20px;
+    right: 20px;
+}
+
+.notification-container.bottom-left {
+    bottom: 20px;
+    left: 20px;
+}
+
+.notification {
     background-color: white;
     border-radius: 4px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     margin-bottom: 10px;
-    overflow: hidden;
+    max-width: 350px;
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(30px);
     transition: all 0.3s ease;
-    animation: toast-in 0.3s ease-out;
 }
 
-@keyframes toast-in {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+.notification.show {
+    opacity: 1;
+    transform: translateX(0);
 }
 
-.toast-header {
+.notification-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1298,12 +770,12 @@ EOL
     border-bottom: 1px solid #e0e0e0;
 }
 
-.toast-body {
+.notification-body {
     padding: 12px 15px;
     color: #4b5563;
 }
 
-.toast-close {
+.notification-close {
     background: none;
     border: none;
     font-size: 18px;
@@ -1311,140 +783,107 @@ EOL
     cursor: pointer;
 }
 
-.toast-info {
+.notification-info {
     border-left: 4px solid #1b67b2;
 }
 
-.toast-success {
+.notification-success {
     border-left: 4px solid #65BD44;
 }
 
-.toast-warning {
+.notification-warning {
     border-left: 4px solid #f59e0b;
 }
 
-.toast-error {
+.notification-error {
     border-left: 4px solid #ef4444;
 }
 EOL
     
-    # Add script and CSS references to index.html
+    # Update the index.html to use the new wizard implementation
     if [ -f "${PROJECT_DIR}/index.html" ]; then
-        if ! grep -q "error-handler.js" "${PROJECT_DIR}/index.html"; then
-            sed -i.bak '/<script src="libs\/js\/particles.min.js"><\/script>/a\    <script src="js\/utils\/error-handler.js"><\/script>' "${PROJECT_DIR}/index.html"
+        log "Updating index.html to use new wizard implementation"
+        
+        # First, add the new CSS files
+        if ! grep -q "wizard-enhanced.css" "${PROJECT_DIR}/index.html"; then
+            sed -i.bak '/<link rel="stylesheet" href="css\/wizard.css">/a\    <link rel="stylesheet" href="css\/fixes\/wizard-enhanced.css">' "${PROJECT_DIR}/index.html"
         fi
         
-        if ! grep -q "notifications.css" "${PROJECT_DIR}/index.html"; then
-            sed -i.bak '/<link rel="stylesheet" href="css\/animations.css">/a\    <link rel="stylesheet" href="css\/fixes\/notifications.css">' "${PROJECT_DIR}/index.html"
+        if ! grep -q "notifications-enhanced.css" "${PROJECT_DIR}/index.html"; then
+            sed -i.bak '/<link rel="stylesheet" href="css\/animations.css">/a\    <link rel="stylesheet" href="css\/fixes\/notifications-enhanced.css">' "${PROJECT_DIR}/index.html"
         fi
+        
+        # Add the new JavaScript files
+        if ! grep -q "notification-manager.js" "${PROJECT_DIR}/index.html"; then
+            sed -i.bak '/<script src="js\/utils\/error-handler.js"><\/script>/a\    <script src="js\/utils\/notification-manager.js"><\/script>' "${PROJECT_DIR}/index.html"
+        fi
+        
+        if ! grep -q "wizard-implementation.js" "${PROJECT_DIR}/index.html"; then
+            sed -i.bak '/<script src="js\/managers\/wizard.js"><\/script>/a\    <script src="js\/wizards\/new\/wizard-implementation.js"><\/script>' "${PROJECT_DIR}/index.html"
+        fi
+        
+        # Move the wizard navigation inside each wizard step
+        # First, create a backup
+        cp "${PROJECT_DIR}/index.html" "${PROJECT_DIR}/index.html.bak"
+        
+        # Now modify the file to move the wizard navigation
+        awk '
+            /<!-- Wizard Navigation -->/ {
+                print "<!-- Wizard Navigation moved inside each step -->";
+                skip = 1;
+                next;
+            }
+            skip && /div>$/ {
+                skip = 0;
+                next;
+            }
+            skip {
+                next;
+            }
+            {print}
+        ' "${PROJECT_DIR}/index.html" > "${PROJECT_DIR}/index.html.temp"
+        
+        # Add navigation to each wizard step
+        awk '
+            /class="wizard-step"/ {
+                in_step = 1;
+                step_content = $0 "\n";
+                next;
+            }
+            in_step && /<\/div>$/ {
+                in_step = 0;
+                step_content = step_content "    <!-- Wizard Navigation -->\n    <div class=\"wizard-navigation\">\n        <button id=\"prev-step\" class=\"btn btn-outline\">\n            <i class=\"fas fa-chevron-left\"></i> Previous\n        </button>\n        <button id=\"next-step\" class=\"btn btn-primary\">\n            Next <i class=\"fas fa-chevron-right\"></i>\n        </button>\n    </div>\n" $0 "\n";
+                print step_content;
+                next;
+            }
+            in_step {
+                step_content = step_content $0 "\n";
+                next;
+            }
+            {print}
+        ' "${PROJECT_DIR}/index.html.temp" > "${PROJECT_DIR}/index.html"
+        
+        # Clean up temporary file
+        rm "${PROJECT_DIR}/index.html.temp"
     else
         warn "Could not locate index.html file"
     fi
     
-    log "Error handling and debugging support added"
-}
-
-# Create documentation
-create_documentation() {
-    log "Creating documentation..."
-    
-    mkdir -p "${PROJECT_DIR}/docs"
-    cat > "${PROJECT_DIR}/docs/README.md" << 'EOL'
-# Portnox Zero Trust NAC Total Cost Analyzer
-
-## Overview
-
-The Portnox Zero Trust NAC Total Cost Analyzer is a comprehensive tool designed to help organizations evaluate the total cost of ownership (TCO) of their Network Access Control (NAC) solutions. This application provides detailed comparisons between traditional NAC solutions (Cisco ISE, Aruba ClearPass, Forescout, FortiNAC, Microsoft NPS, and SecureW2) and Portnox's cloud-native NAC solution.
-
-## Key Features
-
-- **TCO Comparison**: Comprehensive cost analysis including initial costs, implementation, maintenance, and operational expenses
-- **Feature Comparison**: Side-by-side comparison of key NAC features across vendors
-- **Implementation Timeline**: Visualization of implementation time differences
-- **Compliance Coverage**: Analysis of regulatory compliance framework coverage
-- **ROI Analysis**: Detailed return on investment calculations
-- **Risk Assessment**: Security risk evaluation with and without NAC
-- **Sensitivity Analysis**: Dynamic modeling of cost variables
-
-## Target Audiences
-
-- **Executive Teams**: High-level cost comparisons and ROI analysis
-- **Finance Teams**: Detailed TCO breakdown and sensitivity analysis
-- **Technical Teams**: Implementation comparisons and feature analysis
-- **Security Teams**: Risk assessment and security capability evaluation
-- **Compliance Teams**: Regulatory framework coverage analysis
-
-## Portnox Competitive Advantages
-
-Based on market research, Portnox Cloud offers several distinct advantages over traditional NAC solutions:
-
-1. **Deployment Speed**: Implementation in hours to days vs. months for traditional solutions
-2. **Cloud-Native Architecture**: True SaaS delivery without hardware or VM requirements
-3. **Total Cost of Ownership**: 40-60% lower TCO over 3 years compared to traditional solutions
-4. **Operational Efficiency**: 80% reduction in IT staffing requirements
-5. **Zero Maintenance**: Automatic updates without maintenance windows or downtime
-6. **Advanced IoT Security**: AI-powered fingerprinting for 260,000+ device types
-
-## Using the Application
-
-1. **Select Current Solution**: Choose your existing NAC vendor or "No NAC" option
-2. **Specify Industry**: Select your industry to see relevant compliance frameworks
-3. **Configure Organization**: Enter details about your environment
-4. **Adjust Cost Parameters**: Fine-tune cost variables for more accurate comparison
-5. **View Results**: Explore comprehensive analysis and visualizations
-
-## Technical Information
-
-### Supported Browsers
-
-- Chrome (latest)
-- Firefox (latest)
-- Edge (latest)
-- Safari (latest)
-
-### Dependencies
-
-- Chart.js - Visualization library
-- FontAwesome - Icon library
-- Tailwind CSS - Styling
-- GSAP - Animations
-- Particles.js - Background effects
-
-For any issues or questions, please contact Portnox support.
-EOL
-    
-    log "Documentation created: ${PROJECT_DIR}/docs/README.md"
+    log "New wizard implementation created"
 }
 
 # Main execution
 main() {
-    log "Starting Portnox TCO Analyzer fix and enhancement script"
+    log "Starting Portnox TCO Analyzer direct syntax and navigation fixes"
     
     # Create backup
     create_backup
     
-    # Create required directories
-    mkdir -p "${PROJECT_DIR}/js/fixes"
-    mkdir -p "${PROJECT_DIR}/css/fixes"
-    mkdir -p "${PROJECT_DIR}/img/vendors/fallback"
+    # Fix specific syntax errors
+    fix_syntax_errors
     
-    # Fix JavaScript errors
-    fix_javascript_errors
-    
-    # Fix vendor logo loading
-    fix_vendor_logos
-    
-    # Fix UI navigation
-    fix_ui_navigation
-    
-    # Enhance charts
-    enhance_charts
-    
-    # Add error handling
-    add_error_handling
-    
-    # Create documentation
-    create_documentation
+    # Create new wizard implementation
+    create_new_wizard
     
     log "Script completed successfully"
     log "A backup of modified files is available at: ${BACKUP_DIR}"
