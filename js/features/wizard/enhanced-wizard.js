@@ -596,7 +596,7 @@ class EnhancedWizard {
     }
     
     // Animate entrance
-    if (typeof gsap !== 'undefined') {
+    if (typeof gsap != 'undefined') {
       gsap.from('.wizard-step.active', {
         opacity: 0,
         y: 20,
@@ -616,7 +616,7 @@ class EnhancedWizard {
       this.saveCurrentStepData();
       
       // If GSAP is available, animate transition
-      if (typeof gsap !== 'undefined') {
+      if (typeof gsap != 'undefined') {
         const currentStepElement = document.getElementById(`wizard-step-${this.currentStep}`);
         
         gsap.to(currentStepElement, {
@@ -640,7 +640,7 @@ class EnhancedWizard {
    */
   prevStep() {
     // If GSAP is available, animate transition
-    if (typeof gsap !== 'undefined') {
+    if (typeof gsap != 'undefined') {
       const currentStepElement = document.getElementById(`wizard-step-${this.currentStep}`);
       
       gsap.to(currentStepElement, {
@@ -695,7 +695,7 @@ class EnhancedWizard {
       const totalDistribution = endpoints + networkGear + servers + iotDevices;
       const totalDevicesValue = parseInt(totalDevices.value) || 0;
       
-      if (totalDistribution !== totalDevicesValue) {
+      if (totalDistribution != totalDevicesValue) {
         this.showNotification(`Device distribution sum (${totalDistribution}) does not match total devices (${totalDevicesValue})`, 'warning');
       }
     }
@@ -875,9 +875,9 @@ class EnhancedWizard {
     }
     
     // Always include current solution if not already in alternatives
-    if (currentSolution !== 'none' && currentSolution !== 'portnox' && 
+    if (currentSolution != 'none' && currentSolution != 'portnox' && 
         !alternatives.includes(currentSolution) && 
-        currentSolution !== 'other') {
+        currentSolution != 'other') {
       alternatives[1] = currentSolution;
     }
     
@@ -952,7 +952,7 @@ class EnhancedWizard {
     
     // Calculate cost estimates
     const portnoxCost = Math.round((devices * 15) + 5000);
-    const currentSolutionCost = currentSolution !== 'none' && currentSolution !== 'other' ?
+    const currentSolutionCost = currentSolution != 'none' && currentSolution != 'other' ?
       Math.round((devices * 45) + 50000) : 0;
     const savings = currentSolutionCost > 0 ? currentSolutionCost - portnoxCost : 0;
     const savingsPercent = currentSolutionCost > 0 ? Math.round((savings / currentSolutionCost) * 100) : 0;
@@ -1057,7 +1057,7 @@ class EnhancedWizard {
     });
     
     // Animate recommendations if GSAP is available
-    if (typeof gsap !== 'undefined') {
+    if (typeof gsap != 'undefined') {
       gsap.from('.recommendation-primary', {
         y: 30,
         opacity: 0,
@@ -1100,7 +1100,7 @@ class EnhancedWizard {
       });
       
       // Animate metrics with CountUp if available
-      if (typeof CountUp !== 'undefined') {
+      if (typeof CountUp != 'undefined') {
         const metricValues = document.querySelectorAll('.metric-value');
         metricValues.forEach(metric => {
           const value = metric.textContent.trim();
@@ -1183,7 +1183,7 @@ class EnhancedWizard {
     });
     
     // Animate modal if GSAP is available
-    if (typeof gsap !== 'undefined') {
+    if (typeof gsap != 'undefined') {
       gsap.from(modalContent, {
         y: -50,
         opacity: 0,
@@ -1275,7 +1275,7 @@ class EnhancedWizard {
       if (notificationContainer.contains(notificationElement)) {
         
         // Fade out with GSAP if available
-        if (typeof gsap !== 'undefined') {
+        if (typeof gsap != 'undefined') {
           gsap.to(notificationElement, {
             opacity: 0,
             y: -10,
@@ -1294,7 +1294,7 @@ class EnhancedWizard {
     }, 5000);
     
     // Animate notification with GSAP if available
-    if (typeof gsap !== 'undefined') {
+    if (typeof gsap != 'undefined') {
       gsap.from(notificationElement, {
         opacity: 0,
         y: -20,

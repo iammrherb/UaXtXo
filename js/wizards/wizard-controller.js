@@ -91,7 +91,7 @@ const WizardController = (function() {
             
             if (stepNumber < currentStep) {
                 stepEl.classList.add('completed');
-            } else if (stepNumber ==== currentStep) {
+            } else if (stepNumber == currentStep) {
                 stepEl.classList.add('active');
             } else {
                 stepEl.classList.remove('completed');
@@ -158,7 +158,7 @@ const WizardController = (function() {
         switch (stepName) {
             case 'vendor-selection':
                 // Check if a vendor is selected
-                isValid = document.querySelector('.vendor-card.active') !== null;
+                isValid = document.querySelector('.vendor-card.active') != null;
                 if (!isValid) {
                     showValidationError('Please select a current NAC vendor or "No NAC" option.');
                 }
@@ -166,7 +166,7 @@ const WizardController = (function() {
                 
             case 'industry-compliance':
                 // Check if an industry is selected
-                isValid = document.getElementById('industry-select').value !== '';
+                isValid = document.getElementById('industry-select').value != '';
                 if (!isValid) {
                     showValidationError('Please select your industry to continue.');
                 }
@@ -215,7 +215,7 @@ const WizardController = (function() {
     // Show the final results
     function showResults() {
         // Calculate results
-        if (typeof Calculator !== 'undefined') {
+        if (typeof Calculator != 'undefined') {
             Calculator.calculateTCO();
         }
         
@@ -293,7 +293,7 @@ const WizardController = (function() {
     function selectVendor(vendorId) {
         document.querySelectorAll('.vendor-card').forEach(card => {
             card.classList.remove('active');
-            if (card.dataset.vendor ==== vendorId) {
+            if (card.dataset.vendor == vendorId) {
                 card.classList.add('active');
             }
         });
@@ -312,7 +312,7 @@ const WizardController = (function() {
             step.addEventListener('click', function() {
                 const stepNumber = parseInt(this.dataset.step);
                 // Only allow clicking on completed steps or the next step
-                if (stepNumber <= currentStep || stepNumber === currentStep + 1) {
+                if (stepNumber <= currentStep || stepNumber == currentStep + 1) {
                     goToStep(stepNumber);
                 }
             });

@@ -1,223 +1,170 @@
 #!/bin/bash
 
-# NAC Wizard Error Fix Script
-# This script fixes the specific errors shown in the console output
+# Comprehensive NAC Wizard Fix Script
+# This script addresses all errors in the console output and ensures the wizard works fully
 
-echo "Starting NAC Wizard Error Fix..."
+echo "=== Starting Comprehensive NAC Wizard Fix ==="
 
 # Create backup directory
 BACKUP_DIR="./backups/$(date +%Y%m%d_%H%M%S)"
 mkdir -p $BACKUP_DIR
 echo "Created backup directory: $BACKUP_DIR"
 
-# Backup JavaScript files with errors
-echo "Backing up JavaScript files with errors..."
-cp js/wizards/wizard-controller.js "$BACKUP_DIR/" 2>/dev/null || echo "Warning: wizard-controller.js not found"
-cp js/features/wizard/enhanced-wizard.js "$BACKUP_DIR/" 2>/dev/null || echo "Warning: enhanced-wizard.js not found"
-cp js/components/calculator.js "$BACKUP_DIR/" 2>/dev/null || echo "Warning: calculator.js not found"
-cp js/components/charts.js "$BACKUP_DIR/" 2>/dev/null || echo "Warning: charts.js not found"
+# Step 1: Fix the logo issues
+echo "=== Step 1: Fixing vendor logo issues ==="
 
-# Create vendor images directory if it doesn't exist
-echo "Creating vendor images directory..."
-mkdir -p img/vendors
+# Check if img/vendors directory exists, create if not
+if [ ! -d "img/vendors" ]; then
+  mkdir -p img/vendors
+  echo "Created img/vendors directory"
+fi
 
-# Create placeholder vendor logo images
-echo "Creating placeholder vendor logo images..."
-# Function to create a placeholder SVG
-create_placeholder_svg() {
-  local name=$1
-  local color=$2
-  local filename=$3
+# Create a function to download vendor logos if they don't exist
+download_logo() {
+  local vendor=$1
+  local url=$2
+  local output_path="img/vendors/${vendor}-logo.png"
   
-  cat > "$filename" << EOF
+  # Check if file exists and isn't empty
+  if [ ! -s "$output_path" ]; then
+    echo "Downloading logo for $vendor..."
+    curl -s -o "$output_path" "$url" || {
+      echo "Failed to download logo for $vendor, creating placeholder..."
+      create_placeholder_logo "$vendor" "$output_path"
+    }
+  else
+    echo "Logo for $vendor already exists, checking if it's valid..."
+    # Try to identify if it's a valid image
+    file_type=$(file -b --mime-type "$output_path")
+    if [[ "$file_type" != image/* ]]; then
+      echo "Existing file for $vendor is not a valid image, replacing..."
+      create_placeholder_logo "$vendor" "$output_path"
+    fi
+  fi
+  
+  # Also copy to img/ directory for backward compatibility
+  cp "$output_path" "img/${vendor}-logo.png"
+}
+
+# Function to create a placeholder logo
+create_placeholder_logo() {
+  local vendor=$1
+  local output_path=$2
+  local color
+  
+  # Assign colors based on vendor
+  case "$vendor" in
+    cisco) color="#1BA0D7";;
+    aruba) color="#F58220";;
+    forescout) color="#3F3F95";;
+    fortinac) color="#EE3124";;
+    microsoft) color="#00A4EF";;
+    securew2) color="#4CAF50";;
+    portnox) color="#65BD44";;
+    *) color="#555555";;
+  esac
+  
+  # Create SVG placeholder with vendor name
+  cat > "${output_path%.png}.svg" << EOF
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">
   <rect width="200" height="100" fill="#f0f0f0" />
   <rect x="10" y="10" width="180" height="80" fill="$color" rx="10" ry="10" />
-  <text x="100" y="55" font-family="Arial" font-size="16" text-anchor="middle" fill="white">$name</text>
+  <text x="100" y="55" font-family="Arial" font-size="16" text-anchor="middle" fill="white">${vendor^} Logo</text>
 </svg>
 EOF
+
+  # Convert SVG to PNG if ImageMagick is available, otherwise just copy SVG
+  if command -v convert > /dev/null; then
+    convert "${output_path%.png}.svg" "$output_path"
+    rm "${output_path%.png}.svg"
+  else
+    # If convert is not available, try to use any other available tool
+    if command -v rsvg-convert > /dev/null; then
+      rsvg-convert -o "$output_path" "${output_path%.png}.svg"
+      rm "${output_path%.png}.svg"
+    else
+      # Just move the SVG file to PNG (not ideal but better than nothing)
+      mv "${output_path%.png}.svg" "$output_path"
+      echo "Warning: Could not convert SVG to PNG, using SVG file as PNG"
+    fi
+  fi
+  
+  # Ensure file permissions are correct
+  chmod 644 "$output_path"
 }
 
-# Create placeholder vendor logos
-create_placeholder_svg "Cisco ISE" "#1ba0d7" "img/vendors/cisco-logo.png"
-create_placeholder_svg "Aruba ClearPass" "#f58220" "img/vendors/aruba-logo.png"
-create_placeholder_svg "Forescout" "#3f3f95" "img/vendors/forescout-logo.png"
-create_placeholder_svg "FortiNAC" "#ee3124" "img/vendors/fortinac-logo.png"
-create_placeholder_svg "Microsoft NPS" "#00a4ef" "img/vendors/microsoft-logo.png"
-create_placeholder_svg "SecureW2" "#4caf50" "img/vendors/securew2-logo.png"
+# Try to download official logos, fall back to placeholders
+download_logo "cisco" "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/390001-400000/398001-399000/398180.jpg"
+download_logo "aruba" "https://www.arubanetworks.com/wp-content/uploads/Aruba_NetworksLogo.jpg"
+download_logo "forescout" "https://www.forescout.com/wp-content/themes/forescout/images/forescout-logo.png"
+download_logo "fortinac" "https://www.fortinet.com/content/dam/fortinet/images/general/fortinet-logo.svg"
+download_logo "microsoft" "https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/RE1Mu3b?ver=5c31"
+download_logo "securew2" "https://www.securew2.com/wp-content/uploads/2022/05/logo-dark.svg"
+download_logo "portnox" "https://www.portnox.com/wp-content/uploads/2021/01/portnox-logo-dark.svg"
 
-# Also create copies in the img directory to handle both paths
-cp img/vendors/cisco-logo.png img/cisco-logo.png
-cp img/vendors/aruba-logo.png img/aruba-logo.png
-cp img/vendors/forescout-logo.png img/forescout-logo.png
-cp img/vendors/fortinac-logo.png img/fortinac-logo.png
-cp img/vendors/microsoft-logo.png img/microsoft-logo.png
-cp img/vendors/securew2-logo.png img/securew2-logo.png
+# Create a JavaScript fallback for image loading
+echo "Creating JavaScript fallback for image loading..."
+mkdir -p js/fixes
 
-# Fix JavaScript syntax errors - replace ==== with === and !== with !==
-echo "Fixing JavaScript syntax errors..."
-
-# Function to fix equality operators in a file
-fix_equality_operators() {
-  local file=$1
-  if [ -f "$file" ]; then
-    echo "  Fixing equality operators in $file"
-    sed -i 's/====/===/g' "$file"
-    sed -i 's/!===/!==/g' "$file"
-    sed -i 's/===/==/g' "$file" # Fix any === that should be == (in case there were some)
-  else
-    echo "  Warning: $file not found"
-  fi
-}
-
-# Fix wizard-controller.js
-fix_equality_operators "js/wizards/wizard-controller.js"
-
-# Fix enhanced-wizard.js
-fix_equality_operators "js/features/wizard/enhanced-wizard.js"
-
-# Fix calculator.js invalid assignment
-if [ -f "js/components/calculator.js" ]; then
-  echo "  Fixing invalid assignment in calculator.js"
-  # Look for invalid assignments like "if (something = value)" which should be "if (something === value)"
-  # This is a common cause of "Invalid left-hand side in assignment" errors
-  sed -i 's/if (\([^=]*\) = \([^=]*\))/if (\1 === \2)/g' "js/components/calculator.js"
-  # Also fix cases where = might be used for comparison elsewhere
-  sed -i 's/\([^=!<>]\) = \([^=]\)/\1 === \2/g' "js/components/calculator.js"
-else
-  echo "  Warning: calculator.js not found"
-fi
-
-# Fix the "Cannot read properties of undefined (reading 'duration')" error in charts.js
-if [ -f "js/components/charts.js" ]; then
-  echo "  Fixing 'duration' property error in charts.js"
-  
-  # Create a patch file for charts.js
-  cat > charts_fix.patch << 'EOF'
---- charts.js.old  2023-05-12 12:00:00
-+++ charts.js      2023-05-12 12:00:00
-@@ -840,9 +840,15 @@
-   // Update charts with animation
-   updateCharts: function(data) {
-     // Apply animation settings
--    Chart.defaults.animation.duration = data.duration || 1000;
--    Chart.defaults.animation.easing = data.easing || 'easeOutQuart';
--    
-+    if (Chart && Chart.defaults) {
-+      // Check if animation object exists
-+      if (!Chart.defaults.animation) {
-+        Chart.defaults.animation = {};
-+      }
-+      // Set animation properties safely
-+      Chart.defaults.animation.duration = (data && data.duration) || 1000;
-+      Chart.defaults.animation.easing = (data && data.easing) || 'easeOutQuart';
-+    }
-     // Update all charts
-     this.updateTCOChart(data);
-     this.updateBreakdownCharts(data);
-EOF
-  
-  # Apply the patch if possible, or manually implement the fix
-  if command -v patch >/dev/null 2>&1; then
-    # Create a backup of the original file
-    cp "js/components/charts.js" "js/components/charts.js.bak"
-    
-    # Apply the patch
-    patch "js/components/charts.js" charts_fix.patch || {
-      echo "    Patch failed, implementing manual fix..."
-      # Replace the problematic line with a safer version
-      sed -i '842s/.*/    Chart.defaults.animation = Chart.defaults.animation || {};\n    Chart.defaults.animation.duration = (data \&\& data.duration) || 1000;/' "js/components/charts.js"
-      sed -i '843s/.*/    Chart.defaults.animation.easing = (data \&\& data.easing) || '\''easeOutQuart'\'';/' "js/components/charts.js"
-    }
-    
-    # Remove the patch file
-    rm charts_fix.patch
-  else
-    echo "    Patch command not available, implementing manual fix..."
-    # Replace the problematic line with a safer version
-    sed -i '842s/.*/    Chart.defaults.animation = Chart.defaults.animation || {};\n    Chart.defaults.animation.duration = (data \&\& data.duration) || 1000;/' "js/components/charts.js"
-    sed -i '843s/.*/    Chart.defaults.animation.easing = (data \&\& data.easing) || '\''easeOutQuart'\'';/' "js/components/charts.js"
-  fi
-else
-  echo "  Warning: charts.js not found"
-fi
-
-# Create an enhanced image loader script to handle 404 errors
-echo "Creating enhanced image loader script..."
-cat > js/fixes/image-loader-fix.js << 'EOF'
+cat > js/fixes/image-fallback.js << 'EOF'
 /**
- * Enhanced Image Loader
- * Handles 404 errors for missing images by providing fallbacks
+ * Image Fallback Handler
+ * Provides fallback for vendor logos that fail to load
  */
 document.addEventListener('DOMContentLoaded', function() {
-  // Handle vendor logo image errors
+  // Handle all vendor logo images
   document.querySelectorAll('img[src*="logo"]').forEach(function(img) {
     img.onerror = function() {
-      // Extract vendor name from the image path
-      const path = img.src;
-      const vendorMatch = path.match(/\/([a-z0-9-]+)-logo\.png/i);
-      const vendorName = vendorMatch ? vendorMatch[1] : 'vendor';
+      // Extract vendor name from src
+      const src = img.src;
+      let vendorName = "vendor";
       
-      // Create a canvas element for the fallback
+      if (src.includes('cisco')) vendorName = "Cisco";
+      else if (src.includes('aruba')) vendorName = "Aruba";
+      else if (src.includes('forescout')) vendorName = "Forescout";
+      else if (src.includes('fortinac')) vendorName = "FortiNAC";
+      else if (src.includes('microsoft')) vendorName = "Microsoft";
+      else if (src.includes('securew2')) vendorName = "SecureW2";
+      else if (src.includes('portnox')) vendorName = "Portnox";
+      
+      // Create canvas element for fallback
       const canvas = document.createElement('canvas');
       canvas.width = 200;
       canvas.height = 100;
-      
-      // Get the 2D context
       const ctx = canvas.getContext('2d');
       
-      // Fill background
+      // Draw background
       ctx.fillStyle = '#f0f0f0';
       ctx.fillRect(0, 0, 200, 100);
       
       // Draw colored rectangle
-      ctx.fillStyle = getVendorColor(vendorName);
+      let color = '#555555';
+      if (src.includes('cisco')) color = '#1BA0D7';
+      else if (src.includes('aruba')) color = '#F58220';
+      else if (src.includes('forescout')) color = '#3F3F95';
+      else if (src.includes('fortinac')) color = '#EE3124';
+      else if (src.includes('microsoft')) color = '#00A4EF';
+      else if (src.includes('securew2')) color = '#4CAF50';
+      else if (src.includes('portnox')) color = '#65BD44';
+      
+      ctx.fillStyle = color;
+      ctx.beginPath();
       ctx.roundRect(10, 10, 180, 80, 10);
       ctx.fill();
       
-      // Add text
-      ctx.fillStyle = '#ffffff';
+      // Draw text
+      ctx.fillStyle = 'white';
       ctx.font = '16px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(getVendorDisplayName(vendorName), 100, 50);
+      ctx.fillText(vendorName + ' Logo', 100, 50);
       
-      // Replace the image source with the canvas data URL
+      // Replace img src with canvas data URL
       img.src = canvas.toDataURL('image/png');
     };
   });
   
-  // Helper function to get vendor color
-  function getVendorColor(vendorName) {
-    const vendorColors = {
-      'cisco': '#1ba0d7',
-      'aruba': '#f58220',
-      'forescout': '#3f3f95',
-      'fortinac': '#ee3124',
-      'microsoft': '#00a4ef',
-      'securew2': '#4caf50',
-      'portnox': '#65BD44'
-    };
-    
-    return vendorColors[vendorName.toLowerCase()] || '#555555';
-  }
-  
-  // Helper function to get vendor display name
-  function getVendorDisplayName(vendorName) {
-    const vendorDisplayNames = {
-      'cisco': 'Cisco ISE',
-      'aruba': 'Aruba ClearPass',
-      'forescout': 'Forescout',
-      'fortinac': 'FortiNAC',
-      'microsoft': 'Microsoft NPS',
-      'securew2': 'SecureW2',
-      'portnox': 'Portnox Cloud'
-    };
-    
-    return vendorDisplayNames[vendorName.toLowerCase()] || vendorName;
-  }
-  
-  // Add roundRect method if not supported
+  // Add roundRect method if not supported by browser
   if (!CanvasRenderingContext2D.prototype.roundRect) {
     CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
       if (width < 2 * radius) radius = width / 2;
@@ -235,24 +182,117 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 EOF
 
-# Add the image loader script to index.html
-echo "Adding image loader script to index.html..."
-if [ -f "index.html" ]; then
-  # Check if the script is already included
-  if ! grep -q "image-loader-fix.js" "index.html"; then
-    # Add the script before the closing body tag
-    sed -i 's/<\/body>/    <script src="js\/fixes\/image-loader-fix.js"><\/script>\n<\/body>/' "index.html"
+# Step 2: Fix JavaScript syntax errors
+echo "=== Step 2: Fixing JavaScript syntax errors ==="
+
+# Backup original files first
+for file in js/features/wizard/enhanced-wizard.js js/wizards/wizard-controller.js js/components/calculator.js js/components/charts.js js/components/sensitivity.js; do
+  if [ -f "$file" ]; then
+    cp "$file" "$BACKUP_DIR/$(basename "$file")"
+    echo "Backed up $file"
   fi
-else
-  echo "  Warning: index.html not found"
+done
+
+# Fix equality operator syntax errors in wizard files
+for file in js/features/wizard/enhanced-wizard.js js/wizards/wizard-controller.js; do
+  if [ -f "$file" ]; then
+    echo "Fixing equality operators in $file..."
+    sed -i 's/====/===/g' "$file"
+    sed -i 's/!====/!==/g' "$file"
+    sed -i 's/===/==/g' "$file"
+    sed -i 's/!==/!=/g' "$file"
+  else
+    echo "Warning: $file not found"
+  fi
+done
+
+# Fix missing initializer in calculator.js
+if [ -f "js/components/calculator.js" ]; then
+  echo "Fixing missing initializer in calculator.js..."
+  sed -i 's/const Calculator;/const Calculator = (function() {/g' "js/components/calculator.js"
+  
+  # Check if the code already has a closing parenthesis at the end
+  if ! grep -q "})();" "js/components/calculator.js"; then
+    echo "})();" >> "js/components/calculator.js"
+  fi
 fi
 
-# Create a specific fix for wizard step navigation
-echo "Creating wizard step navigation fix..."
+# Fix unexpected token in charts.js
+if [ -f "js/components/charts.js" ]; then
+  echo "Fixing syntax errors in charts.js..."
+  # Fix unexpected token ';'
+  sed -i 's/Chart.defaults.animation.duration = data.duration;;/Chart.defaults.animation.duration = data.duration || 1000;/g' "js/components/charts.js"
+  
+  # Fix chart creation code to check if Chart.defaults.animation exists
+  sed -i 's/Chart.defaults.animation.duration = data.duration/if (Chart.defaults && Chart.defaults.animation) { Chart.defaults.animation.duration = (data && data.duration) || 1000/g' "js/components/charts.js"
+  sed -i 's/Chart.defaults.animation.easing = data.easing/Chart.defaults.animation.easing = (data && data.easing) || "easeOutQuart" }/g' "js/components/charts.js"
+fi
+
+# Fix chart reuse error in sensitivity.js
+if [ -f "js/components/sensitivity.js" ]; then
+  echo "Fixing chart reuse error in sensitivity.js..."
+  
+  # Create a patch for sensitivity.js
+  cat > sensitivity_fix.patch << 'EOF'
+--- sensitivity.js.orig	2023-01-01 00:00:00.000000000 +0000
++++ sensitivity.js	2023-01-01 00:00:00.000000000 +0000
+@@ -70,10 +70,20 @@
+   
+   // Create sensitivity chart
+   function createSensitivityChart(chartId, data) {
++    // Check if chart instance already exists and destroy it
++    if (window.chartInstances && window.chartInstances[chartId]) {
++      window.chartInstances[chartId].destroy();
++    }
++    
+     const ctx = document.getElementById(chartId);
+     if (!ctx) return null;
+     
+-    return new Chart(ctx, {
++    // Create chart
++    const chart = new Chart(ctx, {
+       type: 'line',
+       data: data,
+       options: {
+@@ -97,6 +107,13 @@
+         }
+       }
+     });
++    
++    // Store chart instance for future reference
++    if (!window.chartInstances) {
++      window.chartInstances = {};
++    }
++    window.chartInstances[chartId] = chart;
++    
++    return chart;
+   }
+ });
+EOF
+
+  # Apply patch if patch command exists
+  if command -v patch > /dev/null; then
+    patch -b "js/components/sensitivity.js" sensitivity_fix.patch
+    rm sensitivity_fix.patch
+  else
+    # Manual fix if patch command doesn't exist
+    sed -i 's/function createSensitivityChart(chartId, data) {/function createSensitivityChart(chartId, data) {\n    \/\/ Check if chart instance already exists and destroy it\n    if (window.chartInstances \&\& window.chartInstances[chartId]) {\n      window.chartInstances[chartId].destroy();\n    }/g' "js/components/sensitivity.js"
+    
+    sed -i 's/return new Chart(ctx, {/const chart = new Chart(ctx, {/g' "js/components/sensitivity.js"
+    
+    # Add code to store chart instance
+    sed -i 's/});/});\n\n    \/\/ Store chart instance for future reference\n    if (!window.chartInstances) {\n      window.chartInstances = {};\n    }\n    window.chartInstances[chartId] = chart;\n    \n    return chart;/g' "js/components/sensitivity.js"
+  fi
+fi
+
+# Step 3: Ensure Wizard Steps Work Correctly
+echo "=== Step 3: Ensuring Wizard Steps Work Correctly ==="
+
+# Create wizard step navigation fix
 cat > js/fixes/wizard-navigation-fix.js << 'EOF'
 /**
  * Wizard Navigation Fix
- * Ensures proper navigation between wizard steps
+ * Ensures proper navigation between all wizard steps
  */
 document.addEventListener('DOMContentLoaded', function() {
   // Get all wizard steps
@@ -262,14 +302,20 @@ document.addEventListener('DOMContentLoaded', function() {
   // Get navigation buttons
   const nextBtn = document.getElementById('next-step');
   const prevBtn = document.getElementById('prev-step');
+  const calculateBtn = document.getElementById('calculate-btn');
   
-  // Initialize step tracker
+  // Initialize step tracker (1-indexed for readability)
   let currentStep = 1;
   
   // Function to show a specific step
   function showStep(stepNumber) {
+    console.log("Navigating to step", stepNumber);
+    
     // Validate step number
-    if (stepNumber < 1 || stepNumber > wizardSteps.length) return;
+    if (stepNumber < 1 || stepNumber > wizardSteps.length) {
+      console.warn("Invalid step number:", stepNumber);
+      return;
+    }
     
     // Update current step
     currentStep = stepNumber;
@@ -280,7 +326,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Show current step
-    document.querySelector(`.wizard-step[data-step="${currentStep}"]`).classList.add('active');
+    const stepToShow = document.querySelector(`.wizard-step[data-step="${currentStep}"]`);
+    if (stepToShow) {
+      stepToShow.classList.add('active');
+    } else {
+      console.warn(`Step with data-step="${currentStep}" not found`);
+    }
     
     // Update progress indicators if they exist
     const progressSteps = document.querySelectorAll('.wizard-progress-step');
@@ -299,7 +350,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     if (nextBtn) {
-      nextBtn.textContent = currentStep === wizardSteps.length ? 'Generate Report' : 'Next';
+      if (currentStep === wizardSteps.length) {
+        nextBtn.textContent = 'Generate Report';
+      } else {
+        nextBtn.textContent = 'Next';
+      }
     }
     
     // Update progress fill if it exists
@@ -308,27 +363,130 @@ document.addEventListener('DOMContentLoaded', function() {
       const progressPercentage = ((currentStep - 1) / (wizardSteps.length - 1)) * 100;
       progressFill.style.width = `${progressPercentage}%`;
     }
+    
+    // Update progress steps if they exist
+    const progressStepsContainer = document.getElementById('progress-steps');
+    if (progressStepsContainer) {
+      updateProgressSteps(currentStep);
+    }
   }
   
-  // Add click handlers to navigation buttons
+  // Function to update progress steps
+  function updateProgressSteps(currentStep) {
+    const progressStepsContainer = document.getElementById('progress-steps');
+    if (!progressStepsContainer) return;
+    
+    // Clear existing progress steps
+    progressStepsContainer.innerHTML = '';
+    
+    // Create new progress steps
+    for (let i = 1; i <= wizardSteps.length; i++) {
+      const stepElement = document.createElement('div');
+      stepElement.className = 'progress-step';
+      
+      if (i < currentStep) {
+        stepElement.classList.add('completed');
+      } else if (i === currentStep) {
+        stepElement.classList.add('active');
+      }
+      
+      // Get step label from step content
+      let stepLabel = `Step ${i}`;
+      const stepH2 = document.querySelector(`.wizard-step[data-step="${i}"] h2`);
+      if (stepH2) {
+        stepLabel = stepH2.textContent;
+      }
+      
+      stepElement.innerHTML = `
+        <div class="step-number">${i}</div>
+        <div class="step-label">${stepLabel}</div>
+      `;
+      
+      // Add click handler to navigate to step
+      stepElement.addEventListener('click', () => {
+        if (i <= currentStep || i === currentStep + 1) {
+          showStep(i);
+        }
+      });
+      
+      progressStepsContainer.appendChild(stepElement);
+    }
+  }
+  
+  // Add click handler to next button
   if (nextBtn) {
     nextBtn.addEventListener('click', function() {
-      // Validate current step
+      // Validate step before proceeding
       if (validateStep(currentStep)) {
-        showStep(currentStep + 1);
+        // If we're on the last step, show results
+        if (currentStep === wizardSteps.length) {
+          showResults();
+        } else {
+          showStep(currentStep + 1);
+        }
       }
     });
   }
   
+  // Add click handler to previous button
   if (prevBtn) {
     prevBtn.addEventListener('click', function() {
       showStep(currentStep - 1);
     });
   }
   
-  // Simple validation function
+  // Add click handler to calculate button
+  if (calculateBtn) {
+    calculateBtn.addEventListener('click', function() {
+      showResults();
+    });
+  }
+  
+  // Function to show results
+  function showResults() {
+    console.log("Showing results");
+    
+    // Show loading overlay if it exists
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) {
+      loadingOverlay.style.display = 'flex';
+    }
+    
+    // Generate the report with a slight delay to show the loading animation
+    setTimeout(function() {
+      // Calculate TCO if the function exists
+      if (typeof window.Calculator !== 'undefined' && typeof window.Calculator.calculateTCO === 'function') {
+        window.Calculator.calculateTCO();
+      } else {
+        console.warn("Calculator.calculateTCO is not defined");
+        
+        // Trigger chart generation directly if needed
+        if (typeof window.ChartManager !== 'undefined' && typeof window.ChartManager.generateAllCharts === 'function') {
+          window.ChartManager.generateAllCharts();
+        } else if (typeof window.generateDummyCharts === 'function') {
+          window.generateDummyCharts();
+        }
+      }
+      
+      // Hide loading overlay
+      if (loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+      }
+      
+      // Show results container
+      const resultsContainer = document.getElementById('results-container');
+      if (resultsContainer) {
+        resultsContainer.classList.remove('hidden');
+        resultsContainer.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 1000);
+  }
+  
+  // Simple validation function for steps
   function validateStep(step) {
-    // Add validation logic based on step
+    console.log("Validating step", step);
+    
+    // Validation logic based on step
     switch(step) {
       case 1: // Vendor selection
         const selectedVendor = document.querySelector('.vendor-card.active');
@@ -338,7 +496,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return true;
         
-      case 2: // Industry selection
+      case 2: // Industry & Compliance
         const industrySelect = document.getElementById('industry-select');
         if (industrySelect && !industrySelect.value) {
           showError('Please select an industry to continue.');
@@ -348,8 +506,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
       case 3: // Organization details
         const deviceCount = document.getElementById('device-count');
-        if (deviceCount && (isNaN(deviceCount.value) || deviceCount.value <= 0)) {
-          showError('Please enter a valid device count to continue.');
+        if (deviceCount && (isNaN(parseInt(deviceCount.value)) || parseInt(deviceCount.value) <= 0)) {
+          showError('Please enter a valid number of devices to continue.');
           return false;
         }
         return true;
@@ -359,10 +517,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Function to show error message
+  // Function to show validation error
   function showError(message) {
+    console.warn("Validation error:", message);
+    
     const errorContainer = document.getElementById('wizard-error-container');
-    if (!errorContainer) return;
+    if (!errorContainer) {
+      console.error("Error container not found");
+      alert(message); // Fallback to alert if error container doesn't exist
+      return;
+    }
     
     errorContainer.innerHTML = `
       <div class="error-message-box">
@@ -379,66 +543,66 @@ document.addEventListener('DOMContentLoaded', function() {
         errorContainer.innerHTML = '';
       });
     }
+    
+    // Scroll to error
+    errorContainer.scrollIntoView({ behavior: 'smooth' });
   }
   
-  // Initialize wizard to first step
+  // Initialize to first step
   showStep(1);
   
-  // Make functions available globally
-  window.wizardNavigation = {
+  // Make navigation functions available globally
+  window.WizardNavigation = {
     showStep,
     validateStep,
     getCurrentStep: () => currentStep,
-    getTotalSteps: () => wizardSteps.length
+    getTotalSteps: () => wizardSteps.length,
+    showResults
   };
 });
 EOF
 
-# Add the wizard navigation fix script to index.html
-echo "Adding wizard navigation fix script to index.html..."
-if [ -f "index.html" ]; then
-  # Check if the script is already included
-  if ! grep -q "wizard-navigation-fix.js" "index.html"; then
-    # Add the script before the closing body tag
-    sed -i 's/<\/body>/    <script src="js\/fixes\/wizard-navigation-fix.js"><\/script>\n<\/body>/' "index.html"
-  fi
-else
-  echo "  Warning: index.html not found"
-fi
-
-# Create a vendor card interaction script
-echo "Creating vendor card interaction script..."
+# Create vendor card interaction script
 cat > js/fixes/vendor-cards-fix.js << 'EOF'
 /**
  * Vendor Cards Fix
- * Adds interaction functionality to vendor selection cards
+ * Enhances vendor card interaction and selection
  */
 document.addEventListener('DOMContentLoaded', function() {
   // Get all vendor cards
   const vendorCards = document.querySelectorAll('.vendor-card');
-  if (vendorCards.length === 0) return;
+  if (vendorCards.length === 0) {
+    console.warn("No vendor cards found");
+    return;
+  }
   
-  // Add click event to vendor cards
+  console.log(`Found ${vendorCards.length} vendor cards`);
+  
+  // Function to handle vendor card click
+  function handleVendorCardClick(card) {
+    // Remove active class from all cards
+    vendorCards.forEach(c => c.classList.remove('active'));
+    
+    // Add active class to clicked card
+    card.classList.add('active');
+    
+    // Update vendor preview if it exists
+    const vendorPreview = document.getElementById('vendor-preview');
+    if (vendorPreview) {
+      const vendorId = card.getAttribute('data-vendor');
+      updateVendorPreview(vendorId, vendorPreview);
+    }
+  }
+  
+  // Add click event to all vendor cards
   vendorCards.forEach(card => {
     card.addEventListener('click', function() {
-      // Remove active class from all cards
-      vendorCards.forEach(c => c.classList.remove('active'));
-      
-      // Add active class to clicked card
-      this.classList.add('active');
-      
-      // Update vendor preview if it exists
-      const vendorPreview = document.getElementById('vendor-preview');
-      if (vendorPreview) {
-        const vendorId = this.getAttribute('data-vendor');
-        updateVendorPreview(vendorId, vendorPreview);
-      }
+      handleVendorCardClick(this);
     });
   });
   
   // Function to update vendor preview
   function updateVendorPreview(vendorId, previewElement) {
-    // Get vendor information
     const vendorInfo = getVendorInfo(vendorId);
     
     // Create preview HTML
@@ -461,13 +625,28 @@ document.addEventListener('DOMContentLoaded', function() {
           <span class="detail-value">${vendorInfo.pricing}</span>
         </div>
       </div>
+      <div class="preview-cta">
+        <p>Continue to compare with Portnox Cloud's cloud-native approach.</p>
+        <button id="next-step-preview" class="btn btn-primary">Next Step</button>
+      </div>
     `;
     
     // Set preview HTML
     previewElement.innerHTML = previewHTML;
-    
-    // Show preview
     previewElement.style.display = 'block';
+    
+    // Add event listener to next button
+    const nextBtn = previewElement.querySelector('#next-step-preview');
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function() {
+        const wizardNextBtn = document.getElementById('next-step');
+        if (wizardNextBtn) {
+          wizardNextBtn.click();
+        } else if (window.WizardNavigation && window.WizardNavigation.showStep) {
+          window.WizardNavigation.showStep(2);
+        }
+      });
+    }
   }
   
   // Helper function to get vendor information
@@ -476,42 +655,42 @@ document.addEventListener('DOMContentLoaded', function() {
       'cisco': {
         name: 'Cisco ISE',
         description: 'Enterprise-grade NAC solution with comprehensive features',
-        deployment: 'On-premises',
+        deployment: 'On-premises / Appliance',
         implementationTime: '3-6 months',
         pricing: 'Perpetual licensing + maintenance'
       },
       'aruba': {
         name: 'Aruba ClearPass',
         description: 'Policy management platform with wireless integration',
-        deployment: 'On-premises',
+        deployment: 'On-premises / Appliance',
         implementationTime: '2-4 months',
         pricing: 'Perpetual licensing + maintenance'
       },
       'forescout': {
         name: 'Forescout',
         description: 'Agentless device visibility and control platform',
-        deployment: 'On-premises',
+        deployment: 'On-premises / Appliance',
         implementationTime: '2-4 months',
         pricing: 'Perpetual licensing + maintenance'
       },
       'fortinac': {
         name: 'FortiNAC',
         description: 'Network access control integrated with Fortinet Security Fabric',
-        deployment: 'On-premises',
+        deployment: 'On-premises / Appliance',
         implementationTime: '1-3 months',
         pricing: 'Perpetual licensing + maintenance'
       },
       'nps': {
         name: 'Microsoft NPS',
         description: 'Basic RADIUS server included with Windows Server',
-        deployment: 'On-premises',
+        deployment: 'On-premises / Windows Server',
         implementationTime: '2-4 weeks',
         pricing: 'Included with Windows Server'
       },
       'securew2': {
         name: 'SecureW2',
         description: 'Cloud-based certificate management and authentication',
-        deployment: 'Cloud',
+        deployment: 'Cloud / SaaS',
         implementationTime: '1-3 weeks',
         pricing: 'Subscription (per user)'
       },
@@ -525,7 +704,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     return vendorData[vendorId] || {
-      name: 'Unknown Vendor',
+      name: vendorId ? vendorId.charAt(0).toUpperCase() + vendorId.slice(1) : 'Unknown Vendor',
       description: 'Vendor information not available',
       deployment: 'Unknown',
       implementationTime: 'Unknown',
@@ -534,118 +713,191 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Select first card by default if none is selected
-  if (!document.querySelector('.vendor-card.active')) {
-    vendorCards[0].click();
+  if (!document.querySelector('.vendor-card.active') && vendorCards.length > 0) {
+    handleVendorCardClick(vendorCards[0]);
   }
 });
 EOF
 
-# Add the vendor cards fix script to index.html
-echo "Adding vendor cards fix script to index.html..."
-if [ -f "index.html" ]; then
-  # Check if the script is already included
-  if ! grep -q "vendor-cards-fix.js" "index.html"; then
-    # Add the script before the closing body tag
-    sed -i 's/<\/body>/    <script src="js\/fixes\/vendor-cards-fix.js"><\/script>\n<\/body>/' "index.html"
-  fi
-else
-  echo "  Warning: index.html not found"
-fi
-
-# Create a dummy chart data generator to handle missing data
-echo "Creating chart data generator..."
-cat > js/fixes/chart-data-generator.js << 'EOF'
+# Create chart generation script
+cat > js/fixes/chart-generator.js << 'EOF'
 /**
- * Chart Data Generator
- * Provides dummy data for charts when real data is not available
+ * Chart Generator
+ * Creates and manages all charts in the TCO Analyzer
  */
 document.addEventListener('DOMContentLoaded', function() {
-  // Check if charts exist but no data is loaded
-  setTimeout(function() {
-    // Check TCO comparison chart
-    const tcoChart = document.getElementById('tco-comparison-chart');
-    if (tcoChart && !window.chartInstances) {
-      generateDummyCharts();
-    }
-  }, 2000); // Wait 2 seconds for any async data loading
+  // Initialize chart instances object
+  window.chartInstances = window.chartInstances || {};
   
-  // Function to generate dummy charts
+  // Make chart generation function globally available
+  window.generateDummyCharts = generateDummyCharts;
+  
+  // Function to generate all charts with dummy data
   function generateDummyCharts() {
-    console.log('Generating dummy chart data for preview');
+    console.log("Generating charts with dummy data");
     
     // Get selected vendor
     const selectedVendor = document.querySelector('.vendor-card.active');
     const vendorId = selectedVendor ? selectedVendor.getAttribute('data-vendor') : 'cisco';
     
-    // Generate dummy TCO data
+    // Generate TCO data
     const tcoData = generateTCOData(vendorId);
     
-    // Initialize chart instances object if it doesn't exist
-    window.chartInstances = window.chartInstances || {};
-    
-    // Generate TCO comparison chart
+    // Generate all charts
     generateTCOComparisonChart(tcoData);
-    
-    // Generate cost breakdown charts
     generateCostBreakdownCharts(tcoData);
-    
-    // Generate cumulative cost chart
     generateCumulativeCostChart(tcoData);
+    
+    // Update executive summary with data
+    updateExecutiveSummary(tcoData);
+    
+    return tcoData;
   }
   
-  // Function to generate dummy TCO data
+  // Function to generate TCO data
   function generateTCOData(vendorId) {
-    // Base costs for Portnox
-    const portnoxCosts = {
+    // Base Portnox costs
+    const portnoxBase = {
       license: 100000,
       hardware: 0,
-      implementation: 20000,
+      implementation: 15000,
       maintenance: 0,
       training: 5000,
-      fte: 60000,
-      total: 185000
+      fte: 50000
     };
     
-    // Multipliers for different vendors
-    const vendorMultipliers = {
-      'cisco': { license: 1.5, hardware: 50000, implementation: 3, maintenance: 30000, training: 2, fte: 1.5 },
-      'aruba': { license: 1.4, hardware: 40000, implementation: 2.5, maintenance: 25000, training: 1.8, fte: 1.4 },
-      'forescout': { license: 1.6, hardware: 60000, implementation: 2.8, maintenance: 35000, training: 2.2, fte: 1.6 },
-      'fortinac': { license: 1.3, hardware: 35000, implementation: 2.2, maintenance: 20000, training: 1.6, fte: 1.3 },
-      'nps': { license: 0.2, hardware: 15000, implementation: 1.5, maintenance: 5000, training: 1.2, fte: 2 },
-      'securew2': { license: 0.9, hardware: 0, implementation: 1.2, maintenance: 0, training: 1.1, fte: 1.1 },
-      'noNac': { license: 0, hardware: 0, implementation: 0, maintenance: 0, training: 0, fte: 0 }
+    // Calculate Portnox total
+    portnoxBase.total = portnoxBase.license + portnoxBase.hardware + 
+                        portnoxBase.implementation + portnoxBase.maintenance + 
+                        portnoxBase.training + portnoxBase.fte;
+    
+    // Vendor multipliers
+    const multipliers = {
+      'cisco': {
+        license: 1.5,
+        hardware: 60000,
+        implementation: 3.0,
+        maintenance: 30000,
+        training: 3.0,
+        fte: 2.0
+      },
+      'aruba': {
+        license: 1.3,
+        hardware: 50000,
+        implementation: 2.5,
+        maintenance: 25000,
+        training: 2.5,
+        fte: 1.8
+      },
+      'forescout': {
+        license: 1.4,
+        hardware: 65000,
+        implementation: 2.8,
+        maintenance: 28000,
+        training: 2.8,
+        fte: 1.9
+      },
+      'fortinac': {
+        license: 1.2,
+        hardware: 45000,
+        implementation: 2.2,
+        maintenance: 22000,
+        training: 2.2,
+        fte: 1.7
+      },
+      'nps': {
+        license: 0.1,
+        hardware: 15000,
+        implementation: 1.5,
+        maintenance: 5000,
+        training: 2.0,
+        fte: 2.5
+      },
+      'securew2': {
+        license: 0.8,
+        hardware: 0,
+        implementation: 1.3,
+        maintenance: 0,
+        training: 1.5,
+        fte: 1.3
+      },
+      'noNac': {
+        license: 0,
+        hardware: 0,
+        implementation: 0,
+        maintenance: 0,
+        training: 0,
+        fte: 0.5 // Still some network management needed
+      }
     };
     
     // Get multiplier for selected vendor
-    const multiplier = vendorMultipliers[vendorId] || vendorMultipliers.cisco;
+    const multiplier = multipliers[vendorId] || multipliers.cisco;
     
     // Calculate vendor costs
     const vendorCosts = {
-      license: portnoxCosts.license * multiplier.license,
+      license: portnoxBase.license * multiplier.license,
       hardware: multiplier.hardware,
-      implementation: portnoxCosts.implementation * multiplier.implementation,
+      implementation: portnoxBase.implementation * multiplier.implementation,
       maintenance: multiplier.maintenance,
-      training: portnoxCosts.training * multiplier.training,
-      fte: portnoxCosts.fte * multiplier.fte
+      training: portnoxBase.training * multiplier.training,
+      fte: portnoxBase.fte * multiplier.fte
     };
     
-    // Calculate total
-    vendorCosts.total = vendorCosts.license + vendorCosts.hardware + vendorCosts.implementation + 
-                        vendorCosts.maintenance + vendorCosts.training + vendorCosts.fte;
+    // Calculate vendor total
+    vendorCosts.total = vendorCosts.license + vendorCosts.hardware + 
+                      vendorCosts.implementation + vendorCosts.maintenance + 
+                      vendorCosts.training + vendorCosts.fte;
     
+    // Calculate savings
+    const savings = vendorCosts.total - portnoxBase.total;
+    const savingsPercentage = Math.round((savings / vendorCosts.total) * 100);
+    
+    // Implementation days by vendor
+    const implementationDays = {
+      'cisco': 120,
+      'aruba': 90,
+      'forescout': 100,
+      'fortinac': 75,
+      'nps': 30,
+      'securew2': 15,
+      'noNac': 0,
+      'portnox': 5
+    };
+    
+    // Calculate breakeven months (simplified)
+    const upfrontPortnox = portnoxBase.implementation + portnoxBase.training;
+    const upfrontVendor = vendorCosts.implementation + vendorCosts.hardware + vendorCosts.training;
+    
+    const monthlyPortnox = portnoxBase.license / 36 + portnoxBase.fte / 12;
+    const monthlyVendor = vendorCosts.license / 36 + vendorCosts.maintenance / 12 + vendorCosts.fte / 12;
+    
+    let breakEvenMonths;
+    if (upfrontPortnox > upfrontVendor) {
+      // If Portnox costs more upfront, calculate months to recover through monthly savings
+      breakEvenMonths = Math.ceil((upfrontPortnox - upfrontVendor) / (monthlyVendor - monthlyPortnox));
+    } else {
+      // If Portnox costs less upfront, it's immediate savings
+      breakEvenMonths = 0;
+    }
+    
+    // Return all data
     return {
-      portnox: portnoxCosts,
+      portnox: portnoxBase,
       vendor: vendorCosts,
       vendorName: getVendorName(vendorId),
-      savings: vendorCosts.total - portnoxCosts.total,
-      savingsPercentage: Math.round(((vendorCosts.total - portnoxCosts.total) / vendorCosts.total) * 100)
+      vendorId: vendorId,
+      savings: savings,
+      savingsPercentage: savingsPercentage,
+      implementationDays: implementationDays,
+      breakEvenMonths: breakEvenMonths,
+      riskReduction: vendorId === 'noNac' ? 85 : 45
     };
   }
   
   // Function to get vendor name
   function getVendorName(vendorId) {
-    const vendorNames = {
+    const names = {
       'cisco': 'Cisco ISE',
       'aruba': 'Aruba ClearPass',
       'forescout': 'Forescout',
@@ -655,20 +907,31 @@ document.addEventListener('DOMContentLoaded', function() {
       'noNac': 'No NAC Solution'
     };
     
-    return vendorNames[vendorId] || 'Selected Vendor';
+    return names[vendorId] || 'Selected Vendor';
   }
   
-  // Function to generate TCO comparison chart
+  // Generate TCO comparison chart
   function generateTCOComparisonChart(data) {
     const ctx = document.getElementById('tco-comparison-chart');
-    if (!ctx) return;
+    if (!ctx) {
+      console.warn("TCO comparison chart canvas not found");
+      return;
+    }
     
     // Destroy existing chart if it exists
     if (window.chartInstances.tcoComparison) {
       window.chartInstances.tcoComparison.destroy();
     }
     
-    // Create new chart
+    // Format currency for labels
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+    
+    // Create chart
     window.chartInstances.tcoComparison = new Chart(ctx, {
       type: 'bar',
       data: {
@@ -681,6 +944,7 @@ document.addEventListener('DOMContentLoaded', function() {
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           title: {
             display: true,
@@ -689,8 +953,14 @@ document.addEventListener('DOMContentLoaded', function() {
           tooltip: {
             callbacks: {
               label: function(context) {
-                return '$' + context.raw.toLocaleString();
+                return formatter.format(context.raw);
               }
+            }
+          },
+          datalabels: {
+            color: '#fff',
+            formatter: function(value) {
+              return formatter.format(value);
             }
           }
         },
@@ -699,7 +969,7 @@ document.addEventListener('DOMContentLoaded', function() {
             beginAtZero: true,
             ticks: {
               callback: function(value) {
-                return '$' + value.toLocaleString();
+                return formatter.format(value);
               }
             }
           }
@@ -708,8 +978,65 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Function to generate cost breakdown charts
+  // Generate cost breakdown charts
   function generateCostBreakdownCharts(data) {
+    // Current solution breakdown chart
+    const currentCtx = document.getElementById('current-breakdown-chart');
+    if (currentCtx) {
+      // Destroy existing chart if it exists
+      if (window.chartInstances.currentBreakdown) {
+        window.chartInstances.currentBreakdown.destroy();
+      }
+      
+      // Create chart
+      window.chartInstances.currentBreakdown = new Chart(currentCtx, {
+        type: 'pie',
+        data: {
+          labels: ['License', 'Hardware', 'Implementation', 'Maintenance', 'Training', 'IT Resources'],
+          datasets: [{
+            data: [
+              data.vendor.license,
+              data.vendor.hardware,
+              data.vendor.implementation,
+              data.vendor.maintenance,
+              data.vendor.training,
+              data.vendor.fte
+            ],
+            backgroundColor: [
+              '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: `${data.vendorName} Cost Breakdown`
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 0
+                  }).format(context.raw);
+                  
+                  const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                  const percentage = Math.round((context.raw / total) * 100);
+                  
+                  return `${label}: ${value} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+    
     // Portnox breakdown chart
     const portnoxCtx = document.getElementById('alternative-breakdown-chart');
     if (portnoxCtx) {
@@ -718,7 +1045,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.chartInstances.portnoxBreakdown.destroy();
       }
       
-      // Create new chart
+      // Create chart
       window.chartInstances.portnoxBreakdown = new Chart(portnoxCtx, {
         type: 'pie',
         data: {
@@ -739,6 +1066,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             title: {
               display: true,
@@ -748,59 +1076,15 @@ document.addEventListener('DOMContentLoaded', function() {
               callbacks: {
                 label: function(context) {
                   const label = context.label || '';
-                  const value = '$' + context.raw.toLocaleString();
+                  const value = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 0
+                  }).format(context.raw);
+                  
                   const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
                   const percentage = Math.round((context.raw / total) * 100);
-                  return `${label}: ${value} (${percentage}%)`;
-                }
-              }
-            }
-          }
-        }
-      });
-    }
-    
-    // Vendor breakdown chart
-    const vendorCtx = document.getElementById('current-breakdown-chart');
-    if (vendorCtx) {
-      // Destroy existing chart if it exists
-      if (window.chartInstances.vendorBreakdown) {
-        window.chartInstances.vendorBreakdown.destroy();
-      }
-      
-      // Create new chart
-      window.chartInstances.vendorBreakdown = new Chart(vendorCtx, {
-        type: 'pie',
-        data: {
-          labels: ['License', 'Hardware', 'Implementation', 'Maintenance', 'Training', 'IT Resources'],
-          datasets: [{
-            data: [
-              data.vendor.license,
-              data.vendor.hardware,
-              data.vendor.implementation,
-              data.vendor.maintenance,
-              data.vendor.training,
-              data.vendor.fte
-            ],
-            backgroundColor: [
-              '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'
-            ]
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            title: {
-              display: true,
-              text: `${data.vendorName} Cost Breakdown`
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  const label = context.label || '';
-                  const value = '$' + context.raw.toLocaleString();
-                  const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                  const percentage = Math.round((context.raw / total) * 100);
+                  
                   return `${label}: ${value} (${percentage}%)`;
                 }
               }
@@ -811,10 +1095,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Function to generate cumulative cost chart
+  // Generate cumulative cost chart
   function generateCumulativeCostChart(data) {
     const ctx = document.getElementById('cumulative-cost-chart');
-    if (!ctx) return;
+    if (!ctx) {
+      console.warn("Cumulative cost chart canvas not found");
+      return;
+    }
     
     // Destroy existing chart if it exists
     if (window.chartInstances.cumulativeCost) {
@@ -822,45 +1109,45 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Calculate initial costs
-    const portnoxInitial = data.portnox.hardware + data.portnox.implementation + data.portnox.training;
-    const vendorInitial = data.vendor.hardware + data.vendor.implementation + data.vendor.training;
+    const portnoxInitial = data.portnox.implementation + data.portnox.hardware + data.portnox.training;
+    const vendorInitial = data.vendor.implementation + data.vendor.hardware + data.vendor.training;
     
     // Calculate annual costs
     const portnoxAnnual = data.portnox.license / 3 + data.portnox.fte;
     const vendorAnnual = data.vendor.license / 3 + data.vendor.maintenance + data.vendor.fte;
     
     // Calculate cumulative costs
-    const years = ['Initial', 'Year 1', 'Year 2', 'Year 3'];
-    const portnoxCumulative = [
+    const labels = ['Initial', 'Year 1', 'Year 2', 'Year 3'];
+    const portnoxData = [
       portnoxInitial,
       portnoxInitial + portnoxAnnual,
-      portnoxInitial + portnoxAnnual * 2,
-      portnoxInitial + portnoxAnnual * 3
+      portnoxInitial + (portnoxAnnual * 2),
+      portnoxInitial + (portnoxAnnual * 3)
     ];
     
-    const vendorCumulative = [
+    const vendorData = [
       vendorInitial,
       vendorInitial + vendorAnnual,
-      vendorInitial + vendorAnnual * 2,
-      vendorInitial + vendorAnnual * 3
+      vendorInitial + (vendorAnnual * 2),
+      vendorInitial + (vendorAnnual * 3)
     ];
     
-    // Create new chart
+    // Create chart
     window.chartInstances.cumulativeCost = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: years,
+        labels: labels,
         datasets: [
           {
             label: 'Portnox Cloud',
-            data: portnoxCumulative,
+            data: portnoxData,
             borderColor: '#65BD44',
             backgroundColor: 'rgba(101, 189, 68, 0.1)',
             fill: true
           },
           {
             label: data.vendorName,
-            data: vendorCumulative,
+            data: vendorData,
             borderColor: '#05547C',
             backgroundColor: 'rgba(5, 84, 124, 0.1)',
             fill: true
@@ -869,6 +1156,7 @@ document.addEventListener('DOMContentLoaded', function() {
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           title: {
             display: true,
@@ -877,7 +1165,11 @@ document.addEventListener('DOMContentLoaded', function() {
           tooltip: {
             callbacks: {
               label: function(context) {
-                return context.dataset.label + ': $' + context.raw.toLocaleString();
+                return context.dataset.label + ': ' + new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0
+                }).format(context.raw);
               }
             }
           }
@@ -887,7 +1179,12 @@ document.addEventListener('DOMContentLoaded', function() {
             beginAtZero: true,
             ticks: {
               callback: function(value) {
-                return '$' + value.toLocaleString();
+                return new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                }).format(value);
               }
             }
           }
@@ -896,184 +1193,217 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Add event listener to Calculate button
-  const calculateBtn = document.getElementById('calculate-btn');
-  if (calculateBtn) {
-    calculateBtn.addEventListener('click', function() {
-      generateDummyCharts();
-      
-      // Show results container
-      const resultsContainer = document.getElementById('results-container');
-      if (resultsContainer) {
-        resultsContainer.classList.remove('hidden');
-        resultsContainer.scrollIntoView({ behavior: 'smooth' });
-      }
-      
-      // Update executive summary
-      updateExecutiveSummary();
-    });
-  }
-  
-  // Function to update executive summary
-  function updateExecutiveSummary() {
-    // Get selected vendor
-    const selectedVendor = document.querySelector('.vendor-card.active');
-    const vendorId = selectedVendor ? selectedVendor.getAttribute('data-vendor') : 'cisco';
-    
-    // Generate dummy TCO data
-    const tcoData = generateTCOData(vendorId);
-    
+  // Update executive summary with data
+  function updateExecutiveSummary(data) {
     // Update total savings
     const totalSavingsEl = document.getElementById('total-savings');
     if (totalSavingsEl) {
-      totalSavingsEl.textContent = '$' + tcoData.savings.toLocaleString();
+      totalSavingsEl.textContent = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0
+      }).format(data.savings);
     }
     
     // Update savings percentage
     const savingsPercentageEl = document.getElementById('savings-percentage');
     if (savingsPercentageEl) {
-      savingsPercentageEl.textContent = tcoData.savingsPercentage + '%';
+      savingsPercentageEl.textContent = `${data.savingsPercentage}%`;
     }
     
     // Update break-even point
     const breakEvenEl = document.getElementById('breakeven-point');
     if (breakEvenEl) {
-      // Calculate break-even in months (simplified)
-      const breakEvenMonths = Math.round((tcoData.portnox.implementation + tcoData.portnox.training) / 
-                                       ((tcoData.vendor.license / 36 + tcoData.vendor.maintenance / 12 + tcoData.vendor.fte / 12) - 
-                                        (tcoData.portnox.license / 36 + tcoData.portnox.fte / 12)));
-      
-      breakEvenEl.textContent = breakEvenMonths + ' months';
+      breakEvenEl.textContent = data.breakEvenMonths === 0 ? 
+        'Immediate' : `${data.breakEvenMonths} months`;
     }
     
     // Update risk reduction
     const riskReductionEl = document.getElementById('risk-reduction');
     if (riskReductionEl) {
-      // Calculate risk reduction (simplified)
-      const riskReduction = vendorId === 'noNac' ? 85 : 45;
-      
-      riskReductionEl.textContent = riskReduction + '%';
+      riskReductionEl.textContent = `${data.riskReduction}%`;
     }
     
-    // Update implementation time
+    // Update implementation time comparison
     const implementationTimeEl = document.getElementById('implementation-time');
     if (implementationTimeEl) {
-      // Get implementation times
-      const implementationTimes = {
-        'cisco': 90,
-        'aruba': 75,
-        'forescout': 80,
-        'fortinac': 60,
-        'nps': 21,
-        'securew2': 14,
-        'noNac': 0
-      };
+      const vendorDays = data.implementationDays[data.vendorId] || 60;
+      const portnoxDays = data.implementationDays.portnox;
+      const difference = vendorDays - portnoxDays;
       
-      const vendorTime = implementationTimes[vendorId] || 60;
-      const portnoxTime = 7;
-      
-      implementationTimeEl.textContent = (vendorTime - portnoxTime) + ' days faster';
+      implementationTimeEl.textContent = difference === 0 ? 
+        'Same as current' : `${difference} days faster`;
     }
     
-    // Add key insights
-    const insightsList = document.getElementById('key-insights-list');
-    if (insightsList) {
-      const vendorName = getVendorName(vendorId);
-      
-      // Clear existing insights
-      insightsList.innerHTML = '';
-      
-      // Create insights
-      const insights = [
-        {
-          title: 'Cost Efficiency',
-          description: `Portnox Cloud provides ${tcoData.savingsPercentage}% lower TCO compared to ${vendorName} over 3 years, primarily through eliminated hardware costs and reduced management overhead.`,
-          icon: 'fas fa-piggy-bank'
-        },
-        {
-          title: 'Implementation Speed',
-          description: `Deploy Portnox Cloud in 7 days compared to ${implementationTimes[vendorId] || 60} days for ${vendorName}, reducing time-to-security by ${Math.round(((implementationTimes[vendorId] || 60) - 7) / (implementationTimes[vendorId] || 60) * 100)}%.`,
-          icon: 'fas fa-rocket'
-        },
-        {
-          title: 'Operational Efficiency',
-          description: `Portnox requires 0.5 FTEs for management compared to ${(vendorId === 'noNac' ? 0 : 1.5)} FTEs for ${vendorName}, freeing up IT resources for strategic initiatives.`,
-          icon: 'fas fa-user-cog'
-        },
-        {
-          title: 'Cloud Advantages',
-          description: 'Cloud-native architecture eliminates maintenance windows, provides automatic updates, and scales elastically with your organization\'s growth.',
-          icon: 'fas fa-cloud'
-        }
-      ];
-      
-      // Add insights to container
-      insights.forEach(insight => {
-        const insightEl = document.createElement('div');
-        insightEl.className = 'insight-item';
-        
-        insightEl.innerHTML = `
-          <div class="insight-icon">
-            <i class="${insight.icon}"></i>
-          </div>
-          <div class="insight-content">
-            <h4>${insight.title}</h4>
-            <p>${insight.description}</p>
-          </div>
-        `;
-        
-        insightsList.appendChild(insightEl);
-      });
-    }
+    // Update key insights
+    updateKeyInsights(data);
   }
   
-  // Implementation times for reference
-  const implementationTimes = {
-    'cisco': 90,
-    'aruba': 75,
-    'forescout': 80,
-    'fortinac': 60,
-    'nps': 21,
-    'securew2': 14,
-    'noNac': 0
-  };
+  // Update key insights
+  function updateKeyInsights(data) {
+    const insightsList = document.getElementById('key-insights-list');
+    if (!insightsList) return;
+    
+    // Clear existing insights
+    insightsList.innerHTML = '';
+    
+    // Create insights based on data
+    const insights = generateInsights(data);
+    
+    // Add insights to container
+    insights.forEach(insight => {
+      const insightEl = document.createElement('div');
+      insightEl.className = 'insight-item';
+      
+      insightEl.innerHTML = `
+        <div class="insight-icon">
+          <i class="${insight.icon}"></i>
+        </div>
+        <div class="insight-content">
+          <h4>${insight.title}</h4>
+          <p>${insight.description}</p>
+        </div>
+      `;
+      
+      insightsList.appendChild(insightEl);
+    });
+  }
+  
+  // Generate insights based on data
+  function generateInsights(data) {
+    const vendorDays = data.implementationDays[data.vendorId] || 60;
+    const portnoxDays = data.implementationDays.portnox;
+    const implementationImprovement = Math.round(((vendorDays - portnoxDays) / vendorDays) * 100);
+    
+    // Base insights that apply to all vendors
+    const insights = [
+      {
+        title: 'Cost Efficiency',
+        description: `Portnox Cloud provides ${data.savingsPercentage}% lower TCO compared to ${data.vendorName} over 3 years, primarily through eliminated hardware costs and reduced management overhead.`,
+        icon: 'fas fa-piggy-bank'
+      },
+      {
+        title: 'Implementation Speed',
+        description: `Deploy Portnox Cloud in ${portnoxDays} days compared to ${vendorDays} days for ${data.vendorName}, reducing time-to-security by ${implementationImprovement}%.`,
+        icon: 'fas fa-rocket'
+      },
+      {
+        title: 'Operational Efficiency',
+        description: `Portnox requires ${(data.portnox.fte / data.vendor.fte).toFixed(1)}x fewer IT resources for management compared to ${data.vendorName}, freeing up staff for strategic initiatives.`,
+        icon: 'fas fa-user-cog'
+      }
+    ];
+    
+    // Add vendor-specific insight
+    if (data.vendorId === 'cisco') {
+      insights.push({
+        title: 'Hardware Elimination',
+        description: 'Portnox Cloud eliminates the need for ISE appliances, PSNs, and MnT nodes, reducing both capital expenditure and ongoing maintenance costs.',
+        icon: 'fas fa-server'
+      });
+    } else if (data.vendorId === 'aruba') {
+      insights.push({
+        title: 'Multi-Site Management',
+        description: 'Portnox Cloud provides centralized management for all locations without requiring publisher/subscriber node architecture, simplifying distributed deployments.',
+        icon: 'fas fa-sitemap'
+      });
+    } else if (data.vendorId === 'forescout') {
+      insights.push({
+        title: 'Deployment Simplicity',
+        description: 'Portnox Cloud eliminates the complex eyeSight appliance deployment and eyeControl management requirements of Forescout, with no physical or virtual appliances.',
+        icon: 'fas fa-puzzle-piece'
+      });
+    } else if (data.vendorId === 'nps') {
+      insights.push({
+        title: 'Enhanced Capabilities',
+        description: 'Portnox Cloud extends far beyond basic RADIUS authentication, providing comprehensive NAC functionality including device profiling and automated remediation.',
+        icon: 'fas fa-shield-alt'
+      });
+    } else {
+      insights.push({
+        title: 'Cloud Advantage',
+        description: 'Portnox Cloud delivers continuous updates, elastic scalability, and global accessibility without the maintenance windows or hardware refreshes of traditional solutions.',
+        icon: 'fas fa-cloud'
+      });
+    }
+    
+    return insights;
+  }
+  
+  // Setup result tabs functionality
+  setupResultTabs();
+  
+  // Function to setup result tabs
+  function setupResultTabs() {
+    const tabs = document.querySelectorAll('.result-tab');
+    const panels = document.querySelectorAll('.result-panel');
+    
+    if (tabs.length === 0 || panels.length === 0) return;
+    
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        // Get tab ID
+        const tabId = this.getAttribute('data-tab');
+        
+        // Remove active class from all tabs and panels
+        tabs.forEach(t => t.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        
+        // Add active class to clicked tab
+        this.classList.add('active');
+        
+        // Add active class to corresponding panel
+        const panel = document.getElementById(`${tabId}-panel`);
+        if (panel) {
+          panel.classList.add('active');
+        }
+      });
+    });
+  }
+  
+  // Add handler for the Calculate button
+  const calculateBtn = document.getElementById('calculate-btn');
+  if (calculateBtn) {
+    calculateBtn.addEventListener('click', function() {
+      // This will be handled by the wizard navigation script
+      console.log("Calculate button clicked");
+    });
+  }
+  
+  // Initialize charts if results container is visible (possible on refresh)
+  const resultsContainer = document.getElementById('results-container');
+  if (resultsContainer && !resultsContainer.classList.contains('hidden')) {
+    generateDummyCharts();
+  }
 });
 EOF
 
-# Add the chart data generator script to index.html
-echo "Adding chart data generator script to index.html..."
-if [ -f "index.html" ]; then
-  # Check if the script is already included
-  if ! grep -q "chart-data-generator.js" "index.html"; then
-    # Add the script before the closing body tag
-    sed -i 's/<\/body>/    <script src="js\/fixes\/chart-data-generator.js"><\/script>\n<\/body>/' "index.html"
-  fi
-else
-  echo "  Warning: index.html not found"
-fi
+# Step 4: Add styling fixes
+echo "=== Step 4: Adding styling fixes ==="
 
-# Add CSS fixes for vendor cards and preview panel
-echo "Adding CSS fixes for vendor cards and preview panel..."
+# Create directory for CSS fixes
+mkdir -p css/fixes
+
+# Create CSS fixes for vendor cards
 cat > css/fixes/vendor-cards.css << 'EOF'
 /* Vendor card and preview panel styles */
 .vendor-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
 }
 
 .vendor-card {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
-  border-radius: 10px;
-  border: 1px solid var(--border-color, #e0e0e0);
-  background-color: var(--bg-primary, #ffffff);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .vendor-card:hover {
@@ -1082,25 +1412,22 @@ cat > css/fixes/vendor-cards.css << 'EOF'
 }
 
 .vendor-card.active {
-  border: 2px solid var(--primary-color, #65BD44);
+  border: 2px solid #65BD44;
   box-shadow: 0 5px 15px rgba(101, 189, 68, 0.2);
 }
 
 .vendor-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 100px;
   height: 60px;
   margin-bottom: 15px;
-  border-radius: 5px;
-  overflow: hidden;
-  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .vendor-logo img {
-  max-width: 80%;
-  max-height: 80%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
 }
 
@@ -1110,48 +1437,46 @@ cat > css/fixes/vendor-cards.css << 'EOF'
 
 .vendor-info h3 {
   margin: 0 0 5px 0;
-  font-size: 16px;
   font-weight: 600;
-  color: var(--text-primary, #333333);
+  font-size: 16px;
 }
 
 .vendor-info p {
   margin: 0;
   font-size: 14px;
-  color: var(--text-secondary, #666666);
+  color: #666;
 }
 
 .vendor-badge {
   margin-top: 10px;
 }
 
-.badge-market-leader {
+.badge-market-leader, 
+.badge-warning {
   display: inline-block;
-  padding: 3px 8px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: #ffffff;
-  background-color: #1ba0d7;
+  padding: 3px 8px;
   border-radius: 20px;
+  color: white;
+}
+
+.badge-market-leader {
+  background-color: #1ba0d7;
 }
 
 .badge-warning {
-  display: inline-block;
-  padding: 3px 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #ffffff;
   background-color: #ee3124;
-  border-radius: 20px;
 }
 
 .vendor-comparison-preview {
-  background-color: var(--bg-secondary, #f8f9fa);
-  border: 1px solid var(--border-color, #e0e0e0);
+  margin-top: 20px;
+  background-color: #f8f9fa;
   border-radius: 10px;
   padding: 20px;
-  margin-top: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: none;
 }
 
 .preview-header {
@@ -1160,102 +1485,77 @@ cat > css/fixes/vendor-cards.css << 'EOF'
 
 .preview-header h3 {
   margin: 0 0 5px 0;
-  font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary, #333333);
+  font-size: 18px;
 }
 
 .preview-header p {
   margin: 0;
+  color: #666;
   font-size: 14px;
-  color: var(--text-secondary, #666666);
 }
 
 .preview-details {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 15px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .preview-detail {
-  display: flex;
-  flex-direction: column;
-  padding: 15px;
+  background-color: #fff;
   border-radius: 8px;
-  background-color: var(--bg-primary, #ffffff);
+  padding: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .detail-label {
-  font-size: 13px;
-  color: var(--text-secondary, #666666);
+  font-size: 12px;
+  color: #666;
   margin-bottom: 5px;
+  display: block;
 }
 
 .detail-value {
-  font-size: 15px;
   font-weight: 600;
-  color: var(--text-primary, #333333);
+  font-size: 14px;
 }
 
-/* Animations for vendor cards */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.preview-cta {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.vendor-card {
-  opacity: 0;
-  animation: fadeInUp 0.5s forwards;
+.preview-cta p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
 }
-
-.vendor-card:nth-child(1) { animation-delay: 0.1s; }
-.vendor-card:nth-child(2) { animation-delay: 0.2s; }
-.vendor-card:nth-child(3) { animation-delay: 0.3s; }
-.vendor-card:nth-child(4) { animation-delay: 0.4s; }
-.vendor-card:nth-child(5) { animation-delay: 0.5s; }
-.vendor-card:nth-child(6) { animation-delay: 0.6s; }
-.vendor-card:nth-child(7) { animation-delay: 0.7s; }
 EOF
 
-# Add the CSS file to index.html
-echo "Adding vendor cards CSS to index.html..."
-if [ -f "index.html" ]; then
-  # Check if the CSS file is already included
-  if ! grep -q "vendor-cards.css" "index.html"; then
-    # Add the CSS link before the closing head tag
-    sed -i 's/<\/head>/    <link rel="stylesheet" href="css\/fixes\/vendor-cards.css">\n<\/head>/' "index.html"
-  fi
-else
-  echo "  Warning: index.html not found"
-fi
-
 # Create CSS fixes for charts and results
-echo "Adding CSS fixes for charts and results..."
 cat > css/fixes/charts-results.css << 'EOF'
 /* Charts and results panel styles */
 .results-container {
-  padding: 20px;
-  background-color: var(--bg-primary, #ffffff);
+  background-color: #fff;
   border-radius: 10px;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  padding: 25px;
   margin-top: 30px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
 .results-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--border-color, #e0e0e0);
+  border-bottom: 1px solid #e0e0e0;
   padding-bottom: 15px;
+  margin-bottom: 25px;
 }
 
 .results-tabs {
@@ -1266,24 +1566,24 @@ cat > css/fixes/charts-results.css << 'EOF'
 
 .result-tab {
   padding: 8px 15px;
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
   border-radius: 20px;
-  background-color: var(--bg-secondary, #f8f9fa);
-  color: var(--text-secondary, #666666);
   font-size: 14px;
   font-weight: 500;
+  color: #666;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 1px solid var(--border-color, #e0e0e0);
 }
 
 .result-tab:hover {
-  background-color: var(--bg-tertiary, #f0f0f0);
+  background-color: #e9ecef;
 }
 
 .result-tab.active {
-  background-color: var(--primary-color, #65BD44);
+  background-color: #65BD44;
   color: white;
-  border-color: var(--primary-color, #65BD44);
+  border-color: #65BD44;
 }
 
 .results-actions {
@@ -1291,63 +1591,75 @@ cat > css/fixes/charts-results.css << 'EOF'
   gap: 10px;
 }
 
+.result-panel {
+  display: none;
+}
+
+.result-panel.active {
+  display: block;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .executive-summary {
   margin-bottom: 30px;
 }
 
 .executive-summary h2 {
-  margin-bottom: 20px;
-  color: var(--text-primary, #333333);
   font-size: 24px;
   font-weight: 600;
+  margin-bottom: 20px;
 }
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
 }
 
 .summary-card {
-  padding: 20px;
+  background-color: #f8f9fa;
   border-radius: 10px;
-  background-color: var(--bg-secondary, #f8f9fa);
+  padding: 20px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .summary-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
 .summary-card.highlight {
-  background-color: var(--primary-light, #f0f7ee);
-  border-left: 4px solid var(--primary-color, #65BD44);
+  background-color: #f0f7ee;
+  border-left: 4px solid #65BD44;
 }
 
 .card-icon {
   font-size: 24px;
-  color: var(--primary-color, #65BD44);
+  color: #65BD44;
   margin-bottom: 15px;
 }
 
 .card-content h4 {
-  margin: 0 0 10px 0;
   font-size: 16px;
-  color: var(--text-secondary, #666666);
+  color: #666;
+  margin: 0 0 10px 0;
 }
 
 .metric-value {
   font-size: 28px;
   font-weight: 700;
-  color: var(--text-primary, #333333);
   margin-bottom: 5px;
 }
 
 .metric-detail {
   font-size: 14px;
-  color: var(--text-secondary, #666666);
+  color: #666;
 }
 
 .key-insights {
@@ -1355,126 +1667,386 @@ cat > css/fixes/charts-results.css << 'EOF'
 }
 
 .key-insights h3 {
-  margin-bottom: 20px;
-  color: var(--text-primary, #333333);
   font-size: 20px;
   font-weight: 600;
+  margin-bottom: 20px;
 }
 
 .insights-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: 20px;
 }
 
 .insight-item {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   display: flex;
   gap: 15px;
-  padding: 20px;
-  border-radius: 10px;
-  background-color: var(--bg-secondary, #f8f9fa);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .insight-icon {
+  width: 50px;
+  height: 50px;
+  background-color: #f0f7ee;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: var(--primary-light, #f0f7ee);
   flex-shrink: 0;
 }
 
 .insight-icon i {
   font-size: 20px;
-  color: var(--primary-color, #65BD44);
+  color: #65BD44;
 }
 
 .insight-content h4 {
-  margin: 0 0 10px 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary, #333333);
+  margin: 0 0 10px 0;
 }
 
 .insight-content p {
-  margin: 0;
   font-size: 14px;
-  color: var(--text-secondary, #666666);
-  line-height: 1.5;
+  margin: 0;
+  color: #666;
 }
 
 .chart-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
 }
 
 .chart-card {
-  padding: 20px;
+  background-color: #f8f9fa;
   border-radius: 10px;
-  background-color: var(--bg-secondary, #f8f9fa);
+  padding: 20px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .chart-card h3 {
-  margin: 0 0 15px 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary, #333333);
+  margin: 0 0 15px 0;
 }
 
+/* Fix chart height issues */
 canvas {
-  width: 100% !important;
-  height: 300px !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 300px !important;
 }
 EOF
 
-# Add the charts and results CSS to index.html
-echo "Adding charts and results CSS to index.html..."
-if [ -f "index.html" ]; then
-  # Check if the CSS file is already included
-  if ! grep -q "charts-results.css" "index.html"; then
-    # Add the CSS link before the closing head tag
-    sed -i 's/<\/head>/    <link rel="stylesheet" href="css\/fixes\/charts-results.css">\n<\/head>/' "index.html"
-  fi
-else
-  echo "  Warning: index.html not found"
-fi
+# Create CSS fixes for wizard steps
+cat > css/fixes/wizard-steps.css << 'EOF'
+/* Wizard steps styling fixes */
+.wizard-container {
+  background-color: #fff;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  padding: 25px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+}
 
-# Fix wizard step navigation in index.html
-echo "Fixing wizard step navigation in index.html..."
+.wizard-step {
+  display: none;
+}
+
+.wizard-step.active {
+  display: block;
+  animation: fadeIn 0.5s ease;
+}
+
+.step-header {
+  margin-bottom: 25px;
+}
+
+.step-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+}
+
+.step-header p {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+.wizard-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Progress steps */
+.wizard-progress {
+  margin-bottom: 30px;
+}
+
+.progress-bar {
+  height: 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #65BD44;
+  border-radius: 4px;
+  width: 0;
+  transition: width 0.3s ease;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  flex: 1;
+  position: relative;
+}
+
+.progress-step::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: calc(50% + 18px);
+  width: calc(100% - 36px);
+  height: 2px;
+  background-color: #e0e0e0;
+}
+
+.progress-step:last-child::before {
+  display: none;
+}
+
+.progress-step.completed::before {
+  background-color: #65BD44;
+}
+
+.step-number {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.progress-step.active .step-number {
+  background-color: #65BD44;
+}
+
+.progress-step.completed .step-number {
+  background-color: #65BD44;
+}
+
+.step-label {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+}
+
+.progress-step.active .step-label {
+  color: #333;
+  font-weight: 500;
+}
+
+/* Error container */
+#wizard-error-container {
+  margin-bottom: 20px;
+}
+
+.error-message-box {
+  background-color: #fff8f8;
+  border-left: 4px solid #ee3124;
+  padding: 15px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  animation: fadeIn 0.3s ease;
+}
+
+.error-message-box i {
+  color: #ee3124;
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.error-message-box span {
+  flex: 1;
+  color: #333;
+}
+
+.close-error {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  margin-left: 10px;
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  display: none;
+}
+
+.loading-spinner {
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #65BD44;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+EOF
+
+# Step 5: Update index.html with fixes
+echo "=== Step 5: Updating index.html with fixes ==="
+
 if [ -f "index.html" ]; then
-  # Fix wizard navigation buttons duplicated inside steps
-  sed -i '/<div class="wizard-navigation">/,/<\/div>/d' $(grep -l '<div class="wizard-navigation">' index.html | grep -v 'wizard-controller.js')
+  # Backup original index.html
+  cp "index.html" "$BACKUP_DIR/index.html"
   
-  # Add wizard navigation at the bottom of the wizard container
-  if ! grep -q '<div id="wizard-navigation" class="wizard-navigation">' "index.html"; then
-    sed -i '/<div class="wizard-container" id="wizard-container">/,/<\/div>/s/<\/div>$/  <div id="wizard-navigation" class="wizard-navigation">\n    <button id="prev-step" class="btn btn-outline"><i class="fas fa-chevron-left"><\/i> Previous<\/button>\n    <button id="next-step" class="btn btn-primary">Next <i class="fas fa-chevron-right"><\/i><\/button>\n  <\/div>\n<\/div>/' "index.html"
+  # Add CSS fixes to index.html
+  if ! grep -q "vendor-cards.css" "index.html"; then
+    sed -i 's/<\/head>/    <link rel="stylesheet" href="css\/fixes\/vendor-cards.css">\n    <link rel="stylesheet" href="css\/fixes\/charts-results.css">\n    <link rel="stylesheet" href="css\/fixes\/wizard-steps.css">\n<\/head>/' "index.html"
+  fi
+  
+  # Add JavaScript fixes to index.html
+  if ! grep -q "image-fallback.js" "index.html"; then
+    sed -i 's/<\/body>/    <script src="js\/fixes\/image-fallback.js"><\/script>\n    <script src="js\/fixes\/wizard-navigation-fix.js"><\/script>\n    <script src="js\/fixes\/vendor-cards-fix.js"><\/script>\n    <script src="js\/fixes\/chart-generator.js"><\/script>\n<\/body>/' "index.html"
+  fi
+  
+  echo "Updated index.html with fixes"
+else
+  echo "Warning: index.html not found"
+fi
+
+# Step 6: Verify fixes
+echo "=== Step 6: Verifying fixes ==="
+
+# Check if essential files exist
+echo "Checking if essential files exist..."
+missing_files=0
+
+for file in img/vendors/cisco-logo.png img/vendors/aruba-logo.png img/vendors/forescout-logo.png img/vendors/fortinac-logo.png img/vendors/microsoft-logo.png img/vendors/securew2-logo.png; do
+  if [ ! -f "$file" ]; then
+    echo "Warning: $file is still missing"
+    missing_files=$((missing_files + 1))
+  else
+    echo "✓ $file exists"
+  fi
+done
+
+if [ $missing_files -eq 0 ]; then
+  echo "All vendor logo files exist"
+else
+  echo "Warning: $missing_files vendor logo files are still missing"
+fi
+
+# Create a simple test script to verify JavaScript syntax
+echo "Checking JavaScript syntax..."
+js_errors=0
+
+for file in js/features/wizard/enhanced-wizard.js js/wizards/wizard-controller.js js/components/calculator.js js/components/charts.js; do
+  if [ -f "$file" ]; then
+    if command -v node > /dev/null; then
+      if ! node --check "$file" > /dev/null 2>&1; then
+        echo "Warning: $file still has syntax errors"
+        js_errors=$((js_errors + 1))
+      else
+        echo "✓ $file syntax is valid"
+      fi
+    else
+      echo "node not available, skipping syntax check for $file"
+    fi
+  else
+    echo "Warning: $file not found"
+  fi
+done
+
+if [ $js_errors -eq 0 ]; then
+  echo "All JavaScript files have valid syntax"
+else
+  echo "Warning: $js_errors JavaScript files still have syntax errors"
+fi
+
+# Step 7: Commit changes to git if git is available
+if command -v git > /dev/null; then
+  echo "=== Step 7: Committing changes to git ==="
+  
+  # Check if we're in a git repository
+  if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    # Add all changes
+    git add -A
+    
+    # Commit changes
+    git commit -m "Fix NAC Wizard issues
+
+- Fixed missing vendor logo images
+- Fixed JavaScript syntax errors
+- Added fallback image handler
+- Fixed chart generation issues
+- Enhanced wizard navigation
+- Added comprehensive CSS fixes
+- Added dummy data generator for charts
+- Fixed Canvas reuse error in sensitivity.js" || echo "Failed to commit changes"
+    
+    echo "Changes committed to git"
+  else
+    echo "Not in a git repository, skipping commit step"
   fi
 else
-  echo "  Warning: index.html not found"
+  echo "Git not available, skipping commit step"
 fi
 
-# Commit changes to git if git is available
-if command -v git >/dev/null 2>&1; then
-  echo "Committing changes to git..."
-  git add .
-  git commit -m "Fix NAC Wizard errors and enhance functionality
-
-- Fixed syntax errors in JavaScript files
-- Added placeholder vendor logo images
-- Fixed chart data generation errors
-- Enhanced vendor card interactions
-- Added CSS fixes for visual display
-- Improved wizard step navigation
-- Added error handling and fallbacks" || echo "Failed to commit changes"
-else
-  echo "Git not found, skipping commit step"
-fi
-
-echo "NAC Wizard Error Fix Script completed successfully!"
-echo "Refresh the page in your browser to see the changes."
+echo "=== NAC Wizard Fix Script Complete ==="
+echo "Refresh the page in your browser to see the changes"
