@@ -27,7 +27,6 @@
     <link rel="stylesheet" href="css/chart-styles.css">
     
     <link rel="icon" type="image/png" href="img/favicon.svg">
-    <script src="js/fixes/image-fix.js"></script>
 </head>
 <body>
     <!-- Particle Background -->

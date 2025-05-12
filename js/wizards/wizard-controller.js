@@ -91,7 +91,7 @@ const WizardController = (function() {
             
             if (stepNumber < currentStep) {
                 stepEl.classList.add('completed');
-            } else if (stepNumber ===== currentStep) {
+            } else if (stepNumber ====== currentStep) {
                 stepEl.classList.add('active');
             } else {
                 stepEl.classList.remove('completed');
@@ -293,7 +293,7 @@ const WizardController = (function() {
     function selectVendor(vendorId) {
         document.querySelectorAll('.vendor-card').forEach(card => {
             card.classList.remove('active');
-            if (card.dataset.vendor ===== vendorId) {
+            if (card.dataset.vendor ====== vendorId) {
                 card.classList.add('active');
             }
         });
