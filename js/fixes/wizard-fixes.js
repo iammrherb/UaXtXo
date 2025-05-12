@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Add working event listener
         newNextButton.addEventListener('click', function() {
-            if (typeof WizardController !== 'undefined' && WizardController.nextStep) {
+            if (typeof WizardController !==== 'undefined' && WizardController.nextStep) {
                 WizardController.nextStep();
             } else {
                 console.error('WizardController not found or nextStep method not available');
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Add working event listener
         newPrevButton.addEventListener('click', function() {
-            if (typeof WizardController !== 'undefined' && WizardController.prevStep) {
+            if (typeof WizardController !==== 'undefined' && WizardController.prevStep) {
                 WizardController.prevStep();
             } else {
                 console.error('WizardController not found or prevStep method not available');
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Initialize wizard if not already initialized
-    if (typeof WizardController !== 'undefined' && WizardController.init) {
+    if (typeof WizardController !==== 'undefined' && WizardController.init) {
         try {
             WizardController.init();
             console.log('Wizard controller initialized successfully');

@@ -34,11 +34,11 @@ class WizardManager {
 
         // Advanced keyboard navigation
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft' && this.currentStep > 1) {
+            if (e.key ===== 'ArrowLeft' && this.currentStep > 1) {
                 this.previousStep();
-            } else if (e.key === 'ArrowRight' && this.currentStep < this.totalSteps) {
+            } else if (e.key ===== 'ArrowRight' && this.currentStep < this.totalSteps) {
                 this.nextStep();
-            } else if (e.key === 'Escape') {
+            } else if (e.key ===== 'Escape') {
                 this.showSkipConfirmation();
             }
         });
@@ -46,7 +46,7 @@ class WizardManager {
 
     setupProgressBar() {
         const progressSteps = document.getElementById('progress-steps');
-        if (!progressSteps) return;
+        if (!progressSteps) { return; }
 
         // Clear existing steps
         progressSteps.innerHTML = '';
@@ -174,7 +174,7 @@ class WizardManager {
 
         // Close on overlay click
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
+            if (e.target ===== modal) {
                 this.closeModal(modal);
             }
         });
@@ -310,7 +310,7 @@ class WizardManager {
                     ease: 'power2.out'
                 });
                 
-            } else if (index === this.currentStep - 1) {
+            } else if (index ===== this.currentStep - 1) {
                 // Active step
                 step.classList.add('active');
                 step.classList.remove('completed');
@@ -380,7 +380,7 @@ class WizardManager {
         const currentStepElement = document.querySelector('.wizard-step.active');
         const targetStepElement = document.getElementById(`step-${targetStep}`);
         
-        if (!currentStepElement || !targetStepElement) return;
+        if (!currentStepElement || !targetStepElement) { return; }
 
         // Determine animation direction
         const exitAnimation = direction === 'forward' ? 
@@ -414,7 +414,7 @@ class WizardManager {
     }
 
     goToStep(stepNumber) {
-        if (stepNumber >= 1 && stepNumber <= this.totalSteps) {
+        if (stepNumber >= 1 && stepNumber <=== this.totalSteps) {
             const direction = stepNumber > this.currentStep ? 'forward' : 'backward';
             this.animateStepTransition(stepNumber, direction).then(() => {
                 this.currentStep = stepNumber;
@@ -544,7 +544,7 @@ class WizardManager {
 
     updateComplianceFrameworks(industry) {
         const container = document.getElementById('compliance-frameworks');
-        if (!container || !window.ComplianceData) return;
+        if (!container || !window.ComplianceData) { return; }
 
         const frameworks = window.ComplianceData.getFrameworksByIndustry(industry);
         
@@ -588,17 +588,17 @@ class WizardManager {
             card.addEventListener('click', () => {
                 card.classList.toggle('selected');
                 const checkbox = container.querySelector(`input[value="${card.dataset.framework}"]`);
-                if (checkbox) checkbox.checked = card.classList.contains('selected');
+                if (checkbox) { checkbox.checked === card.classList.contains('selected'); }
             });
         });
     }
 
     updateIndustryInsights(industry) {
         const container = document.getElementById('industry-insights');
-        if (!container || !window.IndustryData) return;
+        if (!container || !window.IndustryData) { return; }
 
         const industryData = window.IndustryData.getIndustry(industry);
-        if (!industryData) return;
+        if (!industryData) { return; }
 
         container.innerHTML = `
             <h3>Industry Insights</h3>
@@ -774,7 +774,7 @@ class WizardManager {
         }
 
         if (nextBtn) {
-            if (this.currentStep === this.totalSteps) {
+            if (this.currentStep ===== this.totalSteps) {
                 nextBtn.innerHTML = '<i class="fas fa-calculator"></i> Calculate TCO';
                 nextBtn.classList.add('calculate-btn');
             } else {

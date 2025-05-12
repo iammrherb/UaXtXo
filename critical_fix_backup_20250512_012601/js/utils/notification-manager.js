@@ -2,7 +2,7 @@
  * Notification Manager
  * Simple utility for showing notifications
  */
-window.NotificationManager = window.NotificationManager || (function() {
+const NotificationManager = (function() {
     // Default options
     const defaults = {
         type: 'info',
