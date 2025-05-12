@@ -1010,8 +1010,8 @@ class ChartManager {
             let datasets = [];
             
             // If we have implementation data, use it
-            if (EnhancedVendors.implementationTimeline && EnhancedVendors.implementationTimeline.phases) {
-                const timeline = EnhancedVendors.implementationTimeline.phases;
+            if (EnhancedVendors.implementationTimeline && EnhancedVendors.(implementationTimeline && implementationTimeline.phases ? implementationTimeline.phases : [])) {
+                const timeline = EnhancedVendors.(implementationTimeline && implementationTimeline.phases ? implementationTimeline.phases : []);
                 
                 // Prepare data for selected vendor
                 const selectedVendorData = timeline.map(phase => phase[selectedVendor]?.days || 0);

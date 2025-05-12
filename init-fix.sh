@@ -1,15 +1,18 @@
 #!/bin/bash
 
-# Final Wizard Controller Fix
-# This script identifies and fixes the actual wizard controller file
+# Targeted Fixes Only - No Rewrites
+# Fixes specific syntax errors and image paths without rewriting anything
+
+# Set exit on error
+set -e
 
 # Define colors for output
 GREEN='\033[0;32m'
-RED='\033[0;31m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Define project directory
+# Define project directory 
 PROJECT_DIR="$(pwd)"
 
 # Log function
@@ -22,483 +25,242 @@ warn() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-# Find all potential wizard files
-find_wizard_files() {
-    log "Finding all potential wizard controller files..."
-    WIZARD_FILES=$(find "${PROJECT_DIR}" -name "*.js" -type f -exec grep -l "wizard" {} \; 2>/dev/null)
+# Error function
+error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+    exit 1
+}
+
+# Fix duplicate NotificationManager declaration
+fix_notification_manager() {
+    log "Finding and fixing NotificationManager issues"
     
-    if [ -z "$WIZARD_FILES" ]; then
-        warn "No wizard files found"
-        return
-    fi
+    NOTIFICATION_FILES=$(find "${PROJECT_DIR}" -name "*.js" -type f -exec grep -l "NotificationManager" {} \; 2>/dev/null || true)
     
-    log "Found potential wizard files:"
-    echo "$WIZARD_FILES"
-    
-    # Look for files with "nextStep" function
-    log "Searching for files with wizard navigation functions..."
-    NEXT_STEP_FILES=$(grep -l "nextStep" $WIZARD_FILES 2>/dev/null)
-    
-    if [ -n "$NEXT_STEP_FILES" ]; then
-        log "Files with nextStep function:"
-        echo "$NEXT_STEP_FILES"
+    if [[ -n "$NOTIFICATION_FILES" ]]; then
+        log "Found potential NotificationManager declarations in: "
+        echo "$NOTIFICATION_FILES"
         
-        # Target these files for fixes
-        for file in $NEXT_STEP_FILES; do
-            fix_wizard_file "$file"
+        # Handle each file that might redefine NotificationManager
+        for file in $NOTIFICATION_FILES; do
+            if [[ "$(basename "$file")" == "notification.js" ]]; then
+                log "Fixing $file"
+                # Modify to only define if not already defined
+                sed -i.bak "s/const NotificationManager = /window.NotificationManager = window.NotificationManager || /" "$file"
+            fi
         done
     else
-        warn "No files with nextStep function found"
+        log "No NotificationManager declarations found"
     fi
 }
 
-# Fix a specific wizard file
-fix_wizard_file() {
-    local file="$1"
-    log "Fixing wizard file: $file"
+# Fix syntax error in wizard.js
+fix_wizard_syntax() {
+    log "Finding and fixing wizard syntax errors"
     
-    # Create backup
-    cp "$file" "${file}.bak"
+    # Find all wizard files with "nextStep" function
+    WIZARD_FILES=$(find "${PROJECT_DIR}" -name "*.js" -type f -exec grep -l "nextStep" {} \; 2>/dev/null || true)
     
-    # Look for assignment in if condition
-    ASSIGNMENT_LINES=$(grep -n "if.*=.*)" "$file" 2>/dev/null)
-    
-    if [ -n "$ASSIGNMENT_LINES" ]; then
-        log "Found potential assignment issues in if conditions:"
-        echo "$ASSIGNMENT_LINES"
+    if [[ -n "$WIZARD_FILES" ]]; then
+        log "Found potential wizard files:"
+        echo "$WIZARD_FILES"
         
-        # Fix each line with the issue
-        echo "$ASSIGNMENT_LINES" | while read -r line_content; do
-            # Extract line number
-            line_num=$(echo "$line_content" | cut -d: -f1)
+        # Look for assignment in if condition in each file
+        for file in $WIZARD_FILES; do
+            log "Checking $file for syntax errors"
             
-            log "Fixing line $line_num"
-            # Replace = with === in if conditions
-            sed -i "${line_num}s/if (.*= )/if (=== )/" "$file"
-            sed -i "${line_num}s/if (\(.*\)= \(.*\))/if (\1=== \2)/" "$file"
-        done
-    else
-        log "No assignment issues found in if conditions"
-    fi
-    
-    # Make sure conditional blocks have proper braces
-    CONDITIONAL_LINES=$(grep -n "if.*) .*;" "$file" 2>/dev/null)
-    
-    if [ -n "$CONDITIONAL_LINES" ]; then
-        log "Found potential missing braces in conditionals:"
-        echo "$CONDITIONAL_LINES"
-        
-        # Fix each line with the issue
-        echo "$CONDITIONAL_LINES" | while read -r line_content; do
-            # Extract line number
-            line_num=$(echo "$line_content" | cut -d: -f1)
+            # Find lines with potential assignment in if condition
+            ASSIGNMENT_LINES=$(grep -n "if.*=.*)" "$file" 2>/dev/null || true)
             
-            log "Adding braces to line $line_num"
-            # Add braces around single-line conditionals
-            sed -i "${line_num}s/if \(.*\)) \(.*\);/if \1) { \2; }/" "$file"
-        done
-    else
-        log "No missing braces issues found in conditionals"
-    fi
-    
-    log "Fixes applied to $file"
-}
-
-# Create a completely new wizard controller
-create_standalone_wizard() {
-    log "Creating standalone wizard controller..."
-    
-    # Create directory
-    mkdir -p "${PROJECT_DIR}/js/wizards/standalone"
-    
-    # Create the standalone wizard controller
-    cat > "${PROJECT_DIR}/js/wizards/standalone/wizard-controller.js" << 'EOL'
-/**
- * Standalone Wizard Controller
- * Complete implementation that works independently of existing code
- */
-const PortnoxWizard = (function() {
-    // Private variables
-    let currentStep = 1;
-    const totalSteps = 5;
-    
-    // Step data (to be populated from DOM)
-    let steps = [];
-    
-    // DOM elements
-    let wizardContainer;
-    let progressBar;
-    let nextButton;
-    let prevButton;
-    
-    // Initialize
-    function init() {
-        console.log('Initializing PortnoxWizard...');
-        
-        try {
-            // Find DOM elements
-            wizardContainer = document.querySelector('.wizard-container');
-            progressBar = document.getElementById('wizard-progress-fill');
-            nextButton = document.getElementById('next-step');
-            prevButton = document.getElementById('prev-step');
-            
-            if (!wizardContainer) {
-                console.error('Wizard container not found');
-                return;
-            }
-            
-            // Find all wizard steps
-            const stepElements = document.querySelectorAll('.wizard-step');
-            steps = Array.from(stepElements).map((element, index) => ({
-                element: element,
-                id: index + 1,
-                title: element.querySelector('.step-header h2')?.textContent || `Step ${index + 1}`
-            }));
-            
-            // Attach event listeners
-            if (nextButton) {
-                nextButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    goToNextStep();
-                });
-            }
-            
-            if (prevButton) {
-                prevButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    goToPrevStep();
-                });
-            }
-            
-            // Handle vendor card selection
-            document.querySelectorAll('.vendor-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    document.querySelectorAll('.vendor-card').forEach(c => {
-                        c.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                });
-            });
-            
-            // Handle industry selection
-            const industrySelect = document.getElementById('industry-select');
-            if (industrySelect) {
-                industrySelect.addEventListener('change', function() {
-                    handleIndustryChange(this.value);
-                });
-            }
-            
-            // Initialize UI
-            showStep(currentStep);
-            updateProgressBar();
-            
-            console.log('PortnoxWizard initialized successfully');
-        } catch (error) {
-            console.error('Error initializing wizard:', error);
-        }
-    }
-    
-    // Show a specific step
-    function showStep(stepNumber) {
-        try {
-            if (stepNumber < 1 || stepNumber > totalSteps) {
-                console.error(`Invalid step number: ${stepNumber}`);
-                return;
-            }
-            
-            // Update current step
-            currentStep = stepNumber;
-            
-            // Hide all steps
-            steps.forEach(step => {
-                step.element.classList.remove('active');
-            });
-            
-            // Show current step
-            const currentStepElement = steps.find(s => s.id === currentStep)?.element;
-            if (currentStepElement) {
-                currentStepElement.classList.add('active');
-                currentStepElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-            
-            // Update UI
-            updateButtons();
-            updateProgressBar();
-            
-            console.log(`Showing step ${currentStep} of ${totalSteps}`);
-        } catch (error) {
-            console.error('Error showing step:', error);
-        }
-    }
-    
-    // Go to next step
-    function goToNextStep() {
-        try {
-            if (validateCurrentStep()) {
-                if (currentStep < totalSteps) {
-                    showStep(currentStep + 1);
-                } else {
-                    // Final step - show results
-                    showResults();
-                }
-            }
-        } catch (error) {
-            console.error('Error going to next step:', error);
-        }
-    }
-    
-    // Go to previous step
-    function goToPrevStep() {
-        try {
-            if (currentStep > 1) {
-                showStep(currentStep - 1);
-            }
-        } catch (error) {
-            console.error('Error going to previous step:', error);
-        }
-    }
-    
-    // Validate current step
-    function validateCurrentStep() {
-        try {
-            switch (currentStep) {
-                case 1: // Vendor selection
-                    const selectedVendor = document.querySelector('.vendor-card.active');
-                    if (!selectedVendor) {
-                        showError('Please select a vendor or "No NAC" option.');
-                        return false;
-                    }
-                    break;
+            if [[ -n "$ASSIGNMENT_LINES" ]]; then
+                log "Found potential assignment issues in $file:"
+                echo "$ASSIGNMENT_LINES"
+                
+                # Fix each line with an assignment issue
+                while IFS= read -r line; do
+                    # Extract line number
+                    LINE_NUM=$(echo "$line" | cut -d: -f1)
+                    LINE_CONTENT=$(echo "$line" | cut -d: -f2-)
                     
-                case 2: // Industry selection
-                    const industrySelect = document.getElementById('industry-select');
-                    if (industrySelect && !industrySelect.value) {
-                        showError('Please select your industry.');
-                        return false;
-                    }
-                    break;
+                    log "Fixing line $LINE_NUM: $LINE_CONTENT"
                     
-                case 3: // Organization details
-                    const deviceCount = document.getElementById('device-count');
-                    if (deviceCount && (!deviceCount.value || parseInt(deviceCount.value) <= 0)) {
-                        showError('Please enter a valid number of devices.');
-                        return false;
-                    }
-                    break;
-            }
+                    # Replace = with === in if conditions
+                    sed -i.bak "${LINE_NUM}s/if (\([^=]*\)= \([^=)]*\))/if (\1=== \2)/" "$file"
+                done <<< "$ASSIGNMENT_LINES"
+            fi
             
-            return true;
-        } catch (error) {
-            console.error('Error validating step:', error);
-            return true; // Allow to proceed even if validation fails due to error
-        }
-    }
-    
-    // Show error message
-    function showError(message) {
-        // Try to use NotificationManager if available
-        if (window.NotificationManager && typeof window.NotificationManager.showNotification === 'function') {
-            window.NotificationManager.showNotification({
-                title: 'Validation Error',
-                message: message,
-                type: 'error',
-                duration: 5000
-            });
-        } else {
-            // Fallback to alert
-            alert(message);
-        }
-    }
-    
-    // Update button states and text
-    function updateButtons() {
-        try {
-            if (prevButton) {
-                prevButton.disabled = currentStep === 1;
-                prevButton.style.display = currentStep === 1 ? 'none' : 'block';
-            }
+            # Find conditional statements without braces
+            BRACE_LINES=$(grep -n "if.*) [^{].*;" "$file" 2>/dev/null || true)
             
-            if (nextButton) {
-                nextButton.textContent = currentStep === totalSteps ? 'View Results' : 'Next';
-            }
-        } catch (error) {
-            console.error('Error updating buttons:', error);
-        }
-    }
+            if [[ -n "$BRACE_LINES" ]]; then
+                log "Found potential missing braces in $file:"
+                echo "$BRACE_LINES"
+                
+                # Fix each line with missing braces
+                while IFS= read -r line; do
+                    # Extract line number
+                    LINE_NUM=$(echo "$line" | cut -d: -f1)
+                    LINE_CONTENT=$(echo "$line" | cut -d: -f2-)
+                    
+                    log "Adding braces to line $LINE_NUM: $LINE_CONTENT"
+                    
+                    # Add braces around single-line conditionals
+                    sed -i.bak "${LINE_NUM}s/if \([^{]*\)) \(.*\);/if \1) { \2; }/" "$file"
+                done <<< "$BRACE_LINES"
+            fi
+        done
+    else
+        log "No wizard files found"
+    fi
+}
+
+# Fix syntax error in calculator.js
+fix_calculator_syntax() {
+    log "Finding and fixing calculator syntax errors"
     
-    // Update progress bar
-    function updateProgressBar() {
-        try {
-            if (progressBar) {
-                const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
-                progressBar.style.width = `${progress}%`;
-            }
-        } catch (error) {
-            console.error('Error updating progress bar:', error);
-        }
-    }
+    # Find calculator files
+    CALCULATOR_FILES=$(find "${PROJECT_DIR}" -name "calculator*.js" -type f 2>/dev/null || true)
     
-    // Handle industry change
-    function handleIndustryChange(industry) {
-        try {
-            console.log(`Industry changed to: ${industry}`);
+    if [[ -n "$CALCULATOR_FILES" ]]; then
+        log "Found calculator files:"
+        echo "$CALCULATOR_FILES"
+        
+        # Look for assignment in if condition in each file
+        for file in $CALCULATOR_FILES; do
+            log "Checking $file for syntax errors"
             
-            // Update compliance frameworks section
-            const frameworksContainer = document.getElementById('compliance-frameworks');
-            if (frameworksContainer) {
-                // Simple placeholder content
-                frameworksContainer.innerHTML = `<p>Showing compliance frameworks for ${industry} industry...</p>`;
-            }
-        } catch (error) {
-            console.error('Error handling industry change:', error);
-        }
-    }
-    
-    // Show results
-    function showResults() {
-        try {
-            console.log('Showing results...');
+            # Find lines with potential assignment in if condition
+            ASSIGNMENT_LINES=$(grep -n "if.*=.*)" "$file" 2>/dev/null || true)
             
-            // Hide wizard container
-            if (wizardContainer) {
-                wizardContainer.style.display = 'none';
-            }
+            if [[ -n "$ASSIGNMENT_LINES" ]]; then
+                log "Found potential assignment issues in $file:"
+                echo "$ASSIGNMENT_LINES"
+                
+                # Fix each line with an assignment issue
+                while IFS= read -r line; do
+                    # Extract line number
+                    LINE_NUM=$(echo "$line" | cut -d: -f1)
+                    LINE_CONTENT=$(echo "$line" | cut -d: -f2-)
+                    
+                    log "Fixing line $LINE_NUM: $LINE_CONTENT"
+                    
+                    # Replace = with === in if conditions
+                    sed -i.bak "${LINE_NUM}s/if (\([^=]*\)= \([^=)]*\))/if (\1=== \2)/" "$file"
+                done <<< "$ASSIGNMENT_LINES"
+            fi
+        done
+    else
+        log "No calculator files found"
+    fi
+}
+
+# Fix undefined 'phases' property in charts.js
+fix_charts_phases() {
+    log "Finding and fixing chart phases undefined issues"
+    
+    # Find charts files
+    CHARTS_FILES=$(find "${PROJECT_DIR}" -name "chart*.js" -type f 2>/dev/null || true)
+    
+    if [[ -n "$CHARTS_FILES" ]]; then
+        log "Found chart files:"
+        echo "$CHARTS_FILES"
+        
+        # Look for phases property access in each file
+        for file in $CHARTS_FILES; do
+            log "Checking $file for phases property access"
             
-            // Show results container
-            const resultsContainer = document.getElementById('results-container');
-            if (resultsContainer) {
-                resultsContainer.classList.remove('hidden');
-                resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+            # Find lines that access .phases property
+            PHASES_LINES=$(grep -n "\.phases" "$file" 2>/dev/null || true)
             
-            // Calculate results if available
-            if (window.Calculator && typeof window.Calculator.calculateTCO === 'function') {
-                window.Calculator.calculateTCO();
-            }
-        } catch (error) {
-            console.error('Error showing results:', error);
-        }
-    }
+            if [[ -n "$PHASES_LINES" ]]; then
+                log "Found potential phases access issues in $file:"
+                echo "$PHASES_LINES"
+                
+                # Fix each line with .phases access
+                while IFS= read -r line; do
+                    # Extract line number
+                    LINE_NUM=$(echo "$line" | cut -d: -f1)
+                    LINE_CONTENT=$(echo "$line" | cut -d: -f2-)
+                    
+                    log "Adding safety check to line $LINE_NUM: $LINE_CONTENT"
+                    
+                    # Add safety check for phases property
+                    # This is a simple pattern replacement, might need adjustment for specific files
+                    sed -i.bak "${LINE_NUM}s/\(\w*\)\.phases/(\1 \&\& \1.phases ? \1.phases : [])/" "$file"
+                done <<< "$PHASES_LINES"
+            fi
+        done
+    else
+        log "No chart files found"
+    fi
+}
+
+# Fix vendor logo paths in index.html
+fix_vendor_logos() {
+    log "Fixing vendor logo paths in index.html"
     
-    // Public API
-    return {
-        init: init,
-        goToStep: showStep,
-        nextStep: goToNextStep,
-        prevStep: goToPrevStep,
-        getCurrentStep: function() { return currentStep; },
-        getTotalSteps: function() { return totalSteps; }
-    };
-})();
-
-// Initialize wizard when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait a moment to ensure all other scripts have loaded
-    setTimeout(function() {
-        PortnoxWizard.init();
-    }, 100);
-});
-EOL
-    
-    # Create a simple CSS fix for the wizard
-    cat > "${PROJECT_DIR}/css/wizards/standalone/wizard-fix.css" << 'EOL'
-/* Standalone Wizard CSS Fixes */
-
-/* Fix wizard step visibility */
-.wizard-step {
-    display: none;
-}
-
-.wizard-step.active {
-    display: block;
-}
-
-/* Make vendor cards clickable */
-.vendor-card {
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-}
-
-.vendor-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-.vendor-card.active {
-    border-color: #1b67b2;
-    background-color: rgba(27, 103, 178, 0.05);
-}
-
-/* Ensure navigation buttons are visible */
-.wizard-navigation {
-    display: flex;
-    justify-content: space-between;
-    padding: 1rem;
-    margin-top: 2rem;
-    border-top: 1px solid #e5e7eb;
-}
-
-.wizard-navigation button {
-    min-width: 120px;
-    padding: 0.75rem 1.25rem;
-}
-
-/* Progress bar */
-.wizard-progress {
-    margin-bottom: 2rem;
-}
-
-.progress-bar {
-    height: 8px;
-    background-color: #e5e7eb;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background-color: #1b67b2;
-    transition: width 0.3s ease;
-}
-EOL
-    
-    # Create directory for CSS
-    mkdir -p "${PROJECT_DIR}/css/wizards/standalone"
-    
-    # Add the files to index.html
     if [ -f "${PROJECT_DIR}/index.html" ]; then
-        log "Adding standalone wizard to index.html"
+        # Back up the file
+        cp "${PROJECT_DIR}/index.html" "${PROJECT_DIR}/index.html.bak"
         
-        # Add CSS
-        if ! grep -q "wizard-fix.css" "${PROJECT_DIR}/index.html"; then
-            sed -i -e '/<link rel="stylesheet" href="css\/wizard.css">/a\    <link rel="stylesheet" href="css\/wizards\/standalone\/wizard-fix.css">' "${PROJECT_DIR}/index.html"
+        log "Checking for logo path issues in index.html"
+        
+        # Check if we're using .svg instead of .png
+        SVG_REFERENCES=$(grep -n "img/vendors/.*\.svg" "${PROJECT_DIR}/index.html" 2>/dev/null || true)
+        
+        if [[ -n "$SVG_REFERENCES" ]]; then
+            log "Found SVG references that should be PNG:"
+            echo "$SVG_REFERENCES"
+            
+            # Replace .svg with .png for vendor logos
+            sed -i.bak 's/vendors\/\([^\.]*\)\.svg/vendors\/\1.png/g' "${PROJECT_DIR}/index.html"
+            
+            log "Converted SVG references to PNG"
+        else
+            log "No SVG references found in index.html"
         fi
         
-        # Add JS
-        if ! grep -q "standalone/wizard-controller.js" "${PROJECT_DIR}/index.html"; then
-            sed -i -e '/<script src="js\/managers\/wizard.js"><\/script>/a\    <script src="js\/wizards\/standalone\/wizard-controller.js"><\/script>' "${PROJECT_DIR}/index.html"
-        fi
+        # Check if the paths are correct
+        VENDOR_REFERENCES=$(grep -n "img/vendors" "${PROJECT_DIR}/index.html" 2>/dev/null || true)
         
-        log "Standalone wizard added to index.html"
+        if [[ -n "$VENDOR_REFERENCES" ]]; then
+            log "Found vendor image references:"
+            echo "$VENDOR_REFERENCES"
+            
+            # Make sure the path starts with / if needed
+            # Note: This assumes the images are in the root directory, adjust if needed
+            if grep -q "src=\"img/vendors" "${PROJECT_DIR}/index.html"; then
+                log "Ensuring vendor image paths are correct"
+                sed -i.bak 's/src="img\/vendors/src="\/img\/vendors/g' "${PROJECT_DIR}/index.html"
+            fi
+        else
+            warn "No vendor image references found in index.html"
+        fi
     else
         warn "Could not locate index.html file"
     fi
-    
-    log "Standalone wizard controller created"
 }
 
 # Main function
 main() {
-    log "Running Final Wizard Controller Fix"
+    log "Running targeted fixes without rewrites"
     
-    # Find and fix all wizard files
-    find_wizard_files
+    # Fix NotificationManager issues
+    fix_notification_manager
     
-    # Create standalone wizard as a failsafe
-    create_standalone_wizard
+    # Fix wizard syntax
+    fix_wizard_syntax
     
-    log "Wizard fixes applied. Please refresh the application to see the changes."
+    # Fix calculator syntax
+    fix_calculator_syntax
+    
+    # Fix charts phases issue
+    fix_charts_phases
+    
+    # Fix vendor logos
+    fix_vendor_logos
+    
+    log "All targeted fixes applied. Please refresh the application."
 }
 
 # Run main function

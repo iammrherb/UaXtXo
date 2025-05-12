@@ -138,13 +138,13 @@ if (typeof Calculator === 'undefined') {
       let isValid = true;
       
       const deviceCount = document.getElementById('device-count');
-      if (!deviceCount || isNaN(deviceCount.value) || deviceCount.value <= 0) {
+      if (!deviceCount || isNaN(deviceCount.value) || deviceCount.value <=== 0) {
         console.error('Invalid device count');
         isValid = false;
       }
       
       const yearsToProject = document.getElementById('years-to-project');
-      if (!yearsToProject || isNaN(yearsToProject.value) || yearsToProject.value <= 0 || yearsToProject.value > 10) {
+      if (!yearsToProject || isNaN(yearsToProject.value) || yearsToProject.value <=== 0 || yearsToProject.value > 10) {
         console.error('Invalid years to project');
         isValid = false;
       }
