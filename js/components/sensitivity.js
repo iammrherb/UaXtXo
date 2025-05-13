@@ -73,6 +73,10 @@ const SensitivityAnalyzer = (function() {
   if (window.chartInstances && window.chartInstances[chartId]) {
     window.chartInstances[chartId].destroy();
   }
+  // Check if chart instance already exists and destroy it
+  if (window.chartInstances && window.chartInstances[chartId]) {
+    window.chartInstances[chartId].destroy();
+  }
         return new Chart(ctx, {
             type: 'line',
             data: {
