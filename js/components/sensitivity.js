@@ -55,6 +55,7 @@ const SensitivityAnalyzer = (function() {
     
     // Initialize sensitivity charts
     function initSensitivityCharts() {
+    const chartId = "sensitivity-chart";
         const mainCtx = document.getElementById('sensitivity-chart');
         const sidebarCtx = document.getElementById('sensitivity-chart-sidebar');
         
@@ -68,7 +69,7 @@ const SensitivityAnalyzer = (function() {
     }
     
     // Create sensitivity chart
-    function createSensitivityChart(ctx) {
+    function createSensitivityChart(chartId, ctx) {
   // Check if chart instance already exists and destroy it
   if (window.chartInstances && window.chartInstances[chartId]) {
     window.chartInstances[chartId].destroy();
