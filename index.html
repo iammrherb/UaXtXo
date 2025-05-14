@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="js/fixes/enhanced-sidepanel-fix.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Zero Trust Total Cost Analyzer - Enterprise Total Cost of Ownership Calculator">
@@ -10,36 +9,23 @@
     <!-- CSS Libraries -->
     <link rel="stylesheet" href="libs/css/tailwind.min.css">
     <link rel="stylesheet" href="libs/css/all.min.css">
-    <link rel="stylesheet" href="css/fontawesome-local.css">
     <link rel="stylesheet" href="libs/css/animate.min.css">
     <link rel="stylesheet" href="libs/css/aos.css">
-    <link rel="stylesheet" href="libs/css/hover.min.css">
     
     <!-- Core CSS -->
     <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/wizard.css">
-    <link rel="stylesheet" href="css/fixes/wizard-enhanced.css">
-    <link rel="stylesheet" href="css/containers.css">
-    <link rel="stylesheet" href="css/animations.css">
-    <link rel="stylesheet" href="css/fixes/notifications-enhanced.css">
-    <link rel="stylesheet" href="css/fixes/notifications.css">
-    <link rel="stylesheet" href="css/fixes/enhanced-insights.css">
-    <link rel="stylesheet" href="css/fixes/navigation-fix.css">
-<link rel="stylesheet" href="css/fixes/wizard-animation.css">
+    <link rel="stylesheet" href="css/modern-layout.css">
+    <link rel="stylesheet" href="css/dark-mode.css">
     <link rel="stylesheet" href="css/chart-styles.css">
     
     <link rel="icon" type="image/png" href="img/favicon.svg">
-    <script src="js/fixes/image-fix.js"></script>
-    <link rel="stylesheet" href="css/fixes/vendor-cards.css">
-    <link rel="stylesheet" href="css/fixes/charts-results.css">
-    <script src="js/fixes/chart-fix.js"></script>
-    <script src="js/fixes/compliance-fix.js"></script>
-    <link rel="stylesheet" href="css/fixes/compliance-framework.css">
-    <link rel="stylesheet" href="css/enhanced-tco.css">
 </head>
 <body>
-    <!-- Particle Background -->
-    <div id="particles-js"></div>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p class="loading-text">Calculating...</p>
+    </div>
     
     <!-- Main Application Container -->
     <div class="app-container">
@@ -54,16 +40,16 @@
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button id="sensitivity-toggle" class="btn btn-outline btn-icon" title="Sensitivity Analysis">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Sensitivity</span>
+                    <button id="export-pdf" class="btn btn-outline btn-icon" title="Export PDF">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Export</span>
                     </button>
                     <button id="help-btn" class="btn btn-outline btn-icon" title="Help">
                         <i class="fas fa-question-circle"></i>
                         <span>Help</span>
                     </button>
                     <button id="dark-mode-toggle" class="btn btn-outline btn-icon" title="Toggle Dark Mode">
-                        <i class="fas fa-moon"></i>
+                        <i id="dark-mode-icon" class="fas fa-moon"></i>
                     </button>
                     <button id="profile-btn" class="btn btn-outline btn-icon" title="User Profile">
                         <i class="fas fa-user"></i>
@@ -72,756 +58,636 @@
             </div>
         </header>
         
-        <!-- Progress Bar -->
-        <div class="wizard-progress">
-            <div class="progress-bar">
-                <div class="progress-fill" id="wizard-progress-fill"></div>
-            </div>
-            <div class="progress-steps" id="progress-steps">
-                <!-- Progress steps will be populated dynamically -->
-            </div>
-        </div>
-        
-        <!-- Main Calculator Container -->
-        <main class="calculator-container">
-            <!-- Wizard Container -->
-            <div class="wizard-container" id="wizard-container">
-                <!-- Step 1: Vendor Selection -->
-                <div class="wizard-step active" id="step-1" data-step="1">
-                    <div class="step-header">
-                        <h2>Select Your Current NAC Solution</h2>
-                        <p>Choose your existing NAC vendor or select "No NAC" if you don't have a solution in place</p>
-                      <div id="wizard-navigation" class="wizard-navigation">
-    <button id="prev-step" class="btn btn-outline"><i class="fas fa-chevron-left"></i> Previous</button>
-    <button id="next-step" class="btn btn-primary">Next <i class="fas fa-chevron-right"></i></button>
-  </div>
-</div>
+        <!-- Main Content Area -->
+        <div class="app-main">
+            <!-- Configuration Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h2>Configuration</h2>
+                    <button id="sidebar-toggle" class="sidebar-toggle" title="Toggle Sidebar">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+                
+                <!-- Vendor Selection -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <h3>Vendor Selection</h3>
+                    <p class="config-description">Select vendors to compare with Portnox Cloud</p>
                     
                     <div class="vendor-grid">
-                        <div class="vendor-card animate-card" data-vendor="cisco">
+                        <div class="vendor-card selected" data-vendor="portnox">
+                            <div class="vendor-logo">
+                                <img src="img/vendors/portnox-logo.png" alt="Portnox">
+                            </div>
+                            <div class="vendor-info">
+                                <h3>Portnox Cloud</h3>
+                                <p>Cloud-native NAC</p>
+                            </div>
+                        </div>
+                        
+                        <div class="vendor-card selected" data-vendor="cisco">
                             <div class="vendor-logo">
                                 <img src="img/vendors/cisco-logo.png" alt="Cisco ISE">
                             </div>
                             <div class="vendor-info">
                                 <h3>Cisco ISE</h3>
-                                <p>Enterprise NAC solution</p>
-                            </div>
-                            <div class="vendor-badge">
-                                <span class="badge-market-leader">Market Leader</span>
+                                <p>Enterprise NAC</p>
                             </div>
                         </div>
                         
-                        <div class="vendor-card animate-card" data-vendor="aruba">
+                        <div class="vendor-card" data-vendor="aruba">
                             <div class="vendor-logo">
                                 <img src="img/vendors/aruba-logo.png" alt="Aruba ClearPass">
                             </div>
                             <div class="vendor-info">
                                 <h3>Aruba ClearPass</h3>
-                                <p>Policy management platform</p>
+                                <p>Policy management</p>
                             </div>
                         </div>
                         
-                        <div class="vendor-card animate-card" data-vendor="forescout">
+                        <div class="vendor-card" data-vendor="forescout">
                             <div class="vendor-logo">
                                 <img src="img/vendors/forescout-logo.png" alt="Forescout">
                             </div>
                             <div class="vendor-info">
                                 <h3>Forescout</h3>
-                                <p>Agentless device visibility</p>
+                                <p>Device visibility</p>
                             </div>
                         </div>
                         
-                        <div class="vendor-card animate-card" data-vendor="fortinac">
+                        <div class="vendor-card" data-vendor="fortinac">
                             <div class="vendor-logo">
                                 <img src="img/vendors/fortinac-logo.png" alt="FortiNAC">
                             </div>
                             <div class="vendor-info">
                                 <h3>FortiNAC</h3>
-                                <p>Fortinet NAC solution</p>
+                                <p>Fortinet NAC</p>
                             </div>
                         </div>
                         
-                        <div class="vendor-card animate-card" data-vendor="nps">
+                        <div class="vendor-card" data-vendor="noNac">
                             <div class="vendor-logo">
-                                <img src="img/vendors/microsoft-logo.png" alt="Microsoft NPS">
+                                <i class="fas fa-shield-virus vendor-icon"></i>
                             </div>
                             <div class="vendor-info">
-                                <h3>Microsoft NPS</h3>
-                                <p>Windows Server NAC</p>
-                            </div>
-                        </div>
-                        
-                        <div class="vendor-card animate-card" data-vendor="securew2">
-                            <div class="vendor-logo">
-                                <img src="img/vendors/securew2-logo.png" alt="SecureW2">
-                            </div>
-                            <div class="vendor-info">
-                                <h3>SecureW2</h3>
-                                <p>Cloud RADIUS solution</p>
-                            </div>
-                        </div>
-                        
-                        <div class="vendor-card animate-card" data-vendor="juniper">
-                            <div class="vendor-logo">
-                                <img src="img/vendors/juniper-logo.png" alt="Juniper Mist">
-                            </div>
-                            <div class="vendor-info">
-                                <h3>Juniper Mist</h3>
-                                <p>AI-Driven Access Assurance</p>
-                            </div>
-                        </div>
-                        
-                        <div class="vendor-card animate-card" data-vendor="foxpass">
-                            <div class="vendor-logo">
-                                <img src="img/vendors/foxpass-logo.png" alt="Foxpass">
-                            </div>
-                            <div class="vendor-info">
-                                <h3>Foxpass</h3>
-                                <p>Cloud RADIUS & LDAP</p>
-                            </div>
-                        </div>
-                        
-                        <div class="vendor-card animate-card" data-vendor="arista">
-                            <div class="vendor-logo">
-                                <img src="img/vendors/arista-logo.png" alt="Arista Agni">
-                            </div>
-                            <div class="vendor-info">
-                                <h3>Arista Agni</h3>
-                                <p>Network Access Control</p>
-                            </div>
-                        </div>
-                        <div class="vendor-card animate-card" data-vendor="juniper">
-                            <div class="vendor-logo">
-                                <img src="img/vendors/juniper-logo.png" alt="Juniper Mist">
-                            </div>
-                            <div class="vendor-info">
-                                <h3>Juniper Mist</h3>
-                                <p>AI-Driven Access Assurance</p>
-                            </div>
-                        </div>
-                        
-                        <div class="vendor-card animate-card" data-vendor="foxpass">
-                            <div class="vendor-logo">
-                                <img src="img/vendors/foxpass-logo.png" alt="Foxpass">
-                            </div>
-                            <div class="vendor-info">
-                                <h3>Foxpass</h3>
-                                <p>Cloud RADIUS & LDAP</p>
-                            </div>
-                        </div>
-                        
-                        <div class="vendor-card animate-card" data-vendor="arista">
-                            <div class="vendor-logo">
-                                <img src="img/vendors/arista-logo.png" alt="Arista Agni">
-                            </div>
-                            <div class="vendor-info">
-                                <h3>Arista Agni</h3>
-                                <p>Network Access Control</p>
-                            </div>
-                        </div>
-                        <div class="vendor-card no-nac animate-card" data-vendor="noNac">
-                            <div class="vendor-logo">
-                                <i class="fas fa-shield-virus fa-3x"></i>
-                            </div>
-                            <div class="vendor-info">
-                                <h3>No NAC Solution</h3>
-                                <p>Currently unprotected</p>
-                            </div>
-                            <div class="vendor-badge">
-                                <span class="badge-warning">High Risk</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="vendor-comparison-preview" id="vendor-preview">
-                        <!-- Preview content will be populated dynamically -->
-                    </div>
-                </div>
-                
-                <!-- Step 2: Industry & Compliance -->
-                <div class="wizard-step" id="step-2" data-step="2">
-                    <div class="step-header">
-                        <h2>Industry & Compliance Requirements</h2>
-                        <p>Select your industry to see relevant compliance frameworks and security requirements</p>
-    <!-- Wizard Navigation -->
-                    </div>
-
-                    
-                    <div class="industry-container">
-                        <div class="industry-selector-card">
-                            <div class="input-group">
-                                <label for="industry-select">Select Your Industry</label>
-                                <select id="industry-select" class="form-select">
-                                    <option value="">Choose an industry...</option>
-                                    <option value="healthcare">Healthcare</option>
-                                    <option value="financial">Financial Services</option>
-                                    <option value="education">Education</option>
-                                    <option value="government">Government</option>
-                                    <option value="manufacturing">Manufacturing</option>
-                                    <option value="retail">Retail</option>
-                                    <option value="technology">Technology</option>
-                                    <option value="energy">Energy & Utilities</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="compliance-frameworks" id="compliance-frameworks">
-                            <!-- Compliance frameworks will be populated dynamically -->
-                        </div>
-                        
-                        <div class="industry-insights" id="industry-insights">
-                            <!-- Industry insights will be populated dynamically -->
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Step 3: Organization Details -->
-                <div class="wizard-step" id="step-3" data-step="3">
-                    <div class="step-header">
-                        <h2>Organization Configuration</h2>
-                        <p>Provide details about your organization to customize the analysis</p>
-    <!-- Wizard Navigation -->
-                    </div>
-
-                    
-                    <div class="organization-form">
-                        <div class="form-grid">
-                            <div class="form-card">
-                                <h3><i class="fas fa-building"></i> Organization Size</h3>
-                                <div class="input-group">
-                                    <label for="organization-size">Company Size</label>
-                                    <select id="organization-size" class="form-select">
-                                        <option value="small">Small (< 1,000 devices)</option>
-                                        <option value="medium" selected>Medium (1,000-5,000 devices)</option>
-                                        <option value="large">Large (5,000+ devices)</option>
-                                        <option value="enterprise">Enterprise (10,000+ devices)</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="input-group">
-                                    <label for="device-count">Number of Devices</label>
-                                    <input type="number" id="device-count" class="form-input" value="2500" min="100" max="100000">
-                                    <div class="input-helper">Include all managed devices (PCs, mobile, IoT)</div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-card">
-                                <h3><i class="fas fa-network-wired"></i> Network Complexity</h3>
-                                <div class="input-group">
-                                    <label for="locations">Number of Locations</label>
-                                    <input type="number" id="locations" class="form-input" value="5" min="1" max="1000">
-                                </div>
-                                
-                                <div class="checkbox-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="cloud-integration">
-                                        <span>Cloud Integration Required</span>
-                                    </label>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="legacy-devices">
-                                        <span>Legacy Device Support</span>
-                                    </label>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="byod-support">
-                                        <span>BYOD Support</span>
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="form-card">
-                                <h3><i class="fas fa-clock"></i> Timeline</h3>
-                                <div class="input-group">
-                                    <label for="years-to-project">Analysis Period</label>
-                                    <select id="years-to-project" class="form-select">
-                                        <option value="1">1 Year</option>
-                                        <option value="3" selected>3 Years</option>
-                                        <option value="5">5 Years</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="input-group">
-                                    <label for="implementation-urgency">Implementation Urgency</label>
-                                    <select id="implementation-urgency" class="form-select">
-                                        <option value="normal">Normal (6-12 months)</option>
-                                        <option value="urgent">Urgent (3-6 months)</option>
-                                        <option value="critical">Critical (< 3 months)</option>
-                                    </select>
-                                </div>
+                                <h3>No NAC</h3>
+                                <p>Unprotected</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Step 4: Advanced Configuration -->
-                <div class="wizard-step" id="step-4" data-step="4">
-                    <div class="step-header">
-                        <h2>Advanced Cost Configuration</h2>
-                        <p>Fine-tune cost parameters for more accurate analysis</p>
-    <!-- Wizard Navigation -->
+                <!-- Industry & Compliance -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-icon">
+                        <i class="fas fa-building"></i>
                     </div>
-
+                    <h3>Industry & Compliance</h3>
+                    <p class="config-description">Select your industry and compliance requirements</p>
                     
-                    <div class="cost-configuration">
-                        <div class="cost-tabs">
-                            <button class="cost-tab active" data-tab="operational">Operational Costs</button>
-                            <button class="cost-tab" data-tab="implementation">Implementation Costs</button>
-                            <button class="cost-tab" data-tab="portnox">Portnox Pricing</button>
+                    <div class="form-group">
+                        <label for="industry-select" class="form-label">Industry</label>
+                        <select id="industry-select" class="form-select">
+                            <option value="financial">Financial Services</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="education">Education</option>
+                            <option value="government">Government</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="retail">Retail</option>
+                            <option value="technology">Technology</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Compliance Frameworks</label>
+                        <div id="compliance-options" class="compliance-options">
+                            <!-- Populated dynamically based on industry -->
                         </div>
-                        
-                        <div class="cost-content">
-                            <div class="cost-panel active" id="operational-costs">
-                                <div class="cost-grid">
-                                    <div class="cost-card">
-                                        <h4>Personnel Costs</h4>
-                                        <div class="slider-group">
-                                            <label for="fte-cost">Average FTE Cost ($/year)</label>
-                                            <input type="range" id="fte-cost" min="60000" max="200000" value="120000">
-                                            <span class="slider-value">$120,000</span>
-                                        </div>
-                                        <div class="slider-group">
-                                            <label for="fte-allocation">FTE Allocation for NAC (%)</label>
-                                            <input type="range" id="fte-allocation" min="10" max="100" value="50">
-                                            <span class="slider-value">50%</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="cost-card">
-                                        <h4>Maintenance & Support</h4>
-                                        <div class="slider-group">
-                                            <label for="maintenance-percentage">Annual Maintenance (%)</label>
-                                            <input type="range" id="maintenance-percentage" min="10" max="30" value="18">
-                                            <span class="slider-value">18%</span>
-                                        </div>
-                                        <div class="slider-group">
-                                            <label for="downtime-cost">Downtime Cost ($/hour)</label>
-                                            <input type="range" id="downtime-cost" min="1000" max="50000" value="10000">
-                                            <span class="slider-value">$10,000</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="cost-panel" id="implementation-costs">
-                                <div class="cost-grid">
-                                    <div class="cost-card">
-                                        <h4>Professional Services</h4>
-                                        <div class="slider-group">
-                                            <label for="consulting-rate">Consulting Rate ($/day)</label>
-                                            <input type="range" id="consulting-rate" min="1000" max="5000" value="2000">
-                                            <span class="slider-value">$2,000</span>
-                                        </div>
-                                        <div class="slider-group">
-                                            <label for="implementation-days">Implementation Days</label>
-                                            <input type="range" id="implementation-days" min="10" max="200" value="60">
-                                            <span class="slider-value">60 days</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="cost-card">
-                                        <h4>Training Costs</h4>
-                                        <div class="slider-group">
-                                            <label for="training-per-user">Training Cost per User ($)</label>
-                                            <input type="range" id="training-per-user" min="100" max="1000" value="500">
-                                            <span class="slider-value">$500</span>
-                                        </div>
-                                        <div class="slider-group">
-                                            <label for="users-to-train">Number of Users to Train</label>
-                                            <input type="range" id="users-to-train" min="5" max="50" value="20">
-                                            <span class="slider-value">20</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="cost-panel" id="portnox-pricing">
-                                <div class="portnox-pricing-card">
-                                    <h3>Portnox Cloud Pricing Configuration</h3>
-                                    <div class="pricing-grid">
-                                        <div class="pricing-option">
-                                            <h4>Base Pricing</h4>
-                                            <div class="slider-group">
-                                                <label for="portnox-base-price">Monthly Cost per Device ($)</label>
-                                                <input type="range" id="portnox-base-price" min="1" max="10" step="0.5" value="4">
-                                                <span class="slider-value">$4.00</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="pricing-option">
-                                            <h4>Volume Discounts</h4>
-                                            <div class="slider-group">
-                                                <label for="portnox-discount">Discount Percentage (%)</label>
-                                                <input type="range" id="portnox-discount" min="0" max="50" value="20">
-                                                <span class="slider-value">20%</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="pricing-summary">
-                                            <div class="summary-item">
-                                                <span>Effective Monthly Price:</span>
-                                                <span id="effective-price">$3.20</span>
-                                            </div>
-                                            <div class="summary-item">
-                                                <span>Annual Cost:</span>
-                                                <span id="annual-cost">$96,000</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    </div>
+                    
+                    <div id="industry-insights" class="industry-insights">
+                        <!-- Populated dynamically based on industry -->
+                    </div>
+                </div>
+                
+                <!-- Organization Configuration -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-icon">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                    <h3>Organization Configuration</h3>
+                    <p class="config-description">Set parameters based on your organization's needs</p>
+                    
+                    <div class="form-group">
+                        <label for="organization-size" class="form-label">Organization Size</label>
+                        <select id="organization-size" class="form-select">
+                            <option value="small">Small (< 1,000 devices)</option>
+                            <option value="medium" selected>Medium (1,000-5,000 devices)</option>
+                            <option value="large">Large (5,000-10,000 devices)</option>
+                            <option value="enterprise">Enterprise (10,000+ devices)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="device-count" class="form-label">Number of Devices</label>
+                        <input type="number" id="device-count" class="form-input" value="2500" min="100" max="100000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="locations" class="form-label">Number of Locations</label>
+                        <input type="number" id="locations" class="form-input" value="5" min="1" max="1000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="years-to-project" class="form-label">Analysis Period</label>
+                        <select id="years-to-project" class="form-select">
+                            <option value="1">1 Year</option>
+                            <option value="3" selected>3 Years</option>
+                            <option value="5">5 Years</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Required Features</label>
+                        <div class="form-check">
+                            <input type="checkbox" id="cloud-integration" class="form-check-input">
+                            <label for="cloud-integration" class="form-check-label">Cloud Integration</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="legacy-devices" class="form-check-input">
+                            <label for="legacy-devices" class="form-check-label">Legacy Device Support</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="byod-support" class="form-check-input" checked>
+                            <label for="byod-support" class="form-check-label">BYOD Support</label>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Step 5: Review & Calculate -->
-                <div class="wizard-step" id="step-5" data-step="5">
-                    <div class="step-header">
-                        <h2>Review Configuration</h2>
-                        <p>Review your inputs and calculate the TCO comparison</p>
-    <!-- Wizard Navigation -->
+                <!-- Cost Parameters -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-icon">
+                        <i class="fas fa-dollar-sign"></i>
                     </div>
-
+                    <h3>Cost Parameters</h3>
+                    <p class="config-description">Customize cost parameters for your analysis</p>
                     
-                    <div class="review-container">
-                        <div class="review-grid">
-                            <div class="review-card">
-                                <h3><i class="fas fa-server"></i> Current Solution</h3>
-                                <div class="review-details" id="current-solution-review">
-                                    <!-- Review details populated dynamically -->
-                                </div>
-                            </div>
-                            
-                            <div class="review-card">
-                                <h3><i class="fas fa-building"></i> Organization</h3>
-                                <div class="review-details" id="organization-review">
-                                    <!-- Review details populated dynamically -->
-                                </div>
-                            </div>
-                            
-                            <div class="review-card">
-                                <h3><i class="fas fa-dollar-sign"></i> Cost Parameters</h3>
-                                <div class="review-details" id="cost-review">
-                                    <!-- Review details populated dynamically -->
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="calculation-actions">
-                            <button id="calculate-btn" class="btn btn-primary btn-large">
-                                <i class="fas fa-calculator"></i> Calculate TCO Comparison
-                            </button>
-                            <button id="modify-btn" class="btn btn-outline">
-                                <i class="fas fa-edit"></i> Modify Configuration
-                            </button>
-                        </div>
+                    <div class="form-group">
+                        <label for="fte-cost" class="form-label">Average FTE Cost ($/year)</label>
+                        <input type="number" id="fte-cost" class="form-input" value="120000" min="50000" max="300000" step="5000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maintenance-percentage" class="form-label">Annual Maintenance (%)</label>
+                        <input type="number" id="maintenance-percentage" class="form-input" value="18" min="5" max="30" step="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <p class="estimated-range">
+                            <strong>Estimated TCO Range:</strong>
+                            <span id="estimated-tco-range">Loading...</span>
+                        </p>
                     </div>
                 </div>
-            </div>
+                
+                <!-- Calculate Button -->
+                <div class="sidebar-section">
+                    <button id="calculate-btn" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-calculator"></i> Calculate TCO
+                    </button>
+                </div>
+            </aside>
             
-            <!-- Results Container -->
-            <div class="results-container hidden" id="results-container">
-                <!-- Results Navigation -->
-                <div class="results-nav">
-                    <div class="results-tabs">
-                        <button class="result-tab active" data-tab="overview">Overview</button>
-                        <button class="result-tab" data-tab="comparison">Cost Comparison</button>
-                        <button class="result-tab" data-tab="implementation">Implementation</button>
-                        <button class="result-tab" data-tab="features">Features</button>
-                        <button class="result-tab" data-tab="industry">Industry & Compliance</button>
-                        <button class="result-tab" data-tab="roi">ROI Analysis</button>
-                        <button class="result-tab" data-tab="risk">Risk Analysis</button>
-                        <button class="result-tab" data-tab="sensitivity">Sensitivity</button>
+            <!-- Main Content Area -->
+            <div class="content-area">
+                <!-- Tabs for Different Views -->
+                <div class="view-tabs">
+                    <button class="view-tab active" data-tab="executive">
+                        <i class="fas fa-chart-pie tab-icon"></i> Executive Summary
+                    </button>
+                    <button class="view-tab" data-tab="technical">
+                        <i class="fas fa-cogs tab-icon"></i> Technical Analysis
+                    </button>
+                    <button class="view-tab" data-tab="financial">
+                        <i class="fas fa-dollar-sign tab-icon"></i> Financial Analysis
+                    </button>
+                    <button class="view-tab" data-tab="security">
+                        <i class="fas fa-shield-alt tab-icon"></i> Security & Compliance
+                    </button>
+                </div>
+                
+                <!-- Tab Content -->
+                
+                <!-- Executive Summary Tab -->
+                <div id="executive-content" class="tab-content active">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Executive Summary</h2>
+                        </div>
+                        
+                        <!-- Key Metrics -->
+                        <div class="metrics-grid">
+                            <div class="metric-card highlight">
+                                <h3 class="metric-title">Total Savings</h3>
+                                <div class="metric-value" id="total-savings">$0</div>
+                                <div class="metric-subtitle" id="savings-percentage">0%</div>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <h3 class="metric-title">Break-even Point</h3>
+                                <div class="metric-value" id="breakeven-point">0 months</div>
+                                <div class="metric-subtitle">Time to positive ROI</div>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <h3 class="metric-title">Risk Reduction</h3>
+                                <div class="metric-value" id="risk-reduction">0%</div>
+                                <div class="metric-subtitle">Security improvement</div>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <h3 class="metric-title">Implementation Time</h3>
+                                <div class="metric-value" id="implementation-time">0 days</div>
+                                <div class="metric-subtitle">vs. current solution</div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="results-actions">
-                        <button id="export-pdf" class="btn btn-outline">
-                            <i class="fas fa-file-pdf"></i> Export PDF
-                        </button>
-                        <button id="share-results" class="btn btn-outline">
-                            <i class="fas fa-share-alt"></i> Share
-                        </button>
-                        <button id="new-calculation" class="btn btn-outline">
-                            <i class="fas fa-plus"></i> New Calculation
-                        </button>
+                    <!-- Key Insights -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Key Insights</h2>
+                        </div>
+                        
+                        <div id="key-insights-list" class="key-insights-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- 3-Year TCO Comparison -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">3-Year TCO Comparison</h2>
+                        </div>
+                        
+                        <div class="chart-container" data-title="3-Year TCO Comparison" id="tco-comparison-chart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+                    
+                    <!-- ROI Analysis -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">ROI Analysis</h2>
+                        </div>
+                        
+                        <div class="chart-container" data-title="Cumulative ROI Over Time" id="roi-chart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Implementation Timeline -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Implementation Timeline Comparison</h2>
+                        </div>
+                        
+                        <div class="chart-container" data-title="Implementation Timeline (Days)" id="implementation-chart">
+                            <!-- Chart will be rendered here -->
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Results Content -->
-                <div class="results-content">
-                    <!-- Overview Tab -->
-                    <div class="result-panel active" id="overview-panel">
-                        <div class="executive-summary">
-                            <h2>Executive Summary</h2>
-                            <div class="summary-grid">
-                                <div class="summary-card highlight">
-                                    <div class="card-icon">
-                                        <i class="fas fa-piggy-bank"></i>
-                                    </div>
-                                    <div class="card-content">
-                                        <h4>Total Savings</h4>
-                                        <div class="metric-value" id="total-savings">$0</div>
-                                        <div class="metric-detail" id="savings-percentage">0%</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="summary-card">
-                                    <div class="card-icon">
-                                        <i class="fas fa-clock"></i>
-                                    </div>
-                                    <div class="card-content">
-                                        <h4>Break-even Point</h4>
-                                        <div class="metric-value" id="breakeven-point">0 months</div>
-                                        <div class="metric-detail">Time to positive ROI</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="summary-card">
-                                    <div class="card-icon">
-                                        <i class="fas fa-shield-alt"></i>
-                                    </div>
-                                    <div class="card-content">
-                                        <h4>Risk Reduction</h4>
-                                        <div class="metric-value" id="risk-reduction">0%</div>
-                                        <div class="metric-detail">Security improvement</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="summary-card">
-                                    <div class="card-icon">
-                                        <i class="fas fa-rocket"></i>
-                                    </div>
-                                    <div class="card-content">
-                                        <h4>Implementation Time</h4>
-                                        <div class="metric-value" id="implementation-time">0 days</div>
-                                        <div class="metric-detail">vs. current solution</div>
-                                    </div>
-                                </div>
-                            </div>
+                <!-- Technical Analysis Tab -->
+                <div id="technical-content" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Feature Comparison</h2>
                         </div>
                         
-                        <div class="key-insights">
-                            <h3>Key Insights</h3>
-                            <div class="insights-list" id="key-insights-list">
-                                <!-- Insights populated dynamically -->
-                            </div>
+                        <div class="chart-container" data-title="Feature Capability Comparison" id="feature-radar-chart">
+                            <!-- Chart will be rendered here -->
                         </div>
-                    </div>
-                    
-                    <!-- Comparison Tab -->
-                    <div class="result-panel" id="comparison-panel">
-                        <div class="comparison-charts">
-                            <div class="chart-grid">
-                                <div class="chart-card">
-                                    <h3>3-Year TCO Comparison</h3>
-                                    <canvas id="tco-comparison-chart"></canvas>
-                                </div>
-
-                                <div class="chart-card">
-                                    <h3>Current Solution Cost Breakdown</h3>
-                                    <canvas id="current-breakdown-chart"></canvas>
-                                </div>
-
-                                <div class="chart-card">
-                                    <h3>Portnox Cloud Cost Breakdown</h3>
-                                    <canvas id="alternative-breakdown-chart"></canvas>
-                                </div>
-
-                                <div class="chart-card">
-                                    <h3>Cumulative Cost Over Time</h3>
-                                    <canvas id="cumulative-cost-chart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="comparison-table">
-                            <h3>Detailed Cost Comparison</h3>
-                            <table id="cost-comparison-table" class="data-table">
-                                <!-- Table populated dynamically -->
+                        
+                        <div class="table-container">
+                            <h3 class="table-title">Detailed Feature Matrix</h3>
+                            <table id="feature-comparison-table" class="comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Feature</th>
+                                        <!-- Vendor columns will be added dynamically -->
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Table rows will be populated dynamically -->
+                                </tbody>
                             </table>
                         </div>
                     </div>
-
-                    <!-- Implementation Tab -->
-                    <div class="result-panel" id="implementation-panel">
-                        <div class="implementation-content">
-                            <div class="chart-card">
-                                <h3>Implementation Timeline Comparison</h3>
-                                <canvas id="implementation-comparison-chart"></canvas>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Technical Requirements</h2>
+                        </div>
+                        
+                        <div class="grid-2">
+                            <div class="requirement-card">
+                                <h3 class="requirement-title">Hardware Requirements</h3>
+                                <div class="requirement-comparison">
+                                    <div class="vendor-requirement">
+                                        <h4>Portnox Cloud</h4>
+                                        <ul class="requirement-list">
+                                            <li><i class="fas fa-check-circle"></i> No dedicated hardware required</li>
+                                            <li><i class="fas fa-check-circle"></i> No appliances to install/maintain</li>
+                                            <li><i class="fas fa-check-circle"></i> No need for high-availability pairs</li>
+                                            <li><i class="fas fa-check-circle"></i> No hardware upgrades needed</li>
+                                        </ul>
+                                    </div>
+                                    <div class="vendor-requirement">
+                                        <h4>On-Premises Solutions</h4>
+                                        <ul class="requirement-list">
+                                            <li><i class="fas fa-times-circle"></i> Multiple servers/appliances required</li>
+                                            <li><i class="fas fa-times-circle"></i> High-availability pairs needed</li>
+                                            <li><i class="fas fa-times-circle"></i> Database servers often required</li>
+                                            <li><i class="fas fa-times-circle"></i> Hardware refresh every 3-5 years</li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
-
-                            <div class="implementation-details">
-                                <h3>Implementation Roadmap</h3>
-                                <div id="implementation-roadmap">
-                                    <!-- Roadmap populated dynamically -->
+                            
+                            <div class="requirement-card">
+                                <h3 class="requirement-title">Infrastructure Integration</h3>
+                                <div class="requirement-comparison">
+                                    <div class="vendor-requirement">
+                                        <h4>Portnox Cloud</h4>
+                                        <ul class="requirement-list">
+                                            <li><i class="fas fa-check-circle"></i> Cloud-to-cloud integrations</li>
+                                            <li><i class="fas fa-check-circle"></i> Modern REST APIs</li>
+                                            <li><i class="fas fa-check-circle"></i> Lightweight local RADIUS server</li>
+                                            <li><i class="fas fa-check-circle"></i> No complex network changes</li>
+                                        </ul>
+                                    </div>
+                                    <div class="vendor-requirement">
+                                        <h4>On-Premises Solutions</h4>
+                                        <ul class="requirement-list">
+                                            <li><i class="fas fa-times-circle"></i> Complex network integration</li>
+                                            <li><i class="fas fa-times-circle"></i> Multiple integration points</li>
+                                            <li><i class="fas fa-times-circle"></i> SPAN/TAP ports often required</li>
+                                            <li><i class="fas fa-times-circle"></i> Network redesign may be needed</li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Features Tab -->
-                    <div class="result-panel" id="features-panel">
-                        <div class="features-content">
-                            <div class="chart-card">
-                                <h3>Feature Comparison</h3>
-                                <canvas id="feature-comparison-chart"></canvas>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Implementation & Complexity</h2>
+                        </div>
+                        
+                        <div class="chart-container" data-title="Implementation Complexity Comparison" id="implementation-comparison-chart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Financial Analysis Tab -->
+                <div id="financial-content" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Detailed Cost Analysis</h2>
+                        </div>
+                        
+                        <div class="table-container">
+                            <h3 class="table-title">Total Cost of Ownership Breakdown</h3>
+                            <table id="tco-comparison-table" class="comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cost Component</th>
+                                        <!-- Vendor columns will be added dynamically -->
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Table rows will be populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Cost Structure Comparison</h2>
+                        </div>
+                        
+                        <div class="grid-2">
+                            <div class="chart-container" data-title="Portnox Cost Breakdown" id="portnox-breakdown-chart">
+                                <!-- Chart will be rendered here -->
                             </div>
-
-                            <div class="features-matrix">
-                                <h3>Detailed Feature Matrix</h3>
-                                <table id="features-matrix-table" class="data-table">
-                                    <!-- Table populated dynamically -->
+                            <div class="chart-container" data-title="On-Premises Cost Breakdown" id="onprem-breakdown-chart">
+                                <!-- Chart will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Cumulative Cost Over Time</h2>
+                        </div>
+                        
+                        <div class="chart-container" data-title="Cumulative Cost Over Time" id="cumulative-cost-chart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Sensitivity Analysis</h2>
+                        </div>
+                        
+                        <div class="sensitivity-controls">
+                            <div class="grid-3">
+                                <div class="sensitivity-control">
+                                    <label for="sensitivity-variable" class="form-label">Variable to Analyze</label>
+                                    <select id="sensitivity-variable" class="form-select">
+                                        <option value="deviceCount">Device Count</option>
+                                        <option value="fteCost">FTE Cost</option>
+                                        <option value="maintenancePercentage">Maintenance %</option>
+                                        <option value="years">Analysis Period</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="sensitivity-control">
+                                    <label for="sensitivity-min" class="form-label">Minimum Value</label>
+                                    <input type="number" id="sensitivity-min" class="form-input" value="500">
+                                </div>
+                                
+                                <div class="sensitivity-control">
+                                    <label for="sensitivity-max" class="form-label">Maximum Value</label>
+                                    <input type="number" id="sensitivity-max" class="form-input" value="10000">
+                                </div>
+                            </div>
+                            
+                            <button id="run-sensitivity" class="btn btn-primary">
+                                Run Sensitivity Analysis
+                            </button>
+                        </div>
+                        
+                        <div class="chart-container" data-title="Sensitivity Analysis" id="sensitivity-chart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security & Compliance Tab -->
+                <div id="security-content" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Security Risk Analysis</h2>
+                        </div>
+                        
+                        <div class="chart-container" data-title="Security Risk Assessment" id="security-risk-chart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                        
+                        <div class="table-container">
+                            <h3 class="table-title">Security Risk Assessment</h3>
+                            <table id="security-risk-table" class="comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Risk Factor</th>
+                                        <!-- Vendor columns will be added dynamically -->
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Unauthorized Access</td>
+                                        <!-- Vendor risk assessments will be added dynamically -->
+                                    </tr>
+                                    <tr>
+                                        <td>Compliance Violations</td>
+                                        <!-- Vendor risk assessments will be added dynamically -->
+                                    </tr>
+                                    <tr>
+                                        <td>Network Visibility</td>
+                                        <!-- Vendor risk assessments will be added dynamically -->
+                                    </tr>
+                                    <tr>
+                                        <td>Insider Threats</td>
+                                        <!-- Vendor risk assessments will be added dynamically -->
+                                    </tr>
+                                    <tr>
+                                        <td>Configuration Errors</td>
+                                        <!-- Vendor risk assessments will be added dynamically -->
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Compliance Framework Coverage</h2>
+                        </div>
+                        
+                        <div class="chart-container" data-title="Compliance Framework Coverage" id="compliance-coverage-chart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Security Capability Comparison</h2>
+                        </div>
+                        
+                        <div class="grid-2">
+                            <div class="security-capability-card">
+                                <h3 class="security-capability-title">Zero Trust Implementation</h3>
+                                <table class="comparison-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Capability</th>
+                                            <th>Portnox Cloud</th>
+                                            <th>Legacy NAC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Continuous Authentication</td>
+                                            <td><span class="feature-status feature-full">✓</span></td>
+                                            <td><span class="feature-status feature-partial">⚠</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Device Risk Assessment</td>
+                                            <td><span class="feature-status feature-full">✓</span></td>
+                                            <td><span class="feature-status feature-partial">⚠</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Cloud-Based Policy</td>
+                                            <td><span class="feature-status feature-full">✓</span></td>
+                                            <td><span class="feature-status feature-none">✗</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Identity-Based Access</td>
+                                            <td><span class="feature-status feature-full">✓</span></td>
+                                            <td><span class="feature-status feature-full">✓</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Remote Device Enforcement</td>
+                                            <td><span class="feature-status feature-full">✓</span></td>
+                                            <td><span class="feature-status feature-partial">⚠</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="security-capability-card">
+                                <h3 class="security-capability-title">Breach Prevention Capabilities</h3>
+                                <table class="comparison-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Capability</th>
+                                            <th>Portnox Cloud</th>
+                                            <th>Legacy NAC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Rogue Device Detection</td>
+                                            <td><span class="feature-status feature-full">✓</span></td>
+                                            <td><span class="feature-status feature-full">✓</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Posture Assessment</td>
+                                            <td><span class="feature-status feature-full">✓</span></td>
+                                            <td><span class="feature-status feature-full">✓</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Automated Remediation</td>
+                                            <td><span class="feature-status feature-full">✓</span></td>
+                                            <td><span class="feature-status feature-partial">⚠</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Real-time Threat Intelligence</td>
+                                            <td><span class="feature-status feature-full">✓</span></td>
+                                            <td><span class="feature-status feature-partial">⚠</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Off-Network Protection</td>
+                                            <td><span class="feature-status feature-full">✓</span></td>
+                                            <td><span class="feature-status feature-none">✗</span></td>
+                                        </tr>
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Industry & Compliance Tab --> 
-                    <div class="result-panel" id="industry-panel"> 
-                        <div class="industry-compliance-content"> 
-                            <div class="chart-card"> 
-                                <h3>Industry Compliance Framework Coverage</h3> 
-                                <canvas id="industry-compliance-chart"></canvas> 
-                            </div> 
-                            
-                            <div class="industry-details"> 
-                                <h3>Industry-Specific Requirements</h3> 
-                                <div id="industry-requirements-container"> 
-                                    <!-- Industry requirements loaded dynamically --> 
-                                </div> 
-                            </div> 
-                            
-                            <div class="compliance-matrix"> 
-                                <h3>Detailed Compliance Matrix</h3> 
-                                <div id="compliance-matrix-container"> 
-                                    <!-- Compliance matrix loaded dynamically --> 
-                                </div> 
-                            </div> 
-                        </div> 
-                    </div>
-
-                    <!-- ROI Tab -->
-                    <div class="result-panel" id="roi-panel">
-                        <div class="roi-content">
-                            <div class="chart-card">
-                                <h3>ROI Analysis</h3>
-                                <canvas id="roi-chart"></canvas>
-                            </div>
-
-                            <div class="roi-details">
-                                <h3>ROI Breakdown</h3>
-                                <div id="roi-breakdown">
-                                    <!-- ROI details populated dynamically -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Risk Tab -->
-                    <div class="result-panel" id="risk-panel">
-                        <div class="risk-content">
-                            <div class="chart-card">
-                                <h3>Risk Assessment Analysis</h3>
-                                <canvas id="risk-analysis-chart"></canvas>
-                            </div>
-                            <div class="risk-matrix">
-                                <h3>Risk Assessment Matrix</h3>
-                                <div id="risk-matrix">
-                                    <!-- Risk matrix populated dynamically -->
-                                </div>
-                            </div>
-
-                            <div class="risk-mitigation">
-                                <h3>Risk Mitigation Strategies</h3>
-                                <div id="risk-mitigation-strategies">
-                                    <!-- Strategies populated dynamically -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Sensitivity Tab -->
-                    <div class="result-panel" id="sensitivity-panel">
-                        <div class="sensitivity-content">
-                            <div class="sensitivity-controls">
-                                <h3>Sensitivity Analysis Parameters</h3>
-                                <div class="parameter-grid">
-                                    <div class="parameter-card">
-                                        <label for="sensitivity-variable">Variable to Analyze</label>
-                                        <select id="sensitivity-variable" class="form-select">
-                                            <option value="deviceCount">Device Count</option>
-                                            <option value="cost">Cost per Device</option>
-                                            <option value="fte">FTE Requirements</option>
-                                            <option value="implementation">Implementation Time</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="parameter-card">
-                                        <label>Value Range</label>
-                                        <div class="range-inputs">
-                                            <input type="number" id="sensitivity-min" class="form-input" placeholder="Min">
-                                            <input type="number" id="sensitivity-max" class="form-input" placeholder="Max">
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <button id="run-sensitivity" class="btn btn-primary">
-                                    Run Sensitivity Analysis
-                                </button>
-                            </div>
-                            
-                            <div class="sensitivity-results">
-                                <div class="chart-card">
-                                    <h3>Sensitivity Analysis Results</h3>
-                                    <canvas id="sensitivity-chart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
-            
-            <!-- Integrated Sensitivity Analysis -->
-            <div class="sensitivity-sidebar" id="sensitivity-sidebar">
-                <div class="sensitivity-header">
-                    <h3>Sensitivity Analysis</h3>
-                    <button id="close-sensitivity" class="btn-close">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <div class="sensitivity-content">
-                    <div class="sensitivity-controls">
-                        <div class="input-group">
-                            <label for="sensitivity-variable-sidebar">Variable to Analyze</label>
-                            <select id="sensitivity-variable-sidebar" class="form-select">
-                                <option value="deviceCount">Device Count</option>
-                                <option value="cost">Cost per Device</option>
-                                <option value="fte">FTE Requirements</option>
-                                <option value="implementation">Implementation Time</option>
-                            </select>
-                        </div>
-                        
-                        <div class="range-inputs">
-                            <div class="input-group">
-                                <label for="sensitivity-min-sidebar">Min Value</label>
-                                <input type="number" id="sensitivity-min-sidebar" class="form-input">
-                            </div>
-                            <div class="input-group">
-                                <label for="sensitivity-max-sidebar">Max Value</label>
-                                <input type="number" id="sensitivity-max-sidebar" class="form-input">
-                            </div>
-                        </div>
-                        
-                        <button id="run-sensitivity-sidebar" class="btn btn-primary">
-                            Run Analysis
-                        </button>
-                    </div>
-                    
-                    <div class="sensitivity-results">
-                        <canvas id="sensitivity-chart-sidebar"></canvas>
-                    </div>
-                </div>
-            </div>
-        </main>
+        </div>
         
         <!-- Footer -->
         <footer class="app-footer">
@@ -844,8 +710,6 @@
         </footer>
     </div>
     
-<!-- Wizard Navigation moved inside each step -->
-    
     <!-- Modals -->
     <div id="help-modal" class="modal">
         <div class="modal-content">
@@ -855,18 +719,27 @@
             </div>
             <div class="modal-body">
                 <!-- Help content -->
+                <h3>Getting Started</h3>
+                <p>The Zero Trust Total Cost Analyzer helps you compare the total cost of ownership (TCO) of Portnox Cloud with other NAC solutions.</p>
+                
+                <h3>How to Use</h3>
+                <ol>
+                    <li>Configure your analysis parameters in the sidebar</li>
+                    <li>Select vendors to compare with Portnox Cloud</li>
+                    <li>Click "Calculate TCO" to generate the comparison</li>
+                    <li>View different perspectives using the tabs above</li>
+                </ol>
+                
+                <h3>Understanding the Results</h3>
+                <p>The TCO analysis includes all direct and indirect costs associated with each solution over the selected time period, including:</p>
+                <ul>
+                    <li>Hardware and software costs</li>
+                    <li>Implementation and professional services</li>
+                    <li>Ongoing maintenance and support</li>
+                    <li>Personnel costs (FTE requirements)</li>
+                    <li>Risk-adjusted costs</li>
+                </ul>
             </div>
-        </div>
-    </div>
-    
-    <!-- Error Container -->
-    <div id="wizard-error-container"></div>
-    
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="loading-spinner">
-            <div class="spinner"></div>
-            <p>Calculating...</p>
         </div>
     </div>
     
@@ -877,15 +750,7 @@
     <script src="libs/js/chart.min.js"></script>
     <script src="libs/js/chartjs-plugin-datalabels.min.js"></script>
     <script src="libs/js/d3.min.js"></script>
-    <script src="libs/js/gsap.min.js"></script>
-    <script src="libs/js/ScrollTrigger.min.js"></script>
     <script src="libs/js/countUp.min.js"></script>
-    <script src="libs/js/aos.js"></script>
-    <script src="libs/js/particles.min.js"></script>
-    <script src="js/utils/fixed/notifications.js"></script>
-    <script src="js/utils/error-handler.js"></script>
-    <script src="js/utils/notification-manager.js"></script>
-    <script src="libs/js/lodash.min.js"></script>
     <script src="libs/js/jspdf.umd.min.js"></script>
     <script src="libs/js/jspdf.plugin.autotable.min.js"></script>
     
@@ -894,66 +759,11 @@
     <script src="js/core/dom.js"></script>
     <script src="js/core/validation.js"></script>
     
-    <!-- Managers -->
-    <script src="js/managers/loading.js"></script>
-    <script src="js/managers/notification.js"></script>
-    <script src="js/managers/wizard.js"></script>
-    <script src="js/wizards/standalone/wizard-controller.js"></script>
-    <script src="js/wizards/new/wizard-implementation.js"></script>
-    <script src="js/managers/state.js"></script>
+    <!-- Modern UI JavaScript -->
+    <script src="js/modern-ui.js"></script>
     
-    <!-- Components -->
-    <script src="js/components/enhanced-ui.js"></script>
-    <script src="js/components/calculator.js"></script>
-    <script src="js/components/sensitivity.js"></script>
-    <script src="js/components/charts.js"></script>
-    
-    <!-- Data -->
-    <script src="js/data/enhanced-vendors.js"></script>
-    <script src="js/data/industry.js"></script>
-    <script src="js/data/compliance.js"></script>
-    
-    <!-- Charts -->
-    <script src="js/charts/enhanced-charts.js"></script>
-    
-    <!-- Reports -->
+    <!-- Additional JavaScript -->
     <script src="js/reports/generator.js"></script>
-    
-    <!-- Main Application -->
-    <script src="js/app-controller.js"></script>
-<script src="js/features/wizard/wizard-steps-fix.js"></script>
-<script src="js/reports/enhanced-generator.js"></script>
-<script src="js/wizards/enhanced-vendor-cards.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/fixes/image-loader-fix.js"></script>
-    <script src="js/fixes/wizard-navigation-fix.js"></script>
-    <script src="js/fixes/vendor-cards-fix.js"></script>
-    <script src="js/fixes/chart-data-generator.js"></script>
-    <script src="js/fixes/image-fallback.js"></script>
-    <script src="js/fixes/wizard-navigation-fix.js"></script>
-    <script src="js/fixes/vendor-cards-fix.js"></script>
-    <script src="js/fixes/chart-generator.js"></script>
-    <script src="js/data/processors/tco-calculator.js"></script>
     <script src="js/components/charts/chart-manager.js"></script>
-    <script src="js/components/risk-analyzer.js"></script>
-    <script src="js/data/industry-compliance.js"></script>
-    <script src="js/implementation/custom-tco-implementation.js"></script>
-    <!-- Fix Scripts -->
-    <script src="js/utils/error-handler.js"></script>
-    <script src="js/fixes/chart-fix.js"></script>
-    <script src="js/fixes/vendor-cards-fix.js"></script>
-    <script src="js/fixes/wizard-navigation-fix.js"></script>
-    <script src="js/features/wizard/wizard-steps-fix.js"></script>
-    
-    <!-- Enhanced Components -->
-    <script src="js/compliance/industry-compliance.js"></script>
-    <script src="js/risk-analysis/risk-analyzer.js"></script>
-    <script src="js/components/calculator.js"></script>
-    <script src="js/components/charts.js"></script>
-    <script src="js/components/sensitivity.js"></script>
-    
-    <!-- Updated Main Script -->
-    <script src="js/main.js"></script>
-
 </body>
 </html>
