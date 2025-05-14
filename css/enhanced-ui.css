@@ -1,0 +1,325 @@
+/**
+ * Enhanced UI Components
+ * Additional styling for notifications, cards, and UI components
+ */
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  width: 320px;
+  max-width: 100%;
+}
+
+.toast {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.15);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: flex-start;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+  position: relative;
+}
+
+.toast-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.toast-hidden {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.toast-icon {
+  margin-right: 0.75rem;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.toast-content {
+  flex: 1;
+  margin-right: 0.75rem;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  align-self: flex-start;
+}
+
+.toast-info {
+  border-left: 4px solid #3498db;
+}
+
+.toast-info .toast-icon {
+  color: #3498db;
+}
+
+.toast-success {
+  border-left: 4px solid #2ecc71;
+}
+
+.toast-success .toast-icon {
+  color: #2ecc71;
+}
+
+.toast-warning {
+  border-left: 4px solid #f39c12;
+}
+
+.toast-warning .toast-icon {
+  color: #f39c12;
+}
+
+.toast-error {
+  border-left: 4px solid #e74c3c;
+}
+
+.toast-error .toast-icon {
+  color: #e74c3c;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.loading-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.loading-spinner {
+  text-align: center;
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #4e73df;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Enhanced UI Elements */
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 0.35em 0.65em;
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 0.375rem;
+}
+
+.badge-success {
+  background-color: #e6f7f0;
+  color: #36B37E;
+}
+
+.badge-warning {
+  background-color: #fff8e6;
+  color: #FFAB00;
+}
+
+.badge-danger {
+  background-color: #ffebe6;
+  color: #FF5630;
+}
+
+.badge-info {
+  background-color: #e6f4ff;
+  color: #0065FF;
+}
+
+.badge-primary {
+  background-color: #e6f0ff;
+  color: #4C9AFF;
+}
+
+/* Data Tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.75rem;
+  border: 1px solid #e3e6f0;
+}
+
+.data-table th {
+  background-color: #f8f9fc;
+  font-weight: 700;
+  text-align: left;
+}
+
+.data-table tbody tr:nth-child(even) {
+  background-color: #f8f9fc;
+}
+
+.data-table tbody tr:hover {
+  background-color: #eaecf4;
+}
+
+.data-table .highlight-value {
+  color: #36B37E;
+  font-weight: 700;
+}
+
+.data-table .negative-value {
+  color: #FF5630;
+  font-weight: 700;
+}
+
+.data-table .total-row {
+  background-color: #f8f9fc;
+  font-weight: 700;
+}
+
+/* Benefits List */
+.benefits-list {
+  list-style-type: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.benefits-list li {
+  position: relative;
+  padding-left: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.benefits-list li:before {
+  content: "\f00c";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #36B37E;
+}
+
+/* Implementation Timeline */
+.implementation-timeline {
+  position: relative;
+  padding: 1rem 0;
+}
+
+.timeline-item {
+  padding: 1rem;
+  border-left: 2px solid #4e73df;
+  margin-left: 20px;
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.timeline-item:before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 1.25rem;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #4e73df;
+}
+
+.timeline-item h4 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.timeline-item p {
+  margin-bottom: 0;
+}
+
+/* Dark Mode Support */
+.dark-mode .toast {
+  background-color: #2d3748;
+  color: #e2e8f0;
+}
+
+.dark-mode .toast-close {
+  color: #cbd5e0;
+}
+
+.dark-mode .loading-overlay {
+  background-color: rgba(26, 32, 44, 0.8);
+}
+
+.dark-mode .spinner {
+  border-color: #2d3748;
+  border-top-color: #4e73df;
+}
+
+.dark-mode .data-table th {
+  background-color: #2d3748;
+}
+
+.dark-mode .data-table th,
+.dark-mode .data-table td {
+  border-color: #4a5568;
+}
+
+.dark-mode .data-table tbody tr:nth-child(even) {
+  background-color: #2d3748;
+}
+
+.dark-mode .data-table tbody tr:hover {
+  background-color: #4a5568;
+}
+
+/* Responsive Fixes */
+@media (max-width: 768px) {
+  .toast-container {
+    width: calc(100% - 40px);
+  }
+
+  .chart-wrapper {
+    height: 250px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
