@@ -1,541 +1,320 @@
 /**
- * TCO Calculator for Total Cost Analyzer
- * Performs cost calculations and comparisons
+ * Calculator Component for Total Cost Analyzer
+ * Provides TCO calculations and comparison
  */
-const Calculator == (function() {
-    // Default parameters for calculations
-    const defaultParams == {
-        vendor: 'cisco',
-        industry: 'financial',
-        organization: {
-            size: 'medium',
-            deviceCount: 2500,
-            locations: 5,
-            cloudIntegration: true,
-            legacyDevices: false,
-            byodSupport: true
-        },
-        costs: {
-            fteCost: 120000,
-            fteAllocation: 50,
-            maintenancePercentage: 18,
-            consultingRate: 2000,
-            implementationDays: 60
-        },
-        portnox: {
-            basePrice: 4,
-            discount: 20
-        },
-        yearsToProject: 3
-    };
-    
-    // Vendor cost data
-    const vendorData == {
-        cisco: {
-            name: 'Cisco ISE',
-            licenseType: 'Subscription',
-            baseCostPerDevice: 120,
-            hardwareCost: 50000,
-            implementationFactor: 1.5,
-            fteFactor: 1.5,
-            maintenanceFactor: 1.2,
-            implementationTimeInDays: 90
-        },
-        aruba: {
-            name: 'Aruba ClearPass',
-            licenseType: 'Perpetual + Support',
-            baseCostPerDevice: 75,
-            hardwareCost: 35000,
-            implementationFactor: 1.25,
-            fteFactor: 1.25,
-            maintenanceFactor: 1.1,
-            implementationTimeInDays: 60
-        },
-        forescout: {
-            name: 'Forescout',
-            licenseType: 'Subscription',
-            baseCostPerDevice: 90,
-            hardwareCost: 45000,
-            implementationFactor: 1.3,
-            fteFactor: 1.4,
-            maintenanceFactor: 1.15,
-            implementationTimeInDays: 75
-        },
-        fortinac: {
-            name: 'FortiNAC',
-            licenseType: 'Subscription',
-            baseCostPerDevice: 65,
-            hardwareCost: 30000,
-            implementationFactor: 1.2,
-            fteFactor: 1.2,
-            maintenanceFactor: 1.1,
-            implementationTimeInDays: 60
-        },
-        nps: {
-            name: 'Microsoft NPS',
-            licenseType: 'Included in Windows Server',
-            baseCostPerDevice: 0,
-            hardwareCost: 15000,
-            implementationFactor: 0.8,
-            fteFactor: 1.0,
-            maintenanceFactor: 1.0,
-            implementationTimeInDays: 30
-        },
-        securew2: {
-            name: 'SecureW2',
-            licenseType: 'Subscription',
-            baseCostPerDevice: 31,
-            hardwareCost: 0,
-            implementationFactor: 0.5,
-            fteFactor: 0.6,
-            maintenanceFactor: 0.7,
-            implementationTimeInDays: 21
-        },
-        portnox: {
-            name: 'Portnox Cloud',
-            licenseType: 'Subscription',
-            baseCostPerDevice: 48,
-            hardwareCost: 0,
-            implementationFactor: 0.25,
-            fteFactor: 0.25,
-            maintenanceFactor: 0.3,
-            implementationTimeInDays: 7
-        },
-        noNac: {
-            name: 'No NAC Solution',
-            licenseType: 'None',
-            baseCostPerDevice: 0,
-            hardwareCost: 0,
-            implementationFactor: 0,
-            fteFactor: 0,
-            maintenanceFactor: 0,
-            implementationTimeInDays: 0
-        }
-    };
-    
-    // Calculate Total Cost of Ownership
-    function calculateTCO(params == {}) {
-        // Merge with default parameters
-        const calculationParams == mergeWithDefaults(params);
-        
-        // Get selected vendor data
-        const vendor == calculationParams.vendor;
-        const vendorInfo == vendorData[vendor] || vendorData.cisco;
-        
-        // Calculate costs for current vendor
-        const currentVendorCosts == calculateVendorCosts(vendorInfo, calculationParams);
-        
-        // Calculate costs for Portnox
-        const portnoxInfo == vendorData.portnox;
-        const portnoxCosts == calculateVendorCosts(portnoxInfo, calculationParams);
-        
-        // Calculate savings
-        const savings == calculateSavings(currentVendorCosts, portnoxCosts);
-        
-        // Return results
-        const results == {
-            vendor: vendorInfo,
-            currentVendorCosts,
-            portnoxInfo,
-            portnoxCosts,
-            savings,
-            params: calculationParams
-        };
-        
-        // Populate UI with results
-        populateResults(results);
-        
-        return results;
+
+const Calculator = (function() {
+  // Default calculation parameters
+  const defaultParams = {
+    deviceCount: 2500,
+    years: 3,
+    fte: {
+      cost: 120000,
+      allocation: 0.5
+    },
+    maintenance: {
+      percentage: 18,
+      downtime: 10000
+    },
+    implementation: {
+      consultingRate: 2000,
+      days: 60
+    },
+    training: {
+      costPerUser: 500,
+      users: 20
+    },
+    portnox: {
+      costPerDevice: 4,
+      discount: 20
     }
+  };
+  
+  // Calculate TCO
+  function calculateTCO(params) {
+    // Merge user parameters with defaults
+    const calculationParams = mergeParams(params);
     
-    // Calculate costs for a specific vendor
-    function calculateVendorCosts(vendorInfo, params) {
-        const deviceCount == params.organization.deviceCount;
-        const yearsToProject == params.yearsToProject;
-        
-        // License costs
-        let annualLicenseCost == 0;
-        if (vendorInfo.licenseType == 'Subscription') {
-            // For subscription, annual fee per device
-            annualLicenseCost == deviceCount * vendorInfo.baseCostPerDevice;
-        } else if (vendorInfo.licenseType == 'Perpetual + Support') {
-            // For perpetual, one-time fee + support
-            const perpetualLicense == deviceCount * vendorInfo.baseCostPerDevice;
-            const annualSupport == perpetualLicense * 0.2; // 20% annual support
-            annualLicenseCost == (perpetualLicense / yearsToProject) + annualSupport;
-        }
-        
-        // Hardware costs (amortized over years)
-        const hardwareScalingFactor == Math.sqrt(deviceCount / 1000);
-        const totalHardwareCost == vendorInfo.hardwareCost * hardwareScalingFactor;
-        const annualHardwareCost == totalHardwareCost / yearsToProject;
-        
-        // Implementation costs
-        const implementationDays == params.costs.implementationDays * vendorInfo.implementationFactor;
-        const consultingCost == implementationDays * params.costs.consultingRate;
-        const annualImplementationCost == consultingCost / yearsToProject;
-        
-        // Personnel costs (FTE)
-        const fteAllocation == (params.costs.fteAllocation / 100) * vendorInfo.fteFactor;
-        const annualFteCost == params.costs.fteCost * fteAllocation;
-        
-        // Maintenance costs
-        const maintenancePercentage == params.costs.maintenancePercentage / 100 * vendorInfo.maintenanceFactor;
-        const annualMaintenanceCost == totalHardwareCost * maintenancePercentage;
-        
-        // Training costs (amortized)
-        const trainingCost == 5000 * vendorInfo.fteFactor; // Base training cost
-        const annualTrainingCost == trainingCost / yearsToProject;
-        
-        // Total annual cost
-        const annualTotalCost == annualLicenseCost + annualHardwareCost + annualImplementationCost + 
-                                annualFteCost + annualMaintenanceCost + annualTrainingCost;
-        
-        // Projected costs
-        const projectedCosts == {
-            oneYear: annualTotalCost,
-            threeYear: annualTotalCost * Math.min(3, yearsToProject),
-            fiveYear: annualTotalCost * Math.min(5, yearsToProject)
-        };
-        
-        // Cost breakdown
-        const costBreakdown == {
-            license: annualLicenseCost,
-            hardware: annualHardwareCost,
-            implementation: annualImplementationCost,
-            personnel: annualFteCost,
-            maintenance: annualMaintenanceCost,
-            training: annualTrainingCost
-        };
-        
-        // Implementation timeline
-        const implementationTimeline == {
-            days: implementationDays,
-            phases: calculateImplementationPhases(implementationDays)
-        };
-        
-        return {
-            annual: annualTotalCost,
-            total: annualTotalCost * yearsToProject,
-            projected: projectedCosts,
-            breakdown: costBreakdown,
-            implementationTimeline
-        };
-    }
+    // Calculate current solution costs
+    const currentSolution = calculateCurrentSolutionCosts(calculationParams);
     
-    // Calculate implementation phases
-    function calculateImplementationPhases(totalDays) {
-        return [
-            {
-                name: 'Planning & Design',
-                duration: Math.round(totalDays * 0.2),
-                description: 'Requirements gathering, architecture design, and deployment planning'
-            },
-            {
-                name: 'Setup & Configuration',
-                duration: Math.round(totalDays * 0.3),
-                description: 'System installation, initial configuration, and integration setup'
-            },
-            {
-                name: 'Testing & Validation',
-                duration: Math.round(totalDays * 0.2),
-                description: 'Testing functionality, performance validation, and security assessment'
-            },
-            {
-                name: 'Pilot Deployment',
-                duration: Math.round(totalDays * 0.15),
-                description: 'Limited rollout to test group, feedback collection, and adjustments'
-            },
-            {
-                name: 'Full Deployment',
-                duration: Math.round(totalDays * 0.15),
-                description: 'Organization-wide deployment and policy enforcement'
-            }
-        ];
-    }
+    // Calculate Portnox Cloud costs
+    const portnoxCloud = calculatePortnoxCloudCosts(calculationParams);
     
-    // Calculate savings between current solution and Portnox
-    function calculateSavings(currentCosts, portnoxCosts) {
-        const annualSavings == currentCosts.annual - portnoxCosts.annual;
-        const percentageSavings == (annualSavings / currentCosts.annual) * 100;
-        
-        const totalSavings == currentCosts.total - portnoxCosts.total;
-        const totalPercentageSavings == (totalSavings / currentCosts.total) * 100;
-        
-        const breakEvenMonths == Math.ceil((portnoxCosts.breakdown.implementation * 12) / annualSavings);
-        
-        const implementationTimeSavings == currentCosts.implementationTimeline.days - portnoxCosts.implementationTimeline.days;
-        const implementationTimePercentage == (implementationTimeSavings / currentCosts.implementationTimeline.days) * 100;
-        
-        const fteSavings == (currentCosts.breakdown.personnel - portnoxCosts.breakdown.personnel) / currentCosts.breakdown.personnel * 100;
-        
-        return {
-            annual: annualSavings,
-            percentage: percentageSavings,
-            total: totalSavings,
-            totalPercentage: totalPercentageSavings,
-            breakEvenMonths,
-            implementationTime: {
-                days: implementationTimeSavings,
-                percentage: implementationTimePercentage
-            },
-            fteSavings
-        };
-    }
+    // Calculate savings and ROI
+    const savings = calculateSavingsAndROI(currentSolution, portnoxCloud, calculationParams);
     
-    // Merge parameters with defaults
-    function mergeWithDefaults(params) {
-        // Start with defaults
-        const result == JSON.parse(JSON.stringify(defaultParams));
-        
-        // Merge top-level properties
-        for (const key in params) {
-            if (typeof params[key] !== 'object' || params[key] == null) {
-                result[key] == params[key];
-            } else if (result.hasOwnProperty(key)) {
-                // For objects, merge nested properties
-                for (const nestedKey in params[key]) {
-                    result[key][nestedKey] == params[key][nestedKey];
-                }
-            }
-        }
-        
-        // Special case for Portnox calculations
-        if (params.vendor == 'portnox') {
-            // Calculating TCO against its own baseline doesn't make sense
-            result.vendor == 'cisco'; // Default to comparing against Cisco
-        }
-        
-        return result;
-    }
-    
-    // Populate UI with calculation results
-    function populateResults(results) {
-        // Executive summary
-        document.getElementById('total-savings')?.innerHTML  == formatCurrency(results.savings.total);
-        document.getElementById('savings-percentage')?.innerHTML == formatPercentage(results.savings.totalPercentage / 100);
-        document.getElementById('breakeven-point')?.innerHTML == `${results.savings.breakEvenMonths} months`;
-        document.getElementById('risk-reduction')?.innerHTML == '65%'; // Placeholder - could be calculated more precisely
-        document.getElementById('implementation-time')?.innerHTML == `${results.portnoxCosts.implementationTimeline.days} days`;
-        
-        // Key insights
-        const insightsList == document.getElementById('key-insights-list');
-        if (insightsList) {
-            insightsList.innerHTML == generateInsights(results);
-        }
-        
-        // Update charts if Chart.js is available
-        if (typeof updateCharts == 'function') {
-            updateCharts(results);
-        } else {
-            console.warn('Chart update function not available');
-        }
-        
-        // Detailed comparison table
-        const comparisonTable == document.getElementById('cost-comparison-table');
-        if (comparisonTable) {
-            comparisonTable.innerHTML == generateComparisonTable(results);
-        }
-        
-        // Implementation roadmap
-        const implementationRoadmap == document.getElementById('implementation-roadmap');
-        if (implementationRoadmap) {
-            implementationRoadmap.innerHTML == generateImplementationRoadmap(results);
-        }
-    }
-    
-    // Generate comparison table HTML
-    function generateComparisonTable(results) {
-        const currentVendor == results.vendor;
-        const currentCosts == results.currentVendorCosts;
-        const portnoxCosts == results.portnoxCosts;
-        const yearsToProject == results.params.yearsToProject;
-        
-        return `
-            <thead>
-                <tr>
-                    <th>Cost Category</th>
-                    <th>${currentVendor.name}</th>
-                    <th>Portnox Cloud</th>
-                    <th>Savings</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>License</td>
-                    <td>${formatCurrency(currentCosts.breakdown.license)}/year</td>
-                    <td>${formatCurrency(portnoxCosts.breakdown.license)}/year</td>
-                    <td>${formatCurrency(currentCosts.breakdown.license - portnoxCosts.breakdown.license)}/year</td>
-                </tr>
-                <tr>
-                    <td>Hardware</td>
-                    <td>${formatCurrency(currentCosts.breakdown.hardware)}/year</td>
-                    <td>${formatCurrency(portnoxCosts.breakdown.hardware)}/year</td>
-                    <td>${formatCurrency(currentCosts.breakdown.hardware - portnoxCosts.breakdown.hardware)}/year</td>
-                </tr>
-                <tr>
-                    <td>Implementation</td>
-                    <td>${formatCurrency(currentCosts.breakdown.implementation)}/year</td>
-                    <td>${formatCurrency(portnoxCosts.breakdown.implementation)}/year</td>
-                    <td>${formatCurrency(currentCosts.breakdown.implementation - portnoxCosts.breakdown.implementation)}/year</td>
-                </tr>
-                <tr>
-                    <td>Personnel</td>
-                    <td>${formatCurrency(currentCosts.breakdown.personnel)}/year</td>
-                    <td>${formatCurrency(portnoxCosts.breakdown.personnel)}/year</td>
-                    <td>${formatCurrency(currentCosts.breakdown.personnel - portnoxCosts.breakdown.personnel)}/year</td>
-                </tr>
-                <tr>
-                    <td>Maintenance</td>
-                    <td>${formatCurrency(currentCosts.breakdown.maintenance)}/year</td>
-                    <td>${formatCurrency(portnoxCosts.breakdown.maintenance)}/year</td>
-                    <td>${formatCurrency(currentCosts.breakdown.maintenance - portnoxCosts.breakdown.maintenance)}/year</td>
-                </tr>
-                <tr>
-                    <td>Training</td>
-                    <td>${formatCurrency(currentCosts.breakdown.training)}/year</td>
-                    <td>${formatCurrency(portnoxCosts.breakdown.training)}/year</td>
-                    <td>${formatCurrency(currentCosts.breakdown.training - portnoxCosts.breakdown.training)}/year</td>
-                </tr>
-                <tr class="total-row">
-                    <td><strong>Annual Total</strong></td>
-                    <td><strong>${formatCurrency(currentCosts.annual)}</strong></td>
-                    <td><strong>${formatCurrency(portnoxCosts.annual)}</strong></td>
-                    <td><strong>${formatCurrency(results.savings.annual)}</strong></td>
-                </tr>
-                <tr class="total-row highlight">
-                    <td><strong>${yearsToProject}-Year Total</strong></td>
-                    <td><strong>${formatCurrency(currentCosts.total)}</strong></td>
-                    <td><strong>${formatCurrency(portnoxCosts.total)}</strong></td>
-                    <td><strong>${formatCurrency(results.savings.total)}</strong></td>
-                </tr>
-            </tbody>
-        `;
-    }
-    
-    // Generate implementation roadmap HTML
-    function generateImplementationRoadmap(results) {
-        const currentVendor == results.vendor;
-        const currentTimeline == results.currentVendorCosts.implementationTimeline;
-        const portnoxTimeline == results.portnoxCosts.implementationTimeline;
-        
-        let html == `
-            <div class="timeline-comparison">
-                <div class="timeline-header">
-                    <div class="timeline-vendor">
-                        <h4>${currentVendor.name}</h4>
-                        <div class="timeline-days">${currentTimeline.days} days</div>
-                    </div>
-                    <div class="timeline-vendor portnox">
-                        <h4>Portnox Cloud</h4>
-                        <div class="timeline-days">${portnoxTimeline.days} days</div>
-                    </div>
-                </div>
-                <div class="timelines-container">
-        `;
-        
-        // Current vendor timeline
-        html += `<div class="vendor-timeline">`;
-        currentTimeline.phases.forEach(phase => {
-            html += `
-                <div class="timeline-phase" style="flex-basis: ${(phase.duration / currentTimeline.days) * 100}%">
-                    <div class="phase-content">
-                        <h5>${phase.name}</h5>
-                        <div class="phase-duration">${phase.duration} days</div>
-                    </div>
-                </div>
-            `;
-        });
-        html += `</div>`;
-        
-        // Portnox timeline
-        html += `<div class="vendor-timeline portnox">`;
-        portnoxTimeline.phases.forEach(phase => {
-            html += `
-                <div class="timeline-phase" style="flex-basis: ${(phase.duration / portnoxTimeline.days) * 100}%">
-                    <div class="phase-content">
-                        <h5>${phase.name}</h5>
-                        <div class="phase-duration">${phase.duration} days</div>
-                    </div>
-                </div>
-            `;
-        });
-        html += `</div>`;
-        
-        html += `
-                </div>
-            </div>
-            <div class="implementation-insights">
-                <h4><i class="fas fa-lightbulb"></i> Implementation Insights</h4>
-                <ul>
-                    <li>Portnox Cloud deployment is ${Math.round(results.savings.implementationTime.percentage)}% faster than ${currentVendor.name}, reducing project risk and accelerating security benefits.</li>
-                    <li>No hardware procurement or deployment is required with Portnox Cloud, eliminating delays from supply chain and shipping.</li>
-                    <li>Portnox's guided implementation approach reduces the need for specialized expertise during setup.</li>
-                    <li>Cloud-native architecture means no complex appliance clustering or high-availability configuration is required.</li>
-                </ul>
-            </div>
-        `;
-        
-        return html;
-    }
-    
-    // Generate key insights based on calculation results
-    function generateInsights(results) {
-        const currentVendor == results.vendor;
-        const savingsPercentage == Math.round(results.savings.totalPercentage);
-        const implementationTimeReduction == Math.round(results.savings.implementationTime.percentage);
-        const fteSavingsPercentage == Math.round(results.savings.fteSavings);
-        
-        return `
-            <div class="insight-item">
-                <div class="insight-icon"><i class="fas fa-chart-line"></i></div>
-                <div class="insight-content">
-                    <h4>Dramatic TCO Reduction</h4>
-                    <p>Portnox Cloud reduces total cost of ownership by ${savingsPercentage}% over ${results.params.yearsToProject} years compared to ${currentVendor.name}, primarily through elimination of hardware costs and reduced IT overhead.</p>
-                </div>
-            </div>
-            <div class="insight-item">
-                <div class="insight-icon"><i class="fas fa-rocket"></i></div>
-                <div class="insight-content">
-                    <h4>Accelerated Deployment</h4>
-                    <p>Implementation time is reduced from ${results.currentVendorCosts.implementationTimeline.days} days to just ${results.portnoxCosts.implementationTimeline.days} days, enabling ${implementationTimeReduction}% faster time-to-security and reducing project risk.</p>
-                </div>
-            </div>
-            <div class="insight-item">
-                <div class="insight-icon"><i class="fas fa-user-cog"></i></div>
-                <div class="insight-content">
-                    <h4>IT Resource Optimization</h4>
-                    <p>Portnox's cloud-native approach requires ${fteSavingsPercentage}% less IT resources for ongoing management, freeing staff for other strategic initiatives.</p>
-                </div>
-            </div>
-            <div class="insight-item">
-                <div class="insight-icon"><i class="fas fa-shield-alt"></i></div>
-                <div class="insight-content">
-                    <h4>Enhanced Security Posture</h4>
-                    <p>Continuous cloud-based updates ensure your NAC solution is always current with the latest security features and threat intelligence without maintenance windows.</p>
-                </div>
-            </div>
-        `;
-    }
-    
-    // Format currency
-    function formatCurrency(value) {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(value);
-    }
-    
-    // Format percentage
-    function formatPercentage(value) {
-        return `${(value * 100).toFixed(0)}%`;
-    }
-    
-    // Public API
+    // Return complete results
     return {
-        calculateTCO,
-        getVendorData: () => vendorData
+      params: calculationParams,
+      currentSolution,
+      portnoxCloud,
+      savings
     };
+  }
+  
+  // Merge user parameters with defaults
+  function mergeParams(params = {}) {
+    const result = {...defaultParams};
+    
+    // Merge top-level parameters
+    if (params.deviceCount) result.deviceCount = parseInt(params.deviceCount);
+    if (params.years) result.years = parseInt(params.years);
+    
+    // Merge nested parameters
+    if (params.fte) {
+      if (params.fte.cost) result.fte.cost = parseInt(params.fte.cost);
+      if (params.fte.allocation) result.fte.allocation = parseFloat(params.fte.allocation);
+    }
+    
+    if (params.maintenance) {
+      if (params.maintenance.percentage) result.maintenance.percentage = parseFloat(params.maintenance.percentage);
+      if (params.maintenance.downtime) result.maintenance.downtime = parseInt(params.maintenance.downtime);
+    }
+    
+    if (params.implementation) {
+      if (params.implementation.consultingRate) result.implementation.consultingRate = parseInt(params.implementation.consultingRate);
+      if (params.implementation.days) result.implementation.days = parseInt(params.implementation.days);
+    }
+    
+    if (params.training) {
+      if (params.training.costPerUser) result.training.costPerUser = parseInt(params.training.costPerUser);
+      if (params.training.users) result.training.users = parseInt(params.training.users);
+    }
+    
+    if (params.portnox) {
+      if (params.portnox.costPerDevice) result.portnox.costPerDevice = parseFloat(params.portnox.costPerDevice);
+      if (params.portnox.discount) result.portnox.discount = parseFloat(params.portnox.discount);
+    }
+    
+    return result;
+  }
+  
+  // Calculate current solution costs
+  function calculateCurrentSolutionCosts(params) {
+    // Get vendor-specific details
+    const vendorDetails = getVendorDetails(params.vendor);
+    
+    // Hardware costs
+    const hardwareCost = vendorDetails.hardwareRequired ? 
+      params.deviceCount * vendorDetails.hardwareCostPerDevice : 0;
+    
+    // Software license costs
+    const licenseCost = params.deviceCount * vendorDetails.licenseCostPerDevice;
+    
+    // Implementation costs
+    const implementationDays = params.implementation.days;
+    const implementationCost = implementationDays * params.implementation.consultingRate;
+    
+    // Training costs
+    const trainingCost = params.training.users * params.training.costPerUser;
+    
+    // Annual maintenance costs
+    const annualMaintenance = (hardwareCost + licenseCost) * (params.maintenance.percentage / 100);
+    
+    // Personnel costs
+    const annualPersonnelCost = params.fte.cost * params.fte.allocation;
+    
+    // Downtime costs (assumes current solution has more downtime)
+    const annualDowntimeCost = vendorDetails.estimatedDowntimeHours * params.maintenance.downtime;
+    
+    // Total costs for first year
+    const firstYearCosts = hardwareCost + licenseCost + implementationCost + 
+      trainingCost + annualMaintenance + annualPersonnelCost + annualDowntimeCost;
+    
+    // Calculate recurring annual costs
+    const annualRecurringCosts = annualMaintenance + annualPersonnelCost + annualDowntimeCost;
+    
+    // Calculate total costs for specified years
+    const totalCosts = firstYearCosts + (annualRecurringCosts * (params.years - 1));
+    
+    // Return detailed cost breakdown
+    return {
+      hardware: hardwareCost,
+      licenses: licenseCost,
+      implementation: implementationCost,
+      training: trainingCost,
+      maintenance: annualMaintenance * params.years,
+      personnel: annualPersonnelCost * params.years,
+      downtime: annualDowntimeCost * params.years,
+      firstYear: firstYearCosts,
+      recurring: annualRecurringCosts,
+      total: totalCosts
+    };
+  }
+  
+  // Calculate Portnox Cloud costs
+  function calculatePortnoxCloudCosts(params) {
+    // Calculate effective cost per device with discount
+    const effectiveCostPerDevice = params.portnox.costPerDevice * (1 - params.portnox.discount / 100);
+    
+    // Annual subscription cost
+    const annualSubscription = params.deviceCount * effectiveCostPerDevice * 12;
+    
+    // Implementation costs (drastically reduced for cloud solution)
+    const implementationDays = Math.max(5, Math.round(params.implementation.days * 0.25));
+    const implementationCost = implementationDays * params.implementation.consultingRate;
+    
+    // Training costs (reduced for cloud solution)
+    const trainingUsers = Math.max(5, Math.round(params.training.users * 0.75));
+    const trainingCost = trainingUsers * params.training.costPerUser;
+    
+    // Personnel costs (reduced for cloud solution)
+    const annualPersonnelCost = params.fte.cost * (params.fte.allocation * 0.5);
+    
+    // Downtime costs (assumes cloud solution has less downtime)
+    const annualDowntimeCost = 2 * params.maintenance.downtime;
+    
+    // Total costs for first year
+    const firstYearCosts = annualSubscription + implementationCost + 
+      trainingCost + annualPersonnelCost + annualDowntimeCost;
+    
+    // Calculate recurring annual costs
+    const annualRecurringCosts = annualSubscription + annualPersonnelCost + annualDowntimeCost;
+    
+    // Calculate total costs for specified years
+    const totalCosts = firstYearCosts + (annualRecurringCosts * (params.years - 1));
+    
+    // Return detailed cost breakdown
+    return {
+      hardware: 0, // No hardware costs for cloud solution
+      licenses: annualSubscription * params.years,
+      implementation: implementationCost,
+      training: trainingCost,
+      maintenance: 0, // Maintenance included in subscription
+      personnel: annualPersonnelCost * params.years,
+      downtime: annualDowntimeCost * params.years,
+      firstYear: firstYearCosts,
+      recurring: annualRecurringCosts,
+      total: totalCosts
+    };
+  }
+  
+  // Calculate savings and ROI
+  function calculateSavingsAndROI(currentSolution, portnoxCloud, params) {
+    // Calculate total savings
+    const totalSavings = currentSolution.total - portnoxCloud.total;
+    
+    // Calculate savings percentage
+    const savingsPercentage = Math.round((totalSavings / currentSolution.total) * 100);
+    
+    // Calculate ROI
+    const investment = portnoxCloud.firstYear;
+    const gains = totalSavings;
+    const roi = Math.round((gains / investment) * 100);
+    
+    // Calculate monthly costs
+    const currentMonthly = [];
+    const portnoxMonthly = [];
+    const savingsMonthly = [];
+    
+    // First month (initial implementation)
+    currentMonthly.push(currentSolution.hardware + currentSolution.licenses + 
+      currentSolution.implementation + currentSolution.training);
+    portnoxMonthly.push(portnoxCloud.implementation + portnoxCloud.training);
+    savingsMonthly.push(currentMonthly[0] - portnoxMonthly[0]);
+    
+    // Subsequent months
+    const currentMonthlyRecurring = currentSolution.recurring / 12;
+    const portnoxMonthlyRecurring = portnoxCloud.recurring / 12;
+    
+    for (let month = 1; month < params.years * 12; month++) {
+      currentMonthly.push(currentMonthly[month - 1] + currentMonthlyRecurring);
+      portnoxMonthly.push(portnoxMonthly[month - 1] + portnoxMonthlyRecurring);
+      savingsMonthly.push(currentMonthly[month] - portnoxMonthly[month]);
+    }
+    
+    // Find break-even point
+    let breakEvenMonth = params.years * 12; // Default to end of analysis period
+    for (let month = 0; month < savingsMonthly.length; month++) {
+      if (savingsMonthly[month] >= 0) {
+        breakEvenMonth = month;
+        break;
+      }
+    }
+    
+    // Return savings and ROI details
+    return {
+      total: totalSavings,
+      percentage: savingsPercentage,
+      roi: roi,
+      breakEvenMonth: breakEvenMonth,
+      currentMonthly: currentMonthly,
+      portnoxMonthly: portnoxMonthly,
+      savingsMonthly: savingsMonthly
+    };
+  }
+  
+  // Get vendor-specific details
+  function getVendorDetails(vendorId) {
+    // Default vendor details
+    const defaultVendor = {
+      name: 'Generic NAC Solution',
+      hardwareRequired: true,
+      hardwareCostPerDevice: 40,
+      licenseCostPerDevice: 60,
+      estimatedDowntimeHours: 24
+    };
+    
+    // Vendor-specific details
+    const vendors = {
+      'cisco': {
+        name: 'Cisco ISE',
+        hardwareRequired: true,
+        hardwareCostPerDevice: 45,
+        licenseCostPerDevice: 75,
+        estimatedDowntimeHours: 24
+      },
+      'aruba': {
+        name: 'Aruba ClearPass',
+        hardwareRequired: true,
+        hardwareCostPerDevice: 40,
+        licenseCostPerDevice: 65,
+        estimatedDowntimeHours: 20
+      },
+      'forescout': {
+        name: 'Forescout',
+        hardwareRequired: true,
+        hardwareCostPerDevice: 35,
+        licenseCostPerDevice: 70,
+        estimatedDowntimeHours: 18
+      },
+      'fortinac': {
+        name: 'FortiNAC',
+        hardwareRequired: true,
+        hardwareCostPerDevice: 30,
+        licenseCostPerDevice: 60,
+        estimatedDowntimeHours: 22
+      },
+      'nps': {
+        name: 'Microsoft NPS',
+        hardwareRequired: true,
+        hardwareCostPerDevice: 15,
+        licenseCostPerDevice: 10,
+        estimatedDowntimeHours: 30
+      },
+      'securew2': {
+        name: 'SecureW2',
+        hardwareRequired: false,
+        hardwareCostPerDevice: 0,
+        licenseCostPerDevice: 40,
+        estimatedDowntimeHours: 12
+      },
+      'noNac': {
+        name: 'No NAC Solution',
+        hardwareRequired: false,
+        hardwareCostPerDevice: 0,
+        licenseCostPerDevice: 0,
+        estimatedDowntimeHours: 48
+      }
+    };
+    
+    // Return vendor details or default
+    return vendors[vendorId] || defaultVendor;
+  }
+  
+  // Return public API
+  return {
+    calculateTCO
+  };
 })();
