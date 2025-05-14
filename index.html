@@ -7,19 +7,13 @@
     <title>Total Cost Analyzer | Portnox</title>
     
     <!-- CSS Libraries -->
-    <link rel="stylesheet" href="libs/css/tailwind.min.css">
-    <link rel="stylesheet" href="libs/css/all.min.css">
-    <link rel="stylesheet" href="css/fontawesome-local.css">
-    <link rel="stylesheet" href="libs/css/animate.min.css">
-    <link rel="stylesheet" href="libs/css/aos.css">
-    <link rel="stylesheet" href="libs/css/hover.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap">
     
     <!-- Core CSS -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/enhanced-ui.css">
-    <link rel="stylesheet" href="css/enhanced-ui.css">
-    <link rel="stylesheet" href="css/chart-styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="icon" type="image/png" href="img/favicon.svg">
 </head>
@@ -533,48 +527,6 @@
                                     <canvas id="value-drivers-chart"></canvas>
                                 </div>
                             </div>
-                            
-                            <div class="chart-container">
-                                <h3>Benefit Details</h3>
-                                <div class="responsive-table">
-                                    <table class="data-table" id="benefits-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Benefit Category</th>
-                                                <th>Description</th>
-                                                <th>Estimated Value</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Cost Avoidance</td>
-                                                <td>Hardware, implementation, and maintenance savings</td>
-                                                <td>$400,000</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Operational Efficiency</td>
-                                                <td>Reduced FTE requirements for management</td>
-                                                <td>$126,000</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Faster Deployment</td>
-                                                <td>Accelerated time-to-value and productivity</td>
-                                                <td>$75,000</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Security Improvement</td>
-                                                <td>Reduced breach risk and compliance violations</td>
-                                                <td>$125,000</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Future-Proofing</td>
-                                                <td>Automatic updates and scalability benefits</td>
-                                                <td>$50,000</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
                         </div>
                         
                         <!-- Risk Assessment Panel -->
@@ -619,54 +571,6 @@
                                 <h3>Breach Impact Analysis</h3>
                                 <div class="chart-wrapper">
                                     <canvas id="breach-impact-chart"></canvas>
-                                </div>
-                            </div>
-                            
-                            <div class="chart-container">
-                                <h3>Risk Assessment Matrix</h3>
-                                <div class="responsive-table">
-                                    <table class="data-table" id="risk-matrix-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Risk Factor</th>
-                                                <th>Portnox Cloud</th>
-                                                <th>Cisco ISE</th>
-                                                <th>Industry Average</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Unauthorized Access</td>
-                                                <td><span class="badge badge-success">Low Risk</span></td>
-                                                <td><span class="badge badge-warning">Medium Risk</span></td>
-                                                <td><span class="badge badge-warning">Medium Risk</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Compliance Violations</td>
-                                                <td><span class="badge badge-success">Low Risk</span></td>
-                                                <td><span class="badge badge-warning">Medium Risk</span></td>
-                                                <td><span class="badge badge-warning">Medium Risk</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Network Visibility</td>
-                                                <td><span class="badge badge-success">High Visibility</span></td>
-                                                <td><span class="badge badge-warning">Medium Visibility</span></td>
-                                                <td><span class="badge badge-warning">Medium Visibility</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Insider Threats</td>
-                                                <td><span class="badge badge-success">Low Risk</span></td>
-                                                <td><span class="badge badge-warning">Medium Risk</span></td>
-                                                <td><span class="badge badge-warning">Medium Risk</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Configuration Errors</td>
-                                                <td><span class="badge badge-success">Low Risk</span></td>
-                                                <td><span class="badge badge-danger">High Risk</span></td>
-                                                <td><span class="badge badge-warning">Medium Risk</span></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -804,13 +708,6 @@
                                     </table>
                                 </div>
                             </div>
-                            
-                            <div class="chart-container">
-                                <h3>Feature Strength Analysis</h3>
-                                <div class="chart-wrapper">
-                                    <canvas id="feature-strength-chart"></canvas>
-                                </div>
-                            </div>
                         </div>
                         
                         <!-- Implementation Panel -->
@@ -873,13 +770,6 @@
                             </div>
                             
                             <div class="chart-container">
-                                <h3>Resource Requirements</h3>
-                                <div class="chart-wrapper">
-                                    <canvas id="resource-requirements-chart"></canvas>
-                                </div>
-                            </div>
-                            
-                            <div class="chart-container">
                                 <h3>Implementation Phases & Timeline</h3>
                                 <div id="implementation-timeline">
                                     <!-- Timeline content -->
@@ -902,60 +792,6 @@
                                 <h3>Industry-Specific Compliance</h3>
                                 <div class="chart-wrapper">
                                     <canvas id="industry-compliance-chart"></canvas>
-                                </div>
-                            </div>
-                            
-                            <div class="chart-container">
-                                <h3>Detailed Compliance Matrix</h3>
-                                <div class="responsive-table">
-                                    <table class="data-table" id="compliance-matrix-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Requirement</th>
-                                                <th>Portnox</th>
-                                                <th>Cisco ISE</th>
-                                                <th>Aruba ClearPass</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>PCI DSS 3.2.1 Requirement 1.3</td>
-                                                <td><span class="badge badge-success">✓ Full</span></td>
-                                                <td><span class="badge badge-warning">⚠ Partial</span></td>
-                                                <td><span class="badge badge-warning">⚠ Partial</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>PCI DSS 3.2.1 Requirement 7.1</td>
-                                                <td><span class="badge badge-success">✓ Full</span></td>
-                                                <td><span class="badge badge-success">✓ Full</span></td>
-                                                <td><span class="badge badge-success">✓ Full</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>PCI DSS 3.2.1 Requirement 8.1</td>
-                                                <td><span class="badge badge-success">✓ Full</span></td>
-                                                <td><span class="badge badge-success">✓ Full</span></td>
-                                                <td><span class="badge badge-success">✓ Full</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>PCI DSS 3.2.1 Requirement 10.1</td>
-                                                <td><span class="badge badge-success">✓ Full</span></td>
-                                                <td><span class="badge badge-warning">⚠ Partial</span></td>
-                                                <td><span class="badge badge-warning">⚠ Partial</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>NIST 800-53 AC-1</td>
-                                                <td><span class="badge badge-success">✓ Full</span></td>
-                                                <td><span class="badge badge-success">✓ Full</span></td>
-                                                <td><span class="badge badge-success">✓ Full</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>NIST 800-53 AC-17</td>
-                                                <td><span class="badge badge-success">✓ Full</span></td>
-                                                <td><span class="badge badge-warning">⚠ Partial</span></td>
-                                                <td><span class="badge badge-warning">⚠ Partial</span></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -995,20 +831,6 @@
                                     <canvas id="sensitivity-chart"></canvas>
                                 </div>
                             </div>
-                            
-                            <div class="chart-container">
-                                <h3>Break-even Analysis</h3>
-                                <div class="chart-wrapper">
-                                    <canvas id="breakeven-chart"></canvas>
-                                </div>
-                            </div>
-                            
-                            <div class="chart-container">
-                                <h3>FTE Impact Analysis</h3>
-                                <div class="chart-wrapper">
-                                    <canvas id="fte-impact-chart"></canvas>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -1044,7 +866,25 @@
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
-                <!-- Help content -->
+                <h3>Getting Started</h3>
+                <p>Welcome to the Portnox Total Cost Analyzer. This tool helps you compare the total cost of ownership (TCO) for different NAC solutions.</p>
+                
+                <h4>1. Configure Your Analysis</h4>
+                <ul>
+                    <li><strong>Select vendors</strong> to compare with Portnox Cloud</li>
+                    <li><strong>Choose your industry</strong> and compliance requirements</li>
+                    <li><strong>Enter your organization details</strong> such as size and device count</li>
+                    <li><strong>Adjust cost parameters</strong> if needed</li>
+                </ul>
+                
+                <h4>2. View Analysis Results</h4>
+                <ul>
+                    <li><strong>Executive & Financial View:</strong> TCO comparison, ROI analysis, and risk assessment</li>
+                    <li><strong>Technical & Security View:</strong> Feature comparison, implementation details, and compliance analysis</li>
+                </ul>
+                
+                <h4>3. Export Your Results</h4>
+                <p>Use the Export button to generate a PDF report of your analysis.</p>
             </div>
         </div>
     </div>
@@ -1064,52 +904,1108 @@
     <div id="toast-container" class="toast-container"></div>
     
     <!-- JavaScript Libraries -->
-    <script src="libs/js/chart.min.js"></script>
-    <script src="libs/js/chartjs-plugin-datalabels.min.js"></script>
-    <script src="libs/js/d3.min.js"></script>
-    <script src="libs/js/gsap.min.js"></script>
-    <script src="libs/js/ScrollTrigger.min.js"></script>
-    <script src="libs/js/countUp.min.js"></script>
-    <script src="libs/js/aos.js"></script>
-    <script src="libs/js/particles.min.js"></script>
-    <script src="libs/js/lodash.min.js"></script>
-    <script src="libs/js/jspdf.umd.min.js"></script>
-    <script src="libs/js/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.8.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.6.1/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
-    <!-- Core JavaScript -->
-    <script src="js/core/helpers.js"></script>
-    <script src="js/core/dom.js"></script>
-    <script src="js/core/validation.js"></script>
+    <!-- Core JavaScript - Single file approach -->
+    <script>
+    /**
+     * Portnox Total Cost Analyzer
+     * Combined JavaScript file to fix loading issues
+     */
     
-    <!-- New Components -->
-    <script src="js/components/sidebar-controller.js"></script>
-    <script src="js/components/view-controller.js"></script>
-    <script src="js/components/vendor-controller.js"></script>
-    
-    <!-- Existing Components -->
-    <script src="js/managers/loading.js"></script>
-    <script src="js/managers/notification.js"></script>
-    <script src="js/managers/state.js"></script>
-    <script src="js/components/enhanced-ui.js"></script>
-    <script src="js/components/calculator.js"></script>
-    <script src="js/components/sensitivity.js"></script>
-    <script src="js/components/charts.js"></script>
-    <script src="js/data/enhanced-vendors.js"></script>
-    <script src="js/data/industry.js"></script>
-    <script src="js/data/compliance.js"></script>
-    <script src="js/data/industry-compliance.js"></script>
-    <script src="js/charts/enhanced-charts.js"></script>
-    <script src="js/reports/generator.js"></script>
-    <script src="js/reports/enhanced-generator.js"></script>
-    
-    <!-- Main Application -->
-    <script src="js/app-controller.js"></script>
-    <script src="js/components/implementation-timeline.js"></script>
-    <script src="js/charts/chart-controller.js"></script>
-    <script src="js/components/config-controller.js"></script>
-    <script src="js/components/implementation-timeline.js"></script>
-    <script src="js/charts/chart-controller.js"></script>
-    <script src="js/components/config-controller.js"></script>
-    <script src="js/main.js"></script>
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Vendor data module
+        const VendorData = {
+            // Vendor display names
+            vendorNames: {
+                'portnox': 'Portnox Cloud',
+                'cisco': 'Cisco ISE',
+                'aruba': 'Aruba ClearPass',
+                'forescout': 'Forescout',
+                'fortinac': 'FortiNAC',
+                'juniper': 'Juniper Mist',
+                'securew2': 'SecureW2',
+                'nps': 'Microsoft NPS',
+                'arista': 'Arista Agni',
+                'foxpass': 'Foxpass',
+                'noNac': 'No NAC Solution'
+            },
+            
+            // Vendor colors for charts
+            vendorColors: {
+                'portnox': '#36B37E',
+                'cisco': '#0D5BD9',
+                'aruba': '#A44CFE',
+                'forescout': '#FF8C3B',
+                'fortinac': '#0088FE',
+                'juniper': '#7E57C2',
+                'securew2': '#00ACC1',
+                'nps': '#00A8E8',
+                'arista': '#8D99AE',
+                'foxpass': '#EC7063',
+                'noNac': '#FF5252'
+            },
+            
+            // TCO data for 3 years (Year 1, Year 2, Year 3) in USD
+            tcoData: {
+                'portnox': [180000, 150000, 145000],
+                'cisco': [350000, 250000, 260000],
+                'aruba': [320000, 240000, 250000],
+                'forescout': [310000, 230000, 240000],
+                'fortinac': [290000, 220000, 230000],
+                'juniper': [300000, 230000, 235000],
+                'securew2': [200000, 180000, 170000],
+                'nps': [150000, 170000, 190000],
+                'noNac': [50000, 60000, 70000]
+            },
+            
+            // Detailed cost components for TCO calculator
+            costComponents: {
+                'portnox': {
+                    hardware: 0,
+                    software: 300000,
+                    implementation: 30000,
+                    maintenance: 45000,
+                    personnel: 54000
+                },
+                'cisco': {
+                    hardware: 175000,
+                    software: 250000,
+                    implementation: 120000,
+                    maintenance: 180000,
+                    personnel: 180000
+                },
+                'aruba': {
+                    hardware: 160000,
+                    software: 240000,
+                    implementation: 110000,
+                    maintenance: 170000,
+                    personnel: 162000
+                },
+                'forescout': {
+                    hardware: 150000,
+                    software: 235000,
+                    implementation: 105000,
+                    maintenance: 160000,
+                    personnel: 144000
+                },
+                'fortinac': {
+                    hardware: 130000,
+                    software: 200000,
+                    implementation: 100000,
+                    maintenance: 150000,
+                    personnel: 144000
+                },
+                'juniper': {
+                    hardware: 140000,
+                    software: 220000,
+                    implementation: 105000,
+                    maintenance: 155000,
+                    personnel: 144000
+                },
+                'securew2': {
+                    hardware: 0,
+                    software: 250000,
+                    implementation: 45000,
+                    maintenance: 60000,
+                    personnel: 72000
+                },
+                'nps': {
+                    hardware: 50000,
+                    software: 0,
+                    implementation: 90000,
+                    maintenance: 45000,
+                    personnel: 216000
+                },
+                'noNac': {
+                    hardware: 0,
+                    software: 0,
+                    implementation: 0,
+                    maintenance: 0,
+                    personnel: 180000
+                }
+            },
+            
+            // Calculate TCO based on organization parameters
+            calculateTCO: function(vendor, params = {}) {
+                const deviceCount = params.deviceCount || 2500;
+                const yearsToProject = params.yearsToProject || 3;
+                const fteCost = params.fteCost || 120000;
+                const fteAllocation = params.fteAllocation || 50;
+                const maintenancePercentage = params.maintenancePercentage || 18;
+                
+                const baseTCO = this.costComponents[vendor];
+                if (!baseTCO) return { total: 0 };
+                
+                // Scale costs based on device count
+                const scaleFactor = deviceCount / 2500; // Base calculations are for 2500 devices
+                
+                let hardware = baseTCO.hardware * scaleFactor;
+                let software = baseTCO.software * scaleFactor;
+                let implementation = baseTCO.implementation * (0.5 + (0.5 * scaleFactor)); // Implementation scales non-linearly
+                let maintenance = baseTCO.maintenance * scaleFactor * (maintenancePercentage / 18); // Adjust for maintenance percentage
+                let personnel = baseTCO.personnel * (fteCost / 120000) * (fteAllocation / 50); // Adjust for FTE cost and allocation
+                
+                // Special case for Portnox with volume discount
+                if (vendor === 'portnox' && params.portnoxDiscount) {
+                    software = software * (1 - (params.portnoxDiscount / 100));
+                }
+                
+                // Adjust for years to project
+                if (yearsToProject !== 3) {
+                    const yearlyFactor = yearsToProject / 3;
+                    maintenance = maintenance * yearlyFactor;
+                    personnel = personnel * yearlyFactor;
+                    software = software * yearlyFactor;
+                }
+                
+                return {
+                    hardware,
+                    software,
+                    implementation,
+                    maintenance,
+                    personnel,
+                    total: hardware + software + implementation + maintenance + personnel
+                };
+            }
+        };
+        
+        // Make available globally
+        window.VendorData = VendorData;
+        
+        // Notification Manager
+        class NotificationManager {
+            constructor() {
+                this.container = document.getElementById('toast-container');
+                
+                // Create container if it doesn't exist
+                if (!this.container) {
+                    this.container = document.createElement('div');
+                    this.container.id = 'toast-container';
+                    this.container.className = 'toast-container';
+                    document.body.appendChild(this.container);
+                }
+            }
+            
+            show(message, type = 'info', duration = 5000) {
+                // Create toast element
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                
+                // Set toast content
+                toast.innerHTML = `
+                    <div class="toast-icon">
+                        <i class="fas fa-${this.getIconForType(type)}"></i>
+                    </div>
+                    <div class="toast-content">${message}</div>
+                    <button class="toast-close">&times;</button>
+                `;
+                
+                // Add to container
+                this.container.appendChild(toast);
+                
+                // Trigger animation
+                setTimeout(() => {
+                    toast.classList.add('toast-visible');
+                }, 10);
+                
+                // Set up auto-close
+                let timeout;
+                if (duration > 0) {
+                    timeout = setTimeout(() => {
+                        this.close(toast);
+                    }, duration);
+                }
+                
+                // Set up close button
+                const closeBtn = toast.querySelector('.toast-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        if (timeout) clearTimeout(timeout);
+                        this.close(toast);
+                    });
+                }
+                
+                return toast;
+            }
+            
+            close(toast) {
+                toast.classList.remove('toast-visible');
+                toast.classList.add('toast-hidden');
+                
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }
+            
+            getIconForType(type) {
+                switch (type) {
+                    case 'success': return 'check-circle';
+                    case 'warning': return 'exclamation-triangle';
+                    case 'error': return 'exclamation-circle';
+                    case 'info':
+                    default: return 'info-circle';
+                }
+            }
+        }
+        
+        // Loading Manager
+        class LoadingManager {
+            constructor() {
+                this.overlay = document.getElementById('loading-overlay');
+                
+                if (!this.overlay) {
+                    this.overlay = document.createElement('div');
+                    this.overlay.id = 'loading-overlay';
+                    this.overlay.className = 'loading-overlay';
+                    
+                    this.overlay.innerHTML = `
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            <p>Calculating...</p>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(this.overlay);
+                }
+            }
+            
+            show(message = 'Calculating...') {
+                const messageElement = this.overlay.querySelector('p');
+                if (messageElement) {
+                    messageElement.textContent = message;
+                }
+                
+                this.overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            
+            hide() {
+                this.overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+        
+        // Sidebar Controller
+        class SidebarController {
+            constructor() {
+                this.sidebar = document.querySelector('.sidebar');
+                this.toggle = document.querySelector('.sidebar-toggle');
+                this.contentArea = document.querySelector('.content-area');
+                this.configCards = document.querySelectorAll('.config-card');
+                
+                this.initEventListeners();
+            }
+            
+            initEventListeners() {
+                // Toggle sidebar
+                if (this.toggle) {
+                    this.toggle.addEventListener('click', () => this.toggleSidebar());
+                }
+                
+                // Toggle config card sections
+                this.configCards.forEach(card => {
+                    const header = card.querySelector('.config-card-header');
+                    const content = card.querySelector('.config-card-content');
+                    
+                    if (header && content) {
+                        header.addEventListener('click', () => {
+                            content.classList.toggle('collapsed');
+                            const icon = header.querySelector('i.fa-chevron-down, i.fa-chevron-up');
+                            
+                            if (icon) {
+                                icon.classList.toggle('fa-chevron-down');
+                                icon.classList.toggle('fa-chevron-up');
+                            }
+                        });
+                    }
+                });
+                
+                // Handle window resize
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth < 768) {
+                        this.contentArea.style.marginLeft = '0';
+                    } else if (!this.sidebar.classList.contains('collapsed')) {
+                        this.contentArea.style.marginLeft = '320px';
+                    }
+                });
+            }
+            
+            toggleSidebar() {
+                this.sidebar.classList.toggle('collapsed');
+                
+                if (window.innerWidth >= 768) {
+                    if (this.sidebar.classList.contains('collapsed')) {
+                        this.contentArea.style.marginLeft = '0';
+                    } else {
+                        this.contentArea.style.marginLeft = '320px';
+                    }
+                }
+                
+                // Update toggle icon
+                const toggleIcon = this.toggle.querySelector('i');
+                if (toggleIcon) {
+                    toggleIcon.classList.toggle('fa-chevron-left');
+                    toggleIcon.classList.toggle('fa-chevron-right');
+                }
+                
+                // Trigger window resize to adjust charts
+                window.dispatchEvent(new Event('resize'));
+            }
+        }
+        
+        // View Controller
+        class ViewController {
+            constructor() {
+                // Stakeholder view tabs
+                this.viewTabs = document.querySelectorAll('.view-tab');
+                this.viewPanels = document.querySelectorAll('.view-panel');
+                
+                // Results tabs within each view
+                this.resultsTabs = document.querySelectorAll('.results-tab');
+                this.resultsPanels = document.querySelectorAll('.results-panel');
+                
+                this.initEventListeners();
+            }
+            
+            initEventListeners() {
+                // Stakeholder view switching
+                this.viewTabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const view = tab.getAttribute('data-view');
+                        this.activateView(view);
+                    });
+                });
+                
+                // Results tab switching
+                this.resultsTabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const panel = tab.getAttribute('data-panel');
+                        const view = tab.closest('.view-panel').getAttribute('data-view');
+                        this.activateResultsPanel(panel, view);
+                    });
+                });
+            }
+            
+            activateView(view) {
+                // Update tab states
+                this.viewTabs.forEach(tab => {
+                    if (tab.getAttribute('data-view') === view) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
+                    }
+                });
+                
+                // Update panel visibility
+                this.viewPanels.forEach(panel => {
+                    if (panel.getAttribute('data-view') === view) {
+                        panel.classList.add('active');
+                    } else {
+                        panel.classList.remove('active');
+                    }
+                });
+                
+                // Trigger event for other components
+                document.dispatchEvent(new CustomEvent('viewChanged', { 
+                    detail: { view: view }
+                }));
+                
+                // Trigger resize to fix chart display
+                window.dispatchEvent(new Event('resize'));
+            }
+            
+            activateResultsPanel(panelId, view) {
+                // Get tabs and panels within the current view
+                const viewPanel = document.querySelector(`.view-panel[data-view="${view}"]`);
+                
+                if (!viewPanel) return;
+                
+                const tabs = viewPanel.querySelectorAll('.results-tab');
+                const panels = viewPanel.querySelectorAll('.results-panel');
+                
+                // Update tab states
+                tabs.forEach(tab => {
+                    if (tab.getAttribute('data-panel') === panelId) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
+                    }
+                });
+                
+                // Update panel visibility
+                panels.forEach(panel => {
+                    if (panel.getAttribute('id') === panelId) {
+                        panel.classList.add('active');
+                    } else {
+                        panel.classList.remove('active');
+                    }
+                });
+                
+                // Trigger resize to fix chart display
+                window.dispatchEvent(new Event('resize'));
+            }
+            
+            // Navigate to a specific view and panel
+            navigateTo(view, panel) {
+                this.activateView(view);
+                if (panel) {
+                    this.activateResultsPanel(panel, view);
+                }
+            }
+        }
+        
+        // Vendor Controller
+        class VendorController {
+            constructor() {
+                this.vendorCards = document.querySelectorAll('.vendor-card');
+                this.selectedVendors = new Set(['portnox']); // Default to Portnox
+                
+                this.initEventListeners();
+                this.updateVendorSelectionState();
+            }
+            
+            initEventListeners() {
+                // Vendor selection
+                this.vendorCards.forEach(card => {
+                    card.addEventListener('click', () => {
+                        const vendor = card.getAttribute('data-vendor');
+                        this.toggleVendor(vendor, card);
+                    });
+                });
+            }
+            
+            toggleVendor(vendor, card) {
+                if (this.selectedVendors.has(vendor)) {
+                    // Don't allow deselecting if it's the last vendor
+                    if (this.selectedVendors.size > 1) {
+                        this.selectedVendors.delete(vendor);
+                        card.classList.remove('selected');
+                    }
+                } else {
+                    this.selectedVendors.add(vendor);
+                    card.classList.add('selected');
+                }
+                
+                // Update state
+                this.updateVendorSelectionState();
+                
+                // Trigger event for other components
+                document.dispatchEvent(new CustomEvent('vendorsChanged', { 
+                    detail: { 
+                        vendors: Array.from(this.selectedVendors),
+                        added: this.selectedVendors.has(vendor),
+                        vendor: vendor
+                    }
+                }));
+            }
+            
+            updateVendorSelectionState() {
+                // Update UI to reflect selection state
+                this.vendorCards.forEach(card => {
+                    const vendor = card.getAttribute('data-vendor');
+                    if (this.selectedVendors.has(vendor)) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                });
+            }
+            
+            getSelectedVendors() {
+                return Array.from(this.selectedVendors);
+            }
+        }
+        
+        // Config Controller
+        class ConfigController {
+            constructor() {
+                this.state = {
+                    // Organization
+                    organizationSize: 'medium',
+                    deviceCount: 2500,
+                    locations: 5,
+                    
+                    // Features
+                    cloudIntegration: false,
+                    legacyDevices: false,
+                    byodSupport: false,
+                    
+                    // Analysis
+                    yearsToProject: 3,
+                    
+                    // Industry & Compliance
+                    industry: '',
+                    compliance: {
+                        pci: false,
+                        hipaa: false,
+                        nist: false,
+                        gdpr: false,
+                        iso: false
+                    },
+                    
+                    // Cost parameters
+                    fteCost: 120000,
+                    fteAllocation: 50,
+                    maintenancePercentage: 18,
+                    downtimeCost: 10000,
+                    implementationDays: 60,
+                    portnoxBasePrice: 4,
+                    portnoxDiscount: 20
+                };
+                
+                this.initEventListeners();
+            }
+            
+            initEventListeners() {
+                // Organization size
+                const sizeSelect = document.getElementById('organization-size');
+                if (sizeSelect) {
+                    sizeSelect.addEventListener('change', () => {
+                        this.state.organizationSize = sizeSelect.value;
+                        this.updateDeviceCount(sizeSelect.value);
+                    });
+                }
+                
+                // Device count
+                const deviceCountInput = document.getElementById('device-count');
+                if (deviceCountInput) {
+                    deviceCountInput.addEventListener('change', () => {
+                        this.state.deviceCount = parseInt(deviceCountInput.value);
+                    });
+                }
+                
+                // Calculate button
+                const calculateBtn = document.getElementById('calculate-btn');
+                if (calculateBtn) {
+                    calculateBtn.addEventListener('click', () => this.calculateResults());
+                }
+                
+                // Set up range sliders
+                this.initRangeSliders();
+            }
+            
+            initRangeSliders() {
+                const sliders = [
+                    { id: 'fte-cost', valueId: 'fte-cost-value', property: 'fteCost', format: val => `$${parseInt(val).toLocaleString()}` },
+                    { id: 'fte-allocation', valueId: 'fte-allocation-value', property: 'fteAllocation', format: val => `${val}%` },
+                    { id: 'maintenance-percentage', valueId: 'maintenance-value', property: 'maintenancePercentage', format: val => `${val}%` },
+                    { id: 'downtime-cost', valueId: 'downtime-cost-value', property: 'downtimeCost', format: val => `$${parseInt(val).toLocaleString()}` },
+                    { id: 'implementation-days', valueId: 'implementation-days-value', property: 'implementationDays', format: val => `${val} days` },
+                    { id: 'portnox-base-price', valueId: 'portnox-cost-value', property: 'portnoxBasePrice', format: val => `$${parseFloat(val).toFixed(2)}` },
+                    { id: 'portnox-discount', valueId: 'portnox-discount-value', property: 'portnoxDiscount', format: val => `${val}%` }
+                ];
+                
+                sliders.forEach(slider => {
+                    const inputElement = document.getElementById(slider.id);
+                    const valueDisplay = document.getElementById(slider.valueId);
+                    
+                    if (inputElement && valueDisplay) {
+                        // Set initial value
+                        valueDisplay.textContent = slider.format(inputElement.value);
+                        
+                        // Update on change
+                        inputElement.addEventListener('input', () => {
+                            const value = inputElement.type === 'range' ? inputElement.value : inputElement.value;
+                            this.state[slider.property] = parseFloat(value);
+                            valueDisplay.textContent = slider.format(value);
+                        });
+                    }
+                });
+            }
+            
+            updateDeviceCount(size) {
+                // Update device count based on organization size
+                const deviceCountInput = document.getElementById('device-count');
+                
+                if (deviceCountInput) {
+                    let count = 2500;
+                    
+                    switch (size) {
+                        case 'small':
+                            count = 500;
+                            break;
+                        case 'medium':
+                            count = 2500;
+                            break;
+                        case 'large':
+                            count = 7500;
+                            break;
+                        case 'enterprise':
+                            count = 15000;
+                            break;
+                    }
+                    
+                    deviceCountInput.value = count;
+                    this.state.deviceCount = count;
+                }
+            }
+            
+            calculateResults() {
+                // Show loading overlay
+                if (window.LoadingManager) {
+                    window.LoadingManager.show('Calculating TCO comparison...');
+                }
+                
+                // Simulate calculation time
+                setTimeout(() => {
+                    // Hide loading overlay
+                    if (window.LoadingManager) {
+                        window.LoadingManager.hide();
+                    }
+                    
+                    // Update TCO metrics
+                    this.updateTcoMetrics();
+                    
+                    // Navigate to results if view controller exists
+                    if (window.ViewController) {
+                        window.ViewController.navigateTo('executive', 'executive-overview');
+                    }
+                    
+                    // Show success notification
+                    if (window.NotificationManager) {
+                        window.NotificationManager.show('Analysis completed successfully', 'success');
+                    }
+                    
+                    // Trigger event for chart updates
+                    document.dispatchEvent(new CustomEvent('calculateResults', {
+                        detail: this.state
+                    }));
+                    
+                    console.log('Calculation results:', this.state);
+                }, 1000);
+            }
+            
+            updateTcoMetrics() {
+                // Get selected vendors
+                const selectedVendors = window.VendorController ? 
+                    window.VendorController.getSelectedVendors() : 
+                    ['portnox', 'cisco'];
+                
+                // Update metrics
+                if (selectedVendors.includes('portnox')) {
+                    const portnoxTco = window.VendorData.calculateTCO('portnox', this.state);
+                    
+                    const portnoxTcoElement = document.getElementById('portnox-tco');
+                    if (portnoxTcoElement) {
+                        portnoxTcoElement.textContent = `$${Math.round(portnoxTco.total).toLocaleString()}`;
+                    }
+                    
+                    // If Cisco is also selected, calculate savings
+                    if (selectedVendors.includes('cisco')) {
+                        const ciscoTco = window.VendorData.calculateTCO('cisco', this.state);
+                        
+                        const tcoComparisonElement = document.getElementById('tco-comparison');
+                        if (tcoComparisonElement) {
+                            tcoComparisonElement.textContent = `vs. $${Math.round(ciscoTco.total).toLocaleString()} (Cisco ISE)`;
+                        }
+                        
+                        const totalSavingsElement = document.getElementById('total-savings');
+                        if (totalSavingsElement) {
+                            const savings = ciscoTco.total - portnoxTco.total;
+                            totalSavingsElement.textContent = `$${Math.round(savings).toLocaleString()}`;
+                        }
+                        
+                        const savingsPercentageElement = document.getElementById('savings-percentage');
+                        if (savingsPercentageElement) {
+                            const percentage = Math.round(((ciscoTco.total - portnoxTco.total) / ciscoTco.total) * 100);
+                            savingsPercentageElement.textContent = `${percentage}% reduction vs. Cisco ISE`;
+                        }
+                    }
+                }
+            }
+            
+            getState() {
+                return { ...this.state };
+            }
+        }
+        
+        // Chart Controller
+        class ChartController {
+            constructor() {
+                this.charts = {};
+                this.chartConfig = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                };
+                
+                // Initialize charts after a short delay to ensure DOM is ready
+                setTimeout(() => this.initializeCharts(), 100);
+                
+                // Listen for calculate events
+                document.addEventListener('calculateResults', () => {
+                    this.updateCharts();
+                });
+                
+                // Listen for window resize
+                window.addEventListener('resize', this.handleResize.bind(this));
+            }
+            
+            handleResize() {
+                // Update charts on window resize
+                Object.values(this.charts).forEach(chart => {
+                    if (chart) chart.resize();
+                });
+            }
+            
+            initializeCharts() {
+                // TCO Comparison Chart
+                this.initTcoComparisonChart();
+                
+                // ROI Chart
+                this.initRoiChart();
+                
+                // Other charts will be initialized as needed
+            }
+            
+            initTcoComparisonChart() {
+                const ctx = document.getElementById('tco-comparison-chart');
+                if (!ctx) return;
+                
+                this.charts['tco-comparison'] = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Year 1', 'Year 2', 'Year 3'],
+                        datasets: [{
+                            label: 'Portnox Cloud',
+                            data: [180000, 150000, 145000],
+                            backgroundColor: VendorData.vendorColors['portnox'],
+                        }, {
+                            label: 'Cisco ISE',
+                            data: [350000, 250000, 260000],
+                            backgroundColor: VendorData.vendorColors['cisco'],
+                        }]
+                    },
+                    options: {
+                        ...this.chartConfig,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: '3-Year TCO Comparison'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => {
+                                        return `${context.dataset.label}: $${context.parsed.y.toLocaleString()}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: (value) => {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            initRoiChart() {
+                const ctx = document.getElementById('roi-chart');
+                if (!ctx) return;
+                
+                this.charts['roi'] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Year 1', 'Year 2', 'Year 3'],
+                        datasets: [{
+                            label: 'Portnox Cloud',
+                            data: [20000, 150000, 280000],
+                            borderColor: VendorData.vendorColors['portnox'],
+                            backgroundColor: 'rgba(54, 179, 126, 0.2)',
+                            fill: true
+                        }, {
+                            label: 'Cisco ISE',
+                            data: [-30000, 20000, 75000],
+                            borderColor: VendorData.vendorColors['cisco'],
+                            backgroundColor: 'rgba(13, 91, 217, 0.2)',
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        ...this.chartConfig,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'ROI Over Time'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => {
+                                        return `${context.dataset.label}: $${context.parsed.y.toLocaleString()}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    callback: (value) => {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            updateCharts() {
+                // Update charts based on current state
+                this.updateTcoComparisonChart();
+                this.updateRoiChart();
+                
+                // Trigger resize to ensure proper rendering
+                window.dispatchEvent(new Event('resize'));
+            }
+            
+            updateTcoComparisonChart() {
+                const chart = this.charts['tco-comparison'];
+                if (!chart) return;
+                
+                // Get selected vendors
+                const selectedVendors = window.VendorController ? 
+                    window.VendorController.getSelectedVendors() : 
+                    ['portnox', 'cisco'];
+                
+                // Get config state
+                const configState = window.ConfigController ? 
+                    window.ConfigController.getState() : null;
+                
+                // Update chart data
+                chart.data.datasets = selectedVendors.map(vendor => {
+                    return {
+                        label: VendorData.vendorNames[vendor],
+                        data: VendorData.tcoData[vendor],
+                        backgroundColor: VendorData.vendorColors[vendor]
+                    };
+                });
+                
+                chart.update();
+            }
+            
+            updateRoiChart() {
+                const chart = this.charts['roi'];
+                if (!chart) return;
+                
+                // Get selected vendors
+                const selectedVendors = window.VendorController ? 
+                    window.VendorController.getSelectedVendors() : 
+                    ['portnox', 'cisco'];
+                
+                // Filter to vendors we have ROI data for
+                const vendorsWithRoi = selectedVendors.filter(vendor => 
+                    VendorData.roiData && VendorData.roiData[vendor]
+                );
+                
+                // Update chart data
+                chart.data.datasets = vendorsWithRoi.map(vendor => {
+                    return {
+                        label: VendorData.vendorNames[vendor],
+                        data: VendorData.roiData[vendor],
+                        borderColor: VendorData.vendorColors[vendor],
+                        backgroundColor: `${VendorData.vendorColors[vendor]}20`,
+                        fill: true
+                    };
+                });
+                
+                chart.update();
+            }
+        }
+        
+        // Implementation Timeline
+        class ImplementationTimeline {
+            constructor() {
+                this.container = document.getElementById('implementation-timeline');
+                if (!this.container) return;
+                
+                // Generate Portnox timeline by default
+                this.generate('portnox');
+                
+                // Listen for vendor changes
+                document.addEventListener('vendorsChanged', (e) => {
+                    const { vendor, added } = e.detail;
+                    
+                    // Update timeline when a vendor is selected
+                    if (added) {
+                        this.generate(vendor);
+                    }
+                });
+            }
+            
+            generate(vendor) {
+                if (!this.container) return;
+                
+                // Clear existing content
+                this.container.innerHTML = '';
+                
+                // Get timeline phases based on vendor
+                const phases = this.getTimelinePhases(vendor);
+                
+                // Create timeline HTML
+                const timeline = document.createElement('div');
+                timeline.className = 'implementation-timeline';
+                
+                phases.forEach(phase => {
+                    const item = document.createElement('div');
+                    item.className = 'timeline-item';
+                    
+                    item.innerHTML = `
+                        <h4>${phase.name} <span class="duration">(${phase.duration})</span></h4>
+                        <p>${phase.description}</p>
+                    `;
+                    
+                    timeline.appendChild(item);
+                });
+                
+                this.container.appendChild(timeline);
+            }
+            
+            getTimelinePhases(vendor) {
+                // Default phases
+                const defaultPhases = [
+                    {
+                        name: 'Planning & Assessment',
+                        duration: '1-2 weeks',
+                        description: 'Evaluate environment, define requirements, and create deployment plan.'
+                    },
+                    {
+                        name: 'Initial Setup',
+                        duration: '1 week',
+                        description: 'Set up core components and establish baseline configuration.'
+                    },
+                    {
+                        name: 'Configuration & Integration',
+                        duration: '2-4 weeks',
+                        description: 'Configure policies, integrate with existing systems, and test functionality.'
+                    },
+                    {
+                        name: 'Pilot Deployment',
+                        duration: '1-2 weeks',
+                        description: 'Deploy to a limited group of users for testing and feedback.'
+                    },
+                    {
+                        name: 'Training & Knowledge Transfer',
+                        duration: '1 week',
+                        description: 'Train IT staff on administration, monitoring, and troubleshooting.'
+                    },
+                    {
+                        name: 'Full Deployment',
+                        duration: '2-4 weeks',
+                        description: 'Roll out solution to all users and devices across the organization.'
+                    }
+                ];
+                
+                // Vendor-specific phases
+                switch (vendor) {
+                    case 'portnox':
+                        return [
+                            {
+                                name: 'Cloud Setup',
+                                duration: '1 day',
+                                description: 'Provision and configure Portnox Cloud instance.'
+                            },
+                            {
+                                name: 'Identity Integration',
+                                duration: '1-2 days',
+                                description: 'Connect to identity providers like Active Directory or Azure AD.'
+                            },
+                            {
+                                name: 'Network Integration',
+                                duration: '2-3 days',
+                                description: 'Configure network devices for RADIUS authentication.'
+                            },
+                            {
+                                name: 'Policy Configuration',
+                                duration: '1-2 days',
+                                description: 'Define access policies and enforcement actions.'
+                            },
+                            {
+                                name: 'Testing',
+                                duration: '1-2 days',
+                                description: 'Validate functionality with test devices.'
+                            },
+                            {
+                                name: 'Deployment',
+                                duration: '1-2 weeks',
+                                description: 'Phased rollout to all devices and locations.'
+                            }
+                        ];
+                    case 'cisco':
+                        return [
+                            {
+                                name: 'Architecture Design',
+                                duration: '2-4 weeks',
+                                description: 'Design ISE deployment architecture with hardware sizing.'
+                            },
+                            {
+                                name: 'Hardware Setup',
+                                duration: '2-3 weeks',
+                                description: 'Deploy ISE appliances or virtual machines with high availability.'
+                            },
+                            {
+                                name: 'Certificate Management',
+                                duration: '1 week',
+                                description: 'Set up certificate authority and deploy certificates.'
+                            },
+                            {
+                                name: 'Network Integration',
+                                duration: '3-4 weeks',
+                                description: 'Configure switches, WLCs, and VPN for ISE integration.'
+                            },
+                            {
+                                name: 'Policy Configuration',
+                                duration: '2-3 weeks',
+                                description: 'Create detailed authorization policies and profiles.'
+                            },
+                            {
+                                name: 'Training',
+                                duration: '1-2 weeks',
+                                description: 'Formal training for administrators (certification recommended).'
+                            },
+                            {
+                                name: 'Pilot Phase',
+                                duration: '2-4 weeks',
+                                description: 'Controlled rollout with extensive monitoring.'
+                            },
+                            {
+                                name: 'Full Deployment',
+                                duration: '4-8 weeks',
+                                description: 'Phased rollout by location with fallback options.'
+                            }
+                        ];
+                    default:
+                        return defaultPhases;
+                }
+            }
+        }
+        
+        // Initialize all components
+        window.NotificationManager = new NotificationManager();
+        window.LoadingManager = new LoadingManager();
+        window.SidebarController = new SidebarController();
+        window.ViewController = new ViewController();
+        window.VendorController = new VendorController();
+        window.ConfigController = new ConfigController();
+        window.ChartController = new ChartController();
+        window.ImplementationTimeline = new ImplementationTimeline();
+        
+        // Show welcome notification
+        window.NotificationManager.show('Welcome to the Portnox Total Cost Analyzer. Select vendors to compare and adjust configuration settings as needed.', 'info');
+    });
+    </script>
 </body>
 </html>
