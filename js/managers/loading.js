@@ -1,53 +1,59 @@
 /**
- * Loading Manager for Total Cost Analyzer
- * Handles loading indicators and transitions
+ * Loading Manager
+ * Handles the display of loading indicators and overlays
  */
-const LoadingManager = (function() {
-    // Show loading overlay
-    function showLoading(message = 'Loading...') {
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const loadingMessage = loadingOverlay?.querySelector('p');
-        
-        if (loadingOverlay) {
-            if (loadingMessage) {
-                loadingMessage.textContent = message;
-            }
-            loadingOverlay.classList.add('active');
-        }
+class LoadingManager {
+  constructor() {
+    this.overlay = document.getElementById('loading-overlay');
+
+    // Create overlay if it doesn't exist
+    if (!this.overlay) {
+      this.overlay = document.createElement('div');
+      this.overlay.id = 'loading-overlay';
+      this.overlay.className = 'loading-overlay';
+
+      this.overlay.innerHTML = `
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          <p>Calculating...</p>
+        </div>
+      `;
+
+      document.body.appendChild(this.overlay);
     }
-    
-    // Hide loading overlay
-    function hideLoading() {
-        const loadingOverlay = document.getElementById('loading-overlay');
-        if (loadingOverlay) {
-            loadingOverlay.classList.remove('active');
-        }
+  }
+
+  /**
+   * Show the loading overlay
+   * @param {string} message - Optional message to display
+   */
+  show(message = 'Calculating...') {
+    // Update message if provided
+    const messageElement = this.overlay.querySelector('p');
+    if (messageElement) {
+      messageElement.textContent = message;
     }
-    
-    // Show loading indicator in a specific container
-    function showLoadingInContainer(containerId, message = 'Loading...') {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-        
-        // Create loading indicator
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'container-loading';
-        loadingIndicator.innerHTML = `
-            <div class="spinner-container">
-                <div class="spinner"></div>
-                <p>${message}</p>
-            </div>
-        `;
-        
-        // Clear container and add loading indicator
-        container.innerHTML = '';
-        container.appendChild(loadingIndicator);
-    }
-    
-    // Public API
-    return {
-        showLoading,
-        hideLoading,
-        showLoadingInContainer
-    };
-})();
+
+    // Show overlay
+    this.overlay.classList.add('active');
+
+    // Lock body scroll
+    document.body.style.overflow = 'hidden';
+  }
+
+  /**
+   * Hide the loading overlay
+   */
+  hide() {
+    // Hide overlay
+    this.overlay.classList.remove('active');
+
+    // Restore body scroll
+    document.body.style.overflow = '';
+  }
+}
+
+// Initialize the loading manager when the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  window.LoadingManager = new LoadingManager();
+});
