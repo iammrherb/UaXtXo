@@ -1,45 +1,38 @@
 /**
- * Chart Fix
- * Prevents chart reuse errors
+ * Chart Fix for Total Cost Analyzer
+ * Ensures charts are properly initialized and rendered
  */
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('Chart fix script loaded');
-  
-  // Initialize chart instances tracker
-  window.chartInstances = window.chartInstances || {};
-  
+
+(function() {
   // Store original Chart constructor
-  const OriginalChart = window.Chart;
+  const originalChart = window.Chart;
   
-  // Override Chart constructor to manage instances
-  window.Chart = function(ctx, config) {
-    // Get canvas ID
-    const canvas = ctx.canvas || ctx;
-    const canvasId = canvas.id || '';
-    
-    console.log(`Creating chart on canvas: ${canvasId}`);
-    
-    // Destroy existing chart if it exists
-    if (canvasId && window.chartInstances[canvasId]) {
-      console.log(`Destroying existing chart on canvas: ${canvasId}`);
-      window.chartInstances[canvasId].destroy();
+  // Create wrapper function for Chart constructor
+  window.Chart = function(context, config) {
+    // Check if context is valid
+    if (!context) {
+      console.error('Invalid chart context');
+      return null;
     }
     
-    // Create new chart
-    const chart = new OriginalChart(ctx, config);
-    
-    // Store chart instance
-    if (canvasId) {
-      window.chartInstances[canvasId] = chart;
+    // Ensure config is valid
+    if (!config || !config.type) {
+      console.error('Invalid chart configuration');
+      return null;
     }
     
-    return chart;
+    try {
+      // Call original Chart constructor
+      return new originalChart(context, config);
+    } catch (error) {
+      console.error('Error creating chart:', error);
+      return null;
+    }
   };
   
-  // Copy properties from original Chart
-  for (const prop in OriginalChart) {
-    if (OriginalChart.hasOwnProperty(prop)) {
-      window.Chart[prop] = OriginalChart[prop];
-    }
+  // Copy prototype and static properties
+  if (originalChart) {
+    Object.assign(window.Chart, originalChart);
+    window.Chart.prototype = originalChart.prototype;
   }
-});
+})();

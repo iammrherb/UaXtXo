@@ -1,147 +1,70 @@
 /**
- * Enhanced error handling and debugging support
+ * Error Handler for Total Cost Analyzer
+ * Provides centralized error handling and logging
  */
-(function() {
-    // Global error handler
-    window.addEventListener('error', function(event) {
-        console.error('Global error caught:', event.error);
-        
-        // Log to console with details
-        const errorDetails = {
-            message: event.message,
-            source: event.filename,
-            lineNumber: event.lineno,
-            columnNumber: event.colno,
-            stack: event.error ? event.error.stack : 'No stack trace available'
-        };
-        console.error('Error details:', errorDetails);
-        
-        // Show error toast if notification manager exists
-        if (typeof NotificationManager !== 'undefined' && NotificationManager.showNotification) {
-            NotificationManager.showNotification({
-                title: 'An error occurred',
-                message: `${event.message}. See console for details.`,
-                type: 'error',
-                duration: 5000
-            });
+
+// Global error handler
+window.onerror = function(message, source, lineno, colno, error) {
+  console.log("Global error caught:", error);
+  
+  // Log error details
+  console.log("Error details:", {
+    message: message,
+    source: source,
+    lineno: lineno,
+    colno: colno,
+    stack: error ? error.stack : null
+  });
+  
+  // Show user-friendly error message if appropriate
+  const errorContainer = document.getElementById('wizard-error-container');
+  if (errorContainer && typeof message === 'string') {
+    // Only show user-visible errors for certain types of errors
+    if (message.includes('Failed to fetch') || 
+        message.includes('NetworkError') ||
+        message.includes('cannot read property')) {
+      
+      const errorMessage = document.createElement('div');
+      errorMessage.className = 'error-message';
+      errorMessage.innerHTML = `
+        <div class="error-icon"><i class="fas fa-exclamation-circle"></i></div>
+        <div class="error-content">
+          <h4>Something went wrong</h4>
+          <p>Please try refreshing the page. If the problem persists, contact support.</p>
+        </div>
+        <button class="error-close">&times;</button>
+      `;
+      
+      errorContainer.appendChild(errorMessage);
+      
+      // Add event listener to close button
+      const closeButton = errorMessage.querySelector('.error-close');
+      if (closeButton) {
+        closeButton.addEventListener('click', function() {
+          errorMessage.remove();
+        });
+      }
+      
+      // Auto-remove after 10 seconds
+      setTimeout(function() {
+        if (errorMessage.parentNode) {
+          errorMessage.remove();
         }
-        
-        return true; // Prevent default error handling
-    });
-    
-    // Unhandled promise rejection handler
-    window.addEventListener('unhandledrejection', function(event) {
-        console.error('Unhandled promise rejection:', event.reason);
-        
-        // Show error toast if notification manager exists
-        if (typeof NotificationManager !== 'undefined' && NotificationManager.showNotification) {
-            NotificationManager.showNotification({
-                title: 'Promise Rejection',
-                message: `${event.reason.message || 'Unknown error'}. See console for details.`,
-                type: 'error',
-                duration: 5000
-            });
-        }
-    });
-    
-    // Create debugging utilities
-    window.DebugUtils = {
-        // Enable this for verbose logging
-        verboseMode: false,
-        
-        // Log with timestamp
-        log: function(message, data) {
-            if (this.verboseMode) {
-                const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
-                console.log(`[${timestamp}] ${message}`, data || '');
-            }
-        },
-        
-        // Profile execution time
-        timeStart: function(label) {
-            console.time(label);
-        },
-        
-        timeEnd: function(label) {
-            console.timeEnd(label);
-        },
-        
-        // Inspect wizard state
-        inspectWizard: function() {
-            if (typeof WizardController !== 'undefined') {
-                console.log('Wizard state:', {
-                    currentStep: WizardController.getCurrentStep ? WizardController.getCurrentStep() : 'Not available',
-                    totalSteps: WizardController.getTotalSteps ? WizardController.getTotalSteps() : 'Not available'
-                });
-                
-                // Check for active step
-                const activeStep = document.querySelector('.wizard-step.active');
-                console.log('Active step element:', activeStep);
-            } else {
-                console.warn('WizardController not available');
-            }
-        },
-        
-        // Enable verbose logging
-        enableVerbose: function() {
-            this.verboseMode = true;
-            console.log('Verbose logging enabled');
-        },
-        
-        // Disable verbose logging
-        disableVerbose: function() {
-            this.verboseMode = false;
-            console.log('Verbose logging disabled');
-        }
-    };
-    
-    // Create notification element if not exists
-    if (!document.getElementById('toast-container')) {
-        const toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.className = 'toast-container';
-        document.body.appendChild(toastContainer);
+      }, 10000);
     }
-    
-    // Basic notification manager if not exists
-    if (typeof NotificationManager === 'undefined') {
-        window.NotificationManager = {
-            showNotification: function(options) {
-                const container = document.getElementById('toast-container');
-                if (!container) return;
-                
-                const toast = document.createElement('div');
-                toast.className = `toast toast-${options.type || 'info'}`;
-                
-                toast.innerHTML = `
-                    <div class="toast-header">
-                        <strong>${options.title || 'Notification'}</strong>
-                        <button type="button" class="toast-close">&times;</button>
-                    </div>
-                    <div class="toast-body">
-                        ${options.message || ''}
-                    </div>
-                `;
-                
-                // Add close handler
-                toast.querySelector('.toast-close').addEventListener('click', function() {
-                    container.removeChild(toast);
-                });
-                
-                // Add to container
-                container.appendChild(toast);
-                
-                // Auto remove after duration
-                if (options.duration) {
-                    setTimeout(() => {
-                        if (container.contains(toast)) {
-                            container.removeChild(toast);
-                        }
-                    }, options.duration);
-                }
-            }
-        };
-    }
-    
-    console.log('Error handling and debugging utilities initialized');
-})();
+  }
+  
+  return true; // Let other error handlers run
+};
+
+// Function to handle and report errors
+function handleError(error, context) {
+  console.log(`Error in ${context}:`, error);
+  
+  // Log to analytics/monitoring service (if available)
+  if (window.errorReporter && typeof window.errorReporter.report === 'function') {
+    window.errorReporter.report(error, context);
+  }
+  
+  return error;
+}

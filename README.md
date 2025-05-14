@@ -1,70 +1,58 @@
-# NAC Architecture Designer Pro - Enhanced Edition
+# Portnox Total Cost Analyzer - Critical Fixes
 
-An enhanced Zero Trust NAC Architecture Designer with stunning visuals, animations, and improved user experience.
+This package addresses critical issues with the Portnox Total Cost Analyzer:
 
-## Features
+1. Duplicate vendor cards
+2. Layout and wizard overlap issues
+3. 404 errors for JavaScript files
+4. Selection and navigation problems
 
-- 🎨 Modern, responsive UI with dark mode support
-- 📊 Enhanced charts with animations and interactions
-- 🚀 Smooth transitions and micro-interactions
-- 📱 Mobile-friendly design
-- 🔍 Advanced sensitivity analysis
-- 📄 Comprehensive reporting capabilities
-- 🎯 Vendor comparison with visual metrics
-- 💡 Smart tooltips and guided workflow
+## Quick Fix Instructions
 
-## Setup
+### Option 1: Run the fix script
 
-1. **Clone or download this repository**
-
-2. **Install dependencies (optional, for development)**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   # Using Python
-   python3 server.py
-   
-   # Or using Node.js
-   npm run serve
-   ```
-
-4. **Open your browser** to `http://localhost:8080`
-
-## Development Scripts
-
-- `npm run lint` - Run ESLint on all JavaScript files
-- `npm run lint:fix` - Fix ESLint issues automatically
-- `npm run format` - Format code with Prettier
-- `npm run build` - Run linting and formatting
-
-## Project Structure
-
-```
-├── css/               # Stylesheets
-├── js/               # JavaScript modules
-│   ├── core/         # Core utilities
-│   ├── managers/     # State management
-│   ├── components/   # UI components
-│   ├── charts/       # Chart configurations
-│   ├── data/         # Data models
-│   └── reports/      # Report generators
-├── libs/             # Third-party libraries
-├── img/              # Images and icons
-├── data/             # Static data files
-├── index.html        # Main application
-└── sensitivity.html  # Sensitivity analysis page
+```bash
+./portnox-tca-critical-fix.sh
 ```
 
-## Browser Support
+This creates all necessary files to fix the application.
 
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
+### Option 2: Apply fixes directly in browser
 
-## License
+1. Open the developer console in your browser (F12 or Ctrl+Shift+I)
+2. Copy the contents of the `browser-fix.js` file
+3. Paste it into the console and press Enter
 
-MIT License - see LICENSE file for details.
+This will immediately fix the issues without requiring file uploads.
+
+## Details of Fixes
+
+### 1. Duplicate Vendor Cards
+
+The script removes duplicate vendor cards and ensures proper selection handling.
+
+### 2. Layout Issues
+
+CSS fixes are applied to ensure proper wizard layout and prevent overlapping sections.
+
+### 3. Missing JavaScript Files
+
+The script creates the missing files that were causing 404 errors:
+- risk-analyzer.js
+- industry-compliance.js
+- custom-tco-implementation.js
+
+### 4. Navigation Problems
+
+The script fixes navigation buttons and ensures proper event handling.
+
+## Testing
+
+After applying fixes, you should be able to:
+
+1. See all vendor cards without duplicates
+2. Select a vendor card (it will highlight)
+3. See the selected vendor preview
+4. Click the Next button to proceed to the next step
+
+If issues persist, try running the browser-fix.js script directly in the console.
