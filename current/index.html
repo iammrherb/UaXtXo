@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Zero Trust Total Cost Analyzer - Enterprise Total Cost of Ownership Calculator">
+    <title>Total Cost Analyzer | Portnox</title>
+    
+    <!-- CSS Libraries - Load from CDN to ensure availability -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/enhanced-ui.css">
+    <link rel="stylesheet" href="css/particle-background.css">
+    
+    <link rel="icon" type="image/png" href="img/favicon.png">
+    
+    <!-- Pre-load Chart.js and plugins to fix loading issues -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+</head>
+<body>
+    <!-- Particle Background -->
+    <div id="particles-js"></div>
+    
+    <!-- Main Application Container -->
+    <div class="app-container">
+        <!-- Enhanced Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="img/vendors/portnox-logo.png" alt="Portnox Logo" class="company-logo">
+                    <div class="app-title">
+                        <h1>Zero Trust Total Cost Analyzer</h1>
+                        <p class="subtitle">Multi-Vendor NAC Solution Comparison Platform</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="stakeholder-selector">
+                        <div class="stakeholder-tabs">
+                            <button class="stakeholder-tab active" data-view="executive">
+                                <i class="fas fa-chart-pie"></i> Executive
+                            </button>
+                            <button class="stakeholder-tab" data-view="financial">
+                                <i class="fas fa-coins"></i> Financial
+                            </button>
+                            <button class="stakeholder-tab" data-view="security">
+                                <i class="fas fa-shield-alt"></i> Security
+                            </button>
+                            <button class="stakeholder-tab" data-view="technical">
+                                <i class="fas fa-cogs"></i> Technical
+                            </button>
+                        </div>
+                    </div>
+                    <button id="calculate-btn-header" class="btn btn-primary" title="Calculate TCO & ROI">
+                        <i class="fas fa-calculator"></i> Calculate
+                    </button>
+                    <button id="export-pdf" class="btn btn-outline btn-icon" title="Export Report">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Export</span>
+                    </button>
+                    <button id="help-btn" class="btn btn-outline btn-icon" title="Help">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                    <button id="dark-mode-toggle" class="btn btn-outline btn-icon" title="Toggle Dark Mode">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main Content Area with Sidebar -->
+        <div class="main-content">
+            <!-- Configuration Sidebar -->
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-sliders-h"></i> Configuration</h2>
+                </div>
+                
+                <div class="sidebar-content">
+                    <!-- Vendor Selection -->
+                    <div id="vendor-config" class="config-card">
+                        <div class="config-card-header">
+                            <h3><i class="fas fa-server"></i> Select NAC Vendors</h3>
+                            <i class="fas fa-chevron-up"></i>
+                        </div>
+                        <div class="config-card-content">
+                            <p class="helper-text">Choose multiple vendors to compare with Portnox Cloud</p>
+                            <div class="vendor-grid">
+                                <div class="vendor-card selected" data-vendor="portnox">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/portnox-logo.png" alt="Portnox">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>Portnox Cloud</h3>
+                                        <p>Cloud-native NAC</p>
+                                    </div>
+                                    <div class="vendor-badge">
+                                        <span class="badge badge-primary">Best Value</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="cisco">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/cisco-logo.png" alt="Cisco ISE">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>Cisco ISE</h3>
+                                        <p>Enterprise NAC</p>
+                                    </div>
+                                    <div class="vendor-badge">
+                                        <span class="badge badge-warning">Complex</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="aruba">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/aruba-logo.png" alt="Aruba ClearPass">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>Aruba ClearPass</h3>
+                                        <p>Policy manager</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="forescout">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/forescout-logo.png" alt="Forescout">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>Forescout</h3>
+                                        <p>Device visibility</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="fortinac">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/fortinac-logo.png" alt="FortiNAC">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>FortiNAC</h3>
+                                        <p>Fortinet NAC</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="juniper">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/juniper-logo.png" alt="Juniper Mist">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>Juniper Mist</h3>
+                                        <p>AI-driven NAC</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="securew2">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/securew2-logo.png" alt="SecureW2">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>SecureW2</h3>
+                                        <p>Cloud RADIUS</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="microsoft">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/microsoft-logo.png" alt="Microsoft NPS">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>Microsoft NPS</h3>
+                                        <p>Windows Server NAC</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="arista">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/arista-logo.png" alt="Arista Agni">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>Arista Agni</h3>
+                                        <p>Network control</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="foxpass">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/foxpass-logo.png" alt="Foxpass">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>Foxpass</h3>
+                                        <p>Cloud RADIUS/LDAP</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="no-nac">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/no-nac-icon.png" alt="No NAC">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>No NAC</h3>
+                                        <p>High risk baseline</p>
+                                    </div>
+                                    <div class="vendor-badge">
+                                        <span class="badge badge-danger">High Risk</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Industry & Compliance -->
+                    <div id="industry-config" class="config-card">
+                        <div class="config-card-header">
+                            <h3><i class="fas fa-building"></i> Industry & Compliance</h3>
+                            <i class="fas fa-chevron-up"></i>
+                        </div>
+                        <div class="config-card-content">
+                            <div class="form-group">
+                                <label for="industry-select" class="form-label">Industry</label>
+                                <select id="industry-select" class="form-select">
+                                    <option value="">Choose an industry...</option>
+                                    <option value="healthcare">Healthcare</option>
+                                    <option value="financial">Financial Services</option>
+                                    <option value="education">Education</option>
+                                    <option value="government">Government</option>
+                                    <option value="manufacturing">Manufacturing</option>
+                                    <option value="retail">Retail</option>
+                                    <option value="technology">Technology</option>
+                                    <option value="energy">Energy & Utilities</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Compliance Requirements</label>
+                                <div class="compliance-grid">
+                                    <div class="compliance-item">
+                                        <input type="checkbox" id="compliance-pci" class="form-check-input">
+                                        <label for="compliance-pci">PCI DSS</label>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <input type="checkbox" id="compliance-hipaa" class="form-check-input">
+                                        <label for="compliance-hipaa">HIPAA</label>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <input type="checkbox" id="compliance-nist" class="form-check-input">
+                                        <label for="compliance-nist">NIST 800-53</label>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <input type="checkbox" id="compliance-gdpr" class="form-check-input">
+                                        <label for="compliance-gdpr">GDPR</label>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <input type="checkbox" id="compliance-iso" class="form-check-input">
+                                        <label for="compliance-iso">ISO 27001</label>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <input type="checkbox" id="compliance-cmmc" class="form-check-input">
+                                        <label for="compliance-cmmc">CMMC</label>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <input type="checkbox" id="compliance-ferpa" class="form-check-input">
+                                        <label for="compliance-ferpa">FERPA</label>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <input type="checkbox" id="compliance-sox" class="form-check-input">
+                                        <label for="compliance-sox">SOX</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="risk-profile" class="form-label">Risk Profile</label>
+                                <select id="risk-profile" class="form-select">
+                                    <option value="standard">Standard Risk</option>
+                                    <option value="elevated">Elevated Risk</option>
+                                    <option value="high">High Risk</option>
+                                    <option value="regulated">Highly Regulated</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="cybersecurity-insurance" class="form-label">Cybersecurity Insurance</label>
+                                <select id="cybersecurity-insurance" class="form-select">
+                                    <option value="none">None</option>
+                                    <option value="basic">Basic Coverage</option>
+                                    <option value="standard" selected>Standard Coverage</option>
+                                    <option value="comprehensive">Comprehensive Coverage</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Organization Details -->
+                    <div id="organization-config" class="config-card">
+                        <div class="config-card-header">
+                            <h3><i class="fas fa-users"></i> Organization</h3>
+                            <i class="fas fa-chevron-up"></i>
+                        </div>
+                        <div class="config-card-content">
+                            <div class="form-group">
+                                <label for="organization-size" class="form-label">Organization Size</label>
+                                <select id="organization-size" class="form-select">
+                                    <option value="very-small">Very Small (< 300 devices)</option>
+                                    <option value="small" selected>Small (300-1,000 devices)</option>
+                                    <option value="medium">Medium (1,000-5,000 devices)</option>
+                                    <option value="large">Large (5,000-10,000 devices)</option>
+                                    <option value="enterprise">Enterprise (10,000+ devices)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="device-count" class="form-label">Number of Devices</label>
+                                <input type="number" id="device-count" class="form-control" value="500" min="300" max="100000">
+                                <div class="helper-text">Include all managed devices (PCs, mobile, IoT)</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="locations" class="form-label">Number of Locations</label>
+                                <input type="number" id="locations" class="form-control" value="2" min="1" max="1000">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Network Requirements</label>
+                                <div class="feature-grid">
+                                    <div class="feature-item">
+                                        <input type="checkbox" id="cloud-integration" class="form-check-input">
+                                        <label for="cloud-integration">Cloud Integration</label>
+                                    </div>
+                                    <div class="feature-item">
+                                        <input type="checkbox" id="legacy-devices" class="form-check-input">
+                                        <label for="legacy-devices">Legacy Device Support</label>
+                                    </div>
+                                    <div class="feature-item">
+                                        <input type="checkbox" id="byod-support" class="form-check-input" checked>
+                                        <label for="byod-support">BYOD Support</label>
+                                    </div>
+                                    <div class="feature-item">
+                                        <input type="checkbox" id="iot-support" class="form-check-input">
+                                        <label for="iot-support">IoT Devices</label>
+                                    </div>
+                                    <div class="feature-item">
+                                        <input type="checkbox" id="wireless-support" class="form-check-input" checked>
+                                        <label for="wireless-support">Wireless Network</label>
+                                    </div>
+                                    <div class="feature-item">
+                                        <input type="checkbox" id="remote-work" class="form-check-input" checked>
+                                        <label for="remote-work">Remote Users</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="years-to-project" class="form-label">Analysis Period</label>
+                                <select id="years-to-project" class="form-select">
+                                    <option value="1">1 Year</option>
+                                    <option value="2">2 Years</option>
+                                    <option value="3" selected>3 Years</option>
+                                    <option value="5">5 Years</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cost Parameters -->
+                    <div id="cost-config" class="config-card">
+                        <div class="config-card-header">
+                            <h3><i class="fas fa-dollar-sign"></i> Cost Parameters</h3>
+                            <i class="fas fa-chevron-up"></i>
+                        </div>
+                        <div class="config-card-content">
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Portnox Cost per Device ($/month)</span>
+                                    <span class="range-slider-value" id="portnox-cost-value">$3.00</span>
+                                </div>
+                                <input type="range" id="portnox-base-price" min="1" max="6" step="0.5" value="3">
+                                <div class="helper-text">Adjust the per-device pricing for Portnox Cloud</div>
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Volume Discount (%)</span>
+                                    <span class="range-slider-value" id="portnox-discount-value">15%</span>
+                                </div>
+                                <input type="range" id="portnox-discount" min="0" max="40" value="15" step="5">
+                                <div class="helper-text">Volume discount based on device count</div>
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Average FTE Cost ($/year)</span>
+                                    <span class="range-slider-value" id="fte-cost-value">$100,000</span>
+                                </div>
+                                <input type="range" id="fte-cost" min="60000" max="180000" value="100000" step="5000">
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">FTE Allocation for NAC (%)</span>
+                                    <span class="range-slider-value" id="fte-allocation-value">25%</span>
+                                </div>
+                                <input type="range" id="fte-allocation" min="5" max="75" value="25" step="5">
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Annual Maintenance (%)</span>
+                                    <span class="range-slider-value" id="maintenance-value">18%</span>
+                                </div>
+                                <input type="range" id="maintenance-percentage" min="10" max="30" value="18" step="1">
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Downtime Cost ($/hour)</span>
+                                    <span class="range-slider-value" id="downtime-cost-value">$5,000</span>
+                                </div>
+                                <input type="range" id="downtime-cost" min="1000" max="25000" value="5000" step="1000">
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Risk of Breach Cost Reduction (%)</span>
+                                    <span class="range-slider-value" id="risk-reduction-value">35%</span>
+                                </div>
+                                <input type="range" id="risk-reduction" min="10" max="50" value="35" step="5">
+                                <div class="helper-text">Estimated reduction in breach costs with NAC</div>
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Insurance Premium Reduction (%)</span>
+                                    <span class="range-slider-value" id="insurance-reduction-value">10%</span>
+                                </div>
+                                <input type="range" id="insurance-reduction" min="0" max="20" value="10" step="5">
+                                <div class="helper-text">Potential cyber insurance premium reduction</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-footer">
+                    <button id="calculate-btn" class="btn btn-primary btn-large">
+                        <i class="fas fa-calculator"></i> Calculate TCO & ROI
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Sidebar Toggle Button -->
+            <div class="sidebar-toggle" id="sidebar-toggle">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            
+            <!-- Main Content Area -->
+            <div class="content-area" id="content-area">
+                <div class="content-wrapper">
+                    <!-- Main Stakeholder Tabs -->
+                    <div class="stakeholder-tabs mobile-tabs">
+                        <button class="stakeholder-tab active" data-view="executive">
+                            <i class="fas fa-chart-pie"></i> Executive
+                        </button>
+                        <button class="stakeholder-tab" data-view="financial">
+                            <i class="fas fa-coins"></i> Financial
+                        </button>
+                        <button class="stakeholder-tab" data-view="security">
+                            <i class="fas fa-shield-alt"></i> Security
+                        </button>
+                        <button class="stakeholder-tab" data-view="technical">
+                            <i class="fas fa-cogs"></i> Technical
+                        </button>
+                    </div>
+                    
+                    <!-- Executive View -->
+                    <div class="view-panel active" data-view="executive">
+                        <!-- View-specific Tabs -->
+                        <div class="results-tabs">
+                            <button class="results-tab active" data-panel="executive-summary">Executive Summary</button>
+                            <button class="results-tab" data-panel="executive-roi">ROI Analysis</button>
+                            <button class="results-tab" data-panel="executive-risk">Risk Assessment</button>
+                            <button class="results-tab" data-panel="executive-comparison">Vendor Comparison</button>
+                        </div>
+                        
+                        <!-- Executive Summary Panel -->
+                        <div id="executive-summary" class="results-panel active">
+                            <div class="panel-header">
+                                <h2>Executive Summary</h2>
+                                <p class="subtitle">Strategic overview of cost savings and business benefits</p>
+                            </div>
+                            
+                            <div class="dashboard-grid">
+                                <div class="dashboard-card highlight-card">
+                                    <h3>Total 3-Year Savings</h3>
+                                    <div class="metric-value highlight-value" id="total-savings">$247,000</div>
+                                    <div class="metric-label" id="savings-percentage">48% reduction vs. Cisco ISE</div>
+                                    <div class="metric-trend up">
+                                        <i class="fas fa-arrow-up"></i> 15% higher than industry average
+                                    </div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Payback Period</h3>
+                                    <div class="metric-value" id="payback-period">7 months</div>
+                                    <div class="metric-label">Time to positive ROI</div>
+                                    <div class="metric-trend up">
+                                        <i class="fas fa-arrow-up"></i> 5 months faster than competitors
+                                    </div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Risk Reduction</h3>
+                                    <div class="metric-value" id="risk-reduction-total">58%</div>
+                                    <div class="metric-label">Overall security improvement</div>
+                                    <div class="metric-trend up">
+                                        <i class="fas fa-arrow-up"></i> 20% better than alternatives
+                                    </div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Implementation Time</h3>
+                                    <div class="metric-value" id="implementation-time">21 days</div>
+                                    <div class="metric-label" id="implementation-comparison">75% faster than on-premises</div>
+                                    <div class="metric-trend up">
+                                        <i class="fas fa-arrow-up"></i> Leading time-to-security
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>3-Year TCO Comparison</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="tco-comparison-chart"></canvas>
+                                </div>
+                                <div class="chart-legend" id="tco-comparison-legend"></div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Cumulative Cost Comparison</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="cumulative-cost-chart"></canvas>
+                                </div>
+                                <div class="chart-legend" id="cumulative-cost-legend"></div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Key Strategic Benefits</h3>
+                                <div class="benefits-grid">
+                                    <div class="benefit-card">
+                                        <div class="benefit-icon">
+                                            <i class="fas fa-cloud"></i>
+                                        </div>
+                                        <h4>Cloud-Native Solution</h4>
+                                        <p>Zero infrastructure costs, automatic updates, and global scalability</p>
+                                    </div>
+                                    <div class="benefit-card">
+                                        <div class="benefit-icon">
+                                            <i class="fas fa-bolt"></i>
+                                        </div>
+                                        <h4>Rapid Deployment</h4>
+                                        <p>75% faster implementation than on-premises alternatives</p>
+                                    </div>
+                                    <div class="benefit-card">
+                                        <div class="benefit-icon">
+                                            <i class="fas fa-shield-alt"></i>
+                                        </div>
+                                        <h4>Zero Trust Security</h4>
+                                        <p>Comprehensive, continuous device authentication and verification</p>
+                                    </div>
+                                    <div class="benefit-card">
+                                        <div class="benefit-icon">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <h4>Future-Proof Solution</h4>
+                                        <p>Automatic updates, continuous innovation, and AI-powered security</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Executive ROI Panel -->
+                        <div id="executive-roi" class="results-panel">
+                            <div class="panel-header">
+                                <h2>ROI Analysis</h2>
+                                <p class="subtitle">Detailed return on investment analysis and business value</p>
+                            </div>
+                            
+                            <div class="dashboard-grid">
+                                <div class="dashboard-card highlight-card">
+                                    <h3>3-Year ROI</h3>
+                                    <div class="metric-value highlight-value" id="three-year-roi">287%</div>
+                                    <div class="metric-label">Return on investment</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Annual Cost Savings</h3>
+                                    <div class="metric-value" id="annual-savings">$82,333</div>
+                                    <div class="metric-label">Per year vs. traditional solutions</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Productivity Gains</h3>
+                                    <div class="metric-value" id="productivity-value">$130,000</div>
+                                    <div class="metric-label">Estimated 3-year value</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Compliance Savings</h3>
+                                    <div class="metric-value" id="compliance-savings">$92,000</div>
+                                    <div class="metric-label">Audit & reporting efficiency</div>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>ROI Over Time</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="roi-chart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Value Drivers</h3>
+                                <div class="chart-wrapper half-height">
+                                    <canvas id="value-drivers-chart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Business Value</h3>
+                                <div class="table-responsive">
+                                    <table class="data-table" id="business-value-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Benefit Category</th>
+                                                <th>Description</th>
+                                                <th>3-Year Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Direct Cost Reduction</td>
+                                                <td>Hardware, licenses, and maintenance savings</td>
+                                                <td class="highlight-value">$167,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>IT Staff Efficiency</td>
+                                                <td>Reduced admin time and management overhead</td>
+                                                <td class="highlight-value">$125,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Breach Risk Reduction</td>
+                                                <td>Lower probability and impact of security incidents</td>
+                                                <td class="highlight-value">$85,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Compliance Automation</td>
+                                                <td>Streamlined audits and reporting</td>
+                                                <td class="highlight-value">$92,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Insurance Premium Reduction</td>
+                                                <td>Lower cybersecurity insurance costs</td>
+                                                <td class="highlight-value">$28,000</td>
+                                            </tr>
+                                            <tr class="total-row">
+                                                <td>Total Business Value</td>
+                                                <td></td>
+                                                <td class="highlight-value">$497,000</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Executive Risk Panel -->
+                        <div id="executive-risk" class="results-panel">
+                            <div class="panel-header">
+                                <h2>Risk Assessment</h2>
+                                <p class="subtitle">Security risk evaluation and business impact analysis</p>
+                            </div>
+                            
+                            <div class="dashboard-grid">
+                                <div class="dashboard-card">
+                                    <h3>Security Posture Improvement</h3>
+                                    <div class="metric-value highlight-value" id="security-improvement">74%</div>
+                                    <div class="metric-label">Enhanced protection vs. no NAC</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Breach Probability</h3>
+                                    <div class="metric-value" id="breach-probability">Low</div>
+                                    <div class="metric-label">vs. Medium-High (No NAC)</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Compliance Coverage</h3>
+                                    <div class="metric-value" id="compliance-coverage">93%</div>
+                                    <div class="metric-label">Key frameworks supported</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Mean Time to Respond</h3>
+                                    <div class="metric-value" id="mttr">52 min</div>
+                                    <div class="metric-label">vs. 4.5 hours (Industry avg.)</div>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Risk Profile Comparison</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="risk-comparison-chart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Breach Impact Analysis</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="breach-impact-chart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Cyber Insurance Impact</h3>
+                                <div class="chart-wrapper half-height">
+                                    <canvas id="insurance-impact-chart"></canvas>
+                                </div>
+                                
+                                <div class="insight-box">
+                                    <h4><i class="fas fa-lightbulb"></i> Insurance Premium Insight</h4>
+                                    <p>Implementing Portnox can reduce cybersecurity insurance premiums by an average of 10-15% by demonstrating strong security controls and continuous monitoring capabilities.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Business Impact Heat Map</h3>
+                                <div class="heatmap-container" id="risk-heatmap">
+                                    <!-- Heatmap will be rendered here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Executive Comparison Panel -->
+                        <div id="executive-comparison" class="results-panel">
+                            <div class="panel-header">
+                                <h2>Vendor Comparison</h2>
+                                <p class="subtitle">Key differentiators and competitive advantages</p>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Solution Comparison</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="vendor-radar-chart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Competitive Advantages</h3>
+                                <div class="advantages-grid">
+                                    <div class="advantage-card">
+                                        <div class="advantage-header">
+                                            <div class="advantage-icon">
+                                                <i class="fas fa-cloud"></i>
+                                            </div>
+                                            <h4>Cloud-Native Architecture</h4>
+                                        </div>
+                                        <p>Unlike on-premises competitors, Portnox requires no hardware investment or complex upgrades.</p>
+                                        <div class="comparison-bar">
+                                            <div class="bar-label">Portnox</div>
+                                            <div class="bar-track">
+                                                <div class="bar-fill" style="width: 95%;"></div>
+                                            </div>
+                                            <div class="bar-value">95%</div>
+                                        </div>
+                                        <div class="comparison-bar">
+                                            <div class="bar-label">Competitors</div>
+                                            <div class="bar-track">
+                                                <div class="bar-fill" style="width: 30%;"></div>
+                                            </div>
+                                            <div class="bar-value">30%</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="advantage-card">
+                                        <div class="advantage-header">
+                                            <div class="advantage-icon">
+                                                <i class="fas fa-tachometer-alt"></i>
+                                            </div>
+                                            <h4>Deployment Speed</h4>
+                                        </div>
+                                        <p>Portnox deploys in days rather than months, with minimal specialized expertise required.</p>
+                                        <div class="comparison-bar">
+                                            <div class="bar-label">Portnox</div>
+                                            <div class="bar-track">
+                                                <div class="bar-fill" style="width: 90%;"></div>
+                                            </div>
+                                            <div class="bar-value">90%</div>
+                                        </div>
+                                        <div class="comparison-bar">
+                                            <div class="bar-label">Competitors</div>
+                                            <div class="bar-track">
+                                                <div class="bar-fill" style="width: 35%;"></div>
+                                            </div>
+                                            <div class="bar-value">35%</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="advantage-card">
+                                        <div class="advantage-header">
+                                            <div class="advantage-icon">
+                                                <i class="fas fa-lock"></i>
+                                            </div>
+                                            <h4>Zero Trust Model</h4>
+                                        </div>
+                                        <p>Built from the ground up for zero trust security, not retrofitted like legacy solutions.</p>
+                                        <div class="comparison-bar">
+                                            <div class="bar-label">Portnox</div>
+                                            <div class="bar-track">
+                                                <div class="bar-fill" style="width: 98%;"></div>
+                                            </div>
+                                            <div class="bar-value">98%</div>
+                                        </div>
+                                        <div class="comparison-bar">
+                                            <div class="bar-label">Competitors</div>
+                                            <div class="bar-track">
+                                                <div class="bar-fill" style="width: 45%;"></div>
+                                            </div>
+                                            <div class="bar-value">45%</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="advantage-card">
+                                        <div class="advantage-header">
+                                            <div class="advantage-icon">
+                                                <i class="fas fa-dollar-sign"></i>
+                                            </div>
+                                            <h4>Total Cost of Ownership</h4>
+                                        </div>
+                                        <p>Predictable subscription model eliminates hidden costs and expensive hardware.</p>
+                                        <div class="comparison-bar">
+                                            <div class="bar-label">Portnox</div>
+                                            <div class="bar-track">
+                                                <div class="bar-fill" style="width: 92%;"></div>
+                                            </div>
+                                            <div class="bar-value">92%</div>
+                                        </div>
+                                        <div class="comparison-bar">
+                                            <div class="bar-label">Competitors</div>
+                                            <div class="bar-track">
+                                                <div class="bar-fill" style="width: 40%;"></div>
+                                            </div>
+                                            <div class="bar-value">40%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Vendor Strengths Comparison</h3>
+                                <div class="table-responsive">
+                                    <table class="data-table" id="vendor-strengths-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Capability</th>
+                                                <th>Portnox</th>
+                                                <th>Cisco ISE</th>
+                                                <th>Aruba ClearPass</th>
+                                                <th>Forescout</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Cloud Architecture</td>
+                                                <td class="highlight-cell">Native</td>
+                                                <td>Partial</td>
+                                                <td>Partial</td>
+                                                <td>Limited</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Zero Trust</td>
+                                                <td class="highlight-cell">Comprehensive</td>
+                                                <td>Partial</td>
+                                                <td>Limited</td>
+                                                <td>Partial</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Deployment Speed</td>
+                                                <td class="highlight-cell">Days</td>
+                                                <td>Months</td>
+                                                <td>Weeks</td>
+                                                <td>Weeks</td>
+                                            </tr>
+                                            <tr>
+                                                <td>FTE Requirements</td>
+                                                <td class="highlight-cell">Minimal</td>
+                                                <td>High</td>
+                                                <td>Moderate</td>
+                                                <td>Moderate</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Remote Access</td>
+                                                <td class="highlight-cell">Built-in</td>
+                                                <td>Add-on</td>
+                                                <td>Limited</td>
+                                                <td>Limited</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Hardware Footprint</td>
+                                                <td class="highlight-cell">None</td>
+                                                <td>Large</td>
+                                                <td>Medium</td>
+                                                <td>Medium</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Financial View -->
+                    <div class="view-panel" data-view="financial">
+                        <!-- View-specific Tabs -->
+                        <div class="results-tabs">
+                            <button class="results-tab active" data-panel="financial-overview">Financial Overview</button>
+                            <button class="results-tab" data-panel="financial-tco">TCO Breakdown</button>
+                            <button class="results-tab" data-panel="financial-roi">ROI Analysis</button>
+                            <button class="results-tab" data-panel="financial-projections">Cost Projections</button>
+                            <button class="results-tab" data-panel="financial-sensitivity">Sensitivity Analysis</button>
+                        </div>
+                        
+                        <!-- Financial content panels here -->
+                        <div id="financial-overview" class="results-panel active">
+                            <div class="panel-header">
+                                <h2>Financial Overview</h2>
+                                <p class="subtitle">Comprehensive cost and value analysis</p>
+                            </div>
+                            
+                            <!-- Financial overview content here -->
+                            <div class="dashboard-grid grid-4">
+                                <div class="dashboard-card highlight-card">
+                                    <h3>Total 3-Year TCO</h3>
+                                    <div class="metric-value highlight-value" id="portnox-tco">$202,500</div>
+                                    <div class="metric-label" id="tco-comparison">vs. $450,000 (Cisco ISE)</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Annual Subscription</h3>
+                                    <div class="metric-value" id="annual-subscription">$51,000</div>
+                                    <div class="metric-label">Fully managed service</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Implementation Cost</h3>
+                                    <div class="metric-value" id="implementation-cost">$15,500</div>
+                                    <div class="metric-label">One-time cost</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Operational Cost (Annual)</h3>
+                                    <div class="metric-value" id="operational-cost">$25,000</div>
+                                    <div class="metric-label">Staff and management</div>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Cost Structure Comparison</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="cost-structure-chart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>3-Year Cost Projection</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="cost-projection-chart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Financial Benefits Summary</h3>
+                                <div class="benefits-table-container">
+                                    <table class="data-table" id="financial-benefits-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Benefit Category</th>
+                                                <th>Year 1</th>
+                                                <th>Year 2</th>
+                                                <th>Year 3</th>
+                                                <th>3-Year Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Hardware Cost Avoidance</td>
+                                                <td>$85,000</td>
+                                                <td>$5,000</td>
+                                                <td>$15,000</td>
+                                                <td class="highlight-value">$105,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Software License Savings</td>
+                                                <td>$25,000</td>
+                                                <td>$30,000</td>
+                                                <td>$30,000</td>
+                                                <td class="highlight-value">$85,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>IT Staff Time Reduction</td>
+                                                <td>$35,000</td>
+                                                <td>$45,000</td>
+                                                <td>$45,000</td>
+                                                <td class="highlight-value">$125,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Maintenance Savings</td>
+                                                <td>$15,000</td>
+                                                <td>$20,000</td>
+                                                <td>$20,000</td>
+                                                <td class="highlight-value">$55,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Risk Reduction Value</td>
+                                                <td>$25,000</td>
+                                                <td>$30,000</td>
+                                                <td>$30,000</td>
+                                                <td class="highlight-value">$85,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Implementation Time Savings</td>
+                                                <td>$35,000</td>
+                                                <td>$0</td>
+                                                <td>$0</td>
+                                                <td class="highlight-value">$35,000</td>
+                                            </tr>
+                                            <tr class="total-row">
+                                                <td>Total Financial Benefits</td>
+                                                <td>$220,000</td>
+                                                <td>$130,000</td>
+                                                <td>$140,000</td>
+                                                <td class="highlight-value">$490,000</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add other financial panels like TCO Breakdown, ROI Analysis, etc. -->
+                    </div>
+                    
+                    <!-- Security & Compliance View -->
+                    <div class="view-panel" data-view="security">
+                        <!-- View-specific Tabs -->
+                        <div class="results-tabs">
+                            <button class="results-tab active" data-panel="security-posture">Security Posture</button>
+                            <button class="results-tab" data-panel="security-compliance">Compliance Coverage</button>
+                            <button class="results-tab" data-panel="security-risk">Risk Assessment</button>
+                            <button class="results-tab" data-panel="security-threat">Threat Protection</button>
+                            <button class="results-tab" data-panel="security-comparison">Security Comparison</button>
+                        </div>
+                        
+                        <!-- Security content panels here -->
+                        <div id="security-posture" class="results-panel active">
+                            <div class="panel-header">
+                                <h2>Security Posture Analysis</h2>
+                                <p class="subtitle">Comprehensive security evaluation</p>
+                            </div>
+                            
+                            <!-- Security posture content here -->
+                            <div class="dashboard-grid grid-4">
+                                <div class="dashboard-card highlight-card">
+                                    <h3>Zero Trust Readiness</h3>
+                                    <div class="metric-value highlight-value">92%</div>
+                                    <div class="metric-label">vs. 45% (Industry Average)</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Device Authentication</h3>
+                                    <div class="metric-value">100%</div>
+                                    <div class="metric-label">Complete device visibility</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Risk Assessment</h3>
+                                    <div class="metric-value">Real-time</div>
+                                    <div class="metric-label">Continuous monitoring</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Remediation Speed</h3>
+                                    <div class="metric-value">4 min</div>
+                                    <div class="metric-label">Average response time</div>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Security Capabilities Heat Map</h3>
+                                <div class="heatmap-container" id="security-heatmap">
+                                    <!-- Security heatmap will be rendered here -->
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>NIST Cybersecurity Framework Alignment</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="nist-framework-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add other security panels like Compliance Coverage, Risk Assessment, etc. -->
+                    </div>
+                    
+                    <!-- Technical View -->
+                    <div class="view-panel" data-view="technical">
+                        <!-- View-specific Tabs -->
+                        <div class="results-tabs">
+                            <button class="results-tab active" data-panel="technical-overview">Technical Overview</button>
+                            <button class="results-tab" data-panel="technical-features">Feature Comparison</button>
+                            <button class="results-tab" data-panel="technical-architecture">Architecture</button>
+                            <button class="results-tab" data-panel="technical-implementation">Implementation</button>
+                            <button class="results-tab" data-panel="technical-integrations">Integrations</button>
+                        </div>
+                        
+                        <!-- Technical content panels here -->
+                        <div id="technical-overview" class="results-panel active">
+                            <div class="panel-header">
+                                <h2>Technical Overview</h2>
+                                <p class="subtitle">Technical capabilities and architecture assessment</p>
+                            </div>
+                            
+                            <!-- Technical overview content here -->
+                            <div class="dashboard-grid grid-4">
+                                <div class="dashboard-card highlight-card">
+                                    <h3>Architecture</h3>
+                                    <div class="metric-value highlight-value">Cloud-Native</div>
+                                    <div class="metric-label">No on-premises hardware</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Deployment Model</h3>
+                                    <div class="metric-value">SaaS</div>
+                                    <div class="metric-label">Fully managed service</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Integration Capability</h3>
+                                    <div class="metric-value">300+</div>
+                                    <div class="metric-label">Pre-built integrations</div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Technical Debt</h3>
+                                    <div class="metric-value">Minimal</div>
+                                    <div class="metric-label">Modern architecture</div>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Architecture Comparison</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="architecture-chart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Feature Radar Comparison</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="feature-radar-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add other technical panels like Feature Comparison, Architecture, etc. -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-copyright">
+                    &copy; 2025 Portnox. All rights reserved.
+                </div>
+                <div class="footer-links">
+                    <a href="#privacy">Privacy Policy</a>
+                    <a href="#terms">Terms of Service</a>
+                    <a href="#contact">Contact Us</a>
+                    <a href="#support">Support</a>
+                </div>
+                <div class="footer-social">
+                    <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Modals -->
+    <div id="help-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Help & Documentation</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Using the Total Cost Analyzer</h3>
+                <p>This tool helps you compare the total cost of ownership (TCO) and return on investment (ROI) for different NAC solutions.</p>
+                
+                <div class="help-section">
+                    <h4>1. Configure Your Analysis</h4>
+                    <ul>
+                        <li><strong>Select vendors</strong> to compare with Portnox Cloud</li>
+                        <li><strong>Choose your industry</strong> and compliance requirements</li>
+                        <li><strong>Enter your organization details</strong> such as size and device count</li>
+                        <li><strong>Adjust cost parameters</strong> if needed</li>
+                    </ul>
+                </div>
+                
+                <div class="help-section">
+                    <h4>2. View Analysis Results</h4>
+                    <ul>
+                        <li><strong>Executive View:</strong> High-level overview for decision makers</li>
+                        <li><strong>Financial View:</strong> Detailed cost breakdown and ROI analysis</li>
+                        <li><strong>Security & Compliance View:</strong> Risk assessment and compliance coverage</li>
+                        <li><strong>Technical View:</strong> Feature comparison and implementation details</li>
+                    </ul>
+                </div>
+                
+                <div class="help-section">
+                    <h4>3. Export Your Results</h4>
+                    <p>Use the Export button to generate a PDF report of your analysis for sharing with stakeholders.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Calculating results...</p>
+        </div>
+    </div>
+    
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.2/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    
+    <!-- Core JavaScript -->
+    <script src="js/portnox-tco-analyzer.js"></script>
+    <script src="js/chart-initializer.js"></script>
+    <script src="js/report-generator.js"></script>
+</body>
+</html>
