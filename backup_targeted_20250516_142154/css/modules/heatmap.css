@@ -1,0 +1,104 @@
+/* Heatmap Styles */
+
+.heatmap-container {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.heatmap-table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 15px;
+}
+
+.heatmap-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.heatmap-table th,
+.heatmap-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.heatmap-table th {
+    background-color: #f5f7fa;
+    font-weight: 600;
+    color: #333;
+}
+
+.heatmap-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Risk cells */
+.risk-cell {
+    text-align: center;
+    font-weight: 600;
+    border-radius: 4px;
+}
+
+.risk-low {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.risk-medium {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.risk-high {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Security cells */
+.security-cell {
+    text-align: center;
+    font-weight: 600;
+    border-radius: 4px;
+}
+
+.security-high {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.security-medium {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.security-low {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Legend */
+.heatmap-legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 15px;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.legend-label {
+    font-size: 13px;
+    color: #555;
+}

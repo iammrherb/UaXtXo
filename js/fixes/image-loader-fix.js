@@ -1,88 +1,105 @@
-/**
- * Enhanced Image Loader
- * Handles 404 errors for missing images by providing fallbacks
- */
-document.addEventListener('DOMContentLoaded', function() {
-  // Handle vendor logo image errors
-  document.querySelectorAll('img[src*="logo"]').forEach(function(img) {
-    img.onerror = function() {
-      // Extract vendor name from the image path
-      const path = img.src;
-      const vendorMatch = path.match(/\/([a-z0-9-]+)-logo\.png/i);
-      const vendorName = vendorMatch ? vendorMatch[1] : 'vendor';
-      
-      // Create a canvas element for the fallback
-      const canvas = document.createElement('canvas');
-      canvas.width = 200;
-      canvas.height = 100;
-      
-      // Get the 2D context
-      const ctx = canvas.getContext('2d');
-      
-      // Fill background
-      ctx.fillStyle = '#f0f0f0';
-      ctx.fillRect(0, 0, 200, 100);
-      
-      // Draw colored rectangle
-      ctx.fillStyle = getVendorColor(vendorName);
-      ctx.roundRect(10, 10, 180, 80, 10);
-      ctx.fill();
-      
-      // Add text
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '16px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(getVendorDisplayName(vendorName), 100, 50);
-      
-      // Replace the image source with the canvas data URL
-      img.src = canvas.toDataURL('image/png');
-    };
-  });
-  
-  // Helper function to get vendor color
-  function getVendorColor(vendorName) {
-    const vendorColors = {
-      'cisco': '#1ba0d7',
-      'aruba': '#f58220',
-      'forescout': '#3f3f95',
-      'fortinac': '#ee3124',
-      'microsoft': '#00a4ef',
-      'securew2': '#4caf50',
-      'portnox': '#65BD44'
-    };
+// Image Loader Fix for Portnox TCO Analyzer
+(function() {
+    console.log('🖼️ Initializing image loader fix...');
     
-    return vendorColors[vendorName.toLowerCase()] || '#555555';
-  }
-  
-  // Helper function to get vendor display name
-  function getVendorDisplayName(vendorName) {
-    const vendorDisplayNames = {
-      'cisco': 'Cisco ISE',
-      'aruba': 'Aruba ClearPass',
-      'forescout': 'Forescout',
-      'fortinac': 'FortiNAC',
-      'microsoft': 'Microsoft NPS',
-      'securew2': 'SecureW2',
-      'portnox': 'Portnox Cloud'
-    };
+    // Function to ensure images are loaded properly
+    function ensureImagesLoaded() {
+        // Fix any broken paths in the HTML
+        fixImagePaths();
+        
+        // Check vendor logo elements
+        checkVendorLogos();
+        
+        console.log('Image loader fix applied');
+    }
     
-    return vendorDisplayNames[vendorName.toLowerCase()] || vendorName;
-  }
-  
-  // Add roundRect method if not supported
-  if (!CanvasRenderingContext2D.prototype.roundRect) {
-    CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
-      if (width < 2 * radius) radius = width / 2;
-      if (height < 2 * radius) radius = height / 2;
-      this.beginPath();
-      this.moveTo(x + radius, y);
-      this.arcTo(x + width, y, x + width, y + height, radius);
-      this.arcTo(x + width, y + height, x, y + height, radius);
-      this.arcTo(x, y + height, x, y, radius);
-      this.arcTo(x, y, x + width, y, radius);
-      this.closePath();
-      return this;
-    };
-  }
-});
+    // Fix image paths in the document
+    function fixImagePaths() {
+        // Fix all image paths starting with /img/
+        const images = document.querySelectorAll('img[src^="/img/"]');
+        images.forEach(img => {
+            const currentSrc = img.getAttribute('src');
+            const newSrc = currentSrc.replace(/^\/img\//, 'img/');
+            console.log(`Fixing image path: ${currentSrc} -> ${newSrc}`);
+            img.setAttribute('src', newSrc);
+        });
+        
+        // Fix vendor logo paths specifically
+        const vendorLogos = document.querySelectorAll('img[src*="vendors/"]');
+        vendorLogos.forEach(img => {
+            const currentSrc = img.getAttribute('src');
+            if (!currentSrc.match(/^img\/vendors\//)) {
+                const filename = currentSrc.split('/').pop();
+                const newSrc = `img/vendors/${filename}`;
+                console.log(`Fixing vendor logo path: ${currentSrc} -> ${newSrc}`);
+                img.setAttribute('src', newSrc);
+            }
+        });
+    }
+    
+    // Check vendor logos and apply fallback only when needed
+    function checkVendorLogos() {
+        const vendorCards = document.querySelectorAll('.vendor-card');
+        
+        vendorCards.forEach(card => {
+            const vendor = card.getAttribute('data-vendor');
+            const logoContainer = card.querySelector('.vendor-logo');
+            
+            if (logoContainer) {
+                const logoImg = logoContainer.querySelector('img');
+                
+                if (logoImg) {
+                    // Fix path if needed
+                    const currentSrc = logoImg.getAttribute('src');
+                    if (!currentSrc.match(/^img\/vendors\//)) {
+                        const filename = currentSrc.split('/').pop();
+                        logoImg.setAttribute('src', `img/vendors/${filename}`);
+                    }
+                    
+                    // Set up error handler to apply fallback only if needed
+                    logoImg.onerror = function() {
+                        console.warn(`Could not load logo for ${vendor}, applying text fallback`);
+                        this.style.display = 'none';
+                        
+                        // Check if fallback already exists
+                        if (!logoContainer.querySelector('svg')) {
+                            const vendorColors = {
+                                portnox: '#2c3e50',
+                                cisco: '#049fd9',
+                                aruba: '#ff8300',
+                                forescout: '#6b2a94',
+                                fortinac: '#c8102e',
+                                juniper: '#84bc41',
+                                securew2: '#1a4d80',
+                                microsoft: '#00a4ef',
+                                arista: '#2d7de1',
+                                foxpass: '#ff5722',
+                                'no-nac': '#f44336'
+                            };
+                            
+                            // Create fallback text 
+                            const text = document.createElement('div');
+                            text.className = 'vendor-text-fallback';
+                            text.textContent = vendor.charAt(0).toUpperCase() + vendor.slice(1).replace('-', ' ');
+                            text.style.color = vendorColors[vendor] || '#666666';
+                            text.style.fontWeight = 'bold';
+                            text.style.textAlign = 'center';
+                            text.style.fontSize = '14px';
+                            text.style.padding = '5px';
+                            logoContainer.appendChild(text);
+                        }
+                    };
+                    
+                    // Reset any existing error handler
+                    logoImg.style.display = '';
+                }
+            }
+        });
+    }
+    
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', ensureImagesLoaded);
+    
+    // Also initialize on window load as a fallback
+    window.addEventListener('load', ensureImagesLoaded);
+})();
