@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">
-  <rect width="200" height="100" fill="#f0f0f0" />
-  <rect x="10" y="10" width="180" height="80" fill="#2159A5" rx="10" ry="10" />
-  <text x="100" y="55" font-family="Arial" font-size="16" text-anchor="middle" fill="white">Arista Agni</text>
+  <rect width="200" height="100" fill="white"/>
+  <rect width="180" height="80" x="10" y="10" fill="#2d7de1" rx="10" ry="10"/>
+  <text x="100" y="55" font-family="Arial" font-size="20" text-anchor="middle" fill="white">arista</text>
 </svg>

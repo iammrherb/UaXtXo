@@ -1,107 +1,153 @@
-/* Sidebar toggle behavior */
+/* Sidebar fixes */
 .sidebar {
-  transition: width 0.3s ease, transform 0.3s ease;
-  position: relative;
-  width: 350px;
-  flex-shrink: 0;
-  overflow: hidden;
+    transition: all 0.3s ease;
+    overflow-y: auto;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.sidebar-collapsed {
-  width: 0;
-  transform: translateX(-100%);
-}
-
-.content-area {
-  transition: padding-left 0.3s ease, width 0.3s ease;
-  flex: 1;
-}
-
-.content-expanded {
-  padding-left: 0;
+.sidebar.collapsed {
+    width: 0;
+    min-width: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
 .sidebar-toggle {
-  position: absolute;
-  top: 50%;
-  right: -15px;
-  transform: translateY(-50%);
-  width: 30px;
-  height: 30px;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
+    position: fixed;
+    left: 290px;
+    top: 120px;
+    width: 28px;
+    height: 60px;
+    background-color: #fff;
+    border-radius: 0 4px 4px 0;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
 }
 
 .sidebar-toggle:hover {
-  background-color: #f8f9fa;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    background-color: #f0f2f5;
 }
 
-/* Fix for vendor cards to ensure they're not cut off */
-.vendor-grid {
-  max-height: 400px;
-  overflow-y: auto;
-  padding-right: 5px;
+.sidebar-toggle.collapsed {
+    left: 0;
 }
 
-/* Better scrollbars */
-.vendor-grid::-webkit-scrollbar {
-  width: 8px;
+.sidebar-toggle i {
+    color: #333;
+    font-size: 14px;
 }
 
-.vendor-grid::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
+.sidebar-content {
+    padding-bottom: 80px;
 }
 
-.vendor-grid::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+/* Vendor card fixes */
+.vendor-card {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-.vendor-grid::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+.vendor-card:hover {
+    border-color: #3498db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Image loading visual indicators */
-img.loaded-image {
-  /* Optional: add a subtle effect for successfully loaded images */
-  transition: opacity 0.3s ease;
+.vendor-card.selected {
+    border-color: #3498db;
+    background-color: rgba(52, 152, 219, 0.05);
+    box-shadow: 0 2px 6px rgba(52, 152, 219, 0.2);
 }
 
-img.failed-image {
-  border: 2px solid rgba(255, 0, 0, 0.3);
-  background-color: rgba(255, 0, 0, 0.05);
-  position: relative;
+.vendor-logo {
+    width: 60px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
 }
 
-/* Responsive fixes */
-@media (max-width: 768px) {
-  .sidebar {
+.vendor-logo img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.vendor-info {
+    flex: 1;
+}
+
+.vendor-info h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.vendor-info p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.vendor-badge {
     position: absolute;
-    z-index: 100;
-    background: white;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    height: 100%;
-  }
-  
-  .sidebar-collapsed {
-    transform: translateX(-100%);
-  }
-  
-  .content-area {
+    top: 5px;
+    right: 5px;
+}
+
+.vendor-badge .badge {
+    font-size: 9px;
+    padding: 3px 5px;
+    border-radius: 3px;
+}
+
+.badge-primary {
+    background-color: #3498db;
+    color: white;
+}
+
+.badge-warning {
+    background-color: #f39c12;
+    color: white;
+}
+
+.badge-danger {
+    background-color: #e74c3c;
+    color: white;
+}
+
+/* Fix content layout */
+.content-area {
+    transition: all 0.3s ease;
+    width: calc(100% - 300px);
+}
+
+.content-area.expanded {
     width: 100%;
-  }
-  
-  .vendor-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
-  }
+}
+
+/* Make sure logos are visible */
+img[src*="vendors"] {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.company-logo {
+    height: 40px;
+    width: auto;
 }
