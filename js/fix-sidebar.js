@@ -1,36 +1,45 @@
+// Sidebar Fix Script
+console.log('Sidebar fix loaded');
+
 document.addEventListener('DOMContentLoaded', function() {
-  console.log("Sidebar fix loaded");
-  
-  // Get sidebar elements
-  const sidebar = document.getElementById('sidebar');
-  const sidebarToggle = document.getElementById('sidebar-toggle');
-  const contentArea = document.getElementById('content-area');
-  
-  if (sidebar && sidebarToggle) {
-    console.log("Sidebar elements found, attaching event listener");
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
     
-    // Toggle sidebar visibility
-    sidebarToggle.addEventListener('click', function() {
-      console.log("Sidebar toggle clicked");
-      sidebar.classList.toggle('collapsed');
-      
-      // Adjust content area margin for desktop
-      if (window.innerWidth >= 768 && contentArea) {
-        if (sidebar.classList.contains('collapsed')) {
-          contentArea.style.marginLeft = '0';
-        } else {
-          contentArea.style.marginLeft = '320px';
+    if (sidebar && sidebarToggle) {
+        console.log('Sidebar elements found, attaching event listener');
+        
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            sidebarToggle.classList.toggle('collapsed');
+            
+            // Update toggle icon
+            const icon = sidebarToggle.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.className = 'fas fa-chevron-right';
+            } else {
+                icon.className = 'fas fa-chevron-left';
+            }
+        });
+    }
+    
+    // Fix config card collapsible functionality
+    const configCards = document.querySelectorAll('.config-card');
+    
+    configCards.forEach(card => {
+        const header = card.querySelector('.config-card-header');
+        const content = card.querySelector('.config-card-content');
+        const icon = header.querySelector('i.fas');
+        
+        if (header && content) {
+            header.addEventListener('click', function() {
+                content.classList.toggle('collapsed');
+                
+                if (content.classList.contains('collapsed')) {
+                    icon.className = 'fas fa-chevron-down';
+                } else {
+                    icon.className = 'fas fa-chevron-up';
+                }
+            });
         }
-      }
-      
-      // Update toggle icon
-      const icon = sidebarToggle.querySelector('i');
-      if (icon) {
-        icon.classList.toggle('fa-chevron-left');
-        icon.classList.toggle('fa-chevron-right');
-      }
     });
-  } else {
-    console.warn("Sidebar elements not found");
-  }
 });
