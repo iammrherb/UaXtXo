@@ -1,0 +1,70 @@
+/* Emergency fixes for Portnox Total Cost Analyzer */
+
+/* Fix vendor logos */
+.vendor-logo img {
+  max-height: 40px;
+  max-width: 80%;
+  object-fit: contain;
+  background-color: white;
+}
+
+/* Ensure vendor cards display properly */
+.vendor-card {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.vendor-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-color: #64b5f6;
+}
+
+.vendor-card.selected {
+  border-color: #1565c0;
+  box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.2);
+  background-color: rgba(21, 101, 192, 0.05);
+}
+
+/* Fix sidebar toggle */
+.sidebar-toggle {
+  position: absolute;
+  left: 320px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 40px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 80;
+  transition: all 0.3s;
+}
+
+.sidebar.collapsed + .content-area .sidebar-toggle {
+  left: 0;
+}
+
+/* Fix sidebar animation */
+.sidebar {
+  transition: transform 0.3s;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-320px);
+}
+
+/* Add this to ensure content area adjusts properly */
+@media (min-width: 768px) {
+  .content-area {
+    transition: margin-left 0.3s;
+  }
+}

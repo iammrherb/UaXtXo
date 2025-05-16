@@ -1,0 +1,129 @@
+/* Enhanced Notification System Styles */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.notification {
+    background-color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    max-width: 350px;
+    pointer-events: auto;
+    animation: slide-in 0.3s ease-out forwards;
+    display: flex;
+    align-items: flex-start;
+}
+
+.notification.slide-out {
+    animation: slide-out 0.3s ease-in forwards;
+}
+
+.notification-icon {
+    margin-right: 12px;
+    font-size: 1.25rem;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.notification-message {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.notification-close {
+    color: #999;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 3px;
+    margin-left: 10px;
+}
+
+.notification-close:hover {
+    color: #333;
+}
+
+/* Notification types */
+.notification-success .notification-icon {
+    color: #2ecc71;
+}
+
+.notification-success {
+    border-left: 4px solid #2ecc71;
+}
+
+.notification-error .notification-icon {
+    color: #e74c3c;
+}
+
+.notification-error {
+    border-left: 4px solid #e74c3c;
+}
+
+.notification-warning .notification-icon {
+    color: #f39c12;
+}
+
+.notification-warning {
+    border-left: 4px solid #f39c12;
+}
+
+.notification-info .notification-icon {
+    color: #3498db;
+}
+
+.notification-info {
+    border-left: 4px solid #3498db;
+}
+
+/* Animations */
+@keyframes slide-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slide-out {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Dark mode */
+body.dark-mode .notification {
+    background-color: #2d3748;
+}
+
+body.dark-mode .notification-message {
+    color: #a0aec0;
+}
+
+body.dark-mode .notification-close {
+    color: #a0aec0;
+}
+
+body.dark-mode .notification-close:hover {
+    color: #e2e8f0;
+}
