@@ -1,679 +1,926 @@
-// Fixed Vendor Data Module for Portnox TCO Analyzer
+// Vendor Data Fix
+// Enhances vendor data with more vendors and detailed information
+
 (function() {
-    console.log('📋 Initializing vendor data module (fixed)...');
+    console.log("📊 Initializing enhanced vendor data...");
     
-    // Vendor data configuration
-    const vendorData = {
-        portnox: {
-            name: 'Portnox Cloud',
-            type: 'Cloud-native NAC',
-            deploymentModel: 'SaaS',
-            description: 'Cloud-native NAC solution with zero infrastructure requirements and continuous compliance monitoring.',
+    // Complete vendor data with all requested vendors
+    window.vendorData = [
+        {
+            id: "portnox",
+            name: "Portnox Cloud",
+            type: "Cloud-native NAC",
             threeYearTCO: 202500,
-            implementationTime: 21, // days
-            riskReduction: 58, // percentage
-            zeroTrustScore: 92, // percentage
-            cloudArchitecture: 'Native',
-            fteRequirement: 0.25, // FTE count
-            advantages: [
-                'Cloud-native architecture eliminates hardware costs and complexity',
-                'Fully managed service reduces IT staff burden',
-                'Built for Zero Trust security from the ground up',
-                'Continuous compliance monitoring and automated remediation',
-                'Seamless remote access support for distributed workforce',
-                'Automatic updates and maintenance',
-                'Global scalability with no infrastructure limits',
-                'Rapid deployment with minimal expertise required',
-                'Subscription model provides predictable costs',
-                'Comprehensive API integration capabilities'
+            description: "Cloud-native NAC solution with zero trust security",
+            strengths: [
+                "True cloud-native architecture with no on-premises hardware",
+                "Fast deployment with minimal IT staff requirements",
+                "Built-in zero trust security framework",
+                "Continuous compliance monitoring",
+                "Seamless remote access support"
             ],
-            features: {
-                easeOfDeployment: 95,
-                cloudIntegration: 98,
-                scalability: 92,
-                costEffectiveness: 88,
-                compliance: 94,
-                security: 96,
-                ztna: 90,
-                mfa: 85,
-                devicePosture: 92,
-                automatedRemediation: 88,
-                remoteAccess: 95,
-                iotSupport: 90
-            },
-            costBreakdown: {
+            weaknesses: [
+                "May require cloud connectivity for full functionality",
+                "Less customizable than some on-premises solutions"
+            ],
+            idealFor: "Organizations seeking a modern, scalable NAC solution with minimal infrastructure"
+        },
+        {
+            id: "cisco",
+            name: "Cisco ISE",
+            type: "Enterprise NAC",
+            threeYearTCO: 450000,
+            description: "Enterprise-grade on-premises NAC solution",
+            strengths: [
+                "Comprehensive security features",
+                "Strong integration with Cisco networking equipment",
+                "Mature platform with extensive capabilities",
+                "Detailed policy controls",
+                "Strong support for complex enterprise environments"
+            ],
+            weaknesses: [
+                "Expensive hardware and licensing costs",
+                "Complex deployment requiring specialized expertise",
+                "High maintenance overhead",
+                "Significant IT staff requirements"
+            ],
+            idealFor: "Large enterprises with substantial Cisco infrastructure and dedicated security teams"
+        },
+        {
+            id: "aruba",
+            name: "Aruba ClearPass",
+            type: "Policy Manager",
+            threeYearTCO: 380000,
+            description: "Comprehensive policy management NAC solution",
+            strengths: [
+                "Strong wireless integration",
+                "Good multi-vendor support",
+                "Built-in guest management",
+                "Solid policy controls",
+                "Integration with HPE/Aruba ecosystem"
+            ],
+            weaknesses: [
+                "Complex deployment and configuration",
+                "High hardware requirements",
+                "Expensive licensing model",
+                "Limited cloud capabilities"
+            ],
+            idealFor: "Mid to large enterprises with Aruba wireless infrastructure"
+        },
+        {
+            id: "forescout",
+            name: "Forescout",
+            type: "Device Visibility",
+            threeYearTCO: 405000,
+            description: "Device visibility and control platform",
+            strengths: [
+                "Excellent device discovery capabilities",
+                "Agentless architecture",
+                "Strong IoT device support",
+                "Good multi-vendor integration",
+                "Detailed visibility dashboards"
+            ],
+            weaknesses: [
+                "High cost for full functionality",
+                "Complex deployment architecture",
+                "Requires significant hardware",
+                "Limited cloud capabilities"
+            ],
+            idealFor: "Organizations with large IoT environments requiring strong device visibility"
+        },
+        {
+            id: "fortinac",
+            name: "FortiNAC",
+            type: "Fortinet NAC",
+            threeYearTCO: 325000,
+            description: "NAC solution within Fortinet security ecosystem",
+            strengths: [
+                "Strong integration with Fortinet products",
+                "Good security fabric integration",
+                "IoT security capabilities",
+                "Rogue device detection",
+                "Consistent security policy framework"
+            ],
+            weaknesses: [
+                "Limited features outside Fortinet ecosystem",
+                "Complex deployment process",
+                "Requires on-premises infrastructure",
+                "Limited cloud integration"
+            ],
+            idealFor: "Organizations already invested in Fortinet security products"
+        },
+        {
+            id: "juniper",
+            name: "Juniper Mist",
+            type: "AI-driven NAC",
+            threeYearTCO: 340000,
+            description: "AI-driven wireless and NAC solution",
+            strengths: [
+                "Strong AI-driven insights",
+                "Good wireless integration",
+                "Cloud management capabilities",
+                "Modern user interface",
+                "Automation capabilities"
+            ],
+            weaknesses: [
+                "Less mature NAC capabilities than dedicated solutions",
+                "Primarily focused on wireless networks",
+                "Limited wired network capabilities",
+                "Less comprehensive than dedicated NAC solutions"
+            ],
+            idealFor: "Organizations with Juniper infrastructure seeking integrated wireless NAC"
+        },
+        {
+            id: "securew2",
+            name: "SecureW2",
+            type: "Cloud RADIUS",
+            threeYearTCO: 280000,
+            description: "Cloud-based RADIUS and certificate services",
+            strengths: [
+                "Cloud-based architecture",
+                "Strong certificate management",
+                "Good integration with identity providers",
+                "Simple deployment model",
+                "No on-premises hardware required"
+            ],
+            weaknesses: [
+                "More limited NAC features compared to dedicated solutions",
+                "Focused primarily on authentication vs. comprehensive NAC",
+                "Limited device enforcement capabilities",
+                "Less mature compliance features"
+            ],
+            idealFor: "Organizations seeking cloud-based identity and certificate management"
+        },
+        {
+            id: "microsoft",
+            name: "Microsoft NPS",
+            type: "Windows Server NAC",
+            threeYearTCO: 290000,
+            description: "Network Policy Server for Windows environments",
+            strengths: [
+                "Integrated with Windows Server",
+                "Familiar management interface for Windows admins",
+                "Good Active Directory integration",
+                "No additional licensing for Windows environments",
+                "Basic NAC functionality"
+            ],
+            weaknesses: [
+                "Limited features compared to dedicated NAC solutions",
+                "Windows Server dependency",
+                "Limited device visibility capabilities",
+                "Basic policy controls",
+                "Limited multi-vendor support"
+            ],
+            idealFor: "Windows-centric organizations with basic NAC requirements"
+        },
+        {
+            id: "arista",
+            name: "Arista Agni",
+            type: "Network Control",
+            threeYearTCO: 300000,
+            description: "Network access control integrated with Arista networking",
+            strengths: [
+                "Tight integration with Arista networks",
+                "Strong policy enforcement",
+                "Good multi-vendor switch support",
+                "Scalable architecture",
+                "Cloud management options"
+            ],
+            weaknesses: [
+                "Less mature than established NAC solutions",
+                "Limited recognition outside Arista customer base",
+                "Fewer integrations with third-party security tools",
+                "More limited compliance features"
+            ],
+            idealFor: "Organizations with Arista networking infrastructure"
+        },
+        {
+            id: "foxpass",
+            name: "Foxpass",
+            type: "Cloud RADIUS/LDAP",
+            threeYearTCO: 240000,
+            description: "Cloud-based RADIUS, LDAP, and certificate services",
+            strengths: [
+                "Fully cloud-hosted solution",
+                "Easy deployment model",
+                "Good identity provider integration",
+                "Developer-friendly approach",
+                "No on-premises hardware required"
+            ],
+            weaknesses: [
+                "More limited NAC features compared to comprehensive solutions",
+                "Focused on authentication rather than full NAC",
+                "Less mature compliance capabilities",
+                "Limited device enforcement features"
+            ],
+            idealFor: "Small to mid-sized organizations seeking cloud identity and basic access control"
+        },
+        {
+            id: "extreme",
+            name: "Extreme Networks NAC",
+            type: "Integrated NAC",
+            threeYearTCO: 320000,
+            description: "Network access control integrated with Extreme networking",
+            strengths: [
+                "Strong integration with Extreme Networks infrastructure",
+                "Good policy management",
+                "Solid device visibility",
+                "Centralized management",
+                "IOT device profiling"
+            ],
+            weaknesses: [
+                "Requires on-premises infrastructure",
+                "Complex deployment",
+                "Best with Extreme networking equipment",
+                "Limited cloud capabilities"
+            ],
+            idealFor: "Organizations with Extreme Networks infrastructure"
+        },
+        {
+            id: "no-nac",
+            name: "No NAC",
+            type: "High risk baseline",
+            threeYearTCO: 0,
+            description: "Baseline for comparison - no NAC solution deployed",
+            strengths: [
+                "No upfront costs",
+                "No deployment requirements",
+                "No maintenance overhead",
+                "No licensing costs",
+                "No training required"
+            ],
+            weaknesses: [
+                "No network visibility",
+                "No access control capabilities",
+                "No device authentication",
+                "No compliance capabilities",
+                "High security risk",
+                "Non-compliant with most security frameworks"
+            ],
+            idealFor: "Not recommended for any organization concerned with security"
+        }
+    ];
+    
+    // Enhanced vendor features matrix
+    window.vendorFeatures = {
+        // Security Features
+        zeroTrust: {
+            portnox: 95,
+            cisco: 80,
+            aruba: 75,
+            forescout: 80,
+            fortinac: 70,
+            juniper: 75,
+            securew2: 65,
+            microsoft: 50,
+            arista: 70,
+            foxpass: 60,
+            extreme: 70,
+            "no-nac": 0
+        },
+        deviceVisibility: {
+            portnox: 90,
+            cisco: 85,
+            aruba: 80,
+            forescout: 95,
+            fortinac: 80,
+            juniper: 75,
+            securew2: 60,
+            microsoft: 50,
+            arista: 75,
+            foxpass: 55,
+            extreme: 80,
+            "no-nac": 0
+        },
+        threatProtection: {
+            portnox: 85,
+            cisco: 90,
+            aruba: 80,
+            forescout: 85,
+            fortinac: 85,
+            juniper: 75,
+            securew2: 60,
+            microsoft: 60,
+            arista: 70,
+            foxpass: 50,
+            extreme: 75,
+            "no-nac": 0
+        },
+        
+        // Deployment Features
+        cloudNative: {
+            portnox: 95,
+            cisco: 40,
+            aruba: 50,
+            forescout: 40,
+            fortinac: 45,
+            juniper: 70,
+            securew2: 90,
+            microsoft: 30,
+            arista: 60,
+            foxpass: 95,
+            extreme: 45,
+            "no-nac": 0
+        },
+        deploymentSpeed: {
+            portnox: 90,
+            cisco: 40,
+            aruba: 50,
+            forescout: 45,
+            fortinac: 50,
+            juniper: 60,
+            securew2: 85,
+            microsoft: 55,
+            arista: 55,
+            foxpass: 85,
+            extreme: 50,
+            "no-nac": 100
+        },
+        hardwareRequirements: {
+            portnox: 95, // Lower is better (less hardware required)
+            cisco: 30,
+            aruba: 40,
+            forescout: 35,
+            fortinac: 45,
+            juniper: 50,
+            securew2: 90,
+            microsoft: 50,
+            arista: 45,
+            foxpass: 95,
+            extreme: 40,
+            "no-nac": 100
+        },
+        
+        // Operational Features
+        staffingRequirements: {
+            portnox: 90, // Lower is better (less staff required)
+            cisco: 40,
+            aruba: 50,
+            forescout: 45,
+            fortinac: 50,
+            juniper: 55,
+            securew2: 80,
+            microsoft: 60,
+            arista: 55,
+            foxpass: 85,
+            extreme: 50,
+            "no-nac": 100
+        },
+        multiVendorSupport: {
+            portnox: 90,
+            cisco: 60,
+            aruba: 75,
+            forescout: 85,
+            fortinac: 60,
+            juniper: 65,
+            securew2: 80,
+            microsoft: 55,
+            arista: 65,
+            foxpass: 75,
+            extreme: 70,
+            "no-nac": 0
+        },
+        scalability: {
+            portnox: 95,
+            cisco: 85,
+            aruba: 80,
+            forescout: 75,
+            fortinac: 75,
+            juniper: 70,
+            securew2: 85,
+            microsoft: 65,
+            arista: 75,
+            foxpass: 80,
+            extreme: 75,
+            "no-nac": 0
+        },
+        
+        // Compliance Features
+        complianceReporting: {
+            portnox: 90,
+            cisco: 85,
+            aruba: 80,
+            forescout: 85,
+            fortinac: 75,
+            juniper: 70,
+            securew2: 65,
+            microsoft: 60,
+            arista: 65,
+            foxpass: 60,
+            extreme: 75,
+            "no-nac": 0
+        },
+        automatedRemediation: {
+            portnox: 85,
+            cisco: 80,
+            aruba: 75,
+            forescout: 80,
+            fortinac: 75,
+            juniper: 70,
+            securew2: 60,
+            microsoft: 50,
+            arista: 65,
+            foxpass: 55,
+            extreme: 70,
+            "no-nac": 0
+        },
+        continuousMonitoring: {
+            portnox: 95,
+            cisco: 80,
+            aruba: 75,
+            forescout: 85,
+            fortinac: 75,
+            juniper: 70,
+            securew2: 65,
+            microsoft: 45,
+            arista: 70,
+            foxpass: 60,
+            extreme: 75,
+            "no-nac": 0
+        }
+    };
+    
+    // Enhanced industry compliance matrix
+    window.industryCompliance = {
+        healthcare: {
+            portnox: 95,
+            cisco: 90,
+            aruba: 85,
+            forescout: 90,
+            fortinac: 80,
+            juniper: 75,
+            securew2: 70,
+            microsoft: 65,
+            arista: 75,
+            foxpass: 65,
+            extreme: 80,
+            "no-nac": 10
+        },
+        financial: {
+            portnox: 95,
+            cisco: 90,
+            aruba: 85,
+            forescout: 85,
+            fortinac: 85,
+            juniper: 80,
+            securew2: 75,
+            microsoft: 70,
+            arista: 80,
+            foxpass: 70,
+            extreme: 85,
+            "no-nac": 5
+        },
+        education: {
+            portnox: 90,
+            cisco: 85,
+            aruba: 90,
+            forescout: 80,
+            fortinac: 75,
+            juniper: 80,
+            securew2: 85,
+            microsoft: 75,
+            arista: 75,
+            foxpass: 80,
+            extreme: 80,
+            "no-nac": 15
+        },
+        government: {
+            portnox: 90,
+            cisco: 90,
+            aruba: 85,
+            forescout: 90,
+            fortinac: 80,
+            juniper: 75,
+            securew2: 70,
+            microsoft: 80,
+            arista: 75,
+            foxpass: 65,
+            extreme: 85,
+            "no-nac": 5
+        },
+        manufacturing: {
+            portnox: 90,
+            cisco: 85,
+            aruba: 80,
+            forescout: 90,
+            fortinac: 80,
+            juniper: 75,
+            securew2: 70,
+            microsoft: 65,
+            arista: 75,
+            foxpass: 65,
+            extreme: 85,
+            "no-nac": 10
+        },
+        retail: {
+            portnox: 90,
+            cisco: 85,
+            aruba: 80,
+            forescout: 85,
+            fortinac: 80,
+            juniper: 75,
+            securew2: 75,
+            microsoft: 65,
+            arista: 70,
+            foxpass: 70,
+            extreme: 75,
+            "no-nac": 15
+        },
+        technology: {
+            portnox: 95,
+            cisco: 85,
+            aruba: 80,
+            forescout: 85,
+            fortinac: 80,
+            juniper: 85,
+            securew2: 85,
+            microsoft: 75,
+            arista: 80,
+            foxpass: 85,
+            extreme: 80,
+            "no-nac": 20
+        },
+        energy: {
+            portnox: 90,
+            cisco: 90,
+            aruba: 85,
+            forescout: 90,
+            fortinac: 85,
+            juniper: 75,
+            securew2: 70,
+            microsoft: 70,
+            arista: 80,
+            foxpass: 65,
+            extreme: 85,
+            "no-nac": 5
+        }
+    };
+    
+    // Regulatory compliance matrix
+    window.regulatoryCompliance = {
+        pci: {
+            portnox: 95,
+            cisco: 90,
+            aruba: 85,
+            forescout: 90,
+            fortinac: 85,
+            juniper: 80,
+            securew2: 75,
+            microsoft: 70,
+            arista: 80,
+            foxpass: 70,
+            extreme: 85,
+            "no-nac": 0
+        },
+        hipaa: {
+            portnox: 95,
+            cisco: 90,
+            aruba: 85,
+            forescout: 90,
+            fortinac: 80,
+            juniper: 75,
+            securew2: 70,
+            microsoft: 70,
+            arista: 75,
+            foxpass: 65,
+            extreme: 80,
+            "no-nac": 0
+        },
+        nist: {
+            portnox: 90,
+            cisco: 90,
+            aruba: 85,
+            forescout: 90,
+            fortinac: 85,
+            juniper: 75,
+            securew2: 70,
+            microsoft: 75,
+            arista: 80,
+            foxpass: 65,
+            extreme: 85,
+            "no-nac": 0
+        },
+        gdpr: {
+            portnox: 95,
+            cisco: 85,
+            aruba: 80,
+            forescout: 85,
+            fortinac: 80,
+            juniper: 75,
+            securew2: 80,
+            microsoft: 70,
+            arista: 75,
+            foxpass: 75,
+            extreme: 80,
+            "no-nac": 0
+        },
+        iso: {
+            portnox: 95,
+            cisco: 90,
+            aruba: 85,
+            forescout: 85,
+            fortinac: 85,
+            juniper: 80,
+            securew2: 75,
+            microsoft: 75,
+            arista: 80,
+            foxpass: 70,
+            extreme: 85,
+            "no-nac": 0
+        },
+        cmmc: {
+            portnox: 90,
+            cisco: 90,
+            aruba: 85,
+            forescout: 90,
+            fortinac: 85,
+            juniper: 75,
+            securew2: 70,
+            microsoft: 80,
+            arista: 80,
+            foxpass: 65,
+            extreme: 85,
+            "no-nac": 0
+        },
+        ferpa: {
+            portnox: 95,
+            cisco: 85,
+            aruba: 85,
+            forescout: 80,
+            fortinac: 75,
+            juniper: 75,
+            securew2: 75,
+            microsoft: 70,
+            arista: 70,
+            foxpass: 70,
+            extreme: 75,
+            "no-nac": 0
+        },
+        sox: {
+            portnox: 95,
+            cisco: 90,
+            aruba: 85,
+            forescout: 85,
+            fortinac: 85,
+            juniper: 80,
+            securew2: 75,
+            microsoft: 75,
+            arista: 80,
+            foxpass: 70,
+            extreme: 85,
+            "no-nac": 0
+        }
+    };
+    
+    // Cost breakdown structure by vendor
+    window.vendorCostStructure = {
+        portnox: {
+            initialCosts: {
                 hardware: 0,
-                software: 135000,
-                implementation: 17500,
-                maintenance: 0,
-                personnel: 40000,
-                training: 10000
+                software: 0,
+                implementation: 25,
+                training: 5
             },
-            complianceScores: {
-                pci: 94,
-                hipaa: 92,
-                nist: 96,
-                gdpr: 90,
-                iso: 93,
-                cmmc: 91,
-                ferpa: 88,
-                sox: 89
+            recurringCosts: {
+                subscription: 55,
+                maintenance: 0,
+                support: 0,
+                operations: 15
+            },
+            indirectCosts: {
+                downtime: 2,
+                security: 1,
+                compliance: 2
             }
         },
         cisco: {
-            name: 'Cisco ISE',
-            type: 'Enterprise NAC',
-            deploymentModel: 'On-premises',
-            description: 'Enterprise network access control solution with extensive hardware requirements and complex deployment.',
-            threeYearTCO: 450000,
-            implementationTime: 120, // days
-            riskReduction: 52, // percentage
-            zeroTrustScore: 45, // percentage
-            cloudArchitecture: 'Partial',
-            fteRequirement: 1.5, // FTE count
-            advantages: [
-                'Extensive integration with Cisco infrastructure',
-                'Robust on-premises deployment',
-                'Strong enterprise capabilities',
-                'Advanced network segmentation'
-            ],
-            features: {
-                easeOfDeployment: 35,
-                cloudIntegration: 50,
-                scalability: 80,
-                costEffectiveness: 40,
-                compliance: 85,
-                security: 88,
-                ztna: 65,
-                mfa: 80,
-                devicePosture: 85,
-                automatedRemediation: 75,
-                remoteAccess: 60,
-                iotSupport: 82
+            initialCosts: {
+                hardware: 20,
+                software: 15,
+                implementation: 10,
+                training: 5
             },
-            costBreakdown: {
-                hardware: 90000,
-                software: 112500,
-                implementation: 67500,
-                maintenance: 81000,
-                personnel: 67500,
-                training: 31500
+            recurringCosts: {
+                subscription: 0,
+                maintenance: 18,
+                support: 10,
+                operations: 15
             },
-            complianceScores: {
-                pci: 85,
-                hipaa: 82,
-                nist: 88,
-                gdpr: 78,
-                iso: 86,
-                cmmc: 84,
-                ferpa: 75,
-                sox: 80
+            indirectCosts: {
+                downtime: 3,
+                security: 2,
+                compliance: 2
             }
         },
         aruba: {
-            name: 'Aruba ClearPass',
-            type: 'Policy Manager',
-            deploymentModel: 'On-premises',
-            description: 'Network policy manager with strong wired and wireless capabilities but complex implementation requirements.',
-            threeYearTCO: 380000,
-            implementationTime: 90, // days
-            riskReduction: 50, // percentage
-            zeroTrustScore: 42, // percentage
-            cloudArchitecture: 'Partial',
-            fteRequirement: 1.25, // FTE count
-            advantages: [
-                'Strong integration with Aruba infrastructure',
-                'Comprehensive wireless capabilities',
-                'Good guest management features',
-                'Granular policy controls'
-            ],
-            features: {
-                easeOfDeployment: 45,
-                cloudIntegration: 55,
-                scalability: 78,
-                costEffectiveness: 45,
-                compliance: 80,
-                security: 85,
-                ztna: 60,
-                mfa: 75,
-                devicePosture: 80,
-                automatedRemediation: 70,
-                remoteAccess: 65,
-                iotSupport: 75
+            initialCosts: {
+                hardware: 18,
+                software: 12,
+                implementation: 10,
+                training: 5
             },
-            costBreakdown: {
-                hardware: 76000,
-                software: 95000,
-                implementation: 57000,
-                maintenance: 68400,
-                personnel: 57000,
-                training: 26600
+            recurringCosts: {
+                subscription: 0,
+                maintenance: 15,
+                support: 10,
+                operations: 20
             },
-            complianceScores: {
-                pci: 82,
-                hipaa: 80,
-                nist: 85,
-                gdpr: 75,
-                iso: 82,
-                cmmc: 80,
-                ferpa: 72,
-                sox: 76
+            indirectCosts: {
+                downtime: 4,
+                security: 3,
+                compliance: 3
             }
         },
         forescout: {
-            name: 'Forescout',
-            type: 'Device Visibility',
-            deploymentModel: 'On-premises',
-            description: 'Device visibility and control platform with strong IoT capabilities but significant hardware requirements.',
-            threeYearTCO: 405000,
-            implementationTime: 100, // days
-            riskReduction: 48, // percentage
-            zeroTrustScore: 40, // percentage
-            cloudArchitecture: 'Limited',
-            fteRequirement: 1.25, // FTE count
-            advantages: [
-                'Excellent device discovery capabilities',
-                'Strong IoT security features',
-                'Good network visibility',
-                'Detailed device profiling'
-            ],
-            features: {
-                easeOfDeployment: 40,
-                cloudIntegration: 40,
-                scalability: 75,
-                costEffectiveness: 35,
-                compliance: 82,
-                security: 86,
-                ztna: 55,
-                mfa: 70,
-                devicePosture: 90,
-                automatedRemediation: 80,
-                remoteAccess: 60,
-                iotSupport: 95
+            initialCosts: {
+                hardware: 15,
+                software: 18,
+                implementation: 12,
+                training: 5
             },
-            costBreakdown: {
-                hardware: 81000,
-                software: 101250,
-                implementation: 60750,
-                maintenance: 72900,
-                personnel: 60750,
-                training: 28350
+            recurringCosts: {
+                subscription: 0,
+                maintenance: 15,
+                support: 10,
+                operations: 18
             },
-            complianceScores: {
-                pci: 85,
-                hipaa: 80,
-                nist: 82,
-                gdpr: 75,
-                iso: 80,
-                cmmc: 78,
-                ferpa: 70,
-                sox: 75
-            }
-        },
-        fortinac: {
-            name: 'FortiNAC',
-            type: 'Fortinet NAC',
-            deploymentModel: 'On-premises',
-            description: 'Network access control solution integrated with Fortinet security ecosystem.',
-            threeYearTCO: 325000,
-            implementationTime: 80, // days
-            riskReduction: 45, // percentage
-            zeroTrustScore: 38, // percentage
-            cloudArchitecture: 'Limited',
-            fteRequirement: 1.0, // FTE count
-            advantages: [
-                'Integration with Fortinet security ecosystem',
-                'Good network segmentation capabilities',
-                'Moderate deployment complexity',
-                'Solid baseline security features'
-            ],
-            features: {
-                easeOfDeployment: 50,
-                cloudIntegration: 45,
-                scalability: 70,
-                costEffectiveness: 55,
-                compliance: 75,
-                security: 80,
-                ztna: 50,
-                mfa: 65,
-                devicePosture: 75,
-                automatedRemediation: 70,
-                remoteAccess: 55,
-                iotSupport: 70
-            },
-            costBreakdown: {
-                hardware: 65000,
-                software: 81250,
-                implementation: 48750,
-                maintenance: 58500,
-                personnel: 48750,
-                training: 22750
-            },
-            complianceScores: {
-                pci: 78,
-                hipaa: 75,
-                nist: 76,
-                gdpr: 70,
-                iso: 75,
-                cmmc: 72,
-                ferpa: 65,
-                sox: 70
-            }
-        },
-        juniper: {
-            name: 'Juniper Mist',
-            type: 'AI-driven NAC',
-            deploymentModel: 'Hybrid',
-            description: 'AI-driven wireless networking platform with NAC capabilities and cloud management.',
-            threeYearTCO: 340000,
-            implementationTime: 70, // days
-            riskReduction: 46, // percentage
-            zeroTrustScore: 40, // percentage
-            cloudArchitecture: 'Partial',
-            fteRequirement: 1.0, // FTE count
-            advantages: [
-                'Strong AI capabilities for network optimization',
-                'Good cloud management features',
-                'Excellent wireless capabilities',
-                'Increasingly strong zero trust features'
-            ],
-            features: {
-                easeOfDeployment: 60,
-                cloudIntegration: 65,
-                scalability: 75,
-                costEffectiveness: 50,
-                compliance: 72,
-                security: 78,
-                ztna: 65,
-                mfa: 70,
-                devicePosture: 75,
-                automatedRemediation: 70,
-                remoteAccess: 60,
-                iotSupport: 65
-            },
-            costBreakdown: {
-                hardware: 68000,
-                software: 85000,
-                implementation: 51000,
-                maintenance: 61200,
-                personnel: 51000,
-                training: 23800
-            },
-            complianceScores: {
-                pci: 75,
-                hipaa: 72,
-                nist: 76,
-                gdpr: 70,
-                iso: 75,
-                cmmc: 70,
-                ferpa: 65,
-                sox: 70
-            }
-        },
-        securew2: {
-            name: 'SecureW2',
-            type: 'Cloud RADIUS',
-            deploymentModel: 'Cloud',
-            description: 'Cloud-based RADIUS service with certificate-based authentication for wireless networks.',
-            threeYearTCO: 280000,
-            implementationTime: 45, // days
-            riskReduction: 40, // percentage
-            zeroTrustScore: 35, // percentage
-            cloudArchitecture: 'Native',
-            fteRequirement: 0.75, // FTE count
-            advantages: [
-                'Strong certificate-based authentication',
-                'Cloud-native architecture',
-                'Good integration with identity providers',
-                'Simplified wireless security'
-            ],
-            features: {
-                easeOfDeployment: 65,
-                cloudIntegration: 75,
-                scalability: 65,
-                costEffectiveness: 70,
-                compliance: 65,
-                security: 70,
-                ztna: 60,
-                mfa: 75,
-                devicePosture: 60,
-                automatedRemediation: 60,
-                remoteAccess: 75,
-                iotSupport: 45
-            },
-            costBreakdown: {
-                hardware: 0,
-                software: 154000,
-                implementation: 33600,
-                maintenance: 0,
-                personnel: 70000,
-                training: 22400
-            },
-            complianceScores: {
-                pci: 70,
-                hipaa: 68,
-                nist: 72,
-                gdpr: 65,
-                iso: 70,
-                cmmc: 65,
-                ferpa: 60,
-                sox: 68
-            }
-        },
-        microsoft: {
-            name: 'Microsoft NPS',
-            type: 'Windows Server NAC',
-            deploymentModel: 'On-premises',
-            description: 'Network Policy Server for Windows Server with basic NAC capabilities for Windows environments.',
-            threeYearTCO: 290000,
-            implementationTime: 60, // days
-            riskReduction: 35, // percentage
-            zeroTrustScore: 25, // percentage
-            cloudArchitecture: 'None',
-            fteRequirement: 1.0, // FTE count
-            advantages: [
-                'Included with Windows Server licensing',
-                'Good integration with Active Directory',
-                'Familiar administration for Windows administrators',
-                'Basic network access control features'
-            ],
-            features: {
-                easeOfDeployment: 40,
-                cloudIntegration: 60,
-                scalability: 55,
-                costEffectiveness: 65,
-                compliance: 60,
-                security: 65,
-                ztna: 30,
-                mfa: 70,
-                devicePosture: 65,
-                automatedRemediation: 45,
-                remoteAccess: 60,
-                iotSupport: 40
-            },
-            costBreakdown: {
-                hardware: 58000,
-                software: 72500,
-                implementation: 43500,
-                maintenance: 52200,
-                personnel: 43500,
-                training: 20300
-            },
-            complianceScores: {
-                pci: 65,
-                hipaa: 62,
-                nist: 70,
-                gdpr: 60,
-                iso: 68,
-                cmmc: 65,
-                ferpa: 60,
-                sox: 65
-            }
-        },
-        arista: {
-            name: 'Arista Agni',
-            type: 'Network Control',
-            deploymentModel: 'On-premises',
-            description: 'Network control solution integrated with Arista networking infrastructure.',
-            threeYearTCO: 300000,
-            implementationTime: 75, // days
-            riskReduction: 42, // percentage
-            zeroTrustScore: 30, // percentage
-            cloudArchitecture: 'Limited',
-            fteRequirement: 1.0, // FTE count
-            advantages: [
-                'Strong integration with Arista networks',
-                'Good network visibility features',
-                'Solid performance in Arista environments',
-                'Enterprise-grade scalability'
-            ],
-            features: {
-                easeOfDeployment: 45,
-                cloudIntegration: 50,
-                scalability: 80,
-                costEffectiveness: 60,
-                compliance: 70,
-                security: 75,
-                ztna: 45,
-                mfa: 65,
-                devicePosture: 70,
-                automatedRemediation: 65,
-                remoteAccess: 55,
-                iotSupport: 60
-            },
-            costBreakdown: {
-                hardware: 60000,
-                software: 75000,
-                implementation: 45000,
-                maintenance: 54000,
-                personnel: 45000,
-                training: 21000
-            },
-            complianceScores: {
-                pci: 72,
-                hipaa: 70,
-                nist: 75,
-                gdpr: 65,
-                iso: 72,
-                cmmc: 70,
-                ferpa: 62,
-                sox: 68
-            }
-        },
-        foxpass: {
-            name: 'Foxpass',
-            type: 'Cloud RADIUS/LDAP',
-            deploymentModel: 'Cloud',
-            description: 'Cloud-based RADIUS and LDAP service for network authentication and access control.',
-            threeYearTCO: 240000,
-            implementationTime: 40, // days
-            riskReduction: 38, // percentage
-            zeroTrustScore: 32, // percentage
-            cloudArchitecture: 'Native',
-            fteRequirement: 0.5, // FTE count
-            advantages: [
-                'Cloud-native RADIUS and LDAP',
-                'Simple deployment for small to medium businesses',
-                'Good developer-friendly features',
-                'Straightforward user management'
-            ],
-            features: {
-                easeOfDeployment: 70,
-                cloudIntegration: 80,
-                scalability: 60,
-                costEffectiveness: 75,
-                compliance: 60,
-                security: 65,
-                ztna: 45,
-                mfa: 70,
-                devicePosture: 55,
-                automatedRemediation: 50,
-                remoteAccess: 70,
-                iotSupport: 45
-            },
-            costBreakdown: {
-                hardware: 0,
-                software: 132000,
-                implementation: 28800,
-                maintenance: 0,
-                personnel: 60000,
-                training: 19200
-            },
-            complianceScores: {
-                pci: 65,
-                hipaa: 62,
-                nist: 68,
-                gdpr: 60,
-                iso: 65,
-                cmmc: 60,
-                ferpa: 55,
-                sox: 60
-            }
-        },
-        'no-nac': {
-            name: 'No NAC',
-            type: 'High risk baseline',
-            deploymentModel: 'None',
-            description: 'No network access control solution, used as a baseline for comparison.',
-            threeYearTCO: 0,
-            implementationTime: 0, // days
-            riskReduction: 0, // percentage
-            zeroTrustScore: 0, // percentage
-            cloudArchitecture: 'None',
-            fteRequirement: 0, // FTE count
-            advantages: [],
-            features: {
-                easeOfDeployment: 100,
-                cloudIntegration: 0,
-                scalability: 0,
-                costEffectiveness: 100,
-                compliance: 0,
-                security: 0,
-                ztna: 0,
-                mfa: 0,
-                devicePosture: 0,
-                automatedRemediation: 0,
-                remoteAccess: 0,
-                iotSupport: 0
-            },
-            costBreakdown: {
-                hardware: 0,
-                software: 0,
-                implementation: 0,
-                maintenance: 0,
-                personnel: 0,
-                training: 0
-            },
-            complianceScores: {
-                pci: 0,
-                hipaa: 0,
-                nist: 0,
-                gdpr: 0,
-                iso: 0,
-                cmmc: 0,
-                ferpa: 0,
-                sox: 0
+            indirectCosts: {
+                downtime: 3,
+                security: 2,
+                compliance: 2
             }
         }
+        // Additional vendors would be added similarly
     };
     
-    // Industry data configuration
-    const industryData = {
-        healthcare: {
-            name: 'Healthcare',
-            complianceFrameworks: ['hipaa', 'pci', 'nist'],
-            challenges: [
-                'Protecting sensitive patient data',
-                'Meeting strict regulatory requirements',
-                'Managing diverse medical devices',
-                'Balancing security with clinical workflows',
-                'Maintaining availability of critical systems'
-            ],
-            solutions: {
-                portnox: [
-                    'Built-in HIPAA compliance controls',
-                    'Medical device visibility and classification',
-                    'Automated compliance reporting',
-                    'Zero disruption to clinical services',
-                    'Simplified remote access for practitioners'
-                ]
-            },
-            averageBreachCost: 9230000, // $9.23M per IBM Cost of a Data Breach Report
-            riskProfile: 'high'
-        },
-        financial: {
-            name: 'Financial Services',
-            complianceFrameworks: ['pci', 'sox', 'gdpr', 'nist'],
-            challenges: [
-                'Protecting customer financial data',
-                'Meeting strict regulatory requirements',
-                'Preventing fraud and unauthorized access',
-                'Managing complex vendor ecosystems',
-                'Maintaining continuous availability'
-            ],
-            solutions: {
-                portnox: [
-                    'PCI DSS and SOX compliance controls',
-                    'Advanced authentication for financial systems',
-                    'Continuous monitoring and automated response',
-                    'Comprehensive audit trails for compliance',
-                    'Secure remote access for employees and vendors'
-                ]
-            },
-            averageBreachCost: 5850000, // $5.85M per IBM Cost of a Data Breach Report
-            riskProfile: 'high'
+    // Function to initialize all vendor data in the UI
+    window.initializeVendorData = function() {
+        console.log("Initializing vendor data in UI");
+        
+        // Update vendor grid with all vendors
+        updateVendorGrid();
+        
+        // Initialize vendor comparison data
+        initializeVendorComparison();
+        
+        console.log("Vendor data initialization complete");
+    };
+    
+    // Function to update vendor grid with all vendors
+    function updateVendorGrid() {
+        const vendorGrid = document.querySelector('.vendor-grid');
+        if (!vendorGrid) {
+            console.error("Vendor grid not found");
+            return;
         }
-    };
-    
-    // Compliance framework data
-    const complianceData = {
-        pci: {
-            name: 'PCI DSS',
-            fullName: 'Payment Card Industry Data Security Standard',
-            description: 'Security standard for organizations that handle credit card data',
-            requirements: [
-                'Network security controls',
-                'Cardholder data protection',
-                'Vulnerability management',
-                'Access control measures',
-                'Network monitoring and testing',
-                'Information security policy'
-            ],
-            portnoxCoverage: 94,
-            industryAvgCoverage: 72,
-            applicableIndustries: ['retail', 'financial', 'healthcare', 'technology']
-        },
-        hipaa: {
-            name: 'HIPAA',
-            fullName: 'Health Insurance Portability and Accountability Act',
-            description: 'Regulations for protecting sensitive patient health information',
-            requirements: [
-                'Access controls',
-                'Audit controls',
-                'Integrity controls',
-                'Authentication',
-                'Transmission security',
-                'Device and media controls'
-            ],
-            portnoxCoverage: 92,
-            industryAvgCoverage: 68,
-            applicableIndustries: ['healthcare']
-        }
-    };
-    
-    // Make data available to the application
-    window.PortnoxData = {
-        vendors: vendorData,
-        industries: industryData,
-        compliance: complianceData,
         
-        // Helper methods
-        getVendor: function(vendorId) {
-            return vendorData[vendorId] || null;
-        },
-        
-        getIndustry: function(industryId) {
-            return industryData[industryId] || null;
-        },
-        
-        getComplianceFramework: function(complianceId) {
-            return complianceData[complianceId] || null;
-        },
-        
-        // Get all vendor IDs
-        getAllVendorIds: function() {
-            return Object.keys(vendorData);
-        },
-        
-        // Get selected vendors (for initialization)
-        getSelectedVendors: function() {
-            // Always include Portnox
-            const selected = ['portnox'];
+        // Check if we need to add Extreme Networks
+        if (!document.querySelector('.vendor-card[data-vendor="extreme"]')) {
+            const extremeCard = document.createElement('div');
+            extremeCard.className = 'vendor-card';
+            extremeCard.setAttribute('data-vendor', 'extreme');
+            extremeCard.innerHTML = `
+                <div class="vendor-logo">
+                    <img src="img/vendors/extreme-logo.png" alt="Extreme Networks">
+                </div>
+                <div class="vendor-info">
+                    <h3>Extreme Networks</h3>
+                    <p>Integrated NAC</p>
+                </div>
+            `;
+            vendorGrid.appendChild(extremeCard);
             
-            // Include some default competitors for initial view
-            return selected.concat(['cisco', 'aruba']);
+            // Add click event listener
+            extremeCard.addEventListener('click', function() {
+                this.classList.toggle('selected');
+            });
         }
-    };
+    }
     
-    console.log('Vendor data module initialized successfully');
+    // Function to initialize vendor comparison data
+    function initializeVendorComparison() {
+        // This would populate any vendor comparison UI elements
+        
+        // For example, update the vendor strengths table if it exists
+        const vendorStrengthsTable = document.getElementById('vendor-strengths-table');
+        if (vendorStrengthsTable) {
+            // Update headers to include all selected vendors
+            const headerRow = vendorStrengthsTable.querySelector('thead tr');
+            if (headerRow) {
+                // Clear existing headers (keep the first one)
+                while (headerRow.children.length > 1) {
+                    headerRow.removeChild(headerRow.lastChild);
+                }
+                
+                // Add headers for primary vendors
+                const primaryVendors = ['portnox', 'cisco', 'aruba', 'forescout', 'extreme'];
+                primaryVendors.forEach(vendorId => {
+                    const vendor = window.vendorData.find(v => v.id === vendorId);
+                    if (vendor) {
+                        const th = document.createElement('th');
+                        th.textContent = vendor.name;
+                        headerRow.appendChild(th);
+                    }
+                });
+            }
+            
+            // Update rows with capability data
+            const capabilities = [
+                { name: 'Cloud Architecture', feature: 'cloudNative' },
+                { name: 'Zero Trust', feature: 'zeroTrust' },
+                { name: 'Deployment Speed', feature: 'deploymentSpeed' },
+                { name: 'FTE Requirements', feature: 'staffingRequirements' },
+                { name: 'Remote Access', feature: 'remoteAccess' },
+                { name: 'Hardware Footprint', feature: 'hardwareRequirements' }
+            ];
+            
+            const tbody = vendorStrengthsTable.querySelector('tbody');
+            if (tbody) {
+                // Clear existing rows
+                tbody.innerHTML = '';
+                
+                // Add new rows
+                capabilities.forEach(capability => {
+                    const tr = document.createElement('tr');
+                    
+                    // Add capability name
+                    const tdName = document.createElement('td');
+                    tdName.textContent = capability.name;
+                    tr.appendChild(tdName);
+                    
+                    // Add ratings for each vendor
+                    primaryVendors.forEach(vendorId => {
+                        const td = document.createElement('td');
+                        
+                        // Get rating if available
+                        if (window.vendorFeatures[capability.feature]) {
+                            const rating = window.vendorFeatures[capability.feature][vendorId];
+                            
+                            // Convert numeric rating to text
+                            if (rating >= 90) {
+                                td.textContent = 'Excellent';
+                                if (vendorId === 'portnox') {
+                                    td.className = 'highlight-cell';
+                                }
+                            } else if (rating >= 75) {
+                                td.textContent = 'Good';
+                            } else if (rating >= 60) {
+                                td.textContent = 'Adequate';
+                            } else if (rating >= 40) {
+                                td.textContent = 'Limited';
+                            } else {
+                                td.textContent = 'Poor';
+                            }
+                        } else {
+                            // Special handling for non-standard features
+                            if (capability.name === 'Remote Access') {
+                                if (vendorId === 'portnox') {
+                                    td.textContent = 'Built-in';
+                                    td.className = 'highlight-cell';
+                                } else if (vendorId === 'cisco') {
+                                    td.textContent = 'Add-on';
+                                } else {
+                                    td.textContent = 'Limited';
+                                }
+                            } else {
+                                td.textContent = 'N/A';
+                            }
+                        }
+                        
+                        tr.appendChild(td);
+                    });
+                    
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+    }
+    
+    // Initialize vendor data when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        window.initializeVendorData();
+        
+        // Also fix the vendor-data.json file if needed
+        const vendorDataFromJson = {
+            "status": "success",
+            "data": {
+                "vendors": {}
+            }
+        };
+        
+        // Populate vendor data
+        window.vendorData.forEach(vendor => {
+            vendorDataFromJson.data.vendors[vendor.id] = {
+                "name": vendor.name,
+                "type": vendor.type,
+                "threeYearTCO": vendor.threeYearTCO
+            };
+        });
+        
+        // If we could write to files, we would update the JSON file here
+        // Since we can't, we'll just override the window object that would be loaded from JSON
+        window.apiVendorData = vendorDataFromJson;
+    });
+    
+    console.log("📊 Enhanced vendor data initialized successfully");
 })();

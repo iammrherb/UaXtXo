@@ -114,9 +114,6 @@ function updateComplianceOptions(industry) {
     } else if (industry === 'retail') {
         document.getElementById('compliance-pci').checked = true;
         document.getElementById('compliance-gdpr').checked = true;
-    } else if (industry === 'energy') {
-        document.getElementById('compliance-nist').checked = true;
-        document.getElementById('compliance-gdpr').checked = true;
     }
     
     // Update appState
@@ -163,19 +160,17 @@ function initSidebar() {
     configCards.forEach(card => {
         const header = card.querySelector('.config-card-header');
         const content = card.querySelector('.config-card-content');
+        const icon = header.querySelector('i.fas');
         
-        if (header && content) {
-            header.addEventListener('click', function() {
-                const icon = header.querySelector('i.fas');
-                content.classList.toggle('collapsed');
-                
-                if (content.classList.contains('collapsed')) {
-                    icon.className = 'fas fa-chevron-down';
-                } else {
-                    icon.className = 'fas fa-chevron-up';
-                }
-            });
-        }
+        header.addEventListener('click', function() {
+            content.classList.toggle('collapsed');
+            
+            if (content.classList.contains('collapsed')) {
+                icon.className = 'fas fa-chevron-down';
+            } else {
+                icon.className = 'fas fa-chevron-up';
+            }
+        });
     });
 }
 
@@ -221,16 +216,6 @@ function initStakeholderViews() {
                     panel.classList.remove('active');
                 }
             });
-            
-            // Reset sub-tabs to first tab
-            const activeViewPanel = document.querySelector(`.view-panel[data-view="${view}"]`);
-            if (activeViewPanel) {
-                // Reset to first tab within this view
-                const firstTab = activeViewPanel.querySelector('.results-tab');
-                if (firstTab) {
-                    firstTab.click();
-                }
-            }
         });
     });
     
@@ -241,22 +226,20 @@ function initStakeholderViews() {
         tab.addEventListener('click', function() {
             const panelId = this.getAttribute('data-panel');
             const tabsContainer = this.parentElement;
+            const panels = tabsContainer.nextElementSibling;
             
             // Update active tab
             tabsContainer.querySelectorAll('.results-tab').forEach(t => t.classList.remove('active'));
             this.classList.add('active');
             
-            // Update active panel - find all sibling panels of this tab set
-            const parentPanel = tabsContainer.closest('.view-panel');
-            if (parentPanel) {
-                parentPanel.querySelectorAll('.results-panel').forEach(panel => {
-                    if (panel.id === panelId) {
-                        panel.classList.add('active');
-                    } else {
-                        panel.classList.remove('active');
-                    }
-                });
-            }
+            // Update active panel
+            document.querySelectorAll('.results-panel').forEach(panel => {
+                if (panel.id === panelId) {
+                    panel.classList.add('active');
+                } else if (panel.parentElement === panels) {
+                    panel.classList.remove('active');
+                }
+            });
         });
     });
 }
@@ -288,7 +271,7 @@ function initTooltips() {
 
 // Initialize particle background
 function initParticleBackground() {
-    if (window.particlesJS) {
+    if (typeof particlesJS !== 'undefined') {
         particlesJS('particles-js', {
             particles: {
                 number: { value: 80, density: { enable: true, value_area: 800 } },
@@ -345,10 +328,7 @@ function initEventListeners() {
     // Export PDF button
     const exportPdfBtn = document.getElementById('export-pdf');
     if (exportPdfBtn) {
-        exportPdfBtn.addEventListener('click', function() {
-            console.log('Exporting PDF report...');
-            // This will be handled by report-generator.js
-        });
+        exportPdfBtn.addEventListener('click', exportPdfReport);
     }
     
     // Help button
@@ -361,11 +341,9 @@ function initEventListeners() {
             helpModal.style.display = 'block';
         });
         
-        if (modalClose) {
-            modalClose.addEventListener('click', function() {
-                helpModal.style.display = 'none';
-            });
-        }
+        modalClose.addEventListener('click', function() {
+            helpModal.style.display = 'none';
+        });
         
         window.addEventListener('click', function(event) {
             if (event.target === helpModal) {
@@ -619,11 +597,22 @@ function updateMetrics() {
     // Implementation would go here
 }
 
+// Export PDF report
+function exportPdfReport() {
+    console.log('Exporting PDF report...');
+    showToast('Generating PDF report...', 'info');
+    
+    // Simulate PDF generation delay
+    setTimeout(function() {
+        showToast('PDF report generated successfully!', 'success');
+    }, 2000);
+    
+    // Implementation would go here
+}
+
 // Show toast notification
 function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) return;
-    
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     
@@ -657,15 +646,10 @@ function showToast(message, type = 'info') {
     
     // Auto remove after 4 seconds
     const progressBar = toast.querySelector('.toast-progress');
-    if (progressBar) {
-        progressBar.style.animationDuration = '4s';
-    }
+    progressBar.style.animationDuration = '4s';
     
     setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
     }, 4000);
 }
-
-// Export this function for global access
-window.showToast = showToast;

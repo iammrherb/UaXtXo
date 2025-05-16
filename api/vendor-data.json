@@ -52,6 +52,11 @@
         "type": "Cloud RADIUS/LDAP",
         "threeYearTCO": 240000
       },
+      "extreme": {
+        "name": "Extreme Networks NAC",
+        "type": "Integrated NAC",
+        "threeYearTCO": 320000
+      },
       "no-nac": {
         "name": "No NAC",
         "type": "High risk baseline",

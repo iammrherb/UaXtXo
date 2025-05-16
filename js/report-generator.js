@@ -31,21 +31,20 @@ function generatePdfReport() {
             loadingOverlay.style.display = 'none';
         }
         
-        // Use the global showToast function if available, otherwise define locally
-        if (typeof window.showToast === 'function') {
-            window.showToast('PDF report generated successfully!', 'success');
-        } else {
-            // Local implementation that won't cause recursion
-            showToastLocal('PDF report generated successfully!', 'success');
-        }
+        showToast('PDF report generated successfully!', 'success');
     }, 2000);
+    
+    // In a real implementation, this would use jsPDF or similar library to generate the PDF
 }
 
-// Show toast notification (LOCAL version to avoid recursion)
-function showToastLocal(message, type = 'info') {
-    const toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) return;
+// Show toast notification (if not already defined)
+function showToast(message, type = 'info') {
+    if (typeof window.showToast === 'function') {
+        window.showToast(message, type);
+        return;
+    }
     
+    const toastContainer = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     
@@ -79,9 +78,7 @@ function showToastLocal(message, type = 'info') {
     
     // Auto remove after 4 seconds
     const progressBar = toast.querySelector('.toast-progress');
-    if (progressBar) {
-        progressBar.style.animationDuration = '4s';
-    }
+    progressBar.style.animationDuration = '4s';
     
     setTimeout(() => {
         toast.classList.remove('show');
