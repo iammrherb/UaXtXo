@@ -5,55 +5,49 @@
     console.log("🧮 Initializing calculations fixes...");
     
     // Detailed TCO calculation function
-    window.updateCalculations = function(selectedVendors, userInputs, updateUI = true) {
+    window.updateCalculations = function(selectedVendors, userInputs) {
         console.log("Updating calculations for selected vendors:", selectedVendors);
-        
-        // Check if selectedVendors is valid
-        if (!selectedVendors || !Array.isArray(selectedVendors) || selectedVendors.length === 0) {
-            console.error("Invalid selectedVendors provided to updateCalculations", selectedVendors);
-            return [];
-        }
         
         // Default inputs if not provided
         userInputs = userInputs || {
-            deviceCount: parseInt(document.getElementById('device-count')?.value || 500),
-            locations: parseInt(document.getElementById('locations')?.value || 2),
-            yearsToProject: parseInt(document.getElementById('years-to-project')?.value || 3),
-            portnoxBasePrice: parseFloat(document.getElementById('portnox-base-price')?.value || 3),
-            portnoxDiscount: parseFloat(document.getElementById('portnox-discount')?.value || 15),
-            fteCost: parseInt(document.getElementById('fte-cost')?.value || 100000),
-            fteAllocation: parseFloat(document.getElementById('fte-allocation')?.value || 25),
-            maintenancePercentage: parseFloat(document.getElementById('maintenance-percentage')?.value || 18),
-            downtimeCost: parseInt(document.getElementById('downtime-cost')?.value || 5000),
-            riskReduction: parseFloat(document.getElementById('risk-reduction')?.value || 35),
-            insuranceReduction: parseFloat(document.getElementById('insurance-reduction')?.value || 10)
+            deviceCount: parseInt(document.getElementById('device-count').value) || 500,
+            locations: parseInt(document.getElementById('locations').value) || 2,
+            yearsToProject: parseInt(document.getElementById('years-to-project').value) || 3,
+            portnoxBasePrice: parseFloat(document.getElementById('portnox-base-price').value) || 3,
+            portnoxDiscount: parseFloat(document.getElementById('portnox-discount').value) || 15,
+            fteCost: parseInt(document.getElementById('fte-cost').value) || 100000,
+            fteAllocation: parseFloat(document.getElementById('fte-allocation').value) || 25,
+            maintenancePercentage: parseFloat(document.getElementById('maintenance-percentage').value) || 18,
+            downtimeCost: parseInt(document.getElementById('downtime-cost').value) || 5000,
+            riskReduction: parseFloat(document.getElementById('risk-reduction').value) || 35,
+            insuranceReduction: parseFloat(document.getElementById('insurance-reduction').value) || 10
         };
         
         // Get network requirements
         const networkRequirements = {
-            cloudIntegration: document.getElementById('cloud-integration')?.checked || false,
-            legacyDevices: document.getElementById('legacy-devices')?.checked || false,
-            byodSupport: document.getElementById('byod-support')?.checked || true,
-            iotSupport: document.getElementById('iot-support')?.checked || false,
-            wirelessSupport: document.getElementById('wireless-support')?.checked || true,
-            remoteWork: document.getElementById('remote-work')?.checked || true
+            cloudIntegration: document.getElementById('cloud-integration').checked,
+            legacyDevices: document.getElementById('legacy-devices').checked,
+            byodSupport: document.getElementById('byod-support').checked,
+            iotSupport: document.getElementById('iot-support').checked,
+            wirelessSupport: document.getElementById('wireless-support').checked,
+            remoteWork: document.getElementById('remote-work').checked
         };
         
         // Get industry and compliance
-        const industry = document.getElementById('industry-select')?.value || '';
+        const industry = document.getElementById('industry-select').value;
         const compliance = {
-            pci: document.getElementById('compliance-pci')?.checked || false,
-            hipaa: document.getElementById('compliance-hipaa')?.checked || false,
-            nist: document.getElementById('compliance-nist')?.checked || false,
-            gdpr: document.getElementById('compliance-gdpr')?.checked || false,
-            iso: document.getElementById('compliance-iso')?.checked || false,
-            cmmc: document.getElementById('compliance-cmmc')?.checked || false,
-            ferpa: document.getElementById('compliance-ferpa')?.checked || false,
-            sox: document.getElementById('compliance-sox')?.checked || false
+            pci: document.getElementById('compliance-pci').checked,
+            hipaa: document.getElementById('compliance-hipaa').checked,
+            nist: document.getElementById('compliance-nist').checked,
+            gdpr: document.getElementById('compliance-gdpr').checked,
+            iso: document.getElementById('compliance-iso').checked,
+            cmmc: document.getElementById('compliance-cmmc').checked,
+            ferpa: document.getElementById('compliance-ferpa').checked,
+            sox: document.getElementById('compliance-sox').checked
         };
         
-        const riskProfile = document.getElementById('risk-profile')?.value || 'standard';
-        const cyberInsurance = document.getElementById('cybersecurity-insurance')?.value || 'standard';
+        const riskProfile = document.getElementById('risk-profile').value;
+        const cyberInsurance = document.getElementById('cybersecurity-insurance').value;
         
         // Calculate detailed TCO for each vendor
         const calculatedData = selectedVendors.map(vendor => {
@@ -77,14 +71,12 @@
         
         console.log("Updated calculation data:", calculatedData);
         
-        // Update UI with calculated data if requested
-        if (updateUI) {
-            updateUIWithCalculations(calculatedData, userInputs);
-            
-            // Refresh charts with new data
-            if (window.refreshAllCharts) {
-                window.refreshAllCharts(calculatedData);
-            }
+        // Update UI with calculated data
+        updateUIWithCalculations(calculatedData, userInputs);
+        
+        // Refresh charts with new data
+        if (window.refreshAllCharts) {
+            window.refreshAllCharts(calculatedData, userInputs);
         }
         
         return calculatedData;
@@ -113,7 +105,7 @@
         };
         
         // Different cost models based on vendor type
-        if (vendor.name && vendor.name === "Portnox Cloud") {
+        if (vendor.name === "Portnox Cloud") {
             // Cloud-native model
             const basePrice = inputs.portnoxBasePrice;
             const discount = inputs.portnoxDiscount / 100;
@@ -133,7 +125,7 @@
             costBreakdown.indirectCosts.downtime = inputs.downtimeCost * 1 * 0.2; // Assumes 80% less downtime
             costBreakdown.indirectCosts.security = 5000;
             costBreakdown.indirectCosts.compliance = 8000;
-        } else if (vendor.name && (vendor.name === "Cisco ISE" || vendor.name === "Aruba ClearPass" || vendor.name === "Forescout")) {
+        } else if (vendor.name === "Cisco ISE" || vendor.name === "Aruba ClearPass" || vendor.name === "Forescout") {
             // Enterprise on-premises model
             const deviceCount = inputs.deviceCount;
             const locations = inputs.locations;
@@ -156,7 +148,7 @@
             costBreakdown.indirectCosts.downtime = inputs.downtimeCost * 2.5; // More downtime for on-prem
             costBreakdown.indirectCosts.security = 15000;
             costBreakdown.indirectCosts.compliance = 25000;
-        } else if (vendor.name && vendor.name === "Microsoft NPS") {
+        } else if (vendor.name === "Microsoft NPS") {
             // Windows-based solution
             const deviceCount = inputs.deviceCount;
             const locations = inputs.locations;
@@ -176,7 +168,7 @@
             costBreakdown.indirectCosts.downtime = inputs.downtimeCost * 2;
             costBreakdown.indirectCosts.security = 20000; // Higher security risks
             costBreakdown.indirectCosts.compliance = 30000; // Higher compliance challenges
-        } else if (vendor.name && vendor.name === "No NAC") {
+        } else if (vendor.name === "No NAC") {
             // No NAC baseline - only includes risk costs
             costBreakdown.indirectCosts.security = inputs.deviceCount * 100; // Much higher security risk
             costBreakdown.indirectCosts.compliance = inputs.deviceCount * 50; // Much higher compliance risk
@@ -215,25 +207,12 @@
     
     // Calculate ROI metrics
     function calculateROI(vendor, inputs, costBreakdown) {
-        // Define default baseline
-        const baselineVendor = {
-            name: "No NAC",
-            threeYearTCO: 0
-        };
-        
-        // Try to find better baseline from vendorData
-        let betterBaseline = null;
-        if (window.vendorData) {
-            betterBaseline = window.vendorData.find(v => v.name === "No NAC");
-            if (!betterBaseline) {
-                betterBaseline = window.vendorData.find(v => v.name === "Cisco ISE");
-            }
-        }
-        
-        const actualBaseline = betterBaseline || baselineVendor;
+        // Get baseline costs (either No NAC or most expensive alternative)
+        const baselineVendor = window.vendorData.find(v => v.name === "No NAC") || 
+                              window.vendorData.find(v => v.name === "Cisco ISE");
         
         // If calculating ROI for the baseline, return zeros
-        if (vendor.name === actualBaseline.name) {
+        if (vendor.name === baselineVendor.name) {
             return {
                 threeYearROI: 0,
                 annualSavings: 0,
@@ -245,7 +224,7 @@
         
         // Calculate baseline costs using same parameters
         const baselineInputs = JSON.parse(JSON.stringify(inputs));
-        const baselineCosts = calculateCostBreakdown(actualBaseline, baselineInputs, {});
+        const baselineCosts = calculateCostBreakdown(baselineVendor, baselineInputs, {});
         
         // Calculate savings
         const initialInvestment = costBreakdown.initialTotal;
@@ -253,11 +232,11 @@
                              (costBreakdown.recurringAnnual + costBreakdown.indirectAnnual);
         
         // Calculate payback period (in months)
-        const paybackPeriod = annualSavings > 0 ? (initialInvestment / (annualSavings / 12)) : 0;
+        const paybackPeriod = initialInvestment / (annualSavings / 12);
         
         // Calculate three-year ROI
         const totalSavings = annualSavings * inputs.yearsToProject;
-        const threeYearROI = initialInvestment > 0 ? ((totalSavings - initialInvestment) / initialInvestment * 100) : 0;
+        const threeYearROI = (totalSavings - initialInvestment) / initialInvestment * 100;
         
         // Calculate NPV with 10% discount rate
         const discountRate = 0.1;
@@ -267,7 +246,7 @@
         }
         
         // Simple IRR approximation
-        const irr = initialInvestment > 0 ? ((annualSavings / initialInvestment) * 100) : 0;
+        const irr = (annualSavings / initialInvestment) * 100;
         
         return {
             threeYearROI: threeYearROI,
@@ -289,10 +268,6 @@
         };
         
         // Security posture score (0-100)
-        if (!vendor.name) {
-            return riskMetrics;
-        }
-        
         switch (vendor.name) {
             case "Portnox Cloud":
                 riskMetrics.securityPosture = 92;
@@ -397,10 +372,6 @@
             scalability: 0,
             integration: 0
         };
-        
-        if (!vendor.name) {
-            return features;
-        }
         
         // Fill in feature scores based on vendor
         switch (vendor.name) {
@@ -670,6 +641,8 @@
             }
         }
         
+        // Update technical metrics and other UI elements as needed
+        
         console.log("UI updated with calculation results");
     }
     
@@ -693,52 +666,20 @@
                     
                     // Get selected vendors
                     const selectedVendorCards = document.querySelectorAll('.vendor-card.selected');
-                    const selectedVendorIds = Array.from(selectedVendorCards).map(card => {
-                        return card.getAttribute('data-vendor');
-                    }).filter(Boolean);
-                    
-                    // Map IDs to full vendor objects
-                    const selectedVendors = selectedVendorIds.map(id => {
-                        if (typeof window.getVendorById === 'function') {
-                            return window.getVendorById(id);
-                        } else {
-                            return window.vendorData.find(v => v.id === id);
-                        }
+                    const selectedVendorNames = Array.from(selectedVendorCards).map(card => {
+                        const vendorId = card.getAttribute('data-vendor');
+                        return window.vendorData.find(v => v.id === vendorId);
                     }).filter(Boolean);
                     
                     // Add No NAC for comparison if not already selected
-                    let noNac = null;
-                    if (typeof window.getVendorById === 'function') {
-                        noNac = window.getVendorById('no-nac');
-                    } else if (window.vendorData) {
-                        noNac = window.vendorData.find(v => v.id === 'no-nac');
-                    }
-                    
-                    if (noNac && !selectedVendors.some(v => v.id === 'no-nac')) {
-                        selectedVendors.push(noNac);
-                    }
-                    
-                    // Ensure at least Portnox is always included
-                    if (!selectedVendors.some(v => v.id === 'portnox')) {
-                        let portnox = null;
-                        if (typeof window.getVendorById === 'function') {
-                            portnox = window.getVendorById('portnox');
-                        } else if (window.vendorData) {
-                            portnox = window.vendorData.find(v => v.id === 'portnox');
-                        }
-                        
-                        if (portnox) {
-                            selectedVendors.unshift(portnox);
-                        }
+                    const noNac = window.vendorData.find(v => v.name === "No NAC");
+                    if (noNac && !selectedVendorNames.some(v => v.name === "No NAC")) {
+                        selectedVendorNames.push(noNac);
                     }
                     
                     // Run calculations
                     setTimeout(() => {
-                        if (selectedVendors.length > 0) {
-                            window.updateCalculations(selectedVendors);
-                        } else {
-                            console.error("No vendors selected for calculation");
-                        }
+                        window.updateCalculations(selectedVendorNames);
                         
                         // Hide loading overlay
                         if (loadingOverlay) {
@@ -750,6 +691,35 @@
                     }, 1000);
                 });
             }
+        });
+        
+        // Add vendor selection event listeners
+        const vendorCards = document.querySelectorAll('.vendor-card');
+        vendorCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const vendorId = this.getAttribute('data-vendor');
+                
+                // Portnox should always be selected
+                if (vendorId === 'portnox') {
+                    return;
+                }
+                
+                // Toggle selection
+                this.classList.toggle('selected');
+                
+                // Run quick update if auto-calculate is enabled
+                if (window.autoCalculate) {
+                    // Get selected vendors
+                    const selectedVendorCards = document.querySelectorAll('.vendor-card.selected');
+                    const selectedVendorNames = Array.from(selectedVendorCards).map(card => {
+                        const vendorId = card.getAttribute('data-vendor');
+                        return window.vendorData.find(v => v.id === vendorId);
+                    }).filter(Boolean);
+                    
+                    // Quick update
+                    window.updateCalculations(selectedVendorNames);
+                }
+            });
         });
     });
     
