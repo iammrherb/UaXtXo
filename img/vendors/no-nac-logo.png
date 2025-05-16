@@ -1,1 +1,4 @@
-NO-NAC LOGO PLACEHOLDER
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40" viewBox="0 0 120 40">
+    <rect width="120" height="40" fill="#f44336" rx="4" ry="4"/>
+    <text x="60" y="25" font-family="Arial" font-size="16" fill="white" text-anchor="middle">NO NAC</text>
+</svg>

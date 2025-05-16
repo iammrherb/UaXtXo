@@ -1,51 +1,20 @@
-/* Logo fixes */
-.logo-section {
-    display: flex;
-    align-items: center;
-}
+/* Logo fixes for the Portnox TCO Analyzer */
 
 .company-logo {
-    height: 40px;
-    width: auto;
-    object-fit: contain;
-    margin-right: 15px;
+    height: 40px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    margin-right: 15px !important;
 }
 
-.app-title {
-    display: flex;
-    flex-direction: column;
+.vendor-logo img {
+    max-height: 30px !important;
+    max-width: 100% !important;
+    object-fit: contain !important;
 }
 
-.app-title h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #2c3e50;
-}
-
-.subtitle {
-    font-size: 0.9rem;
-    color: #7f8c8d;
-    margin: 0;
-}
-
-/* Fix missing vendor logos */
-.vendor-card .vendor-logo img {
-    max-height: 30px;
-    max-width: 100%;
-    object-fit: contain;
-}
-
-/* Fallback for missing logos */
-.vendor-logo-fallback {
-    width: 100%;
-    height: 100%;
-    background-color: #f0f0f0;
-    color: #333;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: bold;
-    border-radius: 4px;
+.logo img {
+    height: 40px !important;
+    width: auto !important;
+    object-fit: contain !important;
 }
