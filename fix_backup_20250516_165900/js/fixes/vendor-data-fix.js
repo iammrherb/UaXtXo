@@ -437,21 +437,6 @@
             foxpass: 60,
             extreme: 75,
             "no-nac": 0
-        },
-        // Remote access features
-        remoteAccess: {
-            portnox: 95,
-            cisco: 70,
-            aruba: 65,
-            forescout: 60,
-            fortinac: 65,
-            juniper: 70,
-            securew2: 80,
-            microsoft: 55,
-            arista: 60,
-            foxpass: 75,
-            extreme: 60,
-            "no-nac": 0
         }
     };
     
@@ -816,9 +801,6 @@
     function initializeVendorComparison() {
         // This would populate any vendor comparison UI elements
         
-        // Define primary vendors for comparison
-        const primaryVendors = ['portnox', 'cisco', 'aruba', 'forescout', 'extreme'];
-        
         // For example, update the vendor strengths table if it exists
         const vendorStrengthsTable = document.getElementById('vendor-strengths-table');
         if (vendorStrengthsTable) {
@@ -831,6 +813,7 @@
                 }
                 
                 // Add headers for primary vendors
+                const primaryVendors = ['portnox', 'cisco', 'aruba', 'forescout', 'extreme'];
                 primaryVendors.forEach(vendorId => {
                     const vendor = window.vendorData.find(v => v.id === vendorId);
                     if (vendor) {
@@ -912,11 +895,6 @@
             }
         }
     }
-    
-    // Map vendor IDs to full objects
-    window.getVendorById = function(vendorId) {
-        return window.vendorData.find(v => v.id === vendorId);
-    };
     
     // Initialize vendor data when DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {

@@ -7,29 +7,14 @@
     // List of fix scripts to load in order
     const fixScripts = [
         'js/fixes/chart-fix.js',
-        'js/fixes/vendor-data-fix.js',
         'js/fixes/calculations-fix.js',
+        'js/fixes/vendor-data-fix.js',
         'js/fixes/sensitivity-analysis.js',
         'js/fixes/selection-fix.js'
     ];
     
     // Counter to track loaded scripts
     let loadedScripts = 0;
-    
-    // Ensure window.vendorData exists before loading scripts
-    window.vendorData = window.vendorData || [];
-    
-    // First, try to load vendorData from existing source if available
-    if (typeof window.apiVendorData === 'object' && window.apiVendorData?.data?.vendors) {
-        const vendors = window.apiVendorData.data.vendors;
-        window.vendorData = Object.keys(vendors).map(key => ({
-            id: key,
-            name: vendors[key].name,
-            type: vendors[key].type,
-            threeYearTCO: vendors[key].threeYearTCO
-        }));
-        console.log("Loaded vendor data from API data:", window.vendorData.length, "vendors");
-    }
     
     // Load scripts in sequence
     function loadFixScripts() {
@@ -74,24 +59,21 @@
     function onDOMReady() {
         console.log("🚀 DOM ready, applying remaining fixes");
         
-        // First, destroy any existing charts to prevent conflicts
-        if (typeof window.destroyAllCharts === 'function') {
-            window.destroyAllCharts();
+        // Fix vendor selection
+        if (typeof window.fixVendorSelection === 'function') {
+            window.fixVendorSelection();
         }
         
         // Select default vendors
         selectDefaultVendors();
         
+        // Initialize charts
+        initializeCharts();
+        
         // Run initial calculations
-        setTimeout(() => {
-            runInitialCalculations();
-            
-            // Initialize charts after calculations
-            setTimeout(() => {
-                initializeCharts();
-                console.log("🚀 Application initialization complete");
-            }, 500);
-        }, 500);
+        runInitialCalculations();
+        
+        console.log("🚀 Application initialization complete");
     }
     
     // Function to select default vendors
@@ -99,12 +81,6 @@
         console.log("Selecting default vendors");
         
         // Portnox should already be selected
-        const portnoxCard = document.querySelector('.vendor-card[data-vendor="portnox"]');
-        if (portnoxCard && !portnoxCard.classList.contains('selected')) {
-            portnoxCard.classList.add('selected');
-            portnoxCard.classList.add('fixed-selected');
-        }
-        
         // Also select Cisco ISE by default for comparison
         const ciscoCard = document.querySelector('.vendor-card[data-vendor="cisco"]');
         if (ciscoCard && !ciscoCard.classList.contains('selected')) {
@@ -118,25 +94,14 @@
         
         // Get selected vendors
         const selectedVendorCards = document.querySelectorAll('.vendor-card.selected');
-        const selectedVendorIds = Array.from(selectedVendorCards).map(card => {
-            return card.getAttribute('data-vendor');
+        const selectedVendors = Array.from(selectedVendorCards).map(card => {
+            const vendorId = card.getAttribute('data-vendor');
+            return window.vendorData.find(v => v.id === vendorId);
         }).filter(Boolean);
-        
-        // Map IDs to full vendor objects
-        const selectedVendors = selectedVendorIds.map(id => {
-            if (typeof window.getVendorById === 'function') {
-                return window.getVendorById(id);
-            } else if (window.vendorData) {
-                return window.vendorData.find(v => v.id === id);
-            }
-            return null;
-        }).filter(Boolean);
-        
-        console.log("Selected vendors for charts:", selectedVendors);
         
         // Update all charts
-        if (typeof window.refreshAllCharts === 'function' && selectedVendors.length > 0) {
-            window.refreshAllCharts(selectedVendors);
+        if (typeof window.updateAllCharts === 'function') {
+            window.updateAllCharts(selectedVendors);
         }
     }
     
@@ -146,24 +111,13 @@
         
         // Get selected vendors
         const selectedVendorCards = document.querySelectorAll('.vendor-card.selected');
-        const selectedVendorIds = Array.from(selectedVendorCards).map(card => {
-            return card.getAttribute('data-vendor');
+        const selectedVendors = Array.from(selectedVendorCards).map(card => {
+            const vendorId = card.getAttribute('data-vendor');
+            return window.vendorData.find(v => v.id === vendorId);
         }).filter(Boolean);
-        
-        // Map IDs to full vendor objects
-        const selectedVendors = selectedVendorIds.map(id => {
-            if (typeof window.getVendorById === 'function') {
-                return window.getVendorById(id);
-            } else if (window.vendorData) {
-                return window.vendorData.find(v => v.id === id);
-            }
-            return null;
-        }).filter(Boolean);
-        
-        console.log("Selected vendors for calculations:", selectedVendors);
         
         // Run calculations
-        if (typeof window.updateCalculations === 'function' && selectedVendors.length > 0) {
+        if (typeof window.updateCalculations === 'function') {
             window.updateCalculations(selectedVendors);
         }
     }
