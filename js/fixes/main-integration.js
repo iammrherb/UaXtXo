@@ -4,7 +4,7 @@
     
     // Load required modules in the correct order
     const modules = [
-        'js/fixes/vendor-data.js',
+        'js/fixes/vendor-data-fix.js',
         'js/fixes/chart-enhancements.js',
         'js/fixes/sidebar-fix.js',
         'js/fixes/report-generator-enhanced.js',
