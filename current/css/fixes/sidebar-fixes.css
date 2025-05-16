@@ -1,0 +1,107 @@
+/* Sidebar toggle behavior */
+.sidebar {
+  transition: width 0.3s ease, transform 0.3s ease;
+  position: relative;
+  width: 350px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.sidebar-collapsed {
+  width: 0;
+  transform: translateX(-100%);
+}
+
+.content-area {
+  transition: padding-left 0.3s ease, width 0.3s ease;
+  flex: 1;
+}
+
+.content-expanded {
+  padding-left: 0;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 50%;
+  right: -15px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+/* Fix for vendor cards to ensure they're not cut off */
+.vendor-grid {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Better scrollbars */
+.vendor-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.vendor-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.vendor-grid::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.vendor-grid::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Image loading visual indicators */
+img.loaded-image {
+  /* Optional: add a subtle effect for successfully loaded images */
+  transition: opacity 0.3s ease;
+}
+
+img.failed-image {
+  border: 2px solid rgba(255, 0, 0, 0.3);
+  background-color: rgba(255, 0, 0, 0.05);
+  position: relative;
+}
+
+/* Responsive fixes */
+@media (max-width: 768px) {
+  .sidebar {
+    position: absolute;
+    z-index: 100;
+    background: white;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    height: 100%;
+  }
+  
+  .sidebar-collapsed {
+    transform: translateX(-100%);
+  }
+  
+  .content-area {
+    width: 100%;
+  }
+  
+  .vendor-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
+  }
+}
