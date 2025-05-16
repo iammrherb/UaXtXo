@@ -14,6 +14,7 @@
     <!-- Core CSS -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/enhanced-ui.css">
+    <link rel="stylesheet" href="css/emergency-fixes.css">
     <link rel="stylesheet" href="css/particle-background.css">
     
     <link rel="icon" type="image/png" href="img/favicon.png">
@@ -21,6 +22,9 @@
     <!-- Pre-load Chart.js and plugins to fix loading issues -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <link rel="stylesheet" href="css/logo-fix.css">
+    <link rel="stylesheet" href="css/fixes/logo-fixes.css">
+    <link rel="stylesheet" href="css/fixes/sidebar-fixes.css">
 </head>
 <body>
     <!-- Particle Background -->
@@ -32,28 +36,38 @@
         <header class="app-header">
             <div class="header-content">
                 <div class="logo-section">
-                    <img src="img/portnox-logo.png" alt="Portnox Logo" class="company-logo">
+                    <img src="/img/vendors/portnox-logo.png" alt="Portnox Logo" class="company-logo">
                     <div class="app-title">
                         <h1>Zero Trust Total Cost Analyzer</h1>
                         <p class="subtitle">Multi-Vendor NAC Solution Comparison Platform</p>
                     </div>
                 </div>
                 <div class="header-actions">
-                    <div class="view-selector">
-                        <select id="stakeholder-view" class="form-select form-select-sm">
-                            <option value="executive">Executive View</option>
-                            <option value="financial">Financial View</option>
-                            <option value="security">Security & Compliance View</option>
-                            <option value="technical">Technical View</option>
-                        </select>
+                    <div class="stakeholder-selector">
+                        <div class="stakeholder-tabs">
+                            <button class="stakeholder-tab active" data-view="executive">
+                                <i class="fas fa-chart-pie"></i> Executive
+                            </button>
+                            <button class="stakeholder-tab" data-view="financial">
+                                <i class="fas fa-coins"></i> Financial
+                            </button>
+                            <button class="stakeholder-tab" data-view="security">
+                                <i class="fas fa-shield-alt"></i> Security
+                            </button>
+                            <button class="stakeholder-tab" data-view="technical">
+                                <i class="fas fa-cogs"></i> Technical
+                            </button>
+                        </div>
                     </div>
+                    <button id="calculate-btn-header" class="btn btn-primary" title="Calculate TCO & ROI">
+                        <i class="fas fa-calculator"></i> Calculate
+                    </button>
                     <button id="export-pdf" class="btn btn-outline btn-icon" title="Export Report">
                         <i class="fas fa-file-pdf"></i>
                         <span>Export</span>
                     </button>
                     <button id="help-btn" class="btn btn-outline btn-icon" title="Help">
                         <i class="fas fa-question-circle"></i>
-                        <span>Help</span>
                     </button>
                     <button id="dark-mode-toggle" class="btn btn-outline btn-icon" title="Toggle Dark Mode">
                         <i class="fas fa-moon"></i>
@@ -82,7 +96,7 @@
                             <div class="vendor-grid">
                                 <div class="vendor-card selected" data-vendor="portnox">
                                     <div class="vendor-logo">
-                                        <img src="img/vendors/portnox-logo.png" alt="Portnox">
+                                        <img src="/img/vendors/portnox-logo.png" alt="Portnox">
                                     </div>
                                     <div class="vendor-info">
                                         <h3>Portnox Cloud</h3>
@@ -156,7 +170,7 @@
                                     </div>
                                 </div>
                                 
-                                <div class="vendor-card" data-vendor="nps">
+                                <div class="vendor-card" data-vendor="microsoft">
                                     <div class="vendor-logo">
                                         <img src="img/vendors/microsoft-logo.png" alt="Microsoft NPS">
                                     </div>
@@ -186,9 +200,9 @@
                                     </div>
                                 </div>
                                 
-                                <div class="vendor-card" data-vendor="noNac">
+                                <div class="vendor-card" data-vendor="no-nac">
                                     <div class="vendor-logo">
-                                        <i class="fas fa-shield-virus fa-3x danger-icon"></i>
+                                        <img src="img/vendors/no-nac-icon.png" alt="No NAC">
                                     </div>
                                     <div class="vendor-info">
                                         <h3>No NAC</h3>
@@ -449,7 +463,7 @@
             <div class="content-area" id="content-area">
                 <div class="content-wrapper">
                     <!-- Main Stakeholder Tabs -->
-                    <div class="stakeholder-tabs">
+                    <div class="stakeholder-tabs mobile-tabs">
                         <button class="stakeholder-tab active" data-view="executive">
                             <i class="fas fa-chart-pie"></i> Executive
                         </button>
@@ -457,7 +471,7 @@
                             <i class="fas fa-coins"></i> Financial
                         </button>
                         <button class="stakeholder-tab" data-view="security">
-                            <i class="fas fa-shield-alt"></i> Security & Compliance
+                            <i class="fas fa-shield-alt"></i> Security
                         </button>
                         <button class="stakeholder-tab" data-view="technical">
                             <i class="fas fa-cogs"></i> Technical
@@ -1037,6 +1051,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Add other financial panels like TCO Breakdown, ROI Analysis, etc. -->
                     </div>
                     
                     <!-- Security & Compliance View -->
@@ -1098,6 +1114,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Add other security panels like Compliance Coverage, Risk Assessment, etc. -->
                     </div>
                     
                     <!-- Technical View -->
@@ -1159,6 +1177,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Add other technical panels like Feature Comparison, Architecture, etc. -->
                     </div>
                 </div>
             </div>
@@ -1244,5 +1264,11 @@
     
     <!-- Core JavaScript -->
     <script src="js/portnox-tco-analyzer.js"></script>
+    <script src="js/fix-sidebar.js"></script>
+    <script src="js/chart-initializer.js"></script>
+    <script src="js/report-generator.js"></script>
+    <script src="js/logo-debug.js"></script>
+    <script src="js/fixes/sidebar-fixes.js"></script>
+    <script src="js/fixes/debug-utilities.js"></script>
 </body>
 </html>
