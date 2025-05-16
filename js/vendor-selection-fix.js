@@ -1,15 +1,3 @@
-#!/bin/bash
-
-# Direct Vendor Selection Fix for Portnox TCO Analyzer
-echo "========================================================"
-echo "🎯 Portnox TCO Analyzer Vendor Selection Direct Fix"
-echo "========================================================"
-
-# Define application directory
-APP_DIR="."
-
-# Create vendor selection fix script
-cat > "$APP_DIR/js/vendor-selection-fix.js" << 'EOL'
 // Direct Vendor Selection Fix
 // This script directly hooks into vendor selection and chart generation
 
@@ -848,54 +836,3 @@ cat > "$APP_DIR/js/vendor-selection-fix.js" << 'EOL'
         }, 4000);
     }
 })();
-EOL
-
-# Create Extreme NAC logo image
-echo "🖼️ Creating Extreme NAC logo..."
-mkdir -p "$APP_DIR/img/vendors"
-
-# Create a simple PNG file for Extreme NAC
-cat > "$APP_DIR/img/vendors/extreme-logo.png" << 'EOL'
-<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40" viewBox="0 0 120 40">
-<rect width="120" height="40" fill="#D70000" rx="4" ry="4"/>
-<text x="60" y="25" font-family="Arial" font-size="16" fill="white" text-anchor="middle">EXTREME</text>
-</svg>
-EOL
-
-echo "🖼️ Creating No NAC icon..."
-cat > "$APP_DIR/img/vendors/no-nac-icon.png" << 'EOL'
-<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40" viewBox="0 0 120 40">
-<rect width="120" height="40" fill="#f44336" rx="4" ry="4"/>
-<text x="60" y="25" font-family="Arial" font-size="16" fill="white" text-anchor="middle">NO NAC</text>
-</svg>
-EOL
-
-# Add the vendor selection fix script to index.html
-echo "📄 Adding vendor selection fix to index.html..."
-
-# Check if the script reference already exists
-if grep -q "vendor-selection-fix.js" "$APP_DIR/index.html"; then
-    echo "Vendor selection fix script reference already exists in index.html"
-else
-    # Add the script reference right after the opening body tag
-    sed -i 's|<body>|<body>\n    <script src="js/vendor-selection-fix.js"></script>|' "$APP_DIR/index.html"
-fi
-
-echo "========================================================"
-echo "✅ Portnox TCO Analyzer Vendor Selection Direct Fix Complete!"
-echo "========================================================"
-echo 
-echo "This highly focused fix directly targets the vendor selection issues:"
-echo 
-echo "1. Created a completely independent vendor selection system"
-echo "2. Recreated the vendor grid with proper styling and layout"
-echo "3. Generated proper logo images for missing vendors"
-echo "4. Directly hooked into Chart.js to ensure charts update with vendor selection"
-echo "5. Fixed the calculate button to trigger proper updates"
-echo 
-echo "The script runs as early as possible and takes complete control"
-echo "of the vendor selection functionality, bypassing any conflicts"
-echo "from other scripts."
-echo 
-echo "Refresh your browser to see the fixed vendor selection functionality!"
-echo "========================================================"
