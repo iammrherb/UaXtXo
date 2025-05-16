@@ -1,4 +1,6 @@
-// Heat Map Fix Script
+/**
+ * Heat Map Fix Script
+ */
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Heatmap fix loaded');
     
