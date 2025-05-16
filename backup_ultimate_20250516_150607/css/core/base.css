@@ -1,0 +1,59 @@
+/* Base styles and variables */
+:root {
+/* Reset and base styles */
+* {
+body {
+/* Layout */
+.app-container {
+/* Cards and Input Containers */
+/* Buttons */
+/* Tabs */
+/* Sub-tabs */
+/* Charts and Result Cards */
+/* Tables */
+/* Comparison Highlight Card */
+/* Modal */
+.modal-body {
+/* Responsive Adjustments */
+@media (max-width: 1100px) {
+@media (max-width: 768px) {
+@media (max-width: 480px) {
+/* Enhanced styles for Total Cost Analyzer */
+/* Notification system */
+/* Loading indicators */
+/* Progress bar in loading indicator */
+/* Global loading indicator */
+/* Form validation */
+/* Disabled form elements */
+/* Table enhancements */
+/* Tooltip */
+/* Keyboard focus styles */
+/* Accessibility enhancements */
+/* Skip to content link for keyboard users */
+/* Updated responsive design */
+@media (max-width: 1100px) {
+@media (max-width: 768px) {
+@media (max-width: 480px) {
+/* Print styles */
+@media print {
+/* Error message styling */
+/* Success message */
+/* Debug info styling */
+/* Enhanced vendor cards */
+/* Loading indicator */
+/* Enhanced mobile responsiveness */
+@media (max-width: 768px) {
+@media (max-width: 480px) {
+/* Enhanced styles for NAC Total Cost Analyzer */
+/* Feature comparison chart container */
+/* Migration strategy phases */
+/* Phase rows in implementation table */
+/* Cloud vs On-Premises comparison table */
+@media (max-width: 768px) {
+/* Enhanced vendor card styling */
+/* Vendor card in dark mode */
+/* Responsive adjustments */
+@media (max-width: 768px) {
+@media (max-width: 480px) {
+/* Options grid for custom cost configuration */
+/* Custom cost section styling */
