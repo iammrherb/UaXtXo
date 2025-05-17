@@ -1,0 +1,204 @@
+/**
+ * Report Styles
+ */
+
+/* PDF Export Button */
+.export-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.export-btn:hover {
+    background-color: var(--primary-color-dark);
+}
+
+.export-btn i {
+    margin-right: 0.5rem;
+}
+
+/* Report Preview */
+.report-preview {
+    width: 100%;
+    height: 500px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+/* Report Options */
+.report-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.report-option {
+    flex: 1;
+    min-width: 200px;
+    padding: 1rem;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.report-option:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.report-option.selected {
+    border: 2px solid var(--primary-color);
+}
+
+.report-option h4 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.report-option p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.report-option-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    background-color: var(--primary-color-light);
+    border-radius: 50%;
+    margin-bottom: 1rem;
+}
+
+.report-option-icon i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+/* Export Progress */
+.export-progress {
+    margin-top: 1.5rem;
+    display: none;
+}
+
+.export-progress.active {
+    display: block;
+}
+
+.progress-bar-container {
+    height: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 0.25rem;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: var(--primary-color);
+    width: 0;
+    transition: width 0.3s ease-out;
+}
+
+.progress-message {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* Dark Mode Adjustments */
+body.dark-mode .report-preview {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .progress-bar-container {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Loading Animation for Export */
+.export-loading {
+    display: inline-block;
+    position: relative;
+    width: 16px;
+    height: 16px;
+    margin-right: 0.5rem;
+}
+
+.export-loading:after {
+    content: " ";
+    display: block;
+    width: 12px;
+    height: 12px;
+    margin: 2px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    border-color: #fff transparent #fff transparent;
+    animation: export-loading-animation 1.2s linear infinite;
+}
+
+@keyframes export-loading-animation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* PDF Thumbnail Preview */
+.pdf-thumbnail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.pdf-thumbnail-img {
+    width: 210px;
+    height: 297px;
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+.pdf-thumbnail-img:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.pdf-thumbnail-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+.pdf-thumbnail-label {
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
