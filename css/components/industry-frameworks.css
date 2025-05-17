@@ -1,0 +1,152 @@
+/**
+ * Industry Frameworks Component Styles
+ */
+
+/* Compliance Section Styles */
+.compliance-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.requirements-container {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.requirements-list h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.requirements-list ul {
+    padding-left: 1.5rem;
+    margin-bottom: 0;
+}
+
+.requirements-list li {
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.requirements-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* Consequences Grid */
+.consequences-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.consequence-card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.consequence-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.consequence-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.consequence-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background-color: var(--primary-color-light);
+    margin-right: 1rem;
+}
+
+.consequence-icon i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.consequence-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.consequence-card p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Vendor Suitability Bar */
+.vendor-cell {
+    display: flex;
+    align-items: center;
+}
+
+.vendor-mini-logo {
+    width: 24px;
+    height: 24px;
+    margin-right: 0.75rem;
+    object-fit: contain;
+}
+
+.suitability-bar {
+    position: relative;
+    width: 100%;
+    height: 20px;
+    background-color: rgba(0,0,0,0.05);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.suitability-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background-color: var(--primary-color);
+    border-radius: 10px;
+}
+
+.suitability-bar span {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 0 2px rgba(0,0,0,0.5);
+    line-height: 20px;
+}
+
+/* Table Styles */
+.compliance-vendor-table th {
+    position: sticky;
+    top: 0;
+    background-color: var(--header-bg);
+    z-index: 10;
+}
+
+/* Dark Mode Adjustments */
+body.dark-mode .suitability-bar {
+    background-color: rgba(255,255,255,0.1);
+}
+
+body.dark-mode .consequence-icon {
+    background-color: rgba(255,255,255,0.1);
+}

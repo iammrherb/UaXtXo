@@ -1,0 +1,328 @@
+/**
+ * Compliance Mapping Styles
+ */
+
+/* Framework Requirements Mapping */
+.requirements-mapping {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.framework-info {
+    padding: 1rem;
+    background-color: var(--primary-color-light);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.framework-header h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.framework-header p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.requirements-accordion {
+    overflow: hidden;
+}
+
+.requirement-section {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.requirement-section:last-child {
+    border-bottom: none;
+}
+
+.requirement-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.requirement-header:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.requirement-title {
+    flex: 1;
+}
+
+.requirement-title h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.requirement-coverage {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    margin-right: 1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: white;
+}
+
+.requirement-toggle {
+    margin-left: auto;
+}
+
+.requirement-toggle i {
+    transition: transform 0.3s ease;
+}
+
+.requirement-controls {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease;
+}
+
+.requirement-section.expanded .requirement-controls {
+    max-height: 1000px;
+}
+
+.requirement-section.expanded .requirement-toggle i {
+    transform: rotate(180deg);
+}
+
+.controls-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.controls-table th {
+    background-color: rgba(0, 0, 0, 0.03);
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.controls-table td {
+    padding: 0.75rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    font-size: 0.9rem;
+}
+
+.controls-table tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.01);
+}
+
+.coverage-cell {
+    font-weight: 600;
+    text-align: center;
+    color: white;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Control Status Grid */
+.control-status-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.control-status-category {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+}
+
+.status-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+}
+
+.status-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+}
+
+.status-icon i {
+    font-size: 1rem;
+    color: white;
+}
+
+.status-header h4 {
+    flex: 1;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.status-count {
+    background-color: white;
+    color: var(--text-color);
+    border-radius: 1rem;
+    padding: 0.25rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.status-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.02);
+    min-height: 6rem;
+}
+
+.control-item {
+    background-color: var(--card-bg);
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: help;
+}
+
+.no-controls {
+    width: 100%;
+    text-align: center;
+    font-style: italic;
+    color: var(--text-muted);
+    padding: 1rem 0;
+}
+
+/* Status-specific styles */
+.status-implemented {
+    background-color: rgba(0, 200, 83, 0.8);
+    color: white;
+}
+
+.status-configurable {
+    background-color: rgba(0, 123, 255, 0.8);
+    color: white;
+}
+
+.status-partial {
+    background-color: rgba(255, 193, 7, 0.8);
+    color: white;
+}
+
+.status-not-supported {
+    background-color: rgba(255, 99, 132, 0.8);
+    color: white;
+}
+
+/* Control Status Legend */
+.control-status-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+}
+
+.legend-title {
+    font-weight: 600;
+    margin-right: 0.5rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-right: 1rem;
+}
+
+.legend-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.legend-icon i {
+    font-size: 0.75rem;
+    color: white;
+}
+
+/* Loading Message */
+.loading-message {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Industry-specific option */
+.industry-specific {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Dark Mode Adjustments */
+body.dark-mode .requirement-header:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .controls-table th {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .controls-table td {
+    border-top-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .controls-table tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+body.dark-mode .status-controls {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+body.dark-mode .status-count {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .requirement-header {
+        flex-wrap: wrap;
+    }
+    
+    .requirement-title {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .requirement-coverage {
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .control-status-wrapper {
+        grid-template-columns: 1fr;
+    }
+}
