@@ -1,707 +1,859 @@
 /**
- * Industry & Compliance Framework Component
- * Replaces the sidebar section with a comprehensive tab-based approach
+ * Industry & Compliance Framework Module
+ * Enhances the industry and compliance integration
  */
-
-class IndustryFrameworks {
-    constructor() {
-        this.industryData = window.INDUSTRY_COMPLIANCE || {};
-        this.riskProfiles = window.RISK_PROFILES || {};
-        this.insuranceOptions = window.INSURANCE_OPTIONS || {};
-        this.selectedIndustry = '';
-        this.selectedCompliance = [];
-        this.selectedRiskProfile = 'standard';
-        this.selectedInsurance = 'standard';
-        
-        // Initialize after DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', () => this.initialize());
-    }
+(function() {
+    console.log("🏢 Initializing enhanced industry frameworks module...");
     
-    initialize() {
-        // Find the existing industry-config card in the sidebar
-        const sidebarCard = document.getElementById('industry-config');
-        if (!sidebarCard) {
-            console.error('Could not find industry-config card in sidebar');
+    // Initialize industry selector
+    function initializeIndustrySelector() {
+        console.log("Initializing industry selector...");
+        
+        const industrySelect = document.getElementById('industry-select');
+        if (!industrySelect) {
+            console.error("Industry select element not found");
             return;
         }
         
-        // Store the current values if already set
-        this.saveCurrentValues();
+        // Add event listener for industry changes
+        industrySelect.addEventListener('change', function() {
+            const selectedIndustry = this.value;
+            console.log(`Industry changed to: ${selectedIndustry}`);
+            
+            // Update compliance checkboxes based on industry
+            updateComplianceCheckboxes(selectedIndustry);
+            
+            // Update risk profile based on industry
+            updateRiskProfile(selectedIndustry);
+            
+            // Update industry-specific content
+            updateIndustryContent(selectedIndustry);
+            
+            // Update charts
+            updateIndustryCharts(selectedIndustry);
+        });
         
-        // Get a reference to the container for the compliance panel
+        // Initial update
+        const selectedIndustry = industrySelect.value;
+        if (selectedIndustry) {
+            updateComplianceCheckboxes(selectedIndustry);
+            updateRiskProfile(selectedIndustry);
+            updateIndustryContent(selectedIndustry);
+        }
+        
+        console.log("Industry selector initialized");
+    }
+    
+    // Update compliance checkboxes based on selected industry
+    function updateComplianceCheckboxes(industry) {
+        console.log(`Updating compliance checkboxes for industry: ${industry}`);
+        
+        // Get industry data
+        const industryData = window.industryComplianceData && 
+                           window.industryComplianceData[industry] ?
+                           window.industryComplianceData[industry] : null;
+        
+        if (!industryData) {
+            console.warn(`No industry data found for ${industry}`);
+            return;
+        }
+        
+        // Reset all checkboxes
+        const complianceCheckboxes = document.querySelectorAll('input[id^="compliance-"]');
+        complianceCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
+        // Check primary compliance frameworks
+        if (industryData.primaryCompliance) {
+            industryData.primaryCompliance.forEach(framework => {
+                const checkbox = document.getElementById(`compliance-${framework}`);
+                if (checkbox) checkbox.checked = true;
+            });
+        }
+        
+        // Check secondary compliance frameworks
+        if (industryData.secondaryCompliance) {
+            industryData.secondaryCompliance.forEach(framework => {
+                const checkbox = document.getElementById(`compliance-${framework}`);
+                if (checkbox) checkbox.checked = true;
+            });
+        }
+    }
+    
+    // Update risk profile based on selected industry
+    function updateRiskProfile(industry) {
+        console.log(`Updating risk profile for industry: ${industry}`);
+        
+        // Get industry data
+        const industryData = window.industryComplianceData && 
+                           window.industryComplianceData[industry] ?
+                           window.industryComplianceData[industry] : null;
+        
+        if (!industryData) {
+            console.warn(`No industry data found for ${industry}`);
+            return;
+        }
+        
+        // Update risk profile select
+        const riskProfileSelect = document.getElementById('risk-profile');
+        if (riskProfileSelect && industryData.riskProfile) {
+            const options = Array.from(riskProfileSelect.options);
+            const matchingOption = options.find(option => 
+                option.value === industryData.riskProfile ||
+                option.value.toLowerCase().includes(industryData.riskProfile.toLowerCase())
+            );
+            
+            if (matchingOption) {
+                riskProfileSelect.value = matchingOption.value;
+            }
+        }
+    }
+    
+    // Update industry-specific content
+    function updateIndustryContent(industry) {
+        console.log(`Updating industry content for: ${industry}`);
+        
+        // Get industry data
+        const industryData = window.industryComplianceData && 
+                           window.industryComplianceData[industry] ?
+                           window.industryComplianceData[industry] : null;
+        
+        if (!industryData) {
+            console.warn(`No industry data found for ${industry}`);
+            return;
+        }
+        
+        // Check if industry detail panel exists, if not create it
+        let industryDetailPanel = document.getElementById('industry-detail-panel');
+        
+        if (!industryDetailPanel) {
+            console.log("Creating industry detail panel...");
+            createIndustryDetailPanel();
+            industryDetailPanel = document.getElementById('industry-detail-panel');
+            
+            if (!industryDetailPanel) {
+                console.error("Failed to create industry detail panel");
+                return;
+            }
+        }
+        
+        // Update panel content
+        updateIndustryDetailPanel(industryData);
+    }
+    
+    // Create industry detail panel
+    function createIndustryDetailPanel() {
+        // Find security view panels container
         const securityView = document.querySelector('.view-panel[data-view="security"]');
         if (!securityView) {
-            console.error('Could not find security view panel');
+            console.error("Security view panel not found");
             return;
         }
         
-        // Create new industry & compliance tab panel
-        this.createCompliancePanel(securityView);
+        // Find security-compliance panel if it exists
+        let compliancePanel = securityView.querySelector('#security-compliance');
         
-        // Update the sidebar card to be more basic (since full functionality is in the panel)
-        this.updateSidebarCard(sidebarCard);
-        
-        // Add event listeners for the new panel and sidebar
-        this.attachEventListeners();
-    }
-    
-    saveCurrentValues() {
-        // Save current industry selection if any
-        const industrySelect = document.getElementById('industry-select');
-        if (industrySelect && industrySelect.value) {
-            this.selectedIndustry = industrySelect.value;
-        }
-        
-        // Save compliance checkboxes
-        const complianceChecks = document.querySelectorAll('.compliance-item input[type="checkbox"]:checked');
-        this.selectedCompliance = Array.from(complianceChecks).map(check => check.id.replace('compliance-', ''));
-        
-        // Save risk profile
-        const riskProfile = document.getElementById('risk-profile');
-        if (riskProfile && riskProfile.value) {
-            this.selectedRiskProfile = riskProfile.value;
-        }
-        
-        // Save insurance selection
-        const insurance = document.getElementById('cybersecurity-insurance');
-        if (insurance && insurance.value) {
-            this.selectedInsurance = insurance.value;
-        }
-    }
-    
-    createCompliancePanel(container) {
-        // Check if compliance panel tab already exists
-        let complianceTab = container.querySelector('.results-tab[data-panel="security-compliance"]');
-        if (!complianceTab) {
-            console.error('Could not find compliance tab in security view');
-            return;
-        }
-        
-        // Create compliance panel content if it doesn't exist
-        let compliancePanel = document.getElementById('security-compliance');
         if (!compliancePanel) {
+            console.log("Creating compliance panel...");
+            
+            // Create compliance panel
             compliancePanel = document.createElement('div');
             compliancePanel.id = 'security-compliance';
             compliancePanel.className = 'results-panel';
-            container.appendChild(compliancePanel);
+            
+            compliancePanel.innerHTML = `
+                <div class="panel-header">
+                    <h2>Compliance Coverage</h2>
+                    <p class="subtitle">Industry-specific compliance framework analysis</p>
+                </div>
+            `;
+            
+            // Add to security view
+            securityView.appendChild(compliancePanel);
         }
         
-        // Create comprehensive compliance content
-        compliancePanel.innerHTML = `
-            <div class="panel-header">
-                <h2>Compliance Requirements</h2>
-                <p class="subtitle">Industry-specific frameworks and regulatory requirements</p>
-            </div>
-            
-            <div class="compliance-controls">
-                <div class="form-group">
-                    <label for="panel-industry-select" class="form-label">Industry</label>
-                    <select id="panel-industry-select" class="form-select">
-                        <option value="">Choose an industry...</option>
-                        ${Object.keys(this.industryData).map(key => `
-                            <option value="${key}" ${this.selectedIndustry === key ? 'selected' : ''}>
-                                ${this.industryData[key].name}
-                            </option>
-                        `).join('')}
-                    </select>
+        // Create industry detail panel
+        const industryDetailPanel = document.createElement('div');
+        industryDetailPanel.id = 'industry-detail-panel';
+        industryDetailPanel.className = 'detail-panel';
+        
+        // Add to compliance panel
+        compliancePanel.appendChild(industryDetailPanel);
+        
+        // Create panel structure
+        industryDetailPanel.innerHTML = `
+            <div class="industry-overview">
+                <div class="industry-header">
+                    <h3>Industry Profile: <span id="industry-name">Financial Services</span></h3>
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label">Primary Compliance Frameworks</label>
-                    <div id="primary-frameworks" class="compliance-grid">
-                        <!-- Will be populated by JavaScript -->
+                <div class="industry-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
+                        <div class="stat-content">
+                            <h4>Regulatory Compliance</h4>
+                            <div id="industry-compliance">PCI DSS, SOX, GDPR</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="stat-content">
+                            <h4>Risk Profile</h4>
+                            <div id="industry-risk-profile">Very High</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+                        <div class="stat-content">
+                            <h4>Avg. Breach Cost</h4>
+                            <div id="industry-breach-cost">$5,850,000</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-content">
+                            <h4>Portnox Compliance Score</h4>
+                            <div id="industry-portnox-score">92%</div>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label">Additional Compliance Frameworks</label>
-                    <div id="additional-frameworks" class="compliance-grid">
-                        <!-- Will be populated by JavaScript -->
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="panel-risk-profile" class="form-label">Risk Profile</label>
-                    <select id="panel-risk-profile" class="form-select">
-                        ${Object.keys(this.riskProfiles).map(key => `
-                            <option value="${key}" ${this.selectedRiskProfile === key ? 'selected' : ''}>
-                                ${this.riskProfiles[key].name}
-                            </option>
-                        `).join('')}
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="panel-cybersecurity-insurance" class="form-label">Cybersecurity Insurance</label>
-                    <select id="panel-cybersecurity-insurance" class="form-select">
-                        ${Object.keys(this.insuranceOptions).map(key => `
-                            <option value="${key}" ${this.selectedInsurance === key ? 'selected' : ''}>
-                                ${this.insuranceOptions[key].name}
-                            </option>
-                        `).join('')}
-                    </select>
+                <div class="industry-data-points">
+                    <h4>Industry Security Insights</h4>
+                    <ul id="industry-insights">
+                        <li>Financial services face 300 times more cyber attacks than other industries</li>
+                        <li>Average cost of cybercrime for financial sector increased 40% over past 3 years</li>
+                        <li>Financial firms take 233 days on average to identify and contain a breach</li>
+                    </ul>
                 </div>
             </div>
             
-            <div class="dashboard-grid grid-4">
-                <div class="dashboard-card highlight-card">
-                    <h3>Compliance Level</h3>
-                    <div class="metric-value highlight-value" id="compliance-level">95%</div>
-                    <div class="metric-label">Framework coverage</div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <h3>Regulatory Status</h3>
-                    <div class="metric-value" id="regulatory-status">Compliant</div>
-                    <div class="metric-label">With selected frameworks</div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <h3>Risk Mitigation</h3>
-                    <div class="metric-value" id="risk-mitigation">Significant</div>
-                    <div class="metric-label">Based on current profile</div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <h3>Insurance Impact</h3>
-                    <div class="metric-value" id="insurance-impact">-15%</div>
-                    <div class="metric-label">Premium reduction potential</div>
-                </div>
-            </div>
-
-            <div class="chart-container">
-                <h3>Specific Requirements</h3>
-                <div id="specific-requirements" class="requirements-container">
-                    <!-- Will be populated by JavaScript -->
-                </div>
-            </div>
-            
-            <div class="chart-container">
-                <h3>Framework Coverage by Vendor</h3>
+            <div class="compliance-chart-container">
+                <h3>Framework Requirements Analysis</h3>
                 <div class="chart-wrapper">
-                    <canvas id="framework-coverage-chart"></canvas>
+                    <canvas id="industry-requirements-chart"></canvas>
                 </div>
             </div>
             
-            <div class="chart-container">
-                <h3>Non-Compliance Consequences</h3>
-                <div id="non-compliance-container" class="non-compliance-container">
-                    <!-- Will be populated by JavaScript -->
-                </div>
-            </div>
-            
-            <div class="chart-container">
-                <h3>Recommended Vendor Matrix</h3>
-                <div class="table-responsive">
-                    <table class="data-table" id="compliance-vendor-table">
-                        <thead>
-                            <tr>
-                                <th>Vendor</th>
-                                <th>Suitability</th>
-                                <th>Key Strengths</th>
-                                <th>Framework Coverage</th>
-                                <th>Implementation Time</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Will be populated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
+            <div class="compliance-framework-details">
+                <h3>Compliance Framework Coverage</h3>
+                <div id="compliance-framework-list"></div>
             </div>
         `;
         
-        // Ensure this panel is visible if the compliance tab is active
-        if (complianceTab.classList.contains('active')) {
-            compliancePanel.classList.add('active');
-        }
-        
-        // Update the compliance panel with initial data
-        this.updateCompliancePanel();
+        // Add styles for the panel
+        addIndustryDetailStyles();
     }
     
-    updateSidebarCard(sidebarCard) {
-        // Simplify the sidebar card while maintaining basic functionality
-        const cardContent = sidebarCard.querySelector('.config-card-content');
-        if (cardContent) {
-            cardContent.innerHTML = `
-                <div class="form-group">
-                    <label for="industry-select" class="form-label">Industry</label>
-                    <select id="industry-select" class="form-select">
-                        <option value="">Choose an industry...</option>
-                        ${Object.keys(this.industryData).map(key => `
-                            <option value="${key}" ${this.selectedIndustry === key ? 'selected' : ''}>
-                                ${this.industryData[key].name}
-                            </option>
-                        `).join('')}
-                    </select>
-                    <div class="helper-text">Full compliance details available in Security tab</div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="risk-profile" class="form-label">Risk Profile</label>
-                    <select id="risk-profile" class="form-select">
-                        ${Object.keys(this.riskProfiles).map(key => `
-                            <option value="${key}" ${this.selectedRiskProfile === key ? 'selected' : ''}>
-                                ${this.riskProfiles[key].name}
-                            </option>
-                        `).join('')}
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="cybersecurity-insurance" class="form-label">Cybersecurity Insurance</label>
-                    <select id="cybersecurity-insurance" class="form-select">
-                        ${Object.keys(this.insuranceOptions).map(key => `
-                            <option value="${key}" ${this.selectedInsurance === key ? 'selected' : ''}>
-                                ${this.insuranceOptions[key].name}
-                            </option>
-                        `).join('')}
-                    </select>
-                </div>
-            `;
-        }
-    }
-    
-    updateCompliancePanel() {
-        if (!this.selectedIndustry) return;
+    // Update industry detail panel with industry data
+    function updateIndustryDetailPanel(industryData) {
+        // Update industry name
+        const industryName = document.getElementById('industry-name');
+        if (industryName) industryName.textContent = industryData.name;
         
-        const industry = this.industryData[this.selectedIndustry];
-        if (!industry) return;
-        
-        // Update primary frameworks
-        const primaryFrameworks = document.getElementById('primary-frameworks');
-        if (primaryFrameworks) {
-            primaryFrameworks.innerHTML = industry.primaryFrameworks.map(framework => `
-                <div class="compliance-item">
-                    <input type="checkbox" id="compliance-${framework.toLowerCase()}" class="form-check-input" 
-                           ${this.selectedCompliance.includes(framework.toLowerCase()) ? 'checked' : ''}>
-                    <label for="compliance-${framework.toLowerCase()}">${framework}</label>
-                </div>
-            `).join('');
+        // Update compliance frameworks
+        const industryCompliance = document.getElementById('industry-compliance');
+        if (industryCompliance) {
+            const frameworks = [];
+            
+            if (industryData.primaryCompliance) {
+                industryData.primaryCompliance.forEach(framework => {
+                    if (window.complianceFrameworks && window.complianceFrameworks[framework]) {
+                        frameworks.push(window.complianceFrameworks[framework].name);
+                    }
+                });
+            }
+            
+            if (industryData.secondaryCompliance) {
+                industryData.secondaryCompliance.forEach(framework => {
+                    if (window.complianceFrameworks && window.complianceFrameworks[framework] &&
+                        !frameworks.includes(window.complianceFrameworks[framework].name)) {
+                        frameworks.push(window.complianceFrameworks[framework].name);
+                    }
+                });
+            }
+            
+            industryCompliance.textContent = frameworks.join(', ');
         }
         
-        // Update additional frameworks
-        const additionalFrameworks = document.getElementById('additional-frameworks');
-        if (additionalFrameworks) {
-            additionalFrameworks.innerHTML = industry.additionalFrameworks.map(framework => `
-                <div class="compliance-item">
-                    <input type="checkbox" id="compliance-${framework.toLowerCase()}" class="form-check-input"
-                           ${this.selectedCompliance.includes(framework.toLowerCase()) ? 'checked' : ''}>
-                    <label for="compliance-${framework.toLowerCase()}">${framework}</label>
-                </div>
-            `).join('');
-        }
-        
-        // Update specific requirements
-        const specificRequirements = document.getElementById('specific-requirements');
-        if (specificRequirements) {
-            specificRequirements.innerHTML = `
-                <div class="requirements-list">
-                    <h4>Key Requirements for ${industry.name}</h4>
-                    <ul>
-                        ${industry.specificRequirements.map(req => `<li>${req}</li>`).join('')}
-                    </ul>
-                </div>
-            `;
-        }
-        
-        // Update non-compliance consequences
-        const nonComplianceContainer = document.getElementById('non-compliance-container');
-        if (nonComplianceContainer) {
-            nonComplianceContainer.innerHTML = `
-                <div class="consequences-grid">
-                    <div class="consequence-card">
-                        <div class="consequence-header">
-                            <div class="consequence-icon">
-                                <i class="fas fa-dollar-sign"></i>
-                            </div>
-                            <h4>Financial Impact</h4>
-                        </div>
-                        <p>${industry.nonCompliance.financial}</p>
-                    </div>
-                    
-                    <div class="consequence-card">
-                        <div class="consequence-header">
-                            <div class="consequence-icon">
-                                <i class="fas fa-cogs"></i>
-                            </div>
-                            <h4>Operational Impact</h4>
-                        </div>
-                        <p>${industry.nonCompliance.operational}</p>
-                    </div>
-                    
-                    <div class="consequence-card">
-                        <div class="consequence-header">
-                            <div class="consequence-icon">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <h4>Reputational Impact</h4>
-                        </div>
-                        <p>${industry.nonCompliance.reputational}</p>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Update vendor recommendations table
-        const complianceVendorTable = document.getElementById('compliance-vendor-table');
-        if (complianceVendorTable) {
-            const tableBody = complianceVendorTable.querySelector('tbody');
-            if (tableBody) {
-                const vendors = window.VENDOR_DATA || {};
-                const recommendedVendors = industry.bestFitVendors || [];
-                
-                tableBody.innerHTML = recommendedVendors.map(vendorId => {
-                    const vendor = vendors[vendorId];
-                    if (!vendor) return '';
-                    
-                    // Calculate suitability score based on industry's critical features
-                    const criticalFeatures = industry.criticalFeatures || [];
-                    let suitabilityScore = 0;
-                    let totalPossible = 0;
-                    
-                    criticalFeatures.forEach(feature => {
-                        if (vendor.features && vendor.features[feature]) {
-                            suitabilityScore += vendor.features[feature];
-                            totalPossible += 100;
-                        }
-                    });
-                    
-                    const suitabilityPercentage = totalPossible > 0 ? 
-                        Math.round((suitabilityScore / totalPossible) * 100) : 0;
-                    
-                    // Count certifications for framework coverage
-                    const certCount = Object.values(vendor.certifications || {}).filter(v => v).length;
-                    const certTotal = Object.keys(vendor.certifications || {}).length;
-                    const frameworkCoverage = certTotal > 0 ? 
-                        Math.round((certCount / certTotal) * 100) : 0;
-                    
-                    // Determine key strengths based on top features
-                    const topFeatures = vendor.features ? 
-                        Object.entries(vendor.features)
-                            .sort((a, b) => b[1] - a[1])
-                            .slice(0, 3)
-                            .map(([key, _]) => this.formatFeatureName(key))
-                            .join(', ') : '';
-                    
-                    return `
-                        <tr>
-                            <td>
-                                <div class="vendor-cell">
-                                    <img src="${vendor.logo}" alt="${vendor.name}" class="vendor-mini-logo">
-                                    ${vendor.name}
-                                </div>
-                            </td>
-                            <td>
-                                <div class="suitability-bar">
-                                    <div class="suitability-fill" style="width: ${suitabilityPercentage}%"></div>
-                                    <span>${suitabilityPercentage}%</span>
-                                </div>
-                            </td>
-                            <td>${topFeatures}</td>
-                            <td>${frameworkCoverage}%</td>
-                            <td>${vendor.implementationTime}</td>
-                        </tr>
-                    `;
-                }).join('');
+        // Update risk profile
+        const riskProfile = document.getElementById('industry-risk-profile');
+        if (riskProfile) {
+            const riskText = industryData.riskProfile.charAt(0).toUpperCase() + 
+                           industryData.riskProfile.slice(1);
+            riskProfile.textContent = riskText;
+            
+            // Add color coding based on risk level
+            riskProfile.className = '';
+            if (industryData.riskProfile.includes('high')) {
+                riskProfile.classList.add('risk-high');
+            } else if (industryData.riskProfile.includes('elevated')) {
+                riskProfile.classList.add('risk-medium');
+            } else {
+                riskProfile.classList.add('risk-low');
             }
         }
         
-        // Initialize/update framework coverage chart
-        this.initFrameworkCoverageChart();
+        // Update breach cost
+        const breachCost = document.getElementById('industry-breach-cost');
+        if (breachCost) {
+            breachCost.textContent = '$' + industryData.breachCost.toLocaleString();
+        }
+        
+        // Update Portnox score
+        const portnoxScore = document.getElementById('industry-portnox-score');
+        if (portnoxScore) {
+            // Calculate average Portnox score for this industry's requirements
+            const requirements = industryData.requirements || [];
+            if (requirements.length > 0) {
+                const total = requirements.reduce((sum, req) => sum + req.portnoxRating, 0);
+		const average = Math.round(total / requirements.length);
+                portnoxScore.textContent = average + '%';
+            } else {
+                portnoxScore.textContent = '90%';
+            }
+        }
+        
+        // Update industry insights
+        const insightsList = document.getElementById('industry-insights');
+        if (insightsList && industryData.dataPoints) {
+            insightsList.innerHTML = '';
+            industryData.dataPoints.forEach(point => {
+                const li = document.createElement('li');
+                li.textContent = point;
+                insightsList.appendChild(li);
+            });
+        }
+        
+        // Update compliance framework details
+        updateComplianceFrameworkDetails(industryData);
     }
     
-    initFrameworkCoverageChart() {
-        const chartCanvas = document.getElementById('framework-coverage-chart');
-        if (!chartCanvas) return;
+    // Update compliance framework details
+    function updateComplianceFrameworkDetails(industryData) {
+        const frameworkList = document.getElementById('compliance-framework-list');
+        if (!frameworkList || !window.complianceFrameworks) return;
         
-        // Get industry data
-        const industry = this.industryData[this.selectedIndustry];
-        if (!industry) return;
+        // Clear existing content
+        frameworkList.innerHTML = '';
         
-        // Get frameworks
-        const allFrameworks = [...industry.primaryFrameworks, ...industry.additionalFrameworks];
+        // Combined frameworks
+        const allFrameworks = [...(industryData.primaryCompliance || []), ...(industryData.secondaryCompliance || [])];
         
-        // Get vendors
-        const vendors = window.VENDOR_DATA || {};
-        const recommendedVendors = industry.bestFitVendors || [];
-        
-        // Chart data preparation
-        const datasets = recommendedVendors.map(vendorId => {
-            const vendor = vendors[vendorId];
-            if (!vendor) return null;
+        // Create framework details
+        allFrameworks.forEach(frameworkId => {
+            const framework = window.complianceFrameworks[frameworkId];
+            if (!framework) return;
             
-            // Create dataset for this vendor
-            const data = [];
-            
-            // Map certifications to frameworks (simple mapping for now)
-            allFrameworks.forEach(framework => {
-                // Check if vendor has certification for this framework
-                const certKey = framework.toLowerCase();
-                const hasCert = vendor.certifications && vendor.certifications[certKey];
-                data.push(hasCert ? 100 : 0);
+            // Calculate compliance scores
+            let portnoxTotal = 0;
+            let industryTotal = 0;
+            framework.requirements.forEach(req => {
+                portnoxTotal += req.portnoxRating;
+                industryTotal += req.averageRating;
             });
             
-            // Get a color for this vendor
-            const color = this.getVendorColor(vendorId);
+            const portnoxAvg = Math.round(portnoxTotal / framework.requirements.length);
+            const industryAvg = Math.round(industryTotal / framework.requirements.length);
+            const difference = portnoxAvg - industryAvg;
             
-            return {
-                label: vendor.name,
-                data: data,
-                backgroundColor: color,
-                borderColor: color,
-                borderWidth: 2,
-                fill: false
-            };
-        }).filter(Boolean);
-        
-        // Create or update chart
-        if (window.frameworkCoverageChart) {
-            window.frameworkCoverageChart.data.labels = allFrameworks;
-            window.frameworkCoverageChart.data.datasets = datasets;
-            window.frameworkCoverageChart.update();
-        } else {
-            window.frameworkCoverageChart = new Chart(chartCanvas, {
-                type: 'radar',
-                data: {
-                    labels: allFrameworks,
-                    datasets: datasets
-                },
-                options: {
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: {
-                                stepSize: 25
-                            }
-                        }
-                    },
-                    elements: {
-                        line: {
-                            tension: 0.2
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const value = context.raw;
-                                    return `${context.dataset.label}: ${value}% coverage`;
-                                }
-                            }
+            // Create framework card
+            const frameworkCard = document.createElement('div');
+            frameworkCard.className = 'compliance-framework-card';
+            frameworkCard.innerHTML = `
+                <div class="framework-header">
+                    <h4>${framework.name}</h4>
+                    <div class="framework-subtitle">${framework.fullName}</div>
+                </div>
+                <div class="framework-description">
+                    ${framework.description}
+                </div>
+                <div class="framework-comparison">
+                    <div class="comparison-item">
+                        <div class="comparison-label">Portnox Coverage:</div>
+                        <div class="comparison-bar">
+                            <div class="bar-track">
+                                <div class="bar-fill portnox-bar" style="width: ${portnoxAvg}%;"></div>
+                            </div>
+                            <div class="bar-value">${portnoxAvg}%</div>
+                        </div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-label">Industry Average:</div>
+                        <div class="comparison-bar">
+                            <div class="bar-track">
+                                <div class="bar-fill industry-bar" style="width: ${industryAvg}%;"></div>
+                            </div>
+                            <div class="bar-value">${industryAvg}%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="framework-advantage">
+                    <div class="advantage-badge">+${difference}%</div>
+                    <div class="advantage-text">Portnox advantage</div>
+                </div>
+                <div class="framework-requirements">
+                    <button class="btn-toggle-requirements" data-framework="${frameworkId}">
+                        View Requirements <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="requirements-details" id="requirements-${frameworkId}" style="display: none;">
+                        <table class="requirements-table">
+                            <thead>
+                                <tr>
+                                    <th>Requirement</th>
+                                    <th>Portnox</th>
+                                    <th>Industry Avg</th>
+                                    <th>Difference</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${framework.requirements.map(req => `
+                                    <tr>
+                                        <td>${req.id}: ${req.name}</td>
+                                        <td>${req.portnoxRating}%</td>
+                                        <td>${req.averageRating}%</td>
+                                        <td class="diff-cell ${(req.portnoxRating - req.averageRating) > 0 ? 'positive' : 'negative'}">
+                                            ${(req.portnoxRating - req.averageRating) > 0 ? '+' : ''}${req.portnoxRating - req.averageRating}%
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            frameworkList.appendChild(frameworkCard);
+            
+            // Add event listener for toggle button
+            const toggleButton = frameworkCard.querySelector('.btn-toggle-requirements');
+            if (toggleButton) {
+                toggleButton.addEventListener('click', function() {
+                    const frameworkId = this.dataset.framework;
+                    const requirementsDetails = document.getElementById(`requirements-${frameworkId}`);
+                    
+                    if (requirementsDetails) {
+                        const isVisible = requirementsDetails.style.display !== 'none';
+                        requirementsDetails.style.display = isVisible ? 'none' : 'block';
+                        
+                        // Update icon
+                        const icon = this.querySelector('i');
+                        if (icon) {
+                            icon.className = isVisible ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
                         }
                     }
-                }
-            });
-        }
-    }
-    
-    attachEventListeners() {
-        // Panel industry select change
-        const panelIndustrySelect = document.getElementById('panel-industry-select');
-        if (panelIndustrySelect) {
-            panelIndustrySelect.addEventListener('change', (e) => {
-                this.selectedIndustry = e.target.value;
-                this.updateCompliancePanel();
-                
-                // Also update sidebar select
-                const sidebarSelect = document.getElementById('industry-select');
-                if (sidebarSelect) {
-                    sidebarSelect.value = this.selectedIndustry;
-                }
-                
-                // Trigger calculation update
-                this.triggerCalculation();
-            });
-        }
-        
-        // Sidebar industry select change
-        const sidebarIndustrySelect = document.getElementById('industry-select');
-        if (sidebarIndustrySelect) {
-            sidebarIndustrySelect.addEventListener('change', (e) => {
-                this.selectedIndustry = e.target.value;
-                
-                // Also update panel select
-                const panelSelect = document.getElementById('panel-industry-select');
-                if (panelSelect) {
-                    panelSelect.value = this.selectedIndustry;
-                    
-                    // Update panel content
-                    this.updateCompliancePanel();
-                }
-                
-                // Trigger calculation update
-                this.triggerCalculation();
-            });
-        }
-        
-        // Panel risk profile change
-        const panelRiskProfile = document.getElementById('panel-risk-profile');
-        if (panelRiskProfile) {
-            panelRiskProfile.addEventListener('change', (e) => {
-                this.selectedRiskProfile = e.target.value;
-                
-                // Also update sidebar select
-                const sidebarSelect = document.getElementById('risk-profile');
-                if (sidebarSelect) {
-                    sidebarSelect.value = this.selectedRiskProfile;
-                }
-                
-                // Trigger calculation update
-                this.triggerCalculation();
-            });
-        }
-        
-        // Sidebar risk profile change
-        const sidebarRiskProfile = document.getElementById('risk-profile');
-        if (sidebarRiskProfile) {
-            sidebarRiskProfile.addEventListener('change', (e) => {
-                this.selectedRiskProfile = e.target.value;
-                
-                // Also update panel select
-                const panelSelect = document.getElementById('panel-risk-profile');
-                if (panelSelect) {
-                    panelSelect.value = this.selectedRiskProfile;
-                }
-                
-                // Trigger calculation update
-                this.triggerCalculation();
-            });
-        }
-        
-        // Panel insurance change
-        const panelInsurance = document.getElementById('panel-cybersecurity-insurance');
-        if (panelInsurance) {
-            panelInsurance.addEventListener('change', (e) => {
-                this.selectedInsurance = e.target.value;
-                
-                // Also update sidebar select
-                const sidebarSelect = document.getElementById('cybersecurity-insurance');
-                if (sidebarSelect) {
-                    sidebarSelect.value = this.selectedInsurance;
-                }
-                
-                // Update insurance impact display
-                this.updateInsuranceImpact();
-                
-                // Trigger calculation update
-                this.triggerCalculation();
-            });
-        }
-        
-        // Sidebar insurance change
-        const sidebarInsurance = document.getElementById('cybersecurity-insurance');
-        if (sidebarInsurance) {
-            sidebarInsurance.addEventListener('change', (e) => {
-                this.selectedInsurance = e.target.value;
-                
-                // Also update panel select
-                const panelSelect = document.getElementById('panel-cybersecurity-insurance');
-                if (panelSelect) {
-                    panelSelect.value = this.selectedInsurance;
-                }
-                
-                // Update insurance impact display
-                this.updateInsuranceImpact();
-                
-                // Trigger calculation update
-                this.triggerCalculation();
-            });
-        }
-        
-        // Framework checkboxes
-        document.addEventListener('change', (e) => {
-            if (e.target.matches('.compliance-grid input[type="checkbox"]')) {
-                // Update selected compliance
-                this.saveCurrentValues();
-                
-                // Trigger calculation update
-                this.triggerCalculation();
+                });
             }
         });
-        
-        // Listen for tab changes to ensure charts render correctly
-        document.addEventListener('click', (e) => {
-            if (e.target.matches('.results-tab[data-panel="security-compliance"]')) {
-                // Tab was clicked, ensure chart renders
-                setTimeout(() => {
-                    this.initFrameworkCoverageChart();
-                }, 50);
-            }
-        });
-        
-        // Initial insurance impact update
-        this.updateInsuranceImpact();
     }
     
-    updateInsuranceImpact() {
-        const insuranceImpact = document.getElementById('insurance-impact');
-        if (!insuranceImpact) return;
+    // Update industry-specific charts
+    function updateIndustryCharts(industry) {
+        console.log(`Updating charts for industry: ${industry}`);
         
-        // Get base reduction from portnox vendor data
-        const portnox = window.VENDOR_DATA?.portnox || {};
-        const baseReduction = portnox.insuranceImpact || 10;
+        // Get industry data
+        const industryData = window.industryComplianceData && 
+                           window.industryComplianceData[industry] ?
+                           window.industryComplianceData[industry] : null;
         
-        // Adjust based on selected insurance tier
-        let adjustedReduction = baseReduction;
-        
-        switch (this.selectedInsurance) {
-            case 'none':
-                adjustedReduction = 0;
-                break;
-            case 'basic':
-                adjustedReduction = Math.round(baseReduction * 0.7);
-                break;
-            case 'standard':
-                // Default value
-                break;
-            case 'comprehensive':
-                adjustedReduction = Math.round(baseReduction * 1.3);
-                break;
+        if (!industryData) {
+            console.warn(`No industry data found for ${industry}`);
+            return;
         }
         
-        // Display the value
-        insuranceImpact.textContent = adjustedReduction > 0 ? `-${adjustedReduction}%` : '0%';
+        // Update industry requirements chart if it exists
+        const requirementsChart = document.getElementById('industry-requirements-chart');
+        if (requirementsChart && window.initializeChart) {
+            window.initializeChart('industry-requirements-chart', ['portnox']);
+        }
+        
+        // Other chart updates can be added here
     }
     
-    triggerCalculation() {
-        // Find calculate button and trigger click to update results
-        const calculateBtn = document.getElementById('calculate-btn');
-        if (calculateBtn) {
-            calculateBtn.click();
+    // Add styles for industry detail panel
+    function addIndustryDetailStyles() {
+        // Create style element if it doesn't exist
+        let styleElement = document.getElementById('industry-framework-styles');
+        
+        if (!styleElement) {
+            styleElement = document.createElement('style');
+            styleElement.id = 'industry-framework-styles';
+            document.head.appendChild(styleElement);
+            
+            styleElement.textContent = `
+                .industry-overview {
+                    background-color: #f8f9fa;
+                    border-radius: 8px;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                }
+                
+                .industry-header {
+                    margin-bottom: 15px;
+                }
+                
+                .industry-header h3 {
+                    margin: 0;
+                    color: #05547C;
+                    font-size: 1.2rem;
+                }
+                
+                .industry-stats {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 15px;
+                    margin-bottom: 20px;
+                }
+                
+                .stat-card {
+                    display: flex;
+                    align-items: center;
+                    background-color: white;
+                    border-radius: 6px;
+                    padding: 12px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                }
+                
+                .stat-icon {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background-color: #05547C;
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.2rem;
+                    margin-right: 12px;
+                    flex-shrink: 0;
+                }
+                
+                .stat-content h4 {
+                    margin: 0 0 5px 0;
+                    font-size: 0.9rem;
+                    color: #666;
+                }
+                
+                .stat-content div {
+                    font-weight: 600;
+                    font-size: 1rem;
+                    color: #333;
+                }
+                
+                .risk-high {
+                    color: #FF5252 !important;
+                }
+                
+                .risk-medium {
+                    color: #FFC107 !important;
+                }
+                
+                .risk-low {
+                    color: #4CAF50 !important;
+                }
+                
+                .industry-data-points {
+                    background-color: white;
+                    border-radius: 6px;
+                    padding: 15px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                }
+                
+                .industry-data-points h4 {
+                    margin: 0 0 10px 0;
+                    color: #05547C;
+                    font-size: 1rem;
+                }
+                
+                .industry-data-points ul {
+                    margin: 0;
+                    padding-left: 20px;
+                }
+                
+                .industry-data-points li {
+                    margin-bottom: 8px;
+                    font-size: 0.9rem;
+                    color: #555;
+                }
+                
+                .compliance-chart-container {
+                    margin-bottom: 20px;
+                }
+                
+                .compliance-chart-container h3 {
+                    margin: 0 0 15px 0;
+                    color: #05547C;
+                    font-size: 1.2rem;
+                }
+                
+                .compliance-framework-details h3 {
+                    margin: 0 0 15px 0;
+                    color: #05547C;
+                    font-size: 1.2rem;
+                }
+                
+                .compliance-framework-card {
+                    background-color: white;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-bottom: 15px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                }
+                
+                .framework-header h4 {
+                    margin: 0;
+                    color: #05547C;
+                    font-size: 1.1rem;
+                }
+                
+                .framework-subtitle {
+                    font-size: 0.85rem;
+                    color: #666;
+                    margin-bottom: 8px;
+                }
+                
+                .framework-description {
+                    font-size: 0.9rem;
+                    color: #555;
+                    margin-bottom: 12px;
+                }
+                
+                .framework-comparison {
+                    margin-bottom: 12px;
+                }
+                
+                .comparison-item {
+                    margin-bottom: 8px;
+                }
+                
+                .comparison-label {
+                    font-size: 0.85rem;
+                    color: #666;
+                    margin-bottom: 3px;
+                }
+                
+                .comparison-bar {
+                    display: flex;
+                    align-items: center;
+                }
+                
+                .bar-track {
+                    flex-grow: 1;
+                    height: 8px;
+                    background-color: #E0E0E0;
+                    border-radius: 4px;
+                    overflow: hidden;
+                    margin-right: 10px;
+                }
+                
+                .bar-fill {
+                    height: 100%;
+                    border-radius: 4px;
+                }
+                
+                .portnox-bar {
+                    background-color: #4BC0C0;
+                }
+                
+                .industry-bar {
+                    background-color: #FF6384;
+                }
+                
+                .bar-value {
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    color: #333;
+                    width: 40px;
+                }
+                
+                .framework-advantage {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 12px;
+                }
+                
+                .advantage-badge {
+                    background-color: #4BC0C0;
+                    color: white;
+                    font-weight: 600;
+                    font-size: 0.85rem;
+                    padding: 3px 8px;
+                    border-radius: 12px;
+                    margin-right: 8px;
+                }
+                
+                .advantage-text {
+                    font-size: 0.85rem;
+                    color: #666;
+                }
+                
+                .btn-toggle-requirements {
+                    background-color: #f0f0f0;
+                    border: none;
+                    border-radius: 4px;
+                    padding: 8px 12px;
+                    font-size: 0.85rem;
+                    color: #333;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    width: 100%;
+                }
+                
+                .btn-toggle-requirements i {
+                    margin-left: 8px;
+                }
+                
+                .requirements-details {
+                    margin-top: 10px;
+                }
+                
+                .requirements-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 0.85rem;
+                }
+                
+                .requirements-table th,
+                .requirements-table td {
+                    padding: 8px;
+                    text-align: left;
+                    border-bottom: 1px solid #eee;
+                }
+                
+                .requirements-table th {
+                    font-weight: 600;
+                    color: #555;
+                }
+                
+                .diff-cell {
+                    font-weight: 600;
+                }
+                
+                .diff-cell.positive {
+                    color: #4CAF50;
+                }
+                
+                .diff-cell.negative {
+                    color: #FF5252;
+                }
+                
+                @media (max-width: 768px) {
+                    .industry-stats {
+                        grid-template-columns: 1fr;
+                    }
+                }
+            `;
         }
     }
     
-    formatFeatureName(key) {
-        // Convert camelCase to proper words with capitalization
-        const words = key.replace(/([A-Z])/g, ' $1').trim();
-        return words.charAt(0).toUpperCase() + words.slice(1);
+    // Add toast notification styles
+    function addToastStyles() {
+        // Create style element if it doesn't exist
+        let styleElement = document.getElementById('toast-styles');
+        
+        if (!styleElement) {
+            styleElement = document.createElement('style');
+            styleElement.id = 'toast-styles';
+            document.head.appendChild(styleElement);
+            
+            styleElement.textContent = `
+                .toast-container {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    z-index: 9999;
+                }
+                
+                .toast {
+                    background-color: white;
+                    border-radius: 4px;
+                    padding: 12px 16px;
+                    margin-bottom: 10px;
+                    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+                    font-size: 0.9rem;
+                    min-width: 250px;
+                    border-left: 4px solid #333;
+                }
+                
+                .toast-success {
+                    border-color: #4CAF50;
+                }
+                
+                .toast-info {
+                    border-color: #2196F3;
+                }
+                
+                .toast-warning {
+                    border-color: #FFC107;
+                }
+                
+                .toast-error {
+                    border-color: #FF5252;
+                }
+                
+                .toast-fade-out {
+                    opacity: 0;
+                    transition: opacity 0.5s;
+                }
+            `;
+        }
     }
     
-    getVendorColor(vendorId) {
-        // Define a color map for vendors
-        const colorMap = {
-            portnox: 'rgba(0, 123, 255, 0.7)',
-            cisco: 'rgba(0, 200, 83, 0.7)',
-            aruba: 'rgba(255, 152, 0, 0.7)',
-            forescout: 'rgba(233, 30, 99, 0.7)',
-            fortinac: 'rgba(156, 39, 176, 0.7)',
-            juniper: 'rgba(3, 169, 244, 0.7)',
-            securew2: 'rgba(255, 193, 7, 0.7)',
-            microsoft: 'rgba(103, 58, 183, 0.7)',
-            arista: 'rgba(255, 87, 34, 0.7)',
-            foxpass: 'rgba(121, 85, 72, 0.7)',
-        };
+    // Display toast notification
+    window.showToast = function(message, type = 'info') {
+        console.log(`Toast: ${message} (${type})`);
         
-        // Return mapped color or a default
-        return colorMap[vendorId] || 'rgba(158, 158, 158, 0.7)';
+        // Find or create toast container
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast-container';
+            document.body.appendChild(toastContainer);
+        }
+        
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        
+        // Add to container
+        toastContainer.appendChild(toast);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            toast.classList.add('toast-fade-out');
+            setTimeout(() => {
+                if (toastContainer.contains(toast)) {
+                    toastContainer.removeChild(toast);
+                }
+            }, 500);
+        }, 3000);
+    };
+    
+    // Initialize the module
+    function init() {
+        console.log("Initializing industry frameworks module...");
+        
+        // Add toast styles
+        addToastStyles();
+        
+        // Initialize industry selector
+        initializeIndustrySelector();
+        
+        console.log("Industry frameworks module initialized successfully");
     }
-}
-
-// Initialize the component
-window.industryFrameworks = new IndustryFrameworks();
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
