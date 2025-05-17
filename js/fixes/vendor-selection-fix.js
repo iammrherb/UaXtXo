@@ -1,272 +1,209 @@
 /**
- * Fixed Vendor Selection for Portnox TCO Analyzer
- * Version 2.0 - Complete rewrite with stable selection handling
+ * Vendor Selection Fix
+ * Ensures proper vendor selection and calculation updates
  */
-
 (function() {
     console.log("🔄 Applying fixed vendor selection module...");
-
-    // Set default selected vendors to avoid null issues
-    window.selectedVendors = window.selectedVendors || ['portnox', 'cisco'];
-
-    // Fix vendor selection functionality
-    const fixVendorSelection = function() {
+    
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initialize);
+    } else {
+        initialize();
+    }
+    
+    function initialize() {
+        // Fix vendor card selection
+        fixVendorSelection();
+        
+        // Fix calculate buttons
+        fixCalculateButtons();
+        
+        // Run initial calculation
+        runInitialCalculation();
+    }
+    
+    function fixVendorSelection() {
         const vendorCards = document.querySelectorAll('.vendor-card');
-        if (!vendorCards || vendorCards.length === 0) {
-            console.warn("Vendor cards not found in the DOM");
+        if (vendorCards.length === 0) {
+            console.warn("No vendor cards found, skipping vendor selection fix");
             return;
         }
-
-        // Clear existing event listeners by cloning and replacing each card
+        
+        console.log("Vendor selection fixed");
+        
+        // Set up selected vendors
+        const selectedVendors = ['portnox', 'cisco', 'aruba'];
+        
+        // Set initial selection state
         vendorCards.forEach(card => {
-            const newCard = card.cloneNode(true);
-            if (card.parentNode) {
-                card.parentNode.replaceChild(newCard, card);
+            const vendorId = card.getAttribute('data-vendor');
+            
+            if (selectedVendors.includes(vendorId)) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
             }
-
+            
+            // Remove existing event listeners (not perfect, but helps in some cases)
+            const clone = card.cloneNode(true);
+            card.parentNode.replaceChild(clone, card);
+            
             // Add new event listener
-            newCard.addEventListener('click', function() {
+            clone.addEventListener('click', function() {
                 const vendorId = this.getAttribute('data-vendor');
-                if (!vendorId) {
-                    console.warn("Vendor card missing data-vendor attribute");
+                
+                // If this is Portnox, don't allow deselection
+                if (vendorId === 'portnox') {
+                    if (!this.classList.contains('selected')) {
+                        this.classList.add('selected');
+                    }
                     return;
                 }
-
-                // Toggle selection class
+                
+                // Toggle selection for other vendors
                 this.classList.toggle('selected');
                 
-                // Update selected vendors array
-                if (this.classList.contains('selected')) {
-                    // Add to selected vendors if not already included
-                    if (!window.selectedVendors.includes(vendorId)) {
-                        window.selectedVendors.push(vendorId);
-                    }
-                } else {
-                    // Remove from selected vendors
-                    window.selectedVendors = window.selectedVendors.filter(v => v !== vendorId);
-                }
-
-                // Ensure Portnox is always selected
-                if (vendorId === 'portnox' && !this.classList.contains('selected')) {
-                    this.classList.add('selected');
-                    if (!window.selectedVendors.includes('portnox')) {
-                        window.selectedVendors.push('portnox');
-                    }
-                }
-
-                // At least one vendor besides Portnox should be selected
-                if (window.selectedVendors.length <= 1) {
-                    // Find first non-Portnox vendor card and select it
-                    const firstNonPortnoxVendor = document.querySelector('.vendor-card:not([data-vendor="portnox"])');
-                    if (firstNonPortnoxVendor) {
-                        const altVendorId = firstNonPortnoxVendor.getAttribute('data-vendor');
-                        firstNonPortnoxVendor.classList.add('selected');
-                        if (altVendorId && !window.selectedVendors.includes(altVendorId)) {
-                            window.selectedVendors.push(altVendorId);
-                        }
-                    }
-                }
-
-                // Limit to 3 selected vendors for better UI
-                if (window.selectedVendors.length > 3) {
-                    // Keep portnox and the 2 most recently selected vendors
-                    const portnox = window.selectedVendors.indexOf('portnox');
-                    const nonPortnoxVendors = window.selectedVendors.filter(v => v !== 'portnox');
-                    const keepVendors = nonPortnoxVendors.slice(-2);
-                    
-                    if (portnox !== -1) {
-                        window.selectedVendors = ['portnox', ...keepVendors];
-                    } else {
-                        window.selectedVendors = keepVendors;
-                    }
-                    
-                    // Update UI to reflect the selection
-                    document.querySelectorAll('.vendor-card').forEach(card => {
-                        const cardVendorId = card.getAttribute('data-vendor');
-                        if (cardVendorId && window.selectedVendors.includes(cardVendorId)) {
-                            card.classList.add('selected');
-                        } else {
-                            card.classList.remove('selected');
-                        }
-                    });
-                }
-
-                console.log("Selected vendors updated:", window.selectedVendors);
+                // Get all selected vendors
+                const selectedVendors = [];
+                document.querySelectorAll('.vendor-card.selected').forEach(selectedCard => {
+                    selectedVendors.push(selectedCard.getAttribute('data-vendor'));
+                });
                 
-                // Update charts and calculations
-                try {
-                    // Show loading overlay
-                    const loadingOverlay = document.getElementById('loading-overlay');
-                    if (loadingOverlay) {
-                        loadingOverlay.style.display = 'flex';
-                    }
-                    
-                    // Small delay to avoid UI freezing
-                    setTimeout(() => {
-                        // Update calculations
-                        if (typeof window.updateCalculations === 'function') {
-                            window.updateCalculations(window.selectedVendors);
-                        } else if (typeof window.updateAllCharts === 'function') {
-                            window.updateAllCharts(window.selectedVendors);
-                        }
-                        
-                        // Hide loading overlay
-                        if (loadingOverlay) {
-                            loadingOverlay.style.display = 'none';
-                        }
-                    }, 50);
-                } catch (error) {
-                    console.error("Error updating calculations:", error);
-                    
-                    // Hide loading overlay on error
-                    const loadingOverlay = document.getElementById('loading-overlay');
-                    if (loadingOverlay) {
-                        loadingOverlay.style.display = 'none';
-                    }
+                // Make sure Portnox is always included
+                if (!selectedVendors.includes('portnox')) {
+                    selectedVendors.push('portnox');
+                    document.querySelector('.vendor-card[data-vendor="portnox"]').classList.add('selected');
+                }
+                
+                // Update calculations
+                if (typeof window.updateCalculations === 'function') {
+                    window.updateCalculations(selectedVendors);
                 }
             });
         });
-
-        // Initialize selected state based on window.selectedVendors
-        // Make sure Portnox is always selected
-        if (!window.selectedVendors.includes('portnox')) {
-            window.selectedVendors.unshift('portnox');
-        }
+    }
+    
+    function fixCalculateButtons() {
+        const calculateBtn = document.getElementById('calculate-btn');
+        const headerCalculateBtn = document.getElementById('calculate-btn-header');
         
-        // Init selected state in UI
-        window.selectedVendors.forEach(vendorId => {
-            const card = document.querySelector(`.vendor-card[data-vendor="${vendorId}"]`);
-            if (card) {
-                card.classList.add('selected');
-            }
-        });
-
-        console.log("Vendor selection fixed");
-    };
-
-    // Fix calculate button functionality
-    const fixCalculateButton = function() {
-        const calculateBtns = [
-            document.getElementById('calculate-btn'),
-            document.getElementById('calculate-btn-header')
-        ];
-
-        calculateBtns.forEach(btn => {
-            if (!btn) return;
+        console.log("Calculate buttons fixed");
+        
+        // Fix main calculate button
+        if (calculateBtn) {
+            // Remove existing event listeners
+            const clone = calculateBtn.cloneNode(true);
+            calculateBtn.parentNode.replaceChild(clone, calculateBtn);
             
-            // Clear existing listeners by cloning
-            const newBtn = btn.cloneNode(true);
-            if (btn.parentNode) {
-                btn.parentNode.replaceChild(newBtn, btn);
-            }
-
             // Add new event listener
-            newBtn.addEventListener('click', function() {
-                console.log("Calculate button clicked");
-                
+            clone.addEventListener('click', function() {
                 // Show loading overlay
                 const loadingOverlay = document.getElementById('loading-overlay');
                 if (loadingOverlay) {
                     loadingOverlay.style.display = 'flex';
                 }
-
-                // Wait a brief moment to ensure UI updates
+                
                 setTimeout(function() {
-                    try {
-                        if (typeof window.updateCalculations === 'function') {
-                            window.updateCalculations(window.selectedVendors);
-                        } else if (typeof window.updateAllCharts === 'function') {
-                            window.updateAllCharts(window.selectedVendors);
-                        }
-
-                        // Hide loading overlay
-                        if (loadingOverlay) {
-                            loadingOverlay.style.display = 'none';
-                        }
-
-                        // Show a success toast
-                        const toastContainer = document.getElementById('toast-container');
-                        if (toastContainer) {
-                            const toast = document.createElement('div');
-                            toast.className = 'toast toast-success';
-                            toast.innerHTML = `
-                                <div class="toast-header">
-                                    <strong>Success</strong>
-                                    <button class="toast-close">&times;</button>
-                                </div>
-                                <div class="toast-body">
-                                    Analysis updated with the latest data
-                                </div>
-                            `;
-                            toastContainer.appendChild(toast);
-                            
-                            // Remove toast after 3 seconds
-                            setTimeout(() => {
-                                toast.classList.add('toast-out');
-                                setTimeout(() => toast.remove(), 300);
-                            }, 3000);
-                        }
-                    } catch (error) {
-                        console.error("Error running calculations:", error);
-                        
-                        // Hide loading overlay
-                        if (loadingOverlay) {
-                            loadingOverlay.style.display = 'none';
-                        }
-
-                        // Show error toast
-                        const toastContainer = document.getElementById('toast-container');
-                        if (toastContainer) {
-                            const toast = document.createElement('div');
-                            toast.className = 'toast toast-error';
-                            toast.innerHTML = `
-                                <div class="toast-header">
-                                    <strong>Error</strong>
-                                    <button class="toast-close">&times;</button>
-                                </div>
-                                <div class="toast-body">
-                                    An error occurred while updating the analysis. Please try again.
-                                </div>
-                            `;
-                            toastContainer.appendChild(toast);
-                            
-                            // Remove toast after 3 seconds
-                            setTimeout(() => {
-                                toast.classList.add('toast-out');
-                                setTimeout(() => toast.remove(), 300);
-                            }, 3000);
-                        }
+                    runCalculation();
+                    
+                    // Hide loading overlay
+                    if (loadingOverlay) {
+                        loadingOverlay.style.display = 'none';
                     }
-                }, 100);
+                    
+                    // Show success toast
+                    if (window.showToast) {
+                        window.showToast('Analysis completed successfully!', 'success');
+                    }
+                }, 500);
             });
-        });
-
-        console.log("Calculate buttons fixed");
-    };
-
-    // Run fixes when DOM is ready
-    function runFixes() {
-        fixVendorSelection();
-        fixCalculateButton();
+        }
         
-        // Force initial calculation update
-        if (window.selectedVendors && window.selectedVendors.length > 0) {
-            if (typeof window.updateCalculations === 'function') {
-                window.updateCalculations(window.selectedVendors);
-            }
+        // Fix header calculate button
+        if (headerCalculateBtn) {
+            // Remove existing event listeners
+            const clone = headerCalculateBtn.cloneNode(true);
+            headerCalculateBtn.parentNode.replaceChild(clone, headerCalculateBtn);
+            
+            // Add new event listener
+            clone.addEventListener('click', function() {
+                // Show loading overlay
+                const loadingOverlay = document.getElementById('loading-overlay');
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'flex';
+                }
+                
+                setTimeout(function() {
+                    runCalculation();
+                    
+                    // Hide loading overlay
+                    if (loadingOverlay) {
+                        loadingOverlay.style.display = 'none';
+                    }
+                    
+                    // Show success toast
+                    if (window.showToast) {
+                        window.showToast('Analysis completed successfully!', 'success');
+                    }
+                }, 500);
+            });
         }
     }
-
-    // Run fixes immediately if DOM is already loaded
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        runFixes();
-    } else {
-        // Otherwise wait for DOM to be ready
-        document.addEventListener('DOMContentLoaded', runFixes);
+    
+    function runCalculation() {
+        // Get selected vendors
+        const selectedVendors = [];
+        document.querySelectorAll('.vendor-card.selected').forEach(selectedCard => {
+            selectedVendors.push(selectedCard.getAttribute('data-vendor'));
+        });
+        
+        // Make sure Portnox is always included
+        if (!selectedVendors.includes('portnox')) {
+            selectedVendors.push('portnox');
+            document.querySelector('.vendor-card[data-vendor="portnox"]').classList.add('selected');
+        }
+        
+        console.log("Updating calculations for selected vendors:", selectedVendors);
+        
+        // Update calculations
+        if (typeof window.updateCalculations === 'function') {
+            window.updateCalculations(selectedVendors);
+        }
+        
+        // Update all charts
+        if (typeof window.updateAllCharts === 'function') {
+            window.updateAllCharts(selectedVendors);
+        }
+        
+        console.log("Calculations updated successfully", window.calculationResults);
     }
-
-    // Also add a window.onload handler as a fallback
-    window.addEventListener('load', runFixes);
-
+    
+    function runInitialCalculation() {
+        console.log("📊 Running initial calculations");
+        
+        // Get selected vendors
+        const selectedVendors = [];
+        document.querySelectorAll('.vendor-card.selected').forEach(selectedCard => {
+            selectedVendors.push(selectedCard.getAttribute('data-vendor'));
+        });
+        
+        // Make sure Portnox is always included and we have at least one competitor
+        if (!selectedVendors.includes('portnox')) {
+            selectedVendors.push('portnox');
+        }
+        
+        if (selectedVendors.length < 2) {
+            selectedVendors.push('cisco');
+        }
+        
+        console.log("Selected vendors for calculations:", selectedVendors);
+        
+        // Update calculations
+        if (typeof window.updateCalculations === 'function') {
+            window.updateCalculations(selectedVendors);
+        }
+    }
+    
     console.log("✅ Fixed vendor selection module applied successfully");
 })();
