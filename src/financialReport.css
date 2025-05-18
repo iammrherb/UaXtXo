@@ -1,0 +1,71 @@
+/* Print styles for financial report */
+@media print {
+  /* Hide non-report elements */
+  header, footer, nav, .sidebar, .stakeholder-tabs, .action-buttons, .tab-panel, button {
+    display: none !important;
+  }
+  
+  /* Adjust main content */
+  .content-area {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+  
+  /* Adjust report container */
+  .financial-report {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Ensure proper colors */
+  body {
+    background-color: white !important;
+    color: black !important;
+    font-size: 12pt;
+  }
+  
+  /* Fix tables */
+  table {
+    break-inside: auto !important;
+    font-size: 10pt;
+  }
+  
+  tr {
+    break-inside: avoid !important;
+    break-after: auto !important;
+  }
+  
+  td, th {
+    break-inside: avoid !important;
+  }
+  
+  /* Page breaks */
+  h2 {
+    break-before: auto !important;
+    break-after: avoid !important;
+    margin-top: 20pt !important;
+  }
+  
+  /* Remove shadows and effects that don't print well */
+  .shadow-sm, .shadow, .shadow-md, .shadow-lg, .shadow-xl {
+    box-shadow: none !important;
+  }
+  
+  /* Logo and header styles */
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Add page numbers */
+  @page {
+    margin: 1cm;
+  }
+  
+  /* Background colors in print */
+  .bg-green-50, .bg-blue-50, .bg-purple-50, .bg-gray-50 {
+    background-color: white !important;
+    border: 1px solid #ddd !important;
+  }
+}
