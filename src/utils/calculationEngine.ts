@@ -1,5 +1,5 @@
 import { vendorData, industryRiskProfiles, complianceFrameworks } from '../api/vendorData';
-import { VendorResult } from 'calculationEngine';
+import { VendorResult } from './calculationEngine';
 
 // Define input parameters interface
 export interface CalculationParams {
