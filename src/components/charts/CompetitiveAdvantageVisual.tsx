@@ -48,12 +48,12 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
   }
   
   // Get Portnox and top 2 competitors
-  const portnox = calculationResults.vendorResults.find(v => v.vendorId === 'portnox');
+  const portnox = calculationResults.vendorResults.find((v: VendorResult) => v.vendorId === 'portnox');
   if (!portnox) return null;
   
   const competitors = calculationResults.vendorResults
-    .filter(v => v.vendorId !== 'portnox')
-    .sort((a, b) => b.totalTco - a.totalTco)
+    .filter((v: VendorResult) => v.vendorId !== 'portnox')
+    .sort((a: VendorResult, b: VendorResult) => b.totalTco - a.totalTco)
     .slice(0, 2);
   
   // Helper function to get score for a category
@@ -144,7 +144,7 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
           </div>
         )}
         
-        <div className={`mt-${activeCategory ? '16' : '4'} grid grid-cols-1 md:grid-cols-${allVendors.length} gap-6`}>
+        <div className={`mt-${activeCategory ? '16' : '4'} grid grid-cols-1 md:grid-cols-3 gap-6`}>
           {allVendors.map((vendor, index) => {
             const overallScore = getOverallScore(vendor);
             const isPortnox = vendor.vendorId === 'portnox';
