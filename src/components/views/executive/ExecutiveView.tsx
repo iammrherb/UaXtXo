@@ -9,7 +9,7 @@ import VendorRadarChart from '../../charts/VendorRadarChart';
 import PaybackPeriodChart from '../../charts/PaybackPeriodChart';
 import ExecutiveSummaryReport from '../../reports/ExecutiveSummaryReport';
 import ExecutiveSummaryChart from '../../charts/ExecutiveSummaryChart';
-import CompetitiveAdvantageChart from '../../charts/CompetitiveAdvantageChart';
+import CompetitiveAdvantageVisual from '../../charts/CompetitiveAdvantageChart';
 import SavingsProjectionChart from '../../charts/SavingsProjectionChart';
 import TcoBreakdownChart from '../../charts/TcoBreakdownChart';
 import { formatCurrency, formatPercentage, formatDays } from '../../../utils/formatters';
@@ -107,7 +107,7 @@ const ExecutiveView: React.FC = () => {
                 <SavingsProjectionChart height={320} />
               </div>
               <div>
-                <CompetitiveAdvantageChart height={320} />
+                <CompetitiveAdvantageVisual height={320} />
               </div>
             </div>
             
