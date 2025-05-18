@@ -3,8 +3,11 @@ import { useCalculator } from '../../../context/CalculatorContext';
 import DashboardCard from '../../ui/DashboardCard';
 import TabPanel from '../../ui/TabPanel';
 import TcoComparisonChart from '../../charts/TcoComparisonChart';
+import TcoBreakdownChart from '../../charts/TcoBreakdownChart';
+import SavingsProjectionChart from '../../charts/SavingsProjectionChart';
 import { formatCurrency, formatPercentage } from '../../../utils/formatters';
 import { VendorResult } from '../../../utils/calculationEngine';
+import { CalculationResults } from '../../../utils/calculationEngine';
 
 const FinancialView: React.FC = () => {
   const { state } = useCalculator();
@@ -73,7 +76,17 @@ const FinancialView: React.FC = () => {
             
             {/* TCO Comparison Chart */}
             <div className="mb-6">
+            <div className="mb-6">
               <TcoComparisonChart height={350} />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <TcoBreakdownChart height={350} vendorId="portnox" />
+              </div>
+              <div>
+                <SavingsProjectionChart height={350} />
+              </div>
             </div>
             
             {/* Simple placeholder for now - will be extended in Phase 5 */}

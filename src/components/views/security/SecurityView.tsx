@@ -4,8 +4,11 @@ import DashboardCard from '../../ui/DashboardCard';
 import TabPanel from '../../ui/TabPanel';
 import VendorRadarChart from '../../charts/VendorRadarChart';
 import RiskReductionChart from '../../charts/RiskReductionChart';
+import SecurityImpactChart from '../../charts/SecurityImpactChart';
 import ComplianceRadarChart from '../../charts/ComplianceRadarChart';
 import { formatCurrency, formatPercentage, formatMinutes } from '../../../utils/formatters';
+import { VendorResult } from '../../../utils/calculationEngine';
+import { CalculationResults } from '../../../utils/calculationEngine';
 
 const SecurityView: React.FC = () => {
   const { state } = useCalculator();
@@ -25,13 +28,13 @@ const SecurityView: React.FC = () => {
     return <div>No calculation data available. Please calculate first.</div>;
   }
   
-  const portnox = calculationResults.vendorResults.find(v => v.vendorId === 'portnox');
+  const portnox = calculationResults.vendorResults.find((v: VendorResult) => v.vendorId === 'portnox');
   if (!portnox) {
     return <div>Portnox data not found in calculation results.</div>;
   }
   
   // Find the "no-nac" option if available for comparison
-  const noNac = calculationResults.vendorResults.find(v => v.vendorId === 'no-nac');
+  const noNac = calculationResults.vendorResults.find((v: VendorResult) => v.vendorId === 'no-nac');
   
   // Get average competitor for comparison (excluding no-nac)
   const competitors = calculationResults.vendorResults

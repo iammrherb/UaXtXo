@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import Chart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import { useCalculator } from '../../context/CalculatorContext';
-import { CalculationResults } from '../../utils/calculationEngine';
 
 interface RiskReductionChartProps {
   height?: number;

@@ -3,11 +3,17 @@ import { useCalculator } from '../../../context/CalculatorContext';
 import DashboardCard from '../../ui/DashboardCard';
 import TabPanel from '../../ui/TabPanel';
 import TcoComparisonChart from '../../charts/TcoComparisonChart';
+import TcoBreakdownChart from '../../charts/TcoBreakdownChart';
+import SavingsProjectionChart from '../../charts/SavingsProjectionChart';
+import CompetitiveAdvantageChart from '../../charts/CompetitiveAdvantageChart';
+import ExecutiveSummaryChart from '../../charts/ExecutiveSummaryChart';
 import CumulativeCostChart from '../../charts/CumulativeCostChart';
 import RoiChart from '../../charts/RoiChart';
 import VendorRadarChart from '../../charts/VendorRadarChart';
 import PaybackPeriodChart from '../../charts/PaybackPeriodChart';
 import { formatCurrency, formatPercentage, formatDays } from '../../../utils/formatters';
+import { VendorResult } from '../../../utils/calculationEngine';
+import { CalculationResults } from '../../../utils/calculationEngine';
 
 // Define vendor result interface
 interface VendorResult {
@@ -138,7 +144,26 @@ const ExecutiveView: React.FC = () => {
             
             {/* Cumulative Cost Chart */}
             <div className="mb-6">
-              <CumulativeCostChart height={350} />
+            <div className="mb-6">
+              <ExecutiveSummaryChart height={400} />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <TcoComparisonChart height={320} />
+              </div>
+              <div>
+                <TcoBreakdownChart height={320} />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <SavingsProjectionChart height={320} />
+              </div>
+              <div>
+                <CompetitiveAdvantageChart height={320} />
+              </div>
             </div>
             
             {/* Key Strategic Benefits */}

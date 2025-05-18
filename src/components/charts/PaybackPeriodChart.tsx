@@ -3,6 +3,8 @@ import Chart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import { useCalculator } from '../../context/CalculatorContext';
 import { formatCurrency } from '../../utils/formatters';
+import { VendorResult } from '../../utils/calculationEngine';
+import { CalculationResults } from '../../utils/calculationEngine';
 
 interface PaybackPeriodChartProps {
   height?: number;

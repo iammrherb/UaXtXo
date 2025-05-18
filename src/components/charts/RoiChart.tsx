@@ -3,6 +3,7 @@ import Chart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import { useCalculator } from '../../context/CalculatorContext';
 import { formatCurrency } from '../../utils/formatters';
+import { CalculationResults } from '../../utils/calculationEngine';
 
 interface RoiChartProps {
   height?: number;

@@ -3,7 +3,6 @@ import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { useCalculator } from '../../context/CalculatorContext';
 import { formatCurrency } from '../../utils/formatters';
-import { CalculationResults } from '../../utils/calculationEngine';
 
 interface TcoComparisonChartProps {
   height?: number;

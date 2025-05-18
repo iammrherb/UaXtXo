@@ -2,8 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { useCalculator } from '../../context/CalculatorContext';
 import { complianceFrameworks } from '../../api/vendorData';
-import { VendorResult } from '../../utils/calculationEngine';
-import { CalculationResults } from '../../utils/calculationEngine';
 
 interface ComplianceRadarChartProps {
   height?: number;
