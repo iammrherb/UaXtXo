@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/UaXtXo/static/css/main.51a235a3.chunk.css",
-    "main.js": "/UaXtXo/static/js/main.41bbb127.chunk.js",
-    "main.js.map": "/UaXtXo/static/js/main.41bbb127.chunk.js.map",
+    "main.js": "/UaXtXo/static/js/main.7f14be0d.chunk.js",
+    "main.js.map": "/UaXtXo/static/js/main.7f14be0d.chunk.js.map",
     "runtime~main.js": "/UaXtXo/static/js/runtime~main.c945bd3c.js",
     "runtime~main.js.map": "/UaXtXo/static/js/runtime~main.c945bd3c.js.map",
     "static/js/2.15af672a.chunk.js": "/UaXtXo/static/js/2.15af672a.chunk.js",
@@ -10,7 +10,7 @@
     "static/js/3.73b51e8f.chunk.js": "/UaXtXo/static/js/3.73b51e8f.chunk.js",
     "static/js/3.73b51e8f.chunk.js.map": "/UaXtXo/static/js/3.73b51e8f.chunk.js.map",
     "index.html": "/UaXtXo/index.html",
-    "precache-manifest.1c01672919f1223d85995a27eb1d35c3.js": "/UaXtXo/precache-manifest.1c01672919f1223d85995a27eb1d35c3.js",
+    "precache-manifest.74777e57808445b88fae1b0293d557ed.js": "/UaXtXo/precache-manifest.74777e57808445b88fae1b0293d557ed.js",
     "service-worker.js": "/UaXtXo/service-worker.js",
     "static/css/main.51a235a3.chunk.css.map": "/UaXtXo/static/css/main.51a235a3.chunk.css.map"
   }

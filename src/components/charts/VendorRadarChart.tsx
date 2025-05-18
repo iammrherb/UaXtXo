@@ -8,6 +8,31 @@ interface VendorRadarChartProps {
   width?: number;
 }
 
+// Define vendor features interface
+interface VendorFeatures {
+  cloudNative: number;
+  zeroTrust: number;
+  deploymentSpeed: number;
+  managementSimplicity: number;
+  scalability: number;
+  remoteAccess: number;
+  compliance: number;
+  costEffectiveness: number;
+  threatPrevention: number;
+  deviceDiscovery: number;
+  userExperience: number;
+  thirdPartyIntegration: number;
+  [key: string]: number; // Index signature to allow string indexing
+}
+
+// Define vendor data interface
+interface VendorData {
+  id: string;
+  name: string;
+  features: VendorFeatures;
+  [key: string]: any;
+}
+
 const VendorRadarChart: React.FC<VendorRadarChartProps> = ({ 
   height = 400, 
   width = 600 
@@ -21,8 +46,8 @@ const VendorRadarChart: React.FC<VendorRadarChartProps> = ({
     
     // Get selected vendor data
     const selectedVendorData = selectedVendors
-      .filter(id => vendorData[id])
-      .map(id => vendorData[id]);
+      .filter((id: string) => vendorData[id])
+      .map((id: string) => vendorData[id] as VendorData);
     
     // Define feature categories for radar chart
     const features = [
@@ -124,11 +149,17 @@ const VendorRadarChart: React.FC<VendorRadarChartProps> = ({
     const colors = ['#8884D8', '#82CA9D', '#FFC658', '#FF8042', '#A4DE6C'];
     
     // Draw radar areas for each vendor
-    selectedVendorData.forEach((vendor, i) => {
+    selectedVendorData.forEach((vendor: VendorData, i: number) => {
       // Assign Portnox a specific color (green)
       const color = vendor.id === 'portnox' ? '#2BD25B' : colors[i % colors.length];
       
-      const dataValues = features.map(f => vendor.features[f]);
+      const dataValues = features.map((f: string) => {
+        // Ensure the feature exists
+        if (typeof vendor.features[f] === 'number') {
+          return vendor.features[f];
+        }
+        return 0; // Default value if feature doesn't exist
+      });
       
       // Create gradient
       const gradientId = `radar-gradient-${i}`;
