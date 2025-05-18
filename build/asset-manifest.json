@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/UaXtXo/static/css/main.7232817e.chunk.css",
-    "main.js": "/UaXtXo/static/js/main.6dcc1b03.chunk.js",
-    "main.js.map": "/UaXtXo/static/js/main.6dcc1b03.chunk.js.map",
+    "main.js": "/UaXtXo/static/js/main.4c522cba.chunk.js",
+    "main.js.map": "/UaXtXo/static/js/main.4c522cba.chunk.js.map",
     "runtime~main.js": "/UaXtXo/static/js/runtime~main.fb211011.js",
     "runtime~main.js.map": "/UaXtXo/static/js/runtime~main.fb211011.js.map",
-    "static/js/2.84645d67.chunk.js": "/UaXtXo/static/js/2.84645d67.chunk.js",
-    "static/js/2.84645d67.chunk.js.map": "/UaXtXo/static/js/2.84645d67.chunk.js.map",
+    "static/js/2.4ed85b13.chunk.js": "/UaXtXo/static/js/2.4ed85b13.chunk.js",
+    "static/js/2.4ed85b13.chunk.js.map": "/UaXtXo/static/js/2.4ed85b13.chunk.js.map",
     "static/js/3.4806d335.chunk.js": "/UaXtXo/static/js/3.4806d335.chunk.js",
     "static/js/3.4806d335.chunk.js.map": "/UaXtXo/static/js/3.4806d335.chunk.js.map",
     "index.html": "/UaXtXo/index.html",
-    "precache-manifest.2c5e234034e741344a7b7dca147e4ef2.js": "/UaXtXo/precache-manifest.2c5e234034e741344a7b7dca147e4ef2.js",
+    "precache-manifest.7fb0bb352f5b0df29f708ac0378ee4df.js": "/UaXtXo/precache-manifest.7fb0bb352f5b0df29f708ac0378ee4df.js",
     "service-worker.js": "/UaXtXo/service-worker.js",
     "static/css/main.7232817e.chunk.css.map": "/UaXtXo/static/css/main.7232817e.chunk.css.map"
   }

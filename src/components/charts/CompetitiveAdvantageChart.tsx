@@ -17,7 +17,7 @@ const CompetitiveAdvantageChart: React.FC<CompetitiveAdvantageChartProps> = ({ h
     if (!calculationResults || !calculationResults.vendorResults) {
       return {
         chart: {
-          type: 'radar' as const,
+          type: 'radar' as const as const,
           height,
           fontFamily: 'Nunito, sans-serif',
           toolbar: {
@@ -42,7 +42,7 @@ const CompetitiveAdvantageChart: React.FC<CompetitiveAdvantageChartProps> = ({ h
     if (!portnox) {
       return { 
         chart: { 
-          type: 'radar' as const
+          type: 'radar' as const as const
         }, 
         series: [], 
         labels: [] 
@@ -109,7 +109,7 @@ const CompetitiveAdvantageChart: React.FC<CompetitiveAdvantageChartProps> = ({ h
     
     return {
       chart: {
-        type: 'radar' as const,
+        type: 'radar' as const as const,
         height,
         dropShadow: {
           enabled: true,

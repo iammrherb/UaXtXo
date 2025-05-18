@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import Chart from 'react-apexcharts';
+import { ApexOptions } from 'apexcharts';
 import { useCalculator } from '../../context/CalculatorContext';
 import { VendorResult } from '../../utils/calculationEngine';
 import { formatCurrency, formatPercentage } from '../../utils/formatters';
@@ -12,11 +13,11 @@ const ExecutiveSummaryChart: React.FC<ExecutiveSummaryChartProps> = ({ height = 
   const { state } = useCalculator();
   const { calculationResults } = state;
   
-  const chartOptions = useMemo(() => {
+  const chartOptions = useMemo<ApexOptions>(() => {
     if (!calculationResults || !calculationResults.vendorResults) {
       return {
         chart: {
-          type: 'area',
+          type: 'area' as const,
           height,
           fontFamily: 'Nunito, sans-serif'
         },
@@ -37,7 +38,7 @@ const ExecutiveSummaryChart: React.FC<ExecutiveSummaryChartProps> = ({ height = 
     
     // Get Portnox and competitors
     const portnox = calculationResults.vendorResults.find((v: VendorResult) => v.vendorId === 'portnox');
-    if (!portnox) return { chart: { type: 'area' }, series: [], xaxis: { categories: [] } };
+    if (!portnox) return { chart: { type: 'area' as const }, series: [], xaxis: { categories: [] } };
     
     const competitors = calculationResults.vendorResults
       .filter((v: VendorResult) => v.vendorId !== 'portnox')
@@ -81,7 +82,7 @@ const ExecutiveSummaryChart: React.FC<ExecutiveSummaryChartProps> = ({ height = 
     
     return {
       chart: {
-        type: 'radar',
+        type: 'radar' as const,
         height,
         dropShadow: {
           enabled: true,
@@ -166,7 +167,7 @@ const ExecutiveSummaryChart: React.FC<ExecutiveSummaryChartProps> = ({ height = 
     <div className="chart-container">
       <Chart
         options={chartOptions}
-        series={chartOptions.series || []}
+        series={(chartOptions.series as any) || []}
         type="radar"
         height={height}
       />

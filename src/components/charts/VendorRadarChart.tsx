@@ -102,7 +102,7 @@ const VendorRadarChart: React.FC<VendorRadarChartProps> = ({
     // Draw background circles
     const circles = [2, 4, 6, 8, 10];
     
-    circles.forEach(d => {
+    circles.forEach((d: VendorResultType) => {
       axisGrid.append('circle')
         .attr('r', rScale(d))
         .attr('fill', 'none')

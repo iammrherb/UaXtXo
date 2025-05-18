@@ -42,7 +42,7 @@ const ComplianceFlowVisual: React.FC<ComplianceFlowVisualProps> = ({ height = 50
   
   const competitors = calculationResults.vendorResults
     .filter((v: VendorResult) => v.vendorId !== 'portnox')
-    .sort((a: VendorResult, b: VendorResult) => b.complianceScores?.overall || 0 - a.complianceScores?.overall || 0)
+    .sort((a: VendorResult, b: VendorResult) => (b.complianceScores?.overall || 0) - (a.complianceScores?.overall || 0))
     .slice(0, 2);
   
   // All vendors for comparison
@@ -114,12 +114,28 @@ const ComplianceFlowVisual: React.FC<ComplianceFlowVisualProps> = ({ height = 50
   const sortedFrameworks = Object.entries(complianceFrameworks)
     .sort(([, a], [, b]) => b.nacRelevance - a.nacRelevance);
   
+  // CSS for animations
+  const fadeInAnimation = `
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+  `;
+  
   return (
     <div 
       className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm"
       style={{ height: 'auto', minHeight: height, overflow: 'hidden' }}
       ref={containerRef}
     >
+      {/* Add styles for animations */}
+      <style>
+        {fadeInAnimation}
+      </style>
+    
       <h3 className="text-xl font-semibold mb-4 text-center text-gray-800 dark:text-gray-200">
         <span className="mr-2">📋</span>
         Compliance Framework Coverage
@@ -286,7 +302,7 @@ const ComplianceFlowVisual: React.FC<ComplianceFlowVisualProps> = ({ height = 50
                       })}
                       
                       {/* Score markers */}
-                      {[0, 25, 50, 75, 100].map(mark => (
+                      {[0, 25, 50, 75, 100].map((mark: any) => (
                         <div 
                           key={`mark-${mark}`} 
                           className="absolute h-3 w-0.5 bg-gray-300 dark:bg-gray-600"
@@ -324,7 +340,7 @@ const ComplianceFlowVisual: React.FC<ComplianceFlowVisualProps> = ({ height = 50
       
       {/* Legend */}
       <div className="flex justify-center mb-4 space-x-4">
-        {allVendors.map(vendor => (
+        {allVendors.map((vendor: any) => (
           <div key={vendor.vendorId} className="flex items-center">
             <div className={`h-3 w-3 rounded-full mr-1 ${
               vendor.vendorId === 'portnox' ? 'bg-portnox-primary' : 'bg-gray-400 dark:bg-gray-500'
@@ -344,17 +360,6 @@ const ComplianceFlowVisual: React.FC<ComplianceFlowVisualProps> = ({ height = 50
           reducing the manual effort required for audits by up to 65%.
         </p>
       </div>
-      
-      {/* Add custom CSS for animations */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out forwards;
-        }
-      `}</style>
     </div>
   );
 };

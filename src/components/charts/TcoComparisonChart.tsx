@@ -95,7 +95,7 @@ const TcoComparisonChart: React.FC<TcoComparisonChartProps> = ({ height = 400 })
     if (!calculationResults || !calculationResults.vendorResults || calculationResults.vendorResults.length === 0) {
       return {
         chart: {
-          type: 'bar',
+          type: 'bar' as const,
           height,
           style: {
             fontFamily: 'Nunito, sans-serif'
@@ -147,7 +147,7 @@ const TcoComparisonChart: React.FC<TcoComparisonChartProps> = ({ height = 400 })
     
     return {
       chart: {
-        type: 'bar',
+        type: 'bar' as const,
         height,
         style: {
           fontFamily: 'Nunito, sans-serif'

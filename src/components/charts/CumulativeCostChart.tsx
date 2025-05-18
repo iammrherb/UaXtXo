@@ -3,7 +3,7 @@ import Chart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import { useCalculator } from '../../context/CalculatorContext';
 import { formatCurrency } from '../../utils/formatters';
-import { VendorResult } from '../../utils/calculationEngine';
+import { VendorResultType as VendorResultType } from '../../utils/calculationEngine';
 import { CalculationResults } from '../../utils/calculationEngine';
 
 interface CumulativeCostChartProps {
@@ -11,7 +11,7 @@ interface CumulativeCostChartProps {
 }
 
 // Define vendor result interface
-interface VendorResult {
+interface VendorResultType {
   vendorId: string;
   name: string;
   totalTco: number;
@@ -42,7 +42,7 @@ const CumulativeCostChart: React.FC<CumulativeCostChartProps> = ({ height = 350 
       return {
         chartOptions: {
           chart: {
-            type: 'line' as const,
+            type: 'line' as const as const,
             height: height,
             fontFamily: 'Nunito, sans-serif'
           },
@@ -66,16 +66,16 @@ const CumulativeCostChart: React.FC<CumulativeCostChartProps> = ({ height = 350 
     }
     
     // Limit to top 4 vendors + Portnox for better readability
-    const portnox = calculationResults.vendorResults.find((r: VendorResult) => r.vendorId === 'portnox');
+    const portnox = calculationResults.vendorResults.find((r: VendorResultType) => r.vendorId === 'portnox');
     const otherVendors = calculationResults.vendorResults
-      .filter((r: VendorResult) => r.vendorId !== 'portnox')
-      .sort((a: VendorResult, b: VendorResult) => a.totalTco - b.totalTco)
+      .filter((r: VendorResultType) => r.vendorId !== 'portnox')
+      .sort((a: VendorResultType, b: VendorResultType) => a.totalTco - b.totalTco)
       .slice(0, 4);
     
     const displayVendors = portnox ? [portnox, ...otherVendors] : otherVendors;
     
     // Prepare series data
-    const seriesData = displayVendors.map((vendor: VendorResult) => ({
+    const seriesData = displayVendors.map((vendor: VendorResultType) => ({
       name: vendor.name,
       data: [
         Math.round(vendor.cumulativeCosts.initial),
@@ -88,7 +88,7 @@ const CumulativeCostChart: React.FC<CumulativeCostChartProps> = ({ height = 350 
     return {
       chartOptions: {
         chart: {
-          type: 'line' as const,
+          type: 'line' as const as const,
           height: height,
           animations: {
             enabled: true,
@@ -112,18 +112,18 @@ const CumulativeCostChart: React.FC<CumulativeCostChartProps> = ({ height = 350 
           },
           fontFamily: 'Nunito, sans-serif'
         },
-        colors: displayVendors.map((vendor: VendorResult) => 
+        colors: displayVendors.map((vendor: VendorResultType) => 
           vendor.vendorId === 'portnox' ? '#2BD25B' : '#1B67B2'
         ),
         stroke: {
-          width: displayVendors.map((vendor: VendorResult) => 
+          width: displayVendors.map((vendor: VendorResultType) => 
             vendor.vendorId === 'portnox' ? 4 : 2
           ),
           curve: 'smooth'
         },
         markers: {
           size: 5,
-          colors: displayVendors.map((vendor: VendorResult) => 
+          colors: displayVendors.map((vendor: VendorResultType) => 
             vendor.vendorId === 'portnox' ? '#2BD25B' : '#1B67B2'
           ),
           strokeWidth: 0

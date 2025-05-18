@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import Chart from 'react-apexcharts';
+import { ApexOptions } from 'apexcharts';
 import { useCalculator } from '../../context/CalculatorContext';
 import { VendorResult } from '../../utils/calculationEngine';
 import { formatCurrency, formatPercentage } from '../../utils/formatters';
@@ -12,11 +13,11 @@ const SecurityImpactChart: React.FC<SecurityImpactChartProps> = ({ height = 350 
   const { state } = useCalculator();
   const { calculationResults } = state;
   
-  const chartOptions = useMemo(() => {
+  const chartOptions = useMemo<ApexOptions>(() => {
     if (!calculationResults || !calculationResults.vendorResults) {
       return {
         chart: {
-          type: 'bar',
+          type: 'bar' as const,
           height,
           fontFamily: 'Nunito, sans-serif'
         },
@@ -39,19 +40,19 @@ const SecurityImpactChart: React.FC<SecurityImpactChartProps> = ({ height = 350 
     const sortedVendors = [...calculationResults.vendorResults]
       .sort((a: VendorResult, b: VendorResult) => b.securityImprovement - a.securityImprovement);
     
-    if (sortedVendors.length === 0) return { chart: { type: 'bar' }, series: [], xaxis: { categories: [] } };
+    if (sortedVendors.length === 0) return { chart: { type: 'bar' as const }, series: [], xaxis: { categories: [] } };
     
     // Prepare categories and data
-    const categories = sortedVendors.map(vendor => vendor.name);
-    const securityImprovementData = sortedVendors.map(vendor => Math.round(vendor.securityImprovement));
-    const meanTimeToRespondData = sortedVendors.map(vendor => vendor.meanTimeToRespond);
+    const categories = sortedVendors.map((vendor: any) => vendor.name);
+    const securityImprovementData = sortedVendors.map((vendor: any) => Math.round(vendor.securityImprovement));
+    const meanTimeToRespondData = sortedVendors.map((vendor: any) => vendor.meanTimeToRespond);
     
     // Calculate financial impact
-    const riskReductionValues = sortedVendors.map(vendor => Math.round(vendor.riskReductionValue / 1000));
+    const riskReductionValues = sortedVendors.map((vendor: any) => Math.round(vendor.riskReductionValue / 1000));
     
     return {
       chart: {
-        type: 'bar',
+        type: 'bar' as const,
         height,
         stacked: false,
         fontFamily: 'Nunito, sans-serif',
@@ -169,7 +170,7 @@ const SecurityImpactChart: React.FC<SecurityImpactChartProps> = ({ height = 350 
     <div className="chart-container">
       <Chart
         options={chartOptions}
-        series={chartOptions.series || []}
+        series={(chartOptions.series as any) || []}
         type="bar"
         height={height}
       />

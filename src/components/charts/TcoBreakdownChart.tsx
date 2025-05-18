@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import Chart from 'react-apexcharts';
+import { ApexOptions } from 'apexcharts';
 import { useCalculator } from '../../context/CalculatorContext';
 import { VendorResult } from '../../utils/calculationEngine';
 import { formatCurrency } from '../../utils/formatters';
@@ -16,11 +17,11 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
   const { state } = useCalculator();
   const { calculationResults } = state;
   
-  const chartOptions = useMemo(() => {
+  const chartOptions = useMemo<ApexOptions>(() => {
     if (!calculationResults || !calculationResults.vendorResults) {
       return {
         chart: {
-          type: 'donut',
+          type: 'donut' as const,
           height,
           fontFamily: 'Nunito, sans-serif'
         },
@@ -42,7 +43,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
     if (!vendor) {
       return {
         chart: {
-          type: 'donut',
+          type: 'donut' as const,
           height,
           fontFamily: 'Nunito, sans-serif'
         },
@@ -86,7 +87,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
     
     return {
       chart: {
-        type: 'donut',
+        type: 'donut' as const,
         height,
         fontFamily: 'Nunito, sans-serif'
       },
@@ -164,7 +165,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
     <div className="chart-container">
       <Chart
         options={chartOptions}
-        series={chartOptions.series || []}
+        series={(chartOptions.series as any) || []}
         type="donut"
         height={height}
       />

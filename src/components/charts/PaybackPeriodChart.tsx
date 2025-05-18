@@ -3,7 +3,7 @@ import Chart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import { useCalculator } from '../../context/CalculatorContext';
 import { formatCurrency } from '../../utils/formatters';
-import { VendorResult } from '../../utils/calculationEngine';
+import { VendorResultType as VendorResultType } from '../../utils/calculationEngine';
 import { CalculationResults } from '../../utils/calculationEngine';
 
 interface PaybackPeriodChartProps {
@@ -11,7 +11,7 @@ interface PaybackPeriodChartProps {
 }
 
 // Define vendor result interface
-interface VendorResult {
+interface VendorResultType {
   vendorId: string;
   name: string;
   paybackPeriod: number;
@@ -33,7 +33,7 @@ const PaybackPeriodChart: React.FC<PaybackPeriodChartProps> = ({ height = 350 })
       return {
         chartOptions: {
           chart: {
-            type: 'bar' as const,
+            type: 'bar' as const as const,
             height,
             fontFamily: 'Nunito, sans-serif'
           },
@@ -52,12 +52,12 @@ const PaybackPeriodChart: React.FC<PaybackPeriodChartProps> = ({ height = 350 })
     }
     
     // Get Portnox result
-    const portnox = calculationResults.vendorResults.find((r: VendorResult) => r.vendorId === 'portnox');
+    const portnox = calculationResults.vendorResults.find((r: VendorResultType) => r.vendorId === 'portnox');
     if (!portnox) {
       return {
         chartOptions: {
           chart: {
-            type: 'bar' as const,
+            type: 'bar' as const as const,
           }
         } as ApexOptions,
         series: [] as ChartSeries[]
@@ -66,20 +66,20 @@ const PaybackPeriodChart: React.FC<PaybackPeriodChartProps> = ({ height = 350 })
     
     // Create comparison data
     const competitors = calculationResults.vendorResults
-      .filter((r: VendorResult) => r.vendorId !== 'portnox')
-      .sort((a: VendorResult, b: VendorResult) => a.paybackPeriod - b.paybackPeriod)
+      .filter((r: VendorResultType) => r.vendorId !== 'portnox')
+      .sort((a: VendorResultType, b: VendorResultType) => a.paybackPeriod - b.paybackPeriod)
       .slice(0, 5); // Limit to top 5 for better readability
     
-    const categories = [portnox.name, ...competitors.map((c: VendorResult) => c.name)];
+    const categories = [portnox.name, ...competitors.map((c: VendorResultType) => c.name)];
     const data = [
       Math.round(portnox.paybackPeriod),
-      ...competitors.map((c: VendorResult) => Math.round(c.paybackPeriod))
+      ...competitors.map((c: VendorResultType) => Math.round(c.paybackPeriod))
     ];
     
     return {
       chartOptions: {
         chart: {
-          type: 'bar' as const,
+          type: 'bar' as const as const,
           height,
           animations: {
             enabled: true,

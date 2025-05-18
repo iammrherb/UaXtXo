@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import Chart from 'react-apexcharts';
+import { ApexOptions } from 'apexcharts';
 import { useCalculator } from '../../context/CalculatorContext';
 import { VendorResult } from '../../utils/calculationEngine';
 import { formatCurrency } from '../../utils/formatters';
@@ -12,7 +13,7 @@ const SavingsProjectionChart: React.FC<SavingsProjectionChartProps> = ({ height 
   const { state } = useCalculator();
   const { calculationResults } = state;
   
-  const chartOptions = useMemo(() => {
+  const chartOptions = useMemo<ApexOptions>(() => {
     if (!calculationResults || !calculationResults.vendorResults) {
       return {
         chart: {
@@ -203,7 +204,7 @@ const SavingsProjectionChart: React.FC<SavingsProjectionChartProps> = ({ height 
     <div className="chart-container">
       <Chart
         options={chartOptions}
-        series={chartOptions.series || []}
+        series={(chartOptions.series as any) || []}
         type="area"
         height={height}
       />

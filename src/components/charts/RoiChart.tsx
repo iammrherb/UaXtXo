@@ -32,7 +32,7 @@ const RoiChart: React.FC<RoiChartProps> = ({ height = 350 }) => {
       return {
         chartOptions: {
           chart: {
-            type: 'bar' as const,
+            type: 'bar' as const as const,
             height,
             fontFamily: 'Nunito, sans-serif'
           },
@@ -65,7 +65,7 @@ const RoiChart: React.FC<RoiChartProps> = ({ height = 350 }) => {
     return {
       chartOptions: {
         chart: {
-          type: 'bar' as const,
+          type: 'bar' as const as const,
           height,
           animations: {
             enabled: true,

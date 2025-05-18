@@ -102,7 +102,7 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
       
       {/* Categories selection */}
       <div className="flex flex-wrap justify-center gap-2 mb-6">
-        {categories.map(category => (
+        {categories.map((category: any) => (
           <button
             key={category.id}
             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 flex items-center ${
@@ -132,14 +132,14 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
               transform: 'translateY(0)', 
               opacity: 1, 
               zIndex: 10,
-              backgroundColor: `${categories.find(c => c.id === activeCategory)?.color}15` 
+              backgroundColor: `${categories.find((c: VendorResultType) => c.id === activeCategory)?.color}15` 
             }}
           >
             <p className="text-sm text-gray-700 dark:text-gray-300">
               <span className="font-medium">
-                {categories.find(c => c.id === activeCategory)?.name}: 
+                {categories.find((c: VendorResultType) => c.id === activeCategory)?.name}: 
               </span>{' '}
-              {categories.find(c => c.id === activeCategory)?.description}
+              {categories.find((c: VendorResultType) => c.id === activeCategory)?.description}
             </p>
           </div>
         )}
@@ -227,7 +227,7 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
                 
                 {/* Category scores */}
                 <div className="space-y-3">
-                  {categories.map(category => {
+                  {categories.map((category: any) => {
                     const score = getScore(vendor, category.id);
                     const isActive = activeCategory === category.id;
                     

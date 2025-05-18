@@ -31,7 +31,7 @@ const RiskReductionChart: React.FC<RiskReductionChartProps> = ({ height = 350 })
       return {
         chartOptions: {
           chart: {
-            type: 'bar' as const,
+            type: 'bar' as const as const,
             height,
             fontFamily: 'Nunito, sans-serif'
           },
@@ -64,7 +64,7 @@ const RiskReductionChart: React.FC<RiskReductionChartProps> = ({ height = 350 })
     return {
       chartOptions: {
         chart: {
-          type: 'bar' as const,
+          type: 'bar' as const as const,
           height,
           animations: {
             enabled: true,
