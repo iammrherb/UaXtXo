@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
+import RouterConfig from './utils/RouterConfig';
 import Header from './components/layout/Header';
 import Sidebar from './components/layout/Sidebar';
 import Footer from './components/layout/Footer';
@@ -12,16 +13,16 @@ import './App.css';
 
 const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
+  
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
-
+  
   return (
     <ThemeProvider>
       <CalculatorProvider>
         <ToastProvider>
-          <Router basename={environment.basename}>
+          <RouterConfig>
             <div className="app-container">
               <Header toggleSidebar={toggleSidebar} />
               <div className="main-content">
@@ -35,7 +36,7 @@ const App: React.FC = () => {
               </div>
               <Footer />
             </div>
-          </Router>
+          </RouterConfig>
         </ToastProvider>
       </CalculatorProvider>
     </ThemeProvider>
