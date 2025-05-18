@@ -7,6 +7,19 @@ interface CumulativeCostChartProps {
   height?: number;
 }
 
+// Define the interface for vendor results
+interface VendorResult {
+  vendorId: string;
+  name: string;
+  totalTco: number;
+  cumulativeCosts: {
+    initial: number;
+    year1: number;
+    year2: number;
+    year3: number;
+  };
+}
+
 const CumulativeCostChart: React.FC<CumulativeCostChartProps> = ({ height = 350 }) => {
   const { state } = useCalculator();
   const { calculationResults } = state;
@@ -41,16 +54,16 @@ const CumulativeCostChart: React.FC<CumulativeCostChartProps> = ({ height = 350 
     }
     
     // Limit to top 4 vendors + Portnox for better readability
-    const portnox = calculationResults.vendorResults.find(r => r.vendorId === 'portnox');
+    const portnox = calculationResults.vendorResults.find((r: VendorResult) => r.vendorId === 'portnox');
     const otherVendors = calculationResults.vendorResults
-      .filter(r => r.vendorId !== 'portnox')
-      .sort((a, b) => a.totalTco - b.totalTco)
+      .filter((r: VendorResult) => r.vendorId !== 'portnox')
+      .sort((a: VendorResult, b: VendorResult) => a.totalTco - b.totalTco)
       .slice(0, 4);
     
     const displayVendors = portnox ? [portnox, ...otherVendors] : otherVendors;
     
     // Prepare series data
-    const series = displayVendors.map(vendor => ({
+    const series = displayVendors.map((vendor: VendorResult) => ({
       name: vendor.name,
       data: [
         Math.round(vendor.cumulativeCosts.initial),
@@ -61,7 +74,7 @@ const CumulativeCostChart: React.FC<CumulativeCostChartProps> = ({ height = 350 
     }));
     
     // Calculate max cost for y-axis scaling
-    const competitors = displayVendors.filter(v => v.vendorId !== 'portnox');
+    const competitors = displayVendors.filter((v: VendorResult) => v.vendorId !== 'portnox');
     let maxCost = 0;
     
     if (portnox) {
@@ -70,7 +83,7 @@ const CumulativeCostChart: React.FC<CumulativeCostChartProps> = ({ height = 350 
     
     if (competitors.length > 0) {
       const competitorMaxCost = Math.max(
-        ...competitors.map((c: typeof portnox) => c.cumulativeCosts.year3)
+        ...competitors.map((c: VendorResult) => c.cumulativeCosts.year3)
       );
       maxCost = Math.max(maxCost, competitorMaxCost);
     }
@@ -115,18 +128,18 @@ const CumulativeCostChart: React.FC<CumulativeCostChartProps> = ({ height = 350 
           }
         }
       },
-      colors: displayVendors.map(vendor => 
+      colors: displayVendors.map((vendor: VendorResult) => 
         vendor.vendorId === 'portnox' ? '#2BD25B' : '#1B67B2'
       ),
       stroke: {
-        width: displayVendors.map(vendor => 
+        width: displayVendors.map((vendor: VendorResult) => 
           vendor.vendorId === 'portnox' ? 4 : 2
         ),
         curve: 'smooth'
       },
       markers: {
         size: 5,
-        colors: displayVendors.map(vendor => 
+        colors: displayVendors.map((vendor: VendorResult) => 
           vendor.vendorId === 'portnox' ? '#2BD25B' : '#1B67B2'
         ),
         strokeWidth: 0
