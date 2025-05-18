@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import Chart from 'react-apexcharts';
 import { useCalculator } from '../../context/CalculatorContext';
 import { formatCurrency } from '../../utils/formatters';
+import { ApexOptions } from 'apexcharts';
 
 interface CumulativeCostChartProps {
   height?: number;
@@ -24,11 +25,11 @@ const CumulativeCostChart: React.FC<CumulativeCostChartProps> = ({ height = 350 
   const { state } = useCalculator();
   const { calculationResults } = state;
   
-  const chartOptions = useMemo(() => {
+  const chartOptions = useMemo<ApexOptions>(() => {
     if (!calculationResults || !calculationResults.vendorResults || calculationResults.vendorResults.length === 0) {
       return {
         chart: {
-          type: 'line',
+          type: 'line' as const,
           height,
           fontFamily: 'Nunito, sans-serif',
           toolbar: {
@@ -62,17 +63,6 @@ const CumulativeCostChart: React.FC<CumulativeCostChartProps> = ({ height = 350 
     
     const displayVendors = portnox ? [portnox, ...otherVendors] : otherVendors;
     
-    // Prepare series data
-    const series = displayVendors.map((vendor: VendorResult) => ({
-      name: vendor.name,
-      data: [
-        Math.round(vendor.cumulativeCosts.initial),
-        Math.round(vendor.cumulativeCosts.year1),
-        Math.round(vendor.cumulativeCosts.year2),
-        Math.round(vendor.cumulativeCosts.year3)
-      ]
-    }));
-    
     // Calculate max cost for y-axis scaling
     const competitors = displayVendors.filter((v: VendorResult) => v.vendorId !== 'portnox');
     let maxCost = 0;
@@ -91,9 +81,20 @@ const CumulativeCostChart: React.FC<CumulativeCostChartProps> = ({ height = 350 
     // Add 10% padding to the max cost
     const yAxisMax = maxCost * 1.1;
     
+    // Prepare series data - separating from options as series is not part of ApexOptions
+    const seriesData = displayVendors.map((vendor: VendorResult) => ({
+      name: vendor.name,
+      data: [
+        Math.round(vendor.cumulativeCosts.initial),
+        Math.round(vendor.cumulativeCosts.year1),
+        Math.round(vendor.cumulativeCosts.year2),
+        Math.round(vendor.cumulativeCosts.year3)
+      ]
+    }));
+    
     return {
       chart: {
-        type: 'line',
+        type: 'line' as const,
         height,
         animations: {
           enabled: true,
@@ -198,16 +199,42 @@ const CumulativeCostChart: React.FC<CumulativeCostChartProps> = ({ height = 350 
           opacityTo: 0.2,
           stops: [0, 90, 100]
         }
-      },
-      series
+      }
     };
   }, [calculationResults, height]);
+  
+  // Get series data
+  const series = useMemo(() => {
+    if (!calculationResults || !calculationResults.vendorResults || calculationResults.vendorResults.length === 0) {
+      return [];
+    }
+    
+    // Limit to top 4 vendors + Portnox for better readability
+    const portnox = calculationResults.vendorResults.find((r: VendorResult) => r.vendorId === 'portnox');
+    const otherVendors = calculationResults.vendorResults
+      .filter((r: VendorResult) => r.vendorId !== 'portnox')
+      .sort((a: VendorResult, b: VendorResult) => a.totalTco - b.totalTco)
+      .slice(0, 4);
+    
+    const displayVendors = portnox ? [portnox, ...otherVendors] : otherVendors;
+    
+    // Prepare series data
+    return displayVendors.map((vendor: VendorResult) => ({
+      name: vendor.name,
+      data: [
+        Math.round(vendor.cumulativeCosts.initial),
+        Math.round(vendor.cumulativeCosts.year1),
+        Math.round(vendor.cumulativeCosts.year2),
+        Math.round(vendor.cumulativeCosts.year3)
+      ]
+    }));
+  }, [calculationResults]);
   
   return (
     <div className="chart-container">
       <Chart
         options={chartOptions}
-        series={chartOptions.series || []}
+        series={series}
         type="line"
         height={height}
       />

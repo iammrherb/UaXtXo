@@ -1,102 +1,172 @@
 import React, { useMemo } from 'react';
 import Chart from 'react-apexcharts';
-import { ApexOptions } from 'apexcharts';
 import { useCalculator } from '../../context/CalculatorContext';
-import { VendorResult } from '../../utils/calculationEngine';
-import { formatCurrency, formatPercentage } from '../../utils/formatters';
+import { formatCurrency, formatPercentage, formatDays } from '../../utils/formatters';
+import { ApexOptions } from 'apexcharts';
 
 interface ExecutiveSummaryChartProps {
   height?: number;
 }
 
-const ExecutiveSummaryChart: React.FC<ExecutiveSummaryChartProps> = ({ height = 400 }) => {
+// Define the interface for vendor results
+interface VendorResult {
+  vendorId: string;
+  name: string;
+  totalTco: number;
+  implementationDays: number;
+  roi: number;
+  paybackPeriod: number;
+  securityImprovement: number;
+}
+
+const ExecutiveSummaryChart: React.FC<ExecutiveSummaryChartProps> = ({ height = 350 }) => {
   const { state } = useCalculator();
   const { calculationResults } = state;
   
   const chartOptions = useMemo<ApexOptions>(() => {
-    if (!calculationResults || !calculationResults.vendorResults) {
+    if (!calculationResults || !calculationResults.vendorResults || calculationResults.vendorResults.length === 0) {
       return {
         chart: {
-          type: 'area' as const,
+          type: 'bar' as const,
           height,
-          fontFamily: 'Nunito, sans-serif'
+          fontFamily: 'Nunito, sans-serif',
+          toolbar: {
+            show: false
+          }
         },
         title: {
-          text: 'Executive Summary',
-          align: 'center'
+          text: 'Executive Summary'
         },
         subtitle: {
-          text: 'No data available. Please calculate results first.',
-          align: 'center'
+          text: 'No data available. Please calculate results first.'
         },
-        series: [],
         xaxis: {
           categories: []
-        }
+        },
+        series: []
       };
     }
     
-    // Get Portnox and competitors
-    const portnox = calculationResults.vendorResults.find((v: VendorResult) => v.vendorId === 'portnox');
-    if (!portnox) return { chart: { type: 'area' as const }, series: [], xaxis: { categories: [] } };
+    // Get Portnox results
+    const portnox = calculationResults.vendorResults.find((r: VendorResult) => r.vendorId === 'portnox');
     
-    const competitors = calculationResults.vendorResults
-      .filter((v: VendorResult) => v.vendorId !== 'portnox')
-      .sort((a: VendorResult, b: VendorResult) => b.totalTco - a.totalTco);
+    if (!portnox) return {
+      chart: {
+        type: 'bar' as const,
+        height,
+        fontFamily: 'Nunito, sans-serif'
+      },
+      title: {
+        text: 'Executive Summary'
+      },
+      subtitle: {
+        text: 'No Portnox data available.'
+      },
+      xaxis: {
+        categories: []
+      },
+      series: []
+    };
+    
+    // Get competitors (all non-Portnox vendors)
+    const competitors = calculationResults.vendorResults.filter((r: VendorResult) => r.vendorId !== 'portnox');
     
     // Average competitor values
-    const avgCompetitorTco = competitors.length > 0 
-      ? competitors.reduce((sum, vendor) => sum + vendor.totalTco, 0) / competitors.length 
+    const avgCompetitorTco = competitors.length > 0
+      ? competitors.reduce((sum: number, vendor: VendorResult) => sum + vendor.totalTco, 0) / competitors.length
       : portnox.totalTco * 1.5;
     
-    const avgCompetitorImplementation = competitors.length > 0 
-      ? competitors.reduce((sum, vendor) => sum + vendor.implementationDays, 0) / competitors.length 
+    const avgCompetitorImplementation = competitors.length > 0
+      ? competitors.reduce((sum: number, vendor: VendorResult) => sum + vendor.implementationDays, 0) / competitors.length
       : portnox.implementationDays * 3;
     
-    const avgCompetitorSecurity = competitors.length > 0 
-      ? competitors.reduce((sum, vendor) => sum + vendor.securityImprovement, 0) / competitors.length 
-      : portnox.securityImprovement * 0.7;
+    const avgCompetitorRoi = competitors.length > 0
+      ? competitors.reduce((sum: number, vendor: VendorResult) => sum + vendor.roi, 0) / competitors.length
+      : portnox.roi / 2;
     
-    // Calculate advantage percentages
-    const costAdvantage = Math.round((avgCompetitorTco - portnox.totalTco) / avgCompetitorTco * 100);
-    const speedAdvantage = Math.round((avgCompetitorImplementation - portnox.implementationDays) / avgCompetitorImplementation * 100);
-    const securityAdvantage = Math.round((portnox.securityImprovement - avgCompetitorSecurity) / avgCompetitorSecurity * 100);
-    const roiAdvantage = Math.round((portnox.roi - (competitors.length > 0 ? competitors[0].roi : portnox.roi * 0.6)) / 
-      (competitors.length > 0 ? competitors[0].roi : portnox.roi * 0.6) * 100);
+    const avgCompetitorPayback = competitors.length > 0
+      ? competitors.reduce((sum: number, vendor: VendorResult) => sum + vendor.paybackPeriod, 0) / competitors.length
+      : portnox.paybackPeriod * 2.5;
     
-    // Prepare data for radar chart
-    const categories = ['Cost Advantage', 'ROI', 'Speed to Security', 'Operational Efficiency', 'Security Effectiveness', 'Future Readiness'];
+    const avgCompetitorSecurity = competitors.length > 0
+      ? competitors.reduce((sum: number, vendor: VendorResult) => sum + vendor.securityImprovement, 0) / competitors.length
+      : portnox.securityImprovement / 1.5;
     
-    const operationalAdvantage = Math.round((10 - portnox.managementComplexity) / portnox.managementComplexity * 100);
-    const futureReadiness = 80; // Assuming cloud solutions have high future readiness
+    // Calculate comparison metrics
+    const categories = ['TCO Savings', 'Implementation', 'ROI', 'Payback', 'Security'];
     
-    // Scale all advantages to 0-100 for better visualization
-    const portnoxAdvantages = [
-      costAdvantage > 100 ? 100 : costAdvantage,
-      roiAdvantage > 100 ? 100 : roiAdvantage,
-      speedAdvantage > 100 ? 100 : speedAdvantage,
-      operationalAdvantage > 100 ? 100 : operationalAdvantage,
-      securityAdvantage > 100 ? 100 : securityAdvantage,
-      futureReadiness
+    const seriesData = [
+      {
+        name: 'Portnox Advantage',
+        data: [
+          Math.round(avgCompetitorTco - portnox.totalTco), // TCO Savings
+          Math.round(avgCompetitorImplementation - portnox.implementationDays), // Implementation Days Saved
+          Math.round(portnox.roi - avgCompetitorRoi), // ROI Difference
+          Math.round(avgCompetitorPayback - portnox.paybackPeriod), // Payback Period Reduction
+          Math.round(portnox.securityImprovement - avgCompetitorSecurity) // Security Improvement
+        ]
+      }
     ];
     
     return {
       chart: {
-        type: 'radar' as const,
+        type: 'bar' as const,
         height,
-        dropShadow: {
-          enabled: true,
-          blur: 1,
-          left: 1,
-          top: 1
-        },
         fontFamily: 'Nunito, sans-serif',
         toolbar: {
-          show: false
+          show: true,
+          tools: {
+            download: true,
+            selection: false,
+            zoom: false,
+            zoomin: false,
+            zoomout: false,
+            pan: false
+          }
+        },
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 800,
+          animateGradually: {
+            enabled: true,
+            delay: 150
+          },
+          dynamicAnimation: {
+            enabled: true,
+            speed: 350
+          }
+        }
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '60%',
+          borderRadius: 8,
+          distributed: true,
+          dataLabels: {
+            position: 'top'
+          }
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: function(val: number, opts: any) {
+          const metric = categories[opts.dataPointIndex];
+          if (metric === 'TCO Savings') return formatCurrency(val);
+          if (metric === 'Implementation') return `${val} days`;
+          if (metric === 'ROI') return `${val}%`;
+          if (metric === 'Payback') return `${val} months`;
+          if (metric === 'Security') return `${val}%`;
+          return val.toString();
+        },
+        style: {
+          fontSize: '12px',
+          colors: ['#333']
         }
       },
       title: {
-        text: 'Portnox Competitive Advantage',
+        text: 'Portnox Competitive Advantages',
         align: 'center',
         style: {
           fontSize: '18px',
@@ -104,94 +174,105 @@ const ExecutiveSummaryChart: React.FC<ExecutiveSummaryChartProps> = ({ height = 
         }
       },
       subtitle: {
-        text: '% improvement vs. traditional NAC solutions',
+        text: 'Comparison with Average Competitor',
         align: 'center'
       },
-      stroke: {
-        width: 3
-      },
-      fill: {
-        opacity: 0.2
-      },
-      markers: {
-        size: 5,
-        hover: {
-          size: 8
-        }
-      },
-      colors: ['#2BD25B'],
+      colors: ['#2BD25B', '#2BD25B', '#2BD25B', '#2BD25B', '#2BD25B'],
       xaxis: {
         categories: categories,
         labels: {
           style: {
-            fontSize: '12px',
-            fontWeight: 'bold'
+            fontSize: '12px'
           }
         }
       },
       yaxis: {
-        show: false,
-        min: 0,
-        max: 100
-      },
-      dataLabels: {
-        enabled: true,
-        background: {
-          enabled: true,
-          borderRadius: 2
+        labels: {
+          show: false
         },
-        style: {
-          colors: ['#333']
+        axisBorder: {
+          show: false
         },
-        formatter: function(val: number) {
-          return `${Math.round(val)}%`;
+        axisTicks: {
+          show: false
         }
+      },
+      grid: {
+        show: false
       },
       tooltip: {
         y: {
-          formatter: function(val: number) {
-            return `${Math.round(val)}% advantage`;
+          formatter: function(val: number, opts: any) {
+            const metric = categories[opts.dataPointIndex];
+            if (metric === 'TCO Savings') return formatCurrency(val);
+            if (metric === 'Implementation') return `${val} days faster implementation`;
+            if (metric === 'ROI') return `${val}% higher ROI`;
+            if (metric === 'Payback') return `${val} months quicker payback`;
+            if (metric === 'Security') return `${val}% better security`;
+            return val.toString();
           }
         }
-      },
-      series: [
-        {
-          name: 'Competitive Advantage',
-          data: portnoxAdvantages
-        }
-      ]
+      }
     };
   }, [calculationResults, height]);
+  
+  // Get series data
+  const series = useMemo(() => {
+    if (!calculationResults || !calculationResults.vendorResults || calculationResults.vendorResults.length === 0) {
+      return [];
+    }
+    
+    // Get Portnox results
+    const portnox = calculationResults.vendorResults.find((r: VendorResult) => r.vendorId === 'portnox');
+    
+    if (!portnox) return [];
+    
+    // Get competitors (all non-Portnox vendors)
+    const competitors = calculationResults.vendorResults.filter((r: VendorResult) => r.vendorId !== 'portnox');
+    
+    // Average competitor values
+    const avgCompetitorTco = competitors.length > 0
+      ? competitors.reduce((sum: number, vendor: VendorResult) => sum + vendor.totalTco, 0) / competitors.length
+      : portnox.totalTco * 1.5;
+    
+    const avgCompetitorImplementation = competitors.length > 0
+      ? competitors.reduce((sum: number, vendor: VendorResult) => sum + vendor.implementationDays, 0) / competitors.length
+      : portnox.implementationDays * 3;
+    
+    const avgCompetitorRoi = competitors.length > 0
+      ? competitors.reduce((sum: number, vendor: VendorResult) => sum + vendor.roi, 0) / competitors.length
+      : portnox.roi / 2;
+    
+    const avgCompetitorPayback = competitors.length > 0
+      ? competitors.reduce((sum: number, vendor: VendorResult) => sum + vendor.paybackPeriod, 0) / competitors.length
+      : portnox.paybackPeriod * 2.5;
+    
+    const avgCompetitorSecurity = competitors.length > 0
+      ? competitors.reduce((sum: number, vendor: VendorResult) => sum + vendor.securityImprovement, 0) / competitors.length
+      : portnox.securityImprovement / 1.5;
+    
+    return [
+      {
+        name: 'Portnox Advantage',
+        data: [
+          Math.round(avgCompetitorTco - portnox.totalTco), // TCO Savings
+          Math.round(avgCompetitorImplementation - portnox.implementationDays), // Implementation Days Saved
+          Math.round(portnox.roi - avgCompetitorRoi), // ROI Difference
+          Math.round(avgCompetitorPayback - portnox.paybackPeriod), // Payback Period Reduction
+          Math.round(portnox.securityImprovement - avgCompetitorSecurity) // Security Improvement
+        ]
+      }
+    ];
+  }, [calculationResults]);
   
   return (
     <div className="chart-container">
       <Chart
         options={chartOptions}
-        series={(chartOptions.series as any) || []}
-        type="radar"
+        series={series}
+        type="bar"
         height={height}
       />
-      {calculationResults && calculationResults.vendorResults && (
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <h4 className="text-md font-medium text-green-700 dark:text-green-400 mb-2">Financial Impact</h4>
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              Portnox Cloud delivers substantial cost savings through eliminated hardware 
-              requirements, simplified implementation, and reduced operational overhead—resulting 
-              in a projected {calculationResults.executiveSummary.savingsPercentage}% TCO reduction over traditional solutions.
-            </p>
-          </div>
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <h4 className="text-md font-medium text-blue-700 dark:text-blue-400 mb-2">Strategic Value</h4>
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              Beyond cost savings, Portnox provides significant strategic advantages: rapid deployment 
-              ({calculationResults.executiveSummary.implementationTime} days vs. industry average 90+ days), 
-              improved security posture ({calculationResults.executiveSummary.riskReduction}% improvement), 
-              and future-proof cloud architecture that continuously evolves against emerging threats.
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
