@@ -4,6 +4,7 @@ import DashboardCard from '../../ui/DashboardCard';
 import TabPanel from '../../ui/TabPanel';
 import TcoComparisonChart from '../../charts/TcoComparisonChart';
 import { formatCurrency, formatPercentage } from '../../../utils/formatters';
+import { VendorResult } from '../../../utils/calculationEngine';
 
 const FinancialView: React.FC = () => {
   const { state } = useCalculator();
@@ -23,7 +24,7 @@ const FinancialView: React.FC = () => {
     return <div>No calculation data available. Please calculate first.</div>;
   }
   
-  const portnox = calculationResults.vendorResults.find(v => v.vendorId === 'portnox');
+  const portnox = calculationResults.vendorResults.find((v: VendorResult) => v.vendorId === 'portnox');
   if (!portnox) {
     return <div>Portnox data not found in calculation results.</div>;
   }
