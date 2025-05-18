@@ -8,11 +8,89 @@ interface TcoComparisonChartProps {
   height?: number;
 }
 
+// Define vendor result interface
+interface VendorResult {
+  vendorId: string;
+  name: string;
+  hardwareCost: number;
+  infrastructureCost: number;
+  implementationCost: number;
+  staffingCost: number;
+  licenseCost: number;
+  subscriptionCost: number;
+  maintenanceCost: number;
+  totalTco: number;
+  [key: string]: any;
+}
+
+// Define chart options interface
+interface HighchartsOptions {
+  chart: {
+    type: string;
+    height?: number;
+    style?: {
+      fontFamily: string;
+    };
+  };
+  title: {
+    text: string;
+  };
+  subtitle?: {
+    text: string;
+  };
+  xAxis: {
+    categories: string[];
+    crosshair?: boolean;
+  };
+  yAxis: {
+    min: number;
+    title: {
+      text: string;
+    };
+    labels?: {
+      formatter?: () => string;
+    };
+  };
+  tooltip?: {
+    headerFormat: string;
+    pointFormat: string;
+    footerFormat: string;
+    shared: boolean;
+    useHTML: boolean;
+  };
+  plotOptions?: {
+    bar?: {
+      stacking: string;
+      dataLabels?: {
+        enabled: boolean;
+      }
+    };
+    series?: {
+      animation?: {
+        duration: number;
+      }
+    };
+  };
+  legend?: {
+    align: string;
+    verticalAlign: string;
+    layout: string;
+  };
+  series: Array<{
+    name: string;
+    data: number[];
+    color?: string;
+  }>;
+  credits?: {
+    enabled: boolean;
+  };
+}
+
 const TcoComparisonChart: React.FC<TcoComparisonChartProps> = ({ height = 400 }) => {
   const { state } = useCalculator();
   const { calculationResults } = state;
   
-  const chartOptions = useMemo(() => {
+  const chartOptions = useMemo<HighchartsOptions>(() => {
     if (!calculationResults || !calculationResults.vendorResults || calculationResults.vendorResults.length === 0) {
       return {
         chart: {
@@ -32,6 +110,7 @@ const TcoComparisonChart: React.FC<TcoComparisonChartProps> = ({ height = 400 })
           categories: []
         },
         yAxis: {
+          min: 0,
           title: {
             text: 'Total Cost ($)'
           }
@@ -42,20 +121,20 @@ const TcoComparisonChart: React.FC<TcoComparisonChartProps> = ({ height = 400 })
     
     // Sort vendors by TCO (Portnox always first)
     const sortedVendors = [...calculationResults.vendorResults]
-      .sort((a, b) => {
+      .sort((a: VendorResult, b: VendorResult) => {
         if (a.vendorId === 'portnox') return -1;
         if (b.vendorId === 'portnox') return 1;
         return a.totalTco - b.totalTco;
       });
     
     // Prepare category data
-    const categories = sortedVendors.map(result => result.name);
+    const categories = sortedVendors.map((result: VendorResult) => result.name);
     
     // Prepare series data
-    const hardwareData = sortedVendors.map(result => result.hardwareCost + result.infrastructureCost);
-    const implementationData = sortedVendors.map(result => result.implementationCost);
-    const operationsData = sortedVendors.map(result => result.staffingCost);
-    const licensesData = sortedVendors.map(result => result.licenseCost + result.subscriptionCost + result.maintenanceCost);
+    const hardwareData = sortedVendors.map((result: VendorResult) => result.hardwareCost + result.infrastructureCost);
+    const implementationData = sortedVendors.map((result: VendorResult) => result.implementationCost);
+    const operationsData = sortedVendors.map((result: VendorResult) => result.staffingCost);
+    const licensesData = sortedVendors.map((result: VendorResult) => result.licenseCost + result.subscriptionCost + result.maintenanceCost);
     
     // Custom colors
     const colors = {
@@ -86,8 +165,8 @@ const TcoComparisonChart: React.FC<TcoComparisonChartProps> = ({ height = 400 })
           text: 'Total Cost ($)'
         },
         labels: {
-          formatter: function() {
-            return '$' + Highcharts.numberFormat(this.value, 0, '.', ',');
+          formatter: function(this: Highcharts.AxisLabelsFormatterContextObject): string {
+            return '$' + Highcharts.numberFormat(this.value as number, 0, '.', ',');
           }
         }
       },
