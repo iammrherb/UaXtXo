@@ -3,8 +3,6 @@ import { useCalculator } from '../../../context/CalculatorContext';
 import DashboardCard from '../../ui/DashboardCard';
 import TabPanel from '../../ui/TabPanel';
 import { formatCurrency, formatPercentage } from '../../../utils/formatters';
-import { VendorResult } from '../../../utils/calculationEngine';
-import { CalculationResults } from '../../../utils/calculationEngine';
 
 const TechnicalView: React.FC = () => {
   const { state } = useCalculator();
@@ -24,7 +22,7 @@ const TechnicalView: React.FC = () => {
     return <div>No calculation data available. Please calculate first.</div>;
   }
   
-  const portnox = calculationResults.vendorResults.find((v: VendorResult) => v.vendorId === 'portnox');
+  const portnox = calculationResults.vendorResults.find(v => v.vendorId === 'portnox');
   if (!portnox) {
     return <div>Portnox data not found in calculation results.</div>;
   }
