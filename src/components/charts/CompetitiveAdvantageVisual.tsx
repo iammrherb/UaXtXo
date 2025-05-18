@@ -92,7 +92,7 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
   return (
     <div 
       className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm" 
-      style={{ height, overflow: 'hidden' }}
+      style={{ height: 'auto', minHeight: height, overflow: 'hidden' }}
       ref={containerRef}
     >
       <h3 className="text-xl font-semibold mb-6 text-center text-gray-800 dark:text-gray-200">
@@ -185,7 +185,8 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
                       alt={`${vendor.name} logo`}
                       onError={(e) => {
                         // Fallback if logo doesn't exist
-                        (e.target as HTMLImageElement).src = '/img/vendors/default-logo.png';
+                        const imgElement = e.target as HTMLImageElement;
+                        imgElement.src = '/img/vendors/default-logo.png';
                       }}
                       className="max-w-full max-h-full p-1"
                     />

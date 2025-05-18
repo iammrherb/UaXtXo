@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import Chart from 'react-apexcharts';
+import { ApexOptions } from 'apexcharts';
 import { useCalculator } from '../../context/CalculatorContext';
 import { VendorResult } from '../../utils/calculationEngine';
 import { formatCurrency, formatPercentage } from '../../utils/formatters';
@@ -12,11 +13,11 @@ const CompetitiveAdvantageChart: React.FC<CompetitiveAdvantageChartProps> = ({ h
   const { state } = useCalculator();
   const { calculationResults } = state;
   
-  const chartOptions = useMemo(() => {
+  const chartOptions = useMemo<ApexOptions>(() => {
     if (!calculationResults || !calculationResults.vendorResults) {
       return {
         chart: {
-          type: 'radar',
+          type: 'radar' as const,
           height,
           fontFamily: 'Nunito, sans-serif',
           toolbar: {
@@ -38,7 +39,15 @@ const CompetitiveAdvantageChart: React.FC<CompetitiveAdvantageChartProps> = ({ h
     
     // Get Portnox and top 2 competitors
     const portnox = calculationResults.vendorResults.find((v: VendorResult) => v.vendorId === 'portnox');
-    if (!portnox) return { chart: { type: 'radar' }, series: [], labels: [] };
+    if (!portnox) {
+      return { 
+        chart: { 
+          type: 'radar' as const
+        }, 
+        series: [], 
+        labels: [] 
+      };
+    }
     
     const competitors = calculationResults.vendorResults
       .filter((v: VendorResult) => v.vendorId !== 'portnox')
@@ -100,7 +109,7 @@ const CompetitiveAdvantageChart: React.FC<CompetitiveAdvantageChartProps> = ({ h
     
     return {
       chart: {
-        type: 'radar',
+        type: 'radar' as const,
         height,
         dropShadow: {
           enabled: true,
@@ -171,8 +180,7 @@ const CompetitiveAdvantageChart: React.FC<CompetitiveAdvantageChartProps> = ({ h
             }
           }
         }
-      ],
-      series
+      ]
     };
   }, [calculationResults, height]);
   
@@ -180,7 +188,7 @@ const CompetitiveAdvantageChart: React.FC<CompetitiveAdvantageChartProps> = ({ h
     <div className="chart-container">
       <Chart
         options={chartOptions}
-        series={chartOptions.series || []}
+        series={(chartOptions.series as any) || []}
         type="radar"
         height={height}
       />
