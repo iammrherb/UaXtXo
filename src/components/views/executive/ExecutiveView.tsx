@@ -10,6 +10,7 @@ import ExecutiveSummaryChart from '../../charts/ExecutiveSummaryChart';
 import CumulativeCostChart from '../../charts/CumulativeCostChart';
 import RoiChart from '../../charts/RoiChart';
 import VendorRadarChart from '../../charts/VendorRadarChart';
+import ExecutiveSummaryReport from '../../reports/ExecutiveSummaryReport';
 import PaybackPeriodChart from '../../charts/PaybackPeriodChart';
 import { formatCurrency, formatPercentage, formatDays } from '../../../utils/formatters';
 import { VendorResult } from '../../../utils/calculationEngine';
@@ -65,6 +66,7 @@ const ExecutiveView: React.FC = () => {
     { id: 'roi', label: 'ROI Analysis' },
     { id: 'risk', label: 'Risk Assessment' },
     { id: 'comparison', label: 'Vendor Comparison' }
+    { id: 'report', label: 'Executive Report' },
   ];
   
   if (!calculationResults) {
@@ -398,147 +400,867 @@ const ExecutiveView: React.FC = () => {
         )}
         
         {activeTab === 'comparison' && (
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
           <div className="vendor-comparison">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
             {/* Vendor Radar Chart */}
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
             <div className="mb-6">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
               <VendorRadarChart height={400} width={600} />
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
             </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
             
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
             {/* Competitive Advantages */}
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
             <div className="mb-6">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
               <h3 className="text-lg font-semibold mb-4">Competitive Advantages</h3>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   <div className="flex items-start mb-2">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <div className="text-portnox-primary p-2 bg-green-50 dark:bg-green-900/20 rounded-lg mr-3">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       </svg>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <h4 className="text-md font-medium">Cloud-Native Architecture</h4>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Unlike on-premises competitors, Portnox requires no hardware investment or complex upgrades.</p>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   <div className="space-y-2">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <div className="flex justify-between mb-1">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                         <span className="text-xs font-medium">Portnox</span>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                         <span className="text-xs font-medium">95%</span>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                         <div className="bg-portnox-primary h-2.5 rounded-full" style={{ width: '95%' }}></div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <div className="flex justify-between mb-1">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                         <span className="text-xs font-medium">Competitors</span>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                         <span className="text-xs font-medium">30%</span>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                         <div className="bg-portnox-secondary h-2.5 rounded-full" style={{ width: '30%' }}></div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                 </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                 
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   <div className="flex items-start mb-2">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <div className="text-portnox-primary p-2 bg-green-50 dark:bg-green-900/20 rounded-lg mr-3">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       </svg>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <h4 className="text-md font-medium">Deployment Speed</h4>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Portnox deploys in days rather than months, with minimal specialized expertise required.</p>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   <div className="space-y-2">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <div className="flex justify-between mb-1">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                         <span className="text-xs font-medium">Portnox</span>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                         <span className="text-xs font-medium">90%</span>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                         <div className="bg-portnox-primary h-2.5 rounded-full" style={{ width: '90%' }}></div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <div className="flex justify-between mb-1">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                         <span className="text-xs font-medium">Competitors</span>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                         <span className="text-xs font-medium">35%</span>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                         <div className="bg-portnox-secondary h-2.5 rounded-full" style={{ width: '35%' }}></div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                 </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
               </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
             </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
             
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
             {/* Vendor Strengths Comparison */}
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
             <div className="mb-6">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
               <h3 className="text-lg font-semibold mb-4">Vendor Strengths Comparison</h3>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
               <div className="overflow-x-auto">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                 <table className="w-full bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   <thead className="bg-gray-50 dark:bg-gray-700">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <tr>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Capability</th>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Portnox</th>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cisco ISE</th>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Aruba ClearPass</th>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Forescout</th>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     </tr>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   </thead>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <tr>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Cloud Architecture</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm font-semibold text-portnox-primary">Native</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Partial</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Partial</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Limited</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     </tr>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <tr>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Zero Trust</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm font-semibold text-portnox-primary">Comprehensive</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Partial</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Limited</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Partial</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     </tr>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <tr>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Deployment Speed</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm font-semibold text-portnox-primary">Days</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Months</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Weeks</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Weeks</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     </tr>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <tr>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">FTE Requirements</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm font-semibold text-portnox-primary">Minimal</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">High</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Moderate</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Moderate</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     </tr>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <tr>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Remote Access</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm font-semibold text-portnox-primary">Built-in</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Add-on</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Limited</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Limited</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     </tr>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     <tr>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Hardware Footprint</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm font-semibold text-portnox-primary">None</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Large</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Medium</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Medium</td>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                     </tr>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                   </tbody>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
                 </table>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
               </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
             </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
+          </div>
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
+          </div>
+        )}
+        )}
+        {activeTab === 'report' && (
+          <div className="executive-report">
+            <ExecutiveSummaryReport className="mt-4" />
           </div>
         )}
       </TabPanel>

@@ -1,0 +1,51 @@
+/* Print styles for executive report */
+@media print {
+  /* Hide non-report elements */
+  header, footer, nav, .sidebar, .stakeholder-tabs, .action-buttons, button {
+    display: none !important;
+  }
+  
+  /* Adjust main content */
+  .content-area {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+  
+  /* Adjust report container */
+  .executive-report {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Ensure proper colors */
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+  
+  /* Fix tables */
+  table {
+    break-inside: auto !important;
+  }
+  
+  tr {
+    break-inside: avoid !important;
+    break-after: auto !important;
+  }
+  
+  td, th {
+    break-inside: avoid !important;
+  }
+  
+  /* Page breaks */
+  h2 {
+    break-before: auto !important;
+    break-after: avoid !important;
+  }
+  
+  /* Remove shadows and effects that don't print well */
+  .shadow-sm, .shadow, .shadow-md, .shadow-lg, .shadow-xl {
+    box-shadow: none !important;
+  }
+}
