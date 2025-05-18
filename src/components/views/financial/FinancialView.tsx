@@ -107,22 +107,18 @@ const FinancialView: React.FC = () => {
                   <h4 className="font-medium text-blue-700 dark:text-blue-400 mb-2">Operational Efficiency</h4>
                   <p className="text-sm">75% less IT staff time required for management and maintenance.</p>
                 </div>
-                
-                <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
-                  <h4 className="font-medium text-purple-700 dark:text-purple-400 mb-2">Predictable Costs</h4>
-                  <p className="text-sm">Subscription-based model with no surprise upgrade or maintenance costs.</p>
-                </div>
+            <div className="mb-6">
+              <TcoComparisonChart height={350} />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <TcoBreakdownChart height={350} vendorId="portnox" />
+              </div>
+              <div>
+                <SavingsProjectionChart height={350} />
               </div>
             </div>
-          </div>
-        )}
-        
-        {activeTab === 'tco' && (
-          <div className="tco-breakdown">
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              This section provides a detailed breakdown of Total Cost of Ownership (TCO) components for Portnox and competitors.
-            </p>
-            
             {/* Simple placeholder for now - will be extended in Phase 5 */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
               <h3 className="text-lg font-semibold mb-4">TCO Breakdown Details</h3>
