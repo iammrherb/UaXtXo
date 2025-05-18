@@ -8,6 +8,16 @@ interface ComplianceRadarChartProps {
   width?: number;
 }
 
+// Define vendor result interface
+interface VendorResult {
+  vendorId: string;
+  name: string;
+  complianceScores?: {
+    [key: string]: number;
+  };
+  [key: string]: any;
+}
+
 const ComplianceRadarChart: React.FC<ComplianceRadarChartProps> = ({ 
   height = 400, 
   width = 600 
@@ -20,13 +30,13 @@ const ComplianceRadarChart: React.FC<ComplianceRadarChartProps> = ({
     if (!svgRef.current || !calculationResults || !calculationResults.vendorResults) return;
     
     // Get Portnox and top competitor for comparison
-    const portnox = calculationResults.vendorResults.find(v => v.vendorId === 'portnox');
+    const portnox = calculationResults.vendorResults.find((v: VendorResult) => v.vendorId === 'portnox');
     if (!portnox) return;
     
     // Get top competitor (highest TCO other than Portnox)
     const competitors = calculationResults.vendorResults
-      .filter(v => v.vendorId !== 'portnox')
-      .sort((a, b) => b.totalTco - a.totalTco);
+      .filter((v: VendorResult) => v.vendorId !== 'portnox')
+      .sort((a: VendorResult, b: VendorResult) => b.totalTco - a.totalTco);
     
     const topCompetitor = competitors.length > 0 ? competitors[0] : null;
     
@@ -96,7 +106,7 @@ const ComplianceRadarChart: React.FC<ComplianceRadarChartProps> = ({
       .attr('dy', '0.35em')
       .attr('x', (d, i) => rScale(110) * Math.cos(angleSlice * i - Math.PI/2))
       .attr('y', (d, i) => rScale(110) * Math.sin(angleSlice * i - Math.PI/2))
-      .text(d => complianceFrameworks[d]?.name || d)
+      .text(d => complianceFrameworks && complianceFrameworks[d] ? complianceFrameworks[d].name : d)
       .attr('fill', '#666')
       .style('font-size', '10px');
     
@@ -110,7 +120,7 @@ const ComplianceRadarChart: React.FC<ComplianceRadarChartProps> = ({
     const defs = g.append('defs');
     
     // Draw Portnox radar area
-    const portnoxValues = frameworks.map(f => portnox.complianceScores?.[f] || 0);
+    const portnoxValues = frameworks.map(f => portnox.complianceScores ? portnox.complianceScores[f] || 0 : 0);
     
     // Create Portnox gradient
     const portnoxGradientId = 'portnox-gradient';
@@ -154,7 +164,9 @@ const ComplianceRadarChart: React.FC<ComplianceRadarChartProps> = ({
     
     // If we have a competitor, draw their radar area too
     if (topCompetitor) {
-      const competitorValues = frameworks.map(f => topCompetitor.complianceScores?.[f] || 0);
+      const competitorValues = frameworks.map(f => 
+        topCompetitor.complianceScores ? topCompetitor.complianceScores[f] || 0 : 0
+      );
       
       // Create competitor gradient
       const competitorGradientId = 'competitor-gradient';
