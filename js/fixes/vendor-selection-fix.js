@@ -1,448 +1,499 @@
 /**
- * Vendor Selection Fix
- * Ensures proper vendor selection and UI updates
+ * Enhanced Vendor Selection Functionality
+ * Improves the vendor selection grid with better UX and validation
  */
 (function() {
-    console.log("🔄 Fixing vendor selection and UI updates...");
+  // Vendor data with comprehensive comparison metrics
+  window.vendorData = {
+    portnox: {
+      name: 'Portnox Cloud',
+      description: 'Cloud-native NAC',
+      badge: { text: 'Best Value', type: 'primary' },
+      basePrice: 3.00, // per device per month
+      initialCost: {
+        hardware: 0,
+        software: 0,
+        implementation: 15000,
+        training: 5000
+      },
+      annualCost: {
+        subscription: true,
+        maintenancePercentage: 0,
+        supportPercentage: 0,
+        fteRequirement: 0.25
+      },
+      implementation: {
+        timeInDays: 21,
+        complexityRating: 'Low',
+        specializedResourcesNeeded: false
+      },
+      architecture: {
+        cloudNative: true,
+        onPremises: false,
+        hybrid: false,
+        saasModel: true,
+        microservices: true,
+        monolithic: false,
+        multiTenant: true,
+        singleTenant: false
+      },
+      ratings: {
+        cloudNative: 97,
+        deploymentSpeed: 95,
+        zeroTrust: 92,
+        costEfficiency: 90,
+        remoteAccess: 95,
+        scalability: 90,
+        easeOfManagement: 85,
+        integration: 80
+      },
+      securityCapabilities: {
+        deviceAuthentication: 95,
+        userAuthentication: 90,
+        continuousMonitoring: 95,
+        automatedRemediation: 85,
+        threatDetection: 80,
+        policyEnforcement: 90,
+        complianceReporting: 90,
+        incidentResponse: 80
+      },
+      zeroTrustCapabilities: {
+        deviceIdentity: 95,
+        userIdentity: 90,
+        contextualAccess: 90,
+        leastPrivilege: 85,
+        continuousVerification: 95,
+        microsegmentation: 75
+      },
+      riskReduction: {
+        unauthorizedAccess: 90,
+        malwarePropagation: 85,
+        dataBreach: 80,
+        complianceViolations: 90,
+        insiderThreats: 75
+      },
+      features: {
+        // Technical features
+        radiusServer: true,
+        cloud802_1x: true,
+        segmentation: true,
+        deviceFingerprinting: true,
+        riskBasedAccess: true,
+        mdm: true,
+        edr: true,
+        macBypass: true,
+        guestPortal: true,
+        apiIntegration: true,
+        siem: true,
+        mfa: true,
+        
+        // Business features
+        flexiblePricing: true,
+        noHardwareRequired: true,
+        scalableLicensing: true,
+        remoteWorkSupport: true,
+        autoScaling: true
+      }
+    },
+    cisco: {
+      name: 'Cisco ISE',
+      description: 'Enterprise NAC',
+      badge: { text: 'Complex', type: 'warning' },
+      basePrice: null, // Enterprise pricing
+      initialCost: {
+        hardware: 85000,
+        software: 120000,
+        implementation: 65000,
+        training: 25000
+      },
+      annualCost: {
+        subscription: false,
+        maintenancePercentage: 18,
+        supportPercentage: 12,
+        fteRequirement: 1.5
+      },
+      implementation: {
+        timeInDays: 120,
+        complexityRating: 'High',
+        specializedResourcesNeeded: true
+      },
+      architecture: {
+        cloudNative: false,
+        onPremises: true,
+        hybrid: true,
+        saasModel: false,
+        microservices: false,
+        monolithic: true,
+        multiTenant: false,
+        singleTenant: true
+      },
+      ratings: {
+        cloudNative: 35,
+        deploymentSpeed: 30,
+        zeroTrust: 75,
+        costEfficiency: 40,
+        remoteAccess: 60,
+        scalability: 80,
+        easeOfManagement: 45,
+        integration: 80
+      },
+      securityCapabilities: {
+        deviceAuthentication: 90,
+        userAuthentication: 85,
+        continuousMonitoring: 70,
+        automatedRemediation: 75,
+        threatDetection: 80,
+        policyEnforcement: 85,
+        complianceReporting: 80,
+        incidentResponse: 75
+      },
+      zeroTrustCapabilities: {
+        deviceIdentity: 80,
+        userIdentity: 85,
+        contextualAccess: 80,
+        leastPrivilege: 80,
+        continuousVerification: 70,
+        microsegmentation: 85
+      },
+      riskReduction: {
+        unauthorizedAccess: 85,
+        malwarePropagation: 80,
+        dataBreach: 75,
+        complianceViolations: 85,
+        insiderThreats: 70
+      },
+      features: {
+        // Technical features
+        radiusServer: true,
+        cloud802_1x: false,
+        segmentation: true,
+        deviceFingerprinting: true,
+        riskBasedAccess: true,
+        mdm: true,
+        edr: true,
+        macBypass: true,
+        guestPortal: true,
+        apiIntegration: true,
+        siem: true,
+        mfa: true,
+        
+        // Business features
+        flexiblePricing: false,
+        noHardwareRequired: false,
+        scalableLicensing: false,
+        remoteWorkSupport: true,
+        autoScaling: false
+      }
+    },
+    aruba: {
+      name: 'Aruba ClearPass',
+      description: 'Policy manager',
+      basePrice: null, // Enterprise pricing
+      initialCost: {
+        hardware: 65000,
+        software: 95000,
+        implementation: 50000,
+        training: 20000
+      },
+      annualCost: {
+        subscription: false,
+        maintenancePercentage: 18,
+        supportPercentage: 10,
+        fteRequirement: 1.2
+      },
+      implementation: {
+        timeInDays: 90,
+        complexityRating: 'Medium-High',
+        specializedResourcesNeeded: true
+      },
+      architecture: {
+        cloudNative: false,
+        onPremises: true,
+        hybrid: true,
+        saasModel: false,
+        microservices: false,
+        monolithic: true,
+        multiTenant: false,
+        singleTenant: true
+      },
+      ratings: {
+        cloudNative: 40,
+        deploymentSpeed: 45,
+        zeroTrust: 70,
+        costEfficiency: 55,
+        remoteAccess: 65,
+        scalability: 75,
+        easeOfManagement: 60,
+        integration: 75
+      },
+      securityCapabilities: {
+        deviceAuthentication: 85,
+        userAuthentication: 80,
+        continuousMonitoring: 75,
+        automatedRemediation: 70,
+        threatDetection: 75,
+        policyEnforcement: 80,
+        complianceReporting: 75,
+        incidentResponse: 70
+      },
+      zeroTrustCapabilities: {
+        deviceIdentity: 80,
+        userIdentity: 80,
+        contextualAccess: 75,
+        leastPrivilege: 75,
+        continuousVerification: 70,
+        microsegmentation: 65
+      },
+      riskReduction: {
+        unauthorizedAccess: 80,
+        malwarePropagation: 75,
+        dataBreach: 70,
+        complianceViolations: 80,
+        insiderThreats: 65
+      },
+      features: {
+        // Technical features
+        radiusServer: true,
+        cloud802_1x: false,
+        segmentation: true,
+        deviceFingerprinting: true,
+        riskBasedAccess: true,
+        mdm: true,
+        edr: true,
+        macBypass: true,
+        guestPortal: true,
+        apiIntegration: true,
+        siem: true,
+        mfa: true,
+        
+        // Business features
+        flexiblePricing: false,
+        noHardwareRequired: false,
+        scalableLicensing: false,
+        remoteWorkSupport: true,
+        autoScaling: false
+      }
+    },
+    forescout: {
+      name: 'Forescout',
+      description: 'Device visibility',
+      basePrice: null, // Enterprise pricing
+      initialCost: {
+        hardware: 70000,
+        software: 110000,
+        implementation: 55000,
+        training: 22000
+      },
+      annualCost: {
+        subscription: false,
+        maintenancePercentage: 20,
+        supportPercentage: 12,
+        fteRequirement: 1.3
+      },
+      implementation: {
+        timeInDays: 100,
+        complexityRating: 'Medium-High',
+        specializedResourcesNeeded: true
+      },
+      architecture: {
+        cloudNative: false,
+        onPremises: true,
+        hybrid: true,
+        saasModel: false,
+        microservices: false,
+        monolithic: true,
+        multiTenant: false,
+        singleTenant: true
+      },
+      ratings: {
+        cloudNative: 30,
+        deploymentSpeed: 35,
+        zeroTrust: 75,
+        costEfficiency: 45,
+        remoteAccess: 60,
+        scalability: 70,
+        easeOfManagement: 55,
+        integration: 80
+      },
+      securityCapabilities: {
+        deviceAuthentication: 80,
+        userAuthentication: 70,
+        continuousMonitoring: 85,
+        automatedRemediation: 75,
+        threatDetection: 80,
+        policyEnforcement: 75,
+        complianceReporting: 75,
+        incidentResponse: 70
+      },
+      zeroTrustCapabilities: {
+        deviceIdentity: 85,
+        userIdentity: 70,
+        contextualAccess: 75,
+        leastPrivilege: 70,
+        continuousVerification: 80,
+        microsegmentation: 65
+      },
+      riskReduction: {
+        unauthorizedAccess: 80,
+        malwarePropagation: 75,
+        dataBreach: 70,
+        complianceViolations: 75,
+        insiderThreats: 70
+      }
+    },
+    'no-nac': {
+      name: 'No NAC Solution',
+      description: 'High risk baseline',
+      badge: { text: 'High Risk', type: 'danger' },
+      basePrice: 0,
+      initialCost: {
+        hardware: 0,
+        software: 0,
+        implementation: 0,
+        training: 0
+      },
+      annualCost: {
+        subscription: false,
+        maintenancePercentage: 0,
+        supportPercentage: 0,
+        fteRequirement: 0.5 // Still requires some management
+      },
+      implementation: {
+        timeInDays: 0,
+        complexityRating: 'None',
+        specializedResourcesNeeded: false
+      },
+      architecture: {
+        cloudNative: false,
+        onPremises: false,
+        hybrid: false,
+        saasModel: false,
+        microservices: false,
+        monolithic: false,
+        multiTenant: false,
+        singleTenant: false
+      },
+      ratings: {
+        cloudNative: 0,
+        deploymentSpeed: 100, // Instant since nothing to deploy
+        zeroTrust: 0,
+        costEfficiency: 100, // No direct costs
+        remoteAccess: 0,
+        scalability: 0,
+        easeOfManagement: 0,
+        integration: 0
+      },
+      securityCapabilities: {
+        deviceAuthentication: 0,
+        userAuthentication: 0,
+        continuousMonitoring: 0,
+        automatedRemediation: 0,
+        threatDetection: 0,
+        policyEnforcement: 0,
+        complianceReporting: 0,
+        incidentResponse: 0
+      },
+      zeroTrustCapabilities: {
+        deviceIdentity: 0,
+        userIdentity: 0,
+        contextualAccess: 0,
+        leastPrivilege: 0,
+        continuousVerification: 0,
+        microsegmentation: 0
+      },
+      riskReduction: {
+        unauthorizedAccess: 0,
+        malwarePropagation: 0,
+        dataBreach: 0,
+        complianceViolations: 0,
+        insiderThreats: 0
+      }
+    }
+  };
+  
+  // Default to always include Portnox
+  const defaultVendor = 'portnox';
+  
+  // Enhance vendor selection handling
+  document.addEventListener('DOMContentLoaded', function() {
+    const vendorCards = document.querySelectorAll('.vendor-card');
     
-    // Store selected vendors
-    let selectedVendors = ['portnox'];
+    // Helper function to get currently selected vendors
+    const getSelectedVendors = function() {
+      return Array.from(document.querySelectorAll('.vendor-card.selected'))
+        .map(card => card.getAttribute('data-vendor'))
+        .filter(Boolean);
+    };
     
-    // Fix vendor selection
-    function fixVendorSelection() {
-        console.log("Fixing vendor selection...");
-        
-        const vendorGrid = document.querySelector('.vendor-grid');
-        if (!vendorGrid) {
-            console.error("Vendor grid not found");
-            return;
-        }
-        
-        const vendorCards = vendorGrid.querySelectorAll('.vendor-card');
-        console.log(`Found ${vendorCards.length} vendor cards`);
-        
-        // Ensure Portnox is always selected
-        const portnoxCard = vendorGrid.querySelector('.vendor-card[data-vendor="portnox"]');
+    // Helper function to update UI based on vendor selection
+    const updateVendorUI = function() {
+      const selectedVendors = getSelectedVendors();
+      console.log("Selected vendors:", selectedVendors);
+      
+      // Ensure Portnox is always selected
+      if (!selectedVendors.includes(defaultVendor)) {
+        const portnoxCard = document.querySelector(`.vendor-card[data-vendor="${defaultVendor}"]`);
         if (portnoxCard && !portnoxCard.classList.contains('selected')) {
-            portnoxCard.classList.add('selected');
+          portnoxCard.classList.add('selected');
+          selectedVendors.push(defaultVendor);
         }
+      }
+      
+      // Enforce reasonable number of vendors (max 4 for readability)
+      if (selectedVendors.length > 4) {
+        warn("Maximum 4 vendors can be selected for clear comparison");
         
-        // Add click event listener to all vendor cards
-        vendorCards.forEach(card => {
-            // Remove existing click listeners to prevent duplicates
-            const newCard = card.cloneNode(true);
-            card.parentNode.replaceChild(newCard, card);
-            
-            newCard.addEventListener('click', function() {
-                const vendorId = this.dataset.vendor;
-                
-                // Toggle selection (except for Portnox which must stay selected)
-                if (vendorId !== 'portnox') {
-                    this.classList.toggle('selected');
-                    
-                    // Update selected vendors list
-                    if (this.classList.contains('selected')) {
-                        if (!selectedVendors.includes(vendorId)) {
-                            selectedVendors.push(vendorId);
-                        }
-                    } else {
-                        selectedVendors = selectedVendors.filter(v => v !== vendorId);
-                    }
-                    
-                    // Limit to 3 vendors max
-                    if (document.querySelectorAll('.vendor-card.selected').length > 3) {
-                        this.classList.remove('selected');
-                        selectedVendors = selectedVendors.filter(v => v !== vendorId);
-                    }
-                }
-                
-                // Update UI based on selection
-                updateVendorSelectionUI();
-            });
+        // Keep only the first 4 selected vendors
+        const excessVendors = selectedVendors.slice(4);
+        excessVendors.forEach(vendor => {
+          if (vendor !== defaultVendor) { // Never deselect Portnox
+            const card = document.querySelector(`.vendor-card[data-vendor="${vendor}"]`);
+            if (card) {
+              card.classList.remove('selected');
+            }
+          }
         });
-        
-        console.log("Vendor selection fixed");
-    }
+      }
+      
+      // Update "Selected Vendors" display if it exists
+      const vendorDisplay = document.getElementById('selected-vendors-display');
+      if (vendorDisplay) {
+        vendorDisplay.textContent = selectedVendors
+          .map(vendor => window.vendorData[vendor]?.name || vendor)
+          .join(', ');
+      }
+      
+      // Trigger a calculation update
+      if (typeof window.updateCalculations === 'function') {
+        window.updateCalculations(getSelectedVendors());
+      }
+    };
     
-    // Fix calculate buttons
-    function fixCalculateButtons() {
-        console.log("Fixing calculate buttons...");
+    // Add click event listeners to vendor cards
+    vendorCards.forEach(card => {
+      card.addEventListener('click', function() {
+        const vendor = this.getAttribute('data-vendor');
+        if (!vendor) return;
         
-        const calculateButtons = document.querySelectorAll('#calculate-btn, #calculate-btn-header');
-        
-        calculateButtons.forEach(button => {
-            // Remove existing click listeners to prevent duplicates
-            const newButton = button.cloneNode(true);
-            button.parentNode.replaceChild(newButton, button);
-            
-            newButton.addEventListener('click', function() {
-                console.log("Calculate button clicked");
-                
-                // Show loading spinner
-                const loadingOverlay = document.getElementById('loading-overlay');
-                if (loadingOverlay) {
-                    loadingOverlay.style.display = 'flex';
-                }
-                
-                // Short delay to show loading spinner
-                setTimeout(() => {
-                    // Update calculations and UI
-                    updateCalculations(selectedVendors);
-                    
-                    // Hide loading spinner
-                    if (loadingOverlay) {
-                        loadingOverlay.style.display = 'none';
-                    }
-                    
-                    // Show toast notification
-                    showToast('Calculations updated successfully', 'success');
-                }, 500);
-            });
-        });
-        
-        console.log("Calculate buttons fixed");
-    }
-    
-    // Update UI based on vendor selection
-    function updateVendorSelectionUI() {
-        console.log(`Updating UI for selected vendors: ${selectedVendors.join(', ')}`);
-        
-        // Ensure charts are updated
-        if (window.initVendorComparisonCharts) {
-            window.initVendorComparisonCharts(selectedVendors);
-        } else if (window.updateAllCharts) {
-            window.updateAllCharts(selectedVendors);
+        // Toggle selection state, except for Portnox which should always be selected
+        if (vendor !== defaultVendor) {
+          this.classList.toggle('selected');
+        } else if (!this.classList.contains('selected')) {
+          // Ensure Portnox is always selected
+          this.classList.add('selected');
         }
         
-        // Update metrics and other UI elements
-        updateMetricsDisplay(selectedVendors);
+        updateVendorUI();
+      });
+    });
+    
+    // Ensure Portnox is selected by default
+    const portnoxCard = document.querySelector(`.vendor-card[data-vendor="${defaultVendor}"]`);
+    if (portnoxCard && !portnoxCard.classList.contains('selected')) {
+      portnoxCard.classList.add('selected');
     }
     
-    // Update calculations and refresh UI
-    function updateCalculations(vendors) {
-        console.log(`Updating calculations for selected vendors: ${vendors.join(', ')}`);
-        
-        // Calculate results for each vendor
-        const results = calculateResults(vendors);
-        
-        // Update UI with results
-        updateResults(results);
-        
-        // Update charts
-        if (window.initVendorComparisonCharts) {
-            window.initVendorComparisonCharts(vendors);
-        } else if (window.updateAllCharts) {
-            window.updateAllCharts(vendors);
-        }
-        
-        console.log("Calculations updated successfully", results);
-        return results;
-    }
-    
-    // Calculate results for selected vendors
-    function calculateResults(vendors) {
-        const results = {
-            tco: {},
-            roi: {},
-            savings: {},
-            implementation: {},
-            security: {}
-        };
-        
-        vendors.forEach(vendorId => {
-            // Get vendor data
-            const vendorData = getVendorData(vendorId);
-            if (!vendorData) {
-                console.warn(`Data not found for vendor ${vendorId}`);
-                return;
-            }
-            
-            // Calculate TCO
-            results.tco[vendorId] = calculateTco(vendorData);
-            
-            // For ROI calculation, we compare against other vendors
-            if (vendorId === 'portnox') {
-                const competitors = vendors.filter(v => v !== 'portnox');
-                if (competitors.length > 0) {
-                    let competitorTco = 0;
-                    let competitorCount = 0;
-                    
-                    competitors.forEach(compId => {
-                        const compData = getVendorData(compId);
-                        if (compData) {
-                            competitorTco += calculateTco(compData);
-                            competitorCount++;
-                        }
-                    });
-                    
-                    if (competitorCount > 0) {
-                        const avgCompetitorTco = competitorTco / competitorCount;
-                        const savings = avgCompetitorTco - results.tco[vendorId];
-                        const investment = (vendorData.initialCosts?.software || vendorData.initialSoftware || 0) + 
-                                         (vendorData.initialCosts?.implementation || vendorData.initialImplementation || 0);
-                        
-                        results.roi[vendorId] = Math.round((savings / investment) * 100);
-                        results.savings[vendorId] = savings;
-                    }
-                }
-            }
-            
-            // Implementation time
-            results.implementation[vendorId] = vendorId === 'portnox' ? 21 : 90; // days
-            
-            // Security score (simplified)
-            results.security[vendorId] = vendorId === 'portnox' ? 92 : 65;
-        });
-        
-        return results;
-    }
-    
-    // Update results display
-    function updateResults(results) {
-        // Update executive summary
-        updateExecutiveSummary(results);
-        
-        // Update financial overview
-        updateFinancialOverview(results);
-        
-        // Update security section
-        updateSecurityOverview(results);
-    }
-    
-    // Update executive summary
-    function updateExecutiveSummary(results) {
-        // Get Portnox data
-        const portnoxResults = {
-            tco: results.tco['portnox'] || 0,
-            roi: results.roi['portnox'] || 0,
-            savings: results.savings['portnox'] || 0,
-            implementation: results.implementation['portnox'] || 0,
-            security: results.security['portnox'] || 0
-        };
-        
-        // Find main competitor (first non-Portnox vendor)
-        let competitorId = null;
-        for (const vendorId in results.tco) {
-            if (vendorId !== 'portnox') {
-                competitorId = vendorId;
-                break;
-            }
-        }
-        
-        // Update dashboard metrics
-        const elements = {
-            // Total savings
-            'total-savings': formatCurrency(portnoxResults.savings),
-            'savings-percentage': competitorId ? `${Math.round((portnoxResults.savings / results.tco[competitorId]) * 100)}% reduction vs. ${getVendorName(competitorId)}` : "N/A",
-            
-            // ROI metrics
-            'three-year-roi': `${portnoxResults.roi}%`,
-            'payback-period': `${Math.round(12 / (portnoxResults.roi / 100))} months`,
-            
-            // Risk metrics
-            'risk-reduction-total': `${portnoxResults.security}%`,
-            
-            // Implementation metrics
-            'implementation-time': `${portnoxResults.implementation} days`,
-            'implementation-comparison': competitorId ? `${Math.round((1 - portnoxResults.implementation / results.implementation[competitorId]) * 100)}% faster than on-premises` : "75% faster than on-premises",
-        };
-        
-        // Update all elements
-        for (const [id, value] of Object.entries(elements)) {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-            }
-        }
-    }
-    
-    // Update financial overview
-    function updateFinancialOverview(results) {
-        // Get Portnox data
-        const portnoxTco = results.tco['portnox'] || 0;
-        
-        // Find main competitor
-        let competitorId = null;
-        let competitorTco = 0;
-        for (const vendorId in results.tco) {
-            if (vendorId !== 'portnox') {
-                competitorId = vendorId;
-                competitorTco = results.tco[vendorId];
-                break;
-            }
-        }
-        
-        // Update metrics
-        const elements = {
-            'portnox-tco': formatCurrency(portnoxTco),
-            'tco-comparison': competitorId ? `vs. ${formatCurrency(competitorTco)} (${getVendorName(competitorId)})` : "N/A",
-            
-            // Add more financial metrics here
-        };
-        
-        // Update all elements
-        for (const [id, value] of Object.entries(elements)) {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-            }
-        }
-    }
-    
-    // Update security overview
-    function updateSecurityOverview(results) {
-        // Security metrics - simplified for this fix
-        const elements = {
-            'security-improvement': `${results.security['portnox'] || 74}%`,
-            'compliance-coverage': '93%',
-            'breach-probability': 'Low',
-            'mttr': '52 min'
-        };
-        
-        // Update all elements
-        for (const [id, value] of Object.entries(elements)) {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-            }
-        }
-    }
-    
-    // Update metrics display
-    function updateMetricsDisplay(vendors) {
-        console.log(`Updating metrics display for vendors: ${vendors.join(', ')}`);
-        
-        // Calculate results
-        const results = calculateResults(vendors);
-        
-        // Update UI
-        updateResults(results);
-        
-        console.log("Metrics display updated");
-    }
-    
-    // Show toast notification
-    function showToast(message, type = 'info') {
-        const toastContainer = document.getElementById('toast-container');
-        if (!toastContainer) return;
-        
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.textContent = message;
-        
-        toastContainer.appendChild(toast);
-        
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-            toast.classList.add('fadeout');
-            setTimeout(() => {
-                toastContainer.removeChild(toast);
-            }, 500);
-        }, 3000);
-    }
-    
-    // Helper function to calculate TCO
-    function calculateTco(vendorData) {
-        if (!vendorData) return 0;
-        
-        let initialCosts = 0;
-        let annualCosts = 0;
-        
-        // Calculate initial costs
-        if (vendorData.initialCosts) {
-            initialCosts += (vendorData.initialCosts.hardware || 0);
-            initialCosts += (vendorData.initialCosts.software || 0);
-            initialCosts += (vendorData.initialCosts.implementation || 0);
-        } else {
-            // Backward compatibility
-            initialCosts += (vendorData.initialHardware || 0);
-            initialCosts += (vendorData.initialSoftware || 0);
-            initialCosts += (vendorData.initialImplementation || 0);
-        }
-        
-        // Calculate annual costs for 3 years
-        if (vendorData.annualCosts) {
-            annualCosts += (vendorData.annualCosts.licensing || 0) * 3;
-            annualCosts += (vendorData.annualCosts.maintenance || 0) * 3;
-            annualCosts += (vendorData.annualCosts.support || 0) * 3;
-            annualCosts += (vendorData.annualCosts.personnel || 0) * 3;
-        } else {
-            // Backward compatibility
-            annualCosts += (vendorData.annualLicensing || 0) * 3;
-            annualCosts += (vendorData.annualMaintenance || 0) * 3;
-            annualCosts += (vendorData.annualSupport || 0) * 3;
-            annualCosts += (vendorData.annualPersonnel || 0) * 3;
-        }
-        
-        return initialCosts + annualCosts;
-    }
-    
-    // Helper function to get vendor data
-    function getVendorData(vendorId) {
-        if (!vendorId) return null;
-        
-        // Try different possible sources of vendor data
-        if (window.vendorData && window.vendorData[vendorId]) {
-            return window.vendorData[vendorId];
-        }
-        
-        if (window.vendorDetails && window.vendorDetails[vendorId]) {
-            return window.vendorDetails[vendorId];
-        }
-        
-        return null;
-    }
-    
-    // Helper function to get vendor name
-    function getVendorName(vendorId) {
-        const data = getVendorData(vendorId);
-        return data ? data.name : vendorId;
-    }
-    
-    // Helper function to format currency
-    function formatCurrency(value) {
-        return '$' + Math.round(value).toLocaleString();
-    }
-    
-    // Run initial calculation
-    function runInitialCalculation() {
-        console.log("Running initial calculation...");
-        
-        // Get currently selected vendors
-        const selectedCards = document.querySelectorAll('.vendor-card.selected');
-        selectedVendors = Array.from(selectedCards).map(card => card.dataset.vendor);
-        
-        // Ensure Portnox is always included
-        if (!selectedVendors.includes('portnox')) {
-            selectedVendors.unshift('portnox');
-        }
-        
-        console.log(`Selected vendors for calculations: ${selectedVendors.join(', ')}`);
-        
-        // Update calculations and UI
-        updateCalculations(selectedVendors);
-    }
-    
-    // Initialize the module
-    function initialize() {
-        console.log("Initializing vendor selection fix...");
-        
-        // Fix vendor selection
-        fixVendorSelection();
-        
-        // Fix calculate buttons
-        fixCalculateButtons();
-        
-        // Run initial calculation
-        runInitialCalculation();
-        
-        console.log("Vendor selection fix initialized");
-    }
-    
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initialize);
-    } else {
-        initialize();
-    }
+    // Initial UI update
+    updateVendorUI();
+  });
 })();
