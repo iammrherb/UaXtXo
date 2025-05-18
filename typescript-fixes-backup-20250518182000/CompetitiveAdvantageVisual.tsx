@@ -7,15 +7,6 @@ interface CompetitiveAdvantageVisualProps {
   height?: number;
 }
 
-// Define the category interface
-interface Category {
-  id: string;
-  name: string;
-  icon: string;
-  color: string;
-  description: string;
-}
-
 const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({ height = 500 }) => {
   const { state } = useCalculator();
   const { calculationResults } = state;
@@ -24,7 +15,7 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Define feature categories
-  const categories: Category[] = [
+  const categories = [
     { id: 'cloud', name: 'Cloud Architecture', icon: '☁️', color: '#4299E1', description: 'Native cloud architecture eliminates hardware costs and provides automatic updates' },
     { id: 'zeroTrust', name: 'Zero Trust', icon: '🔒', color: '#805AD5', description: 'Comprehensive zero trust implementation with continuous verification' },
     { id: 'speed', name: 'Deployment Speed', icon: '🚀', color: '#F6AD55', description: '75% faster deployment than on-premises alternatives' },
@@ -153,7 +144,7 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
           </div>
         )}
         
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={`mt-${activeCategory ? '16' : '4'} grid grid-cols-1 md:grid-cols-3 gap-6`}>
           {allVendors.map((vendor, index) => {
             const overallScore = getOverallScore(vendor);
             const isPortnox = vendor.vendorId === 'portnox';
@@ -336,19 +327,6 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
           </p>
         </div>
       </div>
-      
-      {/* CSS for animations */}
-      <style>
-        {`
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-          }
-        `}
-      </style>
     </div>
   );
 };

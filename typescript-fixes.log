@@ -1,0 +1,86 @@
+  - Fixed VendorResult import by renaming to VendorResultType
+  - Fixed find callbacks
+  - Fixed filter callbacks
+  - Fixed sort callbacks
+  - Fixed map callbacks
+  - Added 'as const' to chart type properties
+Fixed TypeScript errors in: src/components/charts/CumulativeCostChart.tsx
+  - Fixed VendorResult import by renaming to VendorResultType
+  - Fixed find callbacks
+  - Fixed filter callbacks
+  - Fixed sort callbacks
+  - Fixed map callbacks
+  - Added 'as const' to chart type properties
+Fixed TypeScript errors in: src/components/charts/PaybackPeriodChart.tsx
+  - Fixed find callbacks
+  - Fixed filter callbacks
+  - Fixed sort callbacks
+  - Fixed map callbacks
+  - Added ApexOptions import
+  - Added ApexOptions type to useMemo
+  - Added type casting for series prop
+Fixed TypeScript errors in: src/components/charts/SavingsProjectionChart.tsx
+  - Fixed filter callbacks
+  - Fixed forEach callbacks
+  - Fixed map callbacks
+Fixed TypeScript errors in: src/components/charts/VendorRadarChart.tsx
+  - Fixed find callbacks
+  - Fixed filter callbacks
+  - Fixed sort callbacks
+  - Fixed map callbacks
+Fixed TypeScript errors in: src/components/charts/CompetitiveAdvantageVisual.tsx
+  - Fixed find callbacks
+  - Fixed filter callbacks
+  - Fixed forEach callbacks
+  - Fixed sort callbacks
+  - Added 'as const' to chart type properties
+Fixed TypeScript errors in: src/components/charts/CompetitiveAdvantageChart.tsx
+  - Fixed sort callbacks
+  - Fixed map callbacks
+  - Added 'as const' to chart type properties
+  - Added ApexOptions import
+  - Added ApexOptions type to useMemo
+  - Added type casting for series prop
+Fixed TypeScript errors in: src/components/charts/SecurityImpactChart.tsx
+  - Fixed find callbacks
+  - Added 'as const' to chart type properties
+  - Added ApexOptions import
+  - Added ApexOptions type to useMemo
+  - Added type casting for series prop
+Fixed TypeScript errors in: src/components/charts/TcoBreakdownChart.tsx
+  - Fixed sort callbacks
+  - Fixed map callbacks
+  - Added 'as const' to chart type properties
+Fixed TypeScript errors in: src/components/charts/RoiChart.tsx
+  - Fixed find callbacks
+  - Fixed filter callbacks
+  - Fixed forEach callbacks
+  - Fixed sort callbacks
+  - Fixed map callbacks
+  - Added 'as const' to chart type properties
+  - Added ApexOptions import
+  - Added ApexOptions type to useMemo
+Fixed TypeScript errors in: src/components/charts/ComplianceRadarChart.tsx
+  - Fixed sort callbacks
+  - Fixed map callbacks
+  - Added 'as const' to chart type properties
+  - Added ApexOptions import
+  - Added ApexOptions type to useMemo
+Fixed TypeScript errors in: src/components/charts/TcoComparisonChart.tsx
+  - Fixed sort callbacks
+  - Fixed map callbacks
+  - Added 'as const' to chart type properties
+Fixed TypeScript errors in: src/components/charts/RiskReductionChart.tsx
+  - Fixed find callbacks
+  - Fixed filter callbacks
+  - Fixed sort callbacks
+  - Fixed map callbacks
+Fixed TypeScript errors in: src/components/charts/ComplianceFlowVisual.tsx
+  - Fixed find callbacks
+  - Fixed filter callbacks
+  - Fixed sort callbacks
+  - Added 'as const' to chart type properties
+  - Added ApexOptions import
+  - Added ApexOptions type to useMemo
+  - Added type casting for series prop
+Fixed TypeScript errors in: src/components/charts/ExecutiveSummaryChart.tsx

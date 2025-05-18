@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import Chart from 'react-apexcharts';
-import { ApexOptions } from 'apexcharts';
 import { useCalculator } from '../../context/CalculatorContext';
 import { complianceFrameworks } from '../../api/vendorData';
 // Fix: Import VendorResult with a different name to avoid conflict
@@ -16,7 +15,7 @@ const ComplianceRadarChart: React.FC<ComplianceRadarChartProps> = ({ height = 35
   const { state } = useCalculator();
   const { calculationResults } = state;
   
-  const chartOptions = useMemo<ApexOptions>(() => {
+  const chartOptions = useMemo(() => {
     if (!calculationResults || !calculationResults.vendorResults) {
       return {
         chart: {
@@ -33,7 +32,7 @@ const ComplianceRadarChart: React.FC<ComplianceRadarChartProps> = ({ height = 35
         },
         subtitle: {
           text: 'No data available. Please calculate results first.',
-          align: 'center' as const
+          align: 'center'
         },
         series: [],
         labels: []
@@ -85,7 +84,7 @@ const ComplianceRadarChart: React.FC<ComplianceRadarChartProps> = ({ height = 35
       }
     ];
     
-    // Add competitor data
+    // Add competitor data - Fix: Add explicit type annotation for competitor
     competitors.forEach((competitor: VendorResultType) => {
       if (competitor.complianceScores) {
         const competitorData = topFrameworks.map(f => 
@@ -116,7 +115,7 @@ const ComplianceRadarChart: React.FC<ComplianceRadarChartProps> = ({ height = 35
       },
       title: {
         text: 'Compliance Framework Coverage',
-        align: 'center' as const,
+        align: 'center',
         style: {
           fontSize: '18px',
           fontWeight: 'bold'
@@ -163,7 +162,7 @@ const ComplianceRadarChart: React.FC<ComplianceRadarChartProps> = ({ height = 35
         }
       },
       legend: {
-        position: 'bottom' as const
+        position: 'bottom'
       }
     };
   }, [calculationResults, height, width]);
