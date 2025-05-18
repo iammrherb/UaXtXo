@@ -9,6 +9,45 @@ import VendorRadarChart from '../../charts/VendorRadarChart';
 import PaybackPeriodChart from '../../charts/PaybackPeriodChart';
 import { formatCurrency, formatPercentage, formatDays } from '../../../utils/formatters';
 
+// Define vendor result interface
+interface VendorResult {
+  vendorId: string;
+  name: string;
+  roi: number;
+  paybackPeriod: number;
+  productivityGains: number;
+  complianceSavings: number;
+  [key: string]: any;
+}
+
+// Define calculation results interface
+interface CalculationResults {
+  vendorResults: VendorResult[];
+  executiveSummary: {
+    totalSavings: number;
+    savingsPercentage: number;
+    paybackPeriod: number;
+    riskReduction: number;
+    implementationTime: number;
+    topAdvantages: string[];
+    topRisks: string[];
+  };
+  financialSummary: {
+    annualSavings: number;
+    fiveYearTco: number;
+    costAvoidance: number;
+    breakEvenPoint: number;
+  };
+  securitySummary: {
+    riskReduction: number;
+    threatPreventionImprovement: number;
+    meanTimeToRespondImprovement: number;
+    complianceCoverage: number;
+    topSecurityBenefits: string[];
+  };
+  [key: string]: any;
+}
+
 const ExecutiveView: React.FC = () => {
   const { state } = useCalculator();
   const { calculationResults } = state;
@@ -26,8 +65,18 @@ const ExecutiveView: React.FC = () => {
     return <div>No calculation data available. Please calculate first.</div>;
   }
   
+  // Cast to our interface for better type checking
+  const typedResults = calculationResults as CalculationResults;
+  
   // Extract executive summary data
-  const { executiveSummary, financialSummary, securitySummary } = calculationResults;
+  const { executiveSummary, financialSummary, securitySummary } = typedResults;
+  
+  // Helper function to find Portnox result
+  const getPortnoxResult = (): VendorResult | undefined => {
+    return typedResults.vendorResults.find((v: VendorResult) => v.vendorId === 'portnox');
+  };
+  
+  const portnoxResult = getPortnoxResult();
   
   return (
     <div className="executive-view">
@@ -146,7 +195,7 @@ const ExecutiveView: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <DashboardCard
                 title="3-Year ROI"
-                value={`${Math.round(calculationResults.vendorResults.find(v => v.vendorId === 'portnox')?.roi || 0)}%`}
+                value={`${Math.round(portnoxResult?.roi || 0)}%`}
                 subtitle="Return on investment"
                 highlight={true}
               />
@@ -159,13 +208,13 @@ const ExecutiveView: React.FC = () => {
               
               <DashboardCard
                 title="Productivity Gains"
-                value={formatCurrency(calculationResults.vendorResults.find(v => v.vendorId === 'portnox')?.productivityGains || 0)}
+                value={formatCurrency(portnoxResult?.productivityGains || 0)}
                 subtitle="Estimated 3-year value"
               />
               
               <DashboardCard
                 title="Compliance Savings"
-                value={formatCurrency(calculationResults.vendorResults.find(v => v.vendorId === 'portnox')?.complianceSavings || 0)}
+                value={formatCurrency(portnoxResult?.complianceSavings || 0)}
                 subtitle="Audit & reporting efficiency"
               />
             </div>
@@ -276,24 +325,24 @@ const ExecutiveView: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                     <div className="text-green-600 dark:text-green-400 font-semibold mb-1">Financial Risk</div>
-                    <div className="text-sm">Reduced breach probability leading to ${formatCurrency(calculationResults.riskAssessment.financialRiskReduction)} in risk mitigation value</div>
+                    <div className="text-sm">Reduced breach probability leading to ${formatCurrency(typedResults.riskAssessment?.financialRiskReduction || 0)} in risk mitigation value</div>
                   </div>
                   
                   <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                     <div className="text-blue-600 dark:text-blue-400 font-semibold mb-1">Compliance Risk</div>
-                    <div className="text-sm">Automated compliance controls with ${formatCurrency(calculationResults.riskAssessment.complianceRiskReduction)} in audit cost avoidance</div>
+                    <div className="text-sm">Automated compliance controls with ${formatCurrency(typedResults.riskAssessment?.complianceRiskReduction || 0)} in audit cost avoidance</div>
                   </div>
                   
                   <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                     <div className="text-purple-600 dark:text-purple-400 font-semibold mb-1">Operational Risk</div>
-                    <div className="text-sm">Simplified management leading to ${formatCurrency(calculationResults.riskAssessment.operationalRiskReduction)} in operational efficiency</div>
+                    <div className="text-sm">Simplified management leading to ${formatCurrency(typedResults.riskAssessment?.operationalRiskReduction || 0)} in operational efficiency</div>
                   </div>
                 </div>
                 
                 <div className="flex flex-col md:flex-row justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div>
                     <div className="font-semibold mb-1">Baseline Risk Exposure</div>
-                    <div className="text-lg font-bold text-red-500 dark:text-red-400">${formatCurrency(calculationResults.riskAssessment.baselineRisk)}</div>
+                    <div className="text-lg font-bold text-red-500 dark:text-red-400">${formatCurrency(typedResults.riskAssessment?.baselineRisk || 0)}</div>
                   </div>
                   <div className="hidden md:block text-gray-400">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -302,7 +351,7 @@ const ExecutiveView: React.FC = () => {
                   </div>
                   <div>
                     <div className="font-semibold mb-1">Mitigated Risk Exposure</div>
-                    <div className="text-lg font-bold text-green-500 dark:text-green-400">${formatCurrency(calculationResults.riskAssessment.mitigatedRisk)}</div>
+                    <div className="text-lg font-bold text-green-500 dark:text-green-400">${formatCurrency(typedResults.riskAssessment?.mitigatedRisk || 0)}</div>
                   </div>
                   <div className="hidden md:block text-gray-400">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -311,7 +360,11 @@ const ExecutiveView: React.FC = () => {
                   </div>
                   <div>
                     <div className="font-semibold mb-1">Risk Reduction</div>
-                    <div className="text-lg font-bold text-portnox-primary">{Math.round((calculationResults.riskAssessment.baselineRisk - calculationResults.riskAssessment.mitigatedRisk) / calculationResults.riskAssessment.baselineRisk * 100)}%</div>
+                    <div className="text-lg font-bold text-portnox-primary">
+                      {typedResults.riskAssessment ? 
+                        Math.round((typedResults.riskAssessment.baselineRisk - typedResults.riskAssessment.mitigatedRisk) / typedResults.riskAssessment.baselineRisk * 100) 
+                        : 0}%
+                    </div>
                   </div>
                 </div>
               </div>
