@@ -3,57 +3,17 @@ import { useCalculator } from '../../../context/CalculatorContext';
 import DashboardCard from '../../ui/DashboardCard';
 import TabPanel from '../../ui/TabPanel';
 import TcoComparisonChart from '../../charts/TcoComparisonChart';
-import TcoBreakdownChart from '../../charts/TcoBreakdownChart';
-import SavingsProjectionChart from '../../charts/SavingsProjectionChart';
-import CompetitiveAdvantageChart from '../../charts/CompetitiveAdvantageChart';
-import ExecutiveSummaryChart from '../../charts/ExecutiveSummaryChart';
 import CumulativeCostChart from '../../charts/CumulativeCostChart';
 import RoiChart from '../../charts/RoiChart';
 import VendorRadarChart from '../../charts/VendorRadarChart';
-import ExecutiveSummaryReport from '../../reports/ExecutiveSummaryReport';
 import PaybackPeriodChart from '../../charts/PaybackPeriodChart';
+import ExecutiveSummaryReport from '../../reports/ExecutiveSummaryReport';
+import ExecutiveSummaryChart from '../../charts/ExecutiveSummaryChart';
+import CompetitiveAdvantageChart from '../../charts/CompetitiveAdvantageChart';
+import SavingsProjectionChart from '../../charts/SavingsProjectionChart';
+import TcoBreakdownChart from '../../charts/TcoBreakdownChart';
 import { formatCurrency, formatPercentage, formatDays } from '../../../utils/formatters';
 import { VendorResult } from '../../../utils/calculationEngine';
-import { CalculationResults } from '../../../utils/calculationEngine';
-
-// Define vendor result interface
-interface VendorResult {
-  vendorId: string;
-  name: string;
-  roi: number;
-  paybackPeriod: number;
-  productivityGains: number;
-  complianceSavings: number;
-  [key: string]: any;
-}
-
-// Define calculation results interface
-interface CalculationResults {
-  vendorResults: VendorResult[];
-  executiveSummary: {
-    totalSavings: number;
-    savingsPercentage: number;
-    paybackPeriod: number;
-    riskReduction: number;
-    implementationTime: number;
-    topAdvantages: string[];
-    topRisks: string[];
-  };
-  financialSummary: {
-    annualSavings: number;
-    fiveYearTco: number;
-    costAvoidance: number;
-    breakEvenPoint: number;
-  };
-  securitySummary: {
-    riskReduction: number;
-    threatPreventionImprovement: number;
-    meanTimeToRespondImprovement: number;
-    complianceCoverage: number;
-    topSecurityBenefits: string[];
-  };
-  [key: string]: any;
-}
 
 const ExecutiveView: React.FC = () => {
   const { state } = useCalculator();
@@ -65,26 +25,16 @@ const ExecutiveView: React.FC = () => {
     { id: 'summary', label: 'Executive Summary' },
     { id: 'roi', label: 'ROI Analysis' },
     { id: 'risk', label: 'Risk Assessment' },
-    { id: 'comparison', label: 'Vendor Comparison' }
-    { id: 'report', label: 'Executive Report' },
+    { id: 'comparison', label: 'Vendor Comparison' },
+    { id: 'report', label: 'Executive Report' }
   ];
   
   if (!calculationResults) {
     return <div>No calculation data available. Please calculate first.</div>;
   }
   
-  // Cast to our interface for better type checking
-  const typedResults = calculationResults as CalculationResults;
-  
   // Extract executive summary data
-  const { executiveSummary, financialSummary, securitySummary } = typedResults;
-  
-  // Helper function to find Portnox result
-  const getPortnoxResult = (): VendorResult | undefined => {
-    return typedResults.vendorResults.find((v: VendorResult) => v.vendorId === 'portnox');
-  };
-  
-  const portnoxResult = getPortnoxResult();
+  const { executiveSummary, financialSummary, securitySummary } = calculationResults;
   
   return (
     <div className="executive-view">
@@ -139,13 +89,6 @@ const ExecutiveView: React.FC = () => {
               />
             </div>
             
-            {/* TCO Comparison Chart */}
-            <div className="mb-6">
-              <TcoComparisonChart height={350} />
-            </div>
-            
-            {/* Cumulative Cost Chart */}
-            <div className="mb-6">
             <div className="mb-6">
               <ExecutiveSummaryChart height={400} />
             </div>
@@ -222,7 +165,7 @@ const ExecutiveView: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <DashboardCard
                 title="3-Year ROI"
-                value={`${Math.round(portnoxResult?.roi || 0)}%`}
+                value={`${Math.round(calculationResults.vendorResults.find((v: VendorResult) => v.vendorId === 'portnox')?.roi || 0)}%`}
                 subtitle="Return on investment"
                 highlight={true}
               />
@@ -235,13 +178,13 @@ const ExecutiveView: React.FC = () => {
               
               <DashboardCard
                 title="Productivity Gains"
-                value={formatCurrency(portnoxResult?.productivityGains || 0)}
+                value={formatCurrency(calculationResults.vendorResults.find((v: VendorResult) => v.vendorId === 'portnox')?.productivityGains || 0)}
                 subtitle="Estimated 3-year value"
               />
               
               <DashboardCard
                 title="Compliance Savings"
-                value={formatCurrency(portnoxResult?.complianceSavings || 0)}
+                value={formatCurrency(calculationResults.vendorResults.find((v: VendorResult) => v.vendorId === 'portnox')?.complianceSavings || 0)}
                 subtitle="Audit & reporting efficiency"
               />
             </div>
@@ -352,24 +295,24 @@ const ExecutiveView: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                     <div className="text-green-600 dark:text-green-400 font-semibold mb-1">Financial Risk</div>
-                    <div className="text-sm">Reduced breach probability leading to ${formatCurrency(typedResults.riskAssessment?.financialRiskReduction || 0)} in risk mitigation value</div>
+                    <div className="text-sm">Reduced breach probability leading to ${formatCurrency(calculationResults.riskAssessment.financialRiskReduction)} in risk mitigation value</div>
                   </div>
                   
                   <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                     <div className="text-blue-600 dark:text-blue-400 font-semibold mb-1">Compliance Risk</div>
-                    <div className="text-sm">Automated compliance controls with ${formatCurrency(typedResults.riskAssessment?.complianceRiskReduction || 0)} in audit cost avoidance</div>
+                    <div className="text-sm">Automated compliance controls with ${formatCurrency(calculationResults.riskAssessment.complianceRiskReduction)} in audit cost avoidance</div>
                   </div>
                   
                   <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                     <div className="text-purple-600 dark:text-purple-400 font-semibold mb-1">Operational Risk</div>
-                    <div className="text-sm">Simplified management leading to ${formatCurrency(typedResults.riskAssessment?.operationalRiskReduction || 0)} in operational efficiency</div>
+                    <div className="text-sm">Simplified management leading to ${formatCurrency(calculationResults.riskAssessment.operationalRiskReduction)} in operational efficiency</div>
                   </div>
                 </div>
                 
                 <div className="flex flex-col md:flex-row justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div>
                     <div className="font-semibold mb-1">Baseline Risk Exposure</div>
-                    <div className="text-lg font-bold text-red-500 dark:text-red-400">${formatCurrency(typedResults.riskAssessment?.baselineRisk || 0)}</div>
+                    <div className="text-lg font-bold text-red-500 dark:text-red-400">${formatCurrency(calculationResults.riskAssessment.baselineRisk)}</div>
                   </div>
                   <div className="hidden md:block text-gray-400">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -378,7 +321,7 @@ const ExecutiveView: React.FC = () => {
                   </div>
                   <div>
                     <div className="font-semibold mb-1">Mitigated Risk Exposure</div>
-                    <div className="text-lg font-bold text-green-500 dark:text-green-400">${formatCurrency(typedResults.riskAssessment?.mitigatedRisk || 0)}</div>
+                    <div className="text-lg font-bold text-green-500 dark:text-green-400">${formatCurrency(calculationResults.riskAssessment.mitigatedRisk)}</div>
                   </div>
                   <div className="hidden md:block text-gray-400">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -387,11 +330,7 @@ const ExecutiveView: React.FC = () => {
                   </div>
                   <div>
                     <div className="font-semibold mb-1">Risk Reduction</div>
-                    <div className="text-lg font-bold text-portnox-primary">
-                      {typedResults.riskAssessment ? 
-                        Math.round((typedResults.riskAssessment.baselineRisk - typedResults.riskAssessment.mitigatedRisk) / typedResults.riskAssessment.baselineRisk * 100) 
-                        : 0}%
-                    </div>
+                    <div className="text-lg font-bold text-portnox-primary">{Math.round((calculationResults.riskAssessment.baselineRisk - calculationResults.riskAssessment.mitigatedRisk) / calculationResults.riskAssessment.baselineRisk * 100)}%</div>
                   </div>
                 </div>
               </div>
@@ -400,864 +339,150 @@ const ExecutiveView: React.FC = () => {
         )}
         
         {activeTab === 'comparison' && (
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
           <div className="vendor-comparison">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
             {/* Vendor Radar Chart */}
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
             <div className="mb-6">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
               <VendorRadarChart height={400} width={600} />
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
             </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
             
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
             {/* Competitive Advantages */}
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
             <div className="mb-6">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
               <h3 className="text-lg font-semibold mb-4">Competitive Advantages</h3>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   <div className="flex items-start mb-2">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <div className="text-portnox-primary p-2 bg-green-50 dark:bg-green-900/20 rounded-lg mr-3">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       </svg>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <h4 className="text-md font-medium">Cloud-Native Architecture</h4>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Unlike on-premises competitors, Portnox requires no hardware investment or complex upgrades.</p>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   <div className="space-y-2">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <div className="flex justify-between mb-1">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                         <span className="text-xs font-medium">Portnox</span>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                         <span className="text-xs font-medium">95%</span>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                         <div className="bg-portnox-primary h-2.5 rounded-full" style={{ width: '95%' }}></div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <div className="flex justify-between mb-1">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                         <span className="text-xs font-medium">Competitors</span>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                         <span className="text-xs font-medium">30%</span>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                         <div className="bg-portnox-secondary h-2.5 rounded-full" style={{ width: '30%' }}></div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                 </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                 
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   <div className="flex items-start mb-2">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <div className="text-portnox-primary p-2 bg-green-50 dark:bg-green-900/20 rounded-lg mr-3">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       </svg>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <h4 className="text-md font-medium">Deployment Speed</h4>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Portnox deploys in days rather than months, with minimal specialized expertise required.</p>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   <div className="space-y-2">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <div className="flex justify-between mb-1">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                         <span className="text-xs font-medium">Portnox</span>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                         <span className="text-xs font-medium">90%</span>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                         <div className="bg-portnox-primary h-2.5 rounded-full" style={{ width: '90%' }}></div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <div className="flex justify-between mb-1">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                         <span className="text-xs font-medium">Competitors</span>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                         <span className="text-xs font-medium">35%</span>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                         <div className="bg-portnox-secondary h-2.5 rounded-full" style={{ width: '35%' }}></div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                 </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
               </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
             </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
             
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
             {/* Vendor Strengths Comparison */}
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
             <div className="mb-6">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
               <h3 className="text-lg font-semibold mb-4">Vendor Strengths Comparison</h3>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
               <div className="overflow-x-auto">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                 <table className="w-full bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   <thead className="bg-gray-50 dark:bg-gray-700">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <tr>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Capability</th>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Portnox</th>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cisco ISE</th>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Aruba ClearPass</th>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Forescout</th>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     </tr>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   </thead>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <tr>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Cloud Architecture</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm font-semibold text-portnox-primary">Native</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Partial</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Partial</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Limited</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     </tr>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <tr>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Zero Trust</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm font-semibold text-portnox-primary">Comprehensive</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Partial</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Limited</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Partial</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     </tr>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <tr>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Deployment Speed</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm font-semibold text-portnox-primary">Days</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Months</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Weeks</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Weeks</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     </tr>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <tr>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">FTE Requirements</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm font-semibold text-portnox-primary">Minimal</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">High</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Moderate</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Moderate</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     </tr>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <tr>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Remote Access</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm font-semibold text-portnox-primary">Built-in</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Add-on</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Limited</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Limited</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     </tr>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     <tr>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Hardware Footprint</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm font-semibold text-portnox-primary">None</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Large</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Medium</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Medium</td>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                     </tr>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                   </tbody>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
                 </table>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
               </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
             </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
           </div>
         )}
-          </div>
-        {activeTab === 'report' && (
-          <div className="executive-report">
-            <ExecutiveSummaryReport className="mt-4" />
-          </div>
-        )}
-        )}
+        
         {activeTab === 'report' && (
           <div className="executive-report">
             <ExecutiveSummaryReport className="mt-4" />
