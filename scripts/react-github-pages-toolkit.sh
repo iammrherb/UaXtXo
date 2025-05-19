@@ -998,13 +998,13 @@ commit_to_branches() {
     # Deploy to GitHub Pages with custom message
     if [ -z "$GITHUB_TOKEN" ]; then
       # Standard deployment
-      npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "$deploy_commit_message"
+      npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "$deploy_commit_message"
     else
       # Deploy with token for CI/CD
       if [ ! -z "$GITHUB_USERNAME" ]; then
-        npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "$deploy_commit_message" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+        npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "$deploy_commit_message" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
       else
-        npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "$deploy_commit_message" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+        npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "$deploy_commit_message" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
       fi
     fi
     
@@ -1125,13 +1125,13 @@ deploy_project() {
   # Deploy using gh-pages
   if [ -z "$GITHUB_TOKEN" ]; then
     # Standard deployment
-    npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git")
+    npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git")
   else
     # Deploy with token for CI/CD
     if [ ! -z "$GITHUB_USERNAME" ]; then
-      npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git") -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git") -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     else
-      npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git") -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git") -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     fi
   fi
   
@@ -1460,13 +1460,13 @@ revert_deployment() {
   echo -e "Deploying previous version..."
   if [ -z "$GITHUB_TOKEN" ]; then
     # Standard deployment
-    npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Revert to deployment: $previous_tag"
+    npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Revert to deployment: $previous_tag"
   else
     # Deploy with token for CI/CD
     if [ ! -z "$GITHUB_USERNAME" ]; then
-      npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Revert to deployment: $previous_tag" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Revert to deployment: $previous_tag" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     else
-      npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Revert to deployment: $previous_tag" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Revert to deployment: $previous_tag" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     fi
   fi
   
@@ -1524,13 +1524,13 @@ sync_branches() {
   echo -e "Deploying to GitHub Pages..."
   if [ -z "$GITHUB_TOKEN" ]; then
     # Standard deployment
-    npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)"
+    npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)"
   else
     # Deploy with token for CI/CD
     if [ ! -z "$GITHUB_USERNAME" ]; then
-      npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     else
-      npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     fi
   fi
   
@@ -1718,11 +1718,11 @@ main() {
         
         # Use proper authentication for gh-pages
         if [ ! -z "$GITHUB_USERNAME" ] && [ ! -z "$GITHUB_TOKEN" ]; then
-          npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+          npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
         elif [ ! -z "$GITHUB_TOKEN" ]; then
-          npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+          npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
         else
-          npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)"
+          npx gh-pages -d build -r "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)"
         fi
         
         echo "Deployment complete! Site available at ${HOMEPAGE_URL}"
