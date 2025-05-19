@@ -1,7 +1,6 @@
-// @ts-nocheck
 import React, { useState, useEffect, useRef } from 'react';
 import { useCalculator } from '../../context/CalculatorContext';
-import { VendorResult } from '../../utils/calculationEngine';
+import { VendorResult } from '../../utils/types';
 import { formatCurrency, formatPercentage } from '../../utils/formatters';
 
 interface CompetitiveAdvantageVisualProps {
@@ -65,6 +64,9 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
     .filter((v: VendorResult) => v.vendorId !== 'portnox')
     .sort((a: VendorResult, b: VendorResult) => b.totalTco - a.totalTco)
     .slice(0, 2);
+  
+  // All vendors for comparison
+  const vendors = [portnox, ...competitors];
   
   // Helper function to get score for a category
   const getScore = (vendor: VendorResult, categoryId: string): number => {
@@ -164,7 +166,7 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
                 key={vendor.vendorId}
                 className={`relative ${
                   isPortnox 
-                    ? 'border-portnox-primary' 
+                    ? 'border-green-500 dark:border-green-400' 
                     : 'border-gray-200 dark:border-gray-700'
                 } border-2 rounded-lg p-4 transition-all duration-500 transform ${
                   animationComplete 
@@ -180,7 +182,7 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
               >
                 {/* Top ribbon for Portnox */}
                 {isPortnox && (
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-portnox-primary text-white py-1 px-4 rounded-full text-xs font-bold shadow-md">
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white py-1 px-4 rounded-full text-xs font-bold shadow-md">
                     BEST CHOICE
                   </div>
                 )}
@@ -218,14 +220,14 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
                   <div className="flex justify-between mb-1">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Overall Score</span>
                     <span className={`text-sm font-bold ${
-                      isPortnox ? 'text-portnox-primary' : 'text-gray-700 dark:text-gray-300'
+                      isPortnox ? 'text-green-500 dark:text-green-400' : 'text-gray-700 dark:text-gray-300'
                     }`}>
                       {Math.round(overallScore)}%
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                     <div 
-                      className={`h-3 rounded-full ${isPortnox ? 'bg-portnox-primary' : 'bg-portnox-secondary'}`}
+                      className={`h-3 rounded-full ${isPortnox ? 'bg-green-500 dark:bg-green-400' : 'bg-blue-500 dark:bg-blue-400'}`}
                       style={{ 
                         width: `${Math.round(overallScore)}%`, 
                         transition: 'width 1s ease-in-out',
@@ -298,7 +300,7 @@ const CompetitiveAdvantageVisual: React.FC<CompetitiveAdvantageVisualProps> = ({
                         </li>
                         <li className="flex items-start">
                           <span className="text-green-500 mr-1">✓</span>
-                          <span>{calculationResults.executiveSummary.savingsPercentage}% lower TCO vs alternatives</span>
+                          <span>{calculationResults.executiveSummary?.savingsPercentage || 40}% lower TCO vs alternatives</span>
                         </li>
                       </>
                     ) : (

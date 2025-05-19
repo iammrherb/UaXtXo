@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useRef, useEffect, useMemo } from 'react';
 import * as d3 from 'd3';
 import { useCalculator } from '../../context/CalculatorContext';
@@ -437,7 +436,7 @@ const VendorRadarChart: React.FC<VendorRadarChartProps> = ({
     <div className="chart-container">
       <div className="mb-4 text-center">
         <div className="text-lg font-bold">{vendorData.name} Feature Analysis</div>
-        <div className="text-sm text-gray-600">Capability scores on a scale of 0-10</div>
+        <div className="text-sm text-gray-600 dark:text-gray-400">Capability scores on a scale of 0-10</div>
       </div>
       <div className="relative">
         <svg ref={svgRef}></svg>

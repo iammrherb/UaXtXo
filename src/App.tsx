@@ -8,8 +8,6 @@ import Dashboard from './components/views/Dashboard';
 import { CalculatorProvider } from './context/CalculatorContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
-import environment from './config/environment';
-import './App.css';
 
 const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
