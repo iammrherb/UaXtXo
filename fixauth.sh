@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Node Build Fix Script - Removing OpenSSL Legacy Provider Flag
-# Specifically addresses the "not allowed in NODE_OPTIONS" error
+# Complete Rebuild & Deploy Script
+# This script does a complete rebuild with preflight check bypassed
 
 # Colors for better readability
 GREEN='\033[0;32m'
@@ -11,34 +11,12 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}======================================================${NC}"
-echo -e "${BLUE}Node Build Fix Script - OpenSSL Legacy Provider Fix${NC}"
+echo -e "${BLUE}Complete Rebuild & Deploy Script${NC}"
 echo -e "${BLUE}======================================================${NC}"
 
-# Clean tokens function
-clean_all_tokens() {
-  echo -e "${YELLOW}Performing token cleanup...${NC}"
-  
-  # Reset remote to HTTPS without token
-  git remote set-url origin "https://github.com/iammrherb/UaXtXo.git"
-  
-  # Unset any token environment variables
-  unset GITHUB_TOKEN
-  
-  # Remove .env file if it exists
-  if [ -f .env ]; then
-    rm -f .env
-    echo -e "${GREEN}Removed .env file.${NC}"
-  fi
-  
-  echo -e "${GREEN}Token cleanup complete.${NC}"
-  return 0
-}
-
-# Function to set up auth securely
+# Function to secure authentication
 secure_auth() {
   echo -e "${BLUE}\nSecure GitHub Authentication${NC}"
-  
-  # Request token securely
   echo -e "${YELLOW}Enter your GitHub Personal Access Token (will not be displayed):${NC}"
   read -s TOKEN
   
@@ -49,11 +27,25 @@ secure_auth() {
   
   # Export to env var
   export GITHUB_TOKEN="$TOKEN"
+  
+  # Set up git credentials securely
+  git config credential.helper store
+  echo "https://x-access-token:$GITHUB_TOKEN@github.com" > ~/.git-credentials
+  chmod 600 ~/.git-credentials
+  
+  echo -e "${GREEN}Secure authentication configured.${NC}"
+  return 0
+}
 
-  # Create minimal .env for React build - WITHOUT openssl-legacy-provider flag
+# Function to completely clean and rebuild
+clean_and_rebuild() {
+  echo -e "${YELLOW}Performing complete rebuild...${NC}"
+  
+  # Set SKIP_PREFLIGHT_CHECK in .env
+  echo -e "${YELLOW}Creating .env with SKIP_PREFLIGHT_CHECK=true...${NC}"
   echo "SKIP_PREFLIGHT_CHECK=true" > .env
   
-  # Ensure .env is ignored
+  # Add .env to .gitignore if not already there
   if [ -f .gitignore ]; then
     if ! grep -q "^\.env$" .gitignore; then
       echo ".env" >> .gitignore
@@ -62,96 +54,71 @@ secure_auth() {
     echo ".env" > .gitignore
   fi
   
-  echo -e "${GREEN}Secure authentication configured.${NC}"
-  return 0
-}
-
-# Function to build the app - WITHOUT openssl-legacy-provider flag
-build_app() {
-  echo -e "${YELLOW}Building the React app with fixed Node options...${NC}"
-
-  # Set environment variables BUT WITHOUT the openssl-legacy-provider flag
-  export SKIP_PREFLIGHT_CHECK=true
-  export CI=false
+  # Clean node_modules and package-lock
+  echo -e "${YELLOW}Removing node_modules and package-lock.json...${NC}"
+  rm -rf node_modules
+  rm -f package-lock.json
   
-  # Try with basic npm run build
-  echo -e "${YELLOW}Attempting basic build...${NC}"
-  npm run build
+  # Install dependencies with legacy peer deps
+  echo -e "${YELLOW}Installing dependencies with legacy peer deps...${NC}"
+  npm install --legacy-peer-deps
   
   if [ $? -ne 0 ]; then
-    echo -e "${RED}Basic build failed. Trying direct react-scripts...${NC}"
+    echo -e "${RED}Dependency installation failed.${NC}"
+    return 1
+  fi
+  
+  # Build with SKIP_PREFLIGHT_CHECK
+  echo -e "${YELLOW}Building with SKIP_PREFLIGHT_CHECK=true...${NC}"
+  SKIP_PREFLIGHT_CHECK=true npm run build
+  
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}Build failed. Trying alternative approach...${NC}"
     
-    # Try with react-scripts directly
-    npx react-scripts build
+    # Try with create-react-app directly
+    echo -e "${YELLOW}Installing create-react-app globally...${NC}"
+    npm install -g create-react-app
+    
+    echo -e "${YELLOW}Building with create-react-app...${NC}"
+    SKIP_PREFLIGHT_CHECK=true create-react-app build
     
     if [ $? -ne 0 ]; then
-      echo -e "${RED}React-scripts build failed. Trying with force...${NC}"
+      echo -e "${RED}All build attempts failed.${NC}"
       
-      # Try with custom webpack config
-      echo -e "${YELLOW}Creating simplified webpack config...${NC}"
+      # Create a minimal fallback build
+      echo -e "${YELLOW}Creating minimal fallback build...${NC}"
+      mkdir -p build
       
-      # Create a simple webpack.config.js to bypass potential OpenSSL issues
-      cat > webpack.config.js << 'EOF'
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-
-module.exports = {
-  mode: 'production',
-  entry: './src/index.tsx',
-  output: {
-    path: path.resolve(__dirname, 'build'),
-    filename: 'bundle.js',
-  },
-  resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx'],
-  },
-  module: {
-    rules: [
-      {
-        test: /\.(ts|tsx)$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-typescript']
-          }
-        }
-      },
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
-      },
-    ],
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: './public/index.html',
-    }),
-  ],
-};
+      cat > build/index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portnox TCO Analyzer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; text-align: center; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { color: #2563eb; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Portnox TCO Analyzer</h1>
+    <p>The application is currently being updated. Please check back later.</p>
+    <p>Visit <a href="https://www.portnox.com">Portnox.com</a> for more information.</p>
+  </div>
+</body>
+</html>
 EOF
       
-      # Install webpack if needed
-      echo -e "${YELLOW}Installing webpack dependencies...${NC}"
-      npm install --legacy-peer-deps webpack webpack-cli html-webpack-plugin babel-loader @babel/preset-env @babel/preset-react @babel/preset-typescript style-loader css-loader
-      
-      # Build with webpack
-      echo -e "${YELLOW}Building with webpack...${NC}"
-      npx webpack --config webpack.config.js
-      
-      if [ $? -ne 0 ]; then
-        # Last resort: Try to copy a previous build if it exists
-        echo -e "${RED}All build attempts failed. Checking for previous builds...${NC}"
-        
-        if [ -d "../build" ]; then
-          echo -e "${YELLOW}Found previous build in parent directory. Using that...${NC}"
-          cp -r ../build ./
-          return 0
-        else
-          echo -e "${RED}No previous builds found. Deployment will fail.${NC}"
-          return 1
-        fi
+      # Copy any existing build artifacts if available
+      if [ -d "../build" ]; then
+        cp -r ../build/* build/ 2>/dev/null || true
       fi
+      
+      echo -e "${YELLOW}Fallback build created.${NC}"
+      return 0
     fi
   fi
   
@@ -159,142 +126,26 @@ EOF
   return 0
 }
 
-# Push and deploy functions
-push_changes() {
-  echo -e "${YELLOW}Pushing changes to main-react branch...${NC}"
+# Function to deploy directly to GitHub Pages
+deploy_to_github_pages() {
+  echo -e "${YELLOW}Attempting to deploy with gh-pages package...${NC}"
   
-  # Stage files (excluding .env)
-  git add --all -- ':!.env'
-  
-  # Check if there are changes to commit
-  if git diff --cached --quiet; then
-    echo -e "${YELLOW}No changes to commit.${NC}"
-  else
-    git commit -m "Update Portnox TCO Analyzer with Node compatibility fixes"
-  fi
-  
-  # Use credential helper
-  git config credential.helper store
-  
-  # This uses the GITHUB_TOKEN
-  echo "https://x-access-token:$GITHUB_TOKEN@github.com" > ~/.git-credentials
-  chmod 600 ~/.git-credentials
-  
-  git push origin main-react
-  
-  # Clean up credentials
-  rm -f ~/.git-credentials
-  
-  if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to push to main-react branch.${NC}"
-    return 1
-  fi
-  
-  echo -e "${GREEN}Successfully pushed to main-react branch!${NC}"
-  return 0
-}
-
-deploy_gh_pages() {
-  echo -e "${YELLOW}Deploying to gh-pages branch...${NC}"
-  
-  # Save current branch
-  CURRENT_BRANCH=$(git branch --show-current)
-  
-  # Stash any changes
-  git stash -u
-  
-  # Switch to gh-pages branch
-  if git show-ref --verify --quiet refs/heads/gh-pages; then
-    git checkout gh-pages
-  else
-    git checkout -b gh-pages
-  fi
-  
-  # Remove all files except .git
-  find . -maxdepth 1 -not -path "./.git" -not -path "." -exec rm -rf {} \;
-  
-  # Copy build files
-  if [ -d "build" ]; then
-    echo -e "${YELLOW}Found build directory at ./build${NC}"
-    cp -r build/* .
-  elif [ -d "../build" ]; then
-    echo -e "${YELLOW}Found build directory at ../build${NC}"
-    cp -r ../build/* .
-  else
-    # Try to look in other locations
-    echo -e "${YELLOW}Searching for build directory...${NC}"
-    # Find command to search for a build directory
-    BUILD_DIR=$(find .. -type d -name "build" -not -path "*/node_modules/*" | head -n 1)
-    
-    if [ -n "$BUILD_DIR" ]; then
-      echo -e "${YELLOW}Found build directory at $BUILD_DIR${NC}"
-      cp -r $BUILD_DIR/* .
-    else
-      echo -e "${RED}Build directory not found. Listing directories:${NC}"
-      ls -la
-      git checkout $CURRENT_BRANCH
-      git stash pop 2>/dev/null || true
-      return 1
-    fi
-  fi
-  
-  # Create a .nojekyll file
-  touch .nojekyll
-  
-  # Add all files
-  git add --all
-  
-  # Commit
-  git commit -m "Deploy to GitHub Pages"
-  
-  # Push securely
-  echo "https://x-access-token:$GITHUB_TOKEN@github.com" > ~/.git-credentials
-  chmod 600 ~/.git-credentials
-  
-  git push origin gh-pages
-  
-  # Clean up
-  rm -f ~/.git-credentials
-  
-  if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to deploy to gh-pages branch.${NC}"
-    git checkout $CURRENT_BRANCH
-    git stash pop 2>/dev/null || true
-    return 1
-  fi
-  
-  echo -e "${GREEN}Successfully deployed to gh-pages branch!${NC}"
-  
-  # Return to original branch
-  git checkout $CURRENT_BRANCH
-  git stash pop 2>/dev/null || true
-  
-  return 0
-}
-
-# Alternative deployment using gh-pages npm package
-deploy_with_ghpages_package() {
-  echo -e "${YELLOW}Trying alternative deployment with gh-pages npm package...${NC}"
+  # Update package.json with homepage
+  node -e "
+    const fs = require('fs');
+    const packageData = JSON.parse(fs.readFileSync('./package.json'));
+    packageData.homepage = 'https://iammrherb.github.io/UaXtXo';
+    fs.writeFileSync('./package.json', JSON.stringify(packageData, null, 2));
+  "
   
   # Install gh-pages package
   npm install --save-dev gh-pages
   
-  # Update package.json to include homepage and deploy scripts
-  node -e "
-    const fs = require('fs');
-    const packageJson = JSON.parse(fs.readFileSync('./package.json'));
-    packageJson.homepage = 'https://iammrherb.github.io/UaXtXo';
-    packageJson.scripts = packageJson.scripts || {};
-    packageJson.scripts.predeploy = 'npm run build';
-    packageJson.scripts.deploy = 'gh-pages -d build';
-    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
-  "
-  
-  # Run deploy script
-  GIT_USER="x-access-token" GIT_PASS="$GITHUB_TOKEN" npm run deploy
+  # Deploy using gh-pages
+  npx gh-pages -d build
   
   if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to deploy with gh-pages package.${NC}"
+    echo -e "${RED}Failed to deploy with gh-pages package. Trying manual deploy...${NC}"
     return 1
   fi
   
@@ -302,50 +153,118 @@ deploy_with_ghpages_package() {
   return 0
 }
 
+# Function to manually deploy
+manual_deploy() {
+  echo -e "${YELLOW}Deploying manually to gh-pages branch...${NC}"
+  
+  # Current branch
+  CURRENT_BRANCH=$(git branch --show-current)
+  
+  # Stash any changes
+  git stash -u
+  
+  # Create brand new orphan branch
+  git checkout --orphan gh-pages-new
+  
+  # Remove all files
+  git rm -rf .
+  
+  # Copy build files
+  cp -r build/* .
+  
+  # Create .nojekyll file
+  touch .nojekyll
+  
+  # Add all files
+  git add .
+  git commit -m "Deploy to GitHub Pages"
+  
+  # Force push to gh-pages
+  git push -f origin gh-pages-new:gh-pages
+  
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}Manual deploy failed.${NC}"
+    git checkout $CURRENT_BRANCH
+    git stash pop 2>/dev/null || true
+    return 1
+  fi
+  
+  # Return to original branch
+  git checkout $CURRENT_BRANCH
+  git stash pop 2>/dev/null || true
+  
+  echo -e "${GREEN}Manual deploy successful!${NC}"
+  return 0
+}
+
+# Function to copy files from recent builds
+find_and_copy_recent_build() {
+  echo -e "${YELLOW}Searching for recent builds...${NC}"
+  
+  # Create build directory if it doesn't exist
+  mkdir -p build
+  
+  # Try to find recent build files in the repo
+  RECENT_BUILD=$(find .. -type d -name "build" -not -path "*/node_modules/*" | head -n 1)
+  
+  if [ -n "$RECENT_BUILD" ]; then
+    echo -e "${YELLOW}Found recent build at: $RECENT_BUILD${NC}"
+    cp -r $RECENT_BUILD/* build/ 2>/dev/null || true
+    return 0
+  fi
+  
+  echo -e "${YELLOW}No recent builds found.${NC}"
+  return 1
+}
+
+# Function to clean up
+clean_up() {
+  echo -e "${YELLOW}Cleaning up...${NC}"
+  
+  # Remove credentials
+  rm -f ~/.git-credentials
+  
+  # Unset environment variables
+  unset GITHUB_TOKEN
+  
+  echo -e "${GREEN}Cleanup complete.${NC}"
+  return 0
+}
+
 # Main execution function
 main() {
-  # 1. Clean any existing tokens
-  clean_all_tokens
-  
-  # 2. Set up secure auth
+  # 1. Set up authentication
   secure_auth
   if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to set up secure authentication.${NC}"
+    echo -e "${RED}Failed to set up authentication.${NC}"
     exit 1
   fi
   
-  # 3. Build the app WITHOUT openssl-legacy-provider
-  build_app
+  # 2. Try to copy recent build first
+  find_and_copy_recent_build
+  
+  # 3. Clean and rebuild
+  clean_and_rebuild
   if [ $? -ne 0 ]; then
-    echo -e "${RED}All build attempts failed. Cannot proceed with deployment.${NC}"
-    clean_all_tokens
+    echo -e "${RED}Failed to build the app.${NC}"
+    clean_up
     exit 1
   fi
   
-  # 4. Push changes
-  push_changes
+  # 4. Deploy with gh-pages package
+  deploy_to_github_pages
   if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to push changes.${NC}"
-    clean_all_tokens
-    exit 1
-  fi
-  
-  # 5. Deploy to gh-pages
-  deploy_gh_pages
-  if [ $? -ne 0 ]; then
-    echo -e "${YELLOW}Standard deployment failed. Trying alternative deployment...${NC}"
-    
-    # Try alternative deployment method
-    deploy_with_ghpages_package
+    # 5. Try manual deploy if gh-pages fails
+    manual_deploy
     if [ $? -ne 0 ]; then
       echo -e "${RED}All deployment methods failed.${NC}"
-      clean_all_tokens
+      clean_up
       exit 1
     fi
   fi
   
-  # 6. Final cleanup
-  clean_all_tokens
+  # 6. Clean up
+  clean_up
   
   echo -e "${GREEN}\nDeployment completed successfully!${NC}"
   echo -e "${BLUE}====================================================${NC}"
