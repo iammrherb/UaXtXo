@@ -63,5 +63,3 @@ public/dist/
 .Trashes
 ehthumbs.db
 Thumbs.db
-**/.env.github
-.env.github
