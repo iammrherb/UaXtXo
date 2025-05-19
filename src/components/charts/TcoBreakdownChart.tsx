@@ -127,7 +127,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
     const series: number[] = [];
     const colors: string[] = [];
     
-    Object.entries(costBreakdown).forEach(([key, value]) => {
+    Object.entries(costBreakdown).forEach(([key, value]: [string, number]) => {
       if (value > 0 && key in costCategories) {
         labels.push(costCategories[key].name);
         series.push(value);
@@ -706,7 +706,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
       .attr("y", height - margin.bottom)
       .attr("width", x.bandwidth())
       .attr("height", 0)
-      .attr("fill", (d, i) => i === 0 ? costCategories.hardware.color : costCategories.infrastructure.color)
+      .attr("fill", (d: any, i: number) => i === 0 ? costCategories.hardware.color : costCategories.infrastructure.color)
       .attr("rx", 6)
       .attr("ry", 6)
       .transition()
@@ -773,7 +773,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
     ];
     
     // Add cumulative cost property
-    timelineData.forEach((d, i) => {
+    timelineData.forEach((d: any, i: number) => {
       d.cost = d.days * dailyRate;
     });
     
@@ -806,7 +806,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
       .attr("opacity", 0)
       .transition()
       .duration(500)
-      .delay((d, i) => i * 100)
+      .delay((d: any, i: number) => i * 100)
       .attr("opacity", 1);
     
     // Add phase labels
@@ -826,7 +826,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
       .text(d => d.phase)
       .transition()
       .duration(500)
-      .delay((d, i) => i * 100 + 300)
+      .delay((d: any, i: number) => i * 100 + 300)
       .attr("opacity", 1);
     
     // Add cost labels above
@@ -845,7 +845,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
       .text(d => formatCurrency(d.cost))
       .transition()
       .duration(500)
-      .delay((d, i) => i * 100 + 500)
+      .delay((d: any, i: number) => i * 100 + 500)
       .attr("opacity", 1);
     
     // Add axes
@@ -900,7 +900,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
       .attr("y", height - margin.bottom)
       .attr("width", x.bandwidth())
       .attr("height", 0)
-      .attr("fill", (d, i) => i === 0 ? costCategories[category].color : "#bbb")
+      .attr("fill", (d: any, i: number) => i === 0 ? costCategories[category].color : "#bbb")
       .attr("rx", 8)
       .attr("ry", 8)
       .transition()
@@ -1010,7 +1010,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
     
     // Extract values for each category
     const values: number[] = [];
-    Object.entries(vendorData.costBreakdown).forEach(([key, value]) => {
+    Object.entries(vendorData.costBreakdown).forEach(([key, value]: [string, number]) => {
       if (value > 0 && key in costCategories) {
         values.push(value);
       }
