@@ -24,7 +24,17 @@ interface VendorResult {
   deployment: string;
 }
 
-const COLORS = {
+// Define chart data item type
+interface ChartDataItem {
+  name: string;
+  value: number;
+  color: string;
+  key: string;
+  icon: string;
+  description: string;
+}
+
+const COLORS: Record<string, string> = {
   licenses: '#8884d8',
   maintenance: '#ffc658',
   implementation: '#82ca9d',
@@ -33,7 +43,7 @@ const COLORS = {
   infrastructure: '#00c3ff'
 };
 
-const ICONS = {
+const ICONS: Record<string, string> = {
   licenses: '💾',
   maintenance: '🔧',
   implementation: '🚀',
@@ -42,7 +52,7 @@ const ICONS = {
   infrastructure: '🏢'
 };
 
-const DESCRIPTIONS = {
+const DESCRIPTIONS: Record<string, string> = {
   licenses: 'Software licenses or subscription fees',
   maintenance: 'Annual maintenance and support',
   implementation: 'One-time professional services',
@@ -162,18 +172,25 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
   }, [calculationResults, vendorId]);
 
   // Prepare data for charts
-  const chartData = React.useMemo(() => {
+  const chartData = React.useMemo<ChartDataItem[]>(() => {
     if (!vendorData) return [];
 
-    return Object.entries(vendorData.costBreakdown)
-      .map(([key, value]) => ({
-        name: key.charAt(0).toUpperCase() + key.slice(1),
-        value,
-        color: COLORS[key as keyof typeof COLORS],
-        key,
-        icon: ICONS[key as keyof typeof ICONS],
-        description: DESCRIPTIONS[key as keyof typeof DESCRIPTIONS]
-      }))
+    const result: ChartDataItem[] = [];
+    
+    Object.entries(vendorData.costBreakdown).forEach(([key, value]: [string, number]) => {
+      if (key in COLORS) {
+        result.push({
+          name: key.charAt(0).toUpperCase() + key.slice(1),
+          value,
+          color: COLORS[key],
+          key,
+          icon: ICONS[key],
+          description: DESCRIPTIONS[key]
+        });
+      }
+    });
+    
+    return result
       .filter(item => item.value > 0)
       .sort((a, b) => b.value - a.value);
   }, [vendorData]);
@@ -300,12 +317,12 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
       {/* Detailed analysis section */}
       {activeCategory && (
         <div className="detailed-analysis mt-6 p-6 bg-white rounded-lg shadow-sm border-t-2" 
-             style={{ borderColor: COLORS[activeCategory as keyof typeof COLORS] }}>
+             style={{ borderColor: COLORS[activeCategory] }}>
           <div className="flex items-center mb-4">
-            <span className="text-3xl mr-3">{ICONS[activeCategory as keyof typeof ICONS]}</span>
+            <span className="text-3xl mr-3">{ICONS[activeCategory]}</span>
             <div>
               <h3 className="text-xl font-bold">{activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} Breakdown</h3>
-              <p className="text-gray-600">{DESCRIPTIONS[activeCategory as keyof typeof DESCRIPTIONS]}</p>
+              <p className="text-gray-600">{DESCRIPTIONS[activeCategory]}</p>
             </div>
           </div>
           
