@@ -8,6 +8,35 @@ interface TcoBreakdownChartProps {
   height?: number;
 }
 
+// Define vendor result interface
+interface VendorResult {
+  vendorId: string;
+  name: string;
+  totalTco: number;
+  costBreakdown: {
+    licenses: number;
+    maintenance: number;
+    implementation: number;
+    operations: number;
+    hardware: number;
+    infrastructure: number;
+  };
+  badge?: string;
+  badgeClass?: string;
+  deployment: string;
+  implementationDays: number;
+  roi: number;
+  paybackPeriod: number;
+  cumulativeCosts: {
+    initial: number;
+    year1: number;
+    year2: number;
+    year3: number;
+    year4?: number;
+    year5?: number;
+  };
+}
+
 // Categories and their visual properties
 const CATEGORIES = {
   licenses: {
@@ -69,7 +98,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
     labels: [],
     colors: []
   });
-  const [vendorData, setVendorData] = useState<any>(null);
+  const [vendorData, setVendorData] = useState<VendorResult | null>(null);
   const [hasData, setHasData] = useState<boolean>(false);
   
   // Process vendor data and prepare chart data
@@ -79,7 +108,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
       return;
     }
     
-    const vendor = calculationResults.vendorResults.find(v => v.vendorId === vendorId);
+    const vendor = calculationResults.vendorResults.find((v: VendorResult) => v.vendorId === vendorId);
     if (!vendor) {
       setHasData(false);
       return;
@@ -94,7 +123,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
     
     // Check each category
     Object.entries(CATEGORIES).forEach(([key, category]) => {
-      const value = vendor.costBreakdown[key];
+      const value = vendor.costBreakdown[key as keyof typeof vendor.costBreakdown];
       if (value > 0) {
         series.push(value);
         labels.push(category.name);
@@ -118,7 +147,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
       const categoryKeys = Object.keys(CATEGORIES) as CategoryKey[];
       let categoryIndex = 0;
       for (const key of categoryKeys) {
-        if (vendor.costBreakdown[key] > 0) {
+        if (vendor.costBreakdown[key as keyof typeof vendor.costBreakdown] > 0) {
           if (categoryIndex === maxIndex) {
             setSelectedCategory(key);
             break;
@@ -326,7 +355,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
           
           <div className="categories-grid space-y-3">
             {Object.entries(CATEGORIES).map(([key, category]) => {
-              const value = vendorData.costBreakdown[key] || 0;
+              const value = vendorData.costBreakdown[key as keyof typeof vendorData.costBreakdown] || 0;
               if (value <= 0) return null;
               
               const percentage = (value / vendorData.totalTco) * 100;
@@ -499,19 +528,19 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
                       </div>
                       <div className="text-right">
                         <span className="text-xs font-semibold inline-block text-orange-600">
-                          {(vendorData.costBreakdown.operations / state.costParameters.fteCost).toFixed(2)} FTE
+                          {(vendorData.costBreakdown.operations / (state.costParameters?.fteCost || 100000)).toFixed(2)} FTE
                         </span>
                       </div>
                     </div>
                     <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-orange-200">
                       <div style={{
-                        width: `${Math.min((vendorData.costBreakdown.operations / state.costParameters.fteCost) * 100, 100)}%`
+                        width: `${Math.min((vendorData.costBreakdown.operations / (state.costParameters?.fteCost || 100000)) * 100, 100)}%`
                       }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-orange-500"></div>
                     </div>
                     <div className="text-xs text-gray-600">
-                      {vendorData.costBreakdown.operations / state.costParameters.fteCost <= 0.25 ?
+                      {vendorData.costBreakdown.operations / (state.costParameters?.fteCost || 100000) <= 0.25 ?
                         "Low FTE allocation indicates minimal operational overhead and simplified management." :
-                        vendorData.costBreakdown.operations / state.costParameters.fteCost <= 0.5 ?
+                        vendorData.costBreakdown.operations / (state.costParameters?.fteCost || 100000) <= 0.5 ?
                         "Moderate FTE allocation suggests reasonable operational requirements." :
                         "High FTE allocation indicates significant operational complexity and management overhead."
                       }
