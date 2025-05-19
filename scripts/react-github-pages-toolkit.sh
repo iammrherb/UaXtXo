@@ -321,7 +321,7 @@ EOF
   # 12. Save changes
   git add .
   git commit -m "$(generate_commit_message 'project setup' 'chore')"
-  git push origin $SOURCE_BRANCH
+  git -c credential.helper= push origin $SOURCE_BRANCH
   
   echo -e "\n${GREEN}Setup complete!${NC}"
   echo -e "Your project is now configured for GitHub Pages deployment."
@@ -544,7 +544,7 @@ organize_project() {
   # 7. Save changes
   git add .
   git commit -m "Organize project directory structure" || echo "No changes to commit"
-  git push origin $SOURCE_BRANCH || echo "No changes to push"
+  git -c credential.helper= push origin $SOURCE_BRANCH || echo "No changes to push"
   
   echo -e "\n${GREEN}Project organization complete!${NC}"
 }
@@ -581,7 +581,7 @@ push_commits() {
       echo -e "${YELLOW}Changes committed locally. Don't forget to push later.${NC}"
       ;;
     *)
-      git push origin $current_branch
+      git -c credential.helper= push origin $current_branch
       echo -e "${GREEN}Pushed to origin/$current_branch.${NC}"
       ;;
   esac
@@ -998,13 +998,13 @@ commit_to_branches() {
     # Deploy to GitHub Pages with custom message
     if [ -z "$GITHUB_TOKEN" ]; then
       # Standard deployment
-      npx gh-pages -d build -m "$deploy_commit_message"
+      npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "$deploy_commit_message"
     else
       # Deploy with token for CI/CD
       if [ ! -z "$GITHUB_USERNAME" ]; then
-        npx gh-pages -d build -m "$deploy_commit_message" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+        npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "$deploy_commit_message" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
       else
-        npx gh-pages -d build -m "$deploy_commit_message" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+        npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "$deploy_commit_message" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
       fi
     fi
     
@@ -1016,7 +1016,7 @@ commit_to_branches() {
     if [[ $REPLY =~ ^[Yy]$ ]]; then
       local tag_name="deploy-$(date +%Y%m%d-%H%M%S)"
       git tag -a "$tag_name" -m "$deploy_commit_message"
-      git push origin "$tag_name"
+      git -c credential.helper= push origin "$tag_name"
       echo -e "${GREEN}Created and pushed tag: $tag_name${NC}"
     fi
   fi
@@ -1088,7 +1088,7 @@ deploy_project() {
     
     git add .
     git commit -m "$(generate_commit_message "$component_name" "$commit_type")"
-    git push origin $SOURCE_BRANCH
+    git -c credential.helper= push origin $SOURCE_BRANCH
     echo -e "${GREEN}Changes committed and pushed${NC}"
   else
     echo -e "${GREEN}No changes to commit${NC}"
@@ -1125,13 +1125,13 @@ deploy_project() {
   # Deploy using gh-pages
   if [ -z "$GITHUB_TOKEN" ]; then
     # Standard deployment
-    npx gh-pages -d build -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git")
+    npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git")
   else
     # Deploy with token for CI/CD
     if [ ! -z "$GITHUB_USERNAME" ]; then
-      npx gh-pages -d build -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git") -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git") -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     else
-      npx gh-pages -d build -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git") -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git") -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     fi
   fi
   
@@ -1143,7 +1143,7 @@ deploy_project() {
   TAG_NAME="deploy-$(date +%Y%m%d-%H%M%S)"
   echo -e "\n${YELLOW}Creating deployment tag: $TAG_NAME${NC}"
   git tag -a "$TAG_NAME" -m "Deployment on $(date)"
-  git push origin "$TAG_NAME"
+  git -c credential.helper= push origin "$TAG_NAME"
   echo -e "${GREEN}Deployment tagged for future reference${NC}"
   
   # 10. Suggest verification
@@ -1460,20 +1460,20 @@ revert_deployment() {
   echo -e "Deploying previous version..."
   if [ -z "$GITHUB_TOKEN" ]; then
     # Standard deployment
-    npx gh-pages -d build -m "Revert to deployment: $previous_tag"
+    npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Revert to deployment: $previous_tag"
   else
     # Deploy with token for CI/CD
     if [ ! -z "$GITHUB_USERNAME" ]; then
-      npx gh-pages -d build -m "Revert to deployment: $previous_tag" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Revert to deployment: $previous_tag" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     else
-      npx gh-pages -d build -m "Revert to deployment: $previous_tag" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Revert to deployment: $previous_tag" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     fi
   fi
   
   # Tag the reversion
   local revert_tag="revert-to-$previous_tag"
   git tag -a "$revert_tag" -m "Reverted to $previous_tag"
-  git push origin "$revert_tag"
+  git -c credential.helper= push origin "$revert_tag"
   
   # Switch back to source branch
   git checkout $SOURCE_BRANCH
@@ -1507,7 +1507,7 @@ sync_branches() {
     if [[ $REPLY =~ ^[Yy]$ ]]; then
       git add .
       git commit -m "$(generate_commit_message 'sync-preparation' 'chore')"
-      git push origin $SOURCE_BRANCH
+      git -c credential.helper= push origin $SOURCE_BRANCH
       echo -e "${GREEN}Changes committed and pushed${NC}"
     else
       echo -e "${RED}Cannot sync with uncommitted changes. Operation cancelled.${NC}"
@@ -1524,13 +1524,13 @@ sync_branches() {
   echo -e "Deploying to GitHub Pages..."
   if [ -z "$GITHUB_TOKEN" ]; then
     # Standard deployment
-    npx gh-pages -d build -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)"
+    npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)"
   else
     # Deploy with token for CI/CD
     if [ ! -z "$GITHUB_USERNAME" ]; then
-      npx gh-pages -d build -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     else
-      npx gh-pages -d build -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     fi
   fi
   
@@ -1718,11 +1718,11 @@ main() {
         
         # Use proper authentication for gh-pages
         if [ ! -z "$GITHUB_USERNAME" ] && [ ! -z "$GITHUB_TOKEN" ]; then
-          npx gh-pages -d build -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+          npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
         elif [ ! -z "$GITHUB_TOKEN" ]; then
-          npx gh-pages -d build -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+          npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
         else
-          npx gh-pages -d build -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)"
+          npx gh-pages -d build --repo "https://iammrherb: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@github.com/iammrherb/UaXtXo.git" -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)"
         fi
         
         echo "Deployment complete! Site available at ${HOMEPAGE_URL}"
