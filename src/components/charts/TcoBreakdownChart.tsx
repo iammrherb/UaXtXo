@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCalculator } from '../../context/CalculatorContext';
 import { formatCurrency } from '../../utils/formatters';
+// @ts-ignore
 import Chart from 'react-apexcharts';
 
 interface TcoBreakdownChartProps {
@@ -158,123 +159,6 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
     }
   }, [calculationResults, vendorId]);
   
-  // Chart options for the donut chart
-  const chartOptions = {
-    chart: {
-      type: 'donut',
-      animations: {
-        enabled: true,
-        easing: 'easeinout',
-        speed: 800,
-        animateGradually: {
-          enabled: true,
-          delay: 150
-        },
-        dynamicAnimation: {
-          enabled: true,
-          speed: 350
-        }
-      },
-      dropShadow: {
-        enabled: true,
-        color: '#111',
-        top: 3,
-        left: 3,
-        blur: 3,
-        opacity: 0.2
-      },
-      fontFamily: 'Nunito, sans-serif'
-    },
-    plotOptions: {
-      pie: {
-        donut: {
-          size: '65%',
-          background: 'transparent',
-          labels: {
-            show: true,
-            name: {
-              show: true,
-              fontSize: '16px',
-              fontFamily: 'Nunito, sans-serif',
-              fontWeight: 600,
-              offsetY: -10
-            },
-            value: {
-              show: true,
-              fontSize: '18px',
-              fontFamily: 'Nunito, sans-serif',
-              formatter: function(val: number) {
-                return formatCurrency(val);
-              }
-            },
-            total: {
-              show: true,
-              showAlways: true,
-              label: 'Total TCO',
-              fontSize: '16px',
-              fontFamily: 'Nunito, sans-serif',
-              fontWeight: 600,
-              formatter: function() {
-                return formatCurrency(vendorData ? vendorData.totalTco : 0);
-              }
-            }
-          }
-        }
-      }
-    },
-    colors: chartData.colors,
-    labels: chartData.labels,
-    dataLabels: {
-      enabled: true,
-      formatter: function(val: number) {
-        return val.toFixed(1) + '%';
-      },
-      style: {
-        fontSize: '12px',
-        fontFamily: 'Nunito, sans-serif',
-        fontWeight: 'bold',
-        colors: ['#fff']
-      },
-      dropShadow: {
-        enabled: true
-      }
-    },
-    legend: {
-      position: 'bottom',
-      horizontalAlign: 'center',
-      fontSize: '14px',
-      markers: {
-        fillColors: chartData.colors
-      },
-      itemMargin: {
-        horizontal: 15,
-        vertical: 5
-      }
-    },
-    tooltip: {
-      y: {
-        formatter: function(val: number) {
-          return formatCurrency(val);
-        }
-      },
-      theme: 'dark'
-    },
-    responsive: [
-      {
-        breakpoint: 576,
-        options: {
-          chart: {
-            height: 300
-          },
-          legend: {
-            position: 'bottom',
-            fontSize: '12px'
-          }
-        }
-      }
-    ]
-  };
-  
   // No data placeholder
   if (!hasData || !vendorData) {
     return (
@@ -311,9 +195,46 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
         <div className="chart-panel bg-white rounded-lg p-6 shadow-sm">
           <div className="chart-title font-bold text-gray-700 mb-4">Cost Distribution</div>
           <Chart
-            options={chartOptions}
-            series={chartData.series}
             type="donut"
+            options={{
+              chart: {
+                type: 'donut'
+              },
+              labels: chartData.labels,
+              colors: chartData.colors,
+              dataLabels: {
+                formatter: function(val: any) {
+                  return (typeof val === 'number' ? val.toFixed(1) : '0') + '%';
+                }
+              },
+              legend: {
+                position: 'bottom'
+              },
+              tooltip: {
+                y: {
+                  formatter: function(val: any) {
+                    return formatCurrency(val);
+                  }
+                }
+              },
+              plotOptions: {
+                pie: {
+                  donut: {
+                    labels: {
+                      show: true,
+                      total: {
+                        show: true,
+                        label: 'Total TCO',
+                        formatter: function() {
+                          return formatCurrency(vendorData?.totalTco || 0);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }}
+            series={chartData.series}
             height={320}
           />
           
