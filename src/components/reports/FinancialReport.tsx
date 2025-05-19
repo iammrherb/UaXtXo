@@ -11,7 +11,12 @@ interface FinancialReportProps {
 
 const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Financial Analysis" }) => {
   const { state } = useCalculator();
-  const { calculationResults, organizationName, scenarioName, scenarioDescription } = state;
+  const { calculationResults } = state;
+  
+  // Use safe property access or defaults for potentially missing properties
+  const organizationName = state.organization || 'Your Organization';
+  const scenarioName = state.scenario?.name || 'TCO Analysis';
+  const scenarioDescription = state.scenario?.description || '';
 
   // If no calculation results yet, show a message
   if (!calculationResults || !calculationResults.vendorResults || calculationResults.vendorResults.length === 0) {
@@ -80,7 +85,7 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
     if (!competitors || !Array.isArray(competitors)) return null;
     
     return competitors.map((competitor, index) => {
-      const comparisonData = calculationResults.comparisonResults[competitor.vendorId];
+      const comparisonData = calculationResults.comparisonResults?.[competitor.vendorId] || null;
       return (
         <tr key={competitor.vendorId} className={index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-700/30' : ''}>
           <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white">
@@ -123,7 +128,7 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
     if (!competitors || !Array.isArray(competitors)) return null;
     
     return competitors.map((competitor, index) => {
-      const comparison = calculationResults.comparisonResults[competitor.vendorId];
+      const comparison = calculationResults.comparisonResults?.[competitor.vendorId];
       if (!comparison) return null;
       
       return (
@@ -197,6 +202,9 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
     ? competitors.reduce((sum, c) => sum + c.costBreakdown.licenses + c.costBreakdown.maintenance, 0) / competitors.length
     : 0;
 
+  // Get implementation day cost from state with fallback
+  const implDayCost = state.costParameters?.implementationDayCost || 1500;
+
   return (
     <div className="financial-report print:py-0">
       <Helmet>
@@ -209,7 +217,7 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
           <div>
             <h1 className="text-2xl font-bold text-gray-800">{reportTitle}</h1>
             <h2 className="text-lg text-gray-600">
-              {organizationName ? organizationName : 'Organization'} - {scenarioName ? scenarioName : 'TCO Analysis'}
+              {organizationName} - {scenarioName}
             </h2>
             <p className="text-sm text-gray-500">{formattedDate}</p>
           </div>
@@ -476,7 +484,7 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
             <div className="savings-item p-3 bg-blue-50 rounded-lg">
               <h4 className="font-semibold text-blue-800">Implementation</h4>
               <div className="text-2xl font-bold text-blue-700">
-                {formatCurrency(avgCompetitorImplementation * (state.costParameters?.implementationDayCost || 1500) - portnox.costBreakdown.implementation)}
+                {formatCurrency(avgCompetitorImplementation * implDayCost - portnox.costBreakdown.implementation)}
               </div>
               <div className="text-xs text-blue-600">
                 Savings from faster and simpler deployment
