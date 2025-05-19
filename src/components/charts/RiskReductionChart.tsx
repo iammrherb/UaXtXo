@@ -24,7 +24,7 @@ const RiskReductionChart: React.FC<RiskReductionChartProps> = ({ height = 350 })
   const { state } = useCalculator();
   const { calculationResults } = state;
   
-  const chartOptions = useMemo<ApexOptions>(() => {
+  const chartOptions = useMemo(() => {
     if (!calculationResults || !calculationResults.vendorResults || calculationResults.vendorResults.length === 0) {
       return {
         chart: {
@@ -71,6 +71,39 @@ const RiskReductionChart: React.FC<RiskReductionChartProps> = ({ height = 350 })
     
     // Add trend line for minimum acceptable security level
     const minimumSecurityLevel = 50; // Industry standard minimum
+    
+    // Create point annotations for Portnox only (fixes the typing issue)
+    const pointAnnotations = [];
+    const portnoxIndex = sortedVendors.findIndex((v: VendorResult) => v.vendorId === 'portnox');
+    
+    if (portnoxIndex !== -1) {
+      const portnox = sortedVendors[portnoxIndex];
+      pointAnnotations.push({
+        x: portnox.name,
+        y: portnox.securityImprovement,
+        marker: {
+          size: 6,
+          fillColor: '#fff',
+          strokeColor: '#2BD25B',
+          strokeWidth: 2,
+          radius: 2
+        },
+        label: {
+          borderColor: '#2BD25B',
+          style: {
+            color: '#fff',
+            background: '#2BD25B',
+            padding: {
+              left: 10,
+              right: 10,
+              top: 2,
+              bottom: 2
+            }
+          },
+          text: 'Recommended'
+        }
+      });
+    }
     
     return {
       chart: {
@@ -352,36 +385,7 @@ const RiskReductionChart: React.FC<RiskReductionChartProps> = ({ height = 350 })
             }
           }
         ],
-        points: sortedVendors.map((vendor: VendorResult, index: number) => {
-          if (vendor.vendorId === 'portnox') {
-            return {
-              x: vendor.name,
-              y: vendor.securityImprovement,
-              marker: {
-                size: 6,
-                fillColor: '#fff',
-                strokeColor: '#2BD25B',
-                strokeWidth: 2,
-                radius: 2
-              },
-              label: {
-                borderColor: '#2BD25B',
-                style: {
-                  color: '#fff',
-                  background: '#2BD25B',
-                  padding: {
-                    left: 10,
-                    right: 10,
-                    top: 2,
-                    bottom: 2
-                  }
-                },
-                text: 'Recommended'
-              }
-            };
-          }
-          return null;
-        }).filter(Boolean)
+        points: pointAnnotations
       }
     };
   }, [calculationResults, height]);
