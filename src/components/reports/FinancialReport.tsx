@@ -31,6 +31,7 @@ interface VendorResult {
   irr: number;
   implementationDays: number;
   securityImprovement: number;
+  deployment: string;
 }
 
 // Define interface for comparison result
@@ -59,6 +60,9 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
   if (!calculationResults || !calculationResults.vendorResults || calculationResults.vendorResults.length === 0) {
     return (
       <div className="report-container p-6 bg-white rounded-lg shadow-sm">
+        <Helmet>
+          <title>No Results Available | Portnox TCO Calculator</title>
+        </Helmet>
         <h2 className="text-xl font-bold mb-4">No Results Available</h2>
         <p className="mb-4">Please run the TCO calculation to generate financial analysis.</p>
         <Link 
@@ -85,6 +89,9 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
   if (!portnox) {
     return (
       <div className="report-container p-6 bg-white rounded-lg shadow-sm">
+        <Helmet>
+          <title>Portnox Data Missing | TCO Calculator</title>
+        </Helmet>
         <h2 className="text-xl font-bold mb-4">Portnox Data Missing</h2>
         <p className="mb-4">The calculation did not include Portnox data, which is required for comparison.</p>
         <Link 
@@ -117,10 +124,24 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
   const costPerDevice = portnox.totalTco / deviceCount;
   const avgCompetitorCostPerDevice = avgCompetitorTco / deviceCount;
 
+  // Calculate implementation time savings percentage
+  const implementationSavingsPercentage = Math.round((avgCompetitorImplementation - portnox.implementationDays) / avgCompetitorImplementation * 100);
+
+  // Determine deployment type advantage
+  const deploymentAdvantage = portnox.deployment === 'cloud' 
+    ? 'Cloud deployment eliminates hardware costs and reduces operational overhead'
+    : 'On-premises deployment provides maximum control over infrastructure';
+
+  // Calculate annual and monthly cost metrics
+  const annualTco = portnox.totalTco / 3;
+  const monthlyTco = annualTco / 12;
+  const tcoSavingsPercentage = (avgCompetitorTco - portnox.totalTco) / avgCompetitorTco;
+
   return (
     <div className="financial-report print:py-0">
       <Helmet>
         <title>{reportTitle} | Portnox Total Cost of Ownership Analysis</title>
+        <meta name="description" content="Financial analysis of Portnox TCO compared to competitor solutions" />
       </Helmet>
 
       {/* Report Header */}
@@ -154,7 +175,7 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
       <div className="executive-summary p-6 bg-white rounded-lg shadow-sm mb-6 print:shadow-none print:p-2">
         <h2 className="text-xl font-bold mb-4 text-gray-800">Executive Summary</h2>
         
-        <div className="summary-highlights grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="summary-highlights grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="highlight-card p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
             <div className="flex items-center mb-2">
               <div className="text-blue-500 mr-2">
@@ -191,6 +212,23 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
               {portnox.roi > 200 && ' Exceptional return on investment.'}
             </div>
           </div>
+          
+          <div className="highlight-card p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500">
+            <div className="flex items-center mb-2">
+              <div className="text-purple-500 mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zm7-10a1 1 0 01.707.293l.707.707L15 3.207A1 1 0 1116.414 4.62l-.707.707.707.707a1 1 0 11-1.414 1.414L14 6.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707-.707-.707A1 1 0 0112 2z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="text-lg font-bold text-purple-800">Security Improvement</div>
+            </div>
+            <div className="highlight-value text-3xl font-bold text-purple-900 mb-2">
+              {Math.round(portnox.securityImprovement)}%
+            </div>
+            <div className="highlight-details text-sm text-purple-700">
+              Enhanced security posture with reduced breach risk and associated costs.
+            </div>
+          </div>
         </div>
         
         <div className="summary-text mb-6">
@@ -209,11 +247,13 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
             </li>
             <li>
               Portnox implementation time is {Math.round(portnox.implementationDays)} days, compared to the competitor 
-              average of {Math.round(avgCompetitorImplementation)} days, enabling faster time to value.
+              average of {Math.round(avgCompetitorImplementation)} days, enabling {implementationSavingsPercentage}% faster time to value.
             </li>
             <li>
-              Security improvements with Portnox are projected to be {Math.round(portnox.securityImprovement)}%, 
-              which can reduce breach risk and associated costs.
+              {deploymentAdvantage}, providing significant long-term cost benefits and operational efficiencies.
+            </li>
+            <li>
+              Monthly cost of {formatCurrency(monthlyTco)} represents predictable operational expense that scales with your organization.
             </li>
           </ul>
         </div>
@@ -275,6 +315,9 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
               <tr className="bg-green-50 dark:bg-green-900/10">
                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white">
                   <span className="font-bold">{portnox.name}</span>
+                  {portnox.deployment === 'cloud' && (
+                    <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800">Cloud</span>
+                  )}
                 </td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-right font-bold text-green-600 dark:text-green-400">
                   {formatCurrency(portnox.totalTco)}
@@ -309,6 +352,12 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
                   <tr key={competitor.vendorId} className={index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-700/30' : ''}>
                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white">
                       {competitor.name}
+                      {competitor.deployment === 'cloud' && (
+                        <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800">Cloud</span>
+                      )}
+                      {competitor.deployment === 'onprem' && (
+                        <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-800">On-Prem</span>
+                      )}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-gray-800 dark:text-gray-200">
                       {formatCurrency(competitor.totalTco)}
@@ -442,6 +491,175 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
         </div>
       </div>
 
+      {/* Cost Breakdown Analysis */}
+      <div className="cost-breakdown p-6 bg-white rounded-lg shadow-sm mb-6 print:shadow-none print:p-2">
+        <h2 className="text-xl font-bold mb-4 text-gray-800">Cost Breakdown Analysis</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="breakdown-card p-4 bg-gray-50 rounded-lg">
+            <h3 className="text-lg font-semibold mb-3 text-gray-800">Portnox Cost Distribution</h3>
+            
+            <div className="space-y-3">
+              {Object.entries(portnox.costBreakdown).map(([key, value]: [string, number]) => {
+                if (value <= 0) return null;
+                const percentage = (value / portnox.totalTco) * 100;
+                return (
+                  <div key={key} className="cost-item">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm font-medium text-gray-700">
+                        {key.charAt(0).toUpperCase() + key.slice(1)}
+                      </span>
+                      <span className="text-sm font-semibold text-gray-800">
+                        {formatCurrency(value)} ({percentage.toFixed(1)}%)
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-200 rounded-full">
+                      <div 
+                        className="h-2 rounded-full" 
+                        style={{ 
+                          width: `${percentage}%`,
+                          backgroundColor: key === 'licenses' ? '#8884d8' :
+                                          key === 'maintenance' ? '#ffc658' :
+                                          key === 'implementation' ? '#82ca9d' :
+                                          key === 'operations' ? '#ff8042' :
+                                          key === 'hardware' ? '#d0021b' : '#00c3ff'
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="mt-4 pt-3 border-t border-gray-200">
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-gray-700">Total</span>
+                <span className="font-bold text-gray-800">{formatCurrency(portnox.totalTco)}</span>
+              </div>
+            </div>
+          </div>
+          
+          {competitors.length > 0 && (
+            <div className="breakdown-card p-4 bg-gray-50 rounded-lg">
+              <h3 className="text-lg font-semibold mb-3 text-gray-800">Average Competitor Cost Distribution</h3>
+              
+              <div className="space-y-3">
+                {Object.keys(portnox.costBreakdown).map((key) => {
+                  const value = competitors.reduce((sum, c) => sum + c.costBreakdown[key as keyof typeof c.costBreakdown], 0) / competitors.length;
+                  if (value <= 0) return null;
+                  const percentage = (value / avgCompetitorTco) * 100;
+                  return (
+                    <div key={key} className="cost-item">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium text-gray-700">
+                          {key.charAt(0).toUpperCase() + key.slice(1)}
+                        </span>
+                        <span className="text-sm font-semibold text-gray-800">
+                          {formatCurrency(value)} ({percentage.toFixed(1)}%)
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-gray-200 rounded-full">
+                        <div 
+                          className="h-2 rounded-full" 
+                          style={{ 
+                            width: `${percentage}%`,
+                            backgroundColor: key === 'licenses' ? '#8884d8' :
+                                            key === 'maintenance' ? '#ffc658' :
+                                            key === 'implementation' ? '#82ca9d' :
+                                            key === 'operations' ? '#ff8042' :
+                                            key === 'hardware' ? '#d0021b' : '#00c3ff'
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              <div className="mt-4 pt-3 border-t border-gray-200">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-gray-700">Total</span>
+                  <span className="font-bold text-gray-800">{formatCurrency(avgCompetitorTco)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Key Cost Factors */}
+        <div className="cost-factors">
+          <h3 className="text-lg font-semibold mb-3 text-gray-800">Key Cost Factors</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {portnox.deployment === 'cloud' && (
+              <div className="factor-card p-3 bg-blue-50 rounded-lg">
+                <h4 className="font-semibold text-blue-800 mb-1">Cloud Deployment</h4>
+                <p className="text-sm text-blue-700">
+                  The cloud-native architecture eliminates {formatCurrency(
+                    competitors.reduce((sum, c) => {
+                      if (c.deployment !== 'cloud') {
+                        return sum + c.costBreakdown.hardware + c.costBreakdown.infrastructure;
+                      }
+                      return sum;
+                    }, 0) / competitors.filter(c => c.deployment !== 'cloud').length || 0
+                  )} in hardware and infrastructure costs.
+                </p>
+              </div>
+            )}
+            
+            {portnox.costBreakdown.maintenance === 0 && (
+              <div className="factor-card p-3 bg-green-50 rounded-lg">
+                <h4 className="font-semibold text-green-800 mb-1">Subscription Model</h4>
+                <p className="text-sm text-green-700">
+                  The subscription licensing model eliminates the need for separate maintenance fees, resulting in 
+                  {formatCurrency(
+                    competitors.reduce((sum, c) => sum + c.costBreakdown.maintenance, 0) / competitors.length
+                  )} savings.
+                </p>
+              </div>
+            )}
+            
+            <div className="factor-card p-3 bg-purple-50 rounded-lg">
+              <h4 className="font-semibold text-purple-800 mb-1">Operational Efficiency</h4>
+              <p className="text-sm text-purple-700">
+                Lower operational overhead saves {formatCurrency(
+                  competitors.reduce((sum, c) => sum + c.costBreakdown.operations, 0) / competitors.length
+                  - portnox.costBreakdown.operations
+                )} over 3 years, representing {formatPercentage(
+                  (competitors.reduce((sum, c) => sum + c.costBreakdown.operations, 0) / competitors.length
+                  - portnox.costBreakdown.operations) / 
+                  (competitors.reduce((sum, c) => sum + c.costBreakdown.operations, 0) / competitors.length)
+                )} lower management costs.
+              </p>
+            </div>
+            
+            <div className="factor-card p-3 bg-yellow-50 rounded-lg">
+              <h4 className="font-semibold text-yellow-800 mb-1">Rapid Implementation</h4>
+              <p className="text-sm text-yellow-700">
+                {Math.round(portnox.implementationDays)} day implementation versus {Math.round(avgCompetitorImplementation)} day 
+                average competitor timeframe accelerates time to value by {implementationSavingsPercentage}%.
+              </p>
+            </div>
+            
+            <div className="factor-card p-3 bg-red-50 rounded-lg">
+              <h4 className="font-semibold text-red-800 mb-1">Security Enhancement</h4>
+              <p className="text-sm text-red-700">
+                {Math.round(portnox.securityImprovement)}% security improvement reduces breach risk and associated costs,
+                enhancing the overall value proposition.
+              </p>
+            </div>
+            
+            <div className="factor-card p-3 bg-pink-50 rounded-lg">
+              <h4 className="font-semibold text-pink-800 mb-1">Predictable Expenses</h4>
+              <p className="text-sm text-pink-700">
+                Annual cost of {formatCurrency(annualTco)} ({formatCurrency(monthlyTco)} monthly) provides
+                predictable budgeting with no unexpected capital expenses.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Financial Metrics */}
       <div className="financial-metrics p-6 bg-white rounded-lg shadow-sm mb-6 print:shadow-none print:p-2">
         <h2 className="text-xl font-bold mb-4 text-gray-800">Financial Metrics</h2>
@@ -562,6 +780,14 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
               <span className="font-semibold">Faster time to value:</span> Quicker implementation means security benefits and operational
               efficiencies are realized sooner.
             </li>
+            <li>
+              <span className="font-semibold">Reduced management overhead:</span> Simplified administration reduces the time and resources
+              required for ongoing management.
+            </li>
+            <li>
+              <span className="font-semibold">Future-proof investment:</span> Continuous updates ensure the solution remains current with
+              evolving security threats and industry changes.
+            </li>
           </ul>
         </div>
       </div>
@@ -573,7 +799,7 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
         <div className="text-gray-700 space-y-4">
           <p>
             Based on the comprehensive financial analysis, Portnox demonstrates a compelling total cost of ownership advantage
-            over competing solutions. The {formatPercentage((avgCompetitorTco - portnox.totalTco) / avgCompetitorTco)} lower TCO,
+            over competing solutions. The {formatPercentage(tcoSavingsPercentage)} lower TCO,
             combined with a strong ROI of {formatPercentage(portnox.roi / 100, false)} and a payback period of just {Math.round(portnox.paybackPeriod)} months,
             makes Portnox an economically advantageous choice.
           </p>
@@ -581,7 +807,7 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
           <p>
             The cloud-native architecture eliminates hardware and infrastructure costs while reducing operational overhead.
             The subscription model provides predictable, manageable expenses without requiring large upfront capital investments.
-            Implementation is {Math.round((avgCompetitorImplementation - portnox.implementationDays) / avgCompetitorImplementation * 100)}% faster
+            Implementation is {implementationSavingsPercentage}% faster
             than competing solutions, accelerating time to value.
           </p>
           
@@ -604,6 +830,14 @@ const FinancialReport: React.FC<FinancialReportProps> = ({ reportTitle = "TCO Fi
       {/* Footer */}
       <div className="report-footer text-center text-xs text-gray-500 mt-6 print:mt-2">
         <p>Confidential Financial Analysis | Portnox TCO Calculator | Generated on {formattedDate}</p>
+        <p className="mt-1">
+          <button 
+            onClick={() => window.print()}
+            className="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300 transition-colors print:hidden"
+          >
+            Print Report
+          </button>
+        </p>
       </div>
     </div>
   );
