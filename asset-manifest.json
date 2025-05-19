@@ -1,0 +1,24 @@
+{
+  "files": {
+    "main.css": "/UaXtXo/static/css/main.7232817e.chunk.css",
+    "main.js": "/UaXtXo/static/js/main.994d79eb.chunk.js",
+    "main.js.map": "/UaXtXo/static/js/main.994d79eb.chunk.js.map",
+    "runtime-main.js": "/UaXtXo/static/js/runtime-main.81a02d2f.js",
+    "runtime-main.js.map": "/UaXtXo/static/js/runtime-main.81a02d2f.js.map",
+    "static/js/2.93e00026.chunk.js": "/UaXtXo/static/js/2.93e00026.chunk.js",
+    "static/js/2.93e00026.chunk.js.map": "/UaXtXo/static/js/2.93e00026.chunk.js.map",
+    "static/js/3.12bd9ad9.chunk.js": "/UaXtXo/static/js/3.12bd9ad9.chunk.js",
+    "static/js/3.12bd9ad9.chunk.js.map": "/UaXtXo/static/js/3.12bd9ad9.chunk.js.map",
+    "index.html": "/UaXtXo/index.html",
+    "precache-manifest.6682ce2f1318327bd351c3db1962d6c0.js": "/UaXtXo/precache-manifest.6682ce2f1318327bd351c3db1962d6c0.js",
+    "service-worker.js": "/UaXtXo/service-worker.js",
+    "static/css/main.7232817e.chunk.css.map": "/UaXtXo/static/css/main.7232817e.chunk.css.map",
+    "static/js/2.93e00026.chunk.js.LICENSE.txt": "/UaXtXo/static/js/2.93e00026.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.81a02d2f.js",
+    "static/js/2.93e00026.chunk.js",
+    "static/css/main.7232817e.chunk.css",
+    "static/js/main.994d79eb.chunk.js"
+  ]
+}
