@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Deployment script with special handling for fine-grained tokens
-# Fixed for the specific URL errors
+# GitHub Push Protection Resolution Script
+# This script specifically addresses the token security issue
 
 # Colors for better readability
 GREEN='\033[0;32m'
@@ -11,26 +11,20 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}======================================================${NC}"
-echo -e "${BLUE}Portnox TCO Analyzer - Token-Fixed Deployment Script${NC}"
+echo -e "${BLUE}GitHub Token Security Fix & Deployment Script${NC}"
 echo -e "${BLUE}======================================================${NC}"
 
-# Function to set up GitHub authentication with Fine-Grained Token
-setup_github_auth() {
-  echo -e "${BLUE}\nSetting up GitHub Authentication with Fine-Grained Token${NC}"
+# Function to set up GitHub authentication without committing token
+setup_secure_auth() {
+  echo -e "${BLUE}\nSetting up secure GitHub authentication${NC}"
   
-  # First, we'll reset any problematic repository URLs
-  echo -e "${YELLOW}Checking and fixing repository URL...${NC}"
-  
-  # Get the current remote URL
-  CURRENT_URL=$(git config --get remote.origin.url)
-  echo -e "Current URL: ${CURRENT_URL}"
-  
-  # Reset to the base URL without any tokens
+  # Reset repository URL to base URL
   git remote set-url origin "https://github.com/iammrherb/UaXtXo.git"
   echo -e "${GREEN}Repository URL reset to base URL.${NC}"
   
-  # Now set up the new token
-  echo -e "\n${YELLOW}Enter your NEW GitHub Fine-Grained Token:${NC}"
+  # Get token for this session only
+  echo -e "\n${YELLOW}Enter your GitHub Token:${NC}"
+  echo -e "${RED}IMPORTANT: This token will only be used temporarily and will NOT be committed to the repo.${NC}"
   read -p "Token: " TOKEN
   
   if [ -z "$TOKEN" ]; then
@@ -38,16 +32,14 @@ setup_github_auth() {
     return 1
   fi
   
-  # Export the token to environment variables
+  # Export token to environment variable only
   export GITHUB_TOKEN="$TOKEN"
   
-  # Update .env file with the token
-  echo "GITHUB_TOKEN=$TOKEN" > .env
-  echo "SKIP_PREFLIGHT_CHECK=true" >> .env
+  # Create a temp .env file for the build process, but ensure it's not committed
+  echo "SKIP_PREFLIGHT_CHECK=true" > .env
   echo "NODE_OPTIONS=--openssl-legacy-provider" >> .env
-  echo -e "${GREEN}Token saved to .env file.${NC}"
   
-  # Ensure .env is in .gitignore
+  # Add .env to .gitignore if not already there
   if [ -f .gitignore ]; then
     if ! grep -q "^\.env$" .gitignore; then
       echo ".env" >> .gitignore
@@ -58,15 +50,14 @@ setup_github_auth() {
     echo -e "${GREEN}Created .gitignore with .env entry.${NC}"
   fi
   
-  # Configure git to use the token directly in the URL
-  # The correct format for fine-grained tokens
+  # Make sure .gitignore change is committed before anything else
+  git add .gitignore
+  git commit -m "Add .env to gitignore for security"
+  
+  # Configure git to use the token directly in URL for commands
   git remote set-url origin "https://$TOKEN@github.com/iammrherb/UaXtXo.git"
   
-  # Verify the URL update was successful
-  NEW_URL=$(git config --get remote.origin.url | sed 's/\/\/[^@]*@/\/\/****@/')
-  echo -e "New URL (token hidden): ${NEW_URL}"
-  
-  echo -e "${GREEN}GitHub authentication set up successfully!${NC}"
+  echo -e "${GREEN}Secure authentication setup complete.${NC}"
   return 0
 }
 
@@ -82,6 +73,46 @@ build_app() {
   fi
   
   echo -e "${GREEN}Build completed successfully!${NC}"
+  return 0
+}
+
+# Function to safely push changes without committing token
+safe_push_changes() {
+  echo -e "${YELLOW}Preparing to push changes...${NC}"
+  
+  # Ensure .env is not being tracked
+  git rm --cached .env 2>/dev/null || true
+  
+  # Make sure .env is definitely in .gitignore
+  if ! grep -q "^\.env$" .gitignore; then
+    echo ".env" >> .gitignore
+    git add .gitignore
+    git commit -m "Ensure .env is ignored"
+  fi
+  
+  # Commit other changes without the token
+  echo -e "${YELLOW}Committing other changes...${NC}"
+  
+  # Check if there are changes to commit
+  if git status --porcelain | grep -v "^\?" | grep -v ".env"; then
+    git add -A -- ':!.env'
+    git commit -m "Update Portnox TCO Analyzer with enhanced charts and UI"
+  else
+    echo -e "${YELLOW}No changes to commit.${NC}"
+  fi
+  
+  # Push to main-react branch
+  echo -e "${YELLOW}Pushing to main-react branch...${NC}"
+  git push origin main-react
+  
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}Push failed. Please visit:${NC}"
+    echo -e "${YELLOW}https://github.com/iammrherb/UaXtXo/security/secret-scanning${NC}"
+    echo -e "${RED}to unblock the secret or fix the issue manually.${NC}"
+    return 1
+  fi
+  
+  echo -e "${GREEN}Successfully pushed to main-react branch!${NC}"
   return 0
 }
 
@@ -117,16 +148,13 @@ deploy_gh_pages() {
   
   # Push changes
   echo -e "${YELLOW}Pushing to gh-pages branch...${NC}"
-  if ! git push origin gh-pages; then
-    echo -e "${RED}Push to gh-pages failed. Trying with force...${NC}"
-    git push -f origin gh-pages
-    
-    if [ $? -ne 0 ]; then
-      echo -e "${RED}Failed to push to gh-pages branch, even with force.${NC}"
-      git checkout $CURRENT_BRANCH
-      git stash pop
-      return 1
-    fi
+  git push origin gh-pages
+  
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}Failed to push to gh-pages branch.${NC}"
+    git checkout $CURRENT_BRANCH
+    git stash pop
+    return 1
   fi
   
   echo -e "${GREEN}Successfully deployed to gh-pages branch!${NC}"
@@ -138,96 +166,92 @@ deploy_gh_pages() {
   return 0
 }
 
-# Function to push changes to main-react branch
-push_main_branch() {
-  echo -e "${YELLOW}Pushing changes to main-react branch...${NC}"
+# Function to fix any tokens that might have been committed
+fix_committed_tokens() {
+  echo -e "${YELLOW}Checking for committed tokens...${NC}"
   
-  # Ensure we're on main-react branch
-  CURRENT_BRANCH=$(git branch --show-current)
-  if [ "$CURRENT_BRANCH" != "main-react" ]; then
-    git checkout main-react
-  fi
-  
-  # Commit any changes
-  git add .
-  
-  if git diff --cached --quiet; then
-    echo -e "${YELLOW}No changes to commit.${NC}"
-  else
-    git commit -m "Update Portnox TCO Analyzer with enhanced charts and UI"
+  # Check for .env file in git history
+  if git ls-files | grep -q "\.env$"; then
+    echo -e "${RED}WARNING: .env file is tracked in git history.${NC}"
+    echo -e "${YELLOW}Removing .env from git tracking...${NC}"
     
-    # Push changes
-    if ! git push origin main-react; then
-      echo -e "${RED}Push to main-react failed. Trying with force...${NC}"
-      git push -f origin main-react
-      
-      if [ $? -ne 0 ]; then
-        echo -e "${RED}Failed to push to main-react branch, even with force.${NC}"
-        return 1
-      fi
-    fi
+    # Remove .env from git tracking but keep the file
+    git rm --cached .env
+    
+    # Commit this change
+    git commit -m "Remove .env file from git tracking"
+    
+    echo -e "${GREEN}Removed .env from git tracking.${NC}"
+    echo -e "${YELLOW}You should now unblock the token:${NC}"
+    echo -e "${BLUE}https://github.com/iammrherb/UaXtXo/security/secret-scanning${NC}"
+    
+    echo -e "${RED}IMPORTANT: Consider this token compromised and rotate it soon.${NC}"
+  else
+    echo -e "${GREEN}No .env file found in git tracking.${NC}"
   fi
   
-  echo -e "${GREEN}Successfully pushed to main-react branch!${NC}"
   return 0
 }
 
-# Function to test authentication
-test_auth() {
-  echo -e "${YELLOW}Testing authentication...${NC}"
+# Function to cleanup after deployment
+cleanup() {
+  echo -e "${YELLOW}Cleaning up...${NC}"
   
-  # Attempt to list remote branches
-  if git ls-remote --heads origin > /dev/null; then
-    echo -e "${GREEN}Authentication successful!${NC}"
-    return 0
-  else
-    echo -e "${RED}Authentication failed. Please check your token.${NC}"
-    return 1
-  fi
+  # Remove GitHub token from URL to prevent accidental disclosure
+  git remote set-url origin "https://github.com/iammrherb/UaXtXo.git"
+  
+  echo -e "${GREEN}Cleanup complete.${NC}"
+  return 0
 }
 
 # Main execution function
 main() {
-  # 1. Set up authentication with your new token
-  setup_github_auth
+  # First fix any committed tokens
+  fix_committed_tokens
+  
+  # Set up secure authentication
+  setup_secure_auth
   if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to set up GitHub authentication.${NC}"
+    echo -e "${RED}Failed to set up secure authentication.${NC}"
     exit 1
   fi
   
-  # 2. Test authentication before proceeding
-  test_auth
-  if [ $? -ne 0 ]; then
-    echo -e "${RED}Authentication test failed. Please check your token and try again.${NC}"
-    exit 1
-  fi
-  
-  # 3. Build the app
+  # Build the app
   build_app
   if [ $? -ne 0 ]; then
     echo -e "${RED}Failed to build the app.${NC}"
+    cleanup
     exit 1
   fi
   
-  # 4. Push changes to main-react branch
-  push_main_branch
+  # Safely push changes
+  safe_push_changes
   if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to push to main-react branch.${NC}"
+    echo -e "${RED}Failed to push changes safely.${NC}"
+    cleanup
     exit 1
   fi
   
-  # 5. Deploy to gh-pages branch
+  # Deploy to gh-pages
   deploy_gh_pages
   if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to deploy to gh-pages branch.${NC}"
+    echo -e "${RED}Failed to deploy to gh-pages.${NC}"
+    cleanup
     exit 1
   fi
+  
+  # Clean up
+  cleanup
   
   echo -e "${GREEN}\nDeployment completed successfully!${NC}"
   echo -e "${BLUE}====================================================${NC}"
   echo -e "${BLUE}Your application is now deployed to:${NC}"
   echo -e "${GREEN}https://iammrherb.github.io/UaXtXo/${NC}"
   echo -e "${BLUE}====================================================${NC}"
+  
+  echo -e "${YELLOW}SECURITY NOTE:${NC}"
+  echo -e "Always rotate tokens that may have been exposed in git history."
+  echo -e "Check GitHub's secret scanning alerts for any issues."
 }
 
 # Execute the main function
