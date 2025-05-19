@@ -276,7 +276,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
   };
   
   // No data placeholder
-  if (!hasData) {
+  if (!hasData || !vendorData) {
     return (
       <div className="chart-container bg-white rounded-lg p-8 text-center shadow-sm">
         <div className="text-xl font-bold mb-4">TCO Breakdown Analysis</div>
@@ -294,15 +294,15 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
     <div className="chart-container">
       <div className="chart-header text-center mb-6">
         <h3 className="text-xl font-bold">
-          {vendorData.name} TCO Breakdown Analysis
-          {vendorData.badge && (
-            <span className={`ml-2 text-sm px-2 py-1 rounded ${vendorData.badgeClass || 'bg-blue-100 text-blue-800'}`}>
-              {vendorData.badge}
+          {vendorData?.name} TCO Breakdown Analysis
+          {vendorData?.badge && (
+            <span className={`ml-2 text-sm px-2 py-1 rounded ${vendorData?.badgeClass || 'bg-blue-100 text-blue-800'}`}>
+              {vendorData?.badge}
             </span>
           )}
         </h3>
         <p className="text-gray-600 text-sm mt-1">
-          Total Cost of Ownership over 3 years: <span className="font-bold">{formatCurrency(vendorData.totalTco)}</span>
+          Total Cost of Ownership over 3 years: <span className="font-bold">{formatCurrency(vendorData?.totalTco || 0)}</span>
         </p>
       </div>
 
@@ -325,14 +325,14 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
                 <div className="text-blue-500 mr-2">•</div>
                 <div>
                   {chartData.series.length > 0 ? 
-                    `${chartData.labels[0]} represents the largest cost factor at ${formatCurrency(chartData.series[0])} (${(chartData.series[0] / vendorData.totalTco * 100).toFixed(1)}% of total TCO).` : 
+                    `${chartData.labels[0]} represents the largest cost factor at ${formatCurrency(chartData.series[0])} (${(chartData.series[0] / (vendorData?.totalTco || 1) * 100).toFixed(1)}% of total TCO).` : 
                     'No significant cost factors identified.'}
                 </div>
               </div>
               <div className="flex items-start mb-1">
                 <div className="text-blue-500 mr-2">•</div>
                 <div>
-                  {vendorData.deployment === 'cloud' ? 
+                  {vendorData?.deployment === 'cloud' ? 
                     'Cloud deployment eliminates hardware and infrastructure costs.' : 
                     'On-premises deployment increases costs with hardware and infrastructure requirements.'}
                 </div>
@@ -340,7 +340,7 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
               <div className="flex items-start">
                 <div className="text-blue-500 mr-2">•</div>
                 <div>
-                  {vendorData.costBreakdown.operations < vendorData.totalTco * 0.2 ? 
+                  {vendorData?.costBreakdown.operations < (vendorData?.totalTco || 0) * 0.2 ? 
                     'Low operational costs indicate simplified management and administration.' : 
                     'High operational costs suggest complex management requirements.'}
                 </div>
@@ -355,10 +355,10 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
           
           <div className="categories-grid space-y-3">
             {Object.entries(CATEGORIES).map(([key, category]) => {
-              const value = vendorData.costBreakdown[key as keyof typeof vendorData.costBreakdown] || 0;
+              const value = vendorData?.costBreakdown[key as keyof typeof vendorData.costBreakdown] || 0;
               if (value <= 0) return null;
               
-              const percentage = (value / vendorData.totalTco) * 100;
+              const percentage = (value / (vendorData?.totalTco || 1)) * 100;
               const isSelected = selectedCategory === key;
               
               return (
@@ -414,19 +414,19 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
             <div className="grid grid-cols-4 gap-2">
               <div className="text-center bg-gray-50 p-2 rounded">
                 <div className="text-xs text-gray-500">Initial</div>
-                <div className="font-bold text-sm">{formatCurrency(vendorData.cumulativeCosts.initial)}</div>
+                <div className="font-bold text-sm">{formatCurrency(vendorData?.cumulativeCosts.initial || 0)}</div>
               </div>
               <div className="text-center bg-gray-50 p-2 rounded">
                 <div className="text-xs text-gray-500">Year 1</div>
-                <div className="font-bold text-sm">{formatCurrency(vendorData.cumulativeCosts.year1 - vendorData.cumulativeCosts.initial)}</div>
+                <div className="font-bold text-sm">{formatCurrency((vendorData?.cumulativeCosts.year1 || 0) - (vendorData?.cumulativeCosts.initial || 0))}</div>
               </div>
               <div className="text-center bg-gray-50 p-2 rounded">
                 <div className="text-xs text-gray-500">Year 2</div>
-                <div className="font-bold text-sm">{formatCurrency(vendorData.cumulativeCosts.year2 - vendorData.cumulativeCosts.year1)}</div>
+                <div className="font-bold text-sm">{formatCurrency((vendorData?.cumulativeCosts.year2 || 0) - (vendorData?.cumulativeCosts.year1 || 0))}</div>
               </div>
               <div className="text-center bg-gray-50 p-2 rounded">
                 <div className="text-xs text-gray-500">Year 3</div>
-                <div className="font-bold text-sm">{formatCurrency(vendorData.cumulativeCosts.year3 - vendorData.cumulativeCosts.year2)}</div>
+                <div className="font-bold text-sm">{formatCurrency((vendorData?.cumulativeCosts.year3 || 0) - (vendorData?.cumulativeCosts.year2 || 0))}</div>
               </div>
             </div>
           </div>
@@ -454,28 +454,28 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
             <div className="stat-card p-4 bg-gray-50 rounded-lg">
               <div className="text-xs text-gray-500">Total Cost</div>
               <div className="text-lg font-bold text-gray-800">
-                {formatCurrency(vendorData.costBreakdown[selectedCategory])}
+                {formatCurrency(vendorData?.costBreakdown[selectedCategory] || 0)}
               </div>
             </div>
             
             <div className="stat-card p-4 bg-gray-50 rounded-lg">
               <div className="text-xs text-gray-500">Percentage of TCO</div>
               <div className="text-lg font-bold text-gray-800">
-                {((vendorData.costBreakdown[selectedCategory] / vendorData.totalTco) * 100).toFixed(1)}%
+                {(((vendorData?.costBreakdown[selectedCategory] || 0) / (vendorData?.totalTco || 1)) * 100).toFixed(1)}%
               </div>
             </div>
             
             <div className="stat-card p-4 bg-gray-50 rounded-lg">
               <div className="text-xs text-gray-500">Annual Cost</div>
               <div className="text-lg font-bold text-gray-800">
-                {formatCurrency(vendorData.costBreakdown[selectedCategory] / 3)}
+                {formatCurrency((vendorData?.costBreakdown[selectedCategory] || 0) / 3)}
               </div>
             </div>
             
             <div className="stat-card p-4 bg-gray-50 rounded-lg">
               <div className="text-xs text-gray-500">Cost Per Device</div>
               <div className="text-lg font-bold text-gray-800">
-                {formatCurrency(vendorData.costBreakdown[selectedCategory] / (state.deviceCount || 500))}
+                {formatCurrency((vendorData?.costBreakdown[selectedCategory] || 0) / (state.deviceCount || 500))}
               </div>
             </div>
           </div>
@@ -505,9 +505,9 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
                 </div>
               </div>
               <div className="text-sm text-blue-800 font-semibold mt-2">
-                {vendorData.costBreakdown.maintenance === 0 ?
-                  `${vendorData.name} uses a subscription model, which offers better predictability and eliminates the need for large upfront license purchases.` :
-                  `${vendorData.name} uses a perpetual licensing model, which requires significant upfront investment and ongoing maintenance fees.`
+                {(vendorData?.costBreakdown.maintenance || 0) === 0 ?
+                  `${vendorData?.name} uses a subscription model, which offers better predictability and eliminates the need for large upfront license purchases.` :
+                  `${vendorData?.name} uses a perpetual licensing model, which requires significant upfront investment and ongoing maintenance fees.`
                 }
               </div>
             </div>
@@ -528,19 +528,19 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
                       </div>
                       <div className="text-right">
                         <span className="text-xs font-semibold inline-block text-orange-600">
-                          {(vendorData.costBreakdown.operations / (state.costParameters?.fteCost || 100000)).toFixed(2)} FTE
+                          {((vendorData?.costBreakdown.operations || 0) / (state.costParameters?.fteCost || 100000)).toFixed(2)} FTE
                         </span>
                       </div>
                     </div>
                     <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-orange-200">
                       <div style={{
-                        width: `${Math.min((vendorData.costBreakdown.operations / (state.costParameters?.fteCost || 100000)) * 100, 100)}%`
+                        width: `${Math.min(((vendorData?.costBreakdown.operations || 0) / (state.costParameters?.fteCost || 100000)) * 100, 100)}%`
                       }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-orange-500"></div>
                     </div>
                     <div className="text-xs text-gray-600">
-                      {vendorData.costBreakdown.operations / (state.costParameters?.fteCost || 100000) <= 0.25 ?
+                      {(vendorData?.costBreakdown.operations || 0) / (state.costParameters?.fteCost || 100000) <= 0.25 ?
                         "Low FTE allocation indicates minimal operational overhead and simplified management." :
-                        vendorData.costBreakdown.operations / (state.costParameters?.fteCost || 100000) <= 0.5 ?
+                        (vendorData?.costBreakdown.operations || 0) / (state.costParameters?.fteCost || 100000) <= 0.5 ?
                         "Moderate FTE allocation suggests reasonable operational requirements." :
                         "High FTE allocation indicates significant operational complexity and management overhead."
                       }
@@ -549,9 +549,9 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
                 </div>
               </div>
               <div className="text-sm text-orange-800 font-semibold mt-2">
-                {vendorData.costBreakdown.operations < vendorData.totalTco * 0.2 ?
-                  `${vendorData.name} requires minimal operational overhead, allowing IT staff to focus on strategic initiatives rather than solution management.` :
-                  `${vendorData.name} requires significant operational resources, which increases total cost of ownership beyond the direct software and hardware expenses.`
+                {(vendorData?.costBreakdown.operations || 0) < (vendorData?.totalTco || 1) * 0.2 ?
+                  `${vendorData?.name} requires minimal operational overhead, allowing IT staff to focus on strategic initiatives rather than solution management.` :
+                  `${vendorData?.name} requires significant operational resources, which increases total cost of ownership beyond the direct software and hardware expenses.`
                 }
               </div>
             </div>
@@ -581,9 +581,9 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
                 </div>
               </div>
               <div className="text-sm text-red-800 font-semibold mt-2">
-                {vendorData.costBreakdown.hardware === 0 ?
-                  `${vendorData.name} is a cloud-native solution that eliminates hardware costs entirely, reducing total cost of ownership and simplifying deployment.` :
-                  `${vendorData.name} requires significant hardware investment (${formatCurrency(vendorData.costBreakdown.hardware)}), increasing both initial costs and long-term TCO.`
+                {(vendorData?.costBreakdown.hardware || 0) === 0 ?
+                  `${vendorData?.name} is a cloud-native solution that eliminates hardware costs entirely, reducing total cost of ownership and simplifying deployment.` :
+                  `${vendorData?.name} requires significant hardware investment (${formatCurrency(vendorData?.costBreakdown.hardware || 0)}), increasing both initial costs and long-term TCO.`
                 }
               </div>
             </div>
@@ -618,16 +618,16 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
                 </div>
                 <div className="grid grid-cols-5 gap-0 text-center text-xs text-gray-500">
                   <div>Day 1</div>
-                  <div>Day {Math.round(vendorData.implementationDays * 0.25)}</div>
-                  <div>Day {Math.round(vendorData.implementationDays * 0.5)}</div>
-                  <div>Day {Math.round(vendorData.implementationDays * 0.75)}</div>
-                  <div>Day {vendorData.implementationDays}</div>
+                  <div>Day {Math.round((vendorData?.implementationDays || 60) * 0.25)}</div>
+                  <div>Day {Math.round((vendorData?.implementationDays || 60) * 0.5)}</div>
+                  <div>Day {Math.round((vendorData?.implementationDays || 60) * 0.75)}</div>
+                  <div>Day {vendorData?.implementationDays || 60}</div>
                 </div>
               </div>
               <div className="text-sm text-green-800 font-semibold mt-2">
-                {vendorData.implementationDays < 30 ?
-                  `${vendorData.name} offers rapid deployment in just ${vendorData.implementationDays} days, significantly reducing time to value compared to traditional solutions.` :
-                  `${vendorData.name} requires ${vendorData.implementationDays} days for full implementation, representing a significant timeline for deployment.`
+                {(vendorData?.implementationDays || 60) < 30 ?
+                  `${vendorData?.name} offers rapid deployment in just ${vendorData?.implementationDays} days, significantly reducing time to value compared to traditional solutions.` :
+                  `${vendorData?.name} requires ${vendorData?.implementationDays} days for full implementation, representing a significant timeline for deployment.`
                 }
               </div>
             </div>
@@ -638,39 +638,39 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
             <h4 className="font-bold text-gray-700 mb-2">Insights & Recommendations</h4>
             <div className="text-sm text-gray-600">
               {selectedCategory === 'licenses' && (
-                vendorData.costBreakdown.maintenance > 0 ? 
+                (vendorData?.costBreakdown.maintenance || 0) > 0 ? 
                   <p>Consider subscription-based alternatives to reduce upfront costs and achieve better predictability. Subscription models typically offer better long-term value and include updates and maintenance.</p> :
-                  <p>The subscription model used by {vendorData.name} provides optimal cost distribution over time and includes all updates and maintenance, eliminating unexpected costs.</p>
+                  <p>The subscription model used by {vendorData?.name} provides optimal cost distribution over time and includes all updates and maintenance, eliminating unexpected costs.</p>
               )}
               
               {selectedCategory === 'maintenance' && (
-                vendorData.costBreakdown.maintenance > vendorData.totalTco * 0.15 ? 
-                  <p>High maintenance costs (${formatCurrency(vendorData.costBreakdown.maintenance)}) suggest this solution has significant ongoing support requirements, which impacts long-term TCO.</p> :
+                (vendorData?.costBreakdown.maintenance || 0) > (vendorData?.totalTco || 1) * 0.15 ? 
+                  <p>High maintenance costs (${formatCurrency(vendorData?.costBreakdown.maintenance || 0)}) suggest this solution has significant ongoing support requirements, which impacts long-term TCO.</p> :
                   <p>Maintenance costs are well-optimized, representing a small portion of the total TCO and providing good value for the support received.</p>
               )}
               
               {selectedCategory === 'operations' && (
-                vendorData.costBreakdown.operations > vendorData.totalTco * 0.25 ? 
+                (vendorData?.costBreakdown.operations || 0) > (vendorData?.totalTco || 1) * 0.25 ? 
                   <p>High operational costs indicate complex management needs. Consider solutions with lower operational requirements to reduce long-term TCO.</p> :
-                  <p>The low operational overhead of {vendorData.name} translates to significant cost savings over time and allows IT staff to focus on strategic initiatives rather than system management.</p>
+                  <p>The low operational overhead of {vendorData?.name} translates to significant cost savings over time and allows IT staff to focus on strategic initiatives rather than system management.</p>
               )}
               
               {selectedCategory === 'hardware' && (
-                vendorData.costBreakdown.hardware > 0 ? 
+                (vendorData?.costBreakdown.hardware || 0) > 0 ? 
                   <p>Hardware costs represent a significant capital expenditure. Cloud-based alternatives eliminate these costs entirely and provide better scalability.</p> :
-                  <p>The cloud-native architecture of {vendorData.name} eliminates hardware costs entirely, reducing capital expenditure and providing better scalability and flexibility.</p>
+                  <p>The cloud-native architecture of {vendorData?.name} eliminates hardware costs entirely, reducing capital expenditure and providing better scalability and flexibility.</p>
               )}
               
               {selectedCategory === 'implementation' && (
-                vendorData.implementationDays > 45 ? 
+                (vendorData?.implementationDays || 60) > 45 ? 
                   <p>The extended implementation timeline increases both direct costs and delays time to value. Consider solutions with faster deployment options.</p> :
-                  <p>The rapid implementation timeline of {vendorData.name} accelerates time to value and reduces deployment costs compared to traditional alternatives.</p>
+                  <p>The rapid implementation timeline of {vendorData?.name} accelerates time to value and reduces deployment costs compared to traditional alternatives.</p>
               )}
               
               {selectedCategory === 'infrastructure' && (
-                vendorData.costBreakdown.infrastructure > 0 ? 
+                (vendorData?.costBreakdown.infrastructure || 0) > 0 ? 
                   <p>Ongoing infrastructure costs add significant expense over time. Cloud solutions eliminate these costs entirely and reduce operational complexity.</p> :
-                  <p>By eliminating infrastructure costs, {vendorData.name} provides substantial savings over the solution lifecycle while reducing management complexity.</p>
+                  <p>By eliminating infrastructure costs, {vendorData?.name} provides substantial savings over the solution lifecycle while reducing management complexity.</p>
               )}
             </div>
           </div>
@@ -692,13 +692,13 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
               <div className="font-bold text-green-800">License Efficiency</div>
             </div>
             <div className="text-sm text-green-700">
-              {vendorData.costBreakdown.maintenance === 0 ? 
+              {(vendorData?.costBreakdown.maintenance || 0) === 0 ? 
                 "Subscription model provides optimal cost distribution over time, with no large upfront payments required." : 
                 "Perpetual licensing model requires significant upfront investment and ongoing maintenance fees."
               }
             </div>
             <div className="mt-2 font-bold text-green-800 text-right">
-              {vendorData.costBreakdown.maintenance === 0 ? "Excellent" : "Suboptimal"}
+              {(vendorData?.costBreakdown.maintenance || 0) === 0 ? "Excellent" : "Suboptimal"}
             </div>
           </div>
           
@@ -712,13 +712,13 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
               <div className="font-bold text-blue-800">Operational Efficiency</div>
             </div>
             <div className="text-sm text-blue-700">
-              {vendorData.costBreakdown.operations < vendorData.totalTco * 0.2 ? 
+              {(vendorData?.costBreakdown.operations || 0) < (vendorData?.totalTco || 1) * 0.2 ? 
                 "Low operational overhead minimizes FTE costs and allows IT staff to focus on strategic initiatives." : 
                 "High operational requirements increase total cost of ownership and management complexity."
               }
             </div>
             <div className="mt-2 font-bold text-blue-800 text-right">
-              {vendorData.costBreakdown.operations < vendorData.totalTco * 0.2 ? "High" : "Low"}
+              {(vendorData?.costBreakdown.operations || 0) < (vendorData?.totalTco || 1) * 0.2 ? "High" : "Low"}
             </div>
           </div>
           
@@ -732,13 +732,13 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
               <div className="font-bold text-purple-800">Deployment Model</div>
             </div>
             <div className="text-sm text-purple-700">
-              {vendorData.deployment === 'cloud' ? 
+              {vendorData?.deployment === 'cloud' ? 
                 "Cloud-native architecture eliminates hardware and infrastructure costs while providing better scalability." : 
                 "On-premises deployment requires significant hardware investment and infrastructure costs."
               }
             </div>
             <div className="mt-2 font-bold text-purple-800 text-right">
-              {vendorData.deployment === 'cloud' ? "Optimal" : "Traditional"}
+              {vendorData?.deployment === 'cloud' ? "Optimal" : "Traditional"}
             </div>
           </div>
         </div>
@@ -748,18 +748,18 @@ const TcoBreakdownChart: React.FC<TcoBreakdownChartProps> = ({
           <div className="text-gray-700">
             <p className="mb-2">
               <strong>Overall Value Assessment:</strong> {
-                vendorData.deployment === 'cloud' && vendorData.costBreakdown.maintenance === 0 && vendorData.costBreakdown.operations < vendorData.totalTco * 0.2 ? 
-                  `${vendorData.name} offers excellent TCO value with its cloud-native architecture, subscription model, and low operational requirements.` :
-                  vendorData.deployment === 'cloud' ? 
-                    `${vendorData.name} provides good TCO value through its cloud architecture, eliminating hardware and infrastructure costs.` :
-                    `${vendorData.name} has a traditional TCO structure with significant costs across hardware, implementation, and operations.`
+                vendorData?.deployment === 'cloud' && (vendorData?.costBreakdown.maintenance || 0) === 0 && (vendorData?.costBreakdown.operations || 0) < (vendorData?.totalTco || 1) * 0.2 ? 
+                  `${vendorData?.name} offers excellent TCO value with its cloud-native architecture, subscription model, and low operational requirements.` :
+                  vendorData?.deployment === 'cloud' ? 
+                    `${vendorData?.name} provides good TCO value through its cloud architecture, eliminating hardware and infrastructure costs.` :
+                    `${vendorData?.name} has a traditional TCO structure with significant costs across hardware, implementation, and operations.`
               }
             </p>
             <p>
-              <strong>ROI Analysis:</strong> With a projected ROI of {Math.round(vendorData.roi)}% and a payback period of {Math.round(vendorData.paybackPeriod)} months, 
-              {vendorData.roi > 150 ? 
+              <strong>ROI Analysis:</strong> With a projected ROI of {Math.round(vendorData?.roi || 0)}% and a payback period of {Math.round(vendorData?.paybackPeriod || 0)} months, 
+              {(vendorData?.roi || 0) > 150 ? 
                 " this solution provides exceptional return on investment." : 
-                vendorData.roi > 100 ? 
+                (vendorData?.roi || 0) > 100 ? 
                   " this solution provides good return on investment." : 
                   " this solution provides modest return on investment."
               }
