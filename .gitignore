@@ -64,3 +64,4 @@ public/dist/
 ehthumbs.db
 Thumbs.db
 **/.env.github
+.env.github
