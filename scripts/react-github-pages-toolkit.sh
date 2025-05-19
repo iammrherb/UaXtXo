@@ -19,13 +19,13 @@ NC='\033[0m' # No Color
 
 # Configuration - Edit these variables to match your project
 REPO_NAME="UaXtXo"
-GIT_USERNAME="iammrherb"
+GIT_USERNAME="iamrad"
 SOURCE_BRANCH="main-react"
 DEPLOYMENT_BRANCH="gh-pages"
 PROJECT_TITLE="Portnox TCO Analyzer"
 
 # CI/CD Configuration
-GITHUB_TOKEN="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" # For automated deployments - set this or use .env.github file
+GITHUB_TOKEN="" # For automated deployments - set this or use .env.github file
 CI_MODE=false   # Set to true for CI/CD environments
 
 # Commit message templates - used for automated commits
@@ -120,9 +120,25 @@ load_github_token() {
 # Configure git with token if available
 configure_git_with_token() {
   if [ ! -z "$GITHUB_TOKEN" ]; then
-    local repo_url="https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+    # For fine-grained tokens, we need to set username properly
+    if [ ! -z "$GITHUB_USERNAME" ]; then
+      local username="$GITHUB_USERNAME"
+    else
+      local username="$GIT_USERNAME"
+    fi
+    
+    # Configure remote with token
+    local repo_url="https://${username}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     git remote set-url origin "$repo_url"
     echo -e "${GREEN}Git configured with token for authentication${NC}"
+    
+    # Set user identity if configured
+    if [ ! -z "$GIT_USER_EMAIL" ] && [ ! -z "$GIT_USER_NAME" ]; then
+      git config user.email "$GIT_USER_EMAIL"
+      git config user.name "$GIT_USER_NAME"
+      echo -e "${GREEN}Git user identity configured${NC}"
+    fi
+    
     return 0
   fi
   return 1
@@ -137,6 +153,12 @@ show_help() {
   echo -e "  ${CYAN}setup${NC}           - Initial setup (create branches, configure project)"
   echo -e "  ${CYAN}deploy${NC}          - Build and deploy to GitHub Pages"
   echo -e "  ${CYAN}dev${NC}             - Start development server"
+  echo -e "  ${CYAN}token${NC}           - Configure GitHub token for CI/CD (supports fine-grained tokens)"
+  
+  echo -e "\nCommit Commands:"
+  echo -e "  ${CYAN}commit${NC}          - Generate commit message and commit changes to current branch"
+  echo -e "  ${CYAN}commit --multi${NC}  - Commit to both source and deployment branches"
+  echo -e "  ${CYAN}multi-commit${NC}    - Same as commit --multi"
   
   echo -e "\nMaintenance Commands:"
   echo -e "  ${CYAN}clean${NC}           - Clean up project directory (remove unnecessary files)"
@@ -148,17 +170,22 @@ show_help() {
   echo -e "  ${CYAN}reset${NC}           - Reset branch to a previous state"
   echo -e "  ${CYAN}revert${NC}          - Revert the last deployment"
   echo -e "  ${CYAN}sync${NC}            - Sync branches (update deployment from source)"
-  echo -e "  ${CYAN}commit${NC}          - Generate commit message and commit changes"
-  echo -e "  ${CYAN}token${NC}           - Configure GitHub token for CI/CD"
   echo -e "  ${CYAN}gitignore${NC}       - Update or reset .gitignore file"
   echo -e "  ${CYAN}help${NC}            - Show this help message"
   
+  echo -e "\nOne-liner Commands (for CI/CD):"
+  echo -e "  ${CYAN}1liner deploy${NC}   - One-liner deployment with no interaction"
+  echo -e "  ${CYAN}1liner check${NC}    - Quick configuration check"
+  echo -e "  ${CYAN}1liner clean${NC}    - Quick cleanup"
+  
   echo -e "\nExamples:"
-  echo -e "  $0 setup              # Run initial setup"
-  echo -e "  $0 deploy             # Build and deploy to GitHub Pages"
-  echo -e "  $0 commit \"update UI\" # Commit changes with generated message"
-  echo -e "  $0 reset --hard       # Reset to HEAD discarding all changes"
-  echo -e "  $0 gitignore --reset  # Reset to default .gitignore"
+  echo -e "  $0 setup                    # Run initial setup"
+  echo -e "  $0 token                    # Configure GitHub token (with fine-grained token support)"
+  echo -e "  $0 deploy                   # Build and deploy to GitHub Pages"
+  echo -e "  $0 commit \"update UI\"      # Commit changes with generated message"
+  echo -e "  $0 multi-commit             # Commit to both source and deployment branches"
+  echo -e "  $0 reset --hard             # Reset to HEAD discarding all changes"
+  echo -e "  $0 1liner deploy            # Non-interactive deployment (for CI/CD)"
   echo ""
 }
 
@@ -532,6 +559,488 @@ organize_project() {
   echo -e "\n${GREEN}Project organization complete!${NC}"
 }
 
+# Function to handle push options
+push_commits() {
+  echo -e "\nPush options:"
+  echo -e "  1) Push normally"
+  echo -e "  2) Force push"
+  echo -e "  3) Push and set upstream"
+  echo -e "  4) Don't push now"
+  read -p "Select push option (1-4): " push_option
+  
+  # Get current branch
+  local current_branch=$(git rev-parse --abbrev-ref HEAD)
+  
+  case "$push_option" in
+    2)
+      echo -e "${RED}Warning: Force push will overwrite remote branch history.${NC}"
+      read -p "Are you sure? (y/n) " -n 1 -r
+      echo ""
+      if [[ $REPLY =~ ^[Yy]$ ]]; then
+        git push --force origin $current_branch
+        echo -e "${GREEN}Force pushed to $current_branch.${NC}"
+      else
+        echo -e "${YELLOW}Force push cancelled.${NC}"
+      fi
+      ;;
+    3)
+      git push -u origin $current_branch
+      echo -e "${GREEN}Pushed and set upstream to origin/$current_branch.${NC}"
+      ;;
+    4)
+      echo -e "${YELLOW}Changes committed locally. Don't forget to push later.${NC}"
+      ;;
+    *)
+      git push origin $current_branch
+      echo -e "${GREEN}Pushed to origin/$current_branch.${NC}"
+      ;;
+  esac
+}
+
+# Generate commit message and commit changes
+commit_changes() {
+  print_header
+  print_section "Committing changes"
+  
+  # Check if there are changes to commit
+  if [[ -z $(git status -s) ]]; then
+    echo -e "${YELLOW}No changes to commit.${NC}"
+    
+    # Offer to push unpushed commits if any exist
+    local unpushed=$(git log @{push}.. 2>/dev/null)
+    if [ ! -z "$unpushed" ]; then
+      echo -e "${YELLOW}You have unpushed commits. Would you like to push them?${NC}"
+      read -p "Push unpushed commits? (y/n) " -n 1 -r
+      echo ""
+      if [[ $REPLY =~ ^[Yy]$ ]]; then
+        push_commits
+      fi
+    fi
+    
+    return 0
+  fi
+  
+  # List changes
+  echo -e "${YELLOW}Changes to commit:${NC}"
+  git status -s
+  
+  # Prompt for specific files or all files
+  echo -e "\nWould you like to:"
+  echo -e "  1) Commit all changes"
+  echo -e "  2) Select specific files to commit"
+  echo -e "  3) View detailed changes before committing"
+  echo -e "  4) Cancel"
+  read -p "Select option (1-4): " commit_option
+  
+  case "$commit_option" in
+    2)
+      # Select specific files
+      echo -e "\n${YELLOW}Select files to commit (enter file numbers separated by spaces, or 'all' for all files):${NC}"
+      local files=($(git status -s | awk '{print $2}'))
+      for i in "${!files[@]}"; do
+        echo -e "  $i) ${files[$i]}"
+      done
+      
+      read -p "Files to commit: " file_selection
+      
+      if [ "$file_selection" != "all" ]; then
+        # Convert selection to array
+        local selected_files=()
+        for num in $file_selection; do
+          if [ $num -lt ${#files[@]} ]; then
+            selected_files+=("${files[$num]}")
+          fi
+        done
+        
+        # Add selected files
+        if [ ${#selected_files[@]} -eq 0 ]; then
+          echo -e "${RED}No valid files selected. Operation cancelled.${NC}"
+          return 1
+        fi
+        
+        git add "${selected_files[@]}"
+        echo -e "${GREEN}Added selected files to staging area.${NC}"
+      else
+        git add .
+        echo -e "${GREEN}Added all files to staging area.${NC}"
+      fi
+      ;;
+    3)
+      # View detailed changes
+      echo -e "\n${YELLOW}Detailed changes:${NC}"
+      git diff
+      
+      read -p "Continue with commit? (y/n) " -n 1 -r
+      echo ""
+      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "${RED}Commit cancelled.${NC}"
+        return 1
+      fi
+      
+      git add .
+      echo -e "${GREEN}Added all files to staging area.${NC}"
+      ;;
+    4)
+      echo -e "${RED}Commit cancelled.${NC}"
+      return 1
+      ;;
+    *)
+      # Default: commit all changes
+      git add .
+      echo -e "${GREEN}Added all files to staging area.${NC}"
+      ;;
+  esac
+  
+  # Get component name
+  read -p "Enter component/module name (leave blank for default): " component_name
+  
+  # Get commit type
+  echo -e "Select commit type:"
+  echo -e "  1) feat    - New feature"
+  echo -e "  2) fix     - Bug fix"
+  echo -e "  3) docs    - Documentation"
+  echo -e "  4) style   - Formatting"
+  echo -e "  5) refactor - Refactoring"
+  echo -e "  6) perf    - Performance improvement"
+  echo -e "  7) test    - Tests"
+  echo -e "  8) chore   - Maintenance"
+  echo -e "  9) build   - Build system"
+  echo -e "  0) custom  - Enter custom message"
+  read -p "Select type (0-9, default=8): " commit_type_num
+  
+  # Map number to type
+  case "$commit_type_num" in
+    1) commit_type="feat" ;;
+    2) commit_type="fix" ;;
+    3) commit_type="docs" ;;
+    4) commit_type="style" ;;
+    5) commit_type="refactor" ;;
+    6) commit_type="perf" ;;
+    7) commit_type="test" ;;
+    9) commit_type="build" ;;
+    0) commit_type="custom" ;;
+    *) commit_type="chore" ;;
+  esac
+  
+  # Generate or get custom message
+  if [ "$commit_type" == "custom" ]; then
+    read -p "Enter custom commit message: " commit_message
+  else
+    commit_message=$(generate_commit_message "$component_name" "$commit_type")
+    
+    # Allow editing the generated message
+    echo -e "Generated message: ${YELLOW}$commit_message${NC}"
+    read -p "Use this message? (y/n/e for edit) " -n 1 -r
+    echo ""
+    
+    if [[ $REPLY =~ ^[Ee]$ ]]; then
+      read -p "Edit message: " -i "$commit_message" -e commit_message
+    elif [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      read -p "Enter new message: " commit_message
+    fi
+  fi
+  
+  # Check if commit should be amended
+  echo -e "Commit options:"
+  echo -e "  1) Create new commit"
+  echo -e "  2) Amend previous commit"
+  echo -e "  3) Create new commit with sign-off"
+  read -p "Select option (1-3, default=1): " commit_option
+  
+  # Perform commit
+  case "$commit_option" in
+    2)
+      git commit --amend -m "$commit_message"
+      echo -e "${GREEN}Amended previous commit with new changes.${NC}"
+      ;;
+    3)
+      git commit -s -m "$commit_message"
+      echo -e "${GREEN}Created signed-off commit.${NC}"
+      ;;
+    *)
+      git commit -m "$commit_message"
+      echo -e "${GREEN}Created new commit.${NC}"
+      ;;
+  esac
+  
+  # Ask about pushing
+  push_commits
+}
+
+# Commit to multiple branches
+commit_to_branches() {
+  print_header
+  print_section "Committing to multiple branches"
+  
+  # Get branch names
+  SOURCE_BRANCH_NAME=${1:-$SOURCE_BRANCH}
+  DEPLOYMENT_BRANCH_NAME=${2:-$DEPLOYMENT_BRANCH}
+  
+  # Check if branches exist
+  if ! git show-ref --verify --quiet refs/heads/$SOURCE_BRANCH_NAME; then
+    echo -e "${RED}Source branch '$SOURCE_BRANCH_NAME' does not exist.${NC}"
+    read -p "Would you like to create it? (y/n) " -n 1 -r
+    echo ""
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo -e "${RED}Operation cancelled.${NC}"
+      exit 1
+    else
+      # Create the branch
+      echo -e "${YELLOW}Creating branch $SOURCE_BRANCH_NAME...${NC}"
+      git checkout -b $SOURCE_BRANCH_NAME
+      git push -u origin $SOURCE_BRANCH_NAME
+      echo -e "${GREEN}Branch $SOURCE_BRANCH_NAME created.${NC}"
+    fi
+  fi
+  
+  # Load GitHub token if available
+  load_github_token
+  configure_git_with_token
+  
+  # Save current branch
+  CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+  
+  # First, handle the source branch
+  echo -e "\n${YELLOW}Handling source branch: $SOURCE_BRANCH_NAME${NC}"
+  git checkout $SOURCE_BRANCH_NAME
+  
+  # Check for changes
+  if [[ -z $(git status -s) ]]; then
+    echo -e "${YELLOW}No changes to commit in $SOURCE_BRANCH_NAME.${NC}"
+    
+    # Check for unpushed commits
+    local unpushed=$(git log @{push}.. 2>/dev/null)
+    if [ ! -z "$unpushed" ]; then
+      echo -e "${YELLOW}You have unpushed commits in $SOURCE_BRANCH_NAME.${NC}"
+      echo -e "Unpushed commits:"
+      git log --oneline @{push}..
+      
+      read -p "Push these commits? (y/n) " -n 1 -r
+      echo ""
+      if [[ $REPLY =~ ^[Yy]$ ]]; then
+        push_commits
+      fi
+    fi
+  else
+    # Handle source branch changes
+    echo -e "${YELLOW}Changes detected in $SOURCE_BRANCH_NAME:${NC}"
+    git status -s
+    
+    # Prompt for specific files or all files
+    echo -e "\nWould you like to:"
+    echo -e "  1) Commit all changes"
+    echo -e "  2) Select specific files to commit"
+    echo -e "  3) View detailed changes before committing"
+    echo -e "  4) Cancel"
+    read -p "Select option (1-4): " commit_option
+    
+    case "$commit_option" in
+      2)
+        # Select specific files
+        echo -e "\n${YELLOW}Select files to commit (enter file numbers separated by spaces, or 'all' for all files):${NC}"
+        local files=($(git status -s | awk '{print $2}'))
+        for i in "${!files[@]}"; do
+          echo -e "  $i) ${files[$i]}"
+        done
+        
+        read -p "Files to commit: " file_selection
+        
+        if [ "$file_selection" != "all" ]; then
+          # Convert selection to array
+          local selected_files=()
+          for num in $file_selection; do
+            if [ $num -lt ${#files[@]} ]; then
+              selected_files+=("${files[$num]}")
+            fi
+          done
+          
+          # Add selected files
+          if [ ${#selected_files[@]} -eq 0 ]; then
+            echo -e "${RED}No valid files selected. Operation cancelled.${NC}"
+            git checkout $CURRENT_BRANCH
+            return 1
+          fi
+          
+          git add "${selected_files[@]}"
+          echo -e "${GREEN}Added selected files to staging area.${NC}"
+        else
+          git add .
+          echo -e "${GREEN}Added all files to staging area.${NC}"
+        fi
+        ;;
+      3)
+        # View detailed changes
+        echo -e "\n${YELLOW}Detailed changes:${NC}"
+        git diff
+        
+        read -p "Continue with commit? (y/n) " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+          echo -e "${RED}Commit cancelled.${NC}"
+          git checkout $CURRENT_BRANCH
+          return 1
+        fi
+        
+        git add .
+        echo -e "${GREEN}Added all files to staging area.${NC}"
+        ;;
+      4)
+        echo -e "${RED}Commit cancelled.${NC}"
+        git checkout $CURRENT_BRANCH
+        return 1
+        ;;
+      *)
+        # Default: commit all changes
+        git add .
+        echo -e "${GREEN}Added all files to staging area.${NC}"
+        ;;
+    esac
+    
+    # Get component name for commit
+    read -p "Enter component/module name for source branch commit: " component_name
+    
+    # Get commit type
+    echo -e "Select commit type for source branch:"
+    echo -e "  1) feat    - New feature"
+    echo -e "  2) fix     - Bug fix"
+    echo -e "  3) docs    - Documentation"
+    echo -e "  4) style   - Formatting"
+    echo -e "  5) refactor - Refactoring"
+    echo -e "  6) perf    - Performance improvement"
+    echo -e "  7) test    - Tests"
+    echo -e "  8) chore   - Maintenance"
+    echo -e "  9) build   - Build system"
+    echo -e "  0) custom  - Enter custom message"
+    read -p "Select type (0-9, default=8): " commit_type_num
+    
+    # Map number to type
+    case "$commit_type_num" in
+      1) commit_type="feat" ;;
+      2) commit_type="fix" ;;
+      3) commit_type="docs" ;;
+      4) commit_type="style" ;;
+      5) commit_type="refactor" ;;
+      6) commit_type="perf" ;;
+      7) commit_type="test" ;;
+      9) commit_type="build" ;;
+      0) commit_type="custom" ;;
+      *) commit_type="chore" ;;
+    esac
+    
+    # Generate or get custom message for source branch
+    if [ "$commit_type" == "custom" ]; then
+      read -p "Enter custom commit message for source branch: " source_commit_message
+    else
+      source_commit_message=$(generate_commit_message "$component_name" "$commit_type")
+      
+      # Allow editing the generated message
+      echo -e "Generated message: ${YELLOW}$source_commit_message${NC}"
+      read -p "Use this message? (y/n/e for edit) " -n 1 -r
+      echo ""
+      
+      if [[ $REPLY =~ ^[Ee]$ ]]; then
+        read -p "Edit message: " -i "$source_commit_message" -e source_commit_message
+      elif [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        read -p "Enter new message: " source_commit_message
+      fi
+    fi
+    
+    # Check if commit should be amended
+    echo -e "Commit options:"
+    echo -e "  1) Create new commit"
+    echo -e "  2) Amend previous commit"
+    echo -e "  3) Create new commit with sign-off"
+    read -p "Select option (1-3, default=1): " commit_option
+    
+    # Perform commit
+    case "$commit_option" in
+      2)
+        git commit --amend -m "$source_commit_message"
+        echo -e "${GREEN}Amended previous commit with new changes.${NC}"
+        ;;
+      3)
+        git commit -s -m "$source_commit_message"
+        echo -e "${GREEN}Created signed-off commit.${NC}"
+        ;;
+      *)
+        git commit -m "$source_commit_message"
+        echo -e "${GREEN}Created new commit.${NC}"
+        ;;
+    esac
+    
+    # Push options
+    push_commits
+  fi
+  
+  # Now, build and update deployment branch if requested
+  echo -e "\n${YELLOW}Would you like to also update the deployment branch ($DEPLOYMENT_BRANCH_NAME)?${NC}"
+  read -p "Update deployment branch? (y/n) " -n 1 -r
+  echo ""
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo -e "\n${YELLOW}Building and updating deployment branch...${NC}"
+    
+    # Build the app
+    npm run build
+    touch build/.nojekyll
+    
+    # Get commit message for deployment branch
+    echo -e "\n${YELLOW}Commit message options for deployment branch:${NC}"
+    echo -e "  1) Use same commit message as source branch"
+    echo -e "  2) Use automated deployment message"
+    echo -e "  3) Enter custom message"
+    read -p "Select option (1-3): " deploy_msg_option
+    
+    case "$deploy_msg_option" in
+      1)
+        deploy_commit_message="$source_commit_message"
+        ;;
+      2)
+        deploy_commit_message="Deploy: $(date +%Y-%m-%d_%H-%M-%S)"
+        ;;
+      3)
+        read -p "Enter custom message for deployment branch: " deploy_commit_message
+        ;;
+      *)
+        deploy_commit_message="$source_commit_message"
+        ;;
+    esac
+    
+    # Deploy to GitHub Pages with custom message
+    if [ -z "$GITHUB_TOKEN" ]; then
+      # Standard deployment
+      npx gh-pages -d build -m "$deploy_commit_message"
+    else
+      # Deploy with token for CI/CD
+      if [ ! -z "$GITHUB_USERNAME" ]; then
+        npx gh-pages -d build -m "$deploy_commit_message" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      else
+        npx gh-pages -d build -m "$deploy_commit_message" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      fi
+    fi
+    
+    echo -e "${GREEN}Changes committed and pushed to $DEPLOYMENT_BRANCH_NAME${NC}"
+    
+    # Create deployment tag if requested
+    read -p "Create a deployment tag for this version? (y/n) " -n 1 -r
+    echo ""
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      local tag_name="deploy-$(date +%Y%m%d-%H%M%S)"
+      git tag -a "$tag_name" -m "$deploy_commit_message"
+      git push origin "$tag_name"
+      echo -e "${GREEN}Created and pushed tag: $tag_name${NC}"
+    fi
+  fi
+  
+  # Return to original branch
+  git checkout $CURRENT_BRANCH
+  
+  echo -e "\n${GREEN}Multi-branch commit process complete!${NC}"
+  echo -e "Source branch: ${YELLOW}$SOURCE_BRANCH_NAME${NC}"
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo -e "Deployment branch: ${YELLOW}$DEPLOYMENT_BRANCH_NAME${NC}"
+  fi
+}
+
 # Deploy to GitHub Pages
 deploy_project() {
   print_header
@@ -629,7 +1138,11 @@ deploy_project() {
     npx gh-pages -d build -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)"
   else
     # Deploy with token for CI/CD
-    npx gh-pages -d build -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+    if [ ! -z "$GITHUB_USERNAME" ]; then
+      npx gh-pages -d build -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+    else
+      npx gh-pages -d build -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+    fi
   fi
   
   echo -e "\n${GREEN}Deployment complete!${NC}"
@@ -646,6 +1159,209 @@ deploy_project() {
   # 10. Suggest verification
   echo -e "\n${YELLOW}To verify your deployment, run:${NC}"
   echo -e "  $0 verify"
+}
+
+# Check configuration and repository structure
+check_configuration() {
+  print_header
+  print_section "Checking configuration and repository structure"
+  
+  # 1. Check package.json
+  echo -e "Checking package.json..."
+  if [ -f "package.json" ]; then
+    HOMEPAGE=$(node -e "console.log(require('./package.json').homepage || 'Not set')")
+    PREDEPLOY=$(node -e "console.log(require('./package.json').scripts?.predeploy || 'Not set')")
+    DEPLOY=$(node -e "console.log(require('./package.json').scripts?.deploy || 'Not set')")
+    
+    echo -e "  Homepage: ${YELLOW}${HOMEPAGE}${NC}"
+    echo -e "  Predeploy script: ${YELLOW}${PREDEPLOY}${NC}"
+    echo -e "  Deploy script: ${YELLOW}${DEPLOY}${NC}"
+    
+    if [[ "$HOMEPAGE" == "Not set" ]]; then
+      echo -e "  ${RED}✘ Homepage not set${NC}"
+    else
+      echo -e "  ${GREEN}✓ Homepage is set${NC}"
+    fi
+    
+    if [[ "$PREDEPLOY" == "Not set" ]] || [[ "$DEPLOY" == "Not set" ]]; then
+      echo -e "  ${RED}✘ Deployment scripts not set${NC}"
+    else
+      echo -e "  ${GREEN}✓ Deployment scripts are set${NC}"
+    fi
+  else
+    echo -e "${RED}package.json not found!${NC}"
+  fi
+  
+  # 2. Check environment files
+  echo -e "\nChecking environment files..."
+  if [ -f ".env.production" ]; then
+    PUBLIC_URL=$(grep -o 'PUBLIC_URL=.*' .env.production || echo "Not set")
+    echo -e "  .env.production: ${YELLOW}${PUBLIC_URL}${NC}"
+    
+    if [[ "$PUBLIC_URL" == "Not set" ]]; then
+      echo -e "  ${RED}✘ PUBLIC_URL not set in .env.production${NC}"
+    else
+      echo -e "  ${GREEN}✓ PUBLIC_URL is set in .env.production${NC}"
+    fi
+  else
+    echo -e "  ${RED}✘ .env.production not found${NC}"
+  fi
+  
+  # 3. Check .nojekyll
+  echo -e "\nChecking .nojekyll..."
+  if [ -f ".nojekyll" ]; then
+    echo -e "  ${GREEN}✓ .nojekyll exists${NC}"
+  else
+    echo -e "  ${RED}✘ .nojekyll not found${NC}"
+  fi
+  
+  # 4. Check git branches
+  echo -e "\nChecking git branches..."
+  SOURCE_EXISTS=$(git show-ref --verify --quiet refs/heads/$SOURCE_BRANCH && echo "Yes" || echo "No")
+  DEPLOYMENT_EXISTS=$(git show-ref --verify --quiet refs/heads/$DEPLOYMENT_BRANCH && echo "Yes" || echo "No")
+  
+  if [ "$SOURCE_EXISTS" == "Yes" ]; then
+    echo -e "  ${GREEN}✓ Source branch ($SOURCE_BRANCH) exists${NC}"
+  else
+    echo -e "  ${RED}✘ Source branch ($SOURCE_BRANCH) does not exist${NC}"
+  fi
+  
+  if [ "$DEPLOYMENT_EXISTS" == "Yes" ]; then
+    echo -e "  ${GREEN}✓ Deployment branch ($DEPLOYMENT_BRANCH) exists${NC}"
+  else
+    echo -e "  ${RED}✘ Deployment branch ($DEPLOYMENT_BRANCH) does not exist${NC}"
+  fi
+  
+  # 5. Check required directories
+  echo -e "\nChecking required directories..."
+  [ -d "src" ] && echo -e "  ${GREEN}✓ src directory exists${NC}" || echo -e "  ${RED}✘ src directory not found${NC}"
+  [ -d "public" ] && echo -e "  ${GREEN}✓ public directory exists${NC}" || echo -e "  ${RED}✘ public directory not found${NC}"
+  [ -d "node_modules" ] && echo -e "  ${GREEN}✓ node_modules directory exists${NC}" || echo -e "  ${YELLOW}⚠ node_modules directory not found (run npm install)${NC}"
+  
+  # 6. Check dependencies
+  echo -e "\nChecking required dependencies..."
+  GH_PAGES_INSTALLED=$(npm list gh-pages --depth=0 2>/dev/null | grep -q "gh-pages" && echo "Yes" || echo "No")
+  
+  if [ "$GH_PAGES_INSTALLED" == "Yes" ]; then
+    echo -e "  ${GREEN}✓ gh-pages package installed${NC}"
+  else
+    echo -e "  ${RED}✘ gh-pages package not installed${NC}"
+  fi
+  
+  # 7. Check GitHub token
+  echo -e "\nChecking GitHub token configuration..."
+  if [ -f ".env.github" ]; then
+    if grep -q "GITHUB_TOKEN=YOUR_TOKEN_HERE" .env.github; then
+      echo -e "  ${RED}✘ GitHub token not configured (placeholder value)${NC}"
+    elif grep -q "GITHUB_TOKEN=" .env.github; then
+      echo -e "  ${GREEN}✓ GitHub token appears to be configured${NC}"
+      
+      # Check if username is configured for fine-grained tokens
+      if grep -q "GITHUB_USERNAME=" .env.github; then
+        echo -e "  ${GREEN}✓ GitHub username configured for fine-grained token${NC}"
+      else
+        echo -e "  ${YELLOW}⚠ GitHub username not configured (may be needed for fine-grained tokens)${NC}"
+      fi
+    else
+      echo -e "  ${RED}✘ GitHub token not found in .env.github${NC}"
+    fi
+  else
+    echo -e "  ${YELLOW}⚠ .env.github file not found${NC}"
+  fi
+  
+  echo -e "\n${GREEN}Configuration check complete!${NC}"
+  
+  # 8. Provide recommendations
+  echo -e "\n${YELLOW}Recommendations:${NC}"
+  if [[ "$HOMEPAGE" == "Not set" ]] || [[ "$PREDEPLOY" == "Not set" ]] || [[ "$DEPLOY" == "Not set" ]] || [[ "$PUBLIC_URL" == "Not set" ]] || [ ! -f ".nojekyll" ] || [ "$SOURCE_EXISTS" == "No" ] || [ "$GH_PAGES_INSTALLED" == "No" ]; then
+    echo -e "  • Run ${CYAN}$0 setup${NC} to fix configuration issues"
+  fi
+  
+  if [ "$DEPLOYMENT_EXISTS" == "No" ]; then
+    echo -e "  • Run ${CYAN}$0 deploy${NC} to create the deployment branch"
+  fi
+  
+  if [ ! -f ".env.github" ] || grep -q "GITHUB_TOKEN=YOUR_TOKEN_HERE" .env.github; then
+    echo -e "  • Run ${CYAN}$0 token${NC} to configure GitHub token for automated deployments"
+  fi
+}
+
+# Verify deployment
+verify_deployment() {
+  print_header
+  print_section "Verifying deployment on GitHub Pages"
+  
+  # 1. Get homepage URL
+  HOMEPAGE=$(node -e "console.log(require('./package.json').homepage || 'Not set')")
+  if [[ "$HOMEPAGE" == "Not set" ]]; then
+    echo -e "${RED}Homepage not set in package.json. Cannot verify deployment.${NC}"
+    exit 1
+  fi
+  
+  # 2. Check if curl is installed
+  if ! command -v curl &> /dev/null; then
+    echo -e "${RED}curl command not found. Cannot verify deployment.${NC}"
+    echo -e "${YELLOW}Please check manually by visiting:${NC} ${HOMEPAGE}"
+    exit 1
+  fi
+  
+  # 3. Try to fetch the homepage
+  echo -e "Attempting to fetch ${YELLOW}${HOMEPAGE}${NC}..."
+  HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $HOMEPAGE)
+  
+  if [ "$HTTP_STATUS" -eq 200 ]; then
+    echo -e "${GREEN}✓ Site is accessible (HTTP 200 OK)${NC}"
+  else
+    echo -e "${RED}✘ Site returned HTTP status ${HTTP_STATUS}${NC}"
+    echo -e "${YELLOW}This could be due to:${NC}"
+    echo -e "  - Deployment is still in progress (wait a few minutes)"
+    echo -e "  - GitHub Pages is not enabled for this repository"
+    echo -e "  - The repository name or homepage URL is incorrect"
+    echo -e "  - The gh-pages branch does not exist or is empty"
+  fi
+  
+  # 4. Check if index.html exists in deployment branch
+  echo -e "\nChecking deployment branch (${DEPLOYMENT_BRANCH})..."
+  git fetch origin $DEPLOYMENT_BRANCH:$DEPLOYMENT_BRANCH 2>/dev/null || (echo -e "${RED}Cannot fetch ${DEPLOYMENT_BRANCH} branch${NC}" && exit 1)
+  
+  # Save current branch
+  CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+  
+  # Temporarily switch to deployment branch
+  git checkout $DEPLOYMENT_BRANCH
+  
+  if [ -f "index.html" ]; then
+    echo -e "${GREEN}✓ index.html exists in ${DEPLOYMENT_BRANCH} branch${NC}"
+    INDEX_SIZE=$(wc -c < index.html)
+    echo -e "  Size: ${INDEX_SIZE} bytes"
+    
+    if [ $INDEX_SIZE -lt 100 ]; then
+      echo -e "  ${RED}⚠ index.html seems too small, might be incomplete${NC}"
+    fi
+  else
+    echo -e "${RED}✘ index.html not found in ${DEPLOYMENT_BRANCH} branch${NC}"
+  fi
+  
+  # Check for static directory
+  if [ -d "static" ]; then
+    echo -e "${GREEN}✓ static directory exists${NC}"
+  else
+    echo -e "${RED}✘ static directory not found${NC}"
+  fi
+  
+  # Check for .nojekyll
+  if [ -f ".nojekyll" ]; then
+    echo -e "${GREEN}✓ .nojekyll exists${NC}"
+  else
+    echo -e "${RED}✘ .nojekyll not found${NC}"
+  fi
+  
+  # Return to original branch
+  git checkout $CURRENT_BRANCH
+  
+  echo -e "\n${GREEN}Verification complete!${NC}"
+  echo -e "Your site should be available at: ${YELLOW}${HOMEPAGE}${NC}"
+  echo -e "If you're experiencing issues, check the GitHub Pages settings in your repository settings."
 }
 
 # Reset branch to a previous state
@@ -757,7 +1473,11 @@ revert_deployment() {
     npx gh-pages -d build -m "Revert to deployment: $previous_tag"
   else
     # Deploy with token for CI/CD
-    npx gh-pages -d build -m "Revert to deployment: $previous_tag" -r "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+    if [ ! -z "$GITHUB_USERNAME" ]; then
+      npx gh-pages -d build -m "Revert to deployment: $previous_tag" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+    else
+      npx gh-pages -d build -m "Revert to deployment: $previous_tag" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+    fi
   fi
   
   # Tag the reversion
@@ -817,7 +1537,11 @@ sync_branches() {
     npx gh-pages -d build -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)"
   else
     # Deploy with token for CI/CD
-    npx gh-pages -d build -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+    if [ ! -z "$GITHUB_USERNAME" ]; then
+      npx gh-pages -d build -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+    else
+      npx gh-pages -d build -m "Sync: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+    fi
   fi
   
   echo -e "\n${GREEN}Branches synced successfully!${NC}"
@@ -840,9 +1564,24 @@ configure_token() {
     fi
   fi
   
+  # Prompt for token type
+  echo -e "Select token type:"
+  echo -e "  1) Personal Access Token (Classic)"
+  echo -e "  2) Fine-Grained Token"
+  read -p "Select token type (1-2): " token_type
+  
   # Prompt for token
-  echo -e "${YELLOW}Please enter your GitHub Personal Access Token (will not be displayed):${NC}"
-  echo -e "${YELLOW}This token should have 'repo' permissions.${NC}"
+  echo -e "${YELLOW}Please enter your GitHub Token (will not be displayed):${NC}"
+  
+  if [ "$token_type" == "2" ]; then
+    echo -e "${YELLOW}For Fine-Grained Token, ensure it has:${NC}"
+    echo -e "  - Repository access to: ${GIT_USERNAME}/${REPO_NAME}"
+    echo -e "  - Contents permission: Read and Write"
+    echo -e "  - Metadata permission: Read-only"
+  else
+    echo -e "${YELLOW}This token should have 'repo' permissions.${NC}"
+  fi
+  
   read -s github_token
   echo ""
   
@@ -851,8 +1590,31 @@ configure_token() {
     exit 1
   fi
   
-  # Save token to .env.github
-  echo "GITHUB_TOKEN=$github_token" > .env.github
+  # Create or update .env.github
+  cat > .env.github << EOF
+# GitHub token for automated deployments
+GITHUB_TOKEN=$github_token
+EOF
+
+  # If fine-grained token, get username
+  if [ "$token_type" == "2" ]; then
+    read -p "Enter your GitHub username: " github_username
+    if [ ! -z "$github_username" ]; then
+      echo "GITHUB_USERNAME=$github_username" >> .env.github
+    fi
+    
+    # Optional Git identity
+    read -p "Configure Git identity for CI/CD? (y/n): " -n 1 -r
+    echo ""
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      read -p "Git user name: " git_user_name
+      read -p "Git user email: " git_user_email
+      
+      echo "GIT_USER_NAME=\"$git_user_name\"" >> .env.github
+      echo "GIT_USER_EMAIL=\"$git_user_email\"" >> .env.github
+      echo -e "${GREEN}Git identity configured for CI/CD${NC}"
+    fi
+  fi
   
   # Ensure .env.github is in .gitignore
   if ! grep -q "\.env\.github" .gitignore; then
@@ -867,87 +1629,19 @@ configure_token() {
   # Test the token
   echo -e "Testing token..."
   export GITHUB_TOKEN="$github_token"
-  if ! git ls-remote https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git > /dev/null 2>&1; then
+  if [ "$token_type" == "2" ] && [ ! -z "$github_username" ]; then
+    export GITHUB_USERNAME="$github_username"
+  fi
+  
+  if ! configure_git_with_token; then
+    echo -e "${RED}Token configuration failed.${NC}"
+    return 1
+  fi
+  
+  if ! git ls-remote > /dev/null 2>&1; then
     echo -e "${RED}Token test failed. Please check if the token is valid and has the required permissions.${NC}"
   else
     echo -e "${GREEN}Token test successful!${NC}"
-  fi
-}
-
-# Generate commit message and commit changes
-commit_changes() {
-  print_header
-  print_section "Committing changes"
-  
-  # Check if there are changes to commit
-  if [[ -z $(git status -s) ]]; then
-    echo -e "${YELLOW}No changes to commit.${NC}"
-    return 0
-  fi
-  
-  # List changes
-  echo -e "${YELLOW}Changes to commit:${NC}"
-  git status -s
-  
-  # Get component name
-  read -p "Enter component/module name (leave blank for default): " component_name
-  
-  # Get commit type
-  echo -e "Select commit type:"
-  echo -e "  1) feat    - New feature"
-  echo -e "  2) fix     - Bug fix"
-  echo -e "  3) docs    - Documentation"
-  echo -e "  4) style   - Formatting"
-  echo -e "  5) refactor - Refactoring"
-  echo -e "  6) perf    - Performance improvement"
-  echo -e "  7) test    - Tests"
-  echo -e "  8) chore   - Maintenance"
-  echo -e "  9) build   - Build system"
-  echo -e "  0) custom  - Enter custom message"
-  read -p "Select type (0-9, default=8): " commit_type_num
-  
-  # Map number to type
-  case "$commit_type_num" in
-    1) commit_type="feat" ;;
-    2) commit_type="fix" ;;
-    3) commit_type="docs" ;;
-    4) commit_type="style" ;;
-    5) commit_type="refactor" ;;
-    6) commit_type="perf" ;;
-    7) commit_type="test" ;;
-    9) commit_type="build" ;;
-    0) commit_type="custom" ;;
-    *) commit_type="chore" ;;
-  esac
-  
-  # Generate or get custom message
-  if [ "$commit_type" == "custom" ]; then
-    read -p "Enter custom commit message: " commit_message
-  else
-    commit_message=$(generate_commit_message "$component_name" "$commit_type")
-  fi
-  
-  # Confirm commit
-  echo -e "About to commit with message: ${YELLOW}$commit_message${NC}"
-  read -p "Proceed with commit? (y/n) " -n 1 -r
-  echo ""
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${RED}Commit cancelled.${NC}"
-    return 0
-  fi
-  
-  # Perform commit
-  git add .
-  git commit -m "$commit_message"
-  
-  # Ask about pushing
-  read -p "Push changes to remote repository? (y/n) " -n 1 -r
-  echo ""
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
-    git push origin $(git rev-parse --abbrev-ref HEAD)
-    echo -e "${GREEN}Changes committed and pushed!${NC}"
-  else
-    echo -e "${GREEN}Changes committed locally. Don't forget to push later.${NC}"
   fi
 }
 
@@ -1002,164 +1696,6 @@ update_gitignore() {
   esac
 }
 
-# Check configuration and repository structure
-check_configuration() {
-  print_header
-  print_section "Checking configuration and repository structure"
-  
-  # 1. Check package.json
-  echo -e "Checking package.json..."
-  if [ -f "package.json" ]; then
-    HOMEPAGE=$(node -e "console.log(require('./package.json').homepage || 'Not set')")
-    PREDEPLOY=$(node -e "console.log(require('./package.json').scripts?.predeploy || 'Not set')")
-    DEPLOY=$(node -e "console.log(require('./package.json').scripts?.deploy || 'Not set')")
-    
-    echo -e "  Homepage: ${YELLOW}${HOMEPAGE}${NC}"
-    echo -e "  Predeploy script: ${YELLOW}${PREDEPLOY}${NC}"
-    echo -e "  Deploy script: ${YELLOW}${DEPLOY}${NC}"
-    
-    if [[ "$HOMEPAGE" == "Not set" ]]; then
-      echo -e "  ${RED}✘ Homepage not set${NC}"
-    else
-      echo -e "  ${GREEN}✓ Homepage is set${NC}"
-    fi
-    
-    if [[ "$PREDEPLOY" == "Not set" ]] || [[ "$DEPLOY" == "Not set" ]]; then
-      echo -e "  ${RED}✘ Deployment scripts not set${NC}"
-    else
-      echo -e "  ${GREEN}✓ Deployment scripts are set${NC}"
-    fi
-  else
-    echo -e "${RED}package.json not found!${NC}"
-  fi
-  
-  # 2. Check environment files
-  echo -e "\nChecking environment files..."
-  if [ -f ".env.production" ]; then
-    PUBLIC_URL=$(grep -o 'PUBLIC_URL=.*' .env.production || echo "Not set")
-    echo -e "  .env.production: ${YELLOW}${PUBLIC_URL}${NC}"
-    
-    if [[ "$PUBLIC_URL" == "Not set" ]]; then
-      echo -e "  ${RED}✘ PUBLIC_URL not set in .env.production${NC}"
-    else
-      echo -e "  ${GREEN}✓ PUBLIC_URL is set in .env.production${NC}"
-    fi
-  else
-    echo -e "  ${RED}✘ .env.production not found${NC}"
-  fi
-  
-  # 3. Check .nojekyll
-  echo -e "\nChecking .nojekyll..."
-  if [ -f ".nojekyll" ]; then
-    echo -e "  ${GREEN}✓ .nojekyll exists${NC}"
-  else
-    echo -e "  ${RED}✘ .nojekyll not found${NC}"
-  fi
-  
-  # 4. Check git branches
-  echo -e "\nChecking git branches..."
-  SOURCE_EXISTS=$(git show-ref --verify --quiet refs/heads/$SOURCE_BRANCH && echo "Yes" || echo "No")
-  DEPLOYMENT_EXISTS=$(git show-ref --verify --quiet refs/heads/$DEPLOYMENT_BRANCH && echo "Yes" || echo "No")
-  
-  echo -e "  Source branch (${SOURCE_BRANCH}): ${SOURCE_EXISTS == 'Yes' ? GREEN + '✓ Exists' : RED + '✘ Does not exist'}${NC}"
-  echo -e "  Deployment branch (${DEPLOYMENT_BRANCH}): ${DEPLOYMENT_EXISTS == 'Yes' ? GREEN + '✓ Exists' : RED + '✘ Does not exist'}${NC}"
-  
-  # 5. Check required directories
-  echo -e "\nChecking required directories..."
-  [ -d "src" ] && echo -e "  ${GREEN}✓ src directory exists${NC}" || echo -e "  ${RED}✘ src directory not found${NC}"
-  [ -d "public" ] && echo -e "  ${GREEN}✓ public directory exists${NC}" || echo -e "  ${RED}✘ public directory not found${NC}"
-  [ -d "node_modules" ] && echo -e "  ${GREEN}✓ node_modules directory exists${NC}" || echo -e "  ${YELLOW}⚠ node_modules directory not found (run npm install)${NC}"
-  
-  # 6. Check dependencies
-  echo -e "\nChecking required dependencies..."
-  GH_PAGES_INSTALLED=$(npm list gh-pages --depth=0 2>/dev/null | grep -q "gh-pages" && echo "Yes" || echo "No")
-  echo -e "  gh-pages package: ${GH_PAGES_INSTALLED == 'Yes' ? GREEN + '✓ Installed' : RED + '✘ Not installed'}${NC}"
-  
-  echo -e "\n${GREEN}Configuration check complete!${NC}"
-  if [[ "$HOMEPAGE" == "Not set" ]] || [[ "$PREDEPLOY" == "Not set" ]] || [[ "$DEPLOY" == "Not set" ]] || [[ "$PUBLIC_URL" == "Not set" ]] || [ ! -f ".nojekyll" ] || [ "$SOURCE_EXISTS" == "No" ] || [ "$GH_PAGES_INSTALLED" == "No" ]; then
-    echo -e "${YELLOW}Some items need to be fixed. Run the setup command to fix them:${NC}"
-    echo -e "  $0 setup"
-  fi
-}
-
-# Verify deployment
-verify_deployment() {
-  print_header
-  print_section "Verifying deployment on GitHub Pages"
-  
-  # 1. Get homepage URL
-  HOMEPAGE=$(node -e "console.log(require('./package.json').homepage || 'Not set')")
-  if [[ "$HOMEPAGE" == "Not set" ]]; then
-    echo -e "${RED}Homepage not set in package.json. Cannot verify deployment.${NC}"
-    exit 1
-  fi
-  
-  # 2. Check if curl is installed
-  if ! command -v curl &> /dev/null; then
-    echo -e "${RED}curl command not found. Cannot verify deployment.${NC}"
-    echo -e "${YELLOW}Please check manually by visiting:${NC} ${HOMEPAGE}"
-    exit 1
-  fi
-  
-  # 3. Try to fetch the homepage
-  echo -e "Attempting to fetch ${YELLOW}${HOMEPAGE}${NC}..."
-  HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $HOMEPAGE)
-  
-  if [ "$HTTP_STATUS" -eq 200 ]; then
-    echo -e "${GREEN}✓ Site is accessible (HTTP 200 OK)${NC}"
-  else
-    echo -e "${RED}✘ Site returned HTTP status ${HTTP_STATUS}${NC}"
-    echo -e "${YELLOW}This could be due to:${NC}"
-    echo -e "  - Deployment is still in progress (wait a few minutes)"
-    echo -e "  - GitHub Pages is not enabled for this repository"
-    echo -e "  - The repository name or homepage URL is incorrect"
-    echo -e "  - The gh-pages branch does not exist or is empty"
-  fi
-  
-  # 4. Check if index.html exists in deployment branch
-  echo -e "\nChecking deployment branch (${DEPLOYMENT_BRANCH})..."
-  git fetch origin $DEPLOYMENT_BRANCH:$DEPLOYMENT_BRANCH 2>/dev/null || (echo -e "${RED}Cannot fetch ${DEPLOYMENT_BRANCH} branch${NC}" && exit 1)
-  
-  # Save current branch
-  CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-  
-  # Temporarily switch to deployment branch
-  git checkout $DEPLOYMENT_BRANCH
-  
-  if [ -f "index.html" ]; then
-    echo -e "${GREEN}✓ index.html exists in ${DEPLOYMENT_BRANCH} branch${NC}"
-    INDEX_SIZE=$(wc -c < index.html)
-    echo -e "  Size: ${INDEX_SIZE} bytes"
-    
-    if [ $INDEX_SIZE -lt 100 ]; then
-      echo -e "  ${RED}⚠ index.html seems too small, might be incomplete${NC}"
-    fi
-  else
-    echo -e "${RED}✘ index.html not found in ${DEPLOYMENT_BRANCH} branch${NC}"
-  fi
-  
-  # Check for static directory
-  if [ -d "static" ]; then
-    echo -e "${GREEN}✓ static directory exists${NC}"
-  else
-    echo -e "${RED}✘ static directory not found${NC}"
-  fi
-  
-  # Check for .nojekyll
-  if [ -f ".nojekyll" ]; then
-    echo -e "${GREEN}✓ .nojekyll exists${NC}"
-  else
-    echo -e "${RED}✘ .nojekyll not found${NC}"
-  fi
-  
-  # Return to original branch
-  git checkout $CURRENT_BRANCH
-  
-  echo -e "\n${GREEN}Verification complete!${NC}"
-  echo -e "Your site should be available at: ${YELLOW}${HOMEPAGE}${NC}"
-  echo -e "If you're experiencing issues, check the GitHub Pages settings in your repository settings."
-}
-
 # Start development server
 start_dev_server() {
   print_header
@@ -1206,7 +1742,16 @@ main() {
         echo "PUBLIC_URL=/${REPO_NAME}" > .env.production
         npm ci && npm run build
         touch build/.nojekyll
-        npx gh-pages -d build -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)"
+        
+        # Use proper authentication for gh-pages
+        if [ ! -z "$GITHUB_USERNAME" ] && [ ! -z "$GITHUB_TOKEN" ]; then
+          npx gh-pages -d build -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+        elif [ ! -z "$GITHUB_TOKEN" ]; then
+          npx gh-pages -d build -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+        else
+          npx gh-pages -d build -m "Automatic deployment $(date +%Y-%m-%d_%H-%M-%S)"
+        fi
+        
         echo "Deployment complete! Site available at ${HOMEPAGE_URL}"
         exit 0
         ;;
@@ -1263,7 +1808,16 @@ main() {
       ;;
     commit)
       shift
-      commit_changes "$@"
+      if [ "$1" == "--multi" ] || [ "$1" == "-m" ]; then
+        shift
+        commit_to_branches "$@"
+      else
+        commit_changes "$@"
+      fi
+      ;;
+    multi-commit|commit-all)
+      shift
+      commit_to_branches "$@"
       ;;
     gitignore)
       shift
