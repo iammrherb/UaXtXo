@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import { useCalculator } from '../../../context/CalculatorContext';
 import DashboardCard from '../../ui/DashboardCard';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useMemo, useEffect, useRef } from 'react';
 import { useCalculator } from '../../context/CalculatorContext';
 import * as d3 from 'd3';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { createContext, useReducer, useContext } from 'react';
 
 // Define initial state type

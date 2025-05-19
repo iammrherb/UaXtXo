@@ -38,3 +38,19 @@ export const formatDate = (date: Date): string => {
     day: 'numeric'
   }).format(date);
 };
+
+/**
+ * Format minutes into hours and minutes
+ */
+export const formatMinutes = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  
+  if (hours === 0) {
+    return `${remainingMinutes} ${remainingMinutes === 1 ? 'minute' : 'minutes'}`;
+  } else if (remainingMinutes === 0) {
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+  } else {
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ${remainingMinutes} ${remainingMinutes === 1 ? 'minute' : 'minutes'}`;
+  }
+};

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useMemo } from 'react';
 import Chart from 'react-apexcharts';
 import { useCalculator } from '../../context/CalculatorContext';

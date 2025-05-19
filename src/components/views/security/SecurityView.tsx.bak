@@ -4,6 +4,7 @@ import DashboardCard from '../../ui/DashboardCard';
 import TabPanel from '../../ui/TabPanel';
 import VendorRadarChart from '../../charts/VendorRadarChart';
 import RiskReductionChart from '../../charts/RiskReductionChart';
+import SecurityImpactChart from '../../charts/SecurityImpactChart';
 import ComplianceRadarChart from '../../charts/ComplianceRadarChart';
 import { formatCurrency, formatPercentage, formatMinutes } from '../../../utils/formatters';
 import { VendorResult } from '../../../utils/calculationEngine';
