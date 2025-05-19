@@ -19,7 +19,7 @@ NC='\033[0m' # No Color
 
 # Configuration - Edit these variables to match your project
 REPO_NAME="UaXtXo"
-GIT_USERNAME="iammrherb"
+GIT_USERNAME="iamrad"
 SOURCE_BRANCH="main-react"
 DEPLOYMENT_BRANCH="gh-pages"
 PROJECT_TITLE="Portnox TCO Analyzer"
@@ -104,34 +104,44 @@ load_github_token() {
     source .env.github
     if [ ! -z "$GITHUB_TOKEN" ]; then
       echo -e "${GREEN}GitHub token loaded from .env.github${NC}"
-      
-      # Configure git with token immediately
-      if [ ! -z "$GITHUB_USERNAME" ]; then
-        git remote set-url origin "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
-      else
-        git remote set-url origin "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
-      fi
-      
-      # Test the token
-      if git ls-remote origin > /dev/null 2>&1; then
-        echo -e "${GREEN}Token authentication successful!${NC}"
-        return 0
-      else
-        echo -e "${YELLOW}Stored token failed. Will prompt for new one.${NC}"
-        configure_token
-        return $?
-      fi
+      return 0
     fi
   fi
   
-  echo -e "${YELLOW}No working GitHub token found. Running configuration...${NC}"
-  configure_token
-  return $?
+  if [ ! -z "$GITHUB_TOKEN" ]; then
+    echo -e "${GREEN}Using GitHub token from environment${NC}"
+    return 0
+  fi
+  
+  echo -e "${YELLOW}No GitHub token found. Some operations may require manual authentication.${NC}"
+  return 1
 }
 
-# Configure git with token if available - now handled in load_github_token
+# Configure git with token if available
 configure_git_with_token() {
-  return 0
+  if [ ! -z "$GITHUB_TOKEN" ]; then
+    # For fine-grained tokens, we need to set username properly
+    if [ ! -z "$GITHUB_USERNAME" ]; then
+      local username="$GITHUB_USERNAME"
+    else
+      local username="$GIT_USERNAME"
+    fi
+    
+    # Configure remote with token
+    local repo_url="https://${username}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+    git remote set-url origin "$repo_url"
+    echo -e "${GREEN}Git configured with token for authentication${NC}"
+    
+    # Set user identity if configured
+    if [ ! -z "$GIT_USER_EMAIL" ] && [ ! -z "$GIT_USER_NAME" ]; then
+      git config user.email "$GIT_USER_EMAIL"
+      git config user.name "$GIT_USER_NAME"
+      echo -e "${GREEN}Git user identity configured${NC}"
+    fi
+    
+    return 0
+  fi
+  return 1
 }
 
 # Show help menu
@@ -1125,13 +1135,13 @@ deploy_project() {
   # Deploy using gh-pages
   if [ -z "$GITHUB_TOKEN" ]; then
     # Standard deployment
-    npx gh-pages -d build -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git")
+    npx gh-pages -d build -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)"
   else
     # Deploy with token for CI/CD
     if [ ! -z "$GITHUB_USERNAME" ]; then
-      npx gh-pages -d build -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git") -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      npx gh-pages -d build -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     else
-      npx gh-pages -d build -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" --repo $( [ ! -z "$GITHUB_USERNAME" ] && echo "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git" || echo "https://${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git") -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
+      npx gh-pages -d build -m "Deploy: $(date +%Y-%m-%d_%H-%M-%S)" -r "https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USERNAME}/${REPO_NAME}.git"
     fi
   fi
   
@@ -1543,78 +1553,95 @@ configure_token() {
   print_header
   print_section "Configuring GitHub token for CI/CD"
   
-  # Get repository details from remote URL
-  local remote_url=$(git config --get remote.origin.url)
-  local repo_owner=$(echo $remote_url | sed -E "s|https://github.com/([^/]+)/.*|\1|")
-  local repo_name=$(echo $remote_url | sed -E "s|https://github.com/[^/]+/([^.]+).*|\1|")
+  # Check if token is already set
+  if [ -f ".env.github" ] && grep -q "GITHUB_TOKEN=.*" .env.github && ! grep -q "GITHUB_TOKEN=YOUR_TOKEN_HERE" .env.github; then
+    echo -e "${GREEN}GitHub token already configured in .env.github${NC}"
+    read -p "Do you want to update it? (y/n) " -n 1 -r
+    echo ""
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo -e "${YELLOW}Token configuration unchanged.${NC}"
+      return 0
+    fi
+  fi
   
-  echo -e "Repository: ${YELLOW}$repo_owner/$repo_name${NC}"
+  # Prompt for token type
+  echo -e "Select token type:"
+  echo -e "  1) Personal Access Token (Classic)"
+  echo -e "  2) Fine-Grained Token"
+  read -p "Select token type (1-2): " token_type
   
-  # Prompt to confirm or modify repo details
-  read -p "Is this correct? If not, enter the correct owner/name or press Enter to confirm: " repo_correction
+  # Prompt for token
+  echo -e "${YELLOW}Please enter your GitHub Token (will not be displayed):${NC}"
   
-  if [ ! -z "$repo_correction" ]; then
-    # Parse the corrected info
-    repo_owner=$(echo $repo_correction | cut -d "/" -f1)
-    repo_name=$(echo $repo_correction | cut -d "/" -f2)
-    echo -e "Updated to: ${GREEN}$repo_owner/$repo_name${NC}"
+  if [ "$token_type" == "2" ]; then
+    echo -e "${YELLOW}For Fine-Grained Token, ensure it has:${NC}"
+    echo -e "  - Repository access to: ${GIT_USERNAME}/${REPO_NAME}"
+    echo -e "  - Contents permission: Read and Write"
+    echo -e "  - Metadata permission: Read-only"
+  else
+    echo -e "${YELLOW}This token should have 'repo' permissions.${NC}"
+  fi
+  
+  read -s github_token
+  echo ""
+  
+  if [ -z "$github_token" ]; then
+    echo -e "${RED}No token provided. Operation cancelled.${NC}"
+    exit 1
+  fi
+  
+  # Create or update .env.github
+  cat > .env.github << EOF
+# GitHub token for automated deployments
+GITHUB_TOKEN=$github_token
+EOF
+
+  # If fine-grained token, get username
+  if [ "$token_type" == "2" ]; then
+    read -p "Enter your GitHub username: " github_username
+    if [ ! -z "$github_username" ]; then
+      echo "GITHUB_USERNAME=$github_username" >> .env.github
+    fi
     
-    # Update global variables
-    GIT_USERNAME="$repo_owner"
-    REPO_NAME="$repo_name"
-  fi
-  
-  # Always prompt for token - dont use stored one if its failing
-  echo -e "${YELLOW}Enter your GitHub personal access token:${NC}"
-  read -s token
-  
-  if [ -z "$token" ]; then
-    echo -e "${RED}No token provided. Authentication may fail.${NC}"
-    return 1
-  fi
-  
-  # For fine-grained tokens we need the username
-  echo -e "${YELLOW}Enter your GitHub username (needed for fine-grained tokens):${NC}"
-  read username
-  
-  # Save token securely
-  echo "GITHUB_TOKEN=$token" > .env.github
-  if [ ! -z "$username" ]; then
-    echo "GITHUB_USERNAME=$username" >> .env.github
+    # Optional Git identity
+    read -p "Configure Git identity for CI/CD? (y/n): " -n 1 -r
+    echo ""
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      read -p "Git user name: " git_user_name
+      read -p "Git user email: " git_user_email
+      
+      echo "GIT_USER_NAME=\"$git_user_name\"" >> .env.github
+      echo "GIT_USER_EMAIL=\"$git_user_email\"" >> .env.github
+      echo -e "${GREEN}Git identity configured for CI/CD${NC}"
+    fi
   fi
   
   # Ensure .env.github is in .gitignore
-  if ! grep -q ".env.github" .gitignore; then
+  if ! grep -q "\.env\.github" .gitignore; then
+    echo "# GitHub token file" >> .gitignore
     echo ".env.github" >> .gitignore
+    echo -e "${GREEN}Added .env.github to .gitignore${NC}"
   fi
   
-  # Configure git with token
-  if [ ! -z "$username" ]; then
-    git remote set-url origin "https://${username}:${token}@github.com/${repo_owner}/${repo_name}.git"
-  else
-    git remote set-url origin "https://${token}@github.com/${repo_owner}/${repo_name}.git"
+  echo -e "${GREEN}GitHub token configured successfully!${NC}"
+  echo -e "${YELLOW}The token is stored in .env.github and will not be committed to the repository.${NC}"
+  
+  # Test the token
+  echo -e "Testing token..."
+  export GITHUB_TOKEN="$github_token"
+  if [ "$token_type" == "2" ] && [ ! -z "$github_username" ]; then
+    export GITHUB_USERNAME="$github_username"
   fi
   
-  # Test connection
-  echo -e "Testing GitHub connection..."
-  if git ls-remote origin > /dev/null 2>&1; then
-    echo -e "${GREEN}Authentication successful!${NC}"
-    
-    # Export variables for this session
-    export GITHUB_TOKEN="$token"
-    if [ ! -z "$username" ]; then
-      export GITHUB_USERNAME="$username"
-    fi
-    
-    return 0
-  else
-    echo -e "${RED}Authentication failed. Please check:${NC}"
-    echo -e " - Your token has the correct permissions (repo scope)"
-    echo -e " - For fine-grained tokens, ensure it has access to this repository"
-    echo -e " - Your username is correct"
-    echo -e " - The repository owner and name are correct"
-    
+  if ! configure_git_with_token; then
+    echo -e "${RED}Token configuration failed.${NC}"
     return 1
+  fi
+  
+  if ! git ls-remote > /dev/null 2>&1; then
+    echo -e "${RED}Token test failed. Please check if the token is valid and has the required permissions.${NC}"
+  else
+    echo -e "${GREEN}Token test successful!${NC}"
   fi
 }
 
