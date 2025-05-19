@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useEffect } from 'react';
+import VendorRadarChart from "../charts/VendorRadarChart";
 import { useCalculator } from '../../context/CalculatorContext';
 import { useCalculations } from '../../hooks/useCalculations';
 
