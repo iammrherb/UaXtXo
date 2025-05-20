@@ -61,8 +61,6 @@ const App = {
     this.initUIState();
     
     console.log('Portnox TCO Analyzer initialized successfully.');
-    // Dispatch event for other components to know we are ready
-    window.dispatchEvent(new CustomEvent("appInitialized"));
   },
   
   /**

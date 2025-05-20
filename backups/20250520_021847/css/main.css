@@ -198,69 +198,6 @@ a:hover {
 }
 
 /* === Sidebar === */
-
-/* Emergency fixes for sidebar */
-.sidebar {
-  z-index: 99 !important;
-  position: relative !important;
-}
-
-.sidebar.collapsed {
-  width: 0 !important;
-  overflow: hidden !important;
-}
-
-.content-area {
-  transition: margin-left 0.3s ease !important;
-}
-
-.content-area.expanded {
-  margin-left: 0 !important;
-}
-
-.sidebar-toggle {
-  position: fixed !important;
-  z-index: 99 !important;
-  transition: left 0.3s ease !important;
-}
-
-.sidebar-toggle.collapsed {
-  left: 0 !important;
-}
-
-/* Fix for vendor cards in sidebar */
-.vendor-select-card .vendor-logo img {
-  max-height: 28px !important;
-  max-width: 80px !important;
-  object-fit: contain !important;
-}
-
-.vendor-select-card {
-  height: 80px !important;
-  padding: 8px 4px !important;
-}
-
-.vendor-select-card .vendor-name {
-  font-size: 11px !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  max-width: 95% !important;
-  text-align: center !important;
-}
-
-/* Config card expansion/collapse fix */
-.config-card-content {
-  transition: max-height 0.3s ease, padding 0.3s ease !important;
-  overflow: hidden !important;
-}
-
-.config-card-content.collapsed {
-  max-height: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  overflow: hidden !important;
-}
 .sidebar {
   width: var(--sidebar-width);
   height: calc(100vh - var(--header-height) - var(--footer-height));

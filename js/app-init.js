@@ -1,25 +1,27 @@
 /**
  * Main Application Initialization for Portnox Total Cost Analyzer
- * Ensures all components load properly and fixes UI issues
+ * Modified to integrate with existing code and avoid conflicts
  */
 
 // Initialize on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('Initializing Portnox Total Cost Analyzer...');
+  console.log('Initializing Portnox Total Cost Analyzer additional components...');
   
-  // Initialize sidebar first to ensure proper vendor card display
-  initializeSidebar();
-  
-  // Initialize particles for visual effects
-  initializeParticles();
-  
-  // Initialize UI enhancements
-  initializeUI();
-  
-  // Initialize event listeners
-  initializeEvents();
-  
-  console.log('Portnox Total Cost Analyzer initialized successfully');
+  // Check if main app is already initialized
+  if (!window.appInitCalled) {
+    window.appInitCalled = true;
+    
+    // Initialize sidebar if not already done
+    initializeSidebar();
+    
+    // Initialize UI enhancements
+    initializeUI();
+    
+    // Initialize event listeners that don't conflict
+    initializeAdditionalEvents();
+    
+    console.log('Additional components initialized successfully');
+  }
 });
 
 /**
@@ -32,6 +34,8 @@ function initializeSidebar() {
   // Create sidebar manager if not already initialized
   if (!window.sidebarManager) {
     window.sidebarManager = new SidebarManager();
+  } else if (!window.sidebarManager.initialized) {
+    window.sidebarManager.init();
   }
 }
 
@@ -60,26 +64,6 @@ function fixVendorLogos() {
 }
 
 /**
- * Initialize particle effects
- */
-function initializeParticles() {
-  // Check if particles.js is loaded
-  if (typeof particlesJS !== 'undefined') {
-    // Create main background particles
-    if (!window.particleBackground) {
-      window.particleBackground = new ParticleBackground();
-    }
-    
-    // Create header particles
-    if (!window.headerParticles) {
-      window.headerParticles = new HeaderParticles();
-    }
-  } else {
-    console.warn('particles.js not loaded, visual effects will be limited');
-  }
-}
-
-/**
  * Initialize UI enhancements
  */
 function initializeUI() {
@@ -87,92 +71,51 @@ function initializeUI() {
   const dashboardCards = document.querySelectorAll('.dashboard-card');
   dashboardCards.forEach((card, index) => {
     card.style.animationDelay = `${index * 100}ms`;
-    card.classList.add('animate-fadeIn');
+    if (!card.classList.contains('animate-fadeIn')) {
+      card.classList.add('animate-fadeIn');
+    }
   });
   
   // Add fade-in animation to chart containers
   const chartContainers = document.querySelectorAll('.chart-container');
   chartContainers.forEach((container, index) => {
     container.style.animationDelay = `${300 + (index * 100)}ms`;
-    container.classList.add('animate-fadeIn');
+    if (!container.classList.contains('animate-fadeIn')) {
+      container.classList.add('animate-fadeIn');
+    }
   });
   
   // Enhance tabs with hover effects
   const tabs = document.querySelectorAll('.main-tab, .results-tab');
   tabs.forEach(tab => {
-    tab.addEventListener('mouseenter', () => {
-      if (!tab.classList.contains('active')) {
-        tab.style.backgroundColor = 'rgba(26, 90, 150, 0.05)';
-      }
-    });
-    
-    tab.addEventListener('mouseleave', () => {
-      if (!tab.classList.contains('active')) {
-        tab.style.backgroundColor = '';
-      }
-    });
+    // Only add event listener if not already added
+    if (!tab.hasHoverEffect) {
+      tab.hasHoverEffect = true;
+      
+      tab.addEventListener('mouseenter', () => {
+        if (!tab.classList.contains('active')) {
+          tab.style.backgroundColor = 'rgba(26, 90, 150, 0.05)';
+        }
+      });
+      
+      tab.addEventListener('mouseleave', () => {
+        if (!tab.classList.contains('active')) {
+          tab.style.backgroundColor = '';
+        }
+      });
+    }
   });
 }
 
 /**
- * Initialize event listeners
+ * Initialize additional events that don't conflict
  */
-function initializeEvents() {
-  // Handle tab switching
-  const mainTabs = document.querySelectorAll('.main-tab');
-  const viewPanels = document.querySelectorAll('.view-panel');
-  
-  mainTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const viewName = tab.dataset.view;
-      
-      // Update active tab
-      mainTabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      
-      // Show corresponding view panel
-      viewPanels.forEach(panel => {
-        if (panel.dataset.view === viewName) {
-          panel.classList.add('active');
-        } else {
-          panel.classList.remove('active');
-        }
-      });
-      
-      // Trigger view changed event
-      document.dispatchEvent(new CustomEvent('viewChanged', {
-        detail: { view: viewName }
-      }));
-    });
-  });
-  
-  // Handle results tab switching
-  document.querySelectorAll('.results-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const tabGroup = tab.closest('.results-tabs');
-      const panelName = tab.dataset.panel;
-      
-      // Update active tab in this group
-      tabGroup.querySelectorAll('.results-tab').forEach(t => {
-        t.classList.remove('active');
-      });
-      tab.classList.add('active');
-      
-      // Show corresponding panel
-      const panelContainer = tabGroup.parentElement;
-      panelContainer.querySelectorAll('.results-panel').forEach(panel => {
-        if (panel.id === panelName) {
-          panel.classList.add('active');
-        } else {
-          panel.classList.remove('active');
-        }
-      });
-    });
-  });
-  
-  // Handle dark mode toggle
+function initializeAdditionalEvents() {
+  // Handle dark mode toggle if not already handled
   const darkModeToggle = document.getElementById('dark-mode-toggle');
-  if (darkModeToggle) {
+  if (darkModeToggle && !darkModeToggle.hasEventListener) {
+    darkModeToggle.hasEventListener = true;
+    
     darkModeToggle.addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
       

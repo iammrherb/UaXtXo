@@ -581,5 +581,44 @@
     <script src="js/utils/dashboard-enhancer.js"></script>
     <!-- Main application initialization -->
     <script src="js/app-init.js"></script>
+    <script>
+      // Emergency sidebar fix
+      document.addEventListener("DOMContentLoaded", function() {
+        // Fix sidebar toggle button
+        const sidebarToggleButtons = document.querySelectorAll(".sidebar-toggle, #sidebar-toggle");
+        const sidebar = document.getElementById("sidebar");
+        const contentArea = document.querySelector(".content-area");
+        
+        if (sidebar && contentArea) {
+          sidebarToggleButtons.forEach(function(sidebarToggle) {
+            if (sidebarToggle) {
+              sidebarToggle.addEventListener("click", function(e) {
+                e.preventDefault();
+                sidebar.classList.toggle("collapsed");
+                sidebarToggle.classList.toggle("collapsed");
+                contentArea.classList.toggle("expanded");
+                console.log("Emergency sidebar toggle executed");
+              });
+            }
+          });
+        }
+        
+        // Fix vendor cards
+        const vendorCards = document.querySelectorAll(".vendor-select-card");
+        vendorCards.forEach(function(card) {
+          const logoImg = card.querySelector(".vendor-logo img");
+          if (logoImg) {
+            logoImg.style.cssText = "max-height: 28px !important; max-width: 80px !important; object-fit: contain !important;";
+          }
+          
+          card.style.cssText = "height: 80px !important; padding: 8px 4px !important;";
+          
+          const nameElement = card.querySelector(".vendor-name");
+          if (nameElement) {
+            nameElement.style.cssText = "font-size: 11px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 95% !important; text-align: center !important;";
+          }
+        });
+      });
+    </script>
 </body>
 </html>
