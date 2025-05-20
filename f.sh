@@ -1,48 +1,759 @@
 #!/bin/bash
 
-# ==================================================
-# Cleanup Script for Portnox Total Cost Analyzer
-# ==================================================
+# ==========================================================
+# Portnox Total Cost Analyzer - Sidebar Enhancement & Visual Upgrade
+# ==========================================================
 
-echo "=== Starting Portnox Project Cleanup ==="
+echo "=== Starting Sidebar Enhancement & Visual Upgrade ==="
 
 # Create backup of current state
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-BACKUP_DIR="cleanup_backup_$TIMESTAMP"
-mkdir -p "$BACKUP_DIR"
-cp -r * "$BACKUP_DIR" 2>/dev/null || true
+BACKUP_DIR="sidebar_enhancement_$TIMESTAMP"
+#mkdir -p "$BACKUP_DIR"
+#cp -r * "$BACKUP_DIR" 2>/dev/null || true
 cp -r .git "$BACKUP_DIR" 2>/dev/null || true
-cp .gitignore "$BACKUP_DIR" 2>/dev/null || true
 echo "Created backup in $BACKUP_DIR"
 
 # ==================================================
-# 1. Create essential directory structure
+# 1. Create dedicated sidebar CSS
 # ==================================================
-echo "Creating directory structure..."
+echo "Creating dedicated sidebar CSS..."
 
-mkdir -p css
-mkdir -p js
-mkdir -p js/models
-mkdir -p js/charts
-mkdir -p img/vendors
+mkdir -p css/components
 
-# ==================================================
-# 2. Create essential CSS files
-# ==================================================
-echo "Creating essential CSS files..."
+cat > css/components/sidebar.css << 'EOL'
+/* 
+ * Sidebar Styling for Portnox Total Cost Analyzer
+ * Advanced, interactive sidebar with vendor selection and configuration
+ */
 
-# Main CSS file
+/* Main sidebar container */
+.sidebar {
+  width: 360px;
+  background-color: var(--card-background);
+  box-shadow: 2px 0 15px var(--shadow-color);
+  overflow-y: auto;
+  transition: width 0.3s ease, background-color 0.3s ease;
+  z-index: 100;
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar.collapsed {
+  width: 0;
+}
+
+/* Sidebar header */
+.sidebar-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color));
+  color: white;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-header h2 i {
+  margin-right: 10px;
+  font-size: 20px;
+}
+
+/* Sidebar content area (scrollable) */
+.sidebar-content {
+  padding: 15px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Sidebar footer */
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--background-color);
+}
+
+/* Config cards */
+.config-card {
+  margin-bottom: 15px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px var(--shadow-color);
+  background-color: var(--card-background);
+  transition: all 0.3s ease;
+}
+
+.config-card:hover {
+  box-shadow: 0 5px 15px var(--shadow-color);
+}
+
+/* Config card header */
+.config-card-header {
+  padding: 12px 15px;
+  background: linear-gradient(to right, var(--primary-color), var(--primary-dark-color));
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.config-card-header:hover {
+  filter: brightness(1.1);
+}
+
+.config-card-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.config-card-header h3 i {
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.config-card-header .toggle-icon {
+  transition: transform 0.3s ease;
+}
+
+.config-card-header .toggle-icon.collapsed {
+  transform: rotate(180deg);
+}
+
+/* Config card content */
+.config-card-content {
+  padding: 15px;
+  max-height: 1000px;
+  overflow: hidden;
+  transition: max-height 0.5s ease, padding 0.3s ease;
+}
+
+.config-card-content.collapsed {
+  max-height: 0;
+  padding: 0 15px;
+}
+
+/* Helper text */
+.helper-text {
+  font-size: 12px;
+  color: var(--text-light);
+  margin: 5px 0 15px;
+  line-height: 1.5;
+}
+
+/* Vendor Selection Grid */
+.vendor-select-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 8px;
+  margin-top: 10px;
+}
+
+/* Compact vendor card for sidebar */
+.vendor-select-card {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 80px;
+}
+
+.vendor-select-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 10px var(--shadow-color);
+  border-color: var(--primary-color);
+}
+
+.vendor-select-card .vendor-logo {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+
+.vendor-select-card .vendor-logo img {
+  max-height: 30px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.vendor-select-card .vendor-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Selected vendor styling */
+.vendor-select-card.selected {
+  border: 2px solid var(--primary-color);
+  background-color: var(--highlight-background);
+}
+
+.vendor-select-card.selected:after {
+  content: '\f00c';
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 18px;
+  height: 18px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  box-shadow: 0 2px 5px var(--shadow-color);
+}
+
+/* Badge for vendor cards */
+.vendor-select-card .badge {
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.vendor-select-card .badge-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.vendor-select-card .badge-warning {
+  background-color: var(--warning-color);
+  color: white;
+}
+
+.vendor-select-card .badge-danger {
+  background-color: var(--error-color);
+  color: white;
+}
+
+/* Advanced form styling */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 5px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background-color: var(--input-background);
+  color: var(--text-color);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-transparent);
+  outline: none;
+}
+
+.form-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background-color: var(--input-background);
+  color: var(--text-color);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+}
+
+.form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-transparent);
+  outline: none;
+}
+
+/* Range slider styling */
+.range-slider {
+  margin-bottom: 15px;
+}
+
+.range-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.range-slider-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.range-slider-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+input[type="range"] {
+  width: 100%;
+  height: 10px;
+  -webkit-appearance: none;
+  background: linear-gradient(to right, var(--primary-color) 0%, var(--primary-color) 50%, var(--border-color) 50%, var(--border-color) 100%);
+  border-radius: 5px;
+  outline: none;
+  padding: 0;
+  margin: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid var(--primary-color);
+  cursor: pointer;
+  transition: all .3s ease-in-out;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: var(--primary-color);
+  border-color: white;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid var(--primary-color);
+  cursor: pointer;
+  transition: all .3s ease-in-out;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  background: var(--primary-color);
+  border-color: white;
+}
+
+/* Checkbox styling */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 10px;
+  margin-top: 10px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+}
+
+.custom-checkbox {
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.custom-checkbox input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  background-color: var(--input-background);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.custom-checkbox:hover .checkmark {
+  border-color: var(--primary-color);
+}
+
+.custom-checkbox input:checked ~ .checkmark {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.custom-checkbox input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.custom-checkbox .checkmark:after {
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Transition for sidebar toggle */
+.sidebar-toggle {
+  position: fixed;
+  left: 360px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--card-background);
+  width: 28px;
+  height: 56px;
+  border-radius: 0 8px 8px 0;
+  box-shadow: 2px 0 10px var(--shadow-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 100;
+  border: 1px solid var(--border-color);
+  border-left: none;
+}
+
+.sidebar-toggle:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.sidebar-toggle.collapsed {
+  left: 0;
+}
+
+.sidebar-toggle i {
+  transition: transform 0.3s ease;
+}
+
+.sidebar-toggle.collapsed i {
+  transform: rotate(180deg);
+}
+
+/* Selected vendor counter */
+.vendor-counter {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  background-color: var(--highlight-background);
+  border: 1px dashed var(--primary-color);
+}
+
+.vendor-counter-icon {
+  font-size: 16px;
+  color: var(--primary-color);
+  margin-right: 10px;
+}
+
+.vendor-counter-text {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-color);
+}
+
+.vendor-counter-value {
+  font-weight: 700;
+  color: var(--primary-color);
+  font-size: 15px;
+  padding: 2px 8px;
+  background-color: var(--card-background);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px var(--shadow-color);
+}
+
+/* Calculate button styling */
+.btn-calculate {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color));
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-calculate:hover {
+  background: linear-gradient(135deg, var(--primary-dark-color), var(--primary-color));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.btn-calculate:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn-calculate i {
+  margin-right: 10px;
+}
+
+/* Animation for ripple effect */
+.btn-calculate:after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.3);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.btn-calculate:hover:after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(20, 20);
+    opacity: 0;
+  }
+}
+
+/* Responsive adaptations */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 300px;
+  }
+  
+  .sidebar-toggle {
+    left: 300px;
+  }
+  
+  .vendor-select-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    width: 85%;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar.active {
+    transform: translateX(0);
+  }
+  
+  .sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  
+  .sidebar-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .sidebar-toggle {
+    display: block;
+    position: fixed;
+    left: 0;
+    top: 60px;
+    width: 40px;
+    height: 40px;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 2px 0 10px var(--shadow-color);
+    z-index: 1001;
+  }
+}
+EOL
+
+echo "Creating updated main CSS with theme enhancements..."
+
+# Update main CSS with enhanced theme colors
 cat > css/main.css << 'EOL'
-/* Main CSS for Portnox Total Cost Analyzer */
+/* Main CSS for Portnox Total Cost Analyzer - Enhanced Theme */
 :root {
+  /* Primary colors */
   --primary-color: #1a5a96;
+  --primary-dark-color: #0d4275;
+  --primary-light-color: #5b8dc5;
+  --primary-color-transparent: rgba(26, 90, 150, 0.2);
+  
+  /* Secondary colors */
   --secondary-color: #2ecc71;
+  --secondary-dark-color: #25a25a;
+  --secondary-light-color: #6be095;
+  
+  /* Accent colors */
   --accent-color: #f39c12;
-  --text-color: #333;
-  --background-color: #f9f9f9;
-  --card-background: #fff;
-  --border-color: #ddd;
+  --accent-dark-color: #d68910;
+  --accent-light-color: #f6be65;
+  
+  /* Status colors */
+  --success-color: #27ae60;
+  --error-color: #e74c3c;
+  --warning-color: #f39c12;
+  --info-color: #3498db;
+  
+  /* Text colors */
+  --text-color: #333333;
+  --text-secondary: #666666;
+  --text-light: #888888;
+  --text-lighter: #aaaaaa;
+  
+  /* Background colors */
+  --background-color: #f5f7fa;
+  --card-background: #ffffff;
+  --input-background: #ffffff;
+  --highlight-background: rgba(26, 90, 150, 0.05);
+  
+  /* Border colors */
+  --border-color: #e0e0e0;
+  --border-light: #f0f0f0;
+  --border-dark: #cccccc;
+  
+  /* Shadow colors */
   --shadow-color: rgba(0, 0, 0, 0.1);
+  --shadow-light: rgba(0, 0, 0, 0.05);
+  --shadow-dark: rgba(0, 0, 0, 0.15);
+}
+
+/* Dark mode theme */
+body.dark-mode {
+  /* Primary colors */
+  --primary-color: #2980b9;
+  --primary-dark-color: #1d6fa5;
+  --primary-light-color: #5499c7;
+  --primary-color-transparent: rgba(41, 128, 185, 0.2);
+  
+  /* Secondary colors */
+  --secondary-color: #27ae60;
+  --secondary-dark-color: #1f8b4c;
+  --secondary-light-color: #52be80;
+  
+  /* Accent colors */
+  --accent-color: #e67e22;
+  --accent-dark-color: #d35400;
+  --accent-light-color: #eb984e;
+  
+  /* Status colors */
+  --success-color: #2ecc71;
+  --error-color: #e74c3c;
+  --warning-color: #f39c12;
+  --info-color: #3498db;
+  
+  /* Text colors */
+  --text-color: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --text-light: #909090;
+  --text-lighter: #707070;
+  
+  /* Background colors */
+  --background-color: #121212;
+  --card-background: #1e1e1e;
+  --input-background: #2c2c2c;
+  --highlight-background: rgba(41, 128, 185, 0.1);
+  
+  /* Border colors */
+  --border-color: #333333;
+  --border-light: #383838;
+  --border-dark: #555555;
+  
+  /* Shadow colors */
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --shadow-light: rgba(0, 0, 0, 0.2);
+  --shadow-dark: rgba(0, 0, 0, 0.4);
+}
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+  margin: a
+  padding: 0;
 }
 
 body {
@@ -51,19 +762,35 @@ body {
   padding: 0;
   background-color: var(--background-color);
   color: var(--text-color);
+  line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .app-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  position: relative;
+  z-index: 1;
 }
 
-/* Header Styling */
+/* Header with particle background */
 .app-header {
-  background-color: white;
-  box-shadow: 0 2px 4px var(--shadow-color);
+  background-color: var(--card-background);
+  box-shadow: 0 2px 15px var(--shadow-color);
   padding: 10px 0;
+  position: relative;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.app-header .particles-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
 }
 
 .header-content {
@@ -73,6 +800,8 @@ body {
   padding: 0 20px;
   max-width: 1400px;
   margin: 0 auto;
+  position: relative;
+  z-index: 2;
 }
 
 .logo-section {
@@ -87,14 +816,18 @@ body {
 
 .app-title h1 {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
   color: var(--primary-color);
+  font-weight: 700;
+  transition: color 0.3s ease;
 }
 
 .subtitle {
   margin: 5px 0 0;
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
+  font-weight: 400;
+  transition: color 0.3s ease;
 }
 
 .header-actions {
@@ -102,42 +835,11 @@ body {
   gap: 10px;
 }
 
-/* Sidebar Styling */
+/* Main content layout */
 .main-content {
   display: flex;
   flex: 1;
-}
-
-.sidebar {
-  width: 360px;
-  background-color: white;
-  box-shadow: 2px 0 5px var(--shadow-color);
-  overflow-y: auto;
-  transition: width 0.3s ease;
-}
-
-.sidebar.collapsed {
-  width: 0;
-}
-
-.sidebar-header {
-  padding: 15px 20px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.sidebar-header h2 {
-  margin: 0;
-  font-size: 18px;
-  color: var(--primary-color);
-}
-
-.sidebar-content {
-  padding: 20px;
-}
-
-.sidebar-footer {
-  padding: 15px 20px;
-  border-top: 1px solid var(--border-color);
+  position: relative;
 }
 
 /* Content area styling */
@@ -158,145 +860,58 @@ body {
   margin: 0 auto;
 }
 
-/* Sidebar toggle */
-.sidebar-toggle {
-  position: fixed;
-  left: 360px;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: white;
-  width: 24px;
-  height: 48px;
-  border-radius: 0 4px 4px 0;
-  box-shadow: 2px 0 5px var(--shadow-color);
+/* Footer styling */
+.app-footer {
+  background-color: var(--card-background);
+  padding: 20px 0;
+  border-top: 1px solid var(--border-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.footer-content {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: left 0.3s ease;
-  z-index: 100;
+  padding: 0 20px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.sidebar-toggle.collapsed {
-  left: 0;
+.footer-copyright {
+  color: var(--text-light);
+  font-size: 14px;
+  transition: color 0.3s ease;
 }
 
-/* Card styling */
-.dashboard-card {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px var(--shadow-color);
-  padding: 20px;
-  margin-bottom: 20px;
+.footer-links {
+  display: flex;
+  gap: 20px;
 }
 
-.highlight-card {
-  border-left: 4px solid var(--primary-color);
+.footer-links a {
+  color: var(--text-light);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s ease;
 }
 
-.metric-value {
-  font-size: 24px;
-  font-weight: 700;
-  margin: 10px 0;
-}
-
-.highlight-value {
+.footer-links a:hover {
   color: var(--primary-color);
 }
 
-.metric-label {
-  font-size: 14px;
-  color: #666;
+.footer-social {
+  display: flex;
+  gap: 15px;
 }
 
-.metric-trend {
-  font-size: 12px;
-  margin-top: 10px;
+.social-link {
+  color: var(--text-light);
+  font-size: 16px;
+  transition: color 0.3s ease;
 }
 
-.metric-trend.up {
-  color: var(--secondary-color);
-}
-
-.metric-trend.down {
-  color: #e74c3c;
-}
-
-/* Dashboard grid */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-gap: 20px;
-  margin-bottom: 30px;
-}
-
-.grid-4 {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-}
-
-.btn-primary {
-  background-color: var(--primary-color);
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #15497c;
-}
-
-.btn-outline {
-  background-color: transparent;
-  border: 1px solid var(--border-color);
-  color: #666;
-}
-
-.btn-outline:hover {
-  background-color: #f5f5f5;
-}
-
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-}
-
-.btn-icon i {
-  margin-right: 8px;
-}
-
-.btn-large {
-  width: 100%;
-  padding: 12px 20px;
-}
-
-/* Chart container */
-.chart-container {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px var(--shadow-color);
-  padding: 20px;
-  margin-bottom: 24px;
-}
-
-.chart-wrapper {
-  height: 400px;
-  width: 100%;
-}
-
-.chart-wrapper.half-height {
-  height: 250px;
+.social-link:hover {
+  color: var(--primary-color);
 }
 
 /* Loading overlay */
@@ -310,10 +925,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+body.dark-mode .loading-overlay {
+  background-color: rgba(18, 18, 18, 0.8);
 }
 
 .loading-overlay.active {
@@ -345,20 +964,20 @@ body {
   position: fixed;
   top: 20px;
   right: 20px;
-  z-index: 1000;
+  z-index: 9999;
   max-width: 300px;
 }
 
 .toast {
   display: flex;
   align-items: center;
-  background-color: white;
-  border-radius: 4px;
-  box-shadow: 0 2px 10px var(--shadow-color);
+  background-color: var(--card-background);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px var(--shadow-color);
   padding: 12px 16px;
   margin-bottom: 10px;
   transform: translateX(120%);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, background-color 0.3s ease;
 }
 
 .toast.show {
@@ -371,33 +990,252 @@ body {
 }
 
 .toast-success i {
-  color: var(--secondary-color);
+  color: var(--success-color);
 }
 
 .toast-error i {
-  color: #e74c3c;
+  color: var(--error-color);
 }
 
 .toast-warning i {
-  color: var(--accent-color);
+  color: var(--warning-color);
 }
 
 .toast-info i {
+  color: var(--info-color);
+}
+
+/* Help modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  width: 600px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 20px var(--shadow-dark);
+  transform: scale(0.9);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.modal.active .modal-content {
+  transform: scale(1);
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
   color: var(--primary-color);
 }
 
-/* Responsive for tablets and smaller screens */
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-light);
+  transition: color 0.3s ease;
+}
+
+.modal-close:hover {
+  color: var(--error-color);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+/* Buttons */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  box-shadow: 0 2px 5px var(--shadow-light);
+  overflow: hidden;
+}
+
+.btn:after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.3);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.btn:hover:after {
+  animation: ripple 1s ease-out;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color));
+  color: white;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-dark-color), var(--primary-color));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark-color));
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, var(--secondary-dark-color), var(--secondary-color));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.btn-outline:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--shadow-light);
+}
+
+.btn-icon i {
+  margin-right: 8px;
+}
+
+.btn-large {
+  padding: 12px 20px;
+  font-size: 15px;
+}
+
+/* Dashboard grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 20px;
+  margin-bottom: 30px;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Dashboard cards */
+.dashboard-card {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 15px var(--shadow-color);
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px var(--shadow-color);
+}
+
+.dashboard-card h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.metric-value {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 10px 0;
+  color: var(--text-color);
+}
+
+.highlight-value {
+  color: var(--primary-color);
+}
+
+.metric-label {
+  font-size: 14px;
+  color: var(--text-light);
+  margin-bottom: 10px;
+}
+
+.metric-trend {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.metric-trend.up {
+  color: var(--success-color);
+}
+
+.metric-trend.down {
+  color: var(--error-color);
+}
+
+.metric-trend i {
+  margin-right: 5px;
+}
+
+.highlight-card {
+  border-left: 4px solid var(--primary-color);
+}
+
+/* Responsive design */
 @media (max-width: 1024px) {
   .dashboard-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
   
-  .grid-4 {
-    grid-template-columns: 1fr 1fr;
+  .content-area {
+    margin-left: 300px;
   }
 }
 
-/* Responsive for mobile devices */
 @media (max-width: 768px) {
   .header-content {
     flex-direction: column;
@@ -410,13 +1248,6 @@ body {
     justify-content: space-between;
   }
   
-  .sidebar {
-    position: fixed;
-    z-index: 100;
-    top: 0;
-    bottom: 0;
-  }
-  
   .content-area {
     margin-left: 0;
   }
@@ -425,696 +1256,209 @@ body {
     grid-template-columns: 1fr;
   }
   
-  .grid-4 {
-    grid-template-columns: 1fr;
+  .btn span {
+    display: none;
+  }
+  
+  .btn-icon i {
+    margin-right: 0;
   }
 }
+
+/* Import other CSS components */
+@import url('components/sidebar.css');
+@import url('components/particle-background.css');
+@import url('components/charts.css');
 EOL
 
 # ==================================================
-# 3. Create essential JS files
+# 2. Create dedicated sidebar JS functionality
 # ==================================================
-echo "Creating essential JS files..."
+echo "Creating sidebar JS functionality..."
 
-# Create vendor data JS
-cat > js/models/vendor-data.js << 'EOL'
+mkdir -p js/components
+
+cat > js/components/sidebar-manager.js << 'EOL'
 /**
- * Vendor data model for Portnox Total Cost Analyzer
- * Contains real data for NAC vendor comparison
- */
-const VENDORS = {
-  portnox: {
-    id: 'portnox',
-    name: 'Portnox Cloud',
-    description: 'Cloud-native NAC',
-    logo: 'img/vendors/portnox-logo.png',
-    badge: {
-      text: 'Best Value',
-      class: 'badge-primary'
-    },
-    architecture: 'cloud',
-    basePrice: {
-      small: 3.0,    // Per device per month
-      medium: 2.7,   // Per device per month
-      large: 2.4,    // Per device per month
-      enterprise: 2.1 // Per device per month
-    },
-    implementation: {
-      timeInDays: 21,
-      costPercentage: 10  // % of first year subscription
-    },
-    fte: {
-      required: 0.25,  // FTE allocation per year
-    },
-    maintenance: {
-      percentage: 0,  // Included in subscription
-      downtime: 0.5,  // Hours per year
-    },
-    security: {
-      zeroTrustScore: 9.5,    // Out of 10
-      deviceAuthScore: 9.7,   // Out of 10
-      riskAssessmentScore: 9.6,// Out of 10
-      remediationSpeed: 4,    // Minutes
-    },
-    compliance: {
-      pci: true,
-      hipaa: true,
-      nist: true,
-      gdpr: true,
-      iso: true,
-      cmmc: true,
-      ferpa: true,
-      sox: true
-    },
-    features: {
-      cloudIntegration: true,
-      legacyDevices: true,
-      byod: true,
-      iot: true,
-      wireless: true,
-      remoteUsers: true
-    }
-  },
-  cisco: {
-    id: 'cisco',
-    name: 'Cisco ISE',
-    description: 'Enterprise NAC',
-    logo: 'img/vendors/cisco-logo.png',
-    badge: {
-      text: 'Complex',
-      class: 'badge-warning'
-    },
-    architecture: 'on-premises',
-    basePrice: {
-      small: 65,     // Per device - perpetual license
-      medium: 60,    // Per device - perpetual license
-      large: 55,     // Per device - perpetual license
-      enterprise: 50 // Per device - perpetual license
-    },
-    hardware: {
-      small: 75000,   // Base hardware cost
-      medium: 150000, // Base hardware cost
-      large: 300000,  // Base hardware cost
-      enterprise: 500000 // Base hardware cost
-    },
-    implementation: {
-      timeInDays: 90,
-      costPercentage: 40  // % of license cost
-    },
-    fte: {
-      required: 1.5,  // FTE allocation per year
-    },
-    maintenance: {
-      percentage: 18, // Yearly maintenance as % of license
-      downtime: 8,    // Hours per year
-    },
-    security: {
-      zeroTrustScore: 8.0,    // Out of 10
-      deviceAuthScore: 8.5,   // Out of 10
-      riskAssessmentScore: 8.0,// Out of 10
-      remediationSpeed: 10,   // Minutes
-    },
-    compliance: {
-      pci: true,
-      hipaa: true,
-      nist: true,
-      gdpr: true,
-      iso: true,
-      cmmc: true,
-      ferpa: true,
-      sox: true
-    },
-    features: {
-      cloudIntegration: false,
-      legacyDevices: true,
-      byod: true,
-      iot: true,
-      wireless: true,
-      remoteUsers: false
-    }
-  }
-};
-
-// Export for use across the application
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { VENDORS };
-}
-EOL
-
-# Create calculator JS file
-cat > js/models/calculator.js << 'EOL'
-/**
- * TCO Calculator for Portnox Total Cost Analyzer
- * Handles all cost and ROI calculations for NAC vendors
+ * Sidebar Manager for Portnox Total Cost Analyzer
+ * Handles sidebar interactions, vendor selection, and configuration
  */
 
-class TcoCalculator {
-  constructor(config = {}) {
-    // Default configuration
-    this.config = {
-      deviceCount: 500,
-      locationCount: 2,
-      years: 3,
-      organizationSize: 'small', // very-small, small, medium, large, enterprise
-      industry: '',
-      complianceRequirements: [],
-      riskProfile: 'standard', // standard, elevated, high, regulated
-      cybersecurityInsurance: 'standard', // none, basic, standard, comprehensive
-      networkRequirements: {
-        cloudIntegration: false,
-        legacyDevices: false,
-        byodSupport: true,
-        iotSupport: false,
-        wirelessSupport: true,
-        remoteWork: true
-      },
-      costParameters: {
-        portnoxBasePrice: 3.0, // $ per device per month
-        portnoxDiscount: 15,   // % volume discount
-        fteCost: 100000,       // $ per year for full-time employee
-        fteAllocation: 25,     // % of FTE dedicated to NAC
-        maintenancePercentage: 18, // % of license cost for maintenance
-        downtimeCost: 5000,    // $ per hour
-        riskReduction: 35,     // % reduction in breach risks
-        insuranceReduction: 10 // % reduction in insurance premiums
-      },
-      ...config
-    };
+class SidebarManager {
+  constructor() {
+    this.maxVendors = 3; // Maximum number of vendors to compare
+    this.selectedVendors = ['portnox']; // Portnox is always selected
+    this.expanded = {}; // Track expanded/collapsed sections
+    this.initialized = false;
     
-    // Store results
-    this.results = {
-      vendors: {},
-      comparison: {},
-      riskAssessment: {},
-      roi: {}
-    };
-  }
-  
-  // Update configuration
-  updateConfig(newConfig) {
-    this.config = {
-      ...this.config,
-      ...newConfig
-    };
-    
-    return this;
-  }
-  
-  // Calculate TCO for a vendor
-  calculateVendorTco(vendor) {
-    if (!vendor) return null;
-    
-    const { deviceCount, years, organizationSize, costParameters } = this.config;
-    const { fteCost, fteAllocation, downtimeCost } = costParameters;
-    
-    let result = {
-      vendorId: vendor.id,
-      vendorName: vendor.name,
-      architecture: vendor.architecture,
-      initialCosts: 0,
-      annualCosts: 0,
-      totalTco: 0,
-      implementation: {
-        time: vendor.implementation.timeInDays,
-        cost: 0
-      },
-      breakdown: {
-        hardware: 0,
-        software: 0,
-        implementation: 0,
-        maintenance: 0,
-        personnel: 0,
-        downtime: 0,
-        operational: 0,
-        subscription: 0
-      },
-      yearlyBreakdown: []
-    };
-    
-    // Calculate costs based on architecture type
-    if (vendor.architecture === 'cloud') {
-      // Cloud-based solution (subscription)
-      let basePrice = vendor.basePrice[organizationSize];
-      
-      // Apply discount for Portnox
-      if (vendor.id === 'portnox' && costParameters.portnoxDiscount) {
-        basePrice = basePrice * (1 - (costParameters.portnoxDiscount / 100));
-      }
-      
-      // Annual subscription
-      const annualSubscription = basePrice * deviceCount * 12;
-      result.breakdown.subscription = annualSubscription * years;
-      
-      // Implementation
-      result.implementation.cost = annualSubscription * (vendor.implementation.costPercentage / 100);
-      result.breakdown.implementation = result.implementation.cost;
-      
-      // Personnel costs (FTE allocation)
-      const annualPersonnelCost = fteCost * (vendor.fte.required * (fteAllocation / 100));
-      result.breakdown.personnel = annualPersonnelCost * years;
-      
-      // Downtime costs
-      const annualDowntimeCost = vendor.maintenance.downtime * downtimeCost;
-      result.breakdown.downtime = annualDowntimeCost * years;
-      
-      // Calculate operational costs (extra tools, training, etc.)
-      const annualOperationalCost = annualSubscription * 0.05; // Estimated at 5% of subscription
-      result.breakdown.operational = annualOperationalCost * years;
-      
-      // Calculate initial and annual costs
-      result.initialCosts = result.breakdown.implementation;
-      result.annualCosts = annualSubscription + annualPersonnelCost + annualDowntimeCost + annualOperationalCost;
-      
-    } else if (vendor.architecture === 'on-premises' || vendor.architecture === 'hybrid') {
-      // On-premises or hybrid solution
-      
-      // Hardware costs
-      if (vendor.hardware) {
-        result.breakdown.hardware = vendor.hardware[organizationSize];
-      }
-      
-      // Software license costs
-      const licenseCost = vendor.basePrice[organizationSize] * deviceCount;
-      result.breakdown.software = licenseCost;
-      
-      // Implementation
-      result.implementation.cost = licenseCost * (vendor.implementation.costPercentage / 100);
-      result.breakdown.implementation = result.implementation.cost;
-      
-      // Maintenance
-      const annualMaintenance = licenseCost * (vendor.maintenance.percentage / 100);
-      result.breakdown.maintenance = annualMaintenance * years;
-      
-      // Personnel costs (FTE allocation)
-      const annualPersonnelCost = fteCost * (vendor.fte.required * (fteAllocation / 100));
-      result.breakdown.personnel = annualPersonnelCost * years;
-      
-      // Downtime costs
-      const annualDowntimeCost = vendor.maintenance.downtime * downtimeCost;
-      result.breakdown.downtime = annualDowntimeCost * years;
-      
-      // Calculate operational costs (power, cooling, rack space, etc.)
-      const annualOperationalCost = result.breakdown.hardware * 0.10 / years; // Estimated at 10% of hardware cost per year
-      result.breakdown.operational = annualOperationalCost * years;
-      
-      // Calculate initial and annual costs
-      result.initialCosts = result.breakdown.hardware + result.breakdown.software + result.breakdown.implementation;
-      result.annualCosts = annualMaintenance + annualPersonnelCost + annualDowntimeCost + annualOperationalCost;
+    // Initialize on DOM loaded
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => this.init());
+    } else {
+      this.init();
     }
+  }
+  
+  /**
+   * Initialize sidebar components
+   */
+  init() {
+    if (this.initialized) return;
     
-    // Calculate total TCO
-    result.totalTco = result.initialCosts + (result.annualCosts * years);
+    // Initialize collapsible sections
+    this.initCollapsibleSections();
     
-    // Create yearly breakdown
-    for (let i = 1; i <= years; i++) {
-      let yearCost = (i === 1) ? result.initialCosts + result.annualCosts : result.annualCosts;
-      result.yearlyBreakdown.push({
-        year: i,
-        cost: yearCost,
-        cumulativeCost: result.initialCosts + (result.annualCosts * i)
+    // Initialize vendor selection
+    this.initVendorSelection();
+    
+    // Initialize range sliders
+    this.initRangeSliders();
+    
+    // Initialize sidebar toggle
+    this.initSidebarToggle();
+    
+    this.initialized = true;
+    console.log('Sidebar manager initialized');
+  }
+  
+  /**
+   * Initialize collapsible sections
+   */
+  initCollapsibleSections() {
+    const configCards = document.querySelectorAll('.config-card');
+    
+    configCards.forEach(card => {
+      const header = card.querySelector('.config-card-header');
+      const content = card.querySelector('.config-card-content');
+      const toggleIcon = header.querySelector('.toggle-icon');
+      const cardId = card.id;
+      
+      // Set initial state (all expanded by default except cost-config)
+      if (cardId === 'cost-config') {
+        content.classList.add('collapsed');
+        toggleIcon.classList.add('collapsed');
+        this.expanded[cardId] = false;
+      } else {
+        this.expanded[cardId] = true;
+      }
+      
+      header.addEventListener('click', () => {
+        this.toggleSection(cardId);
       });
-    }
-    
-    return result;
+    });
   }
   
-  // Main calculation method
-  calculate(selectedVendors) {
-    if (!selectedVendors || !Array.isArray(selectedVendors) || selectedVendors.length === 0) {
-      throw new Error('No vendors selected for calculation');
-    }
+  /**
+   * Toggle section expand/collapse
+   */
+  toggleSection(cardId) {
+    const card = document.getElementById(cardId);
+    const content = card.querySelector('.config-card-content');
+    const toggleIcon = card.querySelector('.toggle-icon');
     
-    this.results.vendors = {};
-    
-    // Calculate TCO for each vendor
-    for (const vendorId of selectedVendors) {
-      const vendor = VENDORS[vendorId];
-      if (vendor) {
-        const tco = this.calculateVendorTco(vendor);
-        this.results.vendors[vendorId] = tco;
-      }
-    }
-    
-    return this.results;
+    content.classList.toggle('collapsed');
+    toggleIcon.classList.toggle('collapsed');
+    this.expanded[cardId] = !this.expanded[cardId];
   }
-}
-
-// Export calculator for use across the application
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { TcoCalculator };
-}
-EOL
-
-# Create basic tco-analyzer.js
-cat > js/portnox-tco-analyzer.js << 'EOL'
-/**
- * Portnox Total Cost Analyzer - Main Application
- */
-
-// Global app state
-const App = {
-  state: {
-    selectedVendors: ['portnox'],  // Default selection
-    activeView: 'executive',        // executive, financial, security, technical
-    activePanel: 'executive-summary', // Current active panel
-    results: null,                  // Calculation results
-    config: {
-      deviceCount: 500,
-      locationCount: 2,
-      years: 3,
-      organizationSize: 'small', // very-small, small, medium, large, enterprise
-      industry: '',
-      complianceRequirements: [],
-      riskProfile: 'standard', // standard, elevated, high, regulated
-      cybersecurityInsurance: 'standard', // none, basic, standard, comprehensive
-      networkRequirements: {
-        cloudIntegration: false,
-        legacyDevices: false,
-        byodSupport: true,
-        iotSupport: false,
-        wirelessSupport: true,
-        remoteWork: true
-      },
-      costParameters: {
-        portnoxBasePrice: 3.0, // $ per device per month
-        portnoxDiscount: 15,   // % volume discount
-        fteCost: 100000,       // $ per year for full-time employee
-        fteAllocation: 25,     // % of FTE dedicated to NAC
-        maintenancePercentage: 18, // % of license cost for maintenance
-        downtimeCost: 5000,    // $ per hour
-        riskReduction: 35,     // % reduction in breach risks
-        insuranceReduction: 10 // % reduction in insurance premiums
-      }
-    },
-    calculator: null,
-    isDarkMode: false,
-  },
   
   /**
-   * Initialize the application
+   * Initialize vendor selection
    */
-  init: function() {
-    console.log('Initializing Portnox TCO Analyzer...');
+  initVendorSelection() {
+    const vendorCards = document.querySelectorAll('.vendor-select-card');
+    const vendorCounter = document.getElementById('vendor-counter-value');
     
-    // Initialize Calculator
-    this.state.calculator = new TcoCalculator(this.state.config);
-    
-    // Set up event listeners
-    this.setupEventListeners();
-    
-    // Initialize UI state
-    this.initUIState();
-    
-    console.log('Portnox TCO Analyzer initialized successfully.');
-  },
-  
-  /**
-   * Set up all event listeners
-   */
-  setupEventListeners: function() {
-    console.log('Setting up event listeners...');
-    
-    // Vendor selection
-    const vendorCards = document.querySelectorAll('.vendor-card');
     vendorCards.forEach(card => {
+      const vendorId = card.dataset.vendor;
+      
+      // Portnox is always selected and can't be deselected
+      if (vendorId === 'portnox') {
+        card.classList.add('selected');
+        card.classList.add('locked');
+      }
+      
       card.addEventListener('click', () => {
-        const vendorId = card.dataset.vendor;
         this.toggleVendorSelection(vendorId, card);
       });
     });
     
-    // Calculate buttons
-    const calcBtn = document.getElementById('calculate-btn');
-    const calcBtnHeader = document.getElementById('calculate-btn-header');
-    
-    if (calcBtn) {
-      calcBtn.addEventListener('click', () => this.calculate());
+    // Update initial counter
+    if (vendorCounter) {
+      vendorCounter.textContent = this.selectedVendors.length;
     }
-    
-    if (calcBtnHeader) {
-      calcBtnHeader.addEventListener('click', () => this.calculate());
-    }
-    
-    // Export button
-    const exportBtn = document.getElementById('export-pdf');
-    if (exportBtn) {
-      exportBtn.addEventListener('click', () => this.exportReport());
-    }
-    
-    // Help button
-    const helpBtn = document.getElementById('help-btn');
-    if (helpBtn) {
-      helpBtn.addEventListener('click', () => this.toggleHelpModal());
-    }
-    
-    // Dark mode toggle
-    const darkModeBtn = document.getElementById('dark-mode-toggle');
-    if (darkModeBtn) {
-      darkModeBtn.addEventListener('click', () => this.toggleDarkMode());
-    }
-    
-    // Sidebar toggle
-    const sidebarToggle = document.getElementById('sidebar-toggle');
-    if (sidebarToggle) {
-      sidebarToggle.addEventListener('click', () => this.toggleSidebar());
-    }
-    
-    console.log('Event listeners set up successfully.');
-  },
-  
-  /**
-   * Initialize UI state based on default values
-   */
-  initUIState: function() {
-    console.log('Initializing UI state...');
-    
-    // Set initial vendor selection
-    this.state.selectedVendors.forEach(vendorId => {
-      const card = document.querySelector(`.vendor-card[data-vendor="${vendorId}"]`);
-      if (card) {
-        card.classList.add('selected');
-      }
-    });
-    
-    console.log('UI state initialized successfully.');
-  },
+  }
   
   /**
    * Toggle vendor selection
    */
-  toggleVendorSelection: function(vendorId, card) {
-    if (vendorId === 'portnox') {
-      // Portnox cannot be deselected
-      return;
-    }
+  toggleVendorSelection(vendorId, card) {
+    // Portnox can't be deselected
+    if (vendorId === 'portnox') return;
     
-    const index = this.state.selectedVendors.indexOf(vendorId);
+    const index = this.selectedVendors.indexOf(vendorId);
+    const vendorCounter = document.getElementById('vendor-counter-value');
     
     if (index === -1) {
-      // Add vendor to selection
-      this.state.selectedVendors.push(vendorId);
-      card.classList.add('selected');
+      // Add vendor if under max limit
+      if (this.selectedVendors.length < this.maxVendors) {
+        this.selectedVendors.push(vendorId);
+        card.classList.add('selected');
+        
+        // Play selection animation
+        card.animate([
+          { transform: 'scale(1)', opacity: 1 },
+          { transform: 'scale(1.05)', opacity: 1 },
+          { transform: 'scale(1)', opacity: 1 }
+        ], {
+          duration: 300,
+          easing: 'ease-in-out'
+        });
+      } else {
+        // Show max vendors reached message
+        this.showMaxVendorsMessage();
+      }
     } else {
-      // Remove vendor from selection
-      this.state.selectedVendors.splice(index, 1);
+      // Remove vendor
+      this.selectedVendors.splice(index, 1);
       card.classList.remove('selected');
     }
     
-    console.log('Selected vendors:', this.state.selectedVendors);
-  },
-  
-  /**
-   * Toggle sidebar visibility
-   */
-  toggleSidebar: function() {
-    const sidebar = document.getElementById('sidebar');
-    const toggle = document.getElementById('sidebar-toggle');
-    const contentArea = document.querySelector('.content-area');
-    
-    if (sidebar && toggle && contentArea) {
-      sidebar.classList.toggle('collapsed');
-      toggle.classList.toggle('collapsed');
-      contentArea.classList.toggle('expanded');
-      
-      // Update icon
-      const icon = toggle.querySelector('i');
-      if (icon) {
-        if (sidebar.classList.contains('collapsed')) {
-          icon.className = 'fas fa-chevron-right';
-        } else {
-          icon.className = 'fas fa-chevron-left';
-        }
-      }
+    // Update counter
+    if (vendorCounter) {
+      vendorCounter.textContent = this.selectedVendors.length;
     }
-  },
+    
+    // Trigger event for other components
+    this.triggerVendorSelectionEvent();
+    
+    console.log('Selected vendors:', this.selectedVendors);
+  }
   
   /**
-   * Toggle dark mode
+   * Show max vendors reached message
    */
-  toggleDarkMode: function() {
-    document.body.classList.toggle('dark-mode');
-    this.state.isDarkMode = document.body.classList.contains('dark-mode');
-    
-    // Update icon
-    const icon = document.querySelector('#dark-mode-toggle i');
-    if (icon) {
-      if (this.state.isDarkMode) {
-        icon.className = 'fas fa-sun';
-      } else {
-        icon.className = 'fas fa-moon';
-      }
+  showMaxVendorsMessage() {
+    // Find or create toast container
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+      toastContainer = document.createElement('div');
+      toastContainer.id = 'toast-container';
+      toastContainer.className = 'toast-container';
+      document.body.appendChild(toastContainer);
     }
-  },
-  
-  /**
-   * Toggle help modal
-   */
-  toggleHelpModal: function() {
-    const modal = document.getElementById('help-modal');
-    if (modal) {
-      modal.classList.toggle('active');
-    }
-  },
-  
-  /**
-   * Calculate TCO and ROI
-   */
-  calculate: function() {
-    console.log('Calculating TCO and ROI...');
     
-    // Show loading overlay
-    this.showLoadingOverlay();
-    
-    // Update calculator config
-    this.state.calculator.updateConfig(this.state.config);
-    
-    // Perform calculation with slight delay to allow UI to update
-    setTimeout(() => {
-      try {
-        // Calculate results
-        this.state.results = this.state.calculator.calculate(this.state.selectedVendors);
-        
-        // Update UI with results
-        this.updateResultsUI();
-        
-        // Hide loading overlay
-        this.hideLoadingOverlay();
-        
-        // Show success toast
-        this.showToast('Calculation completed successfully!', 'success');
-        
-        console.log('Calculation completed:', this.state.results);
-      } catch (error) {
-        console.error('Calculation error:', error);
-        
-        // Hide loading overlay
-        this.hideLoadingOverlay();
-        
-        // Show error toast
-        this.showToast('Error during calculation: ' + error.message, 'error');
-      }
-    }, 800);
-  },
-  
-  /**
-   * Update UI with calculation results
-   */
-  updateResultsUI: function() {
-    if (!this.state.results) return;
-    
-    console.log('Updating UI with results...');
-    
-    // Update metrics based on results
-    this.updateMetrics();
-    
-    console.log('UI updated with results.');
-  },
-  
-  /**
-   * Update metrics displays
-   */
-  updateMetrics: function() {
-    const { results } = this.state;
-    
-    if (!results.vendors || !results.vendors.portnox) return;
-    
-    // Executive view metrics
-    const portnoxResults = results.vendors.portnox;
-    
-    // Update displayed metrics if elements exist
-    const updateElement = (id, value) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = value;
-    };
-    
-    // Total cost
-    updateElement('portnox-tco', this.formatCurrency(portnoxResults.totalTco));
-    
-    // Implementation time
-    updateElement('implementation-time', `${portnoxResults.implementation.time} days`);
-    
-    // Other vendors comparison
-    if (results.vendors.cisco) {
-      const ciscoResults = results.vendors.cisco;
-      const costDiff = ciscoResults.totalTco - portnoxResults.totalTco;
-      const savingsPercent = Math.round((costDiff / ciscoResults.totalTco) * 100);
-      
-      updateElement('total-savings', this.formatCurrency(costDiff));
-      updateElement('savings-percentage', `${savingsPercent}% reduction vs. Cisco ISE`);
-      updateElement('tco-comparison', `vs. ${this.formatCurrency(ciscoResults.totalTco)} (Cisco ISE)`);
-    }
-  },
-  
-  /**
-   * Show loading overlay
-   */
-  showLoadingOverlay: function() {
-    const overlay = document.getElementById('loading-overlay');
-    if (overlay) {
-      overlay.classList.add('active');
-    }
-  },
-  
-  /**
-   * Hide loading overlay
-   */
-  hideLoadingOverlay: function() {
-    const overlay = document.getElementById('loading-overlay');
-    if (overlay) {
-      overlay.classList.remove('active');
-    }
-  },
-  
-  /**
-   * Show a toast notification
-   */
-  showToast: function(message, type = 'info') {
-    const toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) return;
-    
+    // Create toast
     const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
+    toast.className = 'toast toast-warning';
     
     const icon = document.createElement('i');
-    switch (type) {
-      case 'success':
-        icon.className = 'fas fa-check-circle';
-        break;
-      case 'error':
-        icon.className = 'fas fa-exclamation-circle';
-        break;
-      case 'warning':
-        icon.className = 'fas fa-exclamation-triangle';
-        break;
-      default:
-        icon.className = 'fas fa-info-circle';
-    }
+    icon.className = 'fas fa-exclamation-triangle';
     
-    const textSpan = document.createElement('span');
-    textSpan.textContent = message;
+    const text = document.createElement('span');
+    text.textContent = `Maximum of ${this.maxVendors} vendors can be compared at once. Please deselect a vendor first.`;
     
     toast.appendChild(icon);
-    toast.appendChild(textSpan);
+    toast.appendChild(text);
     toastContainer.appendChild(toast);
     
     // Show the toast with animation
@@ -1122,7 +1466,7 @@ const App = {
       toast.classList.add('show');
     }, 10);
     
-    // Remove the toast after 5 seconds
+    // Remove the toast after a delay
     setTimeout(() => {
       toast.classList.remove('show');
       setTimeout(() => {
@@ -1131,50 +1475,373 @@ const App = {
         }
       }, 300);
     }, 5000);
-  },
-  
-  /**
-   * Export report as PDF
-   */
-  exportReport: function() {
-    console.log('Exporting report...');
-    
-    // Show loading overlay
-    this.showLoadingOverlay();
-    
-    // Simulated export delay (would be replaced with actual PDF generation)
-    setTimeout(() => {
-      // Hide loading overlay
-      this.hideLoadingOverlay();
-      
-      // Show success toast
-      this.showToast('Report exported successfully!', 'success');
-    }, 2000);
-  },
-  
-  /**
-   * Format currency values
-   */
-  formatCurrency: function(value) {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
   }
-};
+  
+  /**
+   * Initialize range sliders
+   */
+  initRangeSliders() {
+    const rangeSliders = document.querySelectorAll('input[type="range"]');
+    
+    rangeSliders.forEach(slider => {
+      // Setup initial value display
+      const valueDisplay = document.getElementById(`${slider.id}-value`);
+      if (valueDisplay) {
+        this.updateRangeSliderValue(slider, valueDisplay);
+      }
+      
+      // Setup background gradient based on initial value
+      this.updateRangeSliderBackground(slider);
+      
+      // Add input event listener
+      slider.addEventListener('input', () => {
+        if (valueDisplay) {
+          this.updateRangeSliderValue(slider, valueDisplay);
+        }
+        this.updateRangeSliderBackground(slider);
+      });
+    });
+  }
+  
+  /**
+   * Update range slider value display
+   */
+  updateRangeSliderValue(slider, valueDisplay) {
+    const value = slider.value;
+    
+    // Format value based on id
+    if (slider.id.includes('cost') || slider.id.includes('fte-cost')) {
+      valueDisplay.textContent = `$${parseInt(value).toLocaleString()}`;
+    } else if (slider.id.includes('discount') || slider.id.includes('percentage') || slider.id.includes('reduction')) {
+      valueDisplay.textContent = `${value}%`;
+    } else {
+      valueDisplay.textContent = value;
+    }
+  }
+  
+  /**
+   * Update range slider background gradient
+   */
+  updateRangeSliderBackground(slider) {
+    const min = parseFloat(slider.min);
+    const max = parseFloat(slider.max);
+    const value = parseFloat(slider.value);
+    const percentage = ((value - min) / (max - min)) * 100;
+    
+    slider.style.background = `linear-gradient(to right, var(--primary-color) 0%, var(--primary-color) ${percentage}%, var(--border-color) ${percentage}%, var(--border-color) 100%)`;
+  }
+  
+  /**
+   * Initialize sidebar toggle
+   */
+  initSidebarToggle() {
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const contentArea = document.querySelector('.content-area');
+    
+    if (sidebarToggle && sidebar && contentArea) {
+      sidebarToggle.addEventListener('click', () => {
+        this.toggleSidebar();
+      });
+      
+      // For mobile
+      document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768) {
+          const backdrop = document.querySelector('.sidebar-backdrop');
+          
+          if (backdrop && e.target === backdrop) {
+            this.toggleSidebar();
+          }
+        }
+      });
+    }
+  }
+  
+  /**
+   * Toggle sidebar visibility
+   */
+  toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const contentArea = document.querySelector('.content-area');
+    
+    if (sidebar && sidebarToggle && contentArea) {
+      // For desktop
+      if (window.innerWidth > 768) {
+        sidebar.classList.toggle('collapsed');
+        sidebarToggle.classList.toggle('collapsed');
+        contentArea.classList.toggle('expanded');
+      } 
+      // For mobile
+      else {
+        let backdrop = document.querySelector('.sidebar-backdrop');
+        
+        if (!backdrop) {
+          backdrop = document.createElement('div');
+          backdrop.className = 'sidebar-backdrop';
+          document.body.appendChild(backdrop);
+        }
+        
+        sidebar.classList.toggle('active');
+        backdrop.classList.toggle('active');
+      }
+    }
+  }
+  
+  /**
+   * Trigger vendor selection event
+   */
+  triggerVendorSelectionEvent() {
+    const event = new CustomEvent('vendorSelectionChanged', {
+      detail: {
+        selectedVendors: this.selectedVendors
+      }
+    });
+    
+    document.dispatchEvent(event);
+  }
+  
+  /**
+   * Get selected vendors
+   */
+  getSelectedVendors() {
+    return [...this.selectedVendors];
+  }
+  
+  /**
+   * Select vendor programmatically
+   */
+  selectVendor(vendorId) {
+    if (vendorId === 'portnox' || this.selectedVendors.includes(vendorId)) {
+      return;
+    }
+    
+    const card = document.querySelector(`.vendor-select-card[data-vendor="${vendorId}"]`);
+    
+    if (card && this.selectedVendors.length < this.maxVendors) {
+      this.selectedVendors.push(vendorId);
+      card.classList.add('selected');
+      
+      // Update counter
+      const vendorCounter = document.getElementById('vendor-counter-value');
+      if (vendorCounter) {
+        vendorCounter.textContent = this.selectedVendors.length;
+      }
+      
+      // Trigger event
+      this.triggerVendorSelectionEvent();
+    }
+  }
+  
+  /**
+   * Deselect vendor programmatically
+   */
+  deselectVendor(vendorId) {
+    if (vendorId === 'portnox') {
+      return;
+    }
+    
+    const index = this.selectedVendors.indexOf(vendorId);
+    
+    if (index !== -1) {
+      this.selectedVendors.splice(index, 1);
+      
+      const card = document.querySelector(`.vendor-select-card[data-vendor="${vendorId}"]`);
+      if (card) {
+        card.classList.remove('selected');
+      }
+      
+      // Update counter
+      const vendorCounter = document.getElementById('vendor-counter-value');
+      if (vendorCounter) {
+        vendorCounter.textContent = this.selectedVendors.length;
+      }
+      
+      // Trigger event
+      this.triggerVendorSelectionEvent();
+    }
+  }
+}
 
-// Initialize the application when the DOM is fully loaded
+// Create instance and export
+window.sidebarManager = new SidebarManager();
+EOL
+
+# ==================================================
+# 3. Create particle background for header
+# ==================================================
+echo "Creating particle background for header..."
+
+cat > js/components/header-particles.js << 'EOL'
+/**
+ * Header Particle Background for Portnox Total Cost Analyzer
+ * Creates a subtle particle effect in the header
+ */
+
+class HeaderParticles {
+  constructor(containerId = 'particles-header', config = {}) {
+    this.containerId = containerId;
+    
+    // Default configuration - lighter and more subtle than main background
+    this.config = {
+      particles: {
+        number: {
+          value: 30,
+          density: {
+            enable: true,
+            value_area: 800
+          }
+        },
+        color: {
+          value: '#1a5a96'
+        },
+        shape: {
+          type: 'circle',
+          stroke: {
+            width: 0,
+            color: '#000000'
+          },
+          polygon: {
+            nb_sides: 5
+          }
+        },
+        opacity: {
+          value: 0.3,
+          random: false,
+          anim: {
+            enable: false,
+            speed: 1,
+            opacity_min: 0.1,
+            sync: false
+          }
+        },
+        size: {
+          value: 3,
+          random: true,
+          anim: {
+            enable: false,
+            speed: 40,
+            size_min: 0.1,
+            sync: false
+          }
+        },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: '#1a5a96',
+          opacity: 0.2,
+          width: 1
+        },
+        move: {
+          enable: true,
+          speed: 2,
+          direction: 'none',
+          random: false,
+          straight: false,
+          out_mode: 'out',
+          bounce: false,
+          attract: {
+            enable: false,
+            rotateX: 600,
+            rotateY: 1200
+          }
+        }
+      },
+      interactivity: {
+        detect_on: 'canvas',
+        events: {
+          onhover: {
+            enable: true,
+            mode: 'grab'
+          },
+          onclick: {
+            enable: false,
+            mode: 'push'
+          },
+          resize: true
+        },
+        modes: {
+          grab: {
+            distance: 140,
+            line_linked: {
+              opacity: 0.5
+            }
+          }
+        }
+      },
+      retina_detect: true,
+      ...config
+    };
+    
+    // Update colors based on dark mode
+    this.updateColors();
+    
+    // Initialize particles.js
+    this.init();
+    
+    // Set up dark mode listener
+    this.setupDarkModeListener();
+  }
+  
+  /**
+   * Initialize particles.js
+   */
+  init() {
+    if (typeof particlesJS !== 'undefined' && document.getElementById(this.containerId)) {
+      particlesJS(this.containerId, this.config);
+    } else {
+      console.warn('particles.js not loaded or container not found for header');
+    }
+  }
+  
+  /**
+   * Update particle colors based on dark mode
+   */
+  updateColors() {
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    
+    if (isDarkMode) {
+      this.config.particles.color.value = '#2980b9';
+      this.config.particles.line_linked.color = '#2980b9';
+    } else {
+      this.config.particles.color.value = '#1a5a96';
+      this.config.particles.line_linked.color = '#1a5a96';
+    }
+  }
+  
+  /**
+   * Set up dark mode listener
+   */
+  setupDarkModeListener() {
+    // Listen for theme changes
+    window.addEventListener('themechange', (event) => {
+      this.updateColors();
+      this.init();
+    });
+    
+    // Detect dark mode toggle
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    if (darkModeToggle) {
+      darkModeToggle.addEventListener('click', () => {
+        setTimeout(() => {
+          this.updateColors();
+          this.init();
+        }, 100);
+      });
+    }
+  }
+}
+
+// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  App.init();
+  window.headerParticles = new HeaderParticles();
 });
 EOL
 
 # ==================================================
-# 4. Create clean index.html file
+# 4. Update the main HTML file
 # ==================================================
-echo "Creating clean index.html..."
+echo "Updating the main HTML file..."
 
 cat > index.html << 'EOL'
 <!DOCTYPE html>
@@ -1185,7 +1852,7 @@ cat > index.html << 'EOL'
     <meta name="description" content="Zero Trust Total Cost Analyzer - Enterprise Total Cost of Ownership Calculator">
     <title>Total Cost Analyzer | Portnox</title>
     
-    <!-- CSS Libraries - Load from CDN to ensure availability -->
+    <!-- CSS Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap">
     
@@ -1193,12 +1860,20 @@ cat > index.html << 'EOL'
     <link rel="stylesheet" href="css/main.css">
     
     <link rel="icon" type="image/png" href="img/favicon.png">
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 </head>
 <body>
+    <!-- Particle Background -->
+    <div id="particles-js"></div>
+    
     <!-- Main Application Container -->
     <div class="app-container">
-        <!-- Enhanced Header -->
+        <!-- Enhanced Header with Particles -->
         <header class="app-header">
+            <div id="particles-header" class="particles-header"></div>
             <div class="header-content">
                 <div class="logo-section">
                     <img src="img/vendors/portnox-logo.png" alt="Portnox Logo" class="company-logo">
@@ -1209,7 +1884,7 @@ cat > index.html << 'EOL'
                 </div>
                 <div class="header-actions">
                     <button id="calculate-btn-header" class="btn btn-primary" title="Calculate TCO & ROI">
-                        <i class="fas fa-calculator"></i> Calculate
+                        <i class="fas fa-calculator"></i> <span>Calculate</span>
                     </button>
                     <button id="export-pdf" class="btn btn-outline btn-icon" title="Export Report">
                         <i class="fas fa-file-pdf"></i>
@@ -1238,43 +1913,276 @@ cat > index.html << 'EOL'
                     <div id="vendor-config" class="config-card">
                         <div class="config-card-header">
                             <h3><i class="fas fa-server"></i> Select NAC Vendors</h3>
-                            <i class="fas fa-chevron-up"></i>
+                            <i class="fas fa-chevron-up toggle-icon"></i>
                         </div>
                         <div class="config-card-content">
-                            <p class="helper-text">Choose multiple vendors to compare with Portnox Cloud</p>
-                            <div class="vendor-grid">
-                                <div class="vendor-card selected" data-vendor="portnox">
+                            <p class="helper-text">Choose up to 3 vendors to compare with Portnox Cloud</p>
+                            
+                            <div class="vendor-select-grid">
+                                <div class="vendor-select-card locked selected" data-vendor="portnox">
                                     <div class="vendor-logo">
                                         <img src="img/vendors/portnox-logo.png" alt="Portnox">
                                     </div>
-                                    <div class="vendor-info">
-                                        <h3>Portnox Cloud</h3>
-                                        <p>Cloud-native NAC</p>
-                                    </div>
-                                    <div class="vendor-badge">
-                                        <span class="badge badge-primary">Best Value</span>
-                                    </div>
+                                    <div class="vendor-name">Portnox Cloud</div>
+                                    <div class="badge badge-primary">Best Value</div>
                                 </div>
                                 
-                                <div class="vendor-card" data-vendor="cisco">
+                                <div class="vendor-select-card" data-vendor="cisco">
                                     <div class="vendor-logo">
                                         <img src="img/vendors/cisco-logo.png" alt="Cisco ISE">
                                     </div>
-                                    <div class="vendor-info">
-                                        <h3>Cisco ISE</h3>
-                                        <p>Enterprise NAC</p>
+                                    <div class="vendor-name">Cisco ISE</div>
+                                    <div class="badge badge-warning">Complex</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="aruba">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/aruba-logo.png" alt="Aruba ClearPass">
                                     </div>
-                                    <div class="vendor-badge">
-                                        <span class="badge badge-warning">Complex</span>
+                                    <div class="vendor-name">Aruba ClearPass</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="forescout">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/forescout-logo.png" alt="Forescout">
+                                    </div>
+                                    <div class="vendor-name">Forescout</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="fortinac">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/fortinac-logo.png" alt="FortiNAC">
+                                    </div>
+                                    <div class="vendor-name">FortiNAC</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="juniper">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/juniper-logo.png" alt="Juniper Mist">
+                                    </div>
+                                    <div class="vendor-name">Juniper Mist</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="securew2">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/securew2-logo.png" alt="SecureW2">
+                                    </div>
+                                    <div class="vendor-name">SecureW2</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="microsoft">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/microsoft-logo.png" alt="Microsoft NPS">
+                                    </div>
+                                    <div class="vendor-name">Microsoft NPS</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="arista">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/arista-logo.png" alt="Arista Agni">
+                                    </div>
+                                    <div class="vendor-name">Arista Agni</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="foxpass">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/foxpass-logo.png" alt="Foxpass">
+                                    </div>
+                                    <div class="vendor-name">Foxpass</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="no-nac">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/no-nac-icon.png" alt="No NAC">
+                                    </div>
+                                    <div class="vendor-name">No NAC</div>
+                                    <div class="badge badge-danger">High Risk</div>
+                                </div>
+                            </div>
+                            
+                            <div class="vendor-counter">
+                                <div class="vendor-counter-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="vendor-counter-text">
+                                    Selected vendors
+                                </div>
+                                <div class="vendor-counter-value" id="vendor-counter-value">
+                                    1
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Organization Details -->
+                    <div id="organization-config" class="config-card">
+                        <div class="config-card-header">
+                            <h3><i class="fas fa-building"></i> Organization</h3>
+                            <i class="fas fa-chevron-up toggle-icon"></i>
+                        </div>
+                        <div class="config-card-content">
+                            <div class="form-group">
+                                <label for="organization-size" class="form-label">Organization Size</label>
+                                <select id="organization-size" class="form-select">
+                                    <option value="very-small">Very Small (< 300 devices)</option>
+                                    <option value="small" selected>Small (300-1,000 devices)</option>
+                                    <option value="medium">Medium (1,000-5,000 devices)</option>
+                                    <option value="large">Large (5,000-10,000 devices)</option>
+                                    <option value="enterprise">Enterprise (10,000+ devices)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="device-count" class="form-label">Number of Devices</label>
+                                <input type="number" id="device-count" class="form-control" value="500" min="300" max="100000">
+                                <div class="helper-text">Include all managed devices (PCs, mobile, IoT)</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="locations" class="form-label">Number of Locations</label>
+                                <input type="number" id="locations" class="form-control" value="2" min="1" max="1000">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Network Requirements</label>
+                                <div class="checkbox-grid">
+                                    <div class="checkbox-item">
+                                        <label class="custom-checkbox">
+                                            <input type="checkbox" id="cloud-integration">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <span>Cloud Integration</span>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <label class="custom-checkbox">
+                                            <input type="checkbox" id="legacy-devices">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <span>Legacy Devices</span>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <label class="custom-checkbox">
+                                            <input type="checkbox" id="byod-support" checked>
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <span>BYOD Support</span>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <label class="custom-checkbox">
+                                            <input type="checkbox" id="iot-support">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <span>IoT Devices</span>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <label class="custom-checkbox">
+                                            <input type="checkbox" id="wireless-support" checked>
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <span>Wireless Network</span>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <label class="custom-checkbox">
+                                            <input type="checkbox" id="remote-work" checked>
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <span>Remote Users</span>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="years-to-project" class="form-label">Analysis Period</label>
+                                <select id="years-to-project" class="form-select">
+                                    <option value="1">1 Year</option>
+                                    <option value="2">2 Years</option>
+                                    <option value="3" selected>3 Years</option>
+                                    <option value="5">5 Years</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cost Parameters -->
+                    <div id="cost-config" class="config-card">
+                        <div class="config-card-header">
+                            <h3><i class="fas fa-dollar-sign"></i> Cost Parameters</h3>
+                            <i class="fas fa-chevron-up toggle-icon"></i>
+                        </div>
+                        <div class="config-card-content">
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Portnox Cost per Device ($/month)</span>
+                                    <span class="range-slider-value" id="portnox-base-price-value">$3.00</span>
+                                </div>
+                                <input type="range" id="portnox-base-price" min="1" max="6" step="0.5" value="3">
+                                <div class="helper-text">Adjust the per-device pricing for Portnox Cloud</div>
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Volume Discount (%)</span>
+                                    <span class="range-slider-value" id="portnox-discount-value">15%</span>
+                                </div>
+                                <input type="range" id="portnox-discount" min="0" max="40" value="15" step="5">
+                                <div class="helper-text">Volume discount based on device count</div>
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Average FTE Cost ($/year)</span>
+                                    <span class="range-slider-value" id="fte-cost-value">$100,000</span>
+                                </div>
+                                <input type="range" id="fte-cost" min="60000" max="180000" value="100000" step="5000">
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">FTE Allocation for NAC (%)</span>
+                                    <span class="range-slider-value" id="fte-allocation-value">25%</span>
+                                </div>
+                                <input type="range" id="fte-allocation" min="5" max="75" value="25" step="5">
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Annual Maintenance (%)</span>
+                                    <span class="range-slider-value" id="maintenance-value">18%</span>
+                                </div>
+                                <input type="range" id="maintenance-percentage" min="10" max="30" value="18" step="1">
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Downtime Cost ($/hour)</span>
+                                    <span class="range-slider-value" id="downtime-cost-value">$5,000</span>
+                                </div>
+                                <input type="range" id="downtime-cost" min="1000" max="25000" value="5000" step="1000">
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Risk of Breach Cost Reduction (%)</span>
+                                    <span class="range-slider-value" id="risk-reduction-value">35%</span>
+                                </div>
+                                <input type="range" id="risk-reduction" min="10" max="50" value="35" step="5">
+                                <div class="helper-text">Estimated reduction in breach costs with NAC</div>
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Insurance Premium Reduction (%)</span>
+                                    <span class="range-slider-value" id="insurance-reduction-value">10%</span>
+                                </div>
+                                <input type="range" id="insurance-reduction" min="0" max="20" value="10" step="5">
+                                <div class="helper-text">Potential cyber insurance premium reduction</div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="sidebar-footer">
-                    <button id="calculate-btn" class="btn btn-primary btn-large">
+                    <button id="calculate-btn" class="btn-calculate">
                         <i class="fas fa-calculator"></i> Calculate TCO & ROI
                     </button>
                 </div>
@@ -1288,8 +2196,32 @@ cat > index.html << 'EOL'
             <!-- Main Content Area -->
             <div class="content-area" id="content-area">
                 <div class="content-wrapper">
+                    <!-- Main Tabs for Different Views -->
+                    <div class="main-tabs">
+                        <button class="main-tab active" data-view="executive">
+                            <i class="fas fa-chart-pie"></i> Executive
+                        </button>
+                        <button class="main-tab" data-view="financial">
+                            <i class="fas fa-coins"></i> Financial
+                        </button>
+                        <button class="main-tab" data-view="security">
+                            <i class="fas fa-shield-alt"></i> Security
+                        </button>
+                        <button class="main-tab" data-view="technical">
+                            <i class="fas fa-cogs"></i> Technical
+                        </button>
+                    </div>
+                    
                     <!-- Executive View -->
                     <div class="view-panel active" data-view="executive">
+                        <!-- View-specific Tabs -->
+                        <div class="results-tabs">
+                            <button class="results-tab active" data-panel="executive-summary">Executive Summary</button>
+                            <button class="results-tab" data-panel="executive-roi">ROI Analysis</button>
+                            <button class="results-tab" data-panel="executive-risk">Risk Assessment</button>
+                            <button class="results-tab" data-panel="executive-comparison">Vendor Comparison</button>
+                        </div>
+                        
                         <!-- Executive Summary Panel -->
                         <div id="executive-summary" class="results-panel active">
                             <div class="panel-header">
@@ -1334,8 +2266,58 @@ cat > index.html << 'EOL'
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div class="chart-container">
+                                <h3>3-Year TCO Comparison</h3>
+                                <div class="chart-wrapper" id="tco-comparison-chart"></div>
+                                <div class="chart-legend" id="tco-comparison-legend"></div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Cumulative Cost Comparison</h3>
+                                <div class="chart-wrapper" id="cumulative-cost-chart"></div>
+                                <div class="chart-legend" id="cumulative-cost-legend"></div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Key Strategic Benefits</h3>
+                                <div class="benefits-grid">
+                                    <div class="benefit-card">
+                                        <div class="benefit-icon">
+                                            <i class="fas fa-cloud"></i>
+                                        </div>
+                                        <h4>Cloud-Native Solution</h4>
+                                        <p>Zero infrastructure costs, automatic updates, and global scalability</p>
+                                    </div>
+                                    <div class="benefit-card">
+                                        <div class="benefit-icon">
+                                            <i class="fas fa-bolt"></i>
+                                        </div>
+                                        <h4>Rapid Deployment</h4>
+                                        <p>75% faster implementation than on-premises alternatives</p>
+                                    </div>
+                                    <div class="benefit-card">
+                                        <div class="benefit-icon">
+                                            <i class="fas fa-shield-alt"></i>
+                                        </div>
+                                        <h4>Zero Trust Security</h4>
+                                        <p>Comprehensive, continuous device authentication and verification</p>
+                                    </div>
+                                    <div class="benefit-card">
+                                        <div class="benefit-icon">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <h4>Future-Proof Solution</h4>
+                                        <p>Automatic updates, continuous innovation, and AI-powered security</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                        
+                        <!-- Other executive panels here -->
                     </div>
+                    
+                    <!-- Other views here (Financial, Security, Technical) -->
                 </div>
             </div>
         </div>
@@ -1345,6 +2327,17 @@ cat > index.html << 'EOL'
             <div class="footer-content">
                 <div class="footer-copyright">
                     &copy; 2025 Portnox. All rights reserved.
+                </div>
+                <div class="footer-links">
+                    <a href="#privacy">Privacy Policy</a>
+                    <a href="#terms">Terms of Service</a>
+                    <a href="#contact">Contact Us</a>
+                    <a href="#support">Support</a>
+                </div>
+                <div class="footer-social">
+                    <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
                 </div>
             </div>
         </footer>
@@ -1361,72 +2354,150 @@ cat > index.html << 'EOL'
     <!-- Toast Notifications Container -->
     <div id="toast-container" class="toast-container"></div>
     
-    <!-- JavaScript Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    
     <!-- Core JavaScript -->
     <script src="js/models/vendor-data.js"></script>
     <script src="js/models/calculator.js"></script>
+    <script src="js/components/particle-background.js"></script>
+    <script src="js/components/header-particles.js"></script>
+    <script src="js/components/sidebar-manager.js"></script>
+    <script src="js/charts/chart-placeholders.js"></script>
     <script src="js/portnox-tco-analyzer.js"></script>
 </body>
 </html>
 EOL
 
 # ==================================================
-# 5. Create .gitignore
+# 5. Update main JS to integrate with sidebar manager
 # ==================================================
-echo "Creating .gitignore..."
+echo "Updating main JS to integrate with sidebar manager..."
 
-cat > .gitignore << 'EOL'
-# Dependencies
-node_modules/
-npm-debug.log
-yarn-error.log
-package-lock.json
-yarn.lock
+cat > js/portnox-tco-analyzer-update.js << 'EOL'
+// Update App object to work with new sidebar manager
 
-# Build files
-dist/
-build/
-*.min.js
-*.min.css
+// Add integration with sidebar manager
+App.init = function() {
+  console.log('Initializing Portnox TCO Analyzer...');
+  
+  // Initialize Calculator
+  this.state.calculator = new TcoCalculator(this.state.config);
+  
+  // Initialize Chart Placeholders
+  this.state.chartPlaceholders = window.chartPlaceholders || new ChartPlaceholders();
+  
+  // Set up event listeners
+  this.setupEventListeners();
+  
+  // Initialize UI state
+  this.initUIState();
+  
+  // Initialize integration with sidebar manager
+  this.initSidebarIntegration();
+  
+  console.log('Portnox TCO Analyzer initialized successfully.');
+};
 
-# OS files
-.DS_Store
-Thumbs.db
+// Add method to integrate with sidebar manager
+App.initSidebarIntegration = function() {
+  // Listen for vendor selection changes
+  document.addEventListener('vendorSelectionChanged', (event) => {
+    this.state.selectedVendors = event.detail.selectedVendors;
+    console.log('App received vendor selection change:', this.state.selectedVendors);
+  });
+  
+  // Initialize with current sidebar selection
+  if (window.sidebarManager) {
+    this.state.selectedVendors = window.sidebarManager.getSelectedVendors();
+  }
+};
 
-# IDE files
-.idea/
-.vscode/
+// Update toggle vendor selection to work with sidebar manager
+App.toggleVendorSelection = function(vendorId, card) {
+  if (window.sidebarManager) {
+    window.sidebarManager.toggleVendorSelection(vendorId, card);
+  } else {
+    // Fallback to original implementation
+    if (vendorId === 'portnox') {
+      // Portnox cannot be deselected
+      return;
+    }
+    
+    const index = this.state.selectedVendors.indexOf(vendorId);
+    
+    if (index === -1) {
+      // Add vendor to selection
+      this.state.selectedVendors.push(vendorId);
+      card.classList.add('selected');
+    } else {
+      // Remove vendor from selection
+      this.state.selectedVendors.splice(index, 1);
+      card.classList.remove('selected');
+    }
+    
+    console.log('Selected vendors:', this.state.selectedVendors);
+  }
+};
 
-# Backup directories
-*_backup_*/
+// Update sidebar toggle
+App.toggleSidebar = function() {
+  if (window.sidebarManager) {
+    window.sidebarManager.toggleSidebar();
+  } else {
+    // Fallback to original implementation
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('sidebar-toggle');
+    const contentArea = document.querySelector('.content-area');
+    
+    if (sidebar && toggle && contentArea) {
+      sidebar.classList.toggle('collapsed');
+      toggle.classList.toggle('collapsed');
+      contentArea.classList.toggle('expanded');
+      
+      // Update icon
+      const icon = toggle.querySelector('i');
+      if (icon) {
+        if (sidebar.classList.contains('collapsed')) {
+          icon.className = 'fas fa-chevron-right';
+        } else {
+          icon.className = 'fas fa-chevron-left';
+        }
+      }
+    }
+  }
+};
 EOL
 
 # ==================================================
-# 6. Create .nojekyll for GitHub Pages
-# ==================================================
-echo "Creating .nojekyll for GitHub Pages..."
-touch .nojekyll
-
-# ==================================================
-# 7. Commit changes to git
+# 6. Commit changes to git
 # ==================================================
 echo "Committing changes to git..."
 
 git add .
-git commit -m "Major cleanup: removed broken references and simplified project structure"
+git commit -m "Enhanced sidebar with vendor selection grid and improved visual design"
 
 # ==================================================
-# 8. Final message
+# 7. Final message
 # ==================================================
-echo "=== Cleanup Complete ==="
-echo "All 404 errors have been resolved by creating a clean, minimal project structure."
-echo "The application now has only the essential files and should load without errors."
+echo "=== Enhancement Complete ==="
 echo ""
-echo "Next steps:"
-echo "1. Check that the basic functionality works"
-echo "2. Add back chart functionality one by one"
-echo "3. Gradually re-introduce enhanced features"
+echo "The Portnox Total Cost Analyzer has been enhanced with:"
+echo "  - Redesigned sidebar with side-by-side vendor selection"
+echo "  - Limit of 3 vendors for comparison"
+echo "  - Expandable/collapsible sidebar sections"
+echo "  - Improved Organization and Cost Configuration sections"
+echo "  - Dedicated CSS and JS for sidebar functionality"
+echo "  - Particle background in header"
+echo "  - Enhanced theme with subtle gradients and animations"
+echo "  - More visually appealing layout and design"
 echo ""
-echo "You can now serve the application with a simple HTTP server to test it."
+echo "To implement these changes:"
+echo "1. Run this script in your project directory"
+echo "2. Refresh your browser to see the new design"
+echo "3. Replace placeholder logo images with real logos"
+echo ""
+echo "Next steps could include:"
+echo "1. Further enhancing the chart visualizations"
+echo "2. Implementing the report generation functionality"
+echo "3. Adding more interactive features to the comparison views"
+echo ""
+echo "Note that this implementation uses the existing directory structure"
+echo "and integrates with your current codebase."
