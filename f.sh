@@ -1,7 +1,6 @@
 #!/bin/bash
-
-# Portnox Total Cost Analyzer Enhancement Script
-# This script enhances the UI and functionality with a focus on fixing sidebar logo sizing
+# Fix Portnox Total Cost Analyzer Sidebar Issues
+# This script focuses on fixing the sidebar vendor logo sizing issues
 
 # Color definitions for terminal output
 RED='\033[0;31m'
@@ -14,55 +13,55 @@ NC='\033[0m' # No Color
 APP_ROOT="."
 CSS_DIR="$APP_ROOT/css"
 JS_DIR="$APP_ROOT/js"
+HTML_DIR="$APP_ROOT"
 COMPONENT_DIR="$JS_DIR/components"
+
+# Create backups
 BACKUP_DIR="$APP_ROOT/backups/$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$BACKUP_DIR/css/components" "$BACKUP_DIR/js/components" "$BACKUP_DIR/html"
 
-# Display banner
 echo -e "${BLUE}=======================================================${NC}"
-echo -e "${GREEN}   Portnox Total Cost Analyzer Enhancement Suite       ${NC}"
+echo -e "${GREEN}   Portnox Sidebar Fix - Direct Code Update           ${NC}"
 echo -e "${BLUE}=======================================================${NC}"
-echo -e "${YELLOW}Fixing sidebar logo sizing and implementing enhancements${NC}"
+echo -e "${YELLOW}Fixing sidebar vendor card and logo sizing issues     ${NC}"
 echo -e "${BLUE}=======================================================${NC}"
-echo ""
 
-# Create backup of original files
-mkdir -p "$BACKUP_DIR/css/components" "$BACKUP_DIR/js/components"
-cp "$CSS_DIR/components/sidebar.css" "$BACKUP_DIR/css/components/"
-cp "$COMPONENT_DIR/sidebar-manager.js" "$BACKUP_DIR/js/components/"
+# Back up files before modifying
+echo -e "${YELLOW}Backing up files...${NC}"
+cp "$CSS_DIR/components/sidebar.css" "$BACKUP_DIR/css/components/" 2>/dev/null || echo "No sidebar.css found to backup"
+cp "$COMPONENT_DIR/sidebar-manager.js" "$BACKUP_DIR/js/components/" 2>/dev/null || echo "No sidebar-manager.js found to backup"
+cp "$HTML_DIR/index.html" "$BACKUP_DIR/html/" 2>/dev/null || echo "No index.html found to backup"
 
-# Fix sidebar vendor cards with proper logo sizing
-echo -e "${YELLOW}Fixing sidebar vendor logo sizing...${NC}"
+# Create directories if they don't exist
+mkdir -p "$CSS_DIR/components"
+mkdir -p "$COMPONENT_DIR"
 
-# Update sidebar.css with fixed vendor card styling
+# 1. Fix sidebar CSS with precise vendor card and logo sizing
+echo -e "${YELLOW}Updating sidebar CSS with fixed vendor card and logo styling...${NC}"
 cat > "$CSS_DIR/components/sidebar.css" << 'EOL'
-/* 
- * Enhanced Sidebar Styling for Portnox Total Cost Analyzer
- * With fixed logo sizing and improved vendor selection cards
- */
-
-/* Main sidebar container */
+/* Sidebar styling with fixed vendor card and logo sizing */
 .sidebar {
-  width: 360px;
-  background-color: var(--card-background);
-  box-shadow: 2px 0 15px var(--shadow-color);
+  width: 350px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
-  transition: width 0.3s ease, background-color 0.3s ease;
+  transition: width 0.3s ease;
   z-index: 100;
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid #e0e0e0;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 .sidebar.collapsed {
   width: 0;
+  overflow: hidden;
 }
 
-/* Sidebar header */
 .sidebar-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color));
+  padding: 15px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: linear-gradient(135deg, #1a5a96, #0d4275);
   color: white;
 }
 
@@ -76,21 +75,18 @@ cat > "$CSS_DIR/components/sidebar.css" << 'EOL'
 
 .sidebar-header h2 i {
   margin-right: 10px;
-  font-size: 20px;
 }
 
-/* Sidebar content area (scrollable) */
 .sidebar-content {
   padding: 15px;
   overflow-y: auto;
   flex: 1;
 }
 
-/* Sidebar footer */
 .sidebar-footer {
-  padding: 16px 20px;
-  border-top: 1px solid var(--border-color);
-  background-color: var(--background-color);
+  padding: 15px;
+  border-top: 1px solid #e0e0e0;
+  background-color: #f9fafb;
 }
 
 /* Config cards */
@@ -98,29 +94,17 @@ cat > "$CSS_DIR/components/sidebar.css" << 'EOL'
   margin-bottom: 15px;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 10px var(--shadow-color);
-  background-color: var(--card-background);
-  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.config-card:hover {
-  box-shadow: 0 5px 15px var(--shadow-color);
-}
-
-/* Config card header */
 .config-card-header {
   padding: 12px 15px;
-  background: linear-gradient(to right, var(--primary-color), var(--primary-dark-color));
+  background: linear-gradient(to right, #1a5a96, #0d4275);
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.config-card-header:hover {
-  filter: brightness(1.1);
 }
 
 .config-card-header h3 {
@@ -133,7 +117,6 @@ cat > "$CSS_DIR/components/sidebar.css" << 'EOL'
 
 .config-card-header h3 i {
   margin-right: 10px;
-  font-size: 16px;
 }
 
 .config-card-header .toggle-icon {
@@ -144,12 +127,11 @@ cat > "$CSS_DIR/components/sidebar.css" << 'EOL'
   transform: rotate(180deg);
 }
 
-/* Config card content */
 .config-card-content {
   padding: 15px;
   max-height: 1000px;
   overflow: hidden;
-  transition: max-height 0.5s ease, padding 0.3s ease;
+  transition: max-height 0.3s ease, padding 0.3s ease;
 }
 
 .config-card-content.collapsed {
@@ -157,15 +139,7 @@ cat > "$CSS_DIR/components/sidebar.css" << 'EOL'
   padding: 0 15px;
 }
 
-/* Helper text */
-.helper-text {
-  font-size: 12px;
-  color: var(--text-light);
-  margin: 5px 0 15px;
-  line-height: 1.5;
-}
-
-/* Vendor Selection Grid */
+/* FIXED: Vendor Selection Grid with proper sizing */
 .vendor-select-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -173,58 +147,73 @@ cat > "$CSS_DIR/components/sidebar.css" << 'EOL'
   margin-top: 10px;
 }
 
-/* Fixed vendor card for sidebar with proper logo sizing */
+/* FIXED: Vendor card styling with proper constraints */
 .vendor-select-card {
-  background-color: var(--card-background);
-  border: 1px solid var(--border-color);
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
   border-radius: 6px;
-  padding: 8px;
+  padding: 8px 4px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  text-align: center;
   height: 80px;
+  overflow: hidden;
 }
 
 .vendor-select-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 10px var(--shadow-color);
-  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-color: #1a5a96;
 }
 
+/* FIXED: Logo container with strict size constraints */
 .vendor-select-card .vendor-logo {
   height: 40px;
+  width: 80%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 5px;
 }
 
+/* FIXED: Proper logo sizing */
 .vendor-select-card .vendor-logo img {
-  max-height: 30px;
-  max-width: 100%;
+  max-height: 28px;
+  max-width: 80px;
   object-fit: contain;
 }
 
+/* Vendor name with proper sizing */
 .vendor-select-card .vendor-name {
   font-size: 11px;
   font-weight: 600;
-  color: var(--text-color);
+  color: #333;
   margin: 0;
-  max-width: 100%;
+  max-width: 95%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: center;
+}
+
+/* Fixed vendor description below name */
+.vendor-select-card .vendor-description {
+  font-size: 9px;
+  color: #666;
+  max-width: 95%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
 }
 
 /* Selected vendor styling */
 .vendor-select-card.selected {
-  border: 2px solid var(--primary-color);
-  background-color: var(--highlight-background);
+  border: 2px solid #1a5a96;
+  background-color: rgba(26, 90, 150, 0.05);
 }
 
 .vendor-select-card.selected:after {
@@ -232,18 +221,18 @@ cat > "$CSS_DIR/components/sidebar.css" << 'EOL'
   font-family: 'Font Awesome 5 Free';
   font-weight: 900;
   position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 18px;
-  height: 18px;
-  background-color: var(--primary-color);
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  background-color: #1a5a96;
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  box-shadow: 0 2px 5px var(--shadow-color);
+  font-size: 9px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Badge for vendor cards */
@@ -254,28 +243,67 @@ cat > "$CSS_DIR/components/sidebar.css" << 'EOL'
   transform: translateX(-50%);
   font-size: 8px;
   padding: 2px 6px;
-  border-radius: 10px;
+  border-radius: 8px;
   font-weight: 600;
   text-transform: uppercase;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.vendor-select-card .badge-primary {
-  background-color: var(--primary-color);
+.badge-primary {
+  background-color: #1a5a96;
   color: white;
 }
 
-.vendor-select-card .badge-warning {
-  background-color: var(--warning-color);
+.badge-warning {
+  background-color: #f39c12;
   color: white;
 }
 
-.vendor-select-card .badge-danger {
-  background-color: var(--error-color);
+.badge-danger {
+  background-color: #e74c3c;
   color: white;
 }
 
-/* Advanced form styling */
+/* Vendor counter styling */
+.vendor-counter {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background-color: rgba(26, 90, 150, 0.05);
+  border: 1px dashed #1a5a96;
+}
+
+.vendor-counter-icon {
+  color: #1a5a96;
+  margin-right: 8px;
+}
+
+.vendor-counter-text {
+  flex: 1;
+  font-size: 12px;
+  color: #333;
+}
+
+.vendor-counter-value {
+  font-weight: 700;
+  color: #1a5a96;
+  font-size: 14px;
+  padding: 2px 8px;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Helper text */
+.helper-text {
+  font-size: 12px;
+  color: #666;
+  margin: 5px 0 10px;
+}
+
+/* Form styling */
 .form-group {
   margin-bottom: 15px;
 }
@@ -284,48 +312,30 @@ cat > "$CSS_DIR/components/sidebar.css" << 'EOL'
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-color);
   margin-bottom: 5px;
 }
 
 .form-control {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #e0e0e0;
   border-radius: 6px;
   font-size: 14px;
-  transition: all 0.3s ease;
-  background-color: var(--input-background);
-  color: var(--text-color);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.form-control:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-color-transparent);
-  outline: none;
+  background-color: white;
 }
 
 .form-select {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #e0e0e0;
   border-radius: 6px;
   font-size: 14px;
-  transition: all 0.3s ease;
-  background-color: var(--input-background);
-  color: var(--text-color);
+  background-color: white;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 12px;
-}
-
-.form-select:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-color-transparent);
-  outline: none;
 }
 
 /* Range slider styling */
@@ -343,58 +353,45 @@ cat > "$CSS_DIR/components/sidebar.css" << 'EOL'
 .range-slider-label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-color);
 }
 
 .range-slider-value {
   font-size: 13px;
-  font-weight: 700;
-  color: var(--primary-color);
+  font-weight: 600;
+  color: #1a5a96;
 }
 
 input[type="range"] {
   width: 100%;
-  height: 10px;
+  height: 6px;
   -webkit-appearance: none;
-  background: linear-gradient(to right, var(--primary-color) 0%, var(--primary-color) 50%, var(--border-color) 50%, var(--border-color) 100%);
-  border-radius: 5px;
+  background: linear-gradient(to right, #1a5a96 0%, #1a5a96 50%, #e0e0e0 50%, #e0e0e0 100%);
+  border-radius: 3px;
   outline: none;
   padding: 0;
-  margin: 0;
+  margin: 10px 0;
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: white;
-  border: 2px solid var(--primary-color);
+  border: 2px solid #1a5a96;
   cursor: pointer;
-  transition: all .3s ease-in-out;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-input[type="range"]::-webkit-slider-thumb:hover {
-  background: var(--primary-color);
-  border-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: white;
-  border: 2px solid var(--primary-color);
+  border: 2px solid #1a5a96;
   cursor: pointer;
-  transition: all .3s ease-in-out;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-input[type="range"]::-moz-range-thumb:hover {
-  background: var(--primary-color);
-  border-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 /* Checkbox styling */
@@ -402,7 +399,7 @@ input[type="range"]::-moz-range-thumb:hover {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-gap: 10px;
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 .checkbox-item {
@@ -410,86 +407,30 @@ input[type="range"]::-moz-range-thumb:hover {
   align-items: center;
 }
 
-.custom-checkbox {
-  position: relative;
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
-  cursor: pointer;
+.checkbox-item span {
+  margin-left: 8px;
+  font-size: 12px;
 }
 
-.custom-checkbox input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.checkmark {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 18px;
-  height: 18px;
-  background-color: var(--input-background);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  transition: all 0.3s ease;
-}
-
-.custom-checkbox:hover .checkmark {
-  border-color: var(--primary-color);
-}
-
-.custom-checkbox input:checked ~ .checkmark {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
-}
-
-.custom-checkbox input:checked ~ .checkmark:after {
-  display: block;
-}
-
-.custom-checkbox .checkmark:after {
-  left: 6px;
-  top: 2px;
-  width: 5px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-/* Transition for sidebar toggle */
+/* Sidebar toggle button */
 .sidebar-toggle {
   position: fixed;
-  left: 360px;
+  left: 350px;
   top: 50%;
   transform: translateY(-50%);
-  background-color: var(--card-background);
-  width: 28px;
-  height: 56px;
+  background-color: white;
+  width: 24px;
+  height: 50px;
   border-radius: 0 8px 8px 0;
-  box-shadow: 2px 0 10px var(--shadow-color);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 100;
-  border: 1px solid var(--border-color);
+  transition: left 0.3s ease;
+  z-index: 99;
+  border: 1px solid #e0e0e0;
   border-left: none;
-}
-
-.sidebar-toggle:hover {
-  background-color: var(--primary-color);
-  color: white;
 }
 
 .sidebar-toggle.collapsed {
@@ -504,118 +445,34 @@ input[type="range"]::-moz-range-thumb:hover {
   transform: rotate(180deg);
 }
 
-/* Selected vendor counter */
-.vendor-counter {
-  display: flex;
-  align-items: center;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 6px;
-  background-color: var(--highlight-background);
-  border: 1px dashed var(--primary-color);
-}
-
-.vendor-counter-icon {
-  font-size: 16px;
-  color: var(--primary-color);
-  margin-right: 10px;
-}
-
-.vendor-counter-text {
-  flex: 1;
-  font-size: 13px;
-  color: var(--text-color);
-}
-
-.vendor-counter-value {
-  font-weight: 700;
-  color: var(--primary-color);
-  font-size: 15px;
-  padding: 2px 8px;
-  background-color: var(--card-background);
-  border-radius: 4px;
-  box-shadow: 0 1px 3px var(--shadow-color);
-}
-
-/* Calculate button styling */
+/* Calculate button */
 .btn-calculate {
-  position: relative;
-  display: block;
   width: 100%;
-  padding: 14px 20px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color));
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #1a5a96, #0d4275);
   color: white;
+  border: none;
+  border-radius: 6px;
   font-size: 15px;
   font-weight: 600;
-  text-align: center;
   cursor: pointer;
-  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .btn-calculate:hover {
-  background: linear-gradient(135deg, var(--primary-dark-color), var(--primary-color));
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-}
-
-.btn-calculate:active {
-  transform: translateY(1px);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn-calculate i {
-  margin-right: 10px;
+  margin-right: 8px;
 }
 
-/* Animation for ripple effect */
-.btn-calculate:after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 10px;
-  height: 10px;
-  background: rgba(255, 255, 255, 0.3);
-  opacity: 0;
-  border-radius: 100%;
-  transform: scale(1, 1) translate(-50%);
-  transform-origin: 50% 50%;
-}
-
-.btn-calculate:hover:after {
-  animation: ripple 1s ease-out;
-}
-
-@keyframes ripple {
-  0% {
-    transform: scale(0, 0);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(20, 20);
-    opacity: 0;
-  }
-}
-
-/* Responsive adaptations */
-@media (max-width: 1024px) {
-  .sidebar {
-    width: 300px;
-  }
-  
-  .sidebar-toggle {
-    left: 300px;
-  }
-  
-  .vendor-select-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
+/* Mobile responsive */
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
@@ -623,7 +480,7 @@ input[type="range"]::-moz-range-thumb:hover {
     bottom: 0;
     left: 0;
     z-index: 1000;
-    width: 85%;
+    width: 280px;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
   }
@@ -654,17 +511,59 @@ input[type="range"]::-moz-range-thumb:hover {
     display: block;
     position: fixed;
     left: 0;
-    top: 60px;
-    width: 40px;
+    top: 70px;
+    border-radius: 0 4px 4px 0;
+    width: 30px;
     height: 40px;
-    border-radius: 0 8px 8px 0;
-    box-shadow: 2px 0 10px var(--shadow-color);
-    z-index: 1001;
   }
 }
 EOL
 
-# Update sidebar-manager.js with fixes for vendor cards
+# 2. Ensure vendor cards render properly with controlled logo sizes in HTML
+echo -e "${YELLOW}Updating HTML index file to ensure proper vendor card rendering...${NC}"
+
+# Find index.html file
+INDEX_HTML=$(find "$HTML_DIR" -name "index.html" -type f | head -n 1)
+
+if [ -f "$INDEX_HTML" ]; then
+  # Create a temporary file
+  TMP_FILE=$(mktemp)
+  
+  # Add CSS variable definitions to head section
+  sed '/<\/head>/i \
+    <style>\
+      :root {\
+        --primary-color: #1a5a96;\
+        --primary-dark-color: #0d4275;\
+        --highlight-background: rgba(26, 90, 150, 0.05);\
+      }\
+      /* Fix for vendor cards in sidebar */\
+      .vendor-select-card .vendor-logo img {\
+        max-height: 28px !important;\
+        max-width: 80px !important;\
+        object-fit: contain !important;\
+      }\
+      .vendor-select-card {\
+        height: 80px !important;\
+        padding: 8px 4px !important;\
+      }\
+      .vendor-select-card .vendor-name {\
+        font-size: 11px !important;\
+        white-space: nowrap !important;\
+        overflow: hidden !important;\
+        text-overflow: ellipsis !important;\
+      }\
+    </style>' "$INDEX_HTML" > "$TMP_FILE"
+  
+  # Replace the original with our modified version
+  mv "$TMP_FILE" "$INDEX_HTML"
+  
+  echo -e "${GREEN}Successfully updated index.html${NC}"
+else
+  echo -e "${RED}Could not find index.html - some changes were not applied${NC}"
+fi
+
+# 3. Update sidebar-manager.js to ensure proper handling of vendor selection
 echo -e "${YELLOW}Updating sidebar manager for proper vendor handling...${NC}"
 
 cat > "$COMPONENT_DIR/sidebar-manager.js" << 'EOL'
@@ -694,6 +593,9 @@ class SidebarManager {
   init() {
     if (this.initialized) return;
     
+    // Fix vendor logos if they're too big
+    this.fixVendorLogos();
+    
     // Initialize collapsible sections
     this.initCollapsibleSections();
     
@@ -708,6 +610,38 @@ class SidebarManager {
     
     this.initialized = true;
     console.log('Sidebar manager initialized');
+  }
+  
+  /**
+   * Fix vendor logos that might be too big
+   */
+  fixVendorLogos() {
+    const vendorCards = document.querySelectorAll('.vendor-select-card');
+    
+    vendorCards.forEach(card => {
+      const logoImg = card.querySelector('.vendor-logo img');
+      if (logoImg) {
+        // Ensure proper sizing
+        logoImg.style.maxHeight = '28px';
+        logoImg.style.maxWidth = '80px';
+        logoImg.style.objectFit = 'contain';
+      }
+      
+      // Fix card height
+      card.style.height = '80px';
+      card.style.padding = '8px 4px';
+      
+      // Fix vendor name
+      const nameElement = card.querySelector('.vendor-name');
+      if (nameElement) {
+        nameElement.style.fontSize = '11px';
+        nameElement.style.whiteSpace = 'nowrap';
+        nameElement.style.overflow = 'hidden';
+        nameElement.style.textOverflow = 'ellipsis';
+        nameElement.style.maxWidth = '95%';
+        nameElement.style.textAlign = 'center';
+      }
+    });
   }
   
   /**
@@ -917,7 +851,7 @@ class SidebarManager {
     const value = parseFloat(slider.value);
     const percentage = ((value - min) / (max - min)) * 100;
     
-    slider.style.background = `linear-gradient(to right, var(--primary-color) 0%, var(--primary-color) ${percentage}%, var(--border-color) ${percentage}%, var(--border-color) 100%)`;
+    slider.style.background = `linear-gradient(to right, #1a5a96 0%, #1a5a96 ${percentage}%, #e0e0e0 ${percentage}%, #e0e0e0 100%)`;
   }
   
   /**
@@ -1056,319 +990,71 @@ class SidebarManager {
 window.sidebarManager = new SidebarManager();
 EOL
 
-# Create enhanced styles.css for better overall look
-echo -e "${YELLOW}Creating enhanced styles for overall UI improvement...${NC}"
+# 4. Create CSS for immediate logo fixes (applied via JavaScript)
+echo -e "${YELLOW}Creating logo fix script to be immediately applied...${NC}"
 
-mkdir -p "$CSS_DIR/custom"
-cat > "$CSS_DIR/custom/enhanced-styles.css" << 'EOL'
-/* Enhanced styles for Portnox Total Cost Analyzer */
-
-/* Dashboard metric cards */
-.dashboard-card {
-  background-color: var(--card-background);
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-}
-
-.dashboard-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
-}
-
-.dashboard-card h3 {
-  margin: 0 0 8px;
-  font-size: 16px;
-  color: var(--text-secondary);
-}
-
-.dashboard-card .metric-value {
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0 0 6px;
-  color: var(--primary-color);
-}
-
-.dashboard-card .metric-label {
-  font-size: 14px;
-  color: var(--text-light);
-  margin-bottom: 10px;
-}
-
-.dashboard-card .metric-trend {
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  color: #2ecc71;
-}
-
-.dashboard-card .metric-trend i {
-  margin-right: 5px;
-}
-
-/* Tabs styling */
-.main-tabs, .results-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 20px;
-}
-
-.main-tab, .results-tab {
-  padding: 12px 18px;
-  cursor: pointer;
-  position: relative;
-  font-weight: 600;
-  color: var(--text-light);
-  border-bottom: 3px solid transparent;
-  transition: all 0.3s ease;
-}
-
-.main-tab.active, .results-tab.active {
-  color: var(--primary-color);
-  border-bottom-color: var(--primary-color);
-}
-
-.main-tab:hover, .results-tab:hover {
-  color: var(--primary-color);
-  background-color: rgba(26, 90, 150, 0.05);
-}
-
-.main-tab i {
-  margin-right: 8px;
-}
-
-/* Chart container styling */
-.chart-container {
-  background-color: var(--card-background);
-  border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.chart-container h3 {
-  margin: 0 0 15px;
-  font-size: 18px;
-  color: var(--text-color);
-}
-
-/* Header styling */
-.app-header {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color));
-  padding: 15px 0;
-  color: white;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 20px;
-}
-
-.app-title h1 {
-  margin: 0;
-  font-size: 22px;
-}
-
-.header-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.app-title .subtitle {
-  margin: 5px 0 0;
-  font-size: 14px;
-  opacity: 0.9;
-}
-
-/* Enhanced buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  border: none;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color));
-  color: white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-}
-
-.btn-outline {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-}
-
-.btn-outline:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-}
-
-.btn i {
-  margin-right: 6px;
-}
-
-/* Panel header styling */
-.panel-header {
-  margin-bottom: 25px;
-}
-
-.panel-header h2 {
-  margin: 0 0 5px;
-  font-size: 24px;
-  color: var(--text-color);
-}
-
-.panel-header .subtitle {
-  margin: 0;
-  font-size: 16px;
-  color: var(--text-light);
-}
-
-/* Executive summary panel styling */
-.executive-summary h2, .executive-summary h3 {
-  color: var(--primary-color);
-}
-
-.executive-summary .metric-value.highlight-value {
-  color: var(--primary-color);
-}
-
-/* Benefits grid */
-.benefits-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-  margin: 20px 0;
-}
-
-.benefit-card {
-  background-color: var(--card-background);
-  border-radius: 10px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-}
-
-.benefit-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
-}
-
-.benefit-card .benefit-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: rgba(26, 90, 150, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 15px;
-}
-
-.benefit-card .benefit-icon i {
-  font-size: 24px;
-  color: var(--primary-color);
-}
-
-.benefit-card h4 {
-  margin: 0 0 10px;
-  font-size: 16px;
-  color: var(--text-color);
-}
-
-.benefit-card p {
-  margin: 0;
-  font-size: 14px;
-  color: var(--text-light);
-}
-
-/* Animations for dashboard cards */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+cat > "$JS_DIR/vendor-logo-fix.js" << 'EOL'
+/**
+ * Immediate fix for vendor logos in sidebar
+ */
+(function fixVendorLogos() {
+  // Function to fix vendor logos
+  function applyLogoFixes() {
+    const vendorCards = document.querySelectorAll('.vendor-select-card');
+    
+    vendorCards.forEach(card => {
+      const logoImg = card.querySelector('.vendor-logo img');
+      if (logoImg) {
+        // Ensure proper sizing - important flags to override any inline styles
+        logoImg.style.cssText = 'max-height: 28px !important; max-width: 80px !important; object-fit: contain !important;';
+      }
+      
+      // Fix card height
+      card.style.cssText = 'height: 80px !important; padding: 8px 4px !important;';
+      
+      // Fix vendor name
+      const nameElement = card.querySelector('.vendor-name');
+      if (nameElement) {
+        nameElement.style.cssText = 'font-size: 11px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 95% !important; text-align: center !important;';
+      }
+    });
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  // Apply fixes immediately
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyLogoFixes);
+  } else {
+    applyLogoFixes();
   }
-}
-
-.dashboard-card {
-  animation: fadeInUp 0.5s ease forwards;
-}
-
-.dashboard-card:nth-child(1) { animation-delay: 0.1s; }
-.dashboard-card:nth-child(2) { animation-delay: 0.2s; }
-.dashboard-card:nth-child(3) { animation-delay: 0.3s; }
-.dashboard-card:nth-child(4) { animation-delay: 0.4s; }
-
-/* Better table styling */
-.data-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.data-table th {
-  background-color: var(--primary-color);
-  color: white;
-  font-weight: 600;
-  padding: 12px 15px;
-  text-align: left;
-}
-
-.data-table td {
-  padding: 12px 15px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.data-table tr:last-child td {
-  border-bottom: none;
-}
-
-.data-table tr:nth-child(even) {
-  background-color: rgba(0, 0, 0, 0.01);
-}
-
-.data-table tr:hover td {
-  background-color: rgba(26, 90, 150, 0.05);
-}
+  
+  // Also apply fixes after any updates to the DOM
+  const observer = new MutationObserver(function(mutations) {
+    applyLogoFixes();
+  });
+  
+  // Start observing once the DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    observer.observe(document.body, { childList: true, subtree: true });
+  });
+})();
 EOL
 
-# Update HTML file to include the new styles
-echo -e "${YELLOW}Updating HTML to include enhanced styles...${NC}"
-
-# Find index.html and add our custom CSS
-INDEX_HTML=$(find "$APP_ROOT" -name "index.html" -type f | head -n 1)
-
+# 5. Add the logo fix script to the HTML
 if [ -f "$INDEX_HTML" ]; then
-    # Use sed to add our custom CSS before the closing head tag
-    sed -i '/<\/head>/i \    <link rel="stylesheet" href="css/custom/enhanced-styles.css">' "$INDEX_HTML"
-    echo -e "${GREEN}Updated index.html with enhanced styles${NC}"
+  # Create a temporary file
+  TMP_FILE=$(mktemp)
+  
+  # Add our script right before the closing body tag
+  sed '/<\/body>/i \    <script src="js/vendor-logo-fix.js"></script>' "$INDEX_HTML" > "$TMP_FILE"
+  
+  # Replace the original with our modified version
+  mv "$TMP_FILE" "$INDEX_HTML"
+  
+  echo -e "${GREEN}Added logo fix script to index.html${NC}"
 else
-    echo -e "${RED}Could not find index.html - manual update required${NC}"
+  echo -e "${RED}Could not find index.html to add logo fix script${NC}"
 fi
 
-echo -e "${GREEN}Sidebar logo sizing fixed and UI enhancements implemented!${NC}"
+echo -e "${GREEN}Sidebar fixes applied successfully!${NC}"
 echo -e "${BLUE}A backup of the original files was created in: $BACKUP_DIR${NC}"
 echo -e "${YELLOW}Refresh your browser to see the changes.${NC}"

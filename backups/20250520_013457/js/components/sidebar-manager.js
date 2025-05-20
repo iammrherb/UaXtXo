@@ -24,9 +24,6 @@ class SidebarManager {
   init() {
     if (this.initialized) return;
     
-    // Fix vendor logos if they're too big
-    this.fixVendorLogos();
-    
     // Initialize collapsible sections
     this.initCollapsibleSections();
     
@@ -41,38 +38,6 @@ class SidebarManager {
     
     this.initialized = true;
     console.log('Sidebar manager initialized');
-  }
-  
-  /**
-   * Fix vendor logos that might be too big
-   */
-  fixVendorLogos() {
-    const vendorCards = document.querySelectorAll('.vendor-select-card');
-    
-    vendorCards.forEach(card => {
-      const logoImg = card.querySelector('.vendor-logo img');
-      if (logoImg) {
-        // Ensure proper sizing
-        logoImg.style.maxHeight = '28px';
-        logoImg.style.maxWidth = '80px';
-        logoImg.style.objectFit = 'contain';
-      }
-      
-      // Fix card height
-      card.style.height = '80px';
-      card.style.padding = '8px 4px';
-      
-      // Fix vendor name
-      const nameElement = card.querySelector('.vendor-name');
-      if (nameElement) {
-        nameElement.style.fontSize = '11px';
-        nameElement.style.whiteSpace = 'nowrap';
-        nameElement.style.overflow = 'hidden';
-        nameElement.style.textOverflow = 'ellipsis';
-        nameElement.style.maxWidth = '95%';
-        nameElement.style.textAlign = 'center';
-      }
-    });
   }
   
   /**
@@ -282,7 +247,7 @@ class SidebarManager {
     const value = parseFloat(slider.value);
     const percentage = ((value - min) / (max - min)) * 100;
     
-    slider.style.background = `linear-gradient(to right, #1a5a96 0%, #1a5a96 ${percentage}%, #e0e0e0 ${percentage}%, #e0e0e0 100%)`;
+    slider.style.background = `linear-gradient(to right, var(--primary-color) 0%, var(--primary-color) ${percentage}%, var(--border-color) ${percentage}%, var(--border-color) 100%)`;
   }
   
   /**
