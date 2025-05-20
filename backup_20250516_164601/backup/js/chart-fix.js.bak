@@ -1,0 +1,306 @@
+/**
+ * Chart Fix for Portnox Total Cost Analyzer
+ * Handles proper chart initialization and destruction
+ */
+
+(function() {
+    // Chart registry to keep track of all charts
+    window.chartRegistry = {
+        charts: {},
+        
+        // Register a chart instance
+        register: function(id, chartInstance) {
+            this.charts[id] = chartInstance;
+        },
+        
+        // Get a chart instance
+        get: function(id) {
+            return this.charts[id];
+        },
+        
+        // Check if a chart exists
+        exists: function(id) {
+            return this.charts[id] !== undefined;
+        },
+        
+        // Destroy a chart instance
+        destroy: function(id) {
+            if (this.exists(id)) {
+                try {
+                    this.charts[id].destroy();
+                } catch (e) {
+                    console.warn(`Error destroying chart ${id}:`, e);
+                }
+                delete this.charts[id];
+                return true;
+            }
+            return false;
+        },
+        
+        // Destroy all charts
+        destroyAll: function() {
+            Object.keys(this.charts).forEach(id => {
+                this.destroy(id);
+            });
+        }
+    };
+    
+    // Safe chart creation function
+    window.createChart = function(canvasId, config) {
+        if (!canvasId || !config) {
+            throw new Error('Canvas ID and config are required');
+        }
+        
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) {
+            throw new Error(`Canvas element with ID '${canvasId}' not found`);
+        }
+        
+        try {
+            // Destroy any existing chart on this canvas
+            if (window.chartRegistry.exists(canvasId)) {
+                window.chartRegistry.destroy(canvasId);
+            }
+            
+            // Create new chart
+            const chartInstance = new Chart(canvas.getContext('2d'), config);
+            
+            // Register the new chart
+            window.chartRegistry.register(canvasId, chartInstance);
+            
+            return chartInstance;
+        } catch (error) {
+            console.error(`Error creating chart ${canvasId}:`, error);
+            throw error;
+        }
+    };
+    
+    // TCO Comparison Chart Creator
+    window.initCharts = function() {
+        try {
+            // Initialize TCO Comparison Chart
+            const tcoComparisonChart = document.getElementById('tco-comparison-chart');
+            if (tcoComparisonChart) {
+                window.createChart('tco-comparison-chart', {
+                    type: 'bar',
+                    data: {
+                        labels: ['Portnox Cloud', 'Cisco ISE', 'Aruba ClearPass', 'Forescout', 'FortiNAC', 'Microsoft NPS'],
+                        datasets: [{
+                            label: '3-Year TCO (USD)',
+                            data: [202500, 450000, 375000, 410000, 350000, 180000],
+                            backgroundColor: [
+                                '#2BD25B', // Portnox (green)
+                                '#1BA0E1', // Cisco (blue)
+                                '#F7941D', // Aruba (orange)
+                                '#6F42C1', // Forescout (purple)
+                                '#E74C3C', // FortiNAC (red)
+                                '#7D5BE2'  // Microsoft (violet)
+                            ],
+                            borderColor: [
+                                '#1CA43F',
+                                '#0A8BCE',
+                                '#E67E00',
+                                '#5A30A0',
+                                '#C0392B',
+                                '#5D3BB2'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return '$' + context.raw.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Initialize Cumulative Cost Chart
+            const cumulativeCostChart = document.getElementById('cumulative-cost-chart');
+            if (cumulativeCostChart) {
+                window.createChart('cumulative-cost-chart', {
+                    type: 'line',
+                    data: {
+                        labels: ['Year 1', 'Year 2', 'Year 3'],
+                        datasets: [
+                            {
+                                label: 'Portnox Cloud',
+                                data: [78500, 142500, 202500],
+                                borderColor: '#2BD25B',
+                                backgroundColor: 'rgba(43, 210, 91, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Cisco ISE',
+                                data: [230000, 345000, 450000],
+                                borderColor: '#1BA0E1',
+                                backgroundColor: 'rgba(27, 160, 225, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Aruba ClearPass',
+                                data: [180000, 275000, 375000],
+                                borderColor: '#F7941D',
+                                backgroundColor: 'rgba(247, 148, 29, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': $' + context.raw.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Initialize other charts as needed
+            const vendorRadarChart = document.getElementById('vendor-radar-chart');
+            if (vendorRadarChart) {
+                window.createChart('vendor-radar-chart', {
+                    type: 'radar',
+                    data: {
+                        labels: [
+                            'Cloud-Native',
+                            'Implementation Speed',
+                            'Total Cost',
+                            'Ease of Use',
+                            'Feature Set',
+                            'Zero Trust',
+                            'Scalability',
+                            'Maintenance'
+                        ],
+                        datasets: [
+                            {
+                                label: 'Portnox Cloud',
+                                data: [10, 9, 9, 9, 8, 9, 9, 10],
+                                backgroundColor: 'rgba(43, 210, 91, 0.2)',
+                                borderColor: '#2BD25B',
+                                pointBackgroundColor: '#2BD25B',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: '#2BD25B'
+                            },
+                            {
+                                label: 'Cisco ISE',
+                                data: [4, 5, 4, 5, 9, 7, 8, 5],
+                                backgroundColor: 'rgba(27, 160, 225, 0.2)',
+                                borderColor: '#1BA0E1',
+                                pointBackgroundColor: '#1BA0E1',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: '#1BA0E1'
+                            },
+                            {
+                                label: 'Aruba ClearPass',
+                                data: [5, 6, 5, 6, 8, 7, 8, 6],
+                                backgroundColor: 'rgba(247, 148, 29, 0.2)',
+                                borderColor: '#F7941D',
+                                pointBackgroundColor: '#F7941D',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: '#F7941D'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        elements: {
+                            line: {
+                                borderWidth: 2
+                            }
+                        },
+                        scales: {
+                            r: {
+                                angleLines: {
+                                    display: true
+                                },
+                                suggestedMin: 0,
+                                suggestedMax: 10
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error initializing charts:', error);
+        }
+    };
+    
+    // Add event listener for tab changes
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize charts on page load
+        window.initCharts();
+        
+        // Handle tab changes
+        const tabs = document.querySelectorAll('.stakeholder-tab, .results-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Add small delay to ensure the canvas is ready
+                setTimeout(function() {
+                    window.initCharts();
+                }, 100);
+            });
+        });
+        
+        // Handle calculate button
+        const calculateBtn = document.getElementById('calculate-btn');
+        if (calculateBtn) {
+            calculateBtn.addEventListener('click', function() {
+                // Destroy all charts before recalculating
+                window.chartRegistry.destroyAll();
+                
+                // Add small delay to ensure the canvas is ready
+                setTimeout(function() {
+                    window.initCharts();
+                }, 100);
+            });
+        }
+    });
+})();
