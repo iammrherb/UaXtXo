@@ -1,0 +1,163 @@
+/**
+ * Header Particle Background for Portnox Total Cost Analyzer
+ * Creates a subtle particle effect in the header
+ */
+
+class HeaderParticles {
+  constructor(containerId = 'particles-header', config = {}) {
+    this.containerId = containerId;
+    
+    // Default configuration - lighter and more subtle than main background
+    this.config = {
+      particles: {
+        number: {
+          value: 30,
+          density: {
+            enable: true,
+            value_area: 800
+          }
+        },
+        color: {
+          value: '#1a5a96'
+        },
+        shape: {
+          type: 'circle',
+          stroke: {
+            width: 0,
+            color: '#000000'
+          },
+          polygon: {
+            nb_sides: 5
+          }
+        },
+        opacity: {
+          value: 0.3,
+          random: false,
+          anim: {
+            enable: false,
+            speed: 1,
+            opacity_min: 0.1,
+            sync: false
+          }
+        },
+        size: {
+          value: 3,
+          random: true,
+          anim: {
+            enable: false,
+            speed: 40,
+            size_min: 0.1,
+            sync: false
+          }
+        },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: '#1a5a96',
+          opacity: 0.2,
+          width: 1
+        },
+        move: {
+          enable: true,
+          speed: 2,
+          direction: 'none',
+          random: false,
+          straight: false,
+          out_mode: 'out',
+          bounce: false,
+          attract: {
+            enable: false,
+            rotateX: 600,
+            rotateY: 1200
+          }
+        }
+      },
+      interactivity: {
+        detect_on: 'canvas',
+        events: {
+          onhover: {
+            enable: true,
+            mode: 'grab'
+          },
+          onclick: {
+            enable: false,
+            mode: 'push'
+          },
+          resize: true
+        },
+        modes: {
+          grab: {
+            distance: 140,
+            line_linked: {
+              opacity: 0.5
+            }
+          }
+        }
+      },
+      retina_detect: true,
+      ...config
+    };
+    
+    // Update colors based on dark mode
+    this.updateColors();
+    
+    // Initialize particles.js
+    this.init();
+    
+    // Set up dark mode listener
+    this.setupDarkModeListener();
+  }
+  
+  /**
+   * Initialize particles.js
+   */
+  init() {
+    if (typeof particlesJS !== 'undefined' && document.getElementById(this.containerId)) {
+      particlesJS(this.containerId, this.config);
+    } else {
+      console.warn('particles.js not loaded or container not found for header');
+    }
+  }
+  
+  /**
+   * Update particle colors based on dark mode
+   */
+  updateColors() {
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    
+    if (isDarkMode) {
+      this.config.particles.color.value = '#2980b9';
+      this.config.particles.line_linked.color = '#2980b9';
+    } else {
+      this.config.particles.color.value = '#1a5a96';
+      this.config.particles.line_linked.color = '#1a5a96';
+    }
+  }
+  
+  /**
+   * Set up dark mode listener
+   */
+  setupDarkModeListener() {
+    // Listen for theme changes
+    window.addEventListener('themechange', (event) => {
+      this.updateColors();
+      this.init();
+    });
+    
+    // Detect dark mode toggle
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    if (darkModeToggle) {
+      darkModeToggle.addEventListener('click', () => {
+        setTimeout(() => {
+          this.updateColors();
+          this.init();
+        }, 100);
+      });
+    }
+  }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  window.headerParticles = new HeaderParticles();
+});
