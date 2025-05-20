@@ -1,0 +1,63 @@
+/* Heatmap component styles */
+.heatmap-container {
+  position: relative;
+  height: 400px;
+  width: 100%;
+  background-color: var(--card-background);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-size: 12px;
+  pointer-events: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.2s ease;
+}
+
+.tooltip strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--primary-color);
+}
+
+/* D3 chart styles */
+.d3-chart {
+  font: 12px var(--font-family);
+}
+
+.d3-chart .axis path,
+.d3-chart .axis line {
+  fill: none;
+  stroke: #ccc;
+  shape-rendering: crispEdges;
+}
+
+.d3-chart text {
+  fill: var(--text-color);
+}
+
+.d3-chart .legend text {
+  font-size: 10px;
+}
+
+.d3-chart .area {
+  fill-opacity: 0.6;
+}
+
+.d3-chart .node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.d3-chart .link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}

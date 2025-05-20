@@ -1,63 +1,301 @@
-/* Heatmap component styles */
+/* Enhanced Heatmap component styles for Portnox Total Cost Analyzer */
 .heatmap-container {
   position: relative;
   height: 400px;
   width: 100%;
   background-color: var(--card-background);
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 6px 16px var(--shadow-color);
+  border: 1px solid rgba(0,0,0,0.03);
+  transition: all 0.4s ease;
 }
 
-.tooltip {
+.heatmap-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px var(--shadow-color);
+}
+
+.heatmap-tooltip {
   position: absolute;
   z-index: 10;
-  background-color: rgba(255, 255, 255, 0.95);
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 8px 12px;
+  background-color: var(--card-background);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 12px 15px;
   font-size: 12px;
   pointer-events: none;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: opacity 0.2s ease;
+  box-shadow: 0 5px 15px var(--shadow-color);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  max-width: 250px;
 }
 
-.tooltip strong {
+.heatmap-tooltip strong {
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 5px;
   color: var(--primary-color);
+  font-weight: 600;
+  font-size: 13px;
 }
 
-/* D3 chart styles */
+.heatmap-tooltip-value {
+  display: flex;
+  justify-content: space-between;
+  margin: 3px 0;
+}
+
+.heatmap-tooltip-label {
+  color: var(--text-secondary);
+  margin-right: 10px;
+}
+
+.heatmap-tooltip-metric {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+/* D3 chart enhancements */
 .d3-chart {
-  font: 12px var(--font-family);
+  font-family: var(--font-family);
+  font-size: 12px;
 }
 
 .d3-chart .axis path,
 .d3-chart .axis line {
   fill: none;
-  stroke: #ccc;
+  stroke: var(--border-color);
   shape-rendering: crispEdges;
+  stroke-width: 1px;
 }
 
 .d3-chart text {
   fill: var(--text-color);
+  font-size: 12px;
+}
+
+.d3-chart .axis-title {
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--text-color);
 }
 
 .d3-chart .legend text {
-  font-size: 10px;
+  font-size: 11px;
+  fill: var(--text-secondary);
 }
 
 .d3-chart .area {
-  fill-opacity: 0.6;
+  fill-opacity: 0.7;
+  transition: fill-opacity 0.3s ease;
+}
+
+.d3-chart .area:hover {
+  fill-opacity: 0.9;
 }
 
 .d3-chart .node {
   stroke: #fff;
   stroke-width: 1.5px;
+  transition: all 0.3s ease;
+}
+
+.d3-chart .node:hover {
+  stroke-width: 2.5px;
+  cursor: pointer;
 }
 
 .d3-chart .link {
   fill: none;
-  stroke: #ccc;
+  stroke: var(--border-color);
   stroke-width: 1.5px;
+  transition: stroke 0.3s ease, stroke-width 0.3s ease;
+}
+
+.d3-chart .link:hover {
+  stroke: var(--primary-color);
+  stroke-width: 2px;
+}
+
+/* Gradient background for heatmaps */
+.heatmap-gradient-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom right, 
+    rgba(var(--primary-color-rgb), 0.05) 0%, 
+    rgba(var(--primary-color-rgb), 0.01) 50%,
+    rgba(var(--primary-color-rgb), 0.05) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Enhanced heatmap visualization */
+.heatmap-grid {
+  position: relative;
+  z-index: 1;
+}
+
+.heatmap-cell {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  stroke: var(--card-background);
+  stroke-width: 1px;
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.05);
+  stroke: var(--text-color);
+  stroke-width: 2px;
+  filter: brightness(1.1);
+  cursor: pointer;
+}
+
+.heatmap-title {
+  font-size: 18px;
+  font-weight: 600;
+  text-anchor: middle;
+  fill: var(--text-color);
+}
+
+.heatmap-subtitle {
+  font-size: 14px;
+  text-anchor: middle;
+  fill: var(--text-secondary);
+  font-weight: normal;
+}
+
+/* Heatmap legend enhancement */
+.heatmap-legend {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  background-color: var(--card-background);
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px var(--shadow-light);
+  border: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+}
+
+.heatmap-legend-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-color);
+}
+
+.heatmap-legend-gradient {
+  width: 20px;
+  height: 150px;
+  margin: 0 auto;
+  position: relative;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.heatmap-legend-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 150px;
+  margin-left: 10px;
+}
+
+.heatmap-legend-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+/* Vector field visualization for flow analysis */
+.vector-field {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: var(--card-background);
+  box-shadow: 0 4px 12px var(--shadow-light);
+}
+
+.vector-field-arrow {
+  transition: fill 0.3s ease, transform 0.3s ease;
+  fill: var(--primary-color);
+  opacity: 0.7;
+}
+
+.vector-field-arrow:hover {
+  fill: var(--primary-dark-color);
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+/* Histogram styling for distribution analysis */
+.histogram-bar {
+  transition: all 0.3s ease;
+  fill: var(--primary-color);
+  stroke: var(--card-background);
+  stroke-width: 1px;
+}
+
+.histogram-bar:hover {
+  fill: var(--primary-dark-color);
+  transform: scaleY(1.05);
+}
+
+.histogram-axis path,
+.histogram-axis line {
+  stroke: var(--text-lighter);
+  stroke-width: 1px;
+}
+
+.histogram-axis text {
+  fill: var(--text-light);
+  font-size: 11px;
+}
+
+/* Interactive legend with highlight effect */
+.interactive-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.legend-item-interactive {
+  display: flex;
+  align-items: center;
+  padding: 5px 12px;
+  margin: 0 8px 8px 0;
+  border-radius: 20px;
+  background-color: rgba(0,0,0,0.03);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.legend-item-interactive:hover {
+  background-color: rgba(0,0,0,0.07);
+  transform: translateY(-2px);
+}
+
+.legend-item-interactive.inactive {
+  opacity: 0.5;
+}
+
+.legend-color-interactive {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 8px;
+}
+
+.legend-label-interactive {
+  font-size: 13px;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+/* Animated axis transitions */
+.axis-animate {
+  transition: transform 0.7s ease;
 }
