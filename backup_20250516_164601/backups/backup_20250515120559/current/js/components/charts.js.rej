@@ -1,0 +1,21 @@
+--- charts.js.old  2023-05-12 12:00:00
++++ charts.js      2023-05-12 12:00:00
+@@ -840,9 +840,15 @@
+   // Update charts with animation
+   updateCharts: function(data) {
+     // Apply animation settings
+-    Chart.defaults.animation.duration = data.duration || 1000;
+-    Chart.defaults.animation.easing = data.easing || 'easeOutQuart';
+-    
++    if (Chart && Chart.defaults) {
++      // Check if animation object exists
++      if (!Chart.defaults.animation) {
++        Chart.defaults.animation = {};
++      }
++      // Set animation properties safely
++      Chart.defaults.animation.duration = (data && data.duration) || 1000;
++      Chart.defaults.animation.easing = (data && data.easing) || 'easeOutQuart';
++    }
+     // Update all charts
+     this.updateTCOChart(data);
+     this.updateBreakdownCharts(data);

@@ -1,0 +1,5 @@
+<svg width="200" height="50" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="50" fill="#ffffff"/>
+  <path d="M20 10 H40 A10 10 0 0 1 50 20 V30 A10 10 0 0 1 40 40 H20 A10 10 0 0 1 10 30 V20 A10 10 0 0 1 20 10 Z" fill="#0052CC"/>
+  <text x="65" y="30" font-family="Arial" font-size="20" font-weight="bold" fill="#333333">PORTNOX</text>
+</svg>

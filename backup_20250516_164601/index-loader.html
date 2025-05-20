@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portnox TCO Analyzer - Loader</title>
+    <style>
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .loader-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        
+        p {
+            margin: 10px 0 20px;
+            line-height: 1.5;
+            color: #555;
+        }
+        
+        .progress-container {
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            margin: 20px 0;
+            height: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            background-color: #3498db;
+            height: 100%;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+        
+        .status {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .logo {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
+        
+        .file-list {
+            text-align: left;
+            margin: 20px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: #f5f7fa;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .file-item {
+            margin-bottom: 5px;
+        }
+        
+        .file-item.success {
+            color: #27ae60;
+        }
+        
+        .file-item.error {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="loader-container">
+        <div id="logo-container">
+            <!-- Logo will be dynamically added here -->
+        </div>
+        <h1>TCO Analyzer Fixer</h1>
+        <p>This tool will load all the necessary modules and fix the issues with the TCO Analyzer application.</p>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <div class="status" id="status">Initializing...</div>
+        
+        <div class="file-list" id="file-list">
+            <!-- File list will be populated here -->
+        </div>
+        
+        <button id="start-btn" class="btn">Start Fix</button>
+    </div>
+    
+    <script>
+        // Create and add logo
+        const logoContainer = document.getElementById('logo-container');
+        const img = document.createElement('img');
+        img.src = 'img/portnox-logo.png';
+        img.alt = 'Portnox Logo';
+        img.className = 'logo';
+        
+        // Add error handler for logo
+        img.onerror = function() {
+            // Try vendor path
+            this.src = 'img/vendors/portnox-logo.png';
+            
+            // If still fails, create SVG fallback
+            this.onerror = function() {
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('width', '200');
+                svg.setAttribute('height', '60');
+                svg.setAttribute('viewBox', '0 0 200 60');
+                svg.innerHTML = `
+                    <rect width="200" height="60" rx="4" ry="4" fill="#2c3e50"/>
+                    <text x="100" y="38" font-family="Arial" font-size="24" fill="white" text-anchor="middle">PORTNOX</text>
+                `;
+                svg.className = 'logo';
+                
+                logoContainer.appendChild(svg);
+            };
+        };
+        
+        logoContainer.appendChild(img);
+
+        // File paths to be loaded
+        const filesToLoad = [
+            // CSS modules
+            { type: 'css', path: 'css/modules/dashboard-cards.css' },
+            { type: 'css', path: 'css/modules/vendor-cards.css' },
+            { type: 'css', path: 'css/modules/tab-styles.css' },
+            { type: 'css', path: 'css/modules/heatmap.css' },
+            { type: 'css', path: 'css/fixes/logo-fixes.css' },
+            { type: 'css', path: 'css/fixes/sidebar-fixes.css' },
+            
+            // JS modules
+            { type: 'js', path: 'js/modules/industry-compliance.js' },
+            { type: 'js', path: 'js/modules/security-risk.js' },
+            { type: 'js', path: 'js/fixes/tab-manager.js' },
+            { type: 'js', path: 'js/fixes/heatmap-fix.js' },
+            
+            // Main integration
+            { type: 'js', path: 'js/master-integration.js' }
+        ];
+        
+        // DOM elements
+        const startBtn = document.getElementById('start-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const status = document.getElementById('status');
+        const fileList = document.getElementById('file-list');
+        
+        // Event listener for start button
+        startBtn.addEventListener('click', startFix);
+        
+        // Initialize file list
+        initFileList();
+        
+        // Initialize file list
+        function initFileList() {
+            fileList.innerHTML = '';
+            filesToLoad.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.id = `file-${file.path.replace(/[/.]/g, '-')}`;
+                fileItem.textContent = file.path;
+                fileList.appendChild(fileItem);
+            });
+        }
+        
+        // Start the fix process
+        function startFix() {
+            startBtn.disabled = true;
+            status.textContent = 'Loading files...';
+            
+            // Reset progress
+            let loaded = 0;
+            const total = filesToLoad.length;
+            progressBar.style.width = '0%';
+            
+            // Load files sequentially
+            loadNextFile(0, total);
+        }
+        
+        // Load files one by one
+        function loadNextFile(index, total) {
+            if (index >= filesToLoad.length) {
+                // All files loaded
+                finishLoading();
+                return;
+            }
+            
+            const file = filesToLoad[index];
+            status.textContent = `Loading ${file.path}...`;
+            
+            // Create element based on file type
+            let element;
+            if (file.type === 'css') {
+                element = document.createElement('link');
+                element.rel = 'stylesheet';
+                element.href = file.path;
+            } else if (file.type === 'js') {
+                element = document.createElement('script');
+                element.src = file.path;
+            }
+            
+            // Set callbacks
+            element.onload = function() {
+                // Mark file as loaded
+                const fileItem = document.getElementById(`file-${file.path.replace(/[/.]/g, '-')}`);
+                if (fileItem) {
+                    fileItem.className = 'file-item success';
+                    fileItem.textContent = `✓ ${file.path}`;
+                }
+                
+                // Update progress
+                const progress = ((index + 1) / total) * 100;
+                progressBar.style.width = `${progress}%`;
+                
+                // Load next file
+                setTimeout(() => loadNextFile(index + 1, total), 100);
+            };
+            
+            element.onerror = function() {
+                // Mark file as error
+                const fileItem = document.getElementById(`file-${file.path.replace(/[/.]/g, '-')}`);
+                if (fileItem) {
+                    fileItem.className = 'file-item error';
+                    fileItem.textContent = `✗ ${file.path} (Failed to load)`;
+                }
+                
+                // Update progress and continue
+                const progress = ((index + 1) / total) * 100;
+                progressBar.style.width = `${progress}%`;
+                
+                // Load next file
+                setTimeout(() => loadNextFile(index + 1, total), 100);
+            };
+            
+            // Add to document
+            document.head.appendChild(element);
+        }
+        
+        // Finish loading process
+        function finishLoading() {
+            status.textContent = 'All files loaded successfully!';
+            
+            // Change button to close or refresh
+            startBtn.textContent = 'Apply & Refresh';
+            startBtn.disabled = false;
+            startBtn.onclick = function() {
+                // Store a flag in localStorage to indicate fixes are applied
+                localStorage.setItem('tcoAnalyzerFixed', 'true');
+                
+                // Refresh parent window if in an iframe, or current window
+                if (window.parent && window.parent !== window) {
+                    window.parent.location.reload();
+                } else {
+                    window.location.reload();
+                }
+            };
+        }
+    </script>
+</body>
+</html>

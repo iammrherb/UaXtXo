@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portnox TCO Multi-Vendor Analyzer</title>
+  <link rel="stylesheet" href="lib/bootstrap.min.css">
+  <link rel="stylesheet" href="lib/font-awesome.min.css">
+  <link rel="stylesheet" href="css/features/tco-analyzer.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="page-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <div class="d-flex align-items-center">
+            <div class="app-logo-icon">P</div>
+            <div>
+              <h1 class="app-title">Zero Trust TCO Analyzer</h1>
+              <p class="app-subtitle">Multi-Vendor NAC Solution Comparison Platform</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="d-flex justify-content-end gap-2">
+            <button class="btn btn-outline-secondary btn-sm">
+              <i class="fas fa-download"></i> Export
+            </button>
+            <button class="btn btn-outline-secondary btn-sm">
+              <i class="fas fa-question-circle"></i> Help
+            </button>
+            <button class="btn btn-outline-secondary btn-sm">
+              <i class="fas fa-sun"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <button class="sidebar-toggle">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="sidebar-content">
+          <div class="sidebar-section">
+            <h3 class="sidebar-heading">Compare Solutions</h3>
+            <div class="vendor-grid">
+              <div class="vendor-item active" data-vendor-id="portnox">
+                <div class="vendor-icon">
+                  <div style="width: 24px; height: 24px; background-color: #2BD25B; border-radius: 4px;"></div>
+                </div>
+                <div class="vendor-name">Portnox Cloud</div>
+              </div>
+              <div class="vendor-item active" data-vendor-id="cisco">
+                <div class="vendor-icon">
+                  <div style="width: 24px; height: 24px; background-color: #1BA0E1; border-radius: 4px;"></div>
+                </div>
+                <div class="vendor-name">Cisco ISE</div>
+              </div>
+              <div class="vendor-item active" data-vendor-id="aruba">
+                <div class="vendor-icon">
+                  <div style="width: 24px; height: 24px; background-color: #F7941D; border-radius: 4px;"></div>
+                </div>
+                <div class="vendor-name">Aruba ClearPass</div>
+              </div>
+              <div class="vendor-item active" data-vendor-id="forescout">
+                <div class="vendor-icon">
+                  <div style="width: 24px; height: 24px; background-color: #6F42C1; border-radius: 4px;"></div>
+                </div>
+                <div class="vendor-name">Forescout</div>
+              </div>
+              <div class="vendor-item active" data-vendor-id="fortinet">
+                <div class="vendor-icon">
+                  <div style="width: 24px; height: 24px; background-color: #E74C3C; border-radius: 4px;"></div>
+                </div>
+                <div class="vendor-name">FortiNAC</div>
+              </div>
+              <div class="vendor-item" data-vendor-id="juniper">
+                <div class="vendor-icon">
+                  <div style="width: 24px; height: 24px; background-color: #16A085; border-radius: 4px;"></div>
+                </div>
+                <div class="vendor-name">Juniper Mist</div>
+              </div>
+              <div class="vendor-item" data-vendor-id="secureW2">
+                <div class="vendor-icon">
+                  <div style="width: 24px; height: 24px; background-color: #3498DB; border-radius: 4px;"></div>
+                </div>
+                <div class="vendor-name">SecureW2</div>
+              </div>
+              <div class="vendor-item" data-vendor-id="microsoft">
+                <div class="vendor-icon">
+                  <div style="width: 24px; height: 24px; background-color: #7D5BE2; border-radius: 4px;"></div>
+                </div>
+                <div class="vendor-name">Microsoft NPS</div>
+              </div>
+              <div class="vendor-item" data-vendor-id="arista">
+                <div class="vendor-icon">
+                  <div style="width: 24px; height: 24px; background-color: #D35400; border-radius: 4px;"></div>
+                </div>
+                <div class="vendor-name">Arista AGNI</div>
+              </div>
+              <div class="vendor-item" data-vendor-id="foxpass">
+                <div class="vendor-icon">
+                  <div style="width: 24px; height: 24px; background-color: #8E44AD; border-radius: 4px;"></div>
+                </div>
+                <div class="vendor-name">Foxpass</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <h3 class="sidebar-heading">Organization</h3>
+            <div class="form-group">
+              <label for="org-size" class="form-label">Organization Size</label>
+              <select id="org-size" class="form-control">
+                <option value="small">Small (< 1,000 devices)</option>
+                <option value="medium">Medium (1,000 - 5,000 devices)</option>
+                <option value="large">Large (> 5,000 devices)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="device-count" class="form-label">Device Count</label>
+              <input type="number" id="device-count" class="form-control" value="300" min="100">
+            </div>
+            <div class="form-group">
+              <label for="locations-count" class="form-label">Locations</label>
+              <input type="number" id="locations-count" class="form-control" value="3" min="1">
+            </div>
+            <div class="form-group">
+              <label for="industry" class="form-label">Industry</label>
+              <select id="industry" class="form-control">
+                <option value="general">General</option>
+                <option value="financial">Financial Services</option>
+                <option value="healthcare">Healthcare</option>
+                <option value="education">Education</option>
+                <option value="retail">Retail</option>
+                <option value="manufacturing">Manufacturing</option>
+                <option value="government">Government</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <h3 class="sidebar-heading">Analysis Settings</h3>
+            <div class="form-group">
+              <label for="analysis-period" class="form-label">Analysis Period</label>
+              <select id="analysis-period" class="form-control">
+                <option value="1">1 Year</option>
+                <option value="3" selected>3 Years</option>
+                <option value="5">5 Years</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Compliance Frameworks</label>
+              <div class="form-check">
+                <input class="form-check-input compliance-checkbox" type="checkbox" id="pci-dss" data-framework="pciDss" checked>
+                <label class="form-check-label" for="pci-dss">PCI DSS</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input compliance-checkbox" type="checkbox" id="nist" data-framework="nist" checked>
+                <label class="form-check-label" for="nist">NIST 800-53</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input compliance-checkbox" type="checkbox" id="iso-27001" data-framework="iso27001">
+                <label class="form-check-label" for="iso-27001">ISO 27001</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input compliance-checkbox" type="checkbox" id="hipaa" data-framework="hipaa">
+                <label class="form-check-label" for="hipaa">HIPAA</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input compliance-checkbox" type="checkbox" id="gdpr" data-framework="gdpr">
+                <label class="form-check-label" for="gdpr">GDPR</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <h3 class="sidebar-heading">Cost Parameters</h3>
+            <div class="form-group">
+              <label for="fte-rate" class="form-label">FTE Cost ($/year)</label>
+              <input type="number" id="fte-rate" class="form-control" value="120000" min="50000" step="10000">
+            </div>
+            <div class="form-group">
+              <label for="growth-rate" class="form-label">Annual Growth Rate (%)</label>
+              <input type="range" class="form-range" id="growth-rate" min="0" max="50" value="10" step="5">
+              <div class="range-values">
+                <span>0%</span>
+                <span>25%</span>
+                <span>50%</span>
+              </div>
+            </div>
+          </div>
+
+          <button id="update-comparison" class="btn btn-primary btn-block">Update Comparison</button>
+        </div>
+      </aside>
+
+      <!-- Content Area -->
+      <main class="content-area">
+        <!-- Tabs -->
+        <div class="tabs-container">
+          <ul class="nav-tabs">
+            <li class="nav-item">
+              <a class="nav-link active" data-tab="overview" href="#">Overview</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-tab="costs" href="#">Cost Analysis</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-tab="implementation" href="#">Implementation</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-tab="features" href="#">Features</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-tab="compliance" href="#">Compliance</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-tab="roi" href="#">ROI Analysis</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-tab="risk" href="#">Risk Analysis</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-tab="sensitivity" href="#">Sensitivity</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+          <!-- Overview Tab -->
+          <div id="overview-tab" class="tab-pane active">
+            <!-- Content will be dynamically generated -->
+          </div>
+
+          <!-- Cost Analysis Tab -->
+          <div id="costs-tab" class="tab-pane">
+            <!-- Content will be dynamically generated -->
+          </div>
+
+          <!-- Implementation Tab -->
+          <div id="implementation-tab" class="tab-pane">
+            <!-- Content will be dynamically generated -->
+          </div>
+
+          <!-- Features Tab -->
+          <div id="features-tab" class="tab-pane">
+            <!-- Content will be dynamically generated -->
+          </div>
+
+          <!-- Compliance Tab -->
+          <div id="compliance-tab" class="tab-pane">
+            <!-- Content will be dynamically generated -->
+          </div>
+
+          <!-- ROI Analysis Tab -->
+          <div id="roi-tab" class="tab-pane">
+            <!-- Content will be dynamically generated -->
+          </div>
+
+          <!-- Risk Analysis Tab -->
+          <div id="risk-tab" class="tab-pane">
+            <!-- Content will be dynamically generated -->
+          </div>
+
+          <!-- Sensitivity Tab -->
+          <div id="sensitivity-tab" class="tab-pane">
+            <!-- Content will be dynamically generated -->
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-3 text-muted">
+      <small>&copy; 2025 Portnox. All rights reserved.</small>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="lib/jquery.min.js"></script>
+  <script src="lib/bootstrap.bundle.min.js"></script>
+  <script src="lib/chart.min.js"></script>
+  <script src="lib/chartjs-plugin-datalabels.min.js"></script>
+  <script src="js/tco-analyzer.js"></script>
+</body>
+</html>
