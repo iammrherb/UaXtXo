@@ -126,7 +126,7 @@ class VendorComparisonView {
    */
   renderComparisonTable() {
     const tableContainer = document.createElement('div');
-    tableContainer.className = 'table-responsive';
+    tableContainer.className = 'table-responsive enhanced-table-container';
     
     const table = document.createElement('table');
     table.className = 'data-table comparison-table';
