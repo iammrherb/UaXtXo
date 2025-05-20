@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Zero Trust Total Cost Analyzer - Enterprise Total Cost of Ownership Calculator">
+    <title>Total Cost Analyzer | Portnox</title>
+    
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/security-view.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="css/security-view.css">
+    
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/security-view.css">
+    
+    <link rel="icon" type="image/png" href="img/favicon.png">
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <!-- Enhanced styling -->
+    <link rel="stylesheet" href="css/custom/enhanced-animations.css">
+    <link rel="stylesheet" href="css/security-view.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/vfs_fonts.js"></script>
+    <link rel="stylesheet" href="css/custom/enhanced-styles.css">
+    <link rel="stylesheet" href="css/security-view.css">
+    <style>
+      :root {
+        --primary-color: #1a5a96;
+        --primary-dark-color: #0d4275;
+        --highlight-background: rgba(26, 90, 150, 0.05);
+      }
+      /* Fix for vendor cards in sidebar */
+      .vendor-select-card .vendor-logo img {
+        max-height: 28px !important;
+        max-width: 80px !important;
+        object-fit: contain !important;
+      }
+      .vendor-select-card {
+        height: 80px !important;
+        padding: 8px 4px !important;
+      }
+      .vendor-select-card .vendor-name {
+        font-size: 11px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+    </style>
+    <!-- Emergency fixes for vendor cards -->
+    <style>
+      :root {
+        --primary-color: #1a5a96;
+        --primary-dark-color: #0d4275;
+        --highlight-background: rgba(26, 90, 150, 0.05);
+      }
+      /* Fix for vendor cards in sidebar */
+      .vendor-select-card .vendor-logo img {
+        max-height: 28px !important;
+        max-width: 80px !important;
+        object-fit: contain !important;
+      }
+      .vendor-select-card {
+        height: 80px !important;
+        padding: 8px 4px !important;
+      }
+      .vendor-select-card .vendor-name {
+        font-size: 11px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 95% !important;
+        text-align: center !important;
+      }
+    </style>
+    <!-- Enhanced UI Files -->
+    <link rel="stylesheet" href="css/enhanced-layout.css">
+    <link rel="stylesheet" href="css/security-view.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/security-view.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <!-- Particle Background -->
+    <div id="particles-js"></div>
+    
+    <!-- Main Application Container -->
+    <div class="app-container">
+        <!-- Enhanced Header with Particles -->
+        <header class="app-header">
+            <div id="particles-header" class="particles-header"></div>
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="img/vendors/portnox-logo.png" alt="Portnox Logo" class="company-logo">
+                    <div class="app-title">
+                        <h1>Zero Trust Total Cost Analyzer</h1>
+                        <p class="subtitle">Multi-Vendor NAC Solution Comparison Platform</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="calculate-btn-header" class="btn btn-primary" title="Calculate TCO & ROI">
+                        <i class="fas fa-calculator"></i> <span>Calculate</span>
+                    </button>
+                    <button id="export-pdf" class="btn btn-outline btn-icon" title="Export Report">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Export</span>
+                    </button>
+                    <button id="help-btn" class="btn btn-outline btn-icon" title="Help">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                    <button id="dark-mode-toggle" class="btn btn-outline btn-icon" title="Toggle Dark Mode">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main Content Area with Sidebar -->
+        <div class="main-content">
+            <!-- Configuration Sidebar -->
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-sliders-h"></i> Configuration</h2>
+                </div>
+                
+                <div class="sidebar-content">
+                    <!-- Vendor Selection -->
+                    <div id="vendor-config" class="config-card">
+                        <div class="config-card-header">
+                            <h3><i class="fas fa-server"></i> Select NAC Vendors</h3>
+                            <i class="fas fa-chevron-up toggle-icon"></i>
+                        </div>
+                        <div class="config-card-content">
+                            <p class="helper-text">Choose up to 3 vendors to compare with Portnox Cloud</p>
+                            
+                            <div class="vendor-select-grid">
+                                <div class="vendor-select-card locked selected" data-vendor="portnox">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/portnox-logo.png" alt="Portnox">
+                                    </div>
+                                    <div class="vendor-name">Portnox Cloud</div>
+                                    <div class="badge badge-primary">Best Value</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="cisco">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/cisco-logo.png" alt="Cisco ISE">
+                                    </div>
+                                    <div class="vendor-name">Cisco ISE</div>
+                                    <div class="badge badge-warning">Complex</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="aruba">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/aruba-logo.png" alt="Aruba ClearPass">
+                                    </div>
+                                    <div class="vendor-name">Aruba ClearPass</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="forescout">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/forescout-logo.png" alt="Forescout">
+                                    </div>
+                                    <div class="vendor-name">Forescout</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="fortinac">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/fortinac-logo.png" alt="FortiNAC">
+                                    </div>
+                                    <div class="vendor-name">FortiNAC</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="juniper">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/juniper-logo.png" alt="Juniper Mist">
+                                    </div>
+                                    <div class="vendor-name">Juniper Mist</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="securew2">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/securew2-logo.png" alt="SecureW2">
+                                    </div>
+                                    <div class="vendor-name">SecureW2</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="microsoft">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/microsoft-logo.png" alt="Microsoft NPS">
+                                    </div>
+                                    <div class="vendor-name">Microsoft NPS</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="arista">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/arista-logo.png" alt="Arista Agni">
+                                    </div>
+                                    <div class="vendor-name">Arista Agni</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="foxpass">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/foxpass-logo.png" alt="Foxpass">
+                                    </div>
+                                    <div class="vendor-name">Foxpass</div>
+                                </div>
+                                
+                                <div class="vendor-select-card" data-vendor="no-nac">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/no-nac-icon.png" alt="No NAC">
+                                    </div>
+                                    <div class="vendor-name">No NAC</div>
+                                    <div class="badge badge-danger">High Risk</div>
+                                </div>
+                            </div>
+                            
+                            <div class="vendor-counter">
+                                <div class="vendor-counter-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="vendor-counter-text">
+                                    Selected vendors
+                                </div>
+                                <div class="vendor-counter-value" id="vendor-counter-value">
+                                    1
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Organization Details -->
+                    <div id="organization-config" class="config-card">
+                        <div class="config-card-header">
+                            <h3><i class="fas fa-building"></i> Organization</h3>
+                            <i class="fas fa-chevron-up toggle-icon"></i>
+                        </div>
+                        <div class="config-card-content">
+                            <div class="form-group">
+                                <label for="organization-size" class="form-label">Organization Size</label>
+                                <select id="organization-size" class="form-select">
+                                    <option value="very-small">Very Small (< 300 devices)</option>
+                                    <option value="small" selected>Small (300-1,000 devices)</option>
+                                    <option value="medium">Medium (1,000-5,000 devices)</option>
+                                    <option value="large">Large (5,000-10,000 devices)</option>
+                                    <option value="enterprise">Enterprise (10,000+ devices)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="device-count" class="form-label">Number of Devices</label>
+                                <input type="number" id="device-count" class="form-control" value="500" min="300" max="100000">
+                                <div class="helper-text">Include all managed devices (PCs, mobile, IoT)</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="locations" class="form-label">Number of Locations</label>
+                                <input type="number" id="locations" class="form-control" value="2" min="1" max="1000">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Network Requirements</label>
+                                <div class="checkbox-grid">
+                                    <div class="checkbox-item">
+                                        <label class="custom-checkbox">
+                                            <input type="checkbox" id="cloud-integration">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <span>Cloud Integration</span>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <label class="custom-checkbox">
+                                            <input type="checkbox" id="legacy-devices">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <span>Legacy Devices</span>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <label class="custom-checkbox">
+                                            <input type="checkbox" id="byod-support" checked>
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <span>BYOD Support</span>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <label class="custom-checkbox">
+                                            <input type="checkbox" id="iot-support">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <span>IoT Devices</span>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <label class="custom-checkbox">
+                                            <input type="checkbox" id="wireless-support" checked>
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <span>Wireless Network</span>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <label class="custom-checkbox">
+                                            <input type="checkbox" id="remote-work" checked>
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <span>Remote Users</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="years-to-project" class="form-label">Analysis Period</label>
+                                <select id="years-to-project" class="form-select">
+                                    <option value="1">1 Year</option>
+                                    <option value="2">2 Years</option>
+                                    <option value="3" selected>3 Years</option>
+                                    <option value="5">5 Years</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cost Parameters -->
+                    <div id="cost-config" class="config-card">
+                        <div class="config-card-header">
+                            <h3><i class="fas fa-dollar-sign"></i> Cost Parameters</h3>
+                            <i class="fas fa-chevron-up toggle-icon"></i>
+                        </div>
+                        <div class="config-card-content">
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Portnox Cost per Device ($/month)</span>
+                                    <span class="range-slider-value" id="portnox-base-price-value">$3.00</span>
+                                </div>
+                                <input type="range" id="portnox-base-price" min="1" max="6" step="0.5" value="3">
+                                <div class="helper-text">Adjust the per-device pricing for Portnox Cloud</div>
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Volume Discount (%)</span>
+                                    <span class="range-slider-value" id="portnox-discount-value">15%</span>
+                                </div>
+                                <input type="range" id="portnox-discount" min="0" max="40" value="15" step="5">
+                                <div class="helper-text">Volume discount based on device count</div>
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Average FTE Cost ($/year)</span>
+                                    <span class="range-slider-value" id="fte-cost-value">$100,000</span>
+                                </div>
+                                <input type="range" id="fte-cost" min="60000" max="180000" value="100000" step="5000">
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">FTE Allocation for NAC (%)</span>
+                                    <span class="range-slider-value" id="fte-allocation-value">25%</span>
+                                </div>
+                                <input type="range" id="fte-allocation" min="5" max="75" value="25" step="5">
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Annual Maintenance (%)</span>
+                                    <span class="range-slider-value" id="maintenance-value">18%</span>
+                                </div>
+                                <input type="range" id="maintenance-percentage" min="10" max="30" value="18" step="1">
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Downtime Cost ($/hour)</span>
+                                    <span class="range-slider-value" id="downtime-cost-value">$5,000</span>
+                                </div>
+                                <input type="range" id="downtime-cost" min="1000" max="25000" value="5000" step="1000">
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Risk of Breach Cost Reduction (%)</span>
+                                    <span class="range-slider-value" id="risk-reduction-value">35%</span>
+                                </div>
+                                <input type="range" id="risk-reduction" min="10" max="50" value="35" step="5">
+                                <div class="helper-text">Estimated reduction in breach costs with NAC</div>
+                            </div>
+                            
+                            <div class="range-slider">
+                                <div class="range-slider-header">
+                                    <span class="range-slider-label">Insurance Premium Reduction (%)</span>
+                                    <span class="range-slider-value" id="insurance-reduction-value">10%</span>
+                                </div>
+                                <input type="range" id="insurance-reduction" min="0" max="20" value="10" step="5">
+                                <div class="helper-text">Potential cyber insurance premium reduction</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-footer">
+                    <button id="calculate-btn" class="btn-calculate">
+                        <i class="fas fa-calculator"></i> Calculate TCO & ROI
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Sidebar Toggle Button -->
+            <div class="sidebar-toggle" id="sidebar-toggle">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            
+            <!-- Main Content Area -->
+            <div class="content-area" id="content-area">
+                <div class="content-wrapper">
+                    <!-- Main Tabs for Different Views -->
+                    <div class="main-tabs">
+                        <button class="main-tab active" data-view="executive">
+                            <i class="fas fa-chart-pie"></i> Executive
+                        </button>
+                        <button class="main-tab" data-view="financial">
+                <button class="main-tab" data-view="security"><i class="fas fa-shield-alt"></i> Security & Compliance</button>
+                            <i class="fas fa-coins"></i> Financial
+                        </button>
+                        <button class="main-tab" data-view="security">
+                <button class="main-tab" data-view="security"><i class="fas fa-shield-alt"></i> Security & Compliance</button>
+                            <i class="fas fa-shield-alt"></i> Security
+                        </button>
+                        <button class="main-tab" data-view="technical">
+                <button class="main-tab" data-view="security"><i class="fas fa-shield-alt"></i> Security & Compliance</button>
+                            <i class="fas fa-cogs"></i> Technical
+                        </button>
+                    </div>
+                    
+                    <!-- Executive View -->
+                    <div class="view-panel active" data-view="executive">
+                        <!-- View-specific Tabs -->
+                        <div class="results-tabs">
+                            <button class="results-tab active" data-panel="executive-summary">Executive Summary</button>
+                            <button class="results-tab" data-panel="executive-roi">ROI Analysis</button>
+                            <button class="results-tab" data-panel="executive-risk">Risk Assessment</button>
+                            <button class="results-tab" data-panel="executive-comparison">Vendor Comparison</button>
+                        </div>
+                        
+                        <!-- Executive Summary Panel -->
+                        <div id="executive-summary" class="results-panel active">
+                            <div class="panel-header">
+                                <h2>Executive Summary</h2>
+                                <p class="subtitle">Strategic overview of cost savings and business benefits</p>
+                            </div>
+                            
+                            <div class="dashboard-grid">
+                                <div class="dashboard-card highlight-card">
+                                    <h3>Total 3-Year Savings</h3>
+                                    <div class="metric-value highlight-value" id="total-savings">$247,000</div>
+                                    <div class="metric-label" id="savings-percentage">48% reduction vs. Cisco ISE</div>
+                                    <div class="metric-trend up">
+                                        <i class="fas fa-arrow-up"></i> 15% higher than industry average
+                                    </div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Payback Period</h3>
+                                    <div class="metric-value" id="payback-period">7 months</div>
+                                    <div class="metric-label">Time to positive ROI</div>
+                                    <div class="metric-trend up">
+                                        <i class="fas fa-arrow-up"></i> 5 months faster than competitors
+                                    </div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Risk Reduction</h3>
+                                    <div class="metric-value" id="risk-reduction-total">58%</div>
+                                    <div class="metric-label">Overall security improvement</div>
+                                    <div class="metric-trend up">
+                                        <i class="fas fa-arrow-up"></i> 20% better than alternatives
+                                    </div>
+                                </div>
+                                
+                                <div class="dashboard-card">
+                                    <h3>Implementation Time</h3>
+                                    <div class="metric-value" id="implementation-time">21 days</div>
+                                    <div class="metric-label" id="implementation-comparison">75% faster than on-premises</div>
+                                    <div class="metric-trend up">
+                                        <i class="fas fa-arrow-up"></i> Leading time-to-security
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>3-Year TCO Comparison</h3>
+                                <div class="chart-wrapper" id="tco-comparison-chart"></div>
+                                <div class="chart-legend" id="tco-comparison-legend"></div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Cumulative Cost Comparison</h3>
+                                <div class="chart-wrapper" id="cumulative-cost-chart"></div>
+                                <div class="chart-legend" id="cumulative-cost-legend"></div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3>Key Strategic Benefits</h3>
+                                <div class="benefits-grid">
+                                    <div class="benefit-card">
+                                        <div class="benefit-icon">
+                                            <i class="fas fa-cloud"></i>
+                                        </div>
+                                        <h4>Cloud-Native Solution</h4>
+                                        <p>Zero infrastructure costs, automatic updates, and global scalability</p>
+                                    </div>
+                                    <div class="benefit-card">
+                                        <div class="benefit-icon">
+                                            <i class="fas fa-bolt"></i>
+                                        </div>
+                                        <h4>Rapid Deployment</h4>
+                                        <p>75% faster implementation than on-premises alternatives</p>
+                                    </div>
+                                    <div class="benefit-card">
+                                        <div class="benefit-icon">
+                                            <i class="fas fa-shield-alt"></i>
+                                        </div>
+                                        <h4>Zero Trust Security</h4>
+                                        <p>Comprehensive, continuous device authentication and verification</p>
+                                    </div>
+                                    <div class="benefit-card">
+                                        <div class="benefit-icon">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <h4>Future-Proof Solution</h4>
+                                        <p>Automatic updates, continuous innovation, and AI-powered security</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Other executive panels here -->
+                    </div>
+                    
+                    <!-- Other views here (Financial, Security, Technical) -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-copyright">
+                    &copy; 2025 Portnox. All rights reserved.
+                </div>
+                <div class="footer-links">
+                    <a href="#privacy">Privacy Policy</a>
+                    <a href="#terms">Terms of Service</a>
+                    <a href="#contact">Contact Us</a>
+                    <a href="#support">Support</a>
+                </div>
+                <div class="footer-social">
+                    <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Calculating results...</p>
+        </div>
+    </div>
+    
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+    
+    <!-- Core JavaScript -->
+    <script src="js/models/vendor-data.js"></script>
+    <script src="js/models/calculator.js"></script>
+    <script src="js/components/particle-background.js"></script>
+    <script src="js/components/header-particles.js"></script>
+    <script src="js/components/sidebar-manager.js"></script>
+    <script src="js/charts/chart-placeholders.js"></script>
+    <script src="js/portnox-tco-analyzer.js"></script>
+    <!-- Enhanced components -->
+    <script src="js/utils/enhanced-report-generator.js"></script>
+    <script src="js/index.js"></script>
+    <script src="js/vendor-logo-fix.js"></script>
+    <!-- Immediate fix for vendor logos -->
+    <script src="js/vendor-logo-fix.js"></script>
+    <!-- Dashboard enhancements -->
+    <script src="js/utils/dashboard-enhancer.js"></script>
+    <!-- Main application initialization -->
+    <script src="js/app-init.js"></script>
+    <script>
+      // Emergency sidebar fix
+      document.addEventListener("DOMContentLoaded", function() {
+        // Fix sidebar toggle button
+        const sidebarToggleButtons = document.querySelectorAll(".sidebar-toggle, #sidebar-toggle");
+        const sidebar = document.getElementById("sidebar");
+        const contentArea = document.querySelector(".content-area");
+        
+        if (sidebar && contentArea) {
+          sidebarToggleButtons.forEach(function(sidebarToggle) {
+            if (sidebarToggle) {
+              sidebarToggle.addEventListener("click", function(e) {
+                e.preventDefault();
+                sidebar.classList.toggle("collapsed");
+                sidebarToggle.classList.toggle("collapsed");
+                contentArea.classList.toggle("expanded");
+                console.log("Emergency sidebar toggle executed");
+              });
+            }
+          });
+        }
+        
+        // Fix vendor cards
+        const vendorCards = document.querySelectorAll(".vendor-select-card");
+        vendorCards.forEach(function(card) {
+          const logoImg = card.querySelector(".vendor-logo img");
+          if (logoImg) {
+            logoImg.style.cssText = "max-height: 28px !important; max-width: 80px !important; object-fit: contain !important;";
+          }
+          
+          card.style.cssText = "height: 80px !important; padding: 8px 4px !important;";
+          
+          const nameElement = card.querySelector(".vendor-name");
+          if (nameElement) {
+            nameElement.style.cssText = "font-size: 11px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 95% !important; text-align: center !important;";
+          }
+        });
+      });
+    </script>
+    <!-- Enhanced JS Files -->
+    <script src="js/charts/chart-config.js"></script>
+    <script src="js/charts/apex/apex-charts.js"></script>
+    <script src="js/charts/d3/d3-manager.js"></script>
+    <script src="js/views/executive-view.js"></script>
+    <script src="js/views/security-view.js"></script>
+    <script src="js/app-integration.js"></script>
+    <script src="js/style-loader.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        // Apply modern styling to vendor cards
+        const vendorCards = document.querySelectorAll(".vendor-select-card");
+        vendorCards.forEach(card => {
+          card.style.transition = "all 0.3s ease";
+          card.style.borderRadius = "6px";
+          card.addEventListener("mouseenter", function() {
+            this.style.transform = "translateY(-3px)";
+            this.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.1)";
+          });
+          card.addEventListener("mouseleave", function() {
+            this.style.transform = "";
+            this.style.boxShadow = "";
+          });
+        });
+        
+        // Apply modern styling to buttons
+        const buttons = document.querySelectorAll(".btn, .btn-calculate");
+        buttons.forEach(button => {
+          button.style.transition = "all 0.3s ease";
+          button.addEventListener("mouseenter", function() {
+            this.style.transform = "translateY(-2px)";
+          });
+          button.addEventListener("mouseleave", function() {
+            this.style.transform = "";
+          });
+        });
+      });
+    </script>
+    <!-- Security View Fix Scripts -->
+    <script src="js/views/security-view.js"></script>
+    <script src="js/security-view-styles.js"></script>
+    <script src="js/security-view-init-patch.js"></script>
+    <script src="js/charts/security-charts.js"></script>
+    <script src="js/security-view-loader.js"></script>
+    <!-- Security View Fix Scripts -->
+    <script src="js/views/security-view.js"></script>
+    <script src="js/security-view-styles.js"></script>
+    <script src="js/security-view-init-patch.js"></script>
+    <script src="js/charts/security-charts.js"></script>
+    <script src="js/security-view-loader.js"></script>
+</body>
+</html>

@@ -1,129 +1,241 @@
 /**
- * Main Application Initialization for Portnox Total Cost Analyzer
- * Modified to integrate with existing code and avoid conflicts
+ * Application Initialization for Portnox Total Cost Analyzer
+ * Initializes all enhanced components and ensures proper layout
  */
 
-// Initialize on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('Initializing Portnox Total Cost Analyzer additional components...');
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Initializing Portnox Total Cost Analyzer with enhanced UI...');
   
-  // Check if main app is already initialized
-  if (!window.appInitCalled) {
-    window.appInitCalled = true;
-    
-    // Initialize sidebar if not already done
-    initializeSidebar();
-    
-    // Initialize UI enhancements
-    initializeUI();
-    
-    // Initialize event listeners that don't conflict
-    initializeAdditionalEvents();
-    
-    console.log('Additional components initialized successfully');
+  // Initialize sidebar manager
+  if (window.sidebarManager) {
+    window.sidebarManager.init();
+  } else {
+    console.warn('SidebarManager not found. Sidebar enhancements will not be applied.');
   }
+  
+  // Initialize header particles
+  if (typeof particlesJS !== 'undefined') {
+    // Initialize header particles
+    initHeaderParticles();
+  } else {
+    console.warn('ParticlesJS not found. Header particles will not be initialized.');
+  }
+  
+  // Initialize main background particles
+  if (typeof particlesJS !== 'undefined') {
+    // Initialize main background particles with reduced opacity
+    initMainBackgroundParticles();
+  }
+  
+  // Fix layout issues
+  fixLayoutIssues();
+  
+  console.log('Enhanced UI initialization complete.');
 });
 
-/**
- * Initialize sidebar with proper vendor cards
- */
-function initializeSidebar() {
-  // Fix vendor logos immediately
-  fixVendorLogos();
+function initHeaderParticles() {
+  const particlesContainer = document.getElementById('particles-header');
+  if (!particlesContainer) return;
   
-  // Create sidebar manager if not already initialized
-  if (!window.sidebarManager) {
-    window.sidebarManager = new SidebarManager();
-  } else if (!window.sidebarManager.initialized) {
-    window.sidebarManager.init();
+  particlesJS('particles-header', {
+    "particles": {
+      "number": {
+        "value": 30,
+        "density": {
+          "enable": true,
+          "value_area": 800
+        }
+      },
+      "color": {
+        "value": "#ffffff"
+      },
+      "shape": {
+        "type": "circle",
+        "stroke": {
+          "width": 0,
+          "color": "#000000"
+        }
+      },
+      "opacity": {
+        "value": 0.3,
+        "random": true,
+        "anim": {
+          "enable": false,
+          "speed": 1,
+          "opacity_min": 0.1,
+          "sync": false
+        }
+      },
+      "size": {
+        "value": 3,
+        "random": true,
+        "anim": {
+          "enable": false,
+          "speed": 40,
+          "size_min": 0.1,
+          "sync": false
+        }
+      },
+      "line_linked": {
+        "enable": true,
+        "distance": 150,
+        "color": "#ffffff",
+        "opacity": 0.2,
+        "width": 1
+      },
+      "move": {
+        "enable": true,
+        "speed": 2,
+        "direction": "none",
+        "random": false,
+        "straight": false,
+        "out_mode": "out",
+        "bounce": false,
+        "attract": {
+          "enable": false,
+          "rotateX": 600,
+          "rotateY": 1200
+        }
+      }
+    },
+    "interactivity": {
+      "detect_on": "canvas",
+      "events": {
+        "onhover": {
+          "enable": false
+        },
+        "onclick": {
+          "enable": false
+        },
+        "resize": true
+      }
+    },
+    "retina_detect": true
+  });
+}
+
+function initMainBackgroundParticles() {
+  const particlesContainer = document.getElementById('particles-js');
+  if (!particlesContainer) return;
+  
+  particlesJS('particles-js', {
+    "particles": {
+      "number": {
+        "value": 50,
+        "density": {
+          "enable": true,
+          "value_area": 1000
+        }
+      },
+      "color": {
+        "value": "#1a5a96"
+      },
+      "shape": {
+        "type": "circle",
+        "stroke": {
+          "width": 0,
+          "color": "#000000"
+        }
+      },
+      "opacity": {
+        "value": 0.1,  // Reduced opacity for better readability
+        "random": true,
+        "anim": {
+          "enable": false,
+          "speed": 1,
+          "opacity_min": 0.05,
+          "sync": false
+        }
+      },
+      "size": {
+        "value": 3,
+        "random": true,
+        "anim": {
+          "enable": false,
+          "speed": 40,
+          "size_min": 0.1,
+          "sync": false
+        }
+      },
+      "line_linked": {
+        "enable": true,
+        "distance": 150,
+        "color": "#1a5a96",
+        "opacity": 0.1,  // Reduced opacity for better readability
+        "width": 1
+      },
+      "move": {
+        "enable": true,
+        "speed": 1,   // Slower speed for less distraction
+        "direction": "none",
+        "random": false,
+        "straight": false,
+        "out_mode": "out",
+        "bounce": false,
+        "attract": {
+          "enable": false,
+          "rotateX": 600,
+          "rotateY": 1200
+        }
+      }
+    },
+    "interactivity": {
+      "detect_on": "canvas",
+      "events": {
+        "onhover": {
+          "enable": true,
+          "mode": "repulse"
+        },
+        "onclick": {
+          "enable": false
+        },
+        "resize": true
+      }
+    },
+    "retina_detect": true
+  });
+}
+
+function fixLayoutIssues() {
+  // Make sure all config cards are expanded
+  const configCards = document.querySelectorAll('.config-card');
+  configCards.forEach(card => {
+    const content = card.querySelector('.config-card-content');
+    const toggleIcon = card.querySelector('.toggle-icon');
+    
+    if (content) {
+      content.style.display = 'block';
+      content.style.maxHeight = '100%';
+      content.style.overflow = 'visible';
+      content.style.opacity = '1';
+    }
+    
+    if (toggleIcon) {
+      toggleIcon.style.display = 'none';
+    }
+  });
+  
+  // Fix sidebar toggle button positioning
+  const sidebar = document.getElementById('sidebar');
+  const sidebarToggle = document.getElementById('sidebar-toggle');
+  
+  if (sidebar && sidebarToggle) {
+    const sidebarWidth = sidebar.offsetWidth;
+    sidebarToggle.style.left = `${sidebarWidth}px`;
   }
-}
-
-/**
- * Fix vendor logos immediately
- */
-function fixVendorLogos() {
-  const vendorCards = document.querySelectorAll('.vendor-select-card');
   
-  vendorCards.forEach(card => {
-    const logoImg = card.querySelector('.vendor-logo img');
-    if (logoImg) {
-      // Apply important styling to override any inline styles
-      logoImg.style.cssText = 'max-height: 28px !important; max-width: 80px !important; object-fit: contain !important;';
-    }
-    
-    // Fix card height
-    card.style.cssText = 'height: 80px !important; padding: 8px 4px !important;';
-    
-    // Fix vendor name
-    const nameElement = card.querySelector('.vendor-name');
-    if (nameElement) {
-      nameElement.style.cssText = 'font-size: 11px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 95% !important; text-align: center !important;';
-    }
-  });
-}
-
-/**
- * Initialize UI enhancements
- */
-function initializeUI() {
-  // Add fade-in animation to dashboard cards
-  const dashboardCards = document.querySelectorAll('.dashboard-card');
-  dashboardCards.forEach((card, index) => {
-    card.style.animationDelay = `${index * 100}ms`;
-    if (!card.classList.contains('animate-fadeIn')) {
-      card.classList.add('animate-fadeIn');
-    }
-  });
+  // Ensure content area is properly positioned
+  const contentArea = document.querySelector('.content-area');
   
-  // Add fade-in animation to chart containers
-  const chartContainers = document.querySelectorAll('.chart-container');
-  chartContainers.forEach((container, index) => {
-    container.style.animationDelay = `${300 + (index * 100)}ms`;
-    if (!container.classList.contains('animate-fadeIn')) {
-      container.classList.add('animate-fadeIn');
-    }
-  });
+  if (contentArea && sidebar) {
+    contentArea.style.marginLeft = '0';
+  }
   
-  // Enhance tabs with hover effects
-  const tabs = document.querySelectorAll('.main-tab, .results-tab');
-  tabs.forEach(tab => {
-    // Only add event listener if not already added
-    if (!tab.hasHoverEffect) {
-      tab.hasHoverEffect = true;
-      
-      tab.addEventListener('mouseenter', () => {
-        if (!tab.classList.contains('active')) {
-          tab.style.backgroundColor = 'rgba(26, 90, 150, 0.05)';
-        }
-      });
-      
-      tab.addEventListener('mouseleave', () => {
-        if (!tab.classList.contains('active')) {
-          tab.style.backgroundColor = '';
-        }
-      });
-    }
-  });
-}
-
-/**
- * Initialize additional events that don't conflict
- */
-function initializeAdditionalEvents() {
-  // Handle dark mode toggle if not already handled
-  const darkModeToggle = document.getElementById('dark-mode-toggle');
-  if (darkModeToggle && !darkModeToggle.hasEventListener) {
-    darkModeToggle.hasEventListener = true;
-    
-    darkModeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
-      
-      // Dispatch theme change event
-      const isDarkMode = document.body.classList.contains('dark-mode');
-      window.dispatchEvent(new CustomEvent('themechange', {
-        detail: { theme: isDarkMode ? 'dark' : 'light' }
-      }));
-    });
+  // Fix particles background z-index
+  const particlesBackground = document.getElementById('particles-js');
+  
+  if (particlesBackground) {
+    particlesBackground.style.zIndex = '0';
+    particlesBackground.style.pointerEvents = 'none';
   }
 }

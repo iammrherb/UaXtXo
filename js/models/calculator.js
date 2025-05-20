@@ -195,6 +195,8 @@ class TcoCalculator {
 }
 
 // Export calculator for use across the application
+window.TcoCalculator = TcoCalculator;
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { TcoCalculator };
 }

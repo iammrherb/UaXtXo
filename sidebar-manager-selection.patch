@@ -1,0 +1,223 @@
+--- sidebar-manager.js.old	2025-05-20 10:00:00
++++ sidebar-manager.js	2025-05-20 10:30:00
+@@ -240,7 +240,18 @@
+   console.log(`Toggle vendor selection for ${vendorId}`);
+   
+   // Get current state
+-  const isSelected = card.classList.contains('selected');
++  let isSelected = card.classList.contains('selected');
++  
++  // Always keep Portnox selected (locked vendor)
++  if (vendorId === 'portnox' && isSelected) {
++    console.log('Cannot deselect Portnox (locked vendor)');
++    return;
++  }
++  
++  // Toggle selection
++  if (isSelected) {
++    card.classList.remove('selected');
++  } else {
+   
+   // Check how many vendors are currently selected
+   const selectedCards = document.querySelectorAll('.vendor-select-card.selected');
+@@ -252,21 +263,25 @@
+     }
+   }
+   
+-  // Toggle selection
+-  if (isSelected) {
+-    card.classList.remove('selected');
+-  } else {
+     card.classList.add('selected');
+   }
+   
+-  // Update counter
+-  updateVendorCounter();
+-  
+   // Get selected vendors
+   const selectedVendors = Array.from(document.querySelectorAll('.vendor-select-card.selected'))
+     .map(card => card.getAttribute('data-vendor'))
+     .filter(Boolean);
+   
+-  console.log('Selected vendors:', selectedVendors);
++  // Update counter
++  updateVendorCounter();
++  
++  // If no vendors selected, re-select Portnox
++  if (selectedVendors.length === 0) {
++    const portnoxCard = document.querySelector('.vendor-select-card[data-vendor="portnox"]');
++    if (portnoxCard) {
++      portnoxCard.classList.add('selected');
++      updateVendorCounter();
++    }
++  }
+ }
+ 
+ /**
+@@ -439,6 +454,38 @@
+     console.error('Vendor counter element not found');
+   }
+ }
++
++/**
++ * Get selected vendors
++ * @returns {Array} Array of selected vendor IDs
++ */
++function getSelectedVendors() {
++  const selectedCards = document.querySelectorAll('.vendor-select-card.selected');
++  const vendors = [];
++  
++  selectedCards.forEach(card => {
++    const vendorId = card.getAttribute('data-vendor');
++    if (vendorId) {
++      vendors.push(vendorId);
++    }
++  });
++  
++  // Ensure we always have at least Portnox selected
++  if (vendors.length === 0) {
++    vendors.push('portnox');
++    
++    // Also select Portnox card in the UI
++    const portnoxCard = document.querySelector('.vendor-select-card[data-vendor="portnox"]');
++    if (portnoxCard && !portnoxCard.classList.contains('selected')) {
++      portnoxCard.classList.add('selected');
++      updateVendorCounter();
++    }
++  }
++  
++  console.log('Selected vendors:', vendors);
++  return vendors;
++}
++
++// Export getSelectedVendors
++window.sidebarManager = { ...window.sidebarManager, getSelectedVendors };
+ EOL
+ 
+  # Apply the patch
+  patch "js/components/sidebar-manager.js" sidebar-manager-selection.patch || echo "Patch application failed but continuing..."
+  rm sidebar-manager-selection.patch
+  
+  # Add CSS fixes for vendor selection
+  cat >> css/main.css << 'EOL'
+
+/* Fixed vendor selection styles */
+.vendor-select-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.vendor-select-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.vendor-select-card:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.vendor-select-card.selected {
+  border-color: #1a5a96;
+  box-shadow: 0 0 0 2px rgba(26, 90, 150, 0.3);
+}
+
+.vendor-select-card.locked {
+  cursor: default;
+}
+
+.vendor-select-card .vendor-logo {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+
+.vendor-select-card .vendor-logo img {
+  max-height: 28px;
+  max-width: 80px;
+  object-fit: contain;
+}
+
+.vendor-select-card .vendor-name {
+  font-size: 11px;
+  text-align: center;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+}
+
+.vendor-select-card .badge {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-top: 5px;
+  font-weight: 600;
+}
+
+.vendor-select-card .badge-primary {
+  background-color: #1a5a96;
+  color: white;
+}
+
+.vendor-select-card .badge-warning {
+  background-color: #f39c12;
+  color: white;
+}
+
+.vendor-select-card .badge-danger {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.vendor-counter {
+  background-color: #f7f9fc;
+  border-radius: 8px;
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.vendor-counter-icon {
+  color: #1a5a96;
+  margin-right: 10px;
+}
+
+.vendor-counter-text {
+  flex: 1;
+  font-size: 14px;
+  color: #555;
+}
+
+.vendor-counter-value {
+  font-weight: 600;
+  font-size: 16px;
+  color: #1a5a96;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}

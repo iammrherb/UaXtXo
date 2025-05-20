@@ -8,10 +8,13 @@
     
     <!-- CSS Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/security-view.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="css/security-view.css">
     
     <!-- Core CSS -->
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/security-view.css">
     
     <link rel="icon" type="image/png" href="img/favicon.png">
     
@@ -20,11 +23,103 @@
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <!-- Enhanced styling -->
     <link rel="stylesheet" href="css/custom/enhanced-animations.css">
+    <link rel="stylesheet" href="css/security-view.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/vfs_fonts.js"></script>
     <link rel="stylesheet" href="css/custom/enhanced-styles.css">
+    <link rel="stylesheet" href="css/security-view.css">
     <style>
+      /* Enhanced Header Styles */
+      .enhanced-header {
+        background: linear-gradient(135deg, #1a5a96, #0d4275);
+        border-bottom: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+        z-index: 100;
+      }
+      
+      .header-content {
+        position: relative;
+        z-index: 10;
+        padding: 1.2rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      
+      .logo-section {
+        display: flex;
+        align-items: center;
+      }
+      
+      .company-logo {
+        height: 40px;
+        margin-right: 1.5rem;
+        filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.2));
+      }
+      
+      .app-title h1 {
+        color: white;
+        font-size: 1.8rem;
+        margin: 0;
+        font-weight: 600;
+        text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+      }
+      
+      .app-title .subtitle {
+        color: rgba(255, 255, 255, 0.9);
+        margin: 0;
+        font-size: 1rem;
+      }
+      
+      .header-actions {
+        display: flex;
+        gap: 0.8rem;
+      }
+      
+      .action-btn {
+        transition: all 0.3s ease;
+      }
+      
+      .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+      
+      .btn-primary {
+        background: #0d4275;
+        border: 1px solid #0d4275;
+      }
+      
+      .btn-primary:hover {
+        background: #1a5a96;
+      }
+      
+      .btn-outline {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+      }
+      
+      .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      
+      .dark-mode .enhanced-header {
+        background: linear-gradient(135deg, #0d4275, #051e38);
+      }
+      
+      /* Fix for particles header */
+      .particles-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
       :root {
         --primary-color: #1a5a96;
         --primary-dark-color: #0d4275;
@@ -49,6 +144,96 @@
     </style>
     <!-- Emergency fixes for vendor cards -->
     <style>
+      /* Enhanced Header Styles */
+      .enhanced-header {
+        background: linear-gradient(135deg, #1a5a96, #0d4275);
+        border-bottom: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+        z-index: 100;
+      }
+      
+      .header-content {
+        position: relative;
+        z-index: 10;
+        padding: 1.2rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      
+      .logo-section {
+        display: flex;
+        align-items: center;
+      }
+      
+      .company-logo {
+        height: 40px;
+        margin-right: 1.5rem;
+        filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.2));
+      }
+      
+      .app-title h1 {
+        color: white;
+        font-size: 1.8rem;
+        margin: 0;
+        font-weight: 600;
+        text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+      }
+      
+      .app-title .subtitle {
+        color: rgba(255, 255, 255, 0.9);
+        margin: 0;
+        font-size: 1rem;
+      }
+      
+      .header-actions {
+        display: flex;
+        gap: 0.8rem;
+      }
+      
+      .action-btn {
+        transition: all 0.3s ease;
+      }
+      
+      .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+      
+      .btn-primary {
+        background: #0d4275;
+        border: 1px solid #0d4275;
+      }
+      
+      .btn-primary:hover {
+        background: #1a5a96;
+      }
+      
+      .btn-outline {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+      }
+      
+      .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      
+      .dark-mode .enhanced-header {
+        background: linear-gradient(135deg, #0d4275, #051e38);
+      }
+      
+      /* Fix for particles header */
+      .particles-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
       :root {
         --primary-color: #1a5a96;
         --primary-dark-color: #0d4275;
@@ -75,9 +260,14 @@
     </style>
     <!-- Enhanced UI Files -->
     <link rel="stylesheet" href="css/enhanced-layout.css">
+    <link rel="stylesheet" href="css/layout-enhanced.css">
+    <link rel="stylesheet" href="css/security-view.css">
     <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/security-view.css">
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="css/layout-fixes.css">
+    <link rel="stylesheet" href="css/particles-fix.css">
 </head>
 <body>
     <!-- Particle Background -->
@@ -86,33 +276,34 @@
     <!-- Main Application Container -->
     <div class="app-container">
         <!-- Enhanced Header with Particles -->
-        <header class="app-header">
-            <div id="particles-header" class="particles-header"></div>
-            <div class="header-content">
-                <div class="logo-section">
-                    <img src="img/vendors/portnox-logo.png" alt="Portnox Logo" class="company-logo">
-                    <div class="app-title">
-                        <h1>Zero Trust Total Cost Analyzer</h1>
-                        <p class="subtitle">Multi-Vendor NAC Solution Comparison Platform</p>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <button id="calculate-btn-header" class="btn btn-primary" title="Calculate TCO & ROI">
-                        <i class="fas fa-calculator"></i> <span>Calculate</span>
-                    </button>
-                    <button id="export-pdf" class="btn btn-outline btn-icon" title="Export Report">
-                        <i class="fas fa-file-pdf"></i>
-                        <span>Export</span>
-                    </button>
-                    <button id="help-btn" class="btn btn-outline btn-icon" title="Help">
-                        <i class="fas fa-question-circle"></i>
-                    </button>
-                    <button id="dark-mode-toggle" class="btn btn-outline btn-icon" title="Toggle Dark Mode">
-                        <i class="fas fa-moon"></i>
-                    </button>
+    <!-- Enhanced Modern Header with Particles -->
+    <header class="app-header enhanced-header">
+        <div id="particles-header" class="particles-header"></div>
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="img/vendors/portnox-logo.png" alt="Portnox Logo" class="company-logo">
+                <div class="app-title">
+                    <h1>Zero Trust Total Cost Analyzer</h1>
+                    <p class="subtitle">Multi-Vendor NAC Solution Comparison Platform</p>
                 </div>
             </div>
-        </header>
+            <div class="header-actions">
+                <button id="calculate-btn-header" class="btn btn-primary action-btn" title="Calculate TCO & ROI">
+                    <i class="fas fa-calculator"></i> <span>Calculate</span>
+                </button>
+                <button id="export-pdf" class="btn btn-outline btn-icon action-btn" title="Export Report">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Export</span>
+                </button>
+                <button id="help-btn" class="btn btn-outline btn-icon action-btn" title="Help">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+                <button id="dark-mode-toggle" class="btn btn-outline btn-icon action-btn" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
         
         <!-- Main Content Area with Sidebar -->
         <div class="main-content">
@@ -410,31 +601,124 @@
             <!-- Main Content Area -->
             <div class="content-area" id="content-area">
                 <div class="content-wrapper">
-                    <!-- Main Tabs for Different Views -->
-                    <div class="main-tabs">
-                        <button class="main-tab active" data-view="executive">
-                            <i class="fas fa-chart-pie"></i> Executive
-                        </button>
-                        <button class="main-tab" data-view="financial">
-                            <i class="fas fa-coins"></i> Financial
-                        </button>
-                        <button class="main-tab" data-view="security">
-                            <i class="fas fa-shield-alt"></i> Security
-                        </button>
-                        <button class="main-tab" data-view="technical">
-                            <i class="fas fa-cogs"></i> Technical
-                        </button>
-                    </div>
-                    
-                    <!-- Executive View -->
-                    <div class="view-panel active" data-view="executive">
-                        <!-- View-specific Tabs -->
-                        <div class="results-tabs">
-                            <button class="results-tab active" data-panel="executive-summary">Executive Summary</button>
-                            <button class="results-tab" data-panel="executive-roi">ROI Analysis</button>
-                            <button class="results-tab" data-panel="executive-risk">Risk Assessment</button>
-                            <button class="results-tab" data-panel="executive-comparison">Vendor Comparison</button>
+        <!-- Security View Panel -->
+        <div class="view-panel" data-view="security">
+            <div class="results-tabs">
+                <button class="results-tab active" data-panel="security-overview">Security Overview</button>
+                <button class="results-tab" data-panel="compliance-frameworks">Compliance</button>
+                <button class="results-tab" data-panel="threat-analysis">Threats</button>
+                <button class="results-tab" data-panel="industry-impact">Industry Impact</button>
+            </div>
+            <div id="security-overview" class="results-panel active">
+                <div class="panel-header">
+                    <h2>Security Overview</h2>
+                    <p>Comprehensive analysis of security capabilities and risk reduction</p>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="dashboard-card highlight-card">
+                        <h3>Overall Security Improvement</h3>
+                        <div class="metric-value highlight-value" id="security-improvement">85%</div>
+                        <div class="metric-label">Risk reduction with NAC implementation</div>
+                        <div class="metric-trend up">
+                            <i class="fas fa-arrow-up"></i> Industry-leading protection
                         </div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Zero Trust Coverage</h3>
+                        <div class="metric-value" id="zero-trust-score">92%</div>
+                        <div class="metric-label">Zero Trust principles implementation</div>
+                        <div class="metric-trend up">
+                            <i class="fas fa-arrow-up"></i> 15% above competitors
+                        </div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Device Authentication</h3>
+                        <div class="metric-value" id="device-auth-score">95%</div>
+                        <div class="metric-label">Robust device identification and validation</div>
+                        <div class="metric-trend up">
+                            <i class="fas fa-arrow-up"></i> Comprehensive coverage
+                        </div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Incident Response Time</h3>
+                        <div class="metric-value" id="response-time">5 min</div>
+                        <div class="metric-label">Average time to detect and isolate threats</div>
+                        <div class="metric-trend up">
+                            <i class="fas fa-arrow-up"></i> 3x faster than competitors
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>NIST Cybersecurity Framework Coverage</h3>
+                    <div class="chart-wrapper" id="nist-framework-chart"></div>
+                </div>
+                <div class="chart-container">
+                    <h3>Data Breach Cost Impact</h3>
+                    <div class="chart-wrapper" id="breach-impact-chart"></div>
+                </div>
+            </div>
+            <div id="compliance-frameworks" class="results-panel">
+                <div class="panel-header">
+                    <h2>Compliance Frameworks</h2>
+                    <p>Coverage of major regulatory and industry compliance frameworks</p>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="dashboard-card highlight-card">
+                        <h3>Overall Compliance Coverage</h3>
+                        <div class="metric-value highlight-value" id="compliance-coverage">95%</div>
+                        <div class="metric-label">Average framework coverage</div>
+                        <div class="metric-trend up">
+                            <i class="fas fa-arrow-up"></i> Comprehensive compliance
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Industry Compliance Framework Coverage</h3>
+                    <div class="chart-wrapper" id="security-frameworks-chart"></div>
+                </div>
+            </div>
+            <div id="threat-analysis" class="results-panel">
+                <div class="panel-header">
+                    <h2>Threat Analysis</h2>
+                    <p>Comprehensive threat modeling and risk mitigation assessment</p>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="dashboard-card highlight-card">
+                        <h3>Overall Threat Reduction</h3>
+                        <div class="metric-value highlight-value" id="threat-reduction">85%</div>
+                        <div class="metric-label">Reduction in vulnerability exposure</div>
+                        <div class="metric-trend up">
+                            <i class="fas fa-arrow-up"></i> Significant risk reduction
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Threat Impact Analysis</h3>
+                    <div class="chart-wrapper" id="threat-model-chart"></div>
+                </div>
+            </div>
+            <div id="industry-impact" class="results-panel">
+                <div class="panel-header">
+                    <h2>Industry Impact Analysis</h2>
+                    <p>Industry-specific security challenges and breach impact analysis</p>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="dashboard-card highlight-card">
+                        <h3>Average Breach Cost</h3>
+                        <div class="metric-value highlight-value" id="avg-breach-cost">$4.35M</div>
+                        <div class="metric-label">Average data breach cost in 2025</div>
+                        <div class="metric-trend up">
+                            <i class="fas fa-arrow-up"></i> 12% increase from 2024
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Data Breach Costs by Industry</h3>
+                    <div class="chart-wrapper" id="industry-breach-chart"></div>
+                </div>
+            </div>
+        </div>
+                    <!-- Main Tabs for Different Views -->
                         
                         <!-- Executive Summary Panel -->
                         <div id="executive-summary" class="results-panel active">
@@ -574,6 +858,7 @@
     <script src="js/components/particle-background.js"></script>
     <script src="js/components/header-particles.js"></script>
     <script src="js/components/sidebar-manager.js"></script>
+    <script src="js/components/cost-config-fix.js"></script>
     <script src="js/charts/chart-placeholders.js"></script>
     <script src="js/portnox-tco-analyzer.js"></script>
     <!-- Enhanced components -->
@@ -663,5 +948,28 @@
         });
       });
     </script>
-</body>
+    <!-- Security View Fix Scripts -->
+    <script src="js/views/security-view.js"></script>
+    <script src="js/security-view-styles.js"></script>
+    <script src="js/security-view-init-patch.js"></script>
+    <script src="js/charts/security-charts.js"></script>
+    <script src="js/security-view-loader.js"></script>
+    <!-- Security View Fix Scripts -->
+    <script src="js/views/security-view.js"></script>
+    <script src="js/security-view-styles.js"></script>
+    <script src="js/security-view-init-patch.js"></script>
+    <script src="js/charts/security-charts.js"></script>
+    <script src="js/security-view-loader.js"></script>
+    <!-- Auto-include fixes -->
+    <script src="js/auto-include-fixes.js"></script>
+      <!-- Critical Fixes -->
+      <script src="js/critical-fixes.js"></script>
+<script src="js/comprehensive-fix.js"></script>
+    <script src="js/models/calculator-init.js"></script>
+    <script src="js/components/sidebar-manager-patch.js"></script>
+    <script src="js/views/tabs-fix.js"></script>
+    <script src="js/components/particles-fix.js"></script>
+    <script src="js/app-integration-fix.js"></script>
+    <script src="js/fixed-app.js"></script>
+    <!-- Enhanced UI Components -->\n    <script src="js/components/header-particles.js"></script>\n    <script src="js/app-init.js"></script>\n</body>
 </html>
