@@ -1,37 +1,94 @@
-# Network Access Control (NAC) TCO Analyzer
+# Portnox Total Cost Analyzer
 
-A web-based tool for comparing the Total Cost of Ownership (TCO) and Return on Investment (ROI) of different Network Access Control solutions.
+A comprehensive web application for calculating and visualizing the Total Cost of Ownership (TCO) and Return on Investment (ROI) for Network Access Control (NAC) solutions.
+
+## Overview
+
+The Portnox Total Cost Analyzer helps organizations compare different NAC vendors and solutions, with a focus on:
+
+- Calculating the true TCO over 3-5 years
+- Analyzing ROI and business value
+- Evaluating security and compliance benefits
+- Comparing technical features and capabilities
+
+This tool provides multiple perspectives for different stakeholders:
+
+- **Executive View**: High-level TCO, ROI, and strategic benefits
+- **Financial View**: Detailed cost breakdown and financial analysis
+- **Security View**: Security posture improvement and compliance coverage
+- **Technical View**: Feature comparison and implementation considerations
+
+## Vendors Included
+
+The analyzer includes data for the following NAC vendors:
+
+- Portnox Cloud (Cloud-native NAC)
+- Cisco ISE (Enterprise NAC)
+- Aruba ClearPass (Policy manager)
+- Forescout (Device visibility)
+- FortiNAC (Fortinet NAC)
+- Juniper Mist (AI-driven NAC)
+- SecureW2 (Cloud RADIUS)
+- Microsoft NPS (Windows Server NAC)
+- Arista Agni (Network control)
+- Foxpass (Cloud RADIUS/LDAP)
+- Extreme NAC (Extreme Networks NAC)
+- No NAC (Baseline for comparison)
 
 ## Features
 
-- Interactive vendor comparison with detailed data
-- Comprehensive TCO and ROI analysis
-- Industry-specific compliance frameworks
-- Security posture evaluation
-- Technical architecture visualization
-- Customizable parameters for accurate calculations
+- **Interactive Visualization**: Vibrant, animated charts using ApexCharts, Highcharts, and D3.js
+- **Comprehensive Cost Modeling**: Accounts for hardware, software, implementation, maintenance, personnel, and operational costs
+- **Risk and Compliance Analysis**: Security posture improvement and compliance coverage evaluation
+- **Flexible Configuration**: Adjust parameters for your specific organization size, industry, and requirements
+- **Multi-Stakeholder Views**: Different perspectives for executives, financial analysts, security professionals, and technical staff
+- **Export Capability**: Generate detailed PDF reports for stakeholders
 
-## Phase 1: Vendor Data Enhancement & Industry Framework Restructuring
+## Directory Structure
 
-This phase focuses on:
+```
+.
+├── css/                   # Stylesheets
+│   ├── components/        # Component-specific styles
+│   ├── themes/            # Theme-related styles
+│   └── main.css           # Main stylesheet
+├── js/                    # JavaScript files
+│   ├── core/              # Core application logic
+│   ├── models/            # Data models and calculations
+│   ├── vendors/           # Vendor-specific logic
+│   ├── charts/            # Charting implementations
+│   │   ├── apex/          # ApexCharts implementation
+│   │   ├── highcharts/    # Highcharts implementation
+│   │   └── d3/            # D3.js visualizations
+│   ├── views/             # View-specific logic
+│   └── utils/             # Utility functions
+├── data/                  # Data files
+├── img/                   # Images and icons
+│   └── vendors/           # Vendor logos
+├── docs/                  # Documentation
+├── index.html             # Main HTML file
+└── package.json           # Project dependencies
+```
 
-1. Enhancing vendor comparison data with detailed market research
-2. Restructuring the industry frameworks section for better compliance analysis
-3. Implementing interactive visualizations for security posture and risk assessment
-4. Improving the UI/UX for the comparison and analysis features
+## Getting Started
 
-## Installation
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Start the development server: `npm start`
+4. Open the application in your browser at `http://localhost:5000`
 
-Simply open the `index.html` file in a modern web browser. No server-side components are required.
+## Technology Stack
 
-## Usage
-
-1. Select vendors to compare
-2. Configure organization parameters
-3. Set network requirements
-4. Click "Calculate" to generate results
-5. View different stakeholder perspectives in the tab panels
+- HTML5, CSS3, and JavaScript (ES6+)
+- Visualization libraries:
+  - ApexCharts: Modern, interactive charts
+  - Highcharts: Advanced charting capabilities
+  - D3.js: Custom, complex visualizations
+- Font Awesome: Icons and visual elements
+- Google Fonts (Nunito): Typography
 
 ## License
 
-Proprietary - For evaluation purposes only
+This project is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited.
+
+© 2025 Portnox Ltd. All rights reserved.
