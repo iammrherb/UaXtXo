@@ -1,7 +1,6 @@
 /**
- * Fixed Sidebar Manager for Portnox Total Cost Analyzer
+ * Enhanced Sidebar Manager for Portnox Total Cost Analyzer
  * Handles sidebar interactions, vendor selection, and configuration
- * This version fixes retraction and section expansion/collapse
  */
 
 class SidebarManager {
@@ -24,8 +23,6 @@ class SidebarManager {
    */
   init() {
     if (this.initialized) return;
-    
-    console.log('Initializing sidebar manager...');
     
     // Fix vendor logos first to ensure they display correctly
     this.fixVendorLogos();
@@ -56,52 +53,50 @@ class SidebarManager {
       const logoImg = card.querySelector('.vendor-logo img');
       if (logoImg) {
         // Ensure proper sizing with !important to override any inline styles
-        logoImg.style.cssText = 'max-height: 28px !important; max-width: 80px !important; object-fit: contain !important;';
+        logoImg.style.maxHeight = '28px';
+        logoImg.style.maxWidth = '80px';
+        logoImg.style.objectFit = 'contain';
       }
       
       // Fix card height
-      card.style.cssText = 'height: 80px !important; padding: 8px 4px !important;';
+      card.style.height = '80px';
+      card.style.padding = '8px 4px';
       
       // Fix vendor name
       const nameElement = card.querySelector('.vendor-name');
       if (nameElement) {
-        nameElement.style.cssText = 'font-size: 11px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 95% !important; text-align: center !important;';
+        nameElement.style.fontSize = '11px';
+        nameElement.style.whiteSpace = 'nowrap';
+        nameElement.style.overflow = 'hidden';
+        nameElement.style.textOverflow = 'ellipsis';
+        nameElement.style.maxWidth = '95%';
+        nameElement.style.textAlign = 'center';
       }
     });
   }
   
   /**
    * Initialize collapsible sections
-   * Fixed to ensure proper expansion/collapse
    */
   initCollapsibleSections() {
-    console.log('Initializing collapsible sections...');
     const configCards = document.querySelectorAll('.config-card');
     
     configCards.forEach(card => {
-      if (!card) return;
-      
       const header = card.querySelector('.config-card-header');
       const content = card.querySelector('.config-card-content');
-      const toggleIcon = header?.querySelector('.toggle-icon');
-      
-      if (!header || !content) return;
-      
-      const cardId = card.id || `config-card-${Math.random().toString(36).substr(2, 9)}`;
-      if (!card.id) card.id = cardId;
+      const toggleIcon = header.querySelector('.toggle-icon');
+      const cardId = card.id;
       
       // Set initial state (all expanded by default except cost-config)
       if (cardId === 'cost-config') {
         content.classList.add('collapsed');
-        if (toggleIcon) toggleIcon.classList.add('collapsed');
+        toggleIcon.classList.add('collapsed');
         this.expanded[cardId] = false;
       } else {
         this.expanded[cardId] = true;
       }
       
-      header.addEventListener('click', (e) => {
-        console.log(`Header clicked for ${cardId}`);
-        e.preventDefault();
+      header.addEventListener('click', () => {
         this.toggleSection(cardId);
       });
     });
@@ -109,66 +104,15 @@ class SidebarManager {
   
   /**
    * Toggle section expand/collapse
-   * Fixed to ensure proper functionality
    */
   toggleSection(cardId) {
-    console.log(`Toggling section ${cardId}`);
     const card = document.getElementById(cardId);
-    if (!card) {
-      console.warn(`Card with ID ${cardId} not found`);
-      return;
-    }
-    
     const content = card.querySelector('.config-card-content');
     const toggleIcon = card.querySelector('.toggle-icon');
     
-    if (!content) {
-      console.warn(`Content not found in card ${cardId}`);
-      return;
-    }
-    
-    // Toggle collapsed state
-    if (content.classList.contains('collapsed')) {
-      // Expand
-      content.classList.remove('collapsed');
-      if (toggleIcon) toggleIcon.classList.remove('collapsed');
-      this.expanded[cardId] = true;
-      
-      // Set explicit max-height to ensure transition works
-      const contentHeight = content.scrollHeight;
-      content.style.maxHeight = '0px';
-      
-      // Force reflow
-      content.offsetHeight;
-      
-      // Set target height
-      content.style.maxHeight = `${contentHeight}px`;
-      
-      // Clear max-height after transition to allow content to grow if needed
-      setTimeout(() => {
-        content.style.maxHeight = '';
-      }, 300);
-    } else {
-      // Collapse
-      const contentHeight = content.scrollHeight;
-      content.style.maxHeight = `${contentHeight}px`;
-      
-      // Force reflow
-      content.offsetHeight;
-      
-      // Set collapse height
-      content.style.maxHeight = '0px';
-      
-      // Add collapsed class after transition
-      setTimeout(() => {
-        content.classList.add('collapsed');
-        if (toggleIcon) toggleIcon.classList.add('collapsed');
-      }, 300);
-      
-      this.expanded[cardId] = false;
-    }
-    
-    console.log(`Section ${cardId} toggled to ${this.expanded[cardId] ? 'expanded' : 'collapsed'}`);
+    content.classList.toggle('collapsed');
+    toggleIcon.classList.toggle('collapsed');
+    this.expanded[cardId] = !this.expanded[cardId];
   }
   
   /**
@@ -187,8 +131,7 @@ class SidebarManager {
         card.classList.add('locked');
       }
       
-      card.addEventListener('click', (e) => {
-        e.preventDefault();
+      card.addEventListener('click', () => {
         this.toggleVendorSelection(vendorId, card);
       });
     });
@@ -203,8 +146,6 @@ class SidebarManager {
    * Toggle vendor selection
    */
   toggleVendorSelection(vendorId, card) {
-    console.log(`Toggle vendor selection for ${vendorId}`);
-    
     // Portnox can't be deselected
     if (vendorId === 'portnox') return;
     
@@ -243,8 +184,6 @@ class SidebarManager {
     
     // Trigger event for other components
     this.triggerVendorSelectionEvent();
-    
-    console.log('Selected vendors:', this.selectedVendors);
   }
   
   /**
@@ -345,25 +284,16 @@ class SidebarManager {
   }
   
   /**
-   * Initialize sidebar toggle - fixed to ensure proper retraction
+   * Initialize sidebar toggle
    */
   initSidebarToggle() {
-    console.log('Initializing sidebar toggle...');
-    const sidebarToggleButtons = document.querySelectorAll('.sidebar-toggle, #sidebar-toggle');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
     const sidebar = document.getElementById('sidebar');
     const contentArea = document.querySelector('.content-area');
     
-    if (sidebar && contentArea) {
-      // Initialize all sidebar toggle buttons
-      sidebarToggleButtons.forEach(sidebarToggle => {
-        if (sidebarToggle) {
-          console.log('Sidebar toggle button found, adding event listener');
-          sidebarToggle.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log('Sidebar toggle clicked');
-            this.toggleSidebar();
-          });
-        }
+    if (sidebarToggle && sidebar && contentArea) {
+      sidebarToggle.addEventListener('click', () => {
+        this.toggleSidebar();
       });
       
       // For mobile
@@ -376,33 +306,23 @@ class SidebarManager {
           }
         }
       });
-      
-      console.log('Sidebar toggle initialized');
-    } else {
-      console.warn('Sidebar or content area not found');
     }
   }
   
   /**
-   * Toggle sidebar visibility - fixed to ensure proper retraction
+   * Toggle sidebar visibility
    */
   toggleSidebar() {
-    console.log('Toggling sidebar visibility');
     const sidebar = document.getElementById('sidebar');
-    const sidebarToggle = document.querySelector('.sidebar-toggle, #sidebar-toggle');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
     const contentArea = document.querySelector('.content-area');
     
-    if (sidebar && contentArea) {
+    if (sidebar && sidebarToggle && contentArea) {
       // For desktop
       if (window.innerWidth > 768) {
-        const isCollapsed = sidebar.classList.contains('collapsed');
-        console.log(`Sidebar is currently ${isCollapsed ? 'collapsed' : 'expanded'}`);
-        
         sidebar.classList.toggle('collapsed');
-        if (sidebarToggle) sidebarToggle.classList.toggle('collapsed');
+        sidebarToggle.classList.toggle('collapsed');
         contentArea.classList.toggle('expanded');
-        
-        console.log(`Sidebar is now ${sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded'}`);
       } 
       // For mobile
       else {
@@ -416,11 +336,7 @@ class SidebarManager {
         
         sidebar.classList.toggle('active');
         backdrop.classList.toggle('active');
-        
-        console.log(`Sidebar is now ${sidebar.classList.contains('active') ? 'active' : 'inactive'} (mobile)`);
       }
-    } else {
-      console.warn('Sidebar or content area not found for toggle');
     }
   }
   
@@ -501,18 +417,3 @@ class SidebarManager {
 
 // Create instance and export
 window.sidebarManager = new SidebarManager();
-
-// Execute immediately to ensure sidebar is initialized
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    // Re-initialize to be sure
-    if (!window.sidebarManager.initialized) {
-      window.sidebarManager.init();
-    }
-  });
-} else {
-  // Re-initialize to be sure
-  if (!window.sidebarManager.initialized) {
-    window.sidebarManager.init();
-  }
-}

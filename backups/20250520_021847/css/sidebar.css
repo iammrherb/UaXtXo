@@ -1,9 +1,4 @@
-/* 
- * Fixed Sidebar Styling for Portnox Total Cost Analyzer
- * Ensures proper retraction and section expansion/collapse
- */
-
-/* Main sidebar container */
+/* Sidebar styling with fixed vendor card and logo sizing */
 .sidebar {
   width: 350px;
   background-color: #fff;
@@ -15,7 +10,6 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  position: relative;
 }
 
 .sidebar.collapsed {
@@ -54,7 +48,7 @@
   background-color: #f9fafb;
 }
 
-/* Config cards with fixed expansion/collapse */
+/* Config cards */
 .config-card {
   margin-bottom: 15px;
   border-radius: 8px;
@@ -70,11 +64,6 @@
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.config-card-header:hover {
-  filter: brightness(1.1);
 }
 
 .config-card-header h3 {
@@ -97,29 +86,19 @@
   transform: rotate(180deg);
 }
 
-/* Fixed content area for proper expansion/collapse */
 .config-card-content {
   padding: 15px;
   max-height: 1000px;
   overflow: hidden;
   transition: max-height 0.3s ease, padding 0.3s ease;
-  background-color: #fff;
 }
 
 .config-card-content.collapsed {
   max-height: 0;
-  padding-top: 0;
-  padding-bottom: 0;
+  padding: 0 15px;
 }
 
-/* Helper text */
-.helper-text {
-  font-size: 12px;
-  color: #666;
-  margin: 5px 0 10px;
-}
-
-/* Vendor Selection Grid with fixed sizing */
+/* FIXED: Vendor Selection Grid with proper sizing */
 .vendor-select-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -127,7 +106,7 @@
   margin-top: 10px;
 }
 
-/* Fixed vendor card styling */
+/* FIXED: Vendor card styling with proper constraints */
 .vendor-select-card {
   background-color: #fff;
   border: 1px solid #e0e0e0;
@@ -139,17 +118,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   height: 80px;
+  overflow: hidden;
 }
 
 .vendor-select-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-color: #1a5a96;
 }
 
-/* Fixed logo container with strict size constraints */
+/* FIXED: Logo container with strict size constraints */
 .vendor-select-card .vendor-logo {
   height: 40px;
   width: 80%;
@@ -159,19 +138,30 @@
   margin-bottom: 5px;
 }
 
-/* Fixed logo sizing */
+/* FIXED: Proper logo sizing */
 .vendor-select-card .vendor-logo img {
   max-height: 28px;
   max-width: 80px;
   object-fit: contain;
 }
 
-/* Fixed vendor name styling */
+/* Vendor name with proper sizing */
 .vendor-select-card .vendor-name {
   font-size: 11px;
   font-weight: 600;
   color: #333;
   margin: 0;
+  max-width: 95%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+/* Fixed vendor description below name */
+.vendor-select-card .vendor-description {
+  font-size: 9px;
+  color: #666;
   max-width: 95%;
   white-space: nowrap;
   overflow: hidden;
@@ -190,18 +180,18 @@
   font-family: 'Font Awesome 5 Free';
   font-weight: 900;
   position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 18px;
-  height: 18px;
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
   background-color: #1a5a96;
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-size: 9px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Badge for vendor cards */
@@ -265,7 +255,123 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Fixed sidebar toggle for proper retraction */
+/* Helper text */
+.helper-text {
+  font-size: 12px;
+  color: #666;
+  margin: 5px 0 10px;
+}
+
+/* Form styling */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: white;
+}
+
+.form-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: white;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+}
+
+/* Range slider styling */
+.range-slider {
+  margin-bottom: 15px;
+}
+
+.range-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.range-slider-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.range-slider-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a5a96;
+}
+
+input[type="range"] {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  background: linear-gradient(to right, #1a5a96 0%, #1a5a96 50%, #e0e0e0 50%, #e0e0e0 100%);
+  border-radius: 3px;
+  outline: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #1a5a96;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #1a5a96;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Checkbox styling */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 10px;
+  margin-top: 5px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-item span {
+  margin-left: 8px;
+  font-size: 12px;
+}
+
+/* Sidebar toggle button */
 .sidebar-toggle {
   position: fixed;
   left: 350px;
@@ -325,19 +431,21 @@
   margin-right: 8px;
 }
 
-/* Mobile responsive adjustments */
+/* Mobile responsive */
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
     top: 0;
     bottom: 0;
-    left: -350px;
+    left: 0;
     z-index: 1000;
+    width: 280px;
+    transform: translateX(-100%);
     transition: transform 0.3s ease;
   }
   
   .sidebar.active {
-    transform: translateX(350px);
+    transform: translateX(0);
   }
   
   .sidebar-backdrop {
