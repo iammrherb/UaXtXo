@@ -143,3 +143,54 @@ To contribute to this project:
 
 ## License
 © 2025 Portnox Ltd. All Rights Reserved.
+
+## New Features
+
+### Advanced Visualization
+- Interactive heatmaps for security risk assessment
+- Radar charts for vendor capability comparison
+- Drill-down chart for breach impact analysis
+- Feature comparison matrix
+
+### Enhanced UI
+- Dark mode support with theme customization
+- Mobile responsive design for all screen sizes
+- Animated UI elements for better user experience
+- Interactive vendor cards with visual feedback
+
+### Additional Features
+- Detailed vendor comparison view
+- PDF report generation with comprehensive analysis
+- Modern, accessible UI with proper contrast and readability
+- Support for touch devices with swipe gestures
+
+## Mobile Support
+The application is now fully responsive and works on all device sizes:
+- Desktop: Full-featured experience with all charts and visualizations
+- Tablet: Optimized layout with adapting chart sizes
+- Mobile: Streamlined interface with touch-friendly controls and swipe gestures
+
+## Accessibility Features
+- Proper color contrast for all UI elements
+- Keyboard navigation support
+- Screen reader friendly markup
+- Touch-friendly controls for mobile devices
+
+## Browser Compatibility
+- Chrome: Full support
+- Firefox: Full support
+- Safari: Full support
+- Edge: Full support
+- Opera: Full support
+- Mobile browsers: Full support
+
+## Development
+To contribute to this project:
+1. Fork the repository
+2. Install dependencies: `npm install`
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+© 2025 Portnox Ltd. All Rights Reserved.
