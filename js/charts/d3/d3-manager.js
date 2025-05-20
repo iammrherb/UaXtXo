@@ -1,21 +1,56 @@
 /**
- * D3.js implementation for Portnox Total Cost Analyzer
- * Creates advanced, custom visualizations for complex data
+ * Enhanced D3.js implementation for Portnox Total Cost Analyzer
+ * Creates advanced, interactive visualizations for complex data
  */
 
 class D3Manager {
   constructor(config = {}) {
     this.config = {
       colors: ChartConfig.colors,
+      theme: ChartConfig.d3Theme,
       ...config
     };
     
     this.charts = {};
+    
+    // Initialize responsive handlers
+    this.initResponsiveHandlers();
   }
   
   /**
-   * Create security heatmap using D3
-   * Shows security capabilities across vendors in a heatmap
+   * Initialize responsive handlers for resizing
+   */
+  initResponsiveHandlers() {
+    // Debounced resize handler for chart responsiveness
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        // Redraw all active charts on resize
+        Object.keys(this.charts).forEach(chartId => {
+          const chart = this.charts[chartId];
+          if (chart && chart.resize) {
+            chart.resize();
+          }
+        });
+      }, 250);
+    });
+    
+    // Handle theme changes
+    window.addEventListener('themechange', () => {
+      // Update all active charts with new theme
+      Object.keys(this.charts).forEach(chartId => {
+        const chart = this.charts[chartId];
+        if (chart && chart.updateTheme) {
+          chart.updateTheme();
+        }
+      });
+    });
+  }
+  
+  /**
+   * Create enhanced security heatmap using D3
+   * Shows security capabilities across vendors in a interactive heatmap
    */
   createSecurityHeatmap(data, elementId, chartId) {
     const element = document.getElementById(elementId);
@@ -33,7 +68,8 @@ class D3Manager {
       { id: 'zeroTrust', name: 'Zero Trust Architecture' },
       { id: 'deviceAuth', name: 'Device Authentication' },
       { id: 'riskAssessment', name: 'Risk Assessment' },
-      { id: 'remediationSpeed', name: 'Remediation Speed' }
+      { id: 'remediationSpeed', name: 'Remediation Speed' },
+      { id: 'compliance', name: 'Compliance Coverage' }
     ];
     
     // Prepare data for heatmap
@@ -50,22 +86,31 @@ class D3Manager {
           // Convert minutes to a 0-100 scale (0 min -> 100, 60+ min -> 0)
           const minutes = security.securityScores.remediationSpeed;
           value = Math.max(0, 100 - (minutes * 1.67));
+        } else if (capability.id === 'compliance') {
+          // For compliance, use the coverage percentage
+          value = security.compliance.coverage;
         } else {
           value = security.securityScores[capability.id];
         }
         
         heatmapData.push({
           vendor: vendor.name,
+          vendorId: vendorId,
           capability: capability.name,
+          capabilityId: capability.id,
           value: value
         });
       });
     });
     
+    // Get theme colors
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    const theme = ChartConfig.getCurrentTheme();
+    
     // Set up dimensions
-    const margin = { top: 50, right: 20, bottom: 100, left: 150 };
-    const width = element.clientWidth - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
+    const margin = { top: 60, right: 80, bottom: 100, left: 160 };
+    const width = Math.max(600, element.clientWidth) - margin.left - margin.right;
+    const height = 450 - margin.top - margin.bottom;
     
     // Create SVG
     const svg = d3.select(element)
@@ -74,6 +119,13 @@ class D3Manager {
       .attr('height', height + margin.top + margin.bottom)
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
+    
+    // Add heatmap background with subtle gradient
+    svg.append('rect')
+      .attr('class', 'heatmap-gradient-bg')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('fill', 'transparent');
     
     // Create scales
     const x = d3.scaleBand()
@@ -88,17 +140,24 @@ class D3Manager {
     
     // Add X axis
     svg.append('g')
+      .attr('class', 'axis x-axis')
       .attr('transform', `translate(0,${height})`)
       .call(d3.axisBottom(x))
       .selectAll('text')
       .style('text-anchor', 'end')
       .attr('dx', '-.8em')
       .attr('dy', '.15em')
-      .attr('transform', 'rotate(-45)');
+      .attr('transform', 'rotate(-45)')
+      .style('font-size', '12px')
+      .style('fill', theme.textLight);
     
     // Add Y axis
     svg.append('g')
-      .call(d3.axisLeft(y));
+      .attr('class', 'axis y-axis')
+      .call(d3.axisLeft(y))
+      .selectAll('text')
+      .style('font-size', '12px')
+      .style('fill', theme.textLight);
     
     // Build color scale
     const colorScale = d3.scaleSequential()
@@ -108,27 +167,57 @@ class D3Manager {
     // Create tooltip
     const tooltip = d3.select(element)
       .append('div')
+      .attr('class', 'heatmap-tooltip')
       .style('opacity', 0)
-      .attr('class', 'tooltip')
-      .style('background-color', 'white')
-      .style('border', 'solid')
-      .style('border-width', '2px')
-      .style('border-radius', '5px')
-      .style('padding', '5px')
       .style('position', 'absolute')
-      .style('z-index', '10');
+      .style('z-index', 10)
+      .style('background-color', theme.cardBackground)
+      .style('border', `1px solid ${theme.borderColor}`)
+      .style('border-radius', '8px')
+      .style('padding', '12px')
+      .style('box-shadow', '0 4px 15px rgba(0, 0, 0, 0.1)');
     
     // Functions for mouseover events
     const mouseover = function(event, d) {
       tooltip.style('opacity', 1);
       d3.select(this)
-        .style('stroke', 'black')
-        .style('opacity', 1);
+        .style('stroke', theme.textColor)
+        .style('opacity', 1)
+        .transition()
+        .duration(200)
+        .attr('rx', 8)
+        .attr('ry', 8);
     };
     
     const mousemove = function(event, d) {
+      // Get comparison text for Portnox vs this vendor
+      let comparisonText = '';
+      
+      if (d.vendorId !== 'portnox') {
+        // Find Portnox value for same capability
+        const portnoxData = heatmapData.find(item => 
+          item.vendorId === 'portnox' && item.capabilityId === d.capabilityId
+        );
+        
+        if (portnoxData) {
+          const diff = d.value - portnoxData.value;
+          if (Math.abs(diff) > 0) {
+            const diffStr = Math.abs(diff).toFixed(1);
+            if (diff < 0) {
+              comparisonText = `<br><span style="color:#e74c3c;font-weight:500;">${diffStr}% lower than Portnox</span>`;
+            } else {
+              comparisonText = `<br><span style="color:#2ecc71;font-weight:500;">${diffStr}% higher than Portnox</span>`;
+            }
+          }
+        }
+      }
+      
       tooltip
-        .html(`<strong>${d.vendor}</strong><br>${d.capability}: ${Math.round(d.value)}%`)
+        .html(`
+          <strong>${d.vendor}</strong><br>
+          ${d.capability}: <span style="font-weight:600">${Math.round(d.value)}%</span>
+          ${comparisonText}
+        `)
         .style('left', (event.pageX + 10) + 'px')
         .style('top', (event.pageY - 10) + 'px');
     };
@@ -137,14 +226,19 @@ class D3Manager {
       tooltip.style('opacity', 0);
       d3.select(this)
         .style('stroke', 'none')
-        .style('opacity', 0.8);
+        .style('opacity', 0.95)
+        .transition()
+        .duration(200)
+        .attr('rx', 4)
+        .attr('ry', 4);
     };
     
-    // Add color squares
-    svg.selectAll()
+    // Add color squares with animation
+    const cells = svg.selectAll()
       .data(heatmapData)
       .enter()
       .append('rect')
+      .attr('class', 'heatmap-cell')
       .attr('x', d => x(d.capability))
       .attr('y', d => y(d.vendor))
       .attr('rx', 4)
@@ -152,21 +246,91 @@ class D3Manager {
       .attr('width', x.bandwidth())
       .attr('height', y.bandwidth())
       .style('fill', d => colorScale(d.value))
-      .style('stroke-width', 4)
+      .style('stroke-width', 1)
       .style('stroke', 'none')
-      .style('opacity', 0.8)
+      .style('opacity', 0)
       .on('mouseover', mouseover)
       .on('mousemove', mousemove)
       .on('mouseleave', mouseleave);
     
+    // Add animated entrance for cells
+    cells.transition()
+      .duration(800)
+      .delay((d, i) => i * 10)
+      .style('opacity', 0.95);
+    
+    // Add value text to cells
+    svg.selectAll()
+      .data(heatmapData)
+      .enter()
+      .append('text')
+      .attr('x', d => x(d.capability) + x.bandwidth()/2)
+      .attr('y', d => y(d.vendor) + y.bandwidth()/2)
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'middle')
+      .style('font-size', '11px')
+      .style('font-weight', '600')
+      .style('fill', d => d.value > 70 ? 'white' : '#333')
+      .style('opacity', 0)
+      .text(d => Math.round(d.value))
+      .transition()
+      .duration(800)
+      .delay((d, i) => 300 + i * 10)
+      .style('opacity', 1);
+    
+    // Highlight Portnox row with a subtle glow
+    const portnoxRow = heatmapData.filter(d => d.vendorId === 'portnox');
+    
+    // Add highlight for Portnox row
+    svg.selectAll()
+      .data(portnoxRow)
+      .enter()
+      .append('rect')
+      .attr('x', 0)
+      .attr('y', y(portnoxRow[0].vendor))
+      .attr('width', width)
+      .attr('height', y.bandwidth())
+      .attr('fill', 'none')
+      .attr('stroke', ChartConfig.colors.vendors.portnox)
+      .attr('stroke-width', 2)
+      .attr('stroke-dasharray', '3,3')
+      .attr('rx', 4)
+      .attr('ry', 4)
+      .style('opacity', 0)
+      .transition()
+      .duration(800)
+      .delay(800)
+      .style('opacity', 0.8);
+    
     // Add title
     svg.append('text')
+      .attr('class', 'heatmap-title')
       .attr('x', width / 2)
-      .attr('y', -20)
+      .attr('y', -30)
       .attr('text-anchor', 'middle')
-      .style('font-size', '16px')
+      .style('font-size', '18px')
       .style('font-weight', 'bold')
-      .text('Security Capabilities Heatmap');
+      .style('fill', theme.textColor)
+      .text('Security Capabilities Comparison')
+      .style('opacity', 0)
+      .transition()
+      .duration(500)
+      .style('opacity', 1);
+    
+    // Add subtitle with animation
+    svg.append('text')
+      .attr('class', 'heatmap-subtitle')
+      .attr('x', width / 2)
+      .attr('y', -10)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '14px')
+      .style('fill', theme.textLight)
+      .text('Higher scores indicate better performance in each category')
+      .style('opacity', 0)
+      .transition()
+      .duration(500)
+      .delay(300)
+      .style('opacity', 1);
     
     // Add legend
     const legendWidth = 20;
@@ -194,11 +358,18 @@ class D3Manager {
     
     // Add the legend rectangle
     svg.append('rect')
-      .attr('x', width + 10)
+      .attr('x', width + 20)
       .attr('y', 0)
       .attr('width', legendWidth)
       .attr('height', legendHeight)
-      .style('fill', 'url(#linear-gradient)');
+      .style('fill', 'url(#linear-gradient)')
+      .attr('rx', 3)
+      .attr('ry', 3)
+      .style('opacity', 0)
+      .transition()
+      .duration(800)
+      .delay(500)
+      .style('opacity', 1);
     
     // Create a scale for the legend
     const legendY = d3.scaleLinear()
@@ -211,304 +382,99 @@ class D3Manager {
       .tickValues([0, 25, 50, 75, 100])
       .tickFormat(d => d + '%');
     
-    svg.append('g')
-      .attr('transform', `translate(${width + 10 + legendWidth},0)`)
-      .call(legendAxis);
+    const legendAxisG = svg.append('g')
+      .attr('transform', `translate(${width + 20 + legendWidth},0)`)
+      .style('opacity', 0);
+      
+    legendAxisG.call(legendAxis)
+      .transition()
+      .duration(800)
+      .delay(500)
+      .style('opacity', 1);
+    
+    legendAxisG.selectAll('text')
+      .style('font-size', '10px')
+      .style('fill', theme.textLight);
     
     // Add legend title
     svg.append('text')
       .attr('transform', `translate(${width + 40},${legendHeight + 30})`)
       .style('text-anchor', 'middle')
-      .text('Capability Score');
-    
-    // Store reference to svg and data
-    this.charts[chartId] = {
-      svg,
-      data: heatmapData,
-      destroy: () => {
-        if (element) {
-          while (element.firstChild) {
-            element.removeChild(element.firstChild);
-          }
-        }
-      }
-    };
-    
-    return this.charts[chartId];
-  }
-  
-  /**
-   * Create risk heatmap using D3
-   * Shows business impact by risk category and likelihood
-   */
-  createRiskHeatmap(data, elementId, chartId) {
-    const element = document.getElementById(elementId);
-    if (!element) return null;
-    
-    // Clear any existing chart
-    while (element.firstChild) {
-      element.removeChild(element.firstChild);
-    }
-    
-    // Risk impact categories
-    const impactCategories = [
-      'Data Breach',
-      'Unauthorized Access',
-      'Malware Infection',
-      'Compliance Violation',
-      'Service Disruption'
-    ];
-    
-    // Risk likelihood levels with descriptive labels
-    const likelihoodLevels = [
-      'Very Low',
-      'Low',
-      'Medium',
-      'High',
-      'Very High'
-    ];
-    
-    // Generate risk scores for each vendor for each impact category
-    const vendors = Object.keys(data.security).filter(v => v !== 'no-nac');
-    const vendorData = {};
-    
-    vendors.forEach(vendorId => {
-      const security = data.security[vendorId];
-      const vendor = VENDORS[vendorId];
-      
-      // Base likelihood score based on security capability
-      const baseLikelihoodScore = 5 - Math.round(security.securityScores.zeroTrust / 20); // 0-100 -> 5-1
-      
-      const risks = impactCategories.map(category => {
-        // Adjust likelihood based on category and vendor capabilities
-        let likelihoodAdjustment = 0;
-        
-        switch (category) {
-          case 'Data Breach':
-            likelihoodAdjustment = 5 - Math.round(security.securityScores.deviceAuth / 20);
-            break;
-          case 'Unauthorized Access':
-            likelihoodAdjustment = 5 - Math.round(security.securityScores.zeroTrust / 20);
-            break;
-          case 'Malware Infection':
-            likelihoodAdjustment = 5 - Math.round(security.securityScores.deviceAuth / 20);
-            break;
-          case 'Compliance Violation':
-            likelihoodAdjustment = 5 - Math.round(security.compliance.coverage / 20);
-            break;
-          case 'Service Disruption':
-            likelihoodAdjustment = 5 - Math.round((100 - security.securityScores.remediationSpeed) / 20);
-            break;
-        }
-        
-        // Average base and adjustment
-        const likelihood = Math.round((baseLikelihoodScore + likelihoodAdjustment) / 2);
-        
-        // Impact level - more severe for regulated industries or high risk profiles
-        let impact = 3; // Medium by default
-        if (data.calculator && data.calculator.config) {
-          if (data.calculator.config.riskProfile === 'high' || 
-              data.calculator.config.riskProfile === 'regulated') {
-            impact = 4; // High
-          } else if (data.calculator.config.riskProfile === 'standard') {
-            impact = 2; // Low
-          }
-        }
-        
-        // Adjust impact by category
-        if (category === 'Data Breach' || category === 'Compliance Violation') {
-          impact = Math.min(5, impact + 1); // Increase impact
-        }
-        
-        return {
-          category,
-          likelihood,
-          impact
-        };
-      });
-      
-      vendorData[vendorId] = risks;
-    });
-    
-    // Select vendor to display (default to Portnox)
-    const selectedVendor = 'portnox';
-    const riskData = vendorData[selectedVendor];
-    
-    // Prepare data for heatmap
-    const heatmapData = [];
-    
-    for (let i = 1; i <= 5; i++) { // Impact levels 1-5
-      for (let j = 1; j <= 5; j++) { // Likelihood levels 1-5
-        // Find if any risks fall in this cell
-        const cellRisks = riskData.filter(r => r.impact === i && r.likelihood === j);
-        
-        heatmapData.push({
-          impact: i,
-          likelihood: j,
-          value: cellRisks.length > 0 ? cellRisks.length * 25 : 0,
-          risks: cellRisks.map(r => r.category)
-        });
-      }
-    }
-    
-    // Set up dimensions
-    const margin = { top: 50, right: 20, bottom: 70, left: 100 };
-    const width = 500 - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
-    
-    // Create SVG
-    const svg = d3.select(element)
-      .append('svg')
-      .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom)
-      .append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
-    
-    // Create scales
-    const x = d3.scaleBand()
-      .range([0, width])
-      .domain(d3.range(1, 6).map(d => d)) // 1-5
-      .padding(0.05);
-    
-    const y = d3.scaleBand()
-      .range([height, 0])
-      .domain(d3.range(1, 6).map(d => d)) // 1-5
-      .padding(0.05);
-    
-    // Add X axis (Likelihood)
-    svg.append('g')
-      .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(x).tickFormat(d => likelihoodLevels[d-1]));
-    
-    // Add X axis label
-    svg.append('text')
-      .attr('transform', `translate(${width/2},${height + 35})`)
-      .style('text-anchor', 'middle')
-      .text('Likelihood');
-    
-    // Add Y axis (Impact)
-    svg.append('g')
-      .call(d3.axisLeft(y).tickFormat(d => {
-        switch (d) {
-          case 1: return 'Negligible';
-          case 2: return 'Minor';
-          case 3: return 'Moderate';
-          case 4: return 'Major';
-          case 5: return 'Severe';
-        }
-      }));
-    
-    // Add Y axis label
-    svg.append('text')
-      .attr('transform', 'rotate(-90)')
-      .attr('y', -60)
-      .attr('x', -height/2)
-      .attr('text-anchor', 'middle')
-      .text('Impact');
-    
-    // Build color scale
-    const colorScale = d3.scaleSequential()
-      .interpolator(d3.interpolateReds)
-      .domain([0, 100]);
-    
-    // Create tooltip
-    const tooltip = d3.select(element)
-      .append('div')
+      .style('font-size', '12px')
+      .style('fill', theme.textColor)
+      .text('Capability Score')
       .style('opacity', 0)
-      .attr('class', 'tooltip')
-      .style('background-color', 'white')
-      .style('border', 'solid')
-      .style('border-width', '2px')
-      .style('border-radius', '5px')
-      .style('padding', '5px')
-      .style('position', 'absolute')
-      .style('z-index', '10');
-    
-    // Functions for mouseover events
-    const mouseover = function(event, d) {
-      tooltip.style('opacity', 1);
-      d3.select(this)
-        .style('stroke', 'black')
-        .style('opacity', 1);
-    };
-    
-    const mousemove = function(event, d) {
-      let text = `<strong>Impact: ${d.impact} | Likelihood: ${d.likelihood}</strong><br>`;
-      if (d.risks.length > 0) {
-        text += 'Risk Categories:<br>';
-        d.risks.forEach(risk => {
-          text += `- ${risk}<br>`;
-        });
-      } else {
-        text += 'No significant risks';
-      }
-      
-      tooltip
-        .html(text)
-        .style('left', (event.pageX + 10) + 'px')
-        .style('top', (event.pageY - 10) + 'px');
-    };
-    
-    const mouseleave = function(event, d) {
-      tooltip.style('opacity', 0);
-      d3.select(this)
-        .style('stroke', 'none')
-        .style('opacity', 0.8);
-    };
-    
-    // Add color squares
-    svg.selectAll()
-      .data(heatmapData)
-      .enter()
-      .append('rect')
-      .attr('x', d => x(d.likelihood))
-      .attr('y', d => y(d.impact))
-      .attr('rx', 4)
-      .attr('ry', 4)
-      .attr('width', x.bandwidth())
-      .attr('height', y.bandwidth())
-      .style('fill', d => colorScale(d.value))
-      .style('stroke-width', 4)
-      .style('stroke', 'none')
-      .style('opacity', 0.8)
-      .on('mouseover', mouseover)
-      .on('mousemove', mousemove)
-      .on('mouseleave', mouseleave);
-    
-    // Add text for cells with risks
-    svg.selectAll()
-      .data(heatmapData.filter(d => d.risks.length > 0))
-      .enter()
-      .append('text')
-      .attr('x', d => x(d.likelihood) + x.bandwidth() / 2)
-      .attr('y', d => y(d.impact) + y.bandwidth() / 2)
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle')
-      .style('font-size', '12px')
-      .style('fill', 'white')
-      .text(d => d.risks.length);
-    
-    // Add title
-    svg.append('text')
-      .attr('x', width / 2)
-      .attr('y', -20)
-      .attr('text-anchor', 'middle')
-      .style('font-size', '16px')
-      .style('font-weight', 'bold')
-      .text(`Risk Assessment for ${VENDORS[selectedVendor].name}`);
-    
-    // Add legend showing selected vendor
-    svg.append('text')
-      .attr('x', width / 2)
-      .attr('y', height + 55)
-      .attr('text-anchor', 'middle')
-      .style('font-size', '12px')
-      .text(`Numbers indicate how many risk categories fall in each cell`);
+      .transition()
+      .duration(800)
+      .delay(700)
+      .style('opacity', 1);
     
     // Store reference to svg and data
     this.charts[chartId] = {
       svg,
       data: heatmapData,
+      resize: () => {
+        // Resize handling code
+        const newWidth = Math.max(600, element.clientWidth) - margin.left - margin.right;
+        
+        // Update scales
+        x.range([0, newWidth]);
+        
+        // Update all elements
+        svg.selectAll('.heatmap-cell')
+          .attr('x', d => x(d.capability))
+          .attr('width', x.bandwidth());
+          
+        svg.selectAll('text')
+          .filter(function() {
+            return !this.classList.contains('heatmap-title') && 
+                   !this.classList.contains('heatmap-subtitle');
+          })
+          .attr('x', d => x(d.capability) + x.bandwidth()/2);
+          
+        // Update highlight rectangle
+        svg.selectAll('rect')
+          .filter(function() {
+            return this.getAttribute('stroke-dasharray') === '3,3';
+          })
+          .attr('width', newWidth);
+          
+        // Update title positions
+        svg.select('.heatmap-title')
+          .attr('x', newWidth / 2);
+          
+        svg.select('.heatmap-subtitle')
+          .attr('x', newWidth / 2);
+          
+        // Update legend position
+        svg.selectAll('.legend')
+          .attr('transform', `translate(${newWidth + 20},0)`);
+      },
+      updateTheme: () => {
+        // Update theme colors
+        const newTheme = ChartConfig.getCurrentTheme();
+        
+        // Update text colors
+        svg.selectAll('text')
+          .style('fill', d => {
+            if (d3.select(this).classed('heatmap-title')) {
+              return newTheme.textColor;
+            } else if (d3.select(this).classed('heatmap-subtitle')) {
+              return newTheme.textLight;
+            } else {
+              return newTheme.textLight;
+            }
+          });
+          
+        // Update tooltip styles
+        tooltip
+          .style('background-color', newTheme.cardBackground)
+          .style('border', `1px solid ${newTheme.borderColor}`);
+          
+        // Update axes
+        svg.selectAll('.axis text')
+          .style('fill', newTheme.textLight);
+      },
       destroy: () => {
         if (element) {
           while (element.firstChild) {
@@ -522,7 +488,7 @@ class D3Manager {
   }
   
   /**
-   * Create vendor strengths radar chart
+   * Create vendor radar chart with enhanced interactivity
    * Shows multi-dimensional comparison of vendor capabilities
    */
   createVendorRadarChart(data, elementId, chartId) {
@@ -587,14 +553,19 @@ class D3Manager {
       
       return {
         name: vendor.name,
+        id: vendorId,
         color: ChartConfig.getVendorColor(vendorId),
         scores
       };
     });
     
+    // Get theme colors
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    const theme = ChartConfig.getCurrentTheme();
+    
     // Set up dimensions
-    const margin = { top: 50, right: 100, bottom: 50, left: 100 };
-    const width = 600 - margin.left - margin.right;
+    const margin = { top: 60, right: 120, bottom: 60, left: 120 };
+    const width = Math.max(500, element.clientWidth) - margin.left - margin.right;
     const height = 500 - margin.top - margin.bottom;
     const radius = Math.min(width / 2, height / 2);
     
@@ -630,25 +601,52 @@ class D3Manager {
       };
     });
     
+    // Add radar background with concentric circles
+    const circles = [20, 40, 60, 80, 100];
+    
+    svg.selectAll('.radar-circle')
+      .data(circles)
+      .enter()
+      .append('circle')
+      .attr('class', 'radar-circle')
+      .attr('cx', 0)
+      .attr('cy', 0)
+      .attr('r', 0)
+      .attr('fill', 'none')
+      .attr('stroke', theme.borderColor)
+      .attr('stroke-width', d => d === 100 ? 1.5 : 1)
+      .attr('stroke-dasharray', d => d % 40 === 0 ? 'none' : '3,3')
+      .attr('opacity', d => (d === 100 ? 0.4 : 0.25))
+      .transition()
+      .duration(1000)
+      .delay((d, i) => i * 200)
+      .attr('r', d => radiusScale(d));
+    
     // Add axes
-    svg.selectAll('line')
+    svg.selectAll('.radar-axis')
       .data(axes)
       .enter()
       .append('line')
+      .attr('class', 'radar-axis')
       .attr('x1', d => d.x1)
       .attr('y1', d => d.y1)
+      .attr('x2', 0)
+      .attr('y2', 0)
+      .attr('stroke', theme.borderColor)
+      .attr('stroke-width', 1.5)
+      .transition()
+      .duration(1000)
       .attr('x2', d => d.x2)
-      .attr('y2', d => d.y2)
-      .attr('stroke', '#ccc')
-      .attr('stroke-width', 1);
+      .attr('y2', d => d.y2);
     
-    // Add axis labels
-    svg.selectAll('text')
+    // Add axis labels with animated fade-in
+    svg.selectAll('.radar-axis-label')
       .data(axes)
       .enter()
       .append('text')
-      .attr('x', d => (radius + 10) * Math.cos(d.angle - Math.PI / 2))
-      .attr('y', d => (radius + 10) * Math.sin(d.angle - Math.PI / 2))
+      .attr('class', 'radar-axis-label')
+      .attr('x', d => (radius + 20) * Math.cos(d.angle - Math.PI / 2))
+      .attr('y', d => (radius + 20) * Math.sin(d.angle - Math.PI / 2))
       .attr('text-anchor', d => {
         const angle = d.angle;
         if (Math.abs(angle - Math.PI) < 0.1) return 'middle';
@@ -660,35 +658,46 @@ class D3Manager {
         if (Math.abs(angle - 3 * Math.PI / 2) < 0.1) return 'after-edge';
         return 'middle';
       })
+      .style('font-size', '13px')
+      .style('font-weight', '600')
+      .style('fill', theme.textColor)
+      .style('opacity', 0)
       .text(d => d.name)
-      .style('font-size', '12px');
-    
-    // Add radar circles
-    const circles = [20, 40, 60, 80, 100];
-    svg.selectAll('circle')
-      .data(circles)
-      .enter()
-      .append('circle')
-      .attr('cx', 0)
-      .attr('cy', 0)
-      .attr('r', d => radiusScale(d))
-      .attr('fill', 'none')
-      .attr('stroke', '#ccc')
-      .attr('stroke-width', 1)
-      .attr('stroke-dasharray', '3,3');
+      .transition()
+      .duration(800)
+      .delay((d, i) => 1000 + i * 100)
+      .style('opacity', 1);
     
     // Add circle labels
-    svg.selectAll('.circle-label')
+    svg.selectAll('.radar-circle-label')
       .data(circles)
       .enter()
       .append('text')
-      .attr('x', 0)
-      .attr('y', d => -radiusScale(d))
-      .attr('text-anchor', 'middle')
-      .attr('alignment-baseline', 'middle')
+      .attr('class', 'radar-circle-label')
+      .attr('x', 5)
+      .attr('y', d => -radiusScale(d) + 3)
+      .attr('text-anchor', 'start')
+      .style('font-size', '9px')
+      .style('fill', theme.textLight)
+      .style('opacity', 0)
       .text(d => d)
-      .style('font-size', '8px')
-      .style('fill', '#999');
+      .transition()
+      .duration(500)
+      .delay((d, i) => 1200 + i * 100)
+      .style('opacity', 0.7);
+    
+    // Create tooltip
+    const tooltip = d3.select(element)
+      .append('div')
+      .attr('class', 'd3-tooltip')
+      .style('opacity', 0)
+      .style('position', 'absolute')
+      .style('z-index', 10)
+      .style('background-color', theme.cardBackground)
+      .style('border', `1px solid ${theme.borderColor}`)
+      .style('border-radius', '8px')
+      .style('padding', '12px')
+      .style('box-shadow', '0 4px 15px rgba(0, 0, 0, 0.1)');
     
     // Create line generator
     const lineGenerator = d3.lineRadial()
@@ -696,65 +705,169 @@ class D3Manager {
       .radius(d => radiusScale(d))
       .curve(d3.curveLinearClosed);
     
-    // Add vendor radar paths
-    vendorScores.forEach(vendor => {
+    // Add vendor radar paths with animation
+    vendorScores.forEach((vendor, index) => {
       const values = dimensions.map(dim => vendor.scores[dim.key]);
       
-      // Draw radar path
-      svg.append('path')
-        .datum(values)
-        .attr('d', lineGenerator)
-        .attr('fill', vendor.color)
-        .attr('fill-opacity', 0.2)
-        .attr('stroke', vendor.color)
-        .attr('stroke-width', 2);
+      // Create group for each vendor
+      const vendorGroup = svg.append('g')
+        .attr('class', `vendor-${vendor.id}`);
       
-      // Add points at each dimension
+      // Draw radar path with animation
+      const path = vendorGroup.append('path')
+        .datum(values)
+        .attr('fill', ChartConfig.getTransparentColor(vendor.color, 0.15))
+        .attr('stroke', vendor.color)
+        .attr('stroke-width', 2)
+        .attr('stroke-opacity', 0.8)
+        .attr('d', d => {
+          // Start with a point at the center
+          const startValues = dimensions.map(() => 0);
+          return lineGenerator(startValues);
+        });
+      
+      // Animate the path expansion
+      path.transition()
+        .duration(1500)
+        .delay(index * 300 + 500)
+        .attrTween('d', () => {
+          return t => {
+            // Interpolate each value from 0 to its final value
+            const interpolatedValues = values.map(val => val * t);
+            return lineGenerator(interpolatedValues);
+          };
+        });
+      
+      // Add points at each dimension with animation
       dimensions.forEach((dim, i) => {
         const angle = angleScale(dim.key) - Math.PI / 2;
         const value = vendor.scores[dim.key];
         
-        svg.append('circle')
+        vendorGroup.append('circle')
+          .attr('cx', 0)
+          .attr('cy', 0)
+          .attr('r', 4)
+          .attr('fill', vendor.color)
+          .attr('stroke', '#fff')
+          .attr('stroke-width', 1.5)
+          .style('opacity', 0)
+          .on('mouseover', function(event, d) {
+            d3.select(this).transition()
+              .duration(200)
+              .attr('r', 6);
+              
+            tooltip.style('opacity', 1);
+            
+            // Get comparison with Portnox
+            let comparisonText = '';
+            if (vendor.id !== 'portnox') {
+              const portnoxVendor = vendorScores.find(v => v.id === 'portnox');
+              if (portnoxVendor) {
+                const portnoxScore = portnoxVendor.scores[dim.key];
+                const diff = value - portnoxScore;
+                if (Math.abs(diff) > 1) {
+                  const diffStr = Math.abs(diff).toFixed(1);
+                  if (diff < 0) {
+                    comparisonText = `<br><span style="color:#e74c3c;">${diffStr}% lower than Portnox</span>`;
+                  } else {
+                    comparisonText = `<br><span style="color:#2ecc71;">${diffStr}% higher than Portnox</span>`;
+                  }
+                }
+              }
+            }
+            
+            tooltip.html(`
+              <strong>${vendor.name}: ${dim.name}</strong><br>
+              Score: <strong>${Math.round(value)}%</strong>
+              ${comparisonText}
+            `)
+            .style('left', (event.pageX + 10) + 'px')
+            .style('top', (event.pageY - 10) + 'px');
+          })
+          .on('mouseout', function() {
+            d3.select(this).transition()
+              .duration(200)
+              .attr('r', 4);
+              
+            tooltip.style('opacity', 0);
+          })
+          .transition()
+          .duration(500)
+          .delay(index * 300 + 2000 + i * 100)
           .attr('cx', radiusScale(value) * Math.cos(angle))
           .attr('cy', radiusScale(value) * Math.sin(angle))
-          .attr('r', 3)
-          .attr('fill', vendor.color);
+          .style('opacity', 1);
       });
     });
     
     // Add legend
     const legend = svg.append('g')
-      .attr('transform', `translate(${radius + 20},-${radius})`);
+      .attr('transform', `translate(${radius + 20},-${radius})`)
+      .attr('class', 'radar-legend');
     
     vendorScores.forEach((vendor, i) => {
       const legendGroup = legend.append('g')
-        .attr('transform', `translate(0,${i * 20})`);
+        .attr('transform', `translate(0,${i * 25})`)
+        .style('opacity', 0)
+        .transition()
+        .duration(500)
+        .delay(2500 + i * 200)
+        .style('opacity', 1);
       
       legendGroup.append('rect')
-        .attr('width', 12)
-        .attr('height', 12)
+        .attr('width', 15)
+        .attr('height', 15)
+        .attr('rx', 2)
+        .attr('ry', 2)
         .attr('fill', vendor.color);
       
       legendGroup.append('text')
-        .attr('x', 16)
-        .attr('y', 10)
+        .attr('x', 20)
+        .attr('y', 12)
         .text(vendor.name)
-        .style('font-size', '12px');
+        .style('font-size', '13px')
+        .style('fill', theme.textColor);
     });
     
-    // Add title
+    // Add chart title
+    svg.append('text')
+      .attr('class', 'radar-title')
+      .attr('x', 0)
+      .attr('y', -radius - 30)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '18px')
+      .style('font-weight', 'bold')
+      .style('fill', theme.textColor)
+      .text('Vendor Capability Comparison')
+      .style('opacity', 0)
+      .transition()
+      .duration(800)
+      .style('opacity', 1);
+    
+    // Add interaction note
     svg.append('text')
       .attr('x', 0)
-      .attr('y', -radius - 20)
+      .attr('y', radius + 40)
       .attr('text-anchor', 'middle')
-      .style('font-size', '16px')
-      .style('font-weight', 'bold')
-      .text('Vendor Capability Comparison');
+      .style('font-size', '12px')
+      .style('fill', theme.textLight)
+      .style('opacity', 0)
+      .text('Hover over points for detailed comparison')
+      .transition()
+      .duration(800)
+      .delay(3000)
+      .style('opacity', 0.8);
     
     // Store reference to svg and data
     this.charts[chartId] = {
       svg,
       data: vendorScores,
+      resize: () => {
+        // Resize handling code...
+      },
+      updateTheme: () => {
+        // Theme update handling code...
+      },
       destroy: () => {
         if (element) {
           while (element.firstChild) {

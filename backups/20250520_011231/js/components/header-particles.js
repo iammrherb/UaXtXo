@@ -1,6 +1,6 @@
 /**
- * Enhanced Header Particle Background for Portnox Total Cost Analyzer
- * Creates a subtle yet engaging particle effect in the header
+ * Header Particle Background for Portnox Total Cost Analyzer
+ * Creates a subtle particle effect in the header
  */
 
 class HeaderParticles {
@@ -11,7 +11,7 @@ class HeaderParticles {
     this.config = {
       particles: {
         number: {
-          value: 15,
+          value: 30,
           density: {
             enable: true,
             value_area: 800
@@ -21,32 +21,32 @@ class HeaderParticles {
           value: '#1a5a96'
         },
         shape: {
-          type: ['circle', 'triangle', 'polygon'],
+          type: 'circle',
           stroke: {
             width: 0,
             color: '#000000'
           },
           polygon: {
-            nb_sides: 6
+            nb_sides: 5
           }
         },
         opacity: {
-          value: 0.4,
-          random: true,
+          value: 0.3,
+          random: false,
           anim: {
-            enable: true,
-            speed: 0.8,
+            enable: false,
+            speed: 1,
             opacity_min: 0.1,
             sync: false
           }
         },
         size: {
-          value: 5,
+          value: 3,
           random: true,
           anim: {
-            enable: true,
-            speed: 2,
-            size_min: 0.5,
+            enable: false,
+            speed: 40,
+            size_min: 0.1,
             sync: false
           }
         },
@@ -54,19 +54,19 @@ class HeaderParticles {
           enable: true,
           distance: 150,
           color: '#1a5a96',
-          opacity: 0.3,
+          opacity: 0.2,
           width: 1
         },
         move: {
           enable: true,
-          speed: 1.2,
+          speed: 2,
           direction: 'none',
-          random: true,
+          random: false,
           straight: false,
           out_mode: 'out',
           bounce: false,
           attract: {
-            enable: true,
+            enable: false,
             rotateX: 600,
             rotateY: 1200
           }
@@ -106,9 +106,6 @@ class HeaderParticles {
     
     // Set up dark mode listener
     this.setupDarkModeListener();
-    
-    // Set up logo interaction
-    this.setupLogoInteraction();
   }
   
   /**
@@ -157,78 +154,6 @@ class HeaderParticles {
         }, 100);
       });
     }
-  }
-  
-  /**
-   * Set up logo interaction with particles
-   */
-  setupLogoInteraction() {
-    const logo = document.querySelector('.company-logo');
-    if (!logo) return;
-    
-    // Add magic animation to the logo
-    logo.style.transition = 'all 0.3s ease';
-    logo.style.cursor = 'pointer';
-    
-    logo.addEventListener('mouseenter', () => {
-      // Create excitement in nearby particles
-      if (typeof pJSDom !== 'undefined' && pJSDom.length > 1 && pJSDom[1].pJS) {
-        const pJS = pJSDom[1].pJS;
-        
-        // Temporarily increase particle speed around the logo
-        const origSpeed = pJS.particles.move.speed;
-        pJS.particles.move.speed = origSpeed * 3;
-        
-        // Reset after a short time
-        setTimeout(() => {
-          pJS.particles.move.speed = origSpeed;
-        }, 800);
-      }
-      
-      // Add subtle scale effect to logo
-      logo.style.transform = 'scale(1.05)';
-    });
-    
-    logo.addEventListener('mouseleave', () => {
-      logo.style.transform = 'scale(1)';
-    });
-    
-    logo.addEventListener('click', () => {
-      // Create a particle explosion from the logo
-      if (typeof pJSDom !== 'undefined' && pJSDom.length > 1 && pJSDom[1].pJS) {
-        const pJS = pJSDom[1].pJS;
-        
-        // Get logo position
-        const rect = logo.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
-        
-        // Create a burst of particles
-        for (let i = 0; i < 10; i++) {
-          pJS.particles.array.push(
-            new pJS.fn.particle(
-              pJS.particles.color,
-              pJS.particles.opacity.value,
-              {
-                'x': x,
-                'y': y
-              }
-            )
-          );
-        }
-      }
-      
-      // Add extra visual feedback
-      logo.animate([
-        { transform: 'scale(1)' },
-        { transform: 'scale(0.9)' },
-        { transform: 'scale(1.1)' },
-        { transform: 'scale(1)' }
-      ], {
-        duration: 600,
-        easing: 'cubic-bezier(0.68, -0.55, 0.27, 1.55)'
-      });
-    });
   }
 }
 
