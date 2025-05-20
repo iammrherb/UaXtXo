@@ -1,0 +1,304 @@
+/* Responsive design for Portnox Total Cost Analyzer */
+
+/* Base mobile styling */
+@media screen and (max-width: 768px) {
+  body.mobile-layout {
+    font-size: 14px;
+  }
+  
+  /* Header adjustments */
+  .app-header .header-content {
+    flex-direction: column;
+    padding: 10px;
+  }
+  
+  .app-header .logo-section {
+    margin-bottom: 10px;
+  }
+  
+  .app-header .app-title h1 {
+    font-size: 18px;
+  }
+  
+  .app-header .subtitle {
+    font-size: 12px;
+  }
+  
+  .app-header .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  /* Sidebar adjustments */
+  .sidebar {
+    position: fixed;
+    z-index: 1000;
+    width: 85%;
+    left: -85%;
+    transition: left 0.3s ease;
+  }
+  
+  .sidebar.collapsed {
+    left: -85%;
+  }
+  
+  .sidebar.expanded {
+    left: 0;
+  }
+  
+  .sidebar-toggle {
+    display: block;
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1001;
+    width: 30px;
+    height: 60px;
+  }
+  
+  /* Content area adjustments */
+  .content-area {
+    margin-left: 0;
+    width: 100%;
+    transition: margin-left 0.3s ease;
+  }
+  
+  .content-area.expanded {
+    margin-left: 0;
+  }
+  
+  /* Chart container adjustments */
+  .chart-container {
+    margin-bottom: 15px;
+    padding: 10px;
+  }
+  
+  .chart-wrapper {
+    height: 300px;
+  }
+  
+  /* Dashboard grid adjustments */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    grid-gap: 10px;
+  }
+  
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Table adjustments */
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  .data-table th, .data-table td {
+    padding: 8px;
+    font-size: 12px;
+  }
+  
+  /* Modal adjustments */
+  .modal-content {
+    width: 90%;
+    max-width: 90%;
+  }
+  
+  /* Result tabs adjustments */
+  .results-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 5px;
+  }
+  
+  .results-tab {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+  
+  /* Vendor grid adjustments */
+  .vendor-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .vendor-card {
+    padding: 10px;
+  }
+  
+  .vendor-card .vendor-logo img {
+    max-width: 80px;
+  }
+  
+  .vendor-card .vendor-info h3 {
+    font-size: 14px;
+  }
+  
+  /* Form adjustments */
+  .form-label {
+    font-size: 12px;
+  }
+  
+  .form-control, .form-select {
+    padding: 8px;
+    font-size: 14px;
+  }
+  
+  /* Toast adjustments */
+  .toast-container {
+    max-width: 90%;
+    right: 10px;
+  }
+  
+  .toast {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Small mobile styling */
+@media screen and (max-width: 480px) {
+  /* Further refinements for very small screens */
+  .app-header .header-content {
+    padding: 5px;
+  }
+  
+  .app-header .app-title h1 {
+    font-size: 16px;
+  }
+  
+  .app-header .subtitle {
+    display: none;
+  }
+  
+  .app-header .header-actions .btn {
+    padding: 5px;
+    font-size: 12px;
+  }
+  
+  .app-header .btn-icon span {
+    display: none;
+  }
+  
+  .vendor-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-card .metric-value {
+    font-size: 18px;
+  }
+  
+  .dashboard-card .metric-label {
+    font-size: 10px;
+  }
+  
+  .chart-wrapper {
+    height: 250px;
+  }
+  
+  /* Simplified tabs for very small screens */
+  .results-tab {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  
+  /* Footer adjustments */
+  .app-footer .footer-links {
+    display: none;
+  }
+}
+
+/* Tablet styling */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .vendor-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  
+  .sidebar {
+    width: 300px;
+  }
+  
+  .content-area {
+    margin-left: 300px;
+  }
+  
+  .chart-wrapper {
+    height: 350px;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  body:not(.light-mode) {
+    background-color: #121212;
+    color: #f5f5f5;
+  }
+  
+  body:not(.light-mode) .app-header,
+  body:not(.light-mode) .sidebar,
+  body:not(.light-mode) .app-footer {
+    background-color: #1e1e1e;
+  }
+  
+  body:not(.light-mode) .dashboard-card,
+  body:not(.light-mode) .chart-container,
+  body:not(.light-mode) .config-card {
+    background-color: #2a2a2a;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+  
+  body:not(.light-mode) .form-control,
+  body:not(.light-mode) .form-select {
+    background-color: #333;
+    color: #f5f5f5;
+    border-color: #555;
+  }
+  
+  body:not(.light-mode) .btn-outline {
+    border-color: #555;
+    color: #f5f5f5;
+  }
+  
+  body:not(.light-mode) .data-table th {
+    background-color: #333;
+  }
+  
+  body:not(.light-mode) .data-table tr:nth-child(even) {
+    background-color: #2a2a2a;
+  }
+  
+  body:not(.light-mode) .data-table tr:hover {
+    background-color: #3a3a3a;
+  }
+}
+
+/* Print styles */
+@media print {
+  .app-header, .sidebar, .app-footer, .sidebar-toggle {
+    display: none !important;
+  }
+  
+  .content-area {
+    margin-left: 0 !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+  
+  .chart-container {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+  
+  .dashboard-card, .chart-container {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+}

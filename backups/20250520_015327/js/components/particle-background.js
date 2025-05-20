@@ -1,13 +1,13 @@
 /**
  * Enhanced Particle Background for Portnox Total Cost Analyzer
- * Creates an interactive network background visualization
+ * Creates a dynamic, interactive particle background with AI-powered effects
  */
 
 class ParticleBackground {
-  constructor(containerId = 'particles-js') {
+  constructor(containerId = 'particles-js', config = {}) {
     this.containerId = containerId;
     
-    // Default particle configuration
+    // Default configuration
     this.config = {
       particles: {
         number: {
@@ -25,25 +25,33 @@ class ParticleBackground {
           stroke: {
             width: 0,
             color: '#000000'
+          },
+          polygon: {
+            nb_sides: 5
+          },
+          image: {
+            src: 'img/github.svg',
+            width: 100,
+            height: 100
           }
         },
         opacity: {
-          value: 0.5,
+          value: 0.6,
           random: true,
           anim: {
             enable: true,
             speed: 0.8,
-            opacity_min: 0.1,
+            opacity_min: 0.2,
             sync: false
           }
         },
         size: {
-          value: 3,
+          value: 4,
           random: true,
           anim: {
             enable: true,
             speed: 2,
-            size_min: 0.1,
+            size_min: 0.5,
             sync: false
           }
         },
@@ -51,12 +59,12 @@ class ParticleBackground {
           enable: true,
           distance: 150,
           color: '#1a5a96',
-          opacity: 0.3,
+          opacity: 0.4,
           width: 1
         },
         move: {
           enable: true,
-          speed: 1,
+          speed: 1.5,
           direction: 'none',
           random: true,
           straight: false,
@@ -108,19 +116,20 @@ class ParticleBackground {
           }
         }
       },
-      retina_detect: true
+      retina_detect: true,
+      ...config
     };
     
-    // Update colors based on theme
+    // Update colors based on dark mode
     this.updateColors();
     
-    // Initialize particles
+    // Initialize particles.js
     this.init();
     
-    // Set up theme change listener
-    this.setupThemeListener();
+    // Set up dark mode listener
+    this.setupDarkModeListener();
     
-    // Setup intelligent behavior
+    // Intelligent behavior based on user interaction
     this.setupIntelligentBehavior();
   }
   
@@ -130,13 +139,14 @@ class ParticleBackground {
   init() {
     if (typeof particlesJS !== 'undefined' && document.getElementById(this.containerId)) {
       particlesJS(this.containerId, this.config);
+      console.log('Particle background initialized');
     } else {
       console.warn('particles.js not loaded or container not found');
     }
   }
   
   /**
-   * Update colors based on theme (light/dark)
+   * Update particle colors based on dark mode
    */
   updateColors() {
     const isDarkMode = document.body.classList.contains('dark-mode');
@@ -151,11 +161,11 @@ class ParticleBackground {
   }
   
   /**
-   * Set up theme change listener
+   * Set up dark mode listener
    */
-  setupThemeListener() {
+  setupDarkModeListener() {
     // Listen for theme changes
-    window.addEventListener('themechange', () => {
+    window.addEventListener('themechange', (event) => {
       this.updateColors();
       this.init();
     });
@@ -173,15 +183,19 @@ class ParticleBackground {
   }
   
   /**
-   * Set up intelligent behavior for particle interactions
+   * Setup intelligent particle behavior based on user activity
    */
   setupIntelligentBehavior() {
-    // Track mouse activity
+    // Track time since last interaction
     let lastActivity = Date.now();
     let isIdle = false;
     const idleThreshold = 30000; // 30 seconds
     
-    // Update activity timestamp
+    // Track mouse position
+    let mouseX = 0;
+    let mouseY = 0;
+    
+    // Update activity timestamp on user interaction
     const updateActivity = () => {
       lastActivity = Date.now();
       if (isIdle) {
@@ -190,13 +204,20 @@ class ParticleBackground {
       }
     };
     
-    // Events that signal user activity
+    // Events that indicate user activity
     const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
+    
     activityEvents.forEach(eventType => {
       document.addEventListener(eventType, updateActivity);
     });
     
-    // Check for idle state
+    // Track mouse position for directed movement
+    document.addEventListener('mousemove', (event) => {
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+    });
+    
+    // Check for idle state periodically
     setInterval(() => {
       if (!isIdle && Date.now() - lastActivity > idleThreshold) {
         isIdle = true;
@@ -204,12 +225,13 @@ class ParticleBackground {
       }
     }, 5000);
     
-    // Adjust particles based on scroll position
+    // Monitor scroll position to adjust particle density
     window.addEventListener('scroll', this.throttle(() => {
       const scrollY = window.scrollY;
       const maxScroll = document.body.scrollHeight - window.innerHeight;
       const scrollPercent = scrollY / maxScroll;
       
+      // Gradually reduce particles as user scrolls down
       if (typeof pJSDom !== 'undefined' && pJSDom.length > 0 && pJSDom[0].pJS) {
         const maxParticles = 60;
         const minParticles = 20;
@@ -222,34 +244,31 @@ class ParticleBackground {
       }
     }, 200));
     
-    // Add particle bursts on important clicks
+    // Monitor clicks to add particle bursts
     document.addEventListener('click', this.throttle((event) => {
       if (typeof pJSDom !== 'undefined' && pJSDom.length > 0 && pJSDom[0].pJS) {
         const pJS = pJSDom[0].pJS;
         
-        // Only add burst for important UI elements
+        // Only add particle burst on specific elements
         const targetElement = event.target;
-        const isImportantElement = 
-          targetElement.classList.contains('btn') || 
-          targetElement.classList.contains('vendor-select-card') ||
-          targetElement.closest('.btn') || 
-          targetElement.closest('.vendor-select-card');
+        const isButton = targetElement.classList.contains('btn') || 
+                         targetElement.classList.contains('vendor-select-card') ||
+                         targetElement.closest('.btn') || 
+                         targetElement.closest('.vendor-select-card');
         
-        if (isImportantElement) {
-          // Create particle burst effect
+        if (isButton) {
+          // Create a small burst of particles
           for (let i = 0; i < 5; i++) {
-            if (pJS.particles.array.length < pJS.particles.number.value * 1.2) {
-              pJS.particles.array.push(
-                new pJS.fn.particle(
-                  pJS.particles.color,
-                  pJS.particles.opacity.value,
-                  {
-                    'x': event.clientX,
-                    'y': event.clientY
-                  }
-                )
-              );
-            }
+            pJS.particles.array.push(
+              new pJS.fn.particle(
+                pJS.particles.color,
+                pJS.particles.opacity.value,
+                {
+                  'x': event.clientX,
+                  'y': event.clientY
+                }
+              )
+            );
           }
         }
       }
@@ -257,32 +276,15 @@ class ParticleBackground {
   }
   
   /**
-   * Transition to idle state (calmer, slower)
+   * Transition to idle state (more gentle, slower movement)
    */
   becomeIdle() {
     if (typeof pJSDom !== 'undefined' && pJSDom.length > 0 && pJSDom[0].pJS) {
       const pJS = pJSDom[0].pJS;
       
-      // Reduce activity for idle state
-      pJS.particles.move.speed = 0.7;
-      pJS.particles.opacity.value = 0.3;
-      pJS.particles.line_linked.opacity = 0.2;
-      
-      // Apply changes
-      pJS.fn.particlesRefresh();
-    }
-  }
-  
-  /**
-   * Transition to active state (more energetic)
-   */
-  becomeActive() {
-    if (typeof pJSDom !== 'undefined' && pJSDom.length > 0 && pJSDom[0].pJS) {
-      const pJS = pJSDom[0].pJS;
-      
-      // Increase activity for active state
-      pJS.particles.move.speed = 1.5;
-      pJS.particles.opacity.value = 0.5;
+      // Slow down the particles and reduce opacity
+      pJS.particles.move.speed = 0.8;
+      pJS.particles.opacity.value = 0.4;
       pJS.particles.line_linked.opacity = 0.3;
       
       // Apply changes
@@ -291,7 +293,24 @@ class ParticleBackground {
   }
   
   /**
-   * Throttle function to limit execution frequency
+   * Transition to active state (more energetic, faster movement)
+   */
+  becomeActive() {
+    if (typeof pJSDom !== 'undefined' && pJSDom.length > 0 && pJSDom[0].pJS) {
+      const pJS = pJSDom[0].pJS;
+      
+      // Speed up the particles and increase opacity
+      pJS.particles.move.speed = 1.5;
+      pJS.particles.opacity.value = 0.6;
+      pJS.particles.line_linked.opacity = 0.4;
+      
+      // Apply changes
+      pJS.fn.particlesRefresh();
+    }
+  }
+  
+  /**
+   * Throttle function to limit function call frequency
    */
   throttle(func, limit) {
     let inThrottle;
