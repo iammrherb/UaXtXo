@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Portnox UI Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-box { 
+            border: 2px solid blue; 
+            padding: 20px; 
+            margin: 20px 0; 
+            background-color: #f0f8ff;
+        }
+        #dynamic-element {
+            border: 2px dashed red;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+    <link rel="stylesheet" href="test.css">
+</head>
+<body>
+    <h1>Portnox UI Test Page</h1>
+    
+    <div class="test-box">
+        <h2>External CSS Test</h2>
+        <p>This box should have a green border if the external CSS is loaded correctly.</p>
+    </div>
+    
+    <div class="test-box">
+        <h2>External JavaScript Test</h2>
+        <p>Click the button below to test if external JavaScript is loaded:</p>
+        <button id="test-button">Test JavaScript</button>
+        <div id="js-result"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>Dynamic Element Creation</h2>
+        <p>If JavaScript is working, a red-bordered box should appear below:</p>
+        <!-- Dynamic element will be added here -->
+    </div>
+    
+    <div class="test-box">
+        <h2>Console Log Test</h2>
+        <p>Check your browser's console for messages.</p>
+    </div>
+
+    <div class="test-box">
+        <h2>Return to Main App</h2>
+        <p><a href="../index.html">Go back to main application</a></p>
+    </div>
+    
+    <script src="test.js"></script>
+</body>
+</html>

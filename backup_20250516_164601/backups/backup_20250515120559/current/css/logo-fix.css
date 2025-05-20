@@ -1,0 +1,41 @@
+/* Logo fixes */
+.company-logo {
+  content: url("/img/portnox-logo.png");
+}
+
+.company-logo:not([src]) {
+  content: url("/img/vendors/portnox-logo.png");
+}
+
+.company-logo:not([src]) {
+  content: url("../img/portnox-logo.png");
+}
+
+.company-logo:not([src]) {
+  content: url("../img/vendors/portnox-logo.png");
+}
+
+/* Vendor logo fallbacks */
+.vendor-card[data-vendor="portnox"] .vendor-logo img {
+  content: url("/img/vendors/portnox-logo.png");
+}
+
+.vendor-card[data-vendor="cisco"] .vendor-logo img {
+  content: url("/img/vendors/cisco-logo.png");
+}
+
+.vendor-card[data-vendor="aruba"] .vendor-logo img {
+  content: url("/img/vendors/aruba-logo.png");
+}
+
+.vendor-card[data-vendor="forescout"] .vendor-logo img {
+  content: url("/img/vendors/forescout-logo.png");
+}
+
+.vendor-card[data-vendor="fortinac"] .vendor-logo img {
+  content: url("/img/vendors/fortinac-logo.png");
+}
+
+.vendor-card[data-vendor="juniper"] .vendor-logo img {
+  content: url("/img/vendors/juniper-logo.png");
+}

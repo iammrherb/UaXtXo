@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCO Analyzer Test</title>
+
+    <!-- Include all CSS files -->
+    <link rel="stylesheet" href="css/chart-styles.css">
+
+    <!-- Include required libraries -->
+    <script src="libs/js/chart.min.js"></script>
+    <script src="libs/js/countUp.min.js"></script>
+
+    <!-- Include fix scripts first -->
+    <script src="js/chart-fix.js"></script>
+    <script src="js/wizard-fix.js"></script>
+    <script src="js/app-bridge.js"></script>
+
+    <!-- Include core components -->
+    <script src="js/components/charts/chart-manager.js"></script>
+    <script src="js/app-controller.js"></script>
+    <script src="js/data-integration.js"></script>
+    <script src="js/canvas-fixer.js"></script>
+
+    <!-- Include initialization script last -->
+    <script src="js/init.js"></script>
+    <script src="js/final-patch.js"></script>
+</head>
+<body>
+    <h1>TCO Analyzer Test</h1>
+
+    <!-- Simplified wizard container -->
+    <div id="wizard-container" class="wizard-container">
+        <div class="wizard-step active" id="step-5" data-step="5">
+            <div class="calculation-actions">
+                <button id="calculate-btn" class="btn btn-primary">
+                    Calculate TCO
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results container -->
+    <div id="results-container" class="results-container hidden">
+        <div class="results-nav">
+            <div class="results-tabs">
+                <button class="result-tab active" data-tab="overview">Overview</button>
+                <button class="result-tab" data-tab="comparison">Comparison</button>
+                <button class="result-tab" data-tab="implementation">Implementation</button>
+                <button class="result-tab" data-tab="features">Features</button>
+                <button class="result-tab" data-tab="roi">ROI</button>
+            </div>
+        </div>
+
+        <div class="results-content">
+            <!-- Overview Panel -->
+            <div class="result-panel active" id="overview-panel">
+                <h2>Executive Summary</h2>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <h4>Total Savings</h4>
+                        <div id="total-savings">$245,000</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Panel -->
+            <div class="result-panel" id="comparison-panel">
+                <div class="comparison-charts">
+                    <div class="chart-grid">
+                        <div class="chart-card">
+                            <h3>TCO Comparison</h3>
+                            <canvas id="tco-comparison-chart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Current Solution Breakdown</h3>
+                            <canvas id="current-breakdown-chart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Portnox Cloud Breakdown</h3>
+                            <canvas id="alternative-breakdown-chart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Cumulative Cost</h3>
+                            <canvas id="cumulative-cost-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other panels will be created dynamically by init.js -->
+        </div>
+    </div>
+
+    <script>
+        // Test initialization when page loads
+        window.addEventListener('load', function() {
+            console.log("Test page loaded, checking initialization...");
+
+            setTimeout(function() {
+                if (!window.appInitialized) {
+                    console.log("Forcing initialization...");
+                    if (window.chartManager) {
+                        window.chartManager.initializeCharts();
+                    }
+
+                    // Add test button to show results
+                    const testBtn = document.createElement('button');
+                    testBtn.textContent = 'Test Show Results';
+                    testBtn.style.position = 'fixed';
+                    testBtn.style.top = '10px';
+                    testBtn.style.right = '10px';
+                    testBtn.onclick = function() {
+                        document.getElementById('wizard-container').classList.add('hidden');
+                        document.getElementById('results-container').classList.remove('hidden');
+
+                        if (window.chartManager) {
+                            window.chartManager.initializeCharts();
+                        }
+                    };
+                    document.body.appendChild(testBtn);
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

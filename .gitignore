@@ -1,12 +1,55 @@
-backup*
-*.sh
-backups/
-scripts/legacy/
+# Dependencies
 node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Build files
 dist/
-*.log
+build/
+*.min.js
+*.min.css
+
+# OS files
 .DS_Store
+Thumbs.db
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temp files
+tmp/
+temp/
+*.tmp
 *.bak
-*.new
-*-fixed.html
-.enhancement-applied
+
+# Backup directory
+portnox_backup_*/
+
+# PDF exports
+exports/
+*.pdf

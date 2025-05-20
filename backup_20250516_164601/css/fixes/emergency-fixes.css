@@ -1,0 +1,75 @@
+/* Emergency fixes for the Portnox TCO Analyzer */
+
+/* Make vendor grid 2 columns */
+.vendor-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+}
+
+/* Fix vendor card styling */
+.vendor-card {
+    height: 100px !important;
+    padding: 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Fix vendor logo display */
+.vendor-logo {
+    height: 40px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.vendor-logo img {
+    max-height: 30px !important;
+    max-width: 90% !important;
+}
+
+/* Fix vendor info text */
+.vendor-info h3 {
+    font-size: 12px !important;
+    margin: 0 0 2px 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.vendor-info p {
+    font-size: 10px !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Make sure sidebar content is scrollable */
+.sidebar-content {
+    max-height: calc(100vh - 250px) !important;
+    overflow-y: auto !important;
+}
+
+/* Fix chart containers */
+.chart-container {
+    margin-bottom: 30px !important;
+}
+
+/* Help tooltip styling */
+.help-icon {
+    margin-left: 5px !important;
+    color: #3498db !important;
+    cursor: pointer !important;
+}
+
+.help-tooltip {
+    position: absolute !important;
+    z-index: 9999 !important;
+    background-color: rgba(0, 0, 0, 0.8) !important;
+    color: white !important;
+    padding: 15px !important;
+    border-radius: 5px !important;
+    max-width: 300px !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2) !important;
+}
