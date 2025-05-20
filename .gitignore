@@ -53,3 +53,7 @@ portnox_backup_*/
 # PDF exports
 exports/
 *.pdf
+# Backup directories
+portnox_backup_*/
+portnox_phase2_backup_*/
+portnox_phase3_backup_*/
