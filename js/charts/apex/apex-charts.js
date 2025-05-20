@@ -6,8 +6,12 @@
 class ApexChartManager {
   constructor(config = {}) {
     this.config = {
-      colors: ChartConfig.colors,
-      theme: ChartConfig.apexTheme,
+      colors: window.ChartConfig ? window.ChartConfig.colors : {
+        chart: ['#1a5a96', '#2ecc71', '#f39c12', '#e74c3c', '#9b59b6', '#3498db']
+      },
+      theme: window.ChartConfig ? window.ChartConfig.apexTheme : {
+        chart: { fontFamily: "'Nunito', sans-serif" }
+      },
       ...config
     };
     
@@ -42,10 +46,12 @@ class ApexChartManager {
    * Update all charts when theme changes
    */
   updateChartsTheme(isDarkMode) {
+    if (!window.ChartConfig) return;
+    
     // Update theme in config
-    this.config.theme.chart.foreColor = isDarkMode ? '#e0e0e0' : '#333333';
+    this.config.theme.chart.foreColor = isDarkMode ? window.ChartConfig.colors.dark.textColor : window.ChartConfig.colors.light.textColor;
     this.config.theme.tooltip.theme = isDarkMode ? 'dark' : 'light';
-    this.config.theme.grid.borderColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    this.config.theme.grid.borderColor = isDarkMode ? window.ChartConfig.colors.dark.gridColor : window.ChartConfig.colors.light.gridColor;
     
     // Update all active charts
     Object.keys(this.charts).forEach(chartId => {
@@ -72,7 +78,7 @@ class ApexChartManager {
   resizeAllCharts() {
     Object.keys(this.charts).forEach(chartId => {
       const chart = this.charts[chartId];
-      if (chart) {
+      if (chart && chart.render) {
         try {
           chart.render();
         } catch (e) {
@@ -89,7 +95,7 @@ class ApexChartManager {
   createTcoComparisonChart(data, elementId, chartId) {
     const vendors = Object.keys(data.vendors).filter(v => v !== 'no-nac');
     const tcoValues = vendors.map(v => data.vendors[v].totalTco);
-    const colors = vendors.map(v => ChartConfig.getVendorColor(v));
+    const colors = vendors.map(v => window.ChartConfig ? window.ChartConfig.getVendorColor(v) : this.config.colors.chart[0]);
     
     // Find index of Portnox for highlighting
     const portnoxIndex = vendors.indexOf('portnox');
@@ -97,14 +103,14 @@ class ApexChartManager {
     // Create distributed colors array with Portnox highlighted
     const distributedColors = vendors.map((v, i) => {
       if (i === portnoxIndex) {
+        // Portnox gets a gradient fill
         return {
-          // Portnox gets a gradient fill
           fillType: 'gradient',
           opacity: 1,
           shade: 'light',
           type: 'vertical',
           shadeIntensity: 0.2,
-          gradientToColors: [ChartConfig.adjustColor(ChartConfig.getVendorColor(v), -15)],
+          gradientToColors: [window.ChartConfig ? window.ChartConfig.adjustColor(window.ChartConfig.getVendorColor(v), -15) : colors[i]],
           inverseColors: false,
           stops: [0, 100]
         };
@@ -170,7 +176,14 @@ class ApexChartManager {
       dataLabels: {
         enabled: true,
         formatter: function(val) {
-          return ChartConfig.formatCurrency(val);
+          return window.ChartConfig ? 
+            window.ChartConfig.formatCurrency(val) : 
+            new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'USD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0
+            }).format(val);
         },
         offsetY: -20,
         style: {
@@ -179,7 +192,7 @@ class ApexChartManager {
         }
       },
       xaxis: {
-        categories: vendors.map(v => VENDORS[v].name),
+        categories: vendors.map(v => window.VENDORS ? window.VENDORS[v].name : v),
         labels: {
           ...this.config.theme.xaxis.labels,
           style: {
@@ -198,19 +211,33 @@ class ApexChartManager {
         },
         labels: {
           formatter: function(val) {
-            return ChartConfig.formatCurrency(val);
+            return window.ChartConfig ? 
+              window.ChartConfig.formatCurrency(val) : 
+              new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(val);
           }
         }
       },
       tooltip: {
         y: {
           formatter: function(val) {
-            return ChartConfig.formatCurrency(val);
+            return window.ChartConfig ? 
+              window.ChartConfig.formatCurrency(val) : 
+              new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(val);
           }
         },
         custom: function({ series, seriesIndex, dataPointIndex, w }) {
           const vendorId = vendors[dataPointIndex];
-          const vendor = VENDORS[vendorId];
+          const vendorName = window.VENDORS ? window.VENDORS[vendorId].name : vendorId;
           const tcoValue = series[seriesIndex][dataPointIndex];
           
           // Calculate savings compared to most expensive option
@@ -218,20 +245,30 @@ class ApexChartManager {
           const savings = maxTco - tcoValue;
           const savingsPercent = Math.round((savings / maxTco) * 100);
           
+          const formatCurrency = val => window.ChartConfig ? 
+            window.ChartConfig.formatCurrency(val) : 
+            new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'USD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0
+            }).format(val);
+          
           // Create custom tooltip
           return `
             <div class="custom-tooltip">
-              <div class="tooltip-title">${vendor.name}</div>
-              <div class="tooltip-value">${ChartConfig.formatCurrency(tcoValue)}</div>
+              <div class="tooltip-title">${vendorName}</div>
+              <div class="tooltip-value">${formatCurrency(tcoValue)}</div>
               ${savings > 0 ? 
                 `<div class="tooltip-savings">
-                  <span style="color:#2ecc71">Save ${ChartConfig.formatCurrency(savings)}</span>
+                  <span style="color:#2ecc71">Save ${formatCurrency(savings)}</span>
                   <span style="color:#2ecc71">(${savingsPercent}%)</span>
                  </div>` : ''
               }
-              <div class="tooltip-arch">${vendor.architecture === 'cloud' ? 'Cloud Solution' : 
-                                         vendor.architecture === 'hybrid' ? 'Hybrid Solution' : 
-                                         'On-Premises Solution'}</div>
+              <div class="tooltip-arch">${window.VENDORS ? 
+                (window.VENDORS[vendorId].architecture === 'cloud' ? 'Cloud Solution' : 
+                 window.VENDORS[vendorId].architecture === 'hybrid' ? 'Hybrid Solution' : 
+                 'On-Premises Solution') : 'Solution'}</div>
             </div>
           `;
         }
@@ -250,16 +287,16 @@ class ApexChartManager {
       annotations: {
         points: portnoxIndex >= 0 ? [
           {
-            x: VENDORS[vendors[portnoxIndex]].name,
+            x: window.VENDORS ? window.VENDORS[vendors[portnoxIndex]].name : vendors[portnoxIndex],
             y: tcoValues[portnoxIndex],
             marker: {
               size: 0
             },
             label: {
               text: 'Best Value',
-              borderColor: ChartConfig.getVendorColor(vendors[portnoxIndex]),
+              borderColor: window.ChartConfig ? window.ChartConfig.getVendorColor(vendors[portnoxIndex]) : colors[portnoxIndex],
               style: {
-                background: ChartConfig.getVendorColor(vendors[portnoxIndex]),
+                background: window.ChartConfig ? window.ChartConfig.getVendorColor(vendors[portnoxIndex]) : colors[portnoxIndex],
                 color: '#fff',
                 fontSize: '11px',
                 fontWeight: 600
@@ -296,7 +333,7 @@ class ApexChartManager {
     
     const series = vendors.map(vendorId => {
       return {
-        name: VENDORS[vendorId].name,
+        name: window.VENDORS ? window.VENDORS[vendorId].name : vendorId,
         data: data.vendors[vendorId].yearlyBreakdown.map(year => year.cumulativeCost)
       };
     });
@@ -321,7 +358,16 @@ class ApexChartManager {
           opacity: 0.1
         },
         toolbar: {
-          show: false
+          show: true,
+          tools: {
+            download: true,
+            selection: false,
+            zoom: false,
+            zoomin: false,
+            zoomout: false,
+            pan: false,
+            reset: false
+          }
         },
         animations: {
           enabled: this.animations,
@@ -337,7 +383,7 @@ class ApexChartManager {
           }
         }
       },
-      colors: vendors.map(v => ChartConfig.getVendorColor(v)),
+      colors: vendors.map(v => window.ChartConfig ? window.ChartConfig.getVendorColor(v) : this.config.colors.chart[0]),
       stroke: {
         width: 3,
         curve: 'smooth',
@@ -370,7 +416,14 @@ class ApexChartManager {
         },
         labels: {
           formatter: function(val) {
-            return ChartConfig.formatCurrency(val);
+            return window.ChartConfig ? 
+              window.ChartConfig.formatCurrency(val) : 
+              new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(val);
           }
         }
       },
@@ -379,7 +432,14 @@ class ApexChartManager {
         intersect: false,
         y: {
           formatter: function(val) {
-            return ChartConfig.formatCurrency(val);
+            return window.ChartConfig ? 
+              window.ChartConfig.formatCurrency(val) : 
+              new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(val);
           }
         }
       },
@@ -415,16 +475,23 @@ class ApexChartManager {
             y: portnoxSeries.data[portnoxSeries.data.length - 1],
             marker: {
               size: 6,
-              fillColor: ChartConfig.getVendorColor('portnox'),
+              fillColor: window.ChartConfig ? window.ChartConfig.getVendorColor('portnox') : this.config.colors.chart[0],
               strokeColor: '#fff',
               strokeWidth: 2,
               radius: 2
             },
             label: {
-              text: `${ChartConfig.formatCurrency(portnoxSeries.data[portnoxSeries.data.length - 1])}`,
-              borderColor: ChartConfig.getVendorColor('portnox'),
+              text: `${window.ChartConfig ? 
+                window.ChartConfig.formatCurrency(portnoxSeries.data[portnoxSeries.data.length - 1]) : 
+                new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                }).format(portnoxSeries.data[portnoxSeries.data.length - 1])}`,
+              borderColor: window.ChartConfig ? window.ChartConfig.getVendorColor('portnox') : this.config.colors.chart[0],
               style: {
-                background: ChartConfig.getVendorColor('portnox'),
+                background: window.ChartConfig ? window.ChartConfig.getVendorColor('portnox') : this.config.colors.chart[0],
                 color: '#fff',
                 fontSize: '12px',
                 fontWeight: 600,
@@ -464,7 +531,7 @@ class ApexChartManager {
   createRoiChart(data, elementId, chartId) {
     const vendors = Object.keys(data.roi).filter(v => v !== 'no-nac');
     const roiValues = vendors.map(v => data.roi[v].roiPercentage);
-    const colors = vendors.map(v => ChartConfig.getVendorColor(v));
+    const colors = vendors.map(v => window.ChartConfig ? window.ChartConfig.getVendorColor(v) : this.config.colors.chart[0]);
     
     // Find index of Portnox for highlighting
     const portnoxIndex = vendors.indexOf('portnox');
@@ -478,7 +545,19 @@ class ApexChartManager {
       chart: {
         ...this.config.theme.chart,
         type: 'bar',
-        height: 400
+        height: 400,
+        toolbar: {
+          show: true,
+          tools: {
+            download: true,
+            selection: false,
+            zoom: false,
+            zoomin: false,
+            zoomout: false,
+            pan: false,
+            reset: false
+          }
+        }
       },
       colors: colors,
       plotOptions: {
@@ -502,7 +581,7 @@ class ApexChartManager {
         }
       },
       xaxis: {
-        categories: vendors.map(v => VENDORS[v].name),
+        categories: vendors.map(v => window.VENDORS ? window.VENDORS[v].name : v),
         labels: {
           ...this.config.theme.xaxis.labels,
           style: {
@@ -533,19 +612,20 @@ class ApexChartManager {
         },
         custom: function({ series, seriesIndex, dataPointIndex, w }) {
           const vendorId = vendors[dataPointIndex];
-          const vendor = VENDORS[vendorId];
+          const vendorName = window.VENDORS ? window.VENDORS[vendorId].name : vendorId;
           const roiValue = series[seriesIndex][dataPointIndex];
           const payback = data.roi[vendorId].paybackPeriod;
           
           // Create custom tooltip
           return `
             <div class="custom-tooltip">
-              <div class="tooltip-title">${vendor.name}</div>
+              <div class="tooltip-title">${vendorName}</div>
               <div class="tooltip-value">${Math.round(roiValue)}% ROI</div>
               <div class="tooltip-payback">Payback in ${Math.round(payback)} months</div>
-              <div class="tooltip-arch">${vendor.architecture === 'cloud' ? 'Cloud Solution' : 
-                                         vendor.architecture === 'hybrid' ? 'Hybrid Solution' : 
-                                         'On-Premises Solution'}</div>
+              <div class="tooltip-arch">${window.VENDORS ? 
+                (window.VENDORS[vendorId].architecture === 'cloud' ? 'Cloud Solution' : 
+                 window.VENDORS[vendorId].architecture === 'hybrid' ? 'Hybrid Solution' : 
+                 'On-Premises Solution') : 'Solution'}</div>
             </div>
           `;
         }
@@ -564,16 +644,16 @@ class ApexChartManager {
       annotations: portnoxIndex >= 0 && roiValues[portnoxIndex] === Math.max(...roiValues) ? {
         points: [
           {
-            x: VENDORS[vendors[portnoxIndex]].name,
+            x: window.VENDORS ? window.VENDORS[vendors[portnoxIndex]].name : vendors[portnoxIndex],
             y: roiValues[portnoxIndex],
             marker: {
               size: 0
             },
             label: {
               text: 'Best ROI',
-              borderColor: ChartConfig.getVendorColor(vendors[portnoxIndex]),
+              borderColor: window.ChartConfig ? window.ChartConfig.getVendorColor(vendors[portnoxIndex]) : colors[portnoxIndex],
               style: {
-                background: ChartConfig.getVendorColor(vendors[portnoxIndex]),
+                background: window.ChartConfig ? window.ChartConfig.getVendorColor(vendors[portnoxIndex]) : colors[portnoxIndex],
                 color: '#fff',
                 fontSize: '11px',
                 fontWeight: 600
@@ -628,7 +708,16 @@ class ApexChartManager {
         type: 'bar',
         height: 350,
         toolbar: {
-          show: false
+          show: true,
+          tools: {
+            download: true,
+            selection: false,
+            zoom: false,
+            zoomin: false,
+            zoomout: false,
+            pan: false,
+            reset: false
+          }
         }
       },
       plotOptions: {
@@ -643,16 +732,23 @@ class ApexChartManager {
         }
       },
       colors: [
-        ChartConfig.colors.chart[0],
-        ChartConfig.colors.chart[1],
-        ChartConfig.colors.chart[2],
-        ChartConfig.colors.chart[3],
-        ChartConfig.colors.chart[4]
+        '#1a5a96',
+        '#2ecc71',
+        '#f39c12',
+        '#e74c3c',
+        '#9b59b6'
       ],
       dataLabels: {
         enabled: true,
         formatter: function(val) {
-          return ChartConfig.formatCurrency(val);
+          return window.ChartConfig ? 
+            window.ChartConfig.formatCurrency(val) : 
+            new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'USD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0
+            }).format(val);
         },
         textAnchor: 'start',
         offsetX: 10,
@@ -676,14 +772,28 @@ class ApexChartManager {
       yaxis: {
         labels: {
           formatter: function(val) {
-            return ChartConfig.formatCurrency(val);
+            return window.ChartConfig ? 
+              window.ChartConfig.formatCurrency(val) : 
+              new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(val);
           }
         }
       },
       tooltip: {
         y: {
           formatter: function(val) {
-            return ChartConfig.formatCurrency(val);
+            return window.ChartConfig ? 
+              window.ChartConfig.formatCurrency(val) : 
+              new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(val);
           }
         }
       },
@@ -716,117 +826,148 @@ class ApexChartManager {
   }
   
   /**
-   * Create Cost Structure Chart
-   * Stacked bar chart showing cost breakdown by component
+   * Create Security Framework Coverage Chart
+   * Horizontal bar chart showing compliance framework coverage
    */
-  createCostStructureChart(data, elementId, chartId) {
-    const vendors = Object.keys(data.vendors).filter(v => v !== 'no-nac');
+  createSecurityFrameworksChart(data, elementId, chartId) {
+    // Framework coverage for Portnox
+    const frameworkData = {
+      'NIST CSF': 95,
+      'ISO 27001': 88,
+      'SOC 2': 92,
+      'HIPAA': 85,
+      'PCI DSS': 90,
+      'GDPR': 80,
+      'CMMC': 82
+    };
     
-    // Prepare series data for a stacked bar chart
+    // For competitor comparison
+    const competitorData = {
+      'cisco': {
+        'NIST CSF': 85,
+        'ISO 27001': 85,
+        'SOC 2': 82,
+        'HIPAA': 80,
+        'PCI DSS': 85,
+        'GDPR': 75,
+        'CMMC': 78
+      },
+      'forescout': {
+        'NIST CSF': 83,
+        'ISO 27001': 80,
+        'SOC 2': 85,
+        'HIPAA': 78,
+        'PCI DSS': 82,
+        'GDPR': 72,
+        'CMMC': 75
+      }
+    };
+    
+    // Create series array for all vendors to compare
     const series = [
-      { name: 'Hardware', data: [] },
-      { name: 'Software', data: [] },
-      { name: 'Subscription', data: [] },
-      { name: 'Implementation', data: [] },
-      { name: 'Maintenance', data: [] },
-      { name: 'Personnel', data: [] },
-      { name: 'Operational', data: [] },
-      { name: 'Downtime', data: [] }
+      {
+        name: 'Portnox',
+        data: Object.values(frameworkData)
+      }
     ];
     
-    const categories = [];
+    // Add competitors if selected
+    const selectedVendors = window.sidebarManager ? window.sidebarManager.getSelectedVendors() : [];
     
-    vendors.forEach(vendorId => {
-      const vendor = data.vendors[vendorId];
-      categories.push(VENDORS[vendorId].name);
-      
-      // Add each cost component to the series
-      series[0].data.push(vendor.breakdown.hardware || 0);
-      series[1].data.push(vendor.breakdown.software || 0);
-      series[2].data.push(vendor.breakdown.subscription || 0);
-      series[3].data.push(vendor.breakdown.implementation || 0);
-      series[4].data.push(vendor.breakdown.maintenance || 0);
-      series[5].data.push(vendor.breakdown.personnel || 0);
-      series[6].data.push(vendor.breakdown.operational || 0);
-      series[7].data.push(vendor.breakdown.downtime || 0);
-    });
+    if (selectedVendors.includes('cisco')) {
+      series.push({
+        name: 'Cisco ISE',
+        data: Object.values(competitorData.cisco)
+      });
+    }
     
-    // Filter out empty series
-    const filteredSeries = series.filter(s => s.data.some(v => v > 0));
+    if (selectedVendors.includes('forescout')) {
+      series.push({
+        name: 'Forescout',
+        data: Object.values(competitorData.forescout)
+      });
+    }
     
     const options = {
       ...this.config.theme,
-      series: filteredSeries,
+      series: series,
       chart: {
         ...this.config.theme.chart,
         type: 'bar',
         height: 450,
-        stacked: true
+        toolbar: {
+          show: true,
+          tools: {
+            download: true,
+            selection: false,
+            zoom: false,
+            zoomin: false,
+            zoomout: false,
+            pan: false,
+            reset: false
+          }
+        }
       },
-      colors: [
-        '#3498db', // Hardware
-        '#2ecc71', // Software
-        '#1abc9c', // Subscription
-        '#9b59b6', // Implementation
-        '#f39c12', // Maintenance
-        '#e74c3c', // Personnel
-        '#34495e', // Operational
-        '#d35400'  // Downtime
-      ],
       plotOptions: {
         bar: {
-          horizontal: false,
-          columnWidth: '70%',
-          borderRadius: 0
-        }
+          horizontal: true,
+          dataLabels: {
+            position: 'top',
+          },
+          barHeight: '80%',
+          borderRadius: 4
+        },
       },
       dataLabels: {
-        enabled: false
+        enabled: true,
+        offsetX: 5,
+        style: {
+          fontSize: '12px',
+          colors: ['#fff']
+        },
+        formatter: function(val) {
+          return val + '%';
+        }
+      },
+      stroke: {
+        width: 1,
+        colors: ['#fff']
       },
       xaxis: {
-        categories: categories,
+        categories: Object.keys(frameworkData),
         labels: {
           ...this.config.theme.xaxis.labels
-        }
+        },
+        max: 100
       },
       yaxis: {
         title: {
-          text: 'Cost Breakdown ($)',
+          text: 'Compliance Frameworks',
           style: {
             fontSize: '14px',
             fontWeight: 500
           }
-        },
-        labels: {
-          formatter: function(val) {
-            return ChartConfig.formatCurrency(val);
-          }
         }
       },
+      colors: [
+        window.ChartConfig ? window.ChartConfig.getVendorColor('portnox') : '#1a5a96',
+        window.ChartConfig ? window.ChartConfig.getVendorColor('cisco') : '#00bceb',
+        window.ChartConfig ? window.ChartConfig.getVendorColor('forescout') : '#7a2a90'
+      ],
       tooltip: {
         y: {
           formatter: function(val) {
-            return ChartConfig.formatCurrency(val);
+            return val + '% Coverage';
           }
         }
-      },
-      fill: {
-        opacity: 1
       },
       legend: {
         position: 'bottom',
         horizontalAlign: 'center',
-        fontSize: '13px',
-        offsetY: 10,
-        markers: {
-          fillColors: [
-            '#3498db', '#2ecc71', '#1abc9c', '#9b59b6',
-            '#f39c12', '#e74c3c', '#34495e', '#d35400'
-          ]
-        }
+        offsetY: 10
       },
       title: {
-        text: 'Cost Structure Breakdown',
+        text: 'Industry Compliance Framework Coverage',
         align: 'center',
         style: {
           fontSize: '18px',
@@ -851,67 +992,93 @@ class ApexChartManager {
   }
   
   /**
-   * Create Cost Projection Chart
-   * Line chart showing yearly costs for different vendors
+   * Create Cyber Insurance Impact Chart
+   * Bar chart showing insurance premium reductions
    */
-  createCostProjectionChart(data, elementId, chartId) {
-    const vendors = Object.keys(data.vendors).filter(v => v !== 'no-nac');
-    const series = [];
+  createInsuranceImpactChart(data, elementId, chartId) {
+    // Insurance data - percentage reduction in premiums
+    const insuranceData = {
+      'portnox': 25,
+      'cisco': 18,
+      'aruba': 15,
+      'forescout': 20,
+      'fortinac': 15
+    };
     
-    vendors.forEach(vendorId => {
-      const vendor = data.vendors[vendorId];
-      const yearlyData = vendor.yearlyBreakdown.map(y => y.cost);
-      
-      series.push({
-        name: VENDORS[vendorId].name,
-        data: yearlyData
-      });
-    });
+    // Filter to selected vendors
+    const selectedVendors = window.sidebarManager ? 
+      window.sidebarManager.getSelectedVendors() : 
+      Object.keys(insuranceData);
+    
+    const vendors = selectedVendors.filter(v => insuranceData[v] !== undefined);
+    
+    // Annual premium before reductions
+    const annualPremium = 150000;
+    
+    // Calculate actual dollar savings
+    const series = [{
+      name: 'Annual Premium Savings',
+      data: vendors.map(v => (insuranceData[v] / 100) * annualPremium)
+    }];
     
     const options = {
       ...this.config.theme,
       series: series,
       chart: {
         ...this.config.theme.chart,
-        type: 'line',
+        type: 'bar',
         height: 400,
-        dropShadow: {
-          enabled: true,
-          color: '#000',
-          top: 18,
-          left: 7,
-          blur: 10,
-          opacity: 0.1
+        toolbar: {
+          show: true,
+          tools: {
+            download: true,
+            selection: false,
+            zoom: false,
+            zoomin: false,
+            zoomout: false,
+            pan: false,
+            reset: false
+          }
         }
       },
-      colors: vendors.map(v => ChartConfig.getVendorColor(v)),
-      stroke: {
-        curve: 'straight',
-        width: 3
-      },
-      markers: {
-        size: 5,
-        hover: {
-          size: 7
+      plotOptions: {
+        bar: {
+          borderRadius: 6,
+          columnWidth: '60%',
+          distributed: true,
+          dataLabels: {
+            position: 'top'
+          }
         }
       },
-      grid: {
-        padding: {
-          top: 10,
-          right: 10,
-          bottom: 10,
-          left: 10
+      colors: vendors.map(v => window.ChartConfig ? window.ChartConfig.getVendorColor(v) : this.config.colors.chart[0]),
+      dataLabels: {
+        enabled: true,
+        formatter: function(val) {
+          return window.ChartConfig ? 
+            window.ChartConfig.formatCurrency(val) : 
+            new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'USD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0
+            }).format(val);
+        },
+        offsetY: -20,
+        style: {
+          fontSize: '12px',
+          colors: ["#333"]
         }
       },
       xaxis: {
-        categories: data.vendors[vendors[0]].yearlyBreakdown.map(y => `Year ${y.year}`),
+        categories: vendors.map(v => window.VENDORS ? window.VENDORS[v].name : v),
         labels: {
           ...this.config.theme.xaxis.labels
         }
       },
       yaxis: {
         title: {
-          text: 'Annual Cost ($)',
+          text: 'Annual Premium Savings ($)',
           style: {
             fontSize: '14px',
             fontWeight: 500
@@ -919,35 +1086,601 @@ class ApexChartManager {
         },
         labels: {
           formatter: function(val) {
-            return ChartConfig.formatCurrency(val);
+            return window.ChartConfig ? 
+              window.ChartConfig.formatCurrency(val) : 
+              new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(val);
           }
         }
       },
       tooltip: {
-        shared: true,
         y: {
           formatter: function(val) {
-            return ChartConfig.formatCurrency(val);
+            return window.ChartConfig ? 
+              window.ChartConfig.formatCurrency(val) : 
+              new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(val);
           }
+        },
+        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+          const vendorId = vendors[dataPointIndex];
+          const vendorName = window.VENDORS ? window.VENDORS[vendorId].name : vendorId;
+          const value = series[seriesIndex][dataPointIndex];
+          const percent = insuranceData[vendorId];
+          
+          return `
+            <div class="custom-tooltip">
+              <div class="tooltip-title">${vendorName}</div>
+              <div class="tooltip-value">${window.ChartConfig ? 
+                window.ChartConfig.formatCurrency(value) : 
+                new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                }).format(value)}</div>
+              <div>Premium reduction: ${percent}%</div>
+              <div>Base premium: ${window.ChartConfig ? 
+                window.ChartConfig.formatCurrency(annualPremium) : 
+                new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                }).format(annualPremium)}</div>
+            </div>
+          `;
         }
       },
       legend: {
-        position: 'bottom',
-        horizontalAlign: 'center',
-        fontSize: '13px',
-        offsetY: 10,
-        itemMargin: {
-          horizontal: 10,
-          vertical: 5
-        }
+        show: false
       },
       title: {
-        text: '3-Year Cost Projection',
+        text: 'Cyber Insurance Premium Reduction',
         align: 'center',
         style: {
           fontSize: '18px',
           fontWeight: 600
         }
+      },
+      annotations: {
+        points: vendors.indexOf('portnox') >= 0 ? [
+          {
+            x: window.VENDORS ? window.VENDORS['portnox'].name : 'portnox',
+            y: (insuranceData['portnox'] / 100) * annualPremium,
+            marker: {
+              size: 0
+            },
+            label: {
+              text: 'Highest Savings',
+              borderColor: window.ChartConfig ? window.ChartConfig.getVendorColor('portnox') : this.config.colors.chart[0],
+              style: {
+                background: window.ChartConfig ? window.ChartConfig.getVendorColor('portnox') : this.config.colors.chart[0],
+                color: '#fff',
+                fontSize: '11px',
+                fontWeight: 600
+              },
+              offsetY: -15
+            }
+          }
+        ] : []
+      }
+    };
+    
+    const element = document.getElementById(elementId);
+    if (element) {
+      // Destroy existing chart if any
+      if (this.charts[chartId] && this.charts[chartId].destroy) {
+        this.charts[chartId].destroy();
+      }
+      
+      // Create and store new chart
+      this.charts[chartId] = new ApexCharts(element, options);
+      this.charts[chartId].render();
+    }
+    
+    return this.charts[chartId];
+  }
+  
+  /**
+   * Create Breach Impact Chart
+   * Bar chart comparing data breach costs with and without NAC
+   */
+  createBreachImpactChart(data, elementId, chartId) {
+    // Define breach impact data
+    const breachCost = 4800000; // Average cost of a data breach
+    const breachProbability = 0.32; // Probability of a breach without NAC
+    
+    // Reduction percentages for different vendors
+    const riskReduction = {
+      'portnox': 0.89,
+      'cisco': 0.76,
+      'aruba': 0.74,
+      'forescout': 0.81,
+      'fortinac': 0.72
+    };
+    
+    // Filter to selected vendors
+    const selectedVendors = window.sidebarManager ? 
+      window.sidebarManager.getSelectedVendors() : 
+      Object.keys(riskReduction);
+    
+    const vendors = selectedVendors.filter(v => riskReduction[v] !== undefined);
+    
+    // Calculate expected annual loss (EAL)
+    const withoutNac = breachCost * breachProbability;
+    const vendorEALs = vendors.map(v => withoutNac * (1 - riskReduction[v]));
+    
+    // Create series data
+    const series = [
+      {
+        name: 'Expected Annual Loss',
+        data: [...vendorEALs, withoutNac]
+      }
+    ];
+    
+    const options = {
+      ...this.config.theme,
+      series: series,
+      chart: {
+        ...this.config.theme.chart,
+        type: 'bar',
+        height: 400,
+        toolbar: {
+          show: true,
+          tools: {
+            download: true,
+            selection: false,
+            zoom: false,
+            zoomin: false,
+            zoomout: false,
+            pan: false,
+            reset: false
+          }
+        }
+      },
+      plotOptions: {
+        bar: {
+          borderRadius: 6,
+          columnWidth: '60%',
+          distributed: true,
+          dataLabels: {
+            position: 'top'
+          }
+        }
+      },
+      colors: [
+        ...vendors.map(v => window.ChartConfig ? window.ChartConfig.getVendorColor(v) : this.config.colors.chart[0]), 
+        '#777777' // color for "No NAC"
+      ],
+      dataLabels: {
+        enabled: true,
+        formatter: function(val) {
+          return window.ChartConfig ? 
+            window.ChartConfig.formatCurrency(val) : 
+            new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'USD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0
+            }).format(val);
+        },
+        offsetY: -20,
+        style: {
+          fontSize: '12px',
+          colors: ["#333"]
+        }
+      },
+      xaxis: {
+        categories: [
+          ...vendors.map(v => window.VENDORS ? window.VENDORS[v].name : v),
+          'No NAC'
+        ],
+        labels: {
+          ...this.config.theme.xaxis.labels
+        }
+      },
+      yaxis: {
+        title: {
+          text: 'Expected Annual Loss ($)',
+          style: {
+            fontSize: '14px',
+            fontWeight: 500
+          }
+        },
+        labels: {
+          formatter: function(val) {
+            return window.ChartConfig ? 
+              window.ChartConfig.formatCurrency(val) : 
+              new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(val);
+          }
+        }
+      },
+      tooltip: {
+        y: {
+          formatter: function(val) {
+            return window.ChartConfig ? 
+              window.ChartConfig.formatCurrency(val) : 
+              new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(val);
+          }
+        },
+        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+          const categories = [
+            ...vendors.map(v => window.VENDORS ? window.VENDORS[v].name : v),
+            'No NAC'
+          ];
+          
+          const vendorName = categories[dataPointIndex];
+          const value = series[seriesIndex][dataPointIndex];
+          
+          let reduction = 0;
+          let reductionPercent = 0;
+          
+          if (dataPointIndex < vendors.length) {
+            reduction = withoutNac - value;
+            reductionPercent = riskReduction[vendors[dataPointIndex]] * 100;
+          }
+          
+          return `
+            <div class="custom-tooltip">
+              <div class="tooltip-title">${vendorName}</div>
+              <div class="tooltip-value">${window.ChartConfig ? 
+                window.ChartConfig.formatCurrency(value) : 
+                new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                }).format(value)}</div>
+              ${dataPointIndex < vendors.length ? `
+                <div style="color:#2ecc71">Risk reduction: ${reductionPercent.toFixed(0)}%</div>
+                <div style="color:#2ecc71">Savings: ${window.ChartConfig ? 
+                  window.ChartConfig.formatCurrency(reduction) : 
+                  new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  }).format(reduction)}</div>
+              ` : ''}
+              <div>Based on an average breach cost of ${window.ChartConfig ? 
+                window.ChartConfig.formatCurrency(breachCost) : 
+                new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                }).format(breachCost)}</div>
+            </div>
+          `;
+        }
+      },
+      legend: {
+        show: false
+      },
+      title: {
+        text: 'Data Breach Cost Impact Analysis',
+        align: 'center',
+        style: {
+          fontSize: '18px',
+          fontWeight: 600
+        }
+      }
+    };
+    
+    const element = document.getElementById(elementId);
+    if (element) {
+      // Destroy existing chart if any
+      if (this.charts[chartId] && this.charts[chartId].destroy) {
+        this.charts[chartId].destroy();
+      }
+      
+      // Create and store new chart
+      this.charts[chartId] = new ApexCharts(element, options);
+      this.charts[chartId].render();
+    }
+    
+    return this.charts[chartId];
+  }
+  
+  /**
+   * Create Industry Breach Data Chart
+   * Shows breach statistics across different industries
+   */
+  createIndustryBreachChart(data, elementId, chartId) {
+    // Industry breach data
+    const industryData = [
+      { industry: 'Healthcare', breachCost: 9230000, records: 29000 },
+      { industry: 'Financial', breachCost: 5850000, records: 22000 },
+      { industry: 'Technology', breachCost: 5150000, records: 25000 },
+      { industry: 'Energy & Utilities', breachCost: 4770000, records: 21000 },
+      { industry: 'Education', breachCost: 3850000, records: 28000 },
+      { industry: 'Retail', breachCost: 3270000, records: 19000 },
+      { industry: 'Manufacturing', breachCost: 4100000, records: 17000 }
+    ];
+    
+    const series = [{
+      name: 'Average Breach Cost',
+      data: industryData.map(item => item.breachCost)
+    }];
+    
+    const options = {
+      ...this.config.theme,
+      series: series,
+      chart: {
+        ...this.config.theme.chart,
+        type: 'bar',
+        height: 400,
+        toolbar: {
+          show: true,
+          tools: {
+            download: true,
+            selection: false,
+            zoom: false,
+            zoomin: false,
+            zoomout: false,
+            pan: false,
+            reset: false
+          }
+        }
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '70%',
+          borderRadius: 6,
+          colors: {
+            ranges: [{
+              from: 0,
+              to: 4000000,
+              color: '#2ecc71'
+            }, {
+              from: 4000001,
+              to: 6000000,
+              color: '#f39c12'
+            }, {
+              from: 6000001,
+              to: 10000000,
+              color: '#e74c3c'
+            }]
+          }
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      xaxis: {
+        categories: industryData.map(item => item.industry),
+        labels: {
+          ...this.config.theme.xaxis.labels
+        }
+      },
+      yaxis: {
+        title: {
+          text: 'Average Breach Cost ($)',
+          style: {
+            fontSize: '14px',
+            fontWeight: 500
+          }
+        },
+        labels: {
+          formatter: function(val) {
+            return window.ChartConfig ? 
+              window.ChartConfig.formatCurrency(val) : 
+              new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(val);
+          }
+        }
+      },
+      tooltip: {
+        y: {
+          formatter: function(val) {
+            return window.ChartConfig ? 
+              window.ChartConfig.formatCurrency(val) : 
+              new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(val);
+          }
+        },
+        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+          const industry = industryData[dataPointIndex].industry;
+          const cost = industryData[dataPointIndex].breachCost;
+          const records = industryData[dataPointIndex].records;
+          
+          return `
+            <div class="custom-tooltip">
+              <div class="tooltip-title">${industry}</div>
+              <div class="tooltip-value">${window.ChartConfig ? 
+                window.ChartConfig.formatCurrency(cost) : 
+                new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                }).format(cost)}</div>
+              <div>Average records exposed: ${records.toLocaleString()}</div>
+              <div>Per record cost: ${window.ChartConfig ? 
+                window.ChartConfig.formatCurrency(cost / records) : 
+                new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                }).format(cost / records)}</div>
+            </div>
+          `;
+        }
+      },
+      colors: ['#1a5a96'],
+      title: {
+        text: 'Data Breach Costs by Industry',
+        align: 'center',
+        style: {
+          fontSize: '18px',
+          fontWeight: 600
+        }
+      },
+      annotations: {
+        points: [{
+          x: 'Healthcare',
+          y: 9230000,
+          marker: {
+            size: 5,
+            fillColor: '#e74c3c',
+            strokeColor: '#fff',
+            strokeWidth: 2
+          },
+          label: {
+            text: 'Highest Risk',
+            borderColor: '#e74c3c',
+            style: {
+              background: '#e74c3c',
+              color: '#fff',
+              fontSize: '11px',
+              fontWeight: 600
+            },
+            offsetY: -15
+          }
+        }]
+      }
+    };
+    
+    const element = document.getElementById(elementId);
+    if (element) {
+      // Destroy existing chart if any
+      if (this.charts[chartId] && this.charts[chartId].destroy) {
+        this.charts[chartId].destroy();
+      }
+      
+      // Create and store new chart
+      this.charts[chartId] = new ApexCharts(element, options);
+      this.charts[chartId].render();
+    }
+    
+    return this.charts[chartId];
+  }
+  
+  /**
+   * Create Technical Impact Radar Chart
+   * Compares technical capabilities across vendors
+   */
+  createTechnicalRadarChart(data, elementId, chartId) {
+    // Technical dimensions for comparison
+    const dimensions = [
+      'Cloud Integration', 
+      'Legacy Support', 
+      'Wireless', 
+      'BYOD', 
+      'IoT', 
+      'Remote Access'
+    ];
+    
+    // Selected vendors for comparison
+    const selectedVendors = window.sidebarManager ? 
+      window.sidebarManager.getSelectedVendors() : 
+      ['portnox', 'cisco', 'forescout'];
+    
+    // Technical ratings (0-100 scale)
+    const vendorRatings = {
+      'portnox': [95, 85, 90, 95, 90, 95],
+      'cisco': [75, 90, 85, 80, 75, 80],
+      'forescout': [70, 85, 80, 85, 90, 75],
+      'aruba': [70, 80, 95, 85, 80, 80],
+      'fortinac': [65, 85, 80, 75, 80, 70]
+    };
+    
+    // Create series from selected vendors
+    const series = selectedVendors
+      .filter(v => vendorRatings[v] !== undefined)
+      .map(vendorId => ({
+        name: window.VENDORS ? window.VENDORS[vendorId].name : vendorId,
+        data: vendorRatings[vendorId]
+      }));
+    
+    const options = {
+      ...this.config.theme,
+      series: series,
+      chart: {
+        ...this.config.theme.chart,
+        type: 'radar',
+        height: 500,
+        dropShadow: {
+          enabled: true,
+          blur: 1,
+          left: 1,
+          top: 1
+        },
+        toolbar: {
+          show: true,
+          tools: {
+            download: true
+          }
+        }
+      },
+      stroke: {
+        width: 2
+      },
+      fill: {
+        opacity: 0.1
+      },
+      markers: {
+        size: 5,
+        hover: {
+          size: 7
+        }
+      },
+      xaxis: {
+        categories: dimensions
+      },
+      yaxis: {
+        max: 100,
+        labels: {
+          formatter: function(val) {
+            return val + '%';
+          }
+        }
+      },
+      colors: selectedVendors
+        .filter(v => vendorRatings[v] !== undefined)
+        .map(v => window.ChartConfig ? window.ChartConfig.getVendorColor(v) : this.config.colors.chart[0]),
+      title: {
+        text: 'Technical Capabilities Comparison',
+        align: 'center',
+        style: {
+          fontSize: '18px',
+          fontWeight: 600
+        }
+      },
+      legend: {
+        show: true,
+        position: 'bottom',
+        horizontalAlign: 'center',
+        offsetY: 10
       }
     };
     
@@ -989,17 +1722,36 @@ class ApexChartManager {
   }
   
   /**
-   * Initialize charts for Financial View
+   * Initialize charts for Security & Compliance View
    */
-  initFinancialCharts(resultsData) {
+  initSecurityCharts(resultsData) {
     // Clear any existing charts
-    this.destroyCharts(['costStructureChart', 'costProjectionChart']);
+    this.destroyCharts(['securityFrameworksChart', 'breachImpactChart', 'insuranceImpactChart', 'industryBreachChart']);
     
-    // Create cost structure chart
-    this.createCostStructureChart(resultsData, 'cost-structure-chart', 'costStructureChart');
+    // Create security frameworks chart
+    this.createSecurityFrameworksChart(resultsData, 'security-frameworks-chart', 'securityFrameworksChart');
     
-    // Create cost projection chart
-    this.createCostProjectionChart(resultsData, 'cost-projection-chart', 'costProjectionChart');
+    // Create breach impact chart
+    this.createBreachImpactChart(resultsData, 'breach-impact-chart', 'breachImpactChart');
+    
+    // Create insurance impact chart
+    this.createInsuranceImpactChart(resultsData, 'insurance-impact-chart', 'insuranceImpactChart');
+    
+    // Create industry breach chart
+    this.createIndustryBreachChart(resultsData, 'industry-breach-chart', 'industryBreachChart');
+    
+    return this.charts;
+  }
+  
+  /**
+   * Initialize charts for Technical View
+   */
+  initTechnicalCharts(resultsData) {
+    // Clear any existing charts
+    this.destroyCharts(['technicalRadarChart']);
+    
+    // Create technical radar chart
+    this.createTechnicalRadarChart(resultsData, 'technical-radar-chart', 'technicalRadarChart');
     
     return this.charts;
   }
@@ -1010,12 +1762,19 @@ class ApexChartManager {
   destroyCharts(chartIds) {
     chartIds.forEach(id => {
       if (this.charts[id]) {
-        this.charts[id].destroy();
+        try {
+          this.charts[id].destroy();
+        } catch (e) {
+          console.error(`Error destroying chart ${id}:`, e);
+        }
         delete this.charts[id];
       }
     });
   }
 }
+
+// Create global instance
+window.apexChartManager = new ApexChartManager();
 
 // Export for use across the application
 if (typeof module !== 'undefined' && module.exports) {

@@ -1,593 +1,456 @@
 /**
- * Vendor data model for Portnox Total Cost Analyzer
- * Contains real data for NAC vendor comparison
+ * Vendor Data for Portnox Total Cost Analyzer
+ * Contains detailed information about NAC vendors
  */
+
 const VENDORS = {
-  portnox: {
-    id: 'portnox',
+  'portnox': {
     name: 'Portnox Cloud',
-    description: 'Cloud-native NAC',
     logo: 'img/vendors/portnox-logo.png',
-    badge: {
-      text: 'Best Value',
-      class: 'badge-primary'
-    },
     architecture: 'cloud',
-    basePrice: {
-      small: 3.0,    // Per device per month
-      medium: 2.7,   // Per device per month
-      large: 2.4,    // Per device per month
-      enterprise: 2.1 // Per device per month
-    },
-    implementation: {
-      timeInDays: 21,
-      costPercentage: 10  // % of first year subscription
-    },
-    fte: {
-      required: 0.25,  // FTE allocation per year
-    },
-    maintenance: {
-      percentage: 0,  // Included in subscription
-      downtime: 0.5,  // Hours per year
-    },
-    security: {
-      zeroTrustScore: 9.5,    // Out of 10
-      deviceAuthScore: 9.7,   // Out of 10
-      riskAssessmentScore: 9.6,// Out of 10
-      remediationSpeed: 4,    // Minutes
-    },
-    compliance: {
-      pci: true,
-      hipaa: true,
-      nist: true,
-      gdpr: true,
-      iso: true,
-      cmmc: true,
-      ferpa: true,
-      sox: true
-    },
+    description: 'Cloud-native NAC solution with zero infrastructure requirements',
     features: {
       cloudIntegration: true,
       legacyDevices: true,
       byod: true,
       iot: true,
       wireless: true,
-      remoteUsers: true
-    }
+      remoteUsers: true,
+      agentless: true,
+      aiThreatPrevention: true,
+      zeroDayProtection: true,
+      multiCloud: true,
+      hybridEnvironment: true,
+      automatedRemediation: true
+    },
+    strengths: [
+      'Zero infrastructure requirements',
+      'Rapid deployment (3 weeks average)',
+      'Automatic updates and scaling',
+      'Global coverage',
+      'Lowest TCO',
+      'Agentless architecture',
+      'Cloud-native design',
+      'Continuous compliance monitoring'
+    ],
+    weaknesses: [
+      'Newer to enterprise market',
+      'Limited on-premises options'
+    ],
+    bestFor: [
+      'Organizations seeking cost-effective NAC',
+      'Multi-site deployments',
+      'Cloud-first organizations',
+      'Hybrid work environments',
+      'Organizations with limited IT resources'
+    ]
   },
-  cisco: {
-    id: 'cisco',
+  
+  'cisco': {
     name: 'Cisco ISE',
-    description: 'Enterprise NAC',
     logo: 'img/vendors/cisco-logo.png',
-    badge: {
-      text: 'Complex',
-      class: 'badge-warning'
-    },
     architecture: 'on-premises',
-    basePrice: {
-      small: 65,     // Per device - perpetual license
-      medium: 60,    // Per device - perpetual license
-      large: 55,     // Per device - perpetual license
-      enterprise: 50 // Per device - perpetual license
-    },
-    hardware: {
-      small: 75000,   // Base hardware cost
-      medium: 150000, // Base hardware cost
-      large: 300000,  // Base hardware cost
-      enterprise: 500000 // Base hardware cost
-    },
-    implementation: {
-      timeInDays: 90,
-      costPercentage: 40  // % of license cost
-    },
-    fte: {
-      required: 1.5,  // FTE allocation per year
-    },
-    maintenance: {
-      percentage: 18, // Yearly maintenance as % of license
-      downtime: 8,    // Hours per year
-    },
-    security: {
-      zeroTrustScore: 8.0,    // Out of 10
-      deviceAuthScore: 8.5,   // Out of 10
-      riskAssessmentScore: 8.0,// Out of 10
-      remediationSpeed: 10,   // Minutes
-    },
-    compliance: {
-      pci: true,
-      hipaa: true,
-      nist: true,
-      gdpr: true,
-      iso: true,
-      cmmc: true,
-      ferpa: true,
-      sox: true
-    },
+    description: 'Enterprise on-premises NAC solution with extensive integration capabilities',
     features: {
       cloudIntegration: false,
       legacyDevices: true,
       byod: true,
       iot: true,
       wireless: true,
-      remoteUsers: false
-    }
+      remoteUsers: true,
+      agentless: false,
+      aiThreatPrevention: false,
+      zeroDayProtection: false,
+      multiCloud: false,
+      hybridEnvironment: true,
+      automatedRemediation: true
+    },
+    strengths: [
+      'Extensive integration with Cisco ecosystem',
+      'Mature solution with large install base',
+      'Strong enterprise support',
+      'Comprehensive policy management',
+      'Scalable for large enterprises'
+    ],
+    weaknesses: [
+      'High implementation and maintenance costs',
+      'Complex deployment and management',
+      'Requires dedicated IT staff',
+      'Long implementation timeframes (3-4 months)'
+    ],
+    bestFor: [
+      'Large enterprises with substantial IT resources',
+      'Organizations with extensive Cisco infrastructure',
+      'Complex network environments',
+      'Organizations requiring deep customization'
+    ]
   },
-  aruba: {
-    id: 'aruba',
+  
+  'aruba': {
     name: 'Aruba ClearPass',
-    description: 'Policy manager',
     logo: 'img/vendors/aruba-logo.png',
     architecture: 'on-premises',
-    basePrice: {
-      small: 55,     // Per device - perpetual license
-      medium: 50,    // Per device - perpetual license
-      large: 45,     // Per device - perpetual license
-      enterprise: 40 // Per device - perpetual license
-    },
-    hardware: {
-      small: 60000,   // Base hardware cost
-      medium: 120000, // Base hardware cost
-      large: 240000,  // Base hardware cost
-      enterprise: 400000 // Base hardware cost
-    },
-    implementation: {
-      timeInDays: 60,
-      costPercentage: 35  // % of license cost
-    },
-    fte: {
-      required: 1.0,  // FTE allocation per year
-    },
-    maintenance: {
-      percentage: 20, // Yearly maintenance as % of license
-      downtime: 6,    // Hours per year
-    },
-    security: {
-      zeroTrustScore: 7.5,    // Out of 10
-      deviceAuthScore: 8.0,   // Out of 10
-      riskAssessmentScore: 7.5,// Out of 10
-      remediationSpeed: 12,   // Minutes
-    },
-    compliance: {
-      pci: true,
-      hipaa: true,
-      nist: true,
-      gdpr: true,
-      iso: true,
-      cmmc: true,
-      ferpa: true,
-      sox: true
-    },
+    description: 'On-premises NAC solution with strong wireless capabilities',
     features: {
       cloudIntegration: false,
       legacyDevices: true,
       byod: true,
       iot: true,
       wireless: true,
-      remoteUsers: false
-    }
+      remoteUsers: true,
+      agentless: false,
+      aiThreatPrevention: false,
+      zeroDayProtection: false,
+      multiCloud: false,
+      hybridEnvironment: false,
+      automatedRemediation: true
+    },
+    strengths: [
+      'Strong wireless integration',
+      'Good BYOD support',
+      'Solid device profiling',
+      'Integration with HP ecosystem',
+      'Context-aware policy management'
+    ],
+    weaknesses: [
+      'Limited cloud management capabilities',
+      'High hardware costs',
+      'Complex implementation',
+      'Moderate learning curve'
+    ],
+    bestFor: [
+      'Organizations with Aruba wireless infrastructure',
+      'Mid-size to large enterprises',
+      'Environments with extensive wireless needs',
+      'Organizations with sufficient IT staff'
+    ]
   },
-  forescout: {
-    id: 'forescout',
+  
+  'forescout': {
     name: 'Forescout',
-    description: 'Device visibility',
     logo: 'img/vendors/forescout-logo.png',
     architecture: 'on-premises',
-    basePrice: {
-      small: 60,     // Per device - perpetual license
-      medium: 55,    // Per device - perpetual license
-      large: 50,     // Per device - perpetual license
-      enterprise: 45 // Per device - perpetual license
-    },
-    hardware: {
-      small: 65000,   // Base hardware cost
-      medium: 130000, // Base hardware cost
-      large: 260000,  // Base hardware cost
-      enterprise: 450000 // Base hardware cost
-    },
-    implementation: {
-      timeInDays: 70,
-      costPercentage: 40  // % of license cost
-    },
-    fte: {
-      required: 1.0,  // FTE allocation per year
-    },
-    maintenance: {
-      percentage: 20, // Yearly maintenance as % of license
-      downtime: 7,    // Hours per year
-    },
-    security: {
-      zeroTrustScore: 7.0,    // Out of 10
-      deviceAuthScore: 9.0,   // Out of 10
-      riskAssessmentScore: 8.5,// Out of 10
-      remediationSpeed: 15,   // Minutes
-    },
-    compliance: {
-      pci: true,
-      hipaa: true,
-      nist: true,
-      gdpr: true,
-      iso: true,
-      cmmc: true,
-      ferpa: true,
-      sox: false
-    },
+    description: 'On-premises NAC solution with strong device discovery capabilities',
     features: {
       cloudIntegration: false,
       legacyDevices: true,
       byod: true,
       iot: true,
       wireless: true,
-      remoteUsers: false
-    }
+      remoteUsers: false,
+      agentless: true,
+      aiThreatPrevention: false,
+      zeroDayProtection: false,
+      multiCloud: false,
+      hybridEnvironment: false,
+      automatedRemediation: true
+    },
+    strengths: [
+      'Excellent device discovery',
+      'Strong IoT security',
+      'Agentless architecture',
+      'Good legacy device support',
+      'Strong compliance capabilities'
+    ],
+    weaknesses: [
+      'High acquisition costs',
+      'Limited cloud capabilities',
+      'Complex licensing model',
+      'Performance challenges at scale'
+    ],
+    bestFor: [
+      'Organizations with diverse device types',
+      'Environments with many IoT devices',
+      'Organizations requiring strong device visibility',
+      'Mid-size to large enterprises'
+    ]
   },
-  fortinac: {
-    id: 'fortinac',
+  
+  'fortinac': {
     name: 'FortiNAC',
-    description: 'Fortinet NAC',
     logo: 'img/vendors/fortinac-logo.png',
     architecture: 'on-premises',
-    basePrice: {
-      small: 50,     // Per device - perpetual license
-      medium: 45,    // Per device - perpetual license
-      large: 40,     // Per device - perpetual license
-      enterprise: 35 // Per device - perpetual license
-    },
-    hardware: {
-      small: 55000,   // Base hardware cost
-      medium: 110000, // Base hardware cost
-      large: 220000,  // Base hardware cost
-      enterprise: 380000 // Base hardware cost
-    },
-    implementation: {
-      timeInDays: 60,
-      costPercentage: 35  // % of license cost
-    },
-    fte: {
-      required: 0.9,  // FTE allocation per year
-    },
-    maintenance: {
-      percentage: 18, // Yearly maintenance as % of license
-      downtime: 8,    // Hours per year
-    },
-    security: {
-      zeroTrustScore: 7.5,    // Out of 10
-      deviceAuthScore: 8.0,   // Out of 10
-      riskAssessmentScore: 7.5,// Out of 10
-      remediationSpeed: 14,   // Minutes
-    },
-    compliance: {
-      pci: true,
-      hipaa: true,
-      nist: true,
-      gdpr: true,
-      iso: true,
-      cmmc: false,
-      ferpa: true,
-      sox: true
-    },
+    description: 'On-premises NAC solution integrated with Fortinet security ecosystem',
     features: {
       cloudIntegration: false,
       legacyDevices: true,
       byod: true,
       iot: true,
       wireless: true,
-      remoteUsers: false
-    }
+      remoteUsers: false,
+      agentless: false,
+      aiThreatPrevention: false,
+      zeroDayProtection: false,
+      multiCloud: false,
+      hybridEnvironment: false,
+      automatedRemediation: true
+    },
+    strengths: [
+      'Integration with Fortinet products',
+      'Solid IoT protection',
+      'Good device profiling',
+      'Security fabric integration',
+      'Moderate learning curve'
+    ],
+    weaknesses: [
+      'Limited cloud management',
+      'Restricted third-party integrations',
+      'Complex policies for multi-vendor environments',
+      'Moderate deployment complexity'
+    ],
+    bestFor: [
+      'Organizations with Fortinet infrastructure',
+      'Mid-size enterprises',
+      'Organizations wanting unified security vendor',
+      'Environments with moderate complexity'
+    ]
   },
-  juniper: {
-    id: 'juniper',
+  
+  'juniper': {
     name: 'Juniper Mist',
-    description: 'AI-driven NAC',
     logo: 'img/vendors/juniper-logo.png',
     architecture: 'hybrid',
-    basePrice: {
-      small: 5.0,     // Per device per month
-      medium: 4.5,    // Per device per month
-      large: 4.0,     // Per device per month
-      enterprise: 3.5 // Per device per month
-    },
-    hardware: {
-      small: 20000,   // Base hardware cost
-      medium: 40000,  // Base hardware cost
-      large: 80000,   // Base hardware cost
-      enterprise: 150000 // Base hardware cost
-    },
-    implementation: {
-      timeInDays: 35,
-      costPercentage: 20  // % of first year subscription
-    },
-    fte: {
-      required: 0.5,  // FTE allocation per year
-    },
-    maintenance: {
-      percentage: 0,  // Included in subscription
-      downtime: 2,    // Hours per year
-    },
-    security: {
-      zeroTrustScore: 8.5,    // Out of 10
-      deviceAuthScore: 8.5,   // Out of 10
-      riskAssessmentScore: 9.0,// Out of 10
-      remediationSpeed: 8,    // Minutes
-    },
-    compliance: {
-      pci: true,
-      hipaa: true,
-      nist: true,
-      gdpr: true,
-      iso: true,
-      cmmc: false,
-      ferpa: true,
-      sox: false
-    },
+    description: 'Cloud-managed NAC with on-premises components and strong AI capabilities',
     features: {
       cloudIntegration: true,
       legacyDevices: false,
       byod: true,
       iot: true,
       wireless: true,
-      remoteUsers: true
-    }
+      remoteUsers: true,
+      agentless: true,
+      aiThreatPrevention: true,
+      zeroDayProtection: false,
+      multiCloud: false,
+      hybridEnvironment: true,
+      automatedRemediation: true
+    },
+    strengths: [
+      'Strong AI-driven insights',
+      'Excellent wireless management',
+      'Cloud-managed architecture',
+      'Good user experience',
+      'Solid troubleshooting capabilities'
+    ],
+    weaknesses: [
+      'Limited legacy device support',
+      'Less mature NAC capabilities',
+      'Primarily focused on wireless',
+      'More limited enterprise deployments'
+    ],
+    bestFor: [
+      'Organizations with Juniper infrastructure',
+      'Wireless-focused environments',
+      'Organizations valuing AI insights',
+      'Mid-size enterprises with modern infrastructure'
+    ]
   },
-  securew2: {
-    id: 'securew2',
+  
+  'securew2': {
     name: 'SecureW2',
-    description: 'Cloud RADIUS',
     logo: 'img/vendors/securew2-logo.png',
     architecture: 'cloud',
-    basePrice: {
-      small: 4.0,     // Per device per month
-      medium: 3.7,    // Per device per month
-      large: 3.4,     // Per device per month
-      enterprise: 3.1 // Per device per month
-    },
-    implementation: {
-      timeInDays: 28,
-      costPercentage: 15  // % of first year subscription
-    },
-    fte: {
-      required: 0.4,  // FTE allocation per year
-    },
-    maintenance: {
-      percentage: 0,  // Included in subscription
-      downtime: 1,    // Hours per year
-    },
-    security: {
-      zeroTrustScore: 8.0,    // Out of 10
-      deviceAuthScore: 8.0,   // Out of 10
-      riskAssessmentScore: 7.5,// Out of 10
-      remediationSpeed: 10,   // Minutes
-    },
-    compliance: {
-      pci: true,
-      hipaa: true,
-      nist: true,
-      gdpr: true,
-      iso: true,
-      cmmc: false,
-      ferpa: true,
-      sox: false
-    },
+    description: 'Cloud-based identity and access management focused on certificate-based authentication',
     features: {
       cloudIntegration: true,
       legacyDevices: false,
       byod: true,
       iot: false,
       wireless: true,
-      remoteUsers: true
-    }
+      remoteUsers: true,
+      agentless: false,
+      aiThreatPrevention: false,
+      zeroDayProtection: false,
+      multiCloud: true,
+      hybridEnvironment: true,
+      automatedRemediation: false
+    },
+    strengths: [
+      'Strong certificate-based authentication',
+      'Good cloud integration',
+      'Solid identity management',
+      'Modern architecture',
+      'Easier deployment than traditional NAC'
+    ],
+    weaknesses: [
+      'More limited NAC feature set',
+      'Less comprehensive device management',
+      'Limited legacy device support',
+      'Less mature solution'
+    ],
+    bestFor: [
+      'Organizations focusing on identity-first security',
+      'Cloud-first environments',
+      'Organizations using certificate-based authentication',
+      'Environments with primarily modern devices'
+    ]
   },
-  microsoft: {
-    id: 'microsoft',
+  
+  'microsoft': {
     name: 'Microsoft NPS',
-    description: 'Windows Server NAC',
     logo: 'img/vendors/microsoft-logo.png',
     architecture: 'on-premises',
-    basePrice: {
-      small: 15,     // Per device - Windows Server CAL
-      medium: 14,    // Per device - Windows Server CAL
-      large: 13,     // Per device - Windows Server CAL
-      enterprise: 12 // Per device - Windows Server CAL
-    },
-    hardware: {
-      small: 20000,   // Base hardware cost
-      medium: 40000,  // Base hardware cost
-      large: 80000,   // Base hardware cost
-      enterprise: 150000 // Base hardware cost
-    },
-    implementation: {
-      timeInDays: 40,
-      costPercentage: 30  // % of license cost
-    },
-    fte: {
-      required: 0.7,  // FTE allocation per year
-    },
-    maintenance: {
-      percentage: 16, // Yearly maintenance as % of license
-      downtime: 12,   // Hours per year
-    },
-    security: {
-      zeroTrustScore: 6.0,    // Out of 10
-      deviceAuthScore: 6.5,   // Out of 10
-      riskAssessmentScore: 5.5,// Out of 10
-      remediationSpeed: 30,   // Minutes
-    },
-    compliance: {
-      pci: true,
-      hipaa: true,
-      nist: true,
-      gdpr: false,
-      iso: true,
-      cmmc: false,
-      ferpa: true,
-      sox: false
-    },
+    description: 'Basic on-premises RADIUS server built into Windows Server',
     features: {
       cloudIntegration: false,
       legacyDevices: true,
       byod: false,
       iot: false,
       wireless: true,
-      remoteUsers: false
-    }
+      remoteUsers: false,
+      agentless: false,
+      aiThreatPrevention: false,
+      zeroDayProtection: false,
+      multiCloud: false,
+      hybridEnvironment: false,
+      automatedRemediation: false
+    },
+    strengths: [
+      'Included with Windows Server',
+      'Familiar to Windows administrators',
+      'Basic authentication capabilities',
+      'Low additional licensing cost',
+      'Integration with Active Directory'
+    ],
+    weaknesses: [
+      'Very limited NAC capabilities',
+      'No advanced features',
+      'Limited device visibility',
+      'Poor IoT and BYOD support',
+      'Minimal automation'
+    ],
+    bestFor: [
+      'Small organizations with limited requirements',
+      'Windows-centric environments',
+      'Organizations needing basic authentication only',
+      'Environments with limited budget'
+    ]
   },
-  arista: {
-    id: 'arista',
-    name: 'Arista Agni',
-    description: 'Network control',
+  
+  'arista': {
+    name: 'Arista CloudVision',
     logo: 'img/vendors/arista-logo.png',
-    architecture: 'on-premises',
-    basePrice: {
-      small: 52,     // Per device - perpetual license
-      medium: 48,    // Per device - perpetual license
-      large: 44,     // Per device - perpetual license
-      enterprise: 40 // Per device - perpetual license
-    },
-    hardware: {
-      small: 60000,   // Base hardware cost
-      medium: 120000, // Base hardware cost
-      large: 240000,  // Base hardware cost
-      enterprise: 400000 // Base hardware cost
-    },
-    implementation: {
-      timeInDays: 65,
-      costPercentage: 35  // % of license cost
-    },
-    fte: {
-      required: 1.0,  // FTE allocation per year
-    },
-    maintenance: {
-      percentage: 18, // Yearly maintenance as % of license
-      downtime: 7,    // Hours per year
-    },
-    security: {
-      zeroTrustScore: 7.0,    // Out of 10
-      deviceAuthScore: 7.5,   // Out of 10
-      riskAssessmentScore: 7.0,// Out of 10
-      remediationSpeed: 18,   // Minutes
-    },
-    compliance: {
-      pci: true,
-      hipaa: true,
-      nist: true,
-      gdpr: true,
-      iso: true,
-      cmmc: false,
-      ferpa: true,
-      sox: false
-    },
+    architecture: 'hybrid',
+    description: 'Hybrid network management with NAC capabilities focused on campus networks',
     features: {
-      cloudIntegration: false,
-      legacyDevices: true,
+      cloudIntegration: true,
+      legacyDevices: false,
       byod: true,
       iot: true,
       wireless: true,
-      remoteUsers: false
-    }
+      remoteUsers: false,
+      agentless: true,
+      aiThreatPrevention: false,
+      zeroDayProtection: false,
+      multiCloud: false,
+      hybridEnvironment: true,
+      automatedRemediation: false
+    },
+    strengths: [
+      'Good network visibility',
+      'Strong integration with Arista switches',
+      'Solid campus network support',
+      'Centralized management',
+      'Analytical capabilities'
+    ],
+    weaknesses: [
+      'Limited traditional NAC features',
+      'Less mature solution for NAC use cases',
+      'More focused on network management than security',
+      'Moderate complexity'
+    ],
+    bestFor: [
+      'Organizations with Arista infrastructure',
+      'Campus network environments',
+      'Organizations wanting integrated network management',
+      'Mid-size to large enterprises'
+    ]
   },
-  foxpass: {
-    id: 'foxpass',
+  
+  'foxpass': {
     name: 'Foxpass',
-    description: 'Cloud RADIUS/LDAP',
     logo: 'img/vendors/foxpass-logo.png',
     architecture: 'cloud',
-    basePrice: {
-      small: 3.5,     // Per device per month
-      medium: 3.2,    // Per device per month
-      large: 2.9,     // Per device per month
-      enterprise: 2.6 // Per device per month
-    },
-    implementation: {
-      timeInDays: 25,
-      costPercentage: 15  // % of first year subscription
-    },
-    fte: {
-      required: 0.3,  // FTE allocation per year
-    },
-    maintenance: {
-      percentage: 0,  // Included in subscription
-      downtime: 2,    // Hours per year
-    },
-    security: {
-      zeroTrustScore: 7.5,    // Out of 10
-      deviceAuthScore: 7.0,   // Out of 10
-      riskAssessmentScore: 6.5,// Out of 10
-      remediationSpeed: 12,   // Minutes
-    },
-    compliance: {
-      pci: true,
-      hipaa: true,
-      nist: false,
-      gdpr: true,
-      iso: false,
-      cmmc: false,
-      ferpa: true,
-      sox: false
-    },
+    description: 'Cloud-based RADIUS and LDAP server with basic NAC capabilities',
     features: {
       cloudIntegration: true,
       legacyDevices: false,
       byod: true,
       iot: false,
       wireless: true,
-      remoteUsers: true
-    }
+      remoteUsers: false,
+      agentless: true,
+      aiThreatPrevention: false,
+      zeroDayProtection: false,
+      multiCloud: true,
+      hybridEnvironment: false,
+      automatedRemediation: false
+    },
+    strengths: [
+      'Simple cloud-based solution',
+      'Easy deployment',
+      'Good for basic authentication',
+      'SSO capabilities',
+      'User-friendly interface'
+    ],
+    weaknesses: [
+      'Limited enterprise NAC features',
+      'Basic device profiling',
+      'Limited security automation',
+      'Less mature for large enterprises'
+    ],
+    bestFor: [
+      'Small to mid-size organizations',
+      'Cloud-first environments',
+      'Organizations needing basic wireless authentication',
+      'Environments with limited complexity'
+    ]
   },
-  "no-nac": {
-    id: 'no-nac',
+  
+  'no-nac': {
     name: 'No NAC',
-    description: 'High risk baseline',
     logo: 'img/vendors/no-nac-icon.png',
-    badge: {
-      text: 'High Risk',
-      class: 'badge-danger'
-    },
     architecture: 'none',
-    basePrice: {
-      small: 0,
-      medium: 0,
-      large: 0,
-      enterprise: 0
-    },
-    implementation: {
-      timeInDays: 0,
-      costPercentage: 0
-    },
-    fte: {
-      required: 0.2,  // Still requires some network security management
-    },
-    maintenance: {
-      percentage: 0,
-      downtime: 24,   // Increased downtime due to security incidents
-    },
-    security: {
-      zeroTrustScore: 1.0,    // Out of 10
-      deviceAuthScore: 2.0,   // Out of 10
-      riskAssessmentScore: 1.5,// Out of 10
-      remediationSpeed: 180,  // Minutes
-    },
-    compliance: {
-      pci: false,
-      hipaa: false,
-      nist: false,
-      gdpr: false,
-      iso: false,
-      cmmc: false,
-      ferpa: false,
-      sox: false
-    },
+    description: 'No network access control solution in place',
     features: {
       cloudIntegration: false,
       legacyDevices: false,
       byod: false,
       iot: false,
       wireless: false,
-      remoteUsers: false
-    }
+      remoteUsers: false,
+      agentless: false,
+      aiThreatPrevention: false,
+      zeroDayProtection: false,
+      multiCloud: false,
+      hybridEnvironment: false,
+      automatedRemediation: false
+    },
+    strengths: [
+      'No upfront investment',
+      'No implementation effort',
+      'No maintenance overhead',
+      'No complexity'
+    ],
+    weaknesses: [
+      'No device visibility',
+      'No access control',
+      'No security enforcement',
+      'No compliance capabilities',
+      'High security risk',
+      'Vulnerable to unauthorized access',
+      'No protection against malicious devices'
+    ],
+    bestFor: [
+      'Not recommended for any organization',
+      'Extremely high-risk approach',
+      'Fails to meet basic security requirements',
+      'Non-compliant with most regulations'
+    ]
   }
 };
 
-// Export for use across the application
+// Export vendor data if in a module context
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { VENDORS };
 }

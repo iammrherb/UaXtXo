@@ -1,10 +1,9 @@
 /**
  * Enhanced Chart Configuration for Portnox Total Cost Analyzer
- * Provides unified styling and configuration for all charts
+ * Central configuration for all charts with improved styling and readability
  */
 
 const ChartConfig = {
-  // Color schemes
   colors: {
     vendors: {
       portnox: '#1a5a96',
@@ -28,24 +27,9 @@ const ChartConfig = {
     positive: '#2ecc71',
     negative: '#e74c3c',
     neutral: '#f39c12',
-    // Add dark/light mode specific colors
-    light: {
-      background: '#f8fafc',
-      cardBackground: '#ffffff',
-      textColor: '#333333',
-      textLight: '#666666',
-      borderColor: '#e0e0e0',
-      gridColor: 'rgba(0, 0, 0, 0.05)'
-    },
-    dark: {
-      background: '#0f172a',
-      cardBackground: '#1e293b',
-      textColor: '#f1f5f9',
-      textLight: '#cbd5e1',
-      borderColor: '#334155',
-      gridColor: 'rgba(255, 255, 255, 0.05)'
-    },
-    // Gradients for enhanced visuals
+    background: '#f9f9f9',
+    text: '#333333',
+    // Add gradient definitions for enhanced visuals
     gradients: {
       primary: ['#1a5a96', '#0d4275'],
       secondary: ['#2ecc71', '#25a25a'],
@@ -54,7 +38,25 @@ const ChartConfig = {
     }
   },
   
-  // Default styling for all charts
+  themes: {
+    light: {
+      background: '#f9f9f9',
+      cardBackground: '#ffffff',
+      textColor: '#333333',
+      textLight: '#666666',
+      borderColor: '#e0e0e0',
+      gridColor: 'rgba(0, 0, 0, 0.05)'
+    },
+    dark: {
+      background: '#121212',
+      cardBackground: '#1e1e1e',
+      textColor: '#e0e0e0',
+      textLight: '#b0b0b0',
+      borderColor: '#333333',
+      gridColor: 'rgba(255, 255, 255, 0.05)'
+    }
+  },
+  
   defaults: {
     fontFamily: "'Nunito', sans-serif",
     fontSize: 13,
@@ -94,7 +96,7 @@ const ChartConfig = {
     }
   },
   
-  // ApexCharts theme
+  // Enhanced ApexCharts default theme
   apexTheme: {
     chart: {
       background: 'transparent',
@@ -221,7 +223,7 @@ const ChartConfig = {
     }
   },
   
-  // D3 Charts theme
+  // Enhanced D3 theme
   d3Theme: {
     fontFamily: "'Nunito', sans-serif",
     fontSize: 12,
@@ -243,9 +245,7 @@ const ChartConfig = {
     transitionDuration: 700
   },
   
-  // Helper methods
-  
-  // Get color for a specific vendor
+  // Get color for a vendor
   getVendorColor: function(vendorId) {
     return this.colors.vendors[vendorId] || this.colors.chart[0];
   },
@@ -329,33 +329,33 @@ const ChartConfig = {
   
   // Get current theme colors based on dark mode
   getCurrentTheme: function() {
-    return document.body.classList.contains('dark-mode') ? this.colors.dark : this.colors.light;
+    return document.body.classList.contains('dark-mode') ? this.themes.dark : this.themes.light;
   },
   
   // Update chart theme for dark/light mode
   updateChartTheme: function(isDarkMode) {
     if (isDarkMode) {
-      this.apexTheme.chart.foreColor = this.colors.dark.textColor;
+      this.apexTheme.chart.foreColor = this.themes.dark.textColor;
       this.apexTheme.tooltip.theme = 'dark';
-      this.apexTheme.grid.borderColor = this.colors.dark.gridColor;
-      this.apexTheme.xaxis.axisBorder.color = this.colors.dark.borderColor;
-      this.apexTheme.xaxis.axisTicks.color = this.colors.dark.borderColor;
+      this.apexTheme.grid.borderColor = this.themes.dark.gridColor;
+      this.apexTheme.xaxis.axisBorder.color = this.themes.dark.borderColor;
+      this.apexTheme.xaxis.axisTicks.color = this.themes.dark.borderColor;
       
       this.d3Theme.axisStyles.strokeColor = 'rgba(255, 255, 255, 0.1)';
-      this.d3Theme.axisStyles.textColor = this.colors.dark.textLight;
+      this.d3Theme.axisStyles.textColor = this.themes.dark.textLight;
       this.d3Theme.tooltipStyles.backgroundColor = 'rgba(30, 30, 30, 0.95)';
-      this.d3Theme.tooltipStyles.borderColor = this.colors.dark.borderColor;
+      this.d3Theme.tooltipStyles.borderColor = this.themes.dark.borderColor;
     } else {
-      this.apexTheme.chart.foreColor = this.colors.light.textColor;
+      this.apexTheme.chart.foreColor = this.themes.light.textColor;
       this.apexTheme.tooltip.theme = 'light';
-      this.apexTheme.grid.borderColor = this.colors.light.gridColor;
-      this.apexTheme.xaxis.axisBorder.color = this.colors.light.borderColor;
-      this.apexTheme.xaxis.axisTicks.color = this.colors.light.borderColor;
+      this.apexTheme.grid.borderColor = this.themes.light.gridColor;
+      this.apexTheme.xaxis.axisBorder.color = this.themes.light.borderColor;
+      this.apexTheme.xaxis.axisTicks.color = this.themes.light.borderColor;
       
       this.d3Theme.axisStyles.strokeColor = 'rgba(0, 0, 0, 0.1)';
-      this.d3Theme.axisStyles.textColor = this.colors.light.textLight;
+      this.d3Theme.axisStyles.textColor = this.themes.light.textLight;
       this.d3Theme.tooltipStyles.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-      this.d3Theme.tooltipStyles.borderColor = this.colors.light.borderColor;
+      this.d3Theme.tooltipStyles.borderColor = this.themes.light.borderColor;
     }
   }
 };
@@ -372,7 +372,4 @@ window.addEventListener('themechange', (event) => {
 // Export for use across the application
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { ChartConfig };
-} else {
-  // Global access
-  window.ChartConfig = ChartConfig;
 }
