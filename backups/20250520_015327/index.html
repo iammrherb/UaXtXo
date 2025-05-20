@@ -47,32 +47,6 @@
         text-overflow: ellipsis !important;
       }
     </style>
-    <!-- Emergency fixes for vendor cards -->
-    <style>
-      :root {
-        --primary-color: #1a5a96;
-        --primary-dark-color: #0d4275;
-        --highlight-background: rgba(26, 90, 150, 0.05);
-      }
-      /* Fix for vendor cards in sidebar */
-      .vendor-select-card .vendor-logo img {
-        max-height: 28px !important;
-        max-width: 80px !important;
-        object-fit: contain !important;
-      }
-      .vendor-select-card {
-        height: 80px !important;
-        padding: 8px 4px !important;
-      }
-      .vendor-select-card .vendor-name {
-        font-size: 11px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        max-width: 95% !important;
-        text-align: center !important;
-      }
-    </style>
 </head>
 <body>
     <!-- Particle Background -->
@@ -575,11 +549,5 @@
     <script src="js/utils/enhanced-report-generator.js"></script>
     <script src="js/index.js"></script>
     <script src="js/vendor-logo-fix.js"></script>
-    <!-- Immediate fix for vendor logos -->
-    <script src="js/vendor-logo-fix.js"></script>
-    <!-- Dashboard enhancements -->
-    <script src="js/utils/dashboard-enhancer.js"></script>
-    <!-- Main application initialization -->
-    <script src="js/app-init.js"></script>
 </body>
 </html>

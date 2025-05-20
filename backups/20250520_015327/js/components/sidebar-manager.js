@@ -1,5 +1,5 @@
 /**
- * Enhanced Sidebar Manager for Portnox Total Cost Analyzer
+ * Sidebar Manager for Portnox Total Cost Analyzer
  * Handles sidebar interactions, vendor selection, and configuration
  */
 
@@ -24,7 +24,7 @@ class SidebarManager {
   init() {
     if (this.initialized) return;
     
-    // Fix vendor logos first to ensure they display correctly
+    // Fix vendor logos if they're too big
     this.fixVendorLogos();
     
     // Initialize collapsible sections
@@ -52,7 +52,7 @@ class SidebarManager {
     vendorCards.forEach(card => {
       const logoImg = card.querySelector('.vendor-logo img');
       if (logoImg) {
-        // Ensure proper sizing with !important to override any inline styles
+        // Ensure proper sizing
         logoImg.style.maxHeight = '28px';
         logoImg.style.maxWidth = '80px';
         logoImg.style.objectFit = 'contain';
@@ -184,6 +184,8 @@ class SidebarManager {
     
     // Trigger event for other components
     this.triggerVendorSelectionEvent();
+    
+    console.log('Selected vendors:', this.selectedVendors);
   }
   
   /**
