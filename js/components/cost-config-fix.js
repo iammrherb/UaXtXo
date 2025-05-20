@@ -1,148 +1,46 @@
 /**
- * Cost Configuration Fix for Portnox Total Cost Analyzer
+ * Fixed Cost Configuration for Portnox Total Cost Analyzer
  * Ensures cost configuration sections expand/collapse properly
  */
 
 document.addEventListener('DOMContentLoaded', function() {
   console.log('Initializing cost configuration fix...');
   
-  // Make sure cost configuration is visible and properly initialized
-  initializeCostConfiguration();
-  
-  // Force re-initialization if needed
-  setTimeout(initializeCostConfiguration, 1000);
+  // Wait a bit for sidebar manager to initialize
+  setTimeout(initializeCostConfiguration, 500);
 });
 
 function initializeCostConfiguration() {
   const costConfigCard = document.getElementById('cost-config');
   
-  // If cost-config card doesn't exist, create it
   if (!costConfigCard) {
-    createCostConfigurationCard();
-  } else {
-    // Ensure it's properly initialized
-    const header = costConfigCard.querySelector('.config-card-header');
-    const content = costConfigCard.querySelector('.config-card-content');
-    
-    if (header && content) {
-      // Make sure the click handler is attached
-      if (!header.hasClickHandler) {
-        header.hasClickHandler = true;
-        
-        header.addEventListener('click', function() {
-          console.log('Cost config header clicked');
-          toggleCostConfig();
-        });
-      }
-      
-      // Check if content is properly styled
-      content.style.transition = 'max-height 0.3s ease, padding 0.3s ease';
-      
-      // If collapsed, make sure it's properly collapsed
-      if (content.classList.contains('collapsed')) {
-        content.style.maxHeight = '0';
-        content.style.paddingTop = '0';
-        content.style.paddingBottom = '0';
-        content.style.overflow = 'hidden';
-      }
-    }
-  }
-}
-
-function createCostConfigurationCard() {
-  console.log('Creating cost configuration card...');
-  
-  // Find the sidebar content where we'll add the card
-  const sidebarContent = document.querySelector('.sidebar-content');
-  if (!sidebarContent) {
-    console.warn('Could not find sidebar content to add cost config card');
+    console.warn('Cost config card not found, will be created by sidebar-manager.js');
     return;
   }
   
-  // Create cost configuration card
-  const costConfigCard = document.createElement('div');
-  costConfigCard.id = 'cost-config';
-  costConfigCard.className = 'config-card';
+  // Ensure it's properly initialized
+  const header = costConfigCard.querySelector('.config-card-header');
+  const content = costConfigCard.querySelector('.config-card-content');
+  const toggleIcon = header?.querySelector('.toggle-icon');
   
-  // Create header
-  const header = document.createElement('div');
-  header.className = 'config-card-header';
-  header.innerHTML = `
-    <h3><i class="fas fa-dollar-sign"></i> Cost Configuration</h3>
-    <span class="toggle-icon collapsed"><i class="fas fa-chevron-up"></i></span>
-  `;
+  if (!header || !content) {
+    console.warn('Cost config header or content not found');
+    return;
+  }
   
-  // Create content
-  const content = document.createElement('div');
-  content.className = 'config-card-content collapsed';
-  content.style.maxHeight = '0';
-  content.style.paddingTop = '0';
-  content.style.paddingBottom = '0';
-  content.style.overflow = 'hidden';
+  // Remove any existing click handler
+  header.removeEventListener('click', toggleCostConfig);
   
-  // Add cost configuration form
-  content.innerHTML = `
-    <div class="form-group">
-      <label class="form-label" for="license-cost">License Cost</label>
-      <div class="range-slider">
-        <div class="range-slider-header">
-          <span class="range-slider-label">Annual per device</span>
-          <span class="range-slider-value" id="license-cost-value">$50</span>
-        </div>
-        <input type="range" id="license-cost" min="0" max="200" value="50" step="1">
-      </div>
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label" for="hardware-cost">Hardware Cost</label>
-      <div class="range-slider">
-        <div class="range-slider-header">
-          <span class="range-slider-label">Per appliance</span>
-          <span class="range-slider-value" id="hardware-cost-value">$5,000</span>
-        </div>
-        <input type="range" id="hardware-cost" min="0" max="50000" value="5000" step="500">
-      </div>
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label" for="implementation-cost">Implementation Cost</label>
-      <div class="range-slider">
-        <div class="range-slider-header">
-          <span class="range-slider-label">Professional services</span>
-          <span class="range-slider-value" id="implementation-cost-value">$10,000</span>
-        </div>
-        <input type="range" id="implementation-cost" min="0" max="100000" value="10000" step="1000">
-      </div>
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label" for="maintenance-percentage">Maintenance Cost</label>
-      <div class="range-slider">
-        <div class="range-slider-header">
-          <span class="range-slider-label">Percentage of license</span>
-          <span class="range-slider-value" id="maintenance-percentage-value">20%</span>
-        </div>
-        <input type="range" id="maintenance-percentage" min="0" max="40" value="20" step="1">
-      </div>
-    </div>
-  `;
+  // Add click handler
+  header.addEventListener('click', toggleCostConfig);
   
-  // Add elements to the card
-  costConfigCard.appendChild(header);
-  costConfigCard.appendChild(content);
-  
-  // Add card to sidebar content
-  sidebarContent.prepend(costConfigCard);
-  
-  // Add click handler to toggle
-  header.addEventListener('click', function() {
-    console.log('New cost config header clicked');
-    toggleCostConfig();
-  });
-  header.hasClickHandler = true;
+  // Check if content is properly styled
+  content.style.transition = 'max-height 0.3s ease, padding 0.3s ease';
   
   // Initialize range sliders
   initializeRangeSliders();
+  
+  console.log('Cost configuration initialized');
 }
 
 function toggleCostConfig() {
@@ -157,7 +55,7 @@ function toggleCostConfig() {
   if (content.classList.contains('collapsed')) {
     // Expand
     content.classList.remove('collapsed');
-    toggleIcon.classList.remove('collapsed');
+    if (toggleIcon) toggleIcon.classList.remove('collapsed');
     
     // Set explicit max-height to ensure transition works
     const contentHeight = getExpandedContentHeight(content);
@@ -242,9 +140,11 @@ function updateRangeSliderValue(slider, valueDisplay) {
   const value = slider.value;
   
   // Format value based on id
-  if (slider.id.includes('cost')) {
+  if (slider.id === 'fte-cost' || slider.id === 'implementation-cost' || slider.id === 'hardware-cost') {
     valueDisplay.textContent = `$${parseInt(value).toLocaleString()}`;
-  } else if (slider.id.includes('percentage')) {
+  } else if (slider.id === 'license-cost') {
+    valueDisplay.textContent = `$${parseInt(value)}`;
+  } else if (slider.id.includes('percentage') || slider.id.includes('reduction')) {
     valueDisplay.textContent = `${value}%`;
   } else {
     valueDisplay.textContent = value;
@@ -259,3 +159,8 @@ function updateRangeSliderBackground(slider) {
   
   slider.style.background = `linear-gradient(to right, #1a5a96 0%, #1a5a96 ${percentage}%, #e0e0e0 ${percentage}%, #e0e0e0 100%)`;
 }
+
+// Initialize range sliders automatically when included
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(initializeRangeSliders, 1000);
+});
