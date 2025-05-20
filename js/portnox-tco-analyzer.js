@@ -1,8 +1,5 @@
 /**
  * Portnox Total Cost Analyzer - Main Application
- * 
- * This is the main application logic for the Portnox Total Cost Analyzer
- * which calculates and displays TCO and ROI for different NAC vendors.
  */
 
 // Global app state
@@ -41,7 +38,6 @@ const App = {
       }
     },
     calculator: null,
-    chartManager: null,
     isDarkMode: false,
   },
   
@@ -53,9 +49,6 @@ const App = {
     
     // Initialize Calculator
     this.state.calculator = new TcoCalculator(this.state.config);
-    
-    // Initialize Chart Manager (using ApexCharts)
-    this.state.chartManager = new ApexChartManager();
     
     // Set up event listeners
     this.setupEventListeners();
@@ -82,189 +75,42 @@ const App = {
     });
     
     // Calculate buttons
-    document.getElementById('calculate-btn').addEventListener('click', () => this.calculate());
-    document.getElementById('calculate-btn-header').addEventListener('click', () => this.calculate());
+    const calcBtn = document.getElementById('calculate-btn');
+    const calcBtnHeader = document.getElementById('calculate-btn-header');
+    
+    if (calcBtn) {
+      calcBtn.addEventListener('click', () => this.calculate());
+    }
+    
+    if (calcBtnHeader) {
+      calcBtnHeader.addEventListener('click', () => this.calculate());
+    }
     
     // Export button
-    document.getElementById('export-pdf').addEventListener('click', () => this.exportReport());
+    const exportBtn = document.getElementById('export-pdf');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => this.exportReport());
+    }
     
     // Help button
-    document.getElementById('help-btn').addEventListener('click', () => this.toggleHelpModal());
+    const helpBtn = document.getElementById('help-btn');
+    if (helpBtn) {
+      helpBtn.addEventListener('click', () => this.toggleHelpModal());
+    }
     
     // Dark mode toggle
-    document.getElementById('dark-mode-toggle').addEventListener('click', () => this.toggleDarkMode());
-    
-    // View tabs (executive, financial, security, technical)
-    const viewTabs = document.querySelectorAll('.stakeholder-tab');
-    viewTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        const view = tab.dataset.view;
-        this.changeView(view);
-      });
-    });
-    
-    // Results tabs within views
-    const resultsTabs = document.querySelectorAll('.results-tab');
-    resultsTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        const panel = tab.dataset.panel;
-        this.changePanel(panel);
-      });
-    });
+    const darkModeBtn = document.getElementById('dark-mode-toggle');
+    if (darkModeBtn) {
+      darkModeBtn.addEventListener('click', () => this.toggleDarkMode());
+    }
     
     // Sidebar toggle
-    document.getElementById('sidebar-toggle').addEventListener('click', () => this.toggleSidebar());
-    
-    // Config card toggles
-    const configHeaders = document.querySelectorAll('.config-card-header');
-    configHeaders.forEach(header => {
-      header.addEventListener('click', () => {
-        const card = header.parentElement;
-        this.toggleConfigCard(card);
-      });
-    });
-    
-    // Input change events for configuration
-    this.setupConfigInputListeners();
-    
-    // Modal close buttons
-    const modalCloseButtons = document.querySelectorAll('.modal-close');
-    modalCloseButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        const modal = button.closest('.modal');
-        this.closeModal(modal);
-      });
-    });
-    
-    // Window click to close modals
-    window.addEventListener('click', (e) => {
-      if (e.target.classList.contains('modal')) {
-        this.closeModal(e.target);
-      }
-    });
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    if (sidebarToggle) {
+      sidebarToggle.addEventListener('click', () => this.toggleSidebar());
+    }
     
     console.log('Event listeners set up successfully.');
-  },
-  
-  /**
-   * Set up configuration input listeners to update config state
-   */
-  setupConfigInputListeners: function() {
-    // Industry select
-    document.getElementById('industry-select').addEventListener('change', (e) => {
-      this.state.config.industry = e.target.value;
-    });
-    
-    // Compliance checkboxes
-    const complianceCheckboxes = document.querySelectorAll('.compliance-item input');
-    complianceCheckboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', () => {
-        this.updateComplianceRequirements();
-      });
-    });
-    
-    // Risk profile
-    document.getElementById('risk-profile').addEventListener('change', (e) => {
-      this.state.config.riskProfile = e.target.value;
-    });
-    
-    // Cybersecurity insurance
-    document.getElementById('cybersecurity-insurance').addEventListener('change', (e) => {
-      this.state.config.cybersecurityInsurance = e.target.value;
-    });
-    
-    // Organization size
-    document.getElementById('organization-size').addEventListener('change', (e) => {
-      this.state.config.organizationSize = e.target.value;
-      this.updateDeviceCount(e.target.value);
-    });
-    
-    // Device count
-    document.getElementById('device-count').addEventListener('change', (e) => {
-      this.state.config.deviceCount = parseInt(e.target.value, 10);
-    });
-    
-    // Locations
-    document.getElementById('locations').addEventListener('change', (e) => {
-      this.state.config.locationCount = parseInt(e.target.value, 10);
-    });
-    
-    // Network requirements
-    const networkCheckboxes = document.querySelectorAll('.feature-grid input');
-    networkCheckboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', () => {
-        this.updateNetworkRequirements();
-      });
-    });
-    
-    // Years to project
-    document.getElementById('years-to-project').addEventListener('change', (e) => {
-      this.state.config.years = parseInt(e.target.value, 10);
-    });
-    
-    // Cost parameters
-    this.setupCostParameterListeners();
-  },
-  
-  /**
-   * Set up cost parameter slider listeners
-   */
-  setupCostParameterListeners: function() {
-    // Portnox base price
-    document.getElementById('portnox-base-price').addEventListener('input', (e) => {
-      const value = parseFloat(e.target.value);
-      this.state.config.costParameters.portnoxBasePrice = value;
-      document.getElementById('portnox-cost-value').textContent = `$${value.toFixed(2)}`;
-    });
-    
-    // Portnox discount
-    document.getElementById('portnox-discount').addEventListener('input', (e) => {
-      const value = parseInt(e.target.value, 10);
-      this.state.config.costParameters.portnoxDiscount = value;
-      document.getElementById('portnox-discount-value').textContent = `${value}%`;
-    });
-    
-    // FTE cost
-    document.getElementById('fte-cost').addEventListener('input', (e) => {
-      const value = parseInt(e.target.value, 10);
-      this.state.config.costParameters.fteCost = value;
-      document.getElementById('fte-cost-value').textContent = `$${value.toLocaleString()}`;
-    });
-    
-    // FTE allocation
-    document.getElementById('fte-allocation').addEventListener('input', (e) => {
-      const value = parseInt(e.target.value, 10);
-      this.state.config.costParameters.fteAllocation = value;
-      document.getElementById('fte-allocation-value').textContent = `${value}%`;
-    });
-    
-    // Maintenance percentage
-    document.getElementById('maintenance-percentage').addEventListener('input', (e) => {
-      const value = parseInt(e.target.value, 10);
-      this.state.config.costParameters.maintenancePercentage = value;
-      document.getElementById('maintenance-value').textContent = `${value}%`;
-    });
-    
-    // Downtime cost
-    document.getElementById('downtime-cost').addEventListener('input', (e) => {
-      const value = parseInt(e.target.value, 10);
-      this.state.config.costParameters.downtimeCost = value;
-      document.getElementById('downtime-cost-value').textContent = `$${value.toLocaleString()}`;
-    });
-    
-    // Risk reduction
-    document.getElementById('risk-reduction').addEventListener('input', (e) => {
-      const value = parseInt(e.target.value, 10);
-      this.state.config.costParameters.riskReduction = value;
-      document.getElementById('risk-reduction-value').textContent = `${value}%`;
-    });
-    
-    // Insurance reduction
-    document.getElementById('insurance-reduction').addEventListener('input', (e) => {
-      const value = parseInt(e.target.value, 10);
-      this.state.config.costParameters.insuranceReduction = value;
-      document.getElementById('insurance-reduction-value').textContent = `${value}%`;
-    });
   },
   
   /**
@@ -281,128 +127,7 @@ const App = {
       }
     });
     
-    // Set initial view and panel
-    this.changeView(this.state.activeView);
-    
-    // Set initial values for sliders and dropdowns
-    const { config } = this.state;
-    
-    // Set industry
-    document.getElementById('industry-select').value = config.industry;
-    
-    // Set compliance requirements
-    config.complianceRequirements.forEach(req => {
-      const checkbox = document.getElementById(`compliance-${req}`);
-      if (checkbox) checkbox.checked = true;
-    });
-    
-    // Set risk profile
-    document.getElementById('risk-profile').value = config.riskProfile;
-    
-    // Set insurance
-    document.getElementById('cybersecurity-insurance').value = config.cybersecurityInsurance;
-    
-    // Set organization size
-    document.getElementById('organization-size').value = config.organizationSize;
-    
-    // Set device count
-    document.getElementById('device-count').value = config.deviceCount;
-    
-    // Set locations
-    document.getElementById('locations').value = config.locationCount;
-    
-    // Set network requirements
-    for (const [key, value] of Object.entries(config.networkRequirements)) {
-      const checkbox = document.getElementById(key.replace(/([A-Z])/g, '-$1').toLowerCase());
-      if (checkbox) checkbox.checked = value;
-    }
-    
-    // Set years
-    document.getElementById('years-to-project').value = config.years;
-    
-    // Set cost parameters
-    this.updateCostParameterDisplay();
-    
     console.log('UI state initialized successfully.');
-  },
-  
-  /**
-   * Update cost parameter display values
-   */
-  updateCostParameterDisplay: function() {
-    const { costParameters } = this.state.config;
-    
-    document.getElementById('portnox-base-price').value = costParameters.portnoxBasePrice;
-    document.getElementById('portnox-cost-value').textContent = `$${costParameters.portnoxBasePrice.toFixed(2)}`;
-    
-    document.getElementById('portnox-discount').value = costParameters.portnoxDiscount;
-    document.getElementById('portnox-discount-value').textContent = `${costParameters.portnoxDiscount}%`;
-    
-    document.getElementById('fte-cost').value = costParameters.fteCost;
-    document.getElementById('fte-cost-value').textContent = `$${costParameters.fteCost.toLocaleString()}`;
-    
-    document.getElementById('fte-allocation').value = costParameters.fteAllocation;
-    document.getElementById('fte-allocation-value').textContent = `${costParameters.fteAllocation}%`;
-    
-    document.getElementById('maintenance-percentage').value = costParameters.maintenancePercentage;
-    document.getElementById('maintenance-value').textContent = `${costParameters.maintenancePercentage}%`;
-    
-    document.getElementById('downtime-cost').value = costParameters.downtimeCost;
-    document.getElementById('downtime-cost-value').textContent = `$${costParameters.downtimeCost.toLocaleString()}`;
-    
-    document.getElementById('risk-reduction').value = costParameters.riskReduction;
-    document.getElementById('risk-reduction-value').textContent = `${costParameters.riskReduction}%`;
-    
-    document.getElementById('insurance-reduction').value = costParameters.insuranceReduction;
-    document.getElementById('insurance-reduction-value').textContent = `${costParameters.insuranceReduction}%`;
-  },
-  
-  /**
-   * Update device count based on organization size
-   */
-  updateDeviceCount: function(size) {
-    const sizeCounts = {
-      'very-small': 250,
-      'small': 500,
-      'medium': 3000,
-      'large': 7500,
-      'enterprise': 15000
-    };
-    
-    const newCount = sizeCounts[size] || 500;
-    document.getElementById('device-count').value = newCount;
-    this.state.config.deviceCount = newCount;
-  },
-  
-  /**
-   * Update compliance requirements from checkboxes
-   */
-  updateComplianceRequirements: function() {
-    const complianceReqs = [];
-    const checkboxes = document.querySelectorAll('.compliance-item input:checked');
-    
-    checkboxes.forEach(box => {
-      const id = box.id.replace('compliance-', '');
-      complianceReqs.push(id);
-    });
-    
-    this.state.config.complianceRequirements = complianceReqs;
-  },
-  
-  /**
-   * Update network requirements from checkboxes
-   */
-  updateNetworkRequirements: function() {
-    const reqs = {};
-    
-    reqs.cloudIntegration = document.getElementById('cloud-integration').checked;
-    reqs.legacyDevices = document.getElementById('legacy-devices').checked;
-    reqs.byodSupport = document.getElementById('byod-support').checked;
-    reqs.iotSupport = document.getElementById('iot-support').checked;
-    reqs.wirelessSupport = document.getElementById('wireless-support').checked;
-    reqs.remoteWork = document.getElementById('remote-work').checked;
-    
-    this.state.config.networkRequirements = reqs;
   },
   
   /**
@@ -430,81 +155,6 @@ const App = {
   },
   
   /**
-   * Change the active view
-   */
-  changeView: function(view) {
-    // Update active view
-    this.state.activeView = view;
-    
-    // Update tab states
-    const viewTabs = document.querySelectorAll('.stakeholder-tab');
-    viewTabs.forEach(tab => {
-      if (tab.dataset.view === view) {
-        tab.classList.add('active');
-      } else {
-        tab.classList.remove('active');
-      }
-    });
-    
-    // Update view panels
-    const viewPanels = document.querySelectorAll('.view-panel');
-    viewPanels.forEach(panel => {
-      if (panel.dataset.view === view) {
-        panel.classList.add('active');
-        
-        // Get the first panel in this view
-        const firstPanel = panel.querySelector('.results-panel');
-        if (firstPanel) {
-          const panelId = firstPanel.id;
-          this.changePanel(panelId);
-        }
-      } else {
-        panel.classList.remove('active');
-      }
-    });
-    
-    // If we have results, update the charts for this view
-    if (this.state.results) {
-      this.updateChartsForActiveView();
-    }
-  },
-  
-  /**
-   * Change the active panel within a view
-   */
-  changePanel: function(panelId) {
-    const view = this.state.activeView;
-    
-    // Update active panel
-    this.state.activePanel = panelId;
-    
-    // Update tab states in current view
-    const resultsTabs = document.querySelectorAll(`.view-panel[data-view="${view}"] .results-tab`);
-    resultsTabs.forEach(tab => {
-      if (tab.dataset.panel === panelId) {
-        tab.classList.add('active');
-      } else {
-        tab.classList.remove('active');
-      }
-    });
-    
-    // Update panel visibility
-    const resultsPanels = document.querySelectorAll(`.view-panel[data-view="${view}"] .results-panel`);
-    resultsPanels.forEach(panel => {
-      if (panel.id === panelId) {
-        panel.classList.add('active');
-      } else {
-        panel.classList.remove('active');
-      }
-    });
-    
-    // Update charts if needed
-    if (this.state.results) {
-      // Specific chart updates for each panel if needed
-    }
-  },
-  
-  /**
    * Toggle sidebar visibility
    */
   toggleSidebar: function() {
@@ -512,32 +162,20 @@ const App = {
     const toggle = document.getElementById('sidebar-toggle');
     const contentArea = document.querySelector('.content-area');
     
-    sidebar.classList.toggle('collapsed');
-    toggle.classList.toggle('collapsed');
-    contentArea.classList.toggle('expanded');
-    
-    // Update icon
-    const icon = toggle.querySelector('i');
-    if (sidebar.classList.contains('collapsed')) {
-      icon.className = 'fas fa-chevron-right';
-    } else {
-      icon.className = 'fas fa-chevron-left';
-    }
-  },
-  
-  /**
-   * Toggle config card expansion
-   */
-  toggleConfigCard: function(card) {
-    const content = card.querySelector('.config-card-content');
-    const icon = card.querySelector('.config-card-header i');
-    
-    content.classList.toggle('collapsed');
-    
-    if (content.classList.contains('collapsed')) {
-      icon.className = 'fas fa-chevron-down';
-    } else {
-      icon.className = 'fas fa-chevron-up';
+    if (sidebar && toggle && contentArea) {
+      sidebar.classList.toggle('collapsed');
+      toggle.classList.toggle('collapsed');
+      contentArea.classList.toggle('expanded');
+      
+      // Update icon
+      const icon = toggle.querySelector('i');
+      if (icon) {
+        if (sidebar.classList.contains('collapsed')) {
+          icon.className = 'fas fa-chevron-right';
+        } else {
+          icon.className = 'fas fa-chevron-left';
+        }
+      }
     }
   },
   
@@ -550,15 +188,12 @@ const App = {
     
     // Update icon
     const icon = document.querySelector('#dark-mode-toggle i');
-    if (this.state.isDarkMode) {
-      icon.className = 'fas fa-sun';
-    } else {
-      icon.className = 'fas fa-moon';
-    }
-    
-    // Update charts if needed
-    if (this.state.results) {
-      this.updateChartsForActiveView();
+    if (icon) {
+      if (this.state.isDarkMode) {
+        icon.className = 'fas fa-sun';
+      } else {
+        icon.className = 'fas fa-moon';
+      }
     }
   },
   
@@ -567,14 +202,9 @@ const App = {
    */
   toggleHelpModal: function() {
     const modal = document.getElementById('help-modal');
-    modal.classList.toggle('active');
-  },
-  
-  /**
-   * Close a modal
-   */
-  closeModal: function(modal) {
-    modal.classList.remove('active');
+    if (modal) {
+      modal.classList.toggle('active');
+    }
   },
   
   /**
@@ -628,9 +258,6 @@ const App = {
     // Update metrics based on results
     this.updateMetrics();
     
-    // Update charts for the active view
-    this.updateChartsForActiveView();
-    
     console.log('UI updated with results.');
   },
   
@@ -640,110 +267,32 @@ const App = {
   updateMetrics: function() {
     const { results } = this.state;
     
+    if (!results.vendors || !results.vendors.portnox) return;
+    
     // Executive view metrics
-    if (results.vendors.portnox && results.vendors.cisco) {
-      const portnoxTco = results.vendors.portnox.totalTco;
-      const ciscoTco = results.vendors.cisco.totalTco;
-      const savings = ciscoTco - portnoxTco;
-      const savingsPercentage = Math.round((savings / ciscoTco) * 100);
-      
-      // Total savings
-      document.getElementById('total-savings').textContent = this.formatCurrency(savings);
-      document.getElementById('savings-percentage').textContent = `${savingsPercentage}% reduction vs. Cisco ISE`;
-      
-      // Payback period
-      if (results.roi.portnox) {
-        const paybackMonths = Math.round(results.roi.portnox.paybackPeriod);
-        document.getElementById('payback-period').textContent = `${paybackMonths} months`;
-      }
-      
-      // Risk reduction
-      if (results.security && results.security.portnox) {
-        const riskReduction = Math.round(results.security.portnox.improvements.overall);
-        document.getElementById('risk-reduction-total').textContent = `${riskReduction}%`;
-      }
-      
-      // Implementation time
-      const implementationTime = results.vendors.portnox.implementation.time;
-      document.getElementById('implementation-time').textContent = `${implementationTime} days`;
-      document.getElementById('implementation-comparison').textContent = `${Math.round((1 - (implementationTime / results.vendors.cisco.implementation.time)) * 100)}% faster than on-premises`;
-    }
+    const portnoxResults = results.vendors.portnox;
     
-    // Financial view metrics
-    if (results.vendors.portnox && results.vendors.cisco) {
-      const portnoxTco = results.vendors.portnox.totalTco;
-      const ciscoTco = results.vendors.cisco.totalTco;
-      
-      // TCO
-      document.getElementById('portnox-tco').textContent = this.formatCurrency(portnoxTco);
-      document.getElementById('tco-comparison').textContent = `vs. ${this.formatCurrency(ciscoTco)} (Cisco ISE)`;
-      
-      // Annual subscription
-      const annualSub = results.vendors.portnox.breakdown.subscription / this.state.config.years;
-      document.getElementById('annual-subscription').textContent = this.formatCurrency(annualSub);
-      
-      // Implementation cost
-      document.getElementById('implementation-cost').textContent = this.formatCurrency(results.vendors.portnox.breakdown.implementation);
-      
-      // Operational cost
-      const operationalCost = results.vendors.portnox.breakdown.personnel / this.state.config.years;
-      document.getElementById('operational-cost').textContent = this.formatCurrency(operationalCost);
-    }
+    // Update displayed metrics if elements exist
+    const updateElement = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    };
     
-    // ROI metrics
-    if (results.roi.portnox) {
-      const portnoxRoi = results.roi.portnox;
-      
-      // 3-Year ROI
-      document.getElementById('three-year-roi').textContent = `${Math.round(portnoxRoi.roiPercentage)}%`;
-      
-      // Annual savings
-      document.getElementById('annual-savings').textContent = this.formatCurrency(portnoxRoi.annualSavings);
-      
-      // Productivity gains
-      document.getElementById('productivity-value').textContent = this.formatCurrency(portnoxRoi.productivityBenefit);
-      
-      // Compliance savings
-      document.getElementById('compliance-savings').textContent = this.formatCurrency(portnoxRoi.complianceSavings);
-    }
+    // Total cost
+    updateElement('portnox-tco', this.formatCurrency(portnoxResults.totalTco));
     
-    // Security metrics
-    if (results.security && results.security.portnox) {
-      const portnoxSecurity = results.security.portnox;
-      
-      // Security improvement
-      document.getElementById('security-improvement').textContent = `${Math.round(portnoxSecurity.improvements.overall)}%`;
-      
-      // Breach probability
-      document.getElementById('breach-probability').textContent = portnoxSecurity.risk.breachProbability;
-      
-      // Compliance coverage
-      document.getElementById('compliance-coverage').textContent = `${Math.round(portnoxSecurity.compliance.coverage)}%`;
-      
-      // Mean time to respond
-      document.getElementById('mttr').textContent = `${portnoxSecurity.risk.mttr} min`;
-    }
-  },
-  
-  /**
-   * Update charts for the active view
-   */
-  updateChartsForActiveView: function() {
-    const { activeView, results } = this.state;
+    // Implementation time
+    updateElement('implementation-time', `${portnoxResults.implementation.time} days`);
     
-    switch (activeView) {
-      case 'executive':
-        this.state.chartManager.initExecutiveCharts(results);
-        break;
-      case 'financial':
-        this.state.chartManager.initFinancialCharts(results);
-        break;
-      case 'security':
-        this.state.chartManager.initSecurityCharts(results);
-        break;
-      case 'technical':
-        this.state.chartManager.initTechnicalCharts(results);
-        break;
+    // Other vendors comparison
+    if (results.vendors.cisco) {
+      const ciscoResults = results.vendors.cisco;
+      const costDiff = ciscoResults.totalTco - portnoxResults.totalTco;
+      const savingsPercent = Math.round((costDiff / ciscoResults.totalTco) * 100);
+      
+      updateElement('total-savings', this.formatCurrency(costDiff));
+      updateElement('savings-percentage', `${savingsPercent}% reduction vs. Cisco ISE`);
+      updateElement('tco-comparison', `vs. ${this.formatCurrency(ciscoResults.totalTco)} (Cisco ISE)`);
     }
   },
   
@@ -752,7 +301,9 @@ const App = {
    */
   showLoadingOverlay: function() {
     const overlay = document.getElementById('loading-overlay');
-    overlay.classList.add('active');
+    if (overlay) {
+      overlay.classList.add('active');
+    }
   },
   
   /**
@@ -760,7 +311,9 @@ const App = {
    */
   hideLoadingOverlay: function() {
     const overlay = document.getElementById('loading-overlay');
-    overlay.classList.remove('active');
+    if (overlay) {
+      overlay.classList.remove('active');
+    }
   },
   
   /**
@@ -768,6 +321,7 @@ const App = {
    */
   showToast: function(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) return;
     
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
@@ -803,7 +357,9 @@ const App = {
     setTimeout(() => {
       toast.classList.remove('show');
       setTimeout(() => {
-        toast.remove();
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
       }, 300);
     }, 5000);
   },
@@ -837,17 +393,6 @@ const App = {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(value);
-  },
-  
-  /**
-   * Format percentage values
-   */
-  formatPercentage: function(value) {
-    return new Intl.NumberFormat('en-US', {
-      style: 'percent',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 1
-    }).format(value / 100);
   }
 };
 

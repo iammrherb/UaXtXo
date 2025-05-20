@@ -52,22 +52,6 @@ class TcoCalculator {
       ...newConfig
     };
     
-    // If networkRequirements is provided, merge it specially
-    if (newConfig.networkRequirements) {
-      this.config.networkRequirements = {
-        ...this.config.networkRequirements,
-        ...newConfig.networkRequirements
-      };
-    }
-    
-    // If costParameters is provided, merge it specially
-    if (newConfig.costParameters) {
-      this.config.costParameters = {
-        ...this.config.costParameters,
-        ...newConfig.costParameters
-      };
-    }
-    
     return this;
   }
   
@@ -171,21 +155,6 @@ class TcoCalculator {
       // Calculate initial and annual costs
       result.initialCosts = result.breakdown.hardware + result.breakdown.software + result.breakdown.implementation;
       result.annualCosts = annualMaintenance + annualPersonnelCost + annualDowntimeCost + annualOperationalCost;
-      
-    } else if (vendor.architecture === 'none') {
-      // No NAC solution (baseline)
-      
-      // Personnel costs for basic network security
-      const annualPersonnelCost = fteCost * (vendor.fte.required * (fteAllocation / 100));
-      result.breakdown.personnel = annualPersonnelCost * years;
-      
-      // Downtime costs (higher due to security incidents)
-      const annualDowntimeCost = vendor.maintenance.downtime * downtimeCost;
-      result.breakdown.downtime = annualDowntimeCost * years;
-      
-      // No initial costs
-      result.initialCosts = 0;
-      result.annualCosts = annualPersonnelCost + annualDowntimeCost;
     }
     
     // Calculate total TCO
@@ -204,182 +173,6 @@ class TcoCalculator {
     return result;
   }
   
-  // Calculate ROI for a vendor compared to baseline
-  calculateRoi(vendorTco, baselineTco) {
-    if (!vendorTco || !baselineTco) return null;
-    
-    const { years, costParameters } = this.config;
-    const { riskReduction, insuranceReduction } = costParameters;
-    
-    // Calculate direct cost savings compared to baseline
-    const costSavings = baselineTco.totalTco - vendorTco.totalTco;
-    
-    // Calculate additional benefits
-    
-    // Risk reduction benefit (avoided breaches)
-    const industryBreachCost = this.getIndustryBreachCost();
-    const breachProbability = this.getBreachProbability();
-    const riskReductionBenefit = industryBreachCost * breachProbability * (riskReduction / 100) * years;
-    
-    // Insurance premium reduction
-    const annualInsurancePremium = this.getInsurancePremium();
-    const insuranceSavings = annualInsurancePremium * (insuranceReduction / 100) * years;
-    
-    // Productivity improvement
-    const productivityBenefit = this.config.deviceCount * 50 * years; // $50 per device per year in productivity gains
-    
-    // Compliance automation savings
-    const complianceSavings = this.config.complianceRequirements.length * 10000 * years; // $10K per compliance standard per year
-    
-    // Calculate total benefits
-    const totalBenefits = costSavings + riskReductionBenefit + insuranceSavings + productivityBenefit + complianceSavings;
-    
-    // Calculate ROI percentage
-    const investment = vendorTco.totalTco;
-    const roiPercentage = (totalBenefits / investment) * 100;
-    
-    // Calculate payback period in months
-    const monthlyBenefits = totalBenefits / (years * 12);
-    const paybackPeriod = (investment / monthlyBenefits);
-    
-    return {
-      vendorId: vendorTco.vendorId,
-      vendorName: vendorTco.vendorName,
-      costSavings,
-      riskReductionBenefit,
-      insuranceSavings,
-      productivityBenefit,
-      complianceSavings,
-      totalBenefits,
-      investment,
-      roiPercentage,
-      paybackPeriod,
-      annualSavings: totalBenefits / years
-    };
-  }
-  
-  // Helper methods for calculating ROI components
-  getIndustryBreachCost() {
-    const { industry } = this.config;
-    const industryCosts = {
-      healthcare: 9800000,
-      financial: 6300000,
-      technology: 5200000,
-      energy: 4750000,
-      retail: 3800000,
-      education: 4000000,
-      government: 8200000,
-      manufacturing: 4350000,
-      '': 4500000 // default
-    };
-    
-    return industryCosts[industry] || industryCosts[''];
-  }
-  
-  getBreachProbability() {
-    const { riskProfile } = this.config;
-    const probabilities = {
-      standard: 0.15,
-      elevated: 0.25,
-      high: 0.35,
-      regulated: 0.40
-    };
-    
-    return probabilities[riskProfile] || probabilities.standard;
-  }
-  
-  getInsurancePremium() {
-    const { cybersecurityInsurance, deviceCount } = this.config;
-    
-    // Base premium per device
-    const basePremiums = {
-      none: 0,
-      basic: 15,
-      standard: 25,
-      comprehensive: 40
-    };
-    
-    return (basePremiums[cybersecurityInsurance] || basePremiums.standard) * deviceCount;
-  }
-  
-  // Calculate security scores
-  calculateSecurityScores(vendorTco, noNacTco) {
-    if (!vendorTco) return null;
-    
-    const vendor = VENDORS[vendorTco.vendorId];
-    const noNacVendor = VENDORS['no-nac'];
-    
-    if (!vendor) return null;
-    
-    // Calculate security improvement vs no NAC
-    const zeroTrustImprovement = ((vendor.security.zeroTrustScore - noNacVendor.security.zeroTrustScore) / 
-                                (10 - noNacVendor.security.zeroTrustScore)) * 100;
-    
-    const deviceAuthImprovement = ((vendor.security.deviceAuthScore - noNacVendor.security.deviceAuthScore) / 
-                                 (10 - noNacVendor.security.deviceAuthScore)) * 100;
-    
-    const riskAssessmentImprovement = ((vendor.security.riskAssessmentScore - noNacVendor.security.riskAssessmentScore) / 
-                                     (10 - noNacVendor.security.riskAssessmentScore)) * 100;
-    
-    const remediationImprovement = ((noNacVendor.security.remediationSpeed - vendor.security.remediationSpeed) / 
-                                  noNacVendor.security.remediationSpeed) * 100;
-    
-    // Overall security improvement
-    const overallImprovement = (zeroTrustImprovement + deviceAuthImprovement + 
-                              riskAssessmentImprovement + remediationImprovement) / 4;
-    
-    // Calculate compliance coverage
-    let complianceCoverage = 0;
-    let availableComplianceCount = 0;
-    
-    for (const compliance of this.config.complianceRequirements) {
-      availableComplianceCount++;
-      if (vendor.compliance[compliance]) {
-        complianceCoverage++;
-      }
-    }
-    
-    const complianceCoveragePercent = availableComplianceCount > 0 ? 
-      (complianceCoverage / availableComplianceCount) * 100 : 100;
-    
-    // Determine breach probability level
-    const breachProbability = this.getBreachProbabilityLevel(vendor.security.zeroTrustScore);
-    
-    return {
-      vendorId: vendorTco.vendorId,
-      vendorName: vendorTco.vendorName,
-      securityScores: {
-        zeroTrust: vendor.security.zeroTrustScore * 10, // Scale to 0-100
-        deviceAuth: vendor.security.deviceAuthScore * 10,
-        riskAssessment: vendor.security.riskAssessmentScore * 10,
-        remediationSpeed: vendor.security.remediationSpeed // Minutes
-      },
-      improvements: {
-        zeroTrust: zeroTrustImprovement,
-        deviceAuth: deviceAuthImprovement,
-        riskAssessment: riskAssessmentImprovement,
-        remediation: remediationImprovement,
-        overall: overallImprovement
-      },
-      compliance: {
-        coverage: complianceCoveragePercent,
-        supported: Object.keys(vendor.compliance).filter(c => vendor.compliance[c])
-      },
-      risk: {
-        breachProbability,
-        mttr: vendor.security.remediationSpeed // Mean time to respond (minutes)
-      }
-    };
-  }
-  
-  getBreachProbabilityLevel(zeroTrustScore) {
-    if (zeroTrustScore >= 9) return 'Very Low';
-    if (zeroTrustScore >= 8) return 'Low';
-    if (zeroTrustScore >= 6) return 'Medium';
-    if (zeroTrustScore >= 4) return 'High';
-    return 'Very High';
-  }
-  
   // Main calculation method
   calculate(selectedVendors) {
     if (!selectedVendors || !Array.isArray(selectedVendors) || selectedVendors.length === 0) {
@@ -388,11 +181,8 @@ class TcoCalculator {
     
     this.results.vendors = {};
     
-    // Always include Portnox and No NAC for comparison
-    const allVendors = [...new Set([...selectedVendors, 'portnox', 'no-nac'])];
-    
     // Calculate TCO for each vendor
-    for (const vendorId of allVendors) {
+    for (const vendorId of selectedVendors) {
       const vendor = VENDORS[vendorId];
       if (vendor) {
         const tco = this.calculateVendorTco(vendor);
@@ -400,77 +190,7 @@ class TcoCalculator {
       }
     }
     
-    // Use No NAC as baseline for comparisons
-    const baselineTco = this.results.vendors['no-nac'];
-    
-    // Calculate ROI for each vendor compared to baseline
-    this.results.roi = {};
-    for (const vendorId in this.results.vendors) {
-      if (vendorId !== 'no-nac') {
-        const vendorTco = this.results.vendors[vendorId];
-        this.results.roi[vendorId] = this.calculateRoi(vendorTco, baselineTco);
-      }
-    }
-    
-    // Calculate security scores for each vendor
-    this.results.security = {};
-    for (const vendorId in this.results.vendors) {
-      if (vendorId !== 'no-nac') {
-        const vendorTco = this.results.vendors[vendorId];
-        this.results.security[vendorId] = this.calculateSecurityScores(vendorTco, baselineTco);
-      }
-    }
-    
-    // Prepare comparison data
-    this.prepareComparisonData();
-    
     return this.results;
-  }
-  
-  prepareComparisonData() {
-    const { vendors, roi, security } = this.results;
-    
-    this.results.comparison = {
-      tco: {},
-      features: {},
-      implementation: {},
-      security: {}
-    };
-    
-    // TCO comparison
-    const tcoData = {};
-    for (const vendorId in vendors) {
-      tcoData[vendorId] = vendors[vendorId].totalTco;
-    }
-    this.results.comparison.tco = tcoData;
-    
-    // Implementation time comparison
-    const implementationData = {};
-    for (const vendorId in vendors) {
-      implementationData[vendorId] = vendors[vendorId].implementation.time;
-    }
-    this.results.comparison.implementation = implementationData;
-    
-    // Security comparison
-    const securityData = {};
-    for (const vendorId in security) {
-      securityData[vendorId] = security[vendorId].improvements.overall;
-    }
-    this.results.comparison.security = securityData;
-    
-    // Feature coverage comparison
-    const featureData = {};
-    for (const vendorId in vendors) {
-      const vendor = VENDORS[vendorId];
-      if (vendor) {
-        const featureCount = Object.values(vendor.features).filter(v => v).length;
-        const featurePercentage = (featureCount / Object.keys(vendor.features).length) * 100;
-        featureData[vendorId] = featurePercentage;
-      }
-    }
-    this.results.comparison.features = featureData;
-    
-    return this.results.comparison;
   }
 }
 

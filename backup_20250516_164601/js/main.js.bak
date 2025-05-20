@@ -1,0 +1,863 @@
+/**
+ * Main Application
+ * Initializes and coordinates all components of the TCO Analyzer
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize application state
+    const appState = {
+        vendors: {
+            available: [
+                'portnox', 'cisco', 'aruba', 'forescout', 'nps', 
+                'securew2', 'juniper', 'arista', 'foxpass', 'noNac'
+            ],
+            selected: ['portnox', 'cisco', 'aruba', 'forescout']
+        },
+        preferences: {
+            industry: 'healthcare',
+            compliance: ['hipaa', 'pci', 'nist'],
+            riskProfile: 'standard',
+            deviceCount: 500,
+            locations: 2,
+            yearsToProject: 3,
+            breachProbability: 'medium',
+            breachImpact: 'high',
+            downtimeCost: 5000,
+            insuranceDiscount: 10,
+            networkRequirements: {
+                cloudIntegration: false,
+                legacyDevices: false,
+                byodSupport: true,
+                iotSupport: false,
+                wirelessSupport: true,
+                remoteWork: true
+            }
+        },
+        costs: {
+            portnoxBasePrice: 3.00, // per device per month
+            portnoxDiscount: 15, // percentage
+            fteCost: 100000, // annual cost
+            fteAllocation: 25, // percentage
+            maintenancePercentage: 18, // annual percentage of license
+            downtimeCost: 5000, // per hour
+            riskReduction: 35, // percentage
+            insuranceReduction: 10 // percentage
+        }
+    };
+    
+    // Create chart generator
+    const chartGenerator = new EnhancedChartGenerator();
+    
+    // Initialize components
+    const executiveSummary = new ExecutiveSummary(chartGenerator, VendorComparisonData, getUserPreferences());
+    const riskAnalyzer = new RiskAnalyzer(VendorComparisonData, getUserPreferences());
+    const complianceAnalyzer = new ComplianceAnalyzer(VendorComparisonData, getUserPreferences());
+    
+    // Initialize UI
+    initializeUI();
+    
+    // Initialize tabs and navigation
+    initializeTabs();
+    
+    // Bind events
+    bindEvents();
+    
+    // Show loading overlay
+    showLoading();
+    
+    // Initialize visualizations with a slight delay for animation
+    setTimeout(function() {
+        executiveSummary.initialize();
+        riskAnalyzer.initialize();
+        complianceAnalyzer.initialize();
+        
+        // Make charts responsive
+        ResponsiveUtils.makeChartsResponsive();
+        
+        hideLoading();
+        
+        // Show welcome toast
+        showToast('Welcome to the Portnox Total Cost Analyzer!');
+    }, 1000);
+    
+    /**
+     * Initialize UI components
+     */
+    function initializeUI() {
+        // Initialize vendor cards
+        initializeVendorCards();
+        
+        // Initialize sliders
+        initializeSliders();
+        
+        // Initialize industry selector
+        initializeIndustrySelector();
+        
+        // Initialize risk profile selector
+        initializeRiskProfileSelector();
+        
+        // Initialize organization size selector
+        initializeOrganizationSizeSelector();
+        
+        // Initialize sidebar toggle
+        initializeSidebarToggle();
+        
+        // Add animated background to cards
+        document.querySelectorAll('.dashboard-card').forEach(card => {
+            if (!card.classList.contains('animated-bg')) {
+                card.classList.add('animated-bg');
+            }
+        });
+        
+        document.querySelectorAll('.insight-card').forEach(card => {
+            if (!card.classList.contains('animated-bg')) {
+                card.classList.add('animated-bg');
+            }
+        });
+    }
+    
+    /**
+     * Initialize vendor cards
+     */
+    function initializeVendorCards() {
+        const vendorCards = document.querySelectorAll('.vendor-card');
+        
+        vendorCards.forEach(card => {
+            const vendor = card.getAttribute('data-vendor');
+            
+            // Set initial selection state
+            if (appState.vendors.selected.includes(vendor)) {
+                card.classList.add('selected');
+            }
+            
+            // Add click event listener
+            card.addEventListener('click', function() {
+                toggleVendorSelection(card, vendor);
+            });
+        });
+    }
+    
+    /**
+     * Toggle vendor selection
+     * @param {Element} card - Vendor card element
+     * @param {string} vendor - Vendor ID
+     */
+    function toggleVendorSelection(card, vendor) {
+        // Toggle selection in UI
+        card.classList.toggle('selected');
+        
+        // Update application state
+        if (card.classList.contains('selected')) {
+            // Add vendor if not already selected
+            if (!appState.vendors.selected.includes(vendor)) {
+                appState.vendors.selected.push(vendor);
+            }
+        } else {
+            // Remove vendor if selected
+            const index = appState.vendors.selected.indexOf(vendor);
+            if (index !== -1) {
+                appState.vendors.selected.splice(index, 1);
+            }
+        }
+        
+        // Ensure Portnox is always selected
+        if (vendor === 'portnox' && !card.classList.contains('selected')) {
+            card.classList.add('selected');
+            if (!appState.vendors.selected.includes('portnox')) {
+                appState.vendors.selected.push('portnox');
+            }
+        }
+        
+        // Limit to max 5 vendors for better chart readability
+        if (appState.vendors.selected.length > 5) {
+            // Find the first non-portnox card that is not this card and deselect it
+            const cardsToDeselect = document.querySelectorAll('.vendor-card.selected:not([data-vendor="portnox"])');
+            for (let i = 0; i < cardsToDeselect.length; i++) {
+                const otherCard = cardsToDeselect[i];
+                const otherVendor = otherCard.getAttribute('data-vendor');
+                if (otherVendor !== vendor) {
+                    otherCard.classList.remove('selected');
+                    const otherIndex = appState.vendors.selected.indexOf(otherVendor);
+                    if (otherIndex !== -1) {
+                        appState.vendors.selected.splice(otherIndex, 1);
+                    }
+                    showToast('Limited to 5 vendors for better chart readability', 'info');
+                    break;
+                }
+            }
+        }
+    }
+    
+    /**
+     * Initialize sliders
+     */
+    function initializeSliders() {
+        // Portnox base price slider
+        const portnoxBasePriceSlider = document.getElementById('portnox-base-price');
+        const portnoxCostValue = document.getElementById('portnox-cost-value');
+        
+        if (portnoxBasePriceSlider && portnoxCostValue) {
+            portnoxBasePriceSlider.value = appState.costs.portnoxBasePrice;
+            portnoxCostValue.textContent = `${appState.costs.portnoxBasePrice.toFixed(2)}`;
+            
+            portnoxBasePriceSlider.addEventListener('input', function() {
+                appState.costs.portnoxBasePrice = parseFloat(this.value);
+                portnoxCostValue.textContent = `${appState.costs.portnoxBasePrice.toFixed(2)}`;
+            });
+        }
+        
+        // Portnox discount slider
+        const portnoxDiscountSlider = document.getElementById('portnox-discount');
+        const portnoxDiscountValue = document.getElementById('portnox-discount-value');
+        
+        if (portnoxDiscountSlider && portnoxDiscountValue) {
+            portnoxDiscountSlider.value = appState.costs.portnoxDiscount;
+            portnoxDiscountValue.textContent = `${appState.costs.portnoxDiscount}%`;
+            
+            portnoxDiscountSlider.addEventListener('input', function() {
+                appState.costs.portnoxDiscount = parseInt(this.value);
+                portnoxDiscountValue.textContent = `${appState.costs.portnoxDiscount}%`;
+            });
+        }
+        
+        // FTE cost slider
+        const fteCostSlider = document.getElementById('fte-cost');
+        const fteCostValue = document.getElementById('fte-cost-value');
+        
+        if (fteCostSlider && fteCostValue) {
+            fteCostSlider.value = appState.costs.fteCost;
+            fteCostValue.textContent = `${addCommas(appState.costs.fteCost)}`;
+            
+            fteCostSlider.addEventListener('input', function() {
+                appState.costs.fteCost = parseInt(this.value);
+                fteCostValue.textContent = `${addCommas(appState.costs.fteCost)}`;
+            });
+        }
+        
+        // FTE allocation slider
+        const fteAllocationSlider = document.getElementById('fte-allocation');
+        const fteAllocationValue = document.getElementById('fte-allocation-value');
+        
+        if (fteAllocationSlider && fteAllocationValue) {
+            fteAllocationSlider.value = appState.costs.fteAllocation;
+            fteAllocationValue.textContent = `${appState.costs.fteAllocation}%`;
+            
+            fteAllocationSlider.addEventListener('input', function() {
+                appState.costs.fteAllocation = parseInt(this.value);
+                fteAllocationValue.textContent = `${appState.costs.fteAllocation}%`;
+            });
+        }
+        
+        // Downtime cost slider
+        const downtimeCostSlider = document.getElementById('downtime-cost');
+        const downtimeCostValue = document.getElementById('downtime-cost-value');
+        
+        if (downtimeCostSlider && downtimeCostValue) {
+            downtimeCostSlider.value = appState.costs.downtimeCost;
+            downtimeCostValue.textContent = `${addCommas(appState.costs.downtimeCost)}`;
+            
+            downtimeCostSlider.addEventListener('input', function() {
+                appState.costs.downtimeCost = parseInt(this.value);
+                downtimeCostValue.textContent = `${addCommas(appState.costs.downtimeCost)}`;
+                
+                // Update preferences
+                appState.preferences.downtimeCost = appState.costs.downtimeCost;
+            });
+        }
+        
+        // Insurance reduction slider
+        const insuranceReductionSlider = document.getElementById('insurance-reduction');
+        const insuranceReductionValue = document.getElementById('insurance-reduction-value');
+        
+        if (insuranceReductionSlider && insuranceReductionValue) {
+            insuranceReductionSlider.value = appState.costs.insuranceReduction;
+            insuranceReductionValue.textContent = `${appState.costs.insuranceReduction}%`;
+            
+            insuranceReductionSlider.addEventListener('input', function() {
+                appState.costs.insuranceReduction = parseInt(this.value);
+                insuranceReductionValue.textContent = `${appState.costs.insuranceReduction}%`;
+                
+                // Update preferences
+                appState.preferences.insuranceDiscount = appState.costs.insuranceReduction;
+            });
+        }
+    }
+    
+    /**
+     * Initialize industry selector
+     */
+    function initializeIndustrySelector() {
+        const industrySelector = document.getElementById('industry-select');
+        
+        if (industrySelector) {
+            industrySelector.value = appState.preferences.industry;
+            
+            industrySelector.addEventListener('change', function() {
+                appState.preferences.industry = this.value;
+                
+                // Update compliance checkboxes based on industry
+                updateComplianceCheckboxes(this.value);
+            });
+        }
+    }
+    
+    /**
+     * Update compliance checkboxes based on industry
+     * @param {string} industry - Industry ID
+     */
+    function updateComplianceCheckboxes(industry) {
+        // Define industry-specific compliance frameworks
+        const industryCompliance = {
+            healthcare: ['hipaa', 'hitech', 'pci', 'nist'],
+            financial: ['pci', 'glba', 'sox', 'nist'],
+            education: ['ferpa', 'glba', 'pci', 'nist'],
+            government: ['fisma', 'nist', 'cmmc', 'fedramp'],
+            manufacturing: ['nist', 'iso', 'cmmc'],
+            retail: ['pci', 'gdpr', 'nist'],
+            technology: ['soc2', 'iso', 'nist', 'gdpr']
+        };
+        
+        // Get compliance frameworks for selected industry
+        const frameworks = industryCompliance[industry] || [];
+        
+        // Update checkboxes
+        const complianceCheckboxes = document.querySelectorAll('input[id^="compliance-"]');
+        
+        if (complianceCheckboxes.length > 0) {
+            complianceCheckboxes.forEach(checkbox => {
+                const framework = checkbox.id.replace('compliance-', '');
+                checkbox.checked = frameworks.includes(framework);
+            });
+            
+            // Update application state
+            appState.preferences.compliance = frameworks;
+        }
+    }
+    
+    /**
+     * Initialize risk profile selector
+     */
+    function initializeRiskProfileSelector() {
+        const riskProfileSelector = document.getElementById('risk-profile');
+        
+        if (riskProfileSelector) {
+            riskProfileSelector.value = appState.preferences.riskProfile;
+            
+            riskProfileSelector.addEventListener('change', function() {
+                appState.preferences.riskProfile = this.value;
+            });
+        }
+    }
+    
+    /**
+     * Initialize organization size selector
+     */
+    function initializeOrganizationSizeSelector() {
+        const organizationSizeSelector = document.getElementById('organization-size');
+        const deviceCountInput = document.getElementById('device-count');
+        
+        if (organizationSizeSelector && deviceCountInput) {
+            organizationSizeSelector.value = getOrganizationSizeCategory(appState.preferences.deviceCount);
+            deviceCountInput.value = appState.preferences.deviceCount;
+            
+            organizationSizeSelector.addEventListener('change', function() {
+                const sizeCategory = this.value;
+                let deviceCount = appState.preferences.deviceCount;
+                
+                // Update device count based on size category
+                switch (sizeCategory) {
+                    case 'very-small':
+                        deviceCount = 300;
+                        break;
+                    case 'small':
+                        deviceCount = 500;
+                        break;
+                    case 'medium':
+                        deviceCount = 2500;
+                        break;
+                    case 'large':
+                        deviceCount = 7500;
+                        break;
+                    case 'enterprise':
+                        deviceCount = 15000;
+                        break;
+                }
+                
+                // Update device count input
+                deviceCountInput.value = deviceCount;
+                appState.preferences.deviceCount = deviceCount;
+            });
+            
+            deviceCountInput.addEventListener('input', function() {
+                appState.preferences.deviceCount = parseInt(this.value) || 500;
+                
+                // Update organization size selector
+                organizationSizeSelector.value = getOrganizationSizeCategory(appState.preferences.deviceCount);
+            });
+        }
+    }
+    
+    /**
+     * Initialize sidebar toggle
+     */
+    function initializeSidebarToggle() {
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const contentArea = document.getElementById('content-area');
+        
+        if (sidebarToggle && sidebar && contentArea) {
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                contentArea.classList.toggle('expanded');
+                
+                // Change toggle icon
+                const icon = sidebarToggle.querySelector('i');
+                if (icon) {
+                    if (sidebar.classList.contains('collapsed')) {
+                        icon.className = 'fas fa-chevron-right';
+                    } else {
+                        icon.className = 'fas fa-chevron-left';
+                    }
+                }
+            });
+        }
+    }
+    
+    /**
+     * Initialize tabs and navigation
+     */
+    function initializeTabs() {
+        // Stakeholder tabs
+        const stakeholderTabs = document.querySelectorAll('.stakeholder-tab');
+        const viewPanels = document.querySelectorAll('.view-panel');
+        
+        stakeholderTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const view = this.getAttribute('data-view');
+                
+                // Update tabs
+                stakeholderTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update panels
+                viewPanels.forEach(panel => {
+                    if (panel.getAttribute('data-view') === view) {
+                        panel.classList.add('active');
+                    } else {
+                        panel.classList.remove('active');
+                    }
+                });
+                
+                // Update stakeholder view selector if it exists
+                const stakeholderViewSelector = document.getElementById('stakeholder-view');
+                if (stakeholderViewSelector) {
+                    stakeholderViewSelector.value = view;
+                }
+            });
+        });
+        
+        // Stakeholder view selector
+        const stakeholderViewSelector = document.getElementById('stakeholder-view');
+        if (stakeholderViewSelector) {
+            stakeholderViewSelector.addEventListener('change', function() {
+                const view = this.value;
+                
+                // Find corresponding tab
+                const tab = document.querySelector(`.stakeholder-tab[data-view="${view}"]`);
+                if (tab) {
+                    tab.click();
+                }
+            });
+        }
+        
+        // Results tabs
+        const resultsTabs = document.querySelectorAll('.results-tab');
+        
+        resultsTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Get parent view panel
+                const viewPanel = this.closest('.view-panel');
+                if (!viewPanel) return;
+                
+                // Get panel ID
+                const panelId = this.getAttribute('data-panel');
+                
+                // Update tabs within view panel
+                const siblingTabs = viewPanel.querySelectorAll('.results-tab');
+                siblingTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update panels within view panel
+                const resultsPanels = viewPanel.querySelectorAll('.results-panel');
+                resultsPanels.forEach(panel => {
+                    if (panel.id === panelId) {
+                        panel.classList.add('active');
+                    } else {
+                        panel.classList.remove('active');
+                    }
+                });
+            });
+        });
+    }
+    
+    /**
+     * Bind events to UI elements
+     */
+    function bindEvents() {
+        // Calculate button
+        const calculateButton = document.getElementById('calculate-btn');
+        if (calculateButton) {
+            calculateButton.addEventListener('click', function() {
+                showLoading();
+                
+                // Update user preferences
+                const userPrefs = getUserPreferences();
+                
+                // Re-initialize components with updated preferences
+                setTimeout(function() {
+                    const executiveSummary = new ExecutiveSummary(chartGenerator, VendorComparisonData, userPrefs);
+                    const riskAnalyzer = new RiskAnalyzer(VendorComparisonData, userPrefs);
+                    const complianceAnalyzer = new ComplianceAnalyzer(VendorComparisonData, userPrefs);
+                    
+                    executiveSummary.initialize();
+                    riskAnalyzer.initialize();
+                    complianceAnalyzer.initialize();
+                    
+                    // Make charts responsive
+                    ResponsiveUtils.makeChartsResponsive();
+                    
+                    // Show success toast
+                    showToast('Analysis complete. Results updated with your preferences.');
+                    
+                    hideLoading();
+                }, 1500);
+            });
+        }
+        
+        // Reset button
+        const resetButton = document.getElementById('reset-btn');
+        if (resetButton) {
+            resetButton.addEventListener('click', function() {
+                // Reset app state to defaults
+                appState.preferences.industry = 'healthcare';
+                appState.preferences.compliance = ['hipaa', 'pci', 'nist'];
+                appState.preferences.riskProfile = 'standard';
+                appState.preferences.deviceCount = 500;
+                appState.preferences.locations = 2;
+                appState.preferences.yearsToProject = 3;
+                appState.preferences.breachProbability = 'medium';
+                appState.preferences.breachImpact = 'high';
+                appState.preferences.downtimeCost = 5000;
+                appState.preferences.insuranceDiscount = 10;
+                
+                appState.costs.portnoxBasePrice = 3.00;
+                appState.costs.portnoxDiscount = 15;
+                appState.costs.fteCost = 100000;
+                appState.costs.fteAllocation = 25;
+                appState.costs.downtimeCost = 5000;
+                appState.costs.insuranceReduction = 10;
+                
+                // Reset UI elements
+                const industrySelector = document.getElementById('industry-select');
+                if (industrySelector) {
+                    industrySelector.value = appState.preferences.industry;
+                    updateComplianceCheckboxes(appState.preferences.industry);
+                }
+                
+                const riskProfileSelector = document.getElementById('risk-profile');
+                if (riskProfileSelector) {
+                    riskProfileSelector.value = appState.preferences.riskProfile;
+                }
+                
+                const organizationSizeSelector = document.getElementById('organization-size');
+                if (organizationSizeSelector) {
+                    organizationSizeSelector.value = getOrganizationSizeCategory(appState.preferences.deviceCount);
+                }
+                
+                const deviceCountInput = document.getElementById('device-count');
+                if (deviceCountInput) {
+                    deviceCountInput.value = appState.preferences.deviceCount;
+                }
+                
+                const portnoxBasePriceSlider = document.getElementById('portnox-base-price');
+                const portnoxCostValue = document.getElementById('portnox-cost-value');
+                if (portnoxBasePriceSlider && portnoxCostValue) {
+                    portnoxBasePriceSlider.value = appState.costs.portnoxBasePrice;
+                    portnoxCostValue.textContent = `${appState.costs.portnoxBasePrice.toFixed(2)}`;
+                }
+                
+                const portnoxDiscountSlider = document.getElementById('portnox-discount');
+                const portnoxDiscountValue = document.getElementById('portnox-discount-value');
+                if (portnoxDiscountSlider && portnoxDiscountValue) {
+                    portnoxDiscountSlider.value = appState.costs.portnoxDiscount;
+                    portnoxDiscountValue.textContent = `${appState.costs.portnoxDiscount}%`;
+                }
+                
+                const fteCostSlider = document.getElementById('fte-cost');
+                const fteCostValue = document.getElementById('fte-cost-value');
+                if (fteCostSlider && fteCostValue) {
+                    fteCostSlider.value = appState.costs.fteCost;
+                    fteCostValue.textContent = `${addCommas(appState.costs.fteCost)}`;
+                }
+                
+                const fteAllocationSlider = document.getElementById('fte-allocation');
+                const fteAllocationValue = document.getElementById('fte-allocation-value');
+                if (fteAllocationSlider && fteAllocationValue) {
+                    fteAllocationSlider.value = appState.costs.fteAllocation;
+                    fteAllocationValue.textContent = `${appState.costs.fteAllocation}%`;
+                }
+                
+                const downtimeCostSlider = document.getElementById('downtime-cost');
+                const downtimeCostValue = document.getElementById('downtime-cost-value');
+                if (downtimeCostSlider && downtimeCostValue) {
+                    downtimeCostSlider.value = appState.costs.downtimeCost;
+                    downtimeCostValue.textContent = `${addCommas(appState.costs.downtimeCost)}`;
+                }
+                
+                const insuranceReductionSlider = document.getElementById('insurance-reduction');
+                const insuranceReductionValue = document.getElementById('insurance-reduction-value');
+                if (insuranceReductionSlider && insuranceReductionValue) {
+                    insuranceReductionSlider.value = appState.costs.insuranceReduction;
+                    insuranceReductionValue.textContent = `${appState.costs.insuranceReduction}%`;
+                }
+                
+                // Reset vendor selection
+                const vendorCards = document.querySelectorAll('.vendor-card');
+                vendorCards.forEach(card => {
+                    const vendor = card.getAttribute('data-vendor');
+                    if (['portnox', 'cisco', 'aruba', 'forescout'].includes(vendor)) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                });
+                
+                appState.vendors.selected = ['portnox', 'cisco', 'aruba', 'forescout'];
+                
+                // Show toast
+                showToast('Parameters reset to defaults.', 'info');
+            });
+        }
+        
+        // Config card toggles
+        const configCardHeaders = document.querySelectorAll('.config-card-header');
+        configCardHeaders.forEach(header => {
+            header.addEventListener('click', function() {
+                const card = this.closest('.config-card');
+                if (!card) return;
+                
+                const content = card.querySelector('.config-card-content');
+                if (!content) return;
+                
+                // Toggle content visibility
+                content.style.display = content.style.display === 'none' ? 'block' : 'none';
+                
+                // Toggle icon
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.className = content.style.display === 'none' ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+                }
+            });
+        });
+        
+        // Export button
+        const exportButton = document.getElementById('export-pdf');
+        if (exportButton) {
+            exportButton.addEventListener('click', function() {
+                showToast('Generating PDF report...', 'info');
+                
+                // Simulate PDF generation (would be implemented in a real application)
+                setTimeout(function() {
+                    showToast('PDF report generated successfully. Check your downloads folder.', 'success');
+                }, 2000);
+            });
+        }
+        
+        // Help button
+        const helpButton = document.getElementById('help-btn');
+        const helpModal = document.getElementById('help-modal');
+        const modalClose = document.querySelector('.modal-close');
+        
+        if (helpButton && helpModal && modalClose) {
+            helpButton.addEventListener('click', function() {
+                helpModal.style.display = 'block';
+            });
+            
+            modalClose.addEventListener('click', function() {
+                helpModal.style.display = 'none';
+            });
+            
+            window.addEventListener('click', function(event) {
+                if (event.target === helpModal) {
+                    helpModal.style.display = 'none';
+                }
+            });
+        }
+        
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        if (darkModeToggle) {
+            darkModeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                
+                // Toggle icon
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.className = document.body.classList.contains('dark-mode') ? 'fas fa-sun' : 'fas fa-moon';
+                }
+                
+                // Show toast
+                const message = document.body.classList.contains('dark-mode') ? 'Dark mode enabled.' : 'Light mode enabled.';
+                showToast(message, 'info');
+            });
+        }
+        
+        // Years to project selector
+        const yearsToProjectSelector = document.getElementById('years-to-project');
+        if (yearsToProjectSelector) {
+            yearsToProjectSelector.value = appState.preferences.yearsToProject;
+            
+            yearsToProjectSelector.addEventListener('change', function() {
+                appState.preferences.yearsToProject = parseInt(this.value);
+            });
+        }
+        
+        // Breach probability selector
+        const breachProbabilitySelector = document.getElementById('breach-probability');
+        if (breachProbabilitySelector) {
+            breachProbabilitySelector.value = appState.preferences.breachProbability;
+            
+            breachProbabilitySelector.addEventListener('change', function() {
+                appState.preferences.breachProbability = this.value;
+            });
+        }
+        
+        // Breach impact selector
+        const breachImpactSelector = document.getElementById('breach-impact');
+        if (breachImpactSelector) {
+            breachImpactSelector.value = appState.preferences.breachImpact;
+            
+            breachImpactSelector.addEventListener('change', function() {
+                appState.preferences.breachImpact = this.value;
+            });
+        }
+    }
+    
+    /**
+     * Get current user preferences
+     * @returns {Object} User preferences
+     */
+    function getUserPreferences() {
+        const preferences = {
+            vendors: appState.vendors.selected,
+            industry: appState.preferences.industry,
+            compliance: appState.preferences.compliance,
+            riskProfile: appState.preferences.riskProfile,
+            deviceCount: appState.preferences.deviceCount,
+            locations: appState.preferences.locations,
+            networkRequirements: appState.preferences.networkRequirements,
+            yearsToProject: appState.preferences.yearsToProject,
+            breachProbability: appState.preferences.breachProbability,
+            breachImpact: appState.preferences.breachImpact,
+            downtimeCost: appState.preferences.downtimeCost,
+            insuranceDiscount: appState.preferences.insuranceDiscount,
+            costs: {
+                portnoxBasePrice: appState.costs.portnoxBasePrice,
+                portnoxDiscount: appState.costs.portnoxDiscount,
+                fteCost: appState.costs.fteCost,
+                fteAllocation: appState.costs.fteAllocation,
+                maintenancePercentage: appState.costs.maintenancePercentage,
+                downtimeCost: appState.costs.downtimeCost,
+                riskReduction: appState.costs.riskReduction,
+                insuranceReduction: appState.costs.insuranceReduction
+            }
+        };
+        
+        return preferences;
+    }
+    
+    /**
+     * Show loading overlay
+     */
+    function showLoading() {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
+        }
+    }
+    
+    /**
+     * Hide loading overlay
+     */
+    function hideLoading() {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+        }
+    }
+    
+    /**
+     * Show toast notification
+     * @param {string} message - Toast message
+     * @param {string} type - Toast type (success, error, warning, info)
+     */
+    function showToast(message, type = 'success') {
+        const toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) return;
+        
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <div class="toast-icon">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+            </div>
+            <div class="toast-message">${message}</div>
+        `;
+        
+        // Add toast to container
+        toastContainer.appendChild(toast);
+        
+        // Animate toast in
+        setTimeout(function() {
+            toast.classList.add('show');
+        }, 10);
+        
+        // Auto remove toast after 3 seconds
+        setTimeout(function() {
+            toast.classList.remove('show');
+            
+            // Remove toast from DOM after animation
+            setTimeout(function() {
+                toastContainer.removeChild(toast);
+            }, 300);
+        }, 3000);
+    }
+    
+    /**
+     * Get organization size category based on device count
+     * @param {number} deviceCount - Number of devices
+     * @returns {string} Organization size category
+     */
+    function getOrganizationSizeCategory(deviceCount) {
+        if (deviceCount < 300) {
+            return 'very-small';
+        } else if (deviceCount < 1000) {
+            return 'small';
+        } else if (deviceCount < 5000) {
+            return 'medium';
+        } else if (deviceCount < 10000) {
+            return 'large';
+        } else {
+            return 'enterprise';
+        }
+    }
+    
+    /**
+     * Add commas to number for formatting
+     * @param {number} x - Number to format
+     * @returns {string} Formatted number with commas
+     */
+    function addCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+});
