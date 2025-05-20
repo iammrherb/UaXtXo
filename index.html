@@ -6,29 +6,24 @@
     <meta name="description" content="Zero Trust Total Cost Analyzer - Enterprise Total Cost of Ownership Calculator">
     <title>Total Cost Analyzer | Portnox</title>
     
-    <!-- CSS Libraries - Load from CDN to ensure availability -->
+    <!-- CSS Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap">
     
     <!-- Core CSS -->
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components/charts.css">
     
     <link rel="icon" type="image/png" href="img/favicon.png">
-    <!-- Chart Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.41.0/apexcharts.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.1.0/highcharts.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.1.0/highcharts-more.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.1.0/modules/heatmap.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.1.0/modules/exporting.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-
-    <!-- Chart Configuration -->
-    <script src="js/charts/chart-config.js"></script>
-    <!-- Enhanced UI Components -->
-    <link rel="stylesheet" href="css/components/enhanced-ui.css">
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 </head>
 <body>
+    <!-- Particle Background -->
+    <div id="particles-js"></div>
+    
     <!-- Main Application Container -->
     <div class="app-container">
         <!-- Enhanced Header -->
@@ -102,122 +97,123 @@
                                         <span class="badge badge-warning">Complex</span>
                                     </div>
                                 </div>
+                                
+                                <div class="vendor-card" data-vendor="aruba">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/aruba-logo.png" alt="Aruba ClearPass">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>Aruba ClearPass</h3>
+                                        <p>Policy manager</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="forescout">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/forescout-logo.png" alt="Forescout">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>Forescout</h3>
+                                        <p>Device visibility</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="fortinac">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/fortinac-logo.png" alt="FortiNAC">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>FortiNAC</h3>
+                                        <p>Fortinet NAC</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="juniper">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/juniper-logo.png" alt="Juniper Mist">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>Juniper Mist</h3>
+                                        <p>AI-driven NAC</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="securew2">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/securew2-logo.png" alt="SecureW2">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>SecureW2</h3>
+                                        <p>Cloud RADIUS</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="microsoft">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/microsoft-logo.png" alt="Microsoft NPS">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>Microsoft NPS</h3>
+                                        <p>Windows Server NAC</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="arista">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/arista-logo.png" alt="Arista Agni">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>Arista Agni</h3>
+                                        <p>Network control</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="foxpass">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/foxpass-logo.png" alt="Foxpass">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>Foxpass</h3>
+                                        <p>Cloud RADIUS/LDAP</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="vendor-card" data-vendor="no-nac">
+                                    <div class="vendor-logo">
+                                        <img src="img/vendors/no-nac-icon.png" alt="No NAC">
+                                    </div>
+                                    <div class="vendor-info">
+                                        <h3>No NAC</h3>
+                                        <p>High risk baseline</p>
+                                    </div>
+                                    <div class="vendor-badge">
+                                        <span class="badge badge-danger">High Risk</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="sidebar-footer">
-                    <button id="calculate-btn" class="btn btn-primary btn-large">
-                        <i class="fas fa-calculator"></i> Calculate TCO & ROI
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Sidebar Toggle Button -->
-            <div class="sidebar-toggle" id="sidebar-toggle">
-                <i class="fas fa-chevron-left"></i>
-            </div>
-            
-            <!-- Main Content Area -->
-            <div class="content-area" id="content-area">
-                <div class="content-wrapper">
-                    <!-- Executive View -->
-                    <div class="view-panel active" data-view="executive">
-                        <!-- Executive Summary Panel -->
-                        <div id="executive-summary" class="results-panel active">
-                            <div class="panel-header">
-                                <h2>Executive Summary</h2>
-                                <p class="subtitle">Strategic overview of cost savings and business benefits</p>
+                    
+                    <!-- Organization Details -->
+                    <div id="organization-config" class="config-card">
+                        <div class="config-card-header">
+                            <h3><i class="fas fa-users"></i> Organization</h3>
+                            <i class="fas fa-chevron-up"></i>
+                        </div>
+                        <div class="config-card-content">
+                            <div class="form-group">
+                                <label for="organization-size" class="form-label">Organization Size</label>
+                                <select id="organization-size" class="form-select">
+                                    <option value="very-small">Very Small (< 300 devices)</option>
+                                    <option value="small" selected>Small (300-1,000 devices)</option>
+                                    <option value="medium">Medium (1,000-5,000 devices)</option>
+                                    <option value="large">Large (5,000-10,000 devices)</option>
+                                    <option value="enterprise">Enterprise (10,000+ devices)</option>
+                                </select>
                             </div>
                             
-                            <div class="dashboard-grid">
-                                <div class="dashboard-card highlight-card">
-                                    <h3>Total 3-Year Savings</h3>
-                                    <div class="metric-value highlight-value" id="total-savings">$247,000</div>
-                                    <div class="metric-label" id="savings-percentage">48% reduction vs. Cisco ISE</div>
-                                    <div class="metric-trend up">
-                                        <i class="fas fa-arrow-up"></i> 15% higher than industry average
-                                    </div>
-                                </div>
-                                
-                                <div class="dashboard-card">
-                                    <h3>Payback Period</h3>
-                                    <div class="metric-value" id="payback-period">7 months</div>
-                                    <div class="metric-label">Time to positive ROI</div>
-                                    <div class="metric-trend up">
-                                        <i class="fas fa-arrow-up"></i> 5 months faster than competitors
-                                    </div>
-                                </div>
-                                
-                                <div class="dashboard-card">
-                                    <h3>Risk Reduction</h3>
-                                    <div class="metric-value" id="risk-reduction-total">58%</div>
-                                    <div class="metric-label">Overall security improvement</div>
-                                    <div class="metric-trend up">
-                                        <i class="fas fa-arrow-up"></i> 20% better than alternatives
-                                    </div>
-                                </div>
-                                
-                                <div class="dashboard-card">
-                                    <h3>Implementation Time</h3>
-                                    <div class="metric-value" id="implementation-time">21 days</div>
-                                    <div class="metric-label" id="implementation-comparison">75% faster than on-premises</div>
-                                    <div class="metric-trend up">
-                                        <i class="fas fa-arrow-up"></i> Leading time-to-security
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Footer -->
-        <footer class="app-footer">
-            <div class="footer-content">
-                <div class="footer-copyright">
-                    &copy; 2025 Portnox. All rights reserved.
-                </div>
-            </div>
-        </footer>
-    </div>
-    
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="loading-spinner">
-            <div class="spinner"></div>
-            <p>Calculating results...</p>
-        </div>
-    </div>
-    
-    <!-- Toast Notifications Container -->
-    <div id="toast-container" class="toast-container"></div>
-    
-    <!-- JavaScript Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    
-    <!-- Core JavaScript -->
-    <script src="js/models/vendor-data.js"></script>
-    <script src="js/models/calculator.js"></script>
-    <!-- Chart Implementations -->
-    <script src="js/charts/apex/apex-charts.js"></script>
-    <script src="js/charts/highcharts/highcharts-manager.js"></script>
-    <script src="js/charts/d3/d3-manager.js"></script>
-    <script src="js/charts/chart-loader.js"></script>
-    <!-- Advanced UI Components -->
-    <script src="js/utils/ui-manager.js"></script>
-    <script src="js/utils/theme-manager.js"></script>
-    <script src="js/views/vendor-comparison.js"></script>
-
-    <!-- Integration Script -->
-    <script src="js/integration.js"></script>
-
-    <!-- Core Application -->
-    <script src="js/models/vendor-data.js"></script>
-    <script src="js/models/calculator.js"></script>
-    <script src="js/utils/report-generator.js"></script>
-    <script src="js/portnox-tco-analyzer.js"></script>
-</body>
-</html>
+                            <div class="form-group">
+                                <label for="device-count" class="form-label">Number of Devices</label>
+                                <input type="number" id="device-count" class="form-control" value="500" min="300" max="100000">
+                                <div class="helper-text">Include all managed devices (PCs, mobile, IoT)</div>
+                  

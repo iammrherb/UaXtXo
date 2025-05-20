@@ -38,6 +38,7 @@ const App = {
       }
     },
     calculator: null,
+    chartPlaceholders: null,
     isDarkMode: false,
   },
   
@@ -49,6 +50,9 @@ const App = {
     
     // Initialize Calculator
     this.state.calculator = new TcoCalculator(this.state.config);
+    
+    // Initialize Chart Placeholders
+    this.state.chartPlaceholders = window.chartPlaceholders || new ChartPlaceholders();
     
     // Set up event listeners
     this.setupEventListeners();
@@ -110,6 +114,41 @@ const App = {
       sidebarToggle.addEventListener('click', () => this.toggleSidebar());
     }
     
+    // Main view tabs (Executive, Financial, Security, Technical)
+    const mainTabs = document.querySelectorAll('.main-tab');
+    mainTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const view = tab.dataset.view;
+        this.changeView(view);
+      });
+    });
+    
+    // Results tabs within views
+    const resultsTabs = document.querySelectorAll('.results-tab');
+    resultsTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const panel = tab.dataset.panel;
+        this.changePanel(panel);
+      });
+    });
+    
+    // Config card headers (collapsible)
+    const configCardHeaders = document.querySelectorAll('.config-card-header');
+    configCardHeaders.forEach(header => {
+      header.addEventListener('click', () => {
+        const content = header.nextElementSibling;
+        const icon = header.querySelector('i:last-child');
+        
+        content.classList.toggle('collapsed');
+        
+        if (content.classList.contains('collapsed')) {
+          icon.className = 'fas fa-chevron-down';
+        } else {
+          icon.className = 'fas fa-chevron-up';
+        }
+      });
+    });
+    
     console.log('Event listeners set up successfully.');
   },
   
@@ -127,7 +166,82 @@ const App = {
       }
     });
     
+    // Set active view
+    this.changeView(this.state.activeView);
+    
     console.log('UI state initialized successfully.');
+  },
+  
+  /**
+   * Change the active view (Executive, Financial, Security, Technical)
+   */
+  changeView: function(view) {
+    // Update state
+    this.state.activeView = view;
+    
+    // Update tab states
+    const mainTabs = document.querySelectorAll('.main-tab');
+    mainTabs.forEach(tab => {
+      if (tab.dataset.view === view) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
+    });
+    
+    // Update view panels
+    const viewPanels = document.querySelectorAll('.view-panel');
+    viewPanels.forEach(panel => {
+      if (panel.dataset.view === view) {
+        panel.classList.add('active');
+        
+        // Set first panel as active
+        const firstPanel = panel.querySelector('.results-panel');
+        if (firstPanel) {
+          const panelId = firstPanel.id;
+          this.changePanel(panelId);
+        }
+      } else {
+        panel.classList.remove('active');
+      }
+    });
+  },
+  
+  /**
+   * Change the active panel within a view
+   */
+  changePanel: function(panelId) {
+    // Update state
+    this.state.activePanel = panelId;
+    
+    // Get the view from the panel
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+    
+    const viewPanel = panel.closest('.view-panel');
+    if (!viewPanel) return;
+    
+    const view = viewPanel.dataset.view;
+    
+    // Update tab states
+    const resultsTabs = document.querySelectorAll(`.view-panel[data-view="${view}"] .results-tab`);
+    resultsTabs.forEach(tab => {
+      if (tab.dataset.panel === panelId) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
+    });
+    
+    // Update panel states
+    const resultsPanels = document.querySelectorAll(`.view-panel[data-view="${view}"] .results-panel`);
+    resultsPanels.forEach(p => {
+      if (p.id === panelId) {
+        p.classList.add('active');
+      } else {
+        p.classList.remove('active');
+      }
+    });
   },
   
   /**
@@ -195,6 +309,11 @@ const App = {
         icon.className = 'fas fa-moon';
       }
     }
+    
+    // Dispatch theme change event
+    window.dispatchEvent(new CustomEvent('themechange', {
+      detail: { theme: this.state.isDarkMode ? 'dark' : 'light' }
+    }));
   },
   
   /**
@@ -228,6 +347,9 @@ const App = {
         // Update UI with results
         this.updateResultsUI();
         
+        // Create basic charts
+        this.createBasicCharts();
+        
         // Hide loading overlay
         this.hideLoadingOverlay();
         
@@ -245,6 +367,16 @@ const App = {
         this.showToast('Error during calculation: ' + error.message, 'error');
       }
     }, 800);
+  },
+  
+  /**
+   * Create basic charts
+   */
+  createBasicCharts: function() {
+    // Create TCO comparison chart
+    if (this.state.chartPlaceholders) {
+      this.state.chartPlaceholders.createBasicTcoChart('tco-comparison-chart', this.state.results);
+    }
   },
   
   /**
@@ -290,113 +422,3 @@ const App = {
       const costDiff = ciscoResults.totalTco - portnoxResults.totalTco;
       const savingsPercent = Math.round((costDiff / ciscoResults.totalTco) * 100);
       
-      updateElement('total-savings', this.formatCurrency(costDiff));
-      updateElement('savings-percentage', `${savingsPercent}% reduction vs. Cisco ISE`);
-      updateElement('tco-comparison', `vs. ${this.formatCurrency(ciscoResults.totalTco)} (Cisco ISE)`);
-    }
-  },
-  
-  /**
-   * Show loading overlay
-   */
-  showLoadingOverlay: function() {
-    const overlay = document.getElementById('loading-overlay');
-    if (overlay) {
-      overlay.classList.add('active');
-    }
-  },
-  
-  /**
-   * Hide loading overlay
-   */
-  hideLoadingOverlay: function() {
-    const overlay = document.getElementById('loading-overlay');
-    if (overlay) {
-      overlay.classList.remove('active');
-    }
-  },
-  
-  /**
-   * Show a toast notification
-   */
-  showToast: function(message, type = 'info') {
-    const toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) return;
-    
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    
-    const icon = document.createElement('i');
-    switch (type) {
-      case 'success':
-        icon.className = 'fas fa-check-circle';
-        break;
-      case 'error':
-        icon.className = 'fas fa-exclamation-circle';
-        break;
-      case 'warning':
-        icon.className = 'fas fa-exclamation-triangle';
-        break;
-      default:
-        icon.className = 'fas fa-info-circle';
-    }
-    
-    const textSpan = document.createElement('span');
-    textSpan.textContent = message;
-    
-    toast.appendChild(icon);
-    toast.appendChild(textSpan);
-    toastContainer.appendChild(toast);
-    
-    // Show the toast with animation
-    setTimeout(() => {
-      toast.classList.add('show');
-    }, 10);
-    
-    // Remove the toast after 5 seconds
-    setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => {
-        if (toast.parentNode) {
-          toast.parentNode.removeChild(toast);
-        }
-      }, 300);
-    }, 5000);
-  },
-  
-  /**
-   * Export report as PDF
-   */
-  exportReport: function() {
-    console.log('Exporting report...');
-    
-    // Show loading overlay
-    this.showLoadingOverlay();
-    
-    // Simulated export delay (would be replaced with actual PDF generation)
-    setTimeout(() => {
-      // Hide loading overlay
-      this.hideLoadingOverlay();
-      
-      // Show success toast
-      this.showToast('Report exported successfully!', 'success');
-    }, 2000);
-  },
-  
-  /**
-   * Format currency values
-   */
-  formatCurrency: function(value) {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  }
-};
-
-// Initialize the application when the DOM is fully loaded
-document.addEventListener('DOMContentLoaded', () => {
-  App.init();
-});

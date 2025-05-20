@@ -112,10 +112,46 @@ const VENDORS = {
       wireless: true,
       remoteUsers: false
     }
-  }
-};
-
-// Export for use across the application
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { VENDORS };
-}
+  },
+  aruba: {
+    id: 'aruba',
+    name: 'Aruba ClearPass',
+    description: 'Policy manager',
+    logo: 'img/vendors/aruba-logo.png',
+    architecture: 'on-premises',
+    basePrice: {
+      small: 55,     // Per device - perpetual license
+      medium: 50,    // Per device - perpetual license
+      large: 45,     // Per device - perpetual license
+      enterprise: 40 // Per device - perpetual license
+    },
+    hardware: {
+      small: 60000,   // Base hardware cost
+      medium: 120000, // Base hardware cost
+      large: 240000,  // Base hardware cost
+      enterprise: 400000 // Base hardware cost
+    },
+    implementation: {
+      timeInDays: 60,
+      costPercentage: 35  // % of license cost
+    },
+    fte: {
+      required: 1.0,  // FTE allocation per year
+    },
+    maintenance: {
+      percentage: 20, // Yearly maintenance as % of license
+      downtime: 6,    // Hours per year
+    },
+    security: {
+      zeroTrustScore: 7.5,    // Out of 10
+      deviceAuthScore: 8.0,   // Out of 10
+      riskAssessmentScore: 7.5,// Out of 10
+      remediationSpeed: 12,   // Minutes
+    },
+    compliance: {
+      pci: true,
+      hipaa: true,
+      nist: true,
+      gdpr: true,
+      iso: true,
+      
