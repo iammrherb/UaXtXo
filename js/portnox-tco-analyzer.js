@@ -422,3 +422,113 @@ const App = {
       const costDiff = ciscoResults.totalTco - portnoxResults.totalTco;
       const savingsPercent = Math.round((costDiff / ciscoResults.totalTco) * 100);
       
+      updateElement('total-savings', this.formatCurrency(costDiff));
+      updateElement('savings-percentage', `${savingsPercent}% reduction vs. Cisco ISE`);
+      updateElement('tco-comparison', `vs. ${this.formatCurrency(ciscoResults.totalTco)} (Cisco ISE)`);
+    }
+  },
+  
+  /**
+   * Show loading overlay
+   */
+  showLoadingOverlay: function() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+      overlay.classList.add('active');
+    }
+  },
+  
+  /**
+   * Hide loading overlay
+   */
+  hideLoadingOverlay: function() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+      overlay.classList.remove('active');
+    }
+  },
+  
+  /**
+   * Show a toast notification
+   */
+  showToast: function(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) return;
+    
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    const icon = document.createElement('i');
+    switch (type) {
+      case 'success':
+        icon.className = 'fas fa-check-circle';
+        break;
+      case 'error':
+        icon.className = 'fas fa-exclamation-circle';
+        break;
+      case 'warning':
+        icon.className = 'fas fa-exclamation-triangle';
+        break;
+      default:
+        icon.className = 'fas fa-info-circle';
+    }
+    
+    const textSpan = document.createElement('span');
+    textSpan.textContent = message;
+    
+    toast.appendChild(icon);
+    toast.appendChild(textSpan);
+    toastContainer.appendChild(toast);
+    
+    // Show the toast with animation
+    setTimeout(() => {
+      toast.classList.add('show');
+    }, 10);
+    
+    // Remove the toast after 5 seconds
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    }, 5000);
+  },
+  
+  /**
+   * Export report as PDF
+   */
+  exportReport: function() {
+    console.log('Exporting report...');
+    
+    // Show loading overlay
+    this.showLoadingOverlay();
+    
+    // Simulated export delay (would be replaced with actual PDF generation)
+    setTimeout(() => {
+      // Hide loading overlay
+      this.hideLoadingOverlay();
+      
+      // Show success toast
+      this.showToast('Report exported successfully!', 'success');
+    }, 2000);
+  },
+  
+  /**
+   * Format currency values
+   */
+  formatCurrency: function(value) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  }
+};
+
+// Initialize the application when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+});
