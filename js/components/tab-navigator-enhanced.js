@@ -398,28 +398,28 @@ class TabNavigator {
           <div class="vendor-position-grid">
             <div class="vendor-position-card">
               <div class="vendor-position-logo">
-                <img src="./img/logos/gartner.png" alt="Gartner" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'60\'%3e%3crect width=\'120\' height=\'60\' fill=\'%23eee\'/%3e%3ctext x=\'60\' y=\'35\' text-anchor=\'middle\' fill=\'%23999\' font-size=\'12\' font-family=\'sans-serif\'%3eGartner%3c/text%3e%3c/svg%3e'">
+                <img src="./img/logos/gartner.png" alt="Gartner">
               </div>
               <div class="vendor-position-title">Gartner</div>
               <div class="vendor-position-text">Named as a <strong>Leader</strong> in the Gartner Magic Quadrant for Network Access Control, with highest position for "Completeness of Vision"</div>
             </div>
             <div class="vendor-position-card">
               <div class="vendor-position-logo">
-                <img src="./img/logos/forrester.png" alt="Forrester" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'60\'%3e%3crect width=\'120\' height=\'60\' fill=\'%23eee\'/%3e%3ctext x=\'60\' y=\'35\' text-anchor=\'middle\' fill=\'%23999\' font-size=\'12\' font-family=\'sans-serif\'%3eForrester%3c/text%3e%3c/svg%3e'">
+                <img src="./img/logos/forrester.png" alt="Forrester">
               </div>
               <div class="vendor-position-title">Forrester</div>
               <div class="vendor-position-text">Recognized as a <strong>Strong Performer</strong> in the Forrester Wave™: Zero Trust Network Access, with top scores in cloud delivery model</div>
             </div>
             <div class="vendor-position-card">
               <div class="vendor-position-logo">
-                <img src="./img/logos/idc.png" alt="IDC" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'60\'%3e%3crect width=\'120\' height=\'60\' fill=\'%23eee\'/%3e%3ctext x=\'60\' y=\'35\' text-anchor=\'middle\' fill=\'%23999\' font-size=\'12\' font-family=\'sans-serif\'%3eIDC%3c/text%3e%3c/svg%3e'">
+                <img src="./img/logos/idc.png" alt="IDC">
               </div>
               <div class="vendor-position-title">IDC</div>
               <div class="vendor-position-text">Highlighted as an <strong>Innovator</strong> in the IDC MarketScape for Network Access Control, noted for cloud-native architecture</div>
             </div>
             <div class="vendor-position-card">
               <div class="vendor-position-logo">
-                <img src="./img/logos/ema.png" alt="EMA" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'60\'%3e%3crect width=\'120\' height=\'60\' fill=\'%23eee\'/%3e%3ctext x=\'60\' y=\'35\' text-anchor=\'middle\' fill=\'%23999\' font-size=\'12\' font-family=\'sans-serif\'%3eEMA%3c/text%3e%3c/svg%3e'">
+                <img src="./img/logos/ema.png" alt="EMA">
               </div>
               <div class="vendor-position-title">EMA</div>
               <div class="vendor-position-text">Named a <strong>Value Leader</strong> by Enterprise Management Associates for TCO and time-to-value metrics</div>
@@ -639,7 +639,7 @@ class TabNavigator {
                 <div class="arch-type-vendor">Portnox Cloud</div>
               </div>
               <div class="arch-type-diagram">
-                <img src="./img/arch-cloud.svg" alt="Cloud Architecture" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'280\' height=\'140\'%3e%3crect width=\'280\' height=\'140\' fill=\'%23f8f9fa\'/%3e%3cpath d=\'M75,70 A20,20 0 1,1 120,70 A20,20 0 1,1 165,70 A20,20 0 1,1 215,70 L215,90 L75,90 Z\' fill=\'%231a5a96\' opacity=\'0.7\'/%3e%3ccircle cx=\'150\' cy=\'50\' r=\'15\' fill=\'%231a5a96\'/%3e%3ctext x=\'150\' y=\'120\' text-anchor=\'middle\' fill=\'%23333\' font-size=\'12\' font-family=\'sans-serif\'%3eCloud-Native Architecture%3c/text%3e%3c/svg%3e'">
+                <img src="./img/arch-cloud.svg" alt="Cloud Architecture" onerror="this.src='./img/arch-cloud-placeholder.png'">
               </div>
               <div class="arch-type-advantages">
                 <div class="advantage-item">
@@ -667,7 +667,7 @@ class TabNavigator {
                 <div class="arch-type-vendor">Cisco, Aruba</div>
               </div>
               <div class="arch-type-diagram">
-                <img src="./img/arch-onprem.svg" alt="On-Premises Architecture" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'280\' height=\'140\'%3e%3crect width=\'280\' height=\'140\' fill=\'%23f8f9fa\'/%3e%3crect x=\'115\' y=\'30\' width=\'50\' height=\'70\' fill=\'%23666\'/%3e%3crect x=\'120\' y=\'35\' width=\'40\' height=\'5\' fill=\'%23999\'/%3e%3crect x=\'120\' y=\'45\' width=\'40\' height=\'5\' fill=\'%23999\'/%3e%3crect x=\'120\' y=\'55\' width=\'40\' height=\'5\' fill=\'%23999\'/%3e%3crect x=\'70\' y=\'70\' width=\'45\' height=\'3\' fill=\'%23666\'/%3e%3crect x=\'165\' y=\'70\' width=\'45\' height=\'3\' fill=\'%23666\'/%3e%3ctext x=\'150\' y=\'120\' text-anchor=\'middle\' fill=\'%23333\' font-size=\'12\' font-family=\'sans-serif\'%3eOn-Premises Architecture%3c/text%3e%3c/svg%3e'">
+                <img src="./img/arch-onprem.svg" alt="On-Premises Architecture" onerror="this.src='./img/arch-onprem-placeholder.png'">
               </div>
               <div class="arch-type-advantages">
                 <div class="advantage-item">
@@ -695,7 +695,7 @@ class TabNavigator {
                 <div class="arch-type-vendor">Forescout, FortiNAC</div>
               </div>
               <div class="arch-type-diagram">
-                <img src="./img/arch-hybrid.svg" alt="Hybrid Architecture" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'280\' height=\'140\'%3e%3crect width=\'280\' height=\'140\' fill=\'%23f8f9fa\'/%3e%3crect x=\'70\' y=\'50\' width=\'40\' height=\'60\' fill=\'%23666\'/%3e%3crect x=\'75\' y=\'55\' width=\'30\' height=\'5\' fill=\'%23999\'/%3e%3crect x=\'75\' y=\'65\' width=\'30\' height=\'5\' fill=\'%23999\'/%3e%3cpath d=\'M170,40 A20,20 0 1,1 215,40 A20,20 0 1,1 250,40 L250,60 L170,60 Z\' fill=\'%231a5a96\' opacity=\'0.7\'/%3e%3ccircle cx=\'200\' cy=\'25\' r=\'10\' fill=\'%231a5a96\'/%3e%3cline x1=\'110\' y1=\'60\' x2=\'170\' y2=\'50\' stroke=\'%23666\' stroke-width=\'2\' stroke-dasharray=\'5,5\'/%3e%3ctext x=\'150\' y=\'120\' text-anchor=\'middle\' fill=\'%23333\' font-size=\'12\' font-family=\'sans-serif\'%3eHybrid Architecture%3c/text%3e%3c/svg%3e'">
+                <img src="./img/arch-hybrid.svg" alt="Hybrid Architecture" onerror="this.src='./img/arch-hybrid-placeholder.png'">
               </div>
               <div class="arch-type-advantages">
                 <div class="advantage-item">
@@ -724,7 +724,7 @@ class TabNavigator {
           <div class="timeline-comparison">
             <div class="timeline-vendor timeline-portnox">
               <div class="timeline-header">
-                <img src="./img/vendors/portnox.png" alt="Portnox" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'24\'%3e%3crect width=\'80\' height=\'24\' fill=\'%23f8f9fa\'/%3e%3ctext x=\'40\' y=\'15\' text-anchor=\'middle\' fill=\'%23333\' font-size=\'10\' font-family=\'sans-serif\'%3ePortnox%3c/text%3e%3c/svg%3e'">
+                <img src="./img/vendors/portnox.png" alt="Portnox">
                 <span class="timeline-title">Portnox Cloud</span>
               </div>
               <div class="timeline">
@@ -736,7 +736,7 @@ class TabNavigator {
             </div>
             <div class="timeline-vendor timeline-traditional">
               <div class="timeline-header">
-                <img src="./img/vendors/cisco.png" alt="Traditional NAC" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'24\'%3e%3crect width=\'80\' height=\'24\' fill=\'%23f8f9fa\'/%3e%3ctext x=\'40\' y=\'15\' text-anchor=\'middle\' fill=\'%23333\' font-size=\'10\' font-family=\'sans-serif\'%3eCisco%3c/text%3e%3c/svg%3e'">
+                <img src="./img/vendors/cisco.png" alt="Traditional NAC">
                 <span class="timeline-title">Traditional NAC</span>
               </div>
               <div class="timeline">

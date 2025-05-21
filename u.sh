@@ -15,1530 +15,14 @@ mkdir -p backup/js/utils backup/js/components backup/js/models backup/js/data ba
 
 # Backup existing files
 echo "Creating backups of existing files..."
-cp -f js/utils/ui-manager.js backup/js/utils/ 2>/dev/null || true
-cp -f js/components/tab-navigator-enhanced.js backup/js/components/ 2>/dev/null || true
-cp -f js/models/vendor-data.js backup/js/models/ 2>/dev/null || true
+cp -f js/utils/ui-manager.js backup/js/utils/
+cp -f js/components/tab-navigator-enhanced.js backup/js/components/
+cp -f js/models/vendor-data.js backup/js/models/
 cp -f js/data/vendor-data.js backup/js/data/ 2>/dev/null || true
-cp -f css/styles.css backup/css/ 2>/dev/null || true
 
-# Make sure directories exist
-mkdir -p js/utils js/components js/models js/data css
-
-# Create modern CSS directory
-echo "Creating modern CSS styles..."
-cat > css/modern-styles.css << 'EOL'
-/**
- * Modern Styles for Portnox Total Cost Analyzer
- * Clean, flat design with professional aesthetic
- */
-
-:root {
-  /* Primary colors */
-  --color-primary-50: #e6f0ff;
-  --color-primary-100: #cce1ff;
-  --color-primary-200: #99c3ff;
-  --color-primary-300: #66a5ff;
-  --color-primary-400: #3387ff;
-  --color-primary-500: #1a5a96;
-  --color-primary-600: #0047b3;
-  --color-primary-700: #003580;
-  --color-primary-800: #00234d;
-  --color-primary-900: #001229;
-  
-  /* Secondary colors */
-  --color-secondary-50: #edf2ff;
-  --color-secondary-100: #dbe6ff;
-  --color-secondary-200: #b7ccff;
-  --color-secondary-300: #93b3ff;
-  --color-secondary-400: #6f99ff;
-  --color-secondary-500: #4b80ff;
-  --color-secondary-600: #3c66cc;
-  --color-secondary-700: #2d4d99;
-  --color-secondary-800: #1e3366;
-  --color-secondary-900: #0f1a33;
-  
-  /* Success colors */
-  --color-success-50: #e6f7ee;
-  --color-success-100: #ccf0dd;
-  --color-success-200: #99e1bb;
-  --color-success-300: #66d299;
-  --color-success-400: #33c377;
-  --color-success-500: #00b455;
-  --color-success-600: #009044;
-  --color-success-700: #006c33;
-  --color-success-800: #004822;
-  --color-success-900: #002411;
-  
-  /* Warning colors */
-  --color-warning-50: #fff9e6;
-  --color-warning-100: #fff3cc;
-  --color-warning-200: #ffe799;
-  --color-warning-300: #ffdb66;
-  --color-warning-400: #ffcf33;
-  --color-warning-500: #ffc300;
-  --color-warning-600: #cc9c00;
-  --color-warning-700: #997500;
-  --color-warning-800: #664e00;
-  --color-warning-900: #332700;
-  
-  /* Danger colors */
-  --color-danger-50: #fdeeee;
-  --color-danger-100: #fbdddd;
-  --color-danger-200: #f7bbbb;
-  --color-danger-300: #f39999;
-  --color-danger-400: #ef7777;
-  --color-danger-500: #eb5555;
-  --color-danger-600: #bc4444;
-  --color-danger-700: #8d3333;
-  --color-danger-800: #5e2222;
-  --color-danger-900: #2f1111;
-  
-  /* Neutral colors */
-  --color-neutral-50: #f8f9fa;
-  --color-neutral-100: #f1f3f5;
-  --color-neutral-200: #e9ecef;
-  --color-neutral-300: #dee2e6;
-  --color-neutral-400: #ced4da;
-  --color-neutral-500: #adb5bd;
-  --color-neutral-600: #6c757d;
-  --color-neutral-700: #495057;
-  --color-neutral-800: #343a40;
-  --color-neutral-900: #212529;
-  
-  /* Layout */
-  --header-height: 64px;
-  --sidebar-width: 280px;
-  --sidebar-collapsed-width: 70px;
-  --content-max-width: 1440px;
-  --border-radius: 0;
-  --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  
-  /* Typography */
-  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  --font-family-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-  --font-size-base: 14px;
-  --line-height-base: 1.5;
-  
-  /* Spacing */
-  --spacing-1: 4px;
-  --spacing-2: 8px;
-  --spacing-3: 12px;
-  --spacing-4: 16px;
-  --spacing-5: 20px;
-  --spacing-6: 24px;
-  --spacing-8: 32px;
-  --spacing-10: 40px;
-  --spacing-12: 48px;
-  --spacing-16: 64px;
-  
-  /* Z-index */
-  --z-index-header: 100;
-  --z-index-sidebar: 90;
-  --z-index-dropdown: 80;
-  --z-index-modal: 1000;
-  --z-index-toast: 1100;
-}
-
-/* Base styles */
-body {
-  font-family: var(--font-family-sans);
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-base);
-  color: var(--color-neutral-800);
-  background-color: var(--color-neutral-50);
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-}
-
-/* Layout */
-.app-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.header {
-  height: var(--header-height);
-  background-color: var(--color-primary-500);
-  color: white;
-  display: flex;
-  align-items: center;
-  padding: 0 var(--spacing-6);
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: var(--z-index-header);
-  box-shadow: var(--box-shadow);
-}
-
-.content-wrapper {
-  display: flex;
-  min-height: calc(100vh - var(--header-height));
-  margin-top: var(--header-height);
-}
-
-.sidebar {
-  width: var(--sidebar-width);
-  background-color: white;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-  transition: width 0.3s ease;
-  position: fixed;
-  top: var(--header-height);
-  bottom: 0;
-  left: 0;
-  z-index: var(--z-index-sidebar);
-  overflow-y: auto;
-  border-right: none;
-}
-
-.sidebar.collapsed {
-  width: var(--sidebar-collapsed-width);
-}
-
-.content-area {
-  flex: 1;
-  margin-left: var(--sidebar-width);
-  padding: var(--spacing-6);
-  transition: margin-left 0.3s ease;
-  background-color: var(--color-neutral-50);
-}
-
-.content-area.expanded {
-  margin-left: var(--sidebar-collapsed-width);
-}
-
-/* Typography */
-h1, h2, h3, h4, h5, h6 {
-  margin-top: 0;
-  margin-bottom: var(--spacing-4);
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--color-neutral-900);
-}
-
-h1 {
-  font-size: 2rem;
-}
-
-h2 {
-  font-size: 1.75rem;
-}
-
-h3 {
-  font-size: 1.5rem;
-}
-
-h4 {
-  font-size: 1.25rem;
-}
-
-h5 {
-  font-size: 1.125rem;
-}
-
-h6 {
-  font-size: 1rem;
-}
-
-p {
-  margin-top: 0;
-  margin-bottom: var(--spacing-4);
-}
-
-a {
-  color: var(--color-primary-500);
-  text-decoration: none;
-}
-
-a:hover {
-  color: var(--color-primary-700);
-  text-decoration: underline;
-}
-
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-2) var(--spacing-4);
-  background-color: var(--color-primary-500);
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  text-decoration: none;
-  height: 36px;
-  border-radius: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.btn:hover {
-  background-color: var(--color-primary-600);
-  transform: translateY(-1px);
-}
-
-.btn:active {
-  transform: translateY(0);
-}
-
-.btn:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--color-primary-200);
-}
-
-.btn-sm {
-  height: 28px;
-  padding: var(--spacing-1) var(--spacing-3);
-  font-size: 0.875rem;
-}
-
-.btn-lg {
-  height: 44px;
-  padding: var(--spacing-3) var(--spacing-6);
-  font-size: 1.125rem;
-}
-
-.btn-outline {
-  background-color: transparent;
-  color: var(--color-primary-500);
-  border: 1px solid var(--color-primary-500);
-}
-
-.btn-outline:hover {
-  background-color: var(--color-primary-50);
-  color: var(--color-primary-600);
-}
-
-.btn-secondary {
-  background-color: var(--color-secondary-500);
-}
-
-.btn-secondary:hover {
-  background-color: var(--color-secondary-600);
-}
-
-.btn-success {
-  background-color: var(--color-success-500);
-}
-
-.btn-success:hover {
-  background-color: var(--color-success-600);
-}
-
-.btn-warning {
-  background-color: var(--color-warning-500);
-  color: var(--color-neutral-800);
-}
-
-.btn-warning:hover {
-  background-color: var(--color-warning-600);
-}
-
-.btn-danger {
-  background-color: var(--color-danger-500);
-}
-
-.btn-danger:hover {
-  background-color: var(--color-danger-600);
-}
-
-/* Tab Navigator */
-.tab-container {
-  margin-bottom: var(--spacing-6);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.main-tabs {
-  display: flex;
-  background-color: white;
-  border-bottom: none;
-}
-
-.main-tab {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: var(--spacing-4) var(--spacing-6);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s ease;
-}
-
-.main-tab:hover {
-  background-color: var(--color-neutral-50);
-  border-bottom-color: var(--color-primary-200);
-}
-
-.main-tab.active {
-  border-bottom-color: var(--color-primary-500);
-  color: var(--color-primary-500);
-  background-color: var(--color-neutral-50);
-}
-
-.tab-icon {
-  font-size: 1.25rem;
-  margin-bottom: var(--spacing-2);
-  color: inherit;
-}
-
-.tab-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.sub-tabs-container {
-  background-color: white;
-  border-bottom: 1px solid var(--color-neutral-200);
-  padding: 0 var(--spacing-2);
-}
-
-.sub-tabs {
-  display: none;
-  flex-wrap: wrap;
-}
-
-.sub-tabs.active {
-  display: flex;
-}
-
-.sub-tab {
-  padding: var(--spacing-3) var(--spacing-4);
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.sub-tab:hover {
-  color: var(--color-primary-500);
-}
-
-.sub-tab.active {
-  color: var(--color-primary-500);
-  font-weight: 500;
-}
-
-.sub-tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: var(--spacing-4);
-  right: var(--spacing-4);
-  height: 2px;
-  background-color: var(--color-primary-500);
-}
-
-.view-container {
-  min-height: 600px;
-}
-
-.view-content {
-  display: none;
-}
-
-.view-content.active {
-  display: block;
-}
-
-/* Section Banner */
-.section-banner {
-  background-color: var(--color-primary-600);
-  color: white;
-  padding: var(--spacing-6) var(--spacing-8);
-  margin-bottom: var(--spacing-8);
-}
-
-.section-banner h2 {
-  margin-top: 0;
-  margin-bottom: var(--spacing-2);
-  font-size: 1.75rem;
-  color: white;
-}
-
-.section-banner p {
-  margin-bottom: 0;
-  opacity: 0.9;
-  font-size: 1rem;
-  max-width: 800px;
-}
-
-.banner-gradient-cool {
-  background: linear-gradient(135deg, var(--color-primary-600), var(--color-secondary-600));
-}
-
-.banner-gradient-warm {
-  background: linear-gradient(135deg, var(--color-primary-600), var(--color-warning-500));
-}
-
-.banner-gradient-primary {
-  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));
-}
-
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--spacing-4);
-  margin-bottom: var(--spacing-8);
-}
-
-.stat-card {
-  background-color: white;
-  padding: var(--spacing-5);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-neutral-200);
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-title {
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: var(--spacing-3);
-  color: var(--color-neutral-700);
-  display: flex;
-  align-items: center;
-}
-
-.stat-title i {
-  margin-right: var(--spacing-2);
-  color: var(--color-primary-500);
-}
-
-.stat-value {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: var(--spacing-3);
-  color: var(--color-neutral-900);
-  line-height: 1;
-}
-
-.stat-indicator {
-  font-size: 0.875rem;
-  display: flex;
-  align-items: center;
-  margin-top: auto;
-}
-
-.stat-indicator.positive {
-  color: var(--color-success-600);
-}
-
-.stat-indicator.negative {
-  color: var(--color-danger-600);
-}
-
-.stat-indicator i {
-  margin-right: var(--spacing-1);
-}
-
-.stat-text {
-  font-size: 0.875rem;
-  color: var(--color-neutral-600);
-  margin-top: var(--spacing-2);
-}
-
-/* Chart Section */
-.chart-section {
-  margin-bottom: var(--spacing-8);
-}
-
-.section-title {
-  font-size: 1.25rem;
-  margin-bottom: var(--spacing-5);
-  display: flex;
-  align-items: center;
-  color: var(--color-neutral-800);
-  position: relative;
-  padding-bottom: var(--spacing-2);
-}
-
-.section-title::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 40px;
-  height: 3px;
-  background-color: var(--color-primary-500);
-}
-
-.section-title i {
-  margin-right: var(--spacing-2);
-  color: var(--color-primary-500);
-}
-
-.chart-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-  gap: var(--spacing-5);
-  margin-bottom: var(--spacing-6);
-}
-
-.chart-wrapper {
-  background-color: white;
-  padding: var(--spacing-5);
-  height: 320px;
-  position: relative;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-neutral-200);
-}
-
-.chart-wrapper.large-chart {
-  height: 400px;
-  grid-column: 1 / -1;
-}
-
-.chart-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: var(--spacing-1);
-  color: var(--color-neutral-800);
-}
-
-.chart-subtitle {
-  font-size: 0.875rem;
-  color: var(--color-neutral-600);
-  margin-bottom: var(--spacing-4);
-}
-
-.chart-placeholder {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
-
-.chart-loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--color-neutral-200);
-  border-top-color: var(--color-primary-500);
-  border-radius: 50%;
-  margin: 0 auto var(--spacing-3);
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Insight Panel */
-.insight-panel {
-  background-color: white;
-  padding: var(--spacing-5);
-  margin-bottom: var(--spacing-6);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-neutral-200);
-}
-
-.insight-list {
-  margin: 0;
-  padding-left: var(--spacing-5);
-}
-
-.insight-list li {
-  margin-bottom: var(--spacing-3);
-  line-height: 1.5;
-}
-
-.insight-list li:last-child {
-  margin-bottom: 0;
-}
-
-/* Recommendations Section */
-.recommendations-section {
-  margin-bottom: var(--spacing-8);
-}
-
-.recommendations-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--spacing-4);
-}
-
-.recommendation-card {
-  background-color: white;
-  padding: var(--spacing-5);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-neutral-200);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.recommendation-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-}
-
-.recommendation-icon {
-  font-size: 2rem;
-  color: var(--color-primary-500);
-  margin-bottom: var(--spacing-3);
-}
-
-.recommendation-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: var(--spacing-2);
-  color: var(--color-neutral-800);
-}
-
-.recommendation-text {
-  font-size: 0.875rem;
-  color: var(--color-neutral-700);
-}
-
-/* NIST Framework Section */
-.nist-framework-section {
-  margin-bottom: var(--spacing-8);
-}
-
-.nist-framework {
-  background-color: white;
-  padding: var(--spacing-5);
-  min-height: 400px;
-  position: relative;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-neutral-200);
-}
-
-/* Vendor Position Section */
-.market-position-section {
-  margin-bottom: var(--spacing-8);
-}
-
-.vendor-position-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--spacing-4);
-}
-
-.vendor-position-card {
-  background-color: white;
-  padding: var(--spacing-5);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-neutral-200);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.vendor-position-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-}
-
-.vendor-position-logo {
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: var(--spacing-3);
-}
-
-.vendor-position-logo img {
-  max-height: 100%;
-  max-width: 120px;
-}
-
-.vendor-position-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: var(--spacing-2);
-  color: var(--color-neutral-800);
-}
-
-.vendor-position-text {
-  font-size: 0.875rem;
-  color: var(--color-neutral-700);
-  text-align: center;
-}
-
-/* Cost Table Section */
-.cost-table-section {
-  margin-bottom: var(--spacing-6);
-}
-
-.table-responsive {
-  overflow-x: auto;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.data-table th,
-.data-table td {
-  padding: var(--spacing-3) var(--spacing-4);
-  text-align: left;
-  border-bottom: 1px solid var(--color-neutral-200);
-}
-
-.data-table th {
-  background-color: var(--color-primary-500);
-  color: white;
-  font-weight: 500;
-  text-transform: uppercase;
-  font-size: 0.8125rem;
-  letter-spacing: 0.5px;
-}
-
-.data-table tr:hover td {
-  background-color: var(--color-neutral-50);
-}
-
-.data-table tr:last-child td {
-  border-bottom: none;
-}
-
-.data-table .total-row {
-  font-weight: 700;
-  background-color: var(--color-neutral-100);
-}
-
-.data-table .savings {
-  color: var(--color-success-600);
-  font-weight: 500;
-}
-
-.data-table .negative {
-  color: var(--color-danger-600);
-  font-weight: 500;
-}
-
-.data-table .total-savings {
-  color: var(--color-success-600);
-  font-weight: 700;
-}
-
-.data-table .advantage {
-  color: var(--color-primary-600);
-  font-weight: 500;
-}
-
-/* Architecture Section */
-.architecture-section {
-  margin-bottom: var(--spacing-8);
-}
-
-.architecture-types {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--spacing-5);
-}
-
-.arch-type {
-  background-color: white;
-  padding: var(--spacing-5);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-neutral-200);
-}
-
-.arch-type-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: var(--spacing-4);
-}
-
-.arch-type-icon {
-  font-size: 1.5rem;
-  margin-right: var(--spacing-3);
-  color: var(--color-primary-500);
-}
-
-.arch-type-name {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-right: auto;
-  color: var(--color-neutral-800);
-}
-
-.arch-type-vendor {
-  font-size: 0.875rem;
-  color: var(--color-neutral-600);
-}
-
-.arch-type-diagram {
-  margin-bottom: var(--spacing-4);
-  height: 160px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--color-neutral-50);
-  padding: var(--spacing-3);
-  border: 1px solid var(--color-neutral-200);
-}
-
-.arch-type-diagram img {
-  max-width: 100%;
-  max-height: 100%;
-}
-
-.arch-type-advantages {
-  font-size: 0.875rem;
-}
-
-.advantage-item,
-.disadvantage-item {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: var(--spacing-2);
-  line-height: 1.4;
-}
-
-.advantage-item i,
-.disadvantage-item i {
-  margin-right: var(--spacing-2);
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-
-.advantage-item i {
-  color: var(--color-success-500);
-}
-
-.disadvantage-item i {
-  color: var(--color-danger-500);
-}
-
-/* Deployment Section */
-.deployment-section {
-  margin-bottom: var(--spacing-8);
-}
-
-.timeline-comparison {
-  margin-top: var(--spacing-4);
-}
-
-.timeline-vendor {
-  margin-bottom: var(--spacing-5);
-}
-
-.timeline-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: var(--spacing-3);
-}
-
-.timeline-header img {
-  height: 24px;
-  margin-right: var(--spacing-3);
-}
-
-.timeline-title {
-  font-weight: 600;
-  color: var(--color-neutral-800);
-}
-
-.timeline {
-  display: flex;
-  height: 40px;
-  background-color: var(--color-neutral-100);
-  margin-bottom: var(--spacing-2);
-}
-
-.timeline-stage {
-  height: 100%;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--color-primary-100);
-  color: var(--color-primary-900);
-  font-size: 0.75rem;
-  overflow: hidden;
-}
-
-.timeline-portnox .timeline-stage {
-  background-color: var(--color-success-100);
-  color: var(--color-success-900);
-}
-
-.timeline-traditional .timeline-stage:nth-child(1) {
-  background-color: var(--color-primary-100);
-}
-
-.timeline-traditional .timeline-stage:nth-child(2) {
-  background-color: var(--color-primary-200);
-}
-
-.timeline-traditional .timeline-stage:nth-child(3) {
-  background-color: var(--color-primary-300);
-}
-
-.timeline-traditional .timeline-stage:nth-child(4) {
-  background-color: var(--color-primary-400);
-  color: white;
-}
-
-.stage-label {
-  font-weight: 600;
-  margin-right: var(--spacing-2);
-}
-
-.timeline-total {
-  font-weight: 600;
-  font-size: 0.875rem;
-  text-align: right;
-  color: var(--color-neutral-800);
-}
-
-/* Zero Trust Section */
-.zero-trust-section {
-  margin-bottom: var(--spacing-8);
-  background-color: white;
-  padding: var(--spacing-5);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-neutral-200);
-}
-
-.zero-trust-description {
-  margin-bottom: var(--spacing-4);
-}
-
-.zero-trust-capabilities {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--spacing-4);
-}
-
-.capability-item {
-  text-align: center;
-  padding: var(--spacing-4);
-  border: 1px solid var(--color-neutral-200);
-  background-color: var(--color-neutral-50);
-}
-
-.capability-icon {
-  font-size: 2rem;
-  color: var(--color-primary-500);
-  margin-bottom: var(--spacing-2);
-}
-
-.capability-name {
-  font-weight: 600;
-  margin-bottom: var(--spacing-1);
-  color: var(--color-neutral-800);
-}
-
-.capability-description {
-  font-size: 0.875rem;
-  color: var(--color-neutral-600);
-}
-
-/* Glass Panel */
-.glass-panel {
-  background-color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  padding: var(--spacing-5);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-neutral-200);
-}
-
-/* Heatmap table */
-.heatmap-table {
-  border: 1px solid var(--color-neutral-200);
-}
-
-.heatmap-table td {
-  text-align: center;
-}
-
-.heatmap-table td:first-child {
-  text-align: left;
-  font-weight: 500;
-}
-
-.heatmap-legend {
-  display: flex;
-  justify-content: center;
-  margin-top: var(--spacing-3);
-  gap: var(--spacing-3);
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-}
-
-.legend-color {
-  width: 16px;
-  height: 16px;
-  margin-right: var(--spacing-2);
-}
-
-.score-excellent {
-  background-color: var(--color-success-500);
-  color: white;
-}
-
-.score-good {
-  background-color: var(--color-success-300);
-  color: var(--color-neutral-800);
-}
-
-.score-average {
-  background-color: var(--color-warning-300);
-  color: var(--color-neutral-800);
-}
-
-.score-poor {
-  background-color: var(--color-danger-300);
-  color: var(--color-neutral-800);
-}
-
-/* Integration and compliance grids */
-.integration-grid,
-.compliance-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: var(--spacing-4);
-  margin-top: var(--spacing-4);
-}
-
-.integration-card,
-.compliance-card {
-  background-color: white;
-  padding: var(--spacing-4);
-  text-align: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-neutral-200);
-}
-
-.integration-icon,
-.compliance-icon {
-  font-size: 2rem;
-  color: var(--color-primary-500);
-  margin-bottom: var(--spacing-2);
-}
-
-.integration-name,
-.compliance-name {
-  font-weight: 600;
-  margin-bottom: var(--spacing-3);
-  color: var(--color-neutral-800);
-}
-
-.integration-vendors,
-.compliance-scores {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--spacing-2);
-}
-
-.integration-vendor {
-  font-size: 0.75rem;
-  padding: var(--spacing-1) var(--spacing-2);
-}
-
-.integration-vendor.supported {
-  background-color: var(--color-success-100);
-  color: var(--color-success-800);
-}
-
-.integration-vendor.not-supported {
-  background-color: var(--color-neutral-100);
-  color: var(--color-neutral-500);
-  text-decoration: line-through;
-}
-
-.compliance-vendor-score {
-  display: flex;
-  justify-content: space-between;
-  padding: var(--spacing-1) 0;
-  border-bottom: 1px solid var(--color-neutral-100);
-  width: 100%;
-  font-size: 0.875rem;
-}
-
-.vendor-name {
-  font-weight: 500;
-}
-
-/* Badges */
-.badge {
-  display: inline-block;
-  padding: var(--spacing-1) var(--spacing-2);
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* NIST CSF Visualization */
-.nist-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-4);
-}
-
-.nist-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-neutral-800);
-}
-
-.nist-controls {
-  display: flex;
-  gap: var(--spacing-2);
-}
-
-.nist-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--spacing-4);
-  margin-bottom: var(--spacing-4);
-}
-
-.nist-category {
-  background-color: white;
-  padding: var(--spacing-4);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-neutral-200);
-}
-
-.nist-category-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: var(--spacing-2);
-}
-
-.nist-category-icon {
-  font-size: 1.25rem;
-  margin-right: var(--spacing-2);
-  color: var(--color-primary-500);
-}
-
-.nist-category-identify .nist-category-icon {
-  color: var(--color-primary-500);
-}
-
-.nist-category-protect .nist-category-icon {
-  color: var(--color-success-500);
-}
-
-.nist-category-detect .nist-category-icon {
-  color: var(--color-warning-500);
-}
-
-.nist-category-respond .nist-category-icon {
-  color: var(--color-danger-500);
-}
-
-.nist-category-recover .nist-category-icon {
-  color: var(--color-secondary-500);
-}
-
-.nist-category-name {
-  margin: 0;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--color-neutral-800);
-}
-
-.nist-category-description {
-  font-size: 0.875rem;
-  margin-bottom: var(--spacing-3);
-  color: var(--color-neutral-600);
-  line-height: 1.4;
-}
-
-.nist-score {
-  height: 8px;
-  background-color: var(--color-neutral-200);
-  margin-bottom: var(--spacing-1);
-}
-
-.nist-score-bar {
-  height: 100%;
-  background-color: var(--color-primary-600);
-}
-
-.nist-category-identify .nist-score-bar {
-  background-color: var(--color-primary-600);
-}
-
-.nist-category-protect .nist-score-bar {
-  background-color: var(--color-success-600);
-}
-
-.nist-category-detect .nist-score-bar {
-  background-color: var(--color-warning-600);
-}
-
-.nist-category-respond .nist-score-bar {
-  background-color: var(--color-danger-600);
-}
-
-.nist-category-recover .nist-score-bar {
-  background-color: var(--color-secondary-600);
-}
-
-.nist-score-values {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  color: var(--color-neutral-600);
-  margin-bottom: var(--spacing-3);
-}
-
-.nist-subcategories {
-  margin-bottom: var(--spacing-3);
-  border-top: 1px solid var(--color-neutral-200);
-  padding-top: var(--spacing-2);
-}
-
-.nist-subcategory {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.875rem;
-  padding: var(--spacing-1) 0;
-  border-bottom: 1px solid var(--color-neutral-100);
-}
-
-.nist-expand-btn {
-  width: 100%;
-}
-
-.nist-legend {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--spacing-4);
-  margin-top: var(--spacing-4);
-  background-color: white;
-  padding: var(--spacing-3);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-neutral-200);
-}
-
-.nist-legend-item {
-  display: flex;
-  align-items: center;
-  font-size: 0.875rem;
-}
-
-.nist-legend-color {
-  width: 16px;
-  height: 16px;
-  margin-right: var(--spacing-2);
-}
-
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-  .sidebar {
-    width: var(--sidebar-collapsed-width);
-  }
-  
-  .content-area {
-    margin-left: var(--sidebar-collapsed-width);
-  }
-  
-  .chart-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .header {
-    padding: 0 var(--spacing-3);
-  }
-  
-  .content-area {
-    padding: var(--spacing-3);
-  }
-  
-  .recommendations-grid,
-  .stats-grid,
-  .zero-trust-capabilities {
-    grid-template-columns: 1fr;
-  }
-  
-  .architecture-types {
-    grid-template-columns: 1fr;
-  }
-  
-  .nist-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Animations */
-@keyframes fadeIn {
-  0% { opacity: 0; transform: translateY(10px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-.fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-/* Toast notifications */
-#toast-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: var(--z-index-toast);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-}
-
-.toast {
-  padding: var(--spacing-3) var(--spacing-4);
-  background-color: white;
-  color: var(--color-neutral-800);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  min-width: 250px;
-  max-width: 400px;
-  display: flex;
-  align-items: center;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.toast i {
-  margin-right: var(--spacing-2);
-  font-size: 1.25rem;
-}
-
-.toast-info {
-  border-left: 4px solid var(--color-primary-500);
-}
-
-.toast-success {
-  border-left: 4px solid var(--color-success-500);
-}
-
-.toast-warning {
-  border-left: 4px solid var(--color-warning-500);
-}
-
-.toast-error {
-  border-left: 4px solid var(--color-danger-500);
-}
-
-/* Vendor card grid */
-.vendor-select-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: var(--spacing-3);
-  padding: var(--spacing-3) 0;
-}
-
-.vendor-select-card {
-  height: 100px;
-  padding: var(--spacing-3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-neutral-200);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.vendor-select-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-  border-color: var(--color-primary-500);
-}
-
-.vendor-select-card.selected {
-  border-color: var(--color-primary-500);
-  background-color: var(--color-primary-50);
-}
-
-.vendor-logo {
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.vendor-logo img {
-  max-height: 40px;
-  max-width: 80px;
-}
-
-.vendor-name {
-  font-size: 0.75rem;
-  text-align: center;
-  margin-top: var(--spacing-2);
-  font-weight: 500;
-}
-
-/* Config card styling */
-.config-card {
-  margin-bottom: var(--spacing-4);
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.config-card-header {
-  padding: var(--spacing-3) var(--spacing-4);
-  background-color: var(--color-neutral-50);
-  border-bottom: 1px solid var(--color-neutral-200);
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.config-card-header h3 {
-  margin: 0;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-}
-
-.config-card-header h3 i {
-  margin-right: var(--spacing-2);
-  color: var(--color-primary-500);
-}
-
-.config-card-content {
-  padding: var(--spacing-4);
-  overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.3s ease;
-}
-
-.config-card-content.collapsed {
-  max-height: 0;
-  padding: 0 var(--spacing-4);
-  opacity: 0;
-}
-
-.toggle-icon {
-  transition: transform 0.3s ease;
-}
-
-.toggle-icon.collapsed {
-  transform: rotate(180deg);
-}
-EOL
-
-# Create the tab navigator fix
-echo "Creating tab navigator fix..."
-cat > js/components/tab-navigator-enhanced.js << 'EOL'
+# Fix the tab-navigator-enhanced.js syntax error
+echo "Fixing syntax error in tab-navigator-enhanced.js..."
+cat > js/components/tab-navigator-enhanced.js << 'EOF'
 /**
  * Enhanced Tab Navigator for Portnox Total Cost Analyzer
  * Provides a fixed, modern tab structure with improved content templates
@@ -1939,28 +423,28 @@ class TabNavigator {
           <div class="vendor-position-grid">
             <div class="vendor-position-card">
               <div class="vendor-position-logo">
-                <img src="./img/logos/gartner.png" alt="Gartner" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'60\'%3e%3crect width=\'120\' height=\'60\' fill=\'%23eee\'/%3e%3ctext x=\'60\' y=\'35\' text-anchor=\'middle\' fill=\'%23999\' font-size=\'12\' font-family=\'sans-serif\'%3eGartner%3c/text%3e%3c/svg%3e'">
+                <img src="./img/logos/gartner.png" alt="Gartner">
               </div>
               <div class="vendor-position-title">Gartner</div>
               <div class="vendor-position-text">Named as a <strong>Leader</strong> in the Gartner Magic Quadrant for Network Access Control, with highest position for "Completeness of Vision"</div>
             </div>
             <div class="vendor-position-card">
               <div class="vendor-position-logo">
-                <img src="./img/logos/forrester.png" alt="Forrester" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'60\'%3e%3crect width=\'120\' height=\'60\' fill=\'%23eee\'/%3e%3ctext x=\'60\' y=\'35\' text-anchor=\'middle\' fill=\'%23999\' font-size=\'12\' font-family=\'sans-serif\'%3eForrester%3c/text%3e%3c/svg%3e'">
+                <img src="./img/logos/forrester.png" alt="Forrester">
               </div>
               <div class="vendor-position-title">Forrester</div>
               <div class="vendor-position-text">Recognized as a <strong>Strong Performer</strong> in the Forrester Wave™: Zero Trust Network Access, with top scores in cloud delivery model</div>
             </div>
             <div class="vendor-position-card">
               <div class="vendor-position-logo">
-                <img src="./img/logos/idc.png" alt="IDC" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'60\'%3e%3crect width=\'120\' height=\'60\' fill=\'%23eee\'/%3e%3ctext x=\'60\' y=\'35\' text-anchor=\'middle\' fill=\'%23999\' font-size=\'12\' font-family=\'sans-serif\'%3eIDC%3c/text%3e%3c/svg%3e'">
+                <img src="./img/logos/idc.png" alt="IDC">
               </div>
               <div class="vendor-position-title">IDC</div>
               <div class="vendor-position-text">Highlighted as an <strong>Innovator</strong> in the IDC MarketScape for Network Access Control, noted for cloud-native architecture</div>
             </div>
             <div class="vendor-position-card">
               <div class="vendor-position-logo">
-                <img src="./img/logos/ema.png" alt="EMA" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'60\'%3e%3crect width=\'120\' height=\'60\' fill=\'%23eee\'/%3e%3ctext x=\'60\' y=\'35\' text-anchor=\'middle\' fill=\'%23999\' font-size=\'12\' font-family=\'sans-serif\'%3eEMA%3c/text%3e%3c/svg%3e'">
+                <img src="./img/logos/ema.png" alt="EMA">
               </div>
               <div class="vendor-position-title">EMA</div>
               <div class="vendor-position-text">Named a <strong>Value Leader</strong> by Enterprise Management Associates for TCO and time-to-value metrics</div>
@@ -2180,7 +664,7 @@ class TabNavigator {
                 <div class="arch-type-vendor">Portnox Cloud</div>
               </div>
               <div class="arch-type-diagram">
-                <img src="./img/arch-cloud.svg" alt="Cloud Architecture" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'280\' height=\'140\'%3e%3crect width=\'280\' height=\'140\' fill=\'%23f8f9fa\'/%3e%3cpath d=\'M75,70 A20,20 0 1,1 120,70 A20,20 0 1,1 165,70 A20,20 0 1,1 215,70 L215,90 L75,90 Z\' fill=\'%231a5a96\' opacity=\'0.7\'/%3e%3ccircle cx=\'150\' cy=\'50\' r=\'15\' fill=\'%231a5a96\'/%3e%3ctext x=\'150\' y=\'120\' text-anchor=\'middle\' fill=\'%23333\' font-size=\'12\' font-family=\'sans-serif\'%3eCloud-Native Architecture%3c/text%3e%3c/svg%3e'">
+                <img src="./img/arch-cloud.svg" alt="Cloud Architecture" onerror="this.src='./img/arch-cloud-placeholder.png'">
               </div>
               <div class="arch-type-advantages">
                 <div class="advantage-item">
@@ -2208,7 +692,7 @@ class TabNavigator {
                 <div class="arch-type-vendor">Cisco, Aruba</div>
               </div>
               <div class="arch-type-diagram">
-                <img src="./img/arch-onprem.svg" alt="On-Premises Architecture" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'280\' height=\'140\'%3e%3crect width=\'280\' height=\'140\' fill=\'%23f8f9fa\'/%3e%3crect x=\'115\' y=\'30\' width=\'50\' height=\'70\' fill=\'%23666\'/%3e%3crect x=\'120\' y=\'35\' width=\'40\' height=\'5\' fill=\'%23999\'/%3e%3crect x=\'120\' y=\'45\' width=\'40\' height=\'5\' fill=\'%23999\'/%3e%3crect x=\'120\' y=\'55\' width=\'40\' height=\'5\' fill=\'%23999\'/%3e%3crect x=\'70\' y=\'70\' width=\'45\' height=\'3\' fill=\'%23666\'/%3e%3crect x=\'165\' y=\'70\' width=\'45\' height=\'3\' fill=\'%23666\'/%3e%3ctext x=\'150\' y=\'120\' text-anchor=\'middle\' fill=\'%23333\' font-size=\'12\' font-family=\'sans-serif\'%3eOn-Premises Architecture%3c/text%3e%3c/svg%3e'">
+                <img src="./img/arch-onprem.svg" alt="On-Premises Architecture" onerror="this.src='./img/arch-onprem-placeholder.png'">
               </div>
               <div class="arch-type-advantages">
                 <div class="advantage-item">
@@ -2236,7 +720,7 @@ class TabNavigator {
                 <div class="arch-type-vendor">Forescout, FortiNAC</div>
               </div>
               <div class="arch-type-diagram">
-                <img src="./img/arch-hybrid.svg" alt="Hybrid Architecture" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'280\' height=\'140\'%3e%3crect width=\'280\' height=\'140\' fill=\'%23f8f9fa\'/%3e%3crect x=\'70\' y=\'50\' width=\'40\' height=\'60\' fill=\'%23666\'/%3e%3crect x=\'75\' y=\'55\' width=\'30\' height=\'5\' fill=\'%23999\'/%3e%3crect x=\'75\' y=\'65\' width=\'30\' height=\'5\' fill=\'%23999\'/%3e%3cpath d=\'M170,40 A20,20 0 1,1 215,40 A20,20 0 1,1 250,40 L250,60 L170,60 Z\' fill=\'%231a5a96\' opacity=\'0.7\'/%3e%3ccircle cx=\'200\' cy=\'25\' r=\'10\' fill=\'%231a5a96\'/%3e%3cline x1=\'110\' y1=\'60\' x2=\'170\' y2=\'50\' stroke=\'%23666\' stroke-width=\'2\' stroke-dasharray=\'5,5\'/%3e%3ctext x=\'150\' y=\'120\' text-anchor=\'middle\' fill=\'%23333\' font-size=\'12\' font-family=\'sans-serif\'%3eHybrid Architecture%3c/text%3e%3c/svg%3e'">
+                <img src="./img/arch-hybrid.svg" alt="Hybrid Architecture" onerror="this.src='./img/arch-hybrid-placeholder.png'">
               </div>
               <div class="arch-type-advantages">
                 <div class="advantage-item">
@@ -2265,7 +749,7 @@ class TabNavigator {
           <div class="timeline-comparison">
             <div class="timeline-vendor timeline-portnox">
               <div class="timeline-header">
-                <img src="./img/vendors/portnox.png" alt="Portnox" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'24\'%3e%3crect width=\'80\' height=\'24\' fill=\'%23f8f9fa\'/%3e%3ctext x=\'40\' y=\'15\' text-anchor=\'middle\' fill=\'%23333\' font-size=\'10\' font-family=\'sans-serif\'%3ePortnox%3c/text%3e%3c/svg%3e'">
+                <img src="./img/vendors/portnox.png" alt="Portnox">
                 <span class="timeline-title">Portnox Cloud</span>
               </div>
               <div class="timeline">
@@ -2277,7 +761,7 @@ class TabNavigator {
             </div>
             <div class="timeline-vendor timeline-traditional">
               <div class="timeline-header">
-                <img src="./img/vendors/cisco.png" alt="Traditional NAC" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'24\'%3e%3crect width=\'80\' height=\'24\' fill=\'%23f8f9fa\'/%3e%3ctext x=\'40\' y=\'15\' text-anchor=\'middle\' fill=\'%23333\' font-size=\'10\' font-family=\'sans-serif\'%3eCisco%3c/text%3e%3c/svg%3e'">
+                <img src="./img/vendors/cisco.png" alt="Traditional NAC">
                 <span class="timeline-title">Traditional NAC</span>
               </div>
               <div class="timeline">
@@ -2441,11 +925,2289 @@ document.addEventListener('DOMContentLoaded', () => {
     window.tabNavigator = new TabNavigator().init();
   }
 });
-EOL
+EOF
 
-# Create the comprehensive fixes JS
+# Fix syntax error in vendor-data.js
+echo "Creating fixed vendor-data.js..."
+cat > js/data/vendor-data.js << 'EOF'
+/**
+ * Comprehensive Vendor Data for Portnox Total Cost Analyzer
+ * Contains detailed information on all NAC vendors, their features, costs, and technical specifications
+ */
+
+const VENDORS = {
+  'portnox': {
+    name: 'Portnox Cloud',
+    shortName: 'Portnox',
+    logoUrl: './img/vendors/portnox.png',
+    cloudNative: true,
+    architecture: 'cloud',
+    deployment: {
+      timeToValue: 1, // Days
+      complexity: 'Low',
+      requiresHardware: false,
+      requiresAgents: false,
+      remoteWorkSupport: true,
+      cloudManaged: true
+    },
+    costs: {
+      pricing: 'subscription',
+      licensePerDevice: 50,
+      hardware: 0,
+      implementation: 15000,
+      maintenance: 0,
+      yearlySubscription: 172000,
+      personnel: 25000,
+      training: 5000,
+      tco3Year: 245000
+    },
+    security: {
+      zeroTrust: 95,
+      deviceAuth: 90,
+      riskAssessment: 95,
+      remediationSpeed: 15,
+      complianceCoverage: 95,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: true,
+      automatedResponse: true
+    },
+    compliance: {
+      pciDss: 95,
+      hipaa: 95,
+      gdpr: 90,
+      nist: 95,
+      iso27001: 95,
+      sox: 90,
+      cmmc: 90,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 95, details: {identify: 92, protect: 96, detect: 95, respond: 94, recover: 90}},
+        {name: 'PCI DSS', coverage: 95},
+        {name: 'HIPAA', coverage: 95},
+        {name: 'GDPR', coverage: 90},
+        {name: 'ISO 27001', coverage: 90},
+        {name: 'SOX', coverage: 90}
+      ]
+    },
+    features: {
+      byod: true,
+      iot: true,
+      wireless: true,
+      wired: true,
+      vpn: true,
+      cloudIntegration: true,
+      legacyDevices: true,
+      remoteUsers: true,
+      mdm: true,
+      siem: true,
+      sso: true,
+      api: true,
+      automatedProvisioning: true,
+      dashboards: true,
+      customReporting: true,
+      userPortal: true
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: true,
+      aws: true,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: true,
+      siem: true,
+      ticketing: true,
+      cmdb: true
+    },
+    technical: {
+      maxDevices: 'Unlimited',
+      performanceImpact: 'Minimal',
+      scalability: 'Highly Scalable',
+      reliability: 99.99,
+      redundancy: 'Built-in',
+      disasterRecovery: 'Automatic',
+      updateFrequency: 'Continuous'
+    },
+    customers: {
+      industries: ['Healthcare', 'Finance', 'Manufacturing', 'Retail', 'Government', 'Education'],
+      companySize: ['Small', 'Medium', 'Enterprise'],
+      geoLocations: ['North America', 'Europe', 'Asia Pacific', 'Latin America']
+    },
+    differentiators: [
+      'True cloud-native architecture with zero on-premises footprint',
+      'Rapid deployment with time-to-value measured in hours',
+      'Continuous updates and security enhancements without downtime',
+      'Comprehensive Zero Trust Network Access capabilities',
+      'Built-in scalability and multi-tenancy'
+    ]
+  },
+  
+  'cisco': {
+    name: 'Cisco ISE',
+    shortName: 'Cisco',
+    logoUrl: './img/vendors/cisco.png',
+    cloudNative: false,
+    architecture: 'on-premises',
+    deployment: {
+      timeToValue: 90, // Days
+      complexity: 'High',
+      requiresHardware: true,
+      requiresAgents: true,
+      remoteWorkSupport: true,
+      cloudManaged: false
+    },
+    costs: {
+      pricing: 'perpetual',
+      licensePerDevice: 60,
+      hardware: 130000,
+      implementation: 85000,
+      maintenance: 98000,
+      yearlySubscription: 0,
+      personnel: 200000,
+      training: 20000,
+      tco3Year: 520000
+    },
+    security: {
+      zeroTrust: 80,
+      deviceAuth: 85,
+      riskAssessment: 82,
+      remediationSpeed: 45,
+      complianceCoverage: 90,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: true,
+      automatedResponse: true
+    },
+    compliance: {
+      pciDss: 90,
+      hipaa: 90,
+      gdpr: 85,
+      nist: 90,
+      iso27001: 90,
+      sox: 85,
+      cmmc: 90,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 90, details: {identify: 88, protect: 92, detect: 90, respond: 85, recover: 82}},
+        {name: 'PCI DSS', coverage: 90},
+        {name: 'HIPAA', coverage: 90},
+        {name: 'GDPR', coverage: 85},
+        {name: 'ISO 27001', coverage: 90},
+        {name: 'SOX', coverage: 85}
+      ]
+    },
+    features: {
+      byod: true,
+      iot: true,
+      wireless: true,
+      wired: true,
+      vpn: true,
+      cloudIntegration: true,
+      legacyDevices: true,
+      remoteUsers: true,
+      mdm: true,
+      siem: true,
+      sso: true,
+      api: true,
+      automatedProvisioning: true,
+      dashboards: true,
+      customReporting: true,
+      userPortal: true
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: false,
+      aws: true,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: true,
+      siem: true,
+      ticketing: true,
+      cmdb: true
+    },
+    technical: {
+      maxDevices: '100,000+',
+      performanceImpact: 'Moderate',
+      scalability: 'Enterprise-grade',
+      reliability: 99.9,
+      redundancy: 'Manual Configuration',
+      disasterRecovery: 'Manual',
+      updateFrequency: 'Quarterly'
+    },
+    customers: {
+      industries: ['Finance', 'Healthcare', 'Government', 'Education', 'Manufacturing'],
+      companySize: ['Large', 'Enterprise'],
+      geoLocations: ['North America', 'Europe', 'Asia Pacific', 'Latin America', 'Middle East']
+    },
+    differentiators: [
+      'Deep integration with Cisco networking infrastructure',
+      'Extensive feature set for large enterprise deployments',
+      'Mature product with long history in the market',
+      'Strong professional services and support ecosystem',
+      'Comprehensive policy management capabilities'
+    ]
+  },
+  
+  'aruba': {
+    name: 'Aruba ClearPass',
+    shortName: 'Aruba',
+    logoUrl: './img/vendors/aruba.png',
+    cloudNative: false,
+    architecture: 'on-premises',
+    deployment: {
+      timeToValue: 60, // Days
+      complexity: 'High',
+      requiresHardware: true,
+      requiresAgents: true,
+      remoteWorkSupport: true,
+      cloudManaged: false
+    },
+    costs: {
+      pricing: 'perpetual',
+      licensePerDevice: 55,
+      hardware: 110000,
+      implementation: 65000,
+      maintenance: 85000,
+      yearlySubscription: 0,
+      personnel: 175000,
+      training: 15000,
+      tco3Year: 480000
+    },
+    security: {
+      zeroTrust: 80,
+      deviceAuth: 85,
+      riskAssessment: 80,
+      remediationSpeed: 40,
+      complianceCoverage: 85,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: true,
+      automatedResponse: true
+    },
+    compliance: {
+      pciDss: 90,
+      hipaa: 85,
+      gdpr: 80,
+      nist: 85,
+      iso27001: 85,
+      sox: 80,
+      cmmc: 85,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 85, details: {identify: 85, protect: 90, detect: 85, respond: 80, recover: 80}},
+        {name: 'PCI DSS', coverage: 90},
+        {name: 'HIPAA', coverage: 85},
+        {name: 'GDPR', coverage: 80},
+        {name: 'ISO 27001', coverage: 85},
+        {name: 'SOX', coverage: 80}
+      ]
+    },
+    features: {
+      byod: true,
+      iot: true,
+      wireless: true,
+      wired: true,
+      vpn: true,
+      cloudIntegration: true,
+      legacyDevices: true,
+      remoteUsers: true,
+      mdm: true,
+      siem: true,
+      sso: true,
+      api: true,
+      automatedProvisioning: true,
+      dashboards: true,
+      customReporting: true,
+      userPortal: true
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: false,
+      aws: false,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: true,
+      siem: true,
+      ticketing: true,
+      cmdb: true
+    },
+    technical: {
+      maxDevices: '75,000+',
+      performanceImpact: 'Moderate',
+      scalability: 'Enterprise-grade',
+      reliability: 99.9,
+      redundancy: 'Manual Configuration',
+      disasterRecovery: 'Manual',
+      updateFrequency: 'Quarterly'
+    },
+    customers: {
+      industries: ['Healthcare', 'Government', 'Education', 'Retail', 'Manufacturing'],
+      companySize: ['Medium', 'Large', 'Enterprise'],
+      geoLocations: ['North America', 'Europe', 'Asia Pacific']
+    },
+    differentiators: [
+      'Tight integration with Aruba wireless infrastructure',
+      'Strong focus on BYOD and guest networking',
+      'Role-based access control capabilities',
+      'Extensive device profiling database',
+      'Context-aware policy enforcement'
+    ]
+  },
+  
+  'forescout': {
+    name: 'Forescout Platform',
+    shortName: 'Forescout',
+    logoUrl: './img/vendors/forescout.png',
+    cloudNative: false,
+    architecture: 'hybrid',
+    deployment: {
+      timeToValue: 75, // Days
+      complexity: 'High',
+      requiresHardware: true,
+      requiresAgents: false,
+      remoteWorkSupport: true,
+      cloudManaged: false
+    },
+    costs: {
+      pricing: 'perpetual',
+      licensePerDevice: 65,
+      hardware: 100000,
+      implementation: 75000,
+      maintenance: 75000,
+      yearlySubscription: 0,
+      personnel: 150000,
+      training: 15000,
+      tco3Year: 430000
+    },
+    security: {
+      zeroTrust: 85,
+      deviceAuth: 85,
+      riskAssessment: 90,
+      remediationSpeed: 35,
+      complianceCoverage: 85,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: true,
+      automatedResponse: true
+    },
+    compliance: {
+      pciDss: 90,
+      hipaa: 85,
+      gdpr: 80,
+      nist: 85,
+      iso27001: 85,
+      sox: 85,
+      cmmc: 85,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 85, details: {identify: 90, protect: 85, detect: 90, respond: 80, recover: 75}},
+        {name: 'PCI DSS', coverage: 90},
+        {name: 'HIPAA', coverage: 85},
+        {name: 'GDPR', coverage: 80},
+        {name: 'ISO 27001', coverage: 85},
+        {name: 'SOX', coverage: 85}
+      ]
+    },
+    features: {
+      byod: true,
+      iot: true,
+      wireless: true,
+      wired: true,
+      vpn: true,
+      cloudIntegration: true,
+      legacyDevices: true,
+      remoteUsers: true,
+      mdm: true,
+      siem: true,
+      sso: true,
+      api: true,
+      automatedProvisioning: true,
+      dashboards: true,
+      customReporting: true,
+      userPortal: true
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: false,
+      aws: true,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: true,
+      siem: true,
+      ticketing: true,
+      cmdb: true
+    },
+    technical: {
+      maxDevices: '60,000+',
+      performanceImpact: 'Low',
+      scalability: 'Enterprise-grade',
+      reliability: 99.9,
+      redundancy: 'Manual Configuration',
+      disasterRecovery: 'Manual',
+      updateFrequency: 'Quarterly'
+    },
+    customers: {
+      industries: ['Healthcare', 'Finance', 'Government', 'Critical Infrastructure', 'Manufacturing'],
+      companySize: ['Large', 'Enterprise'],
+      geoLocations: ['North America', 'Europe', 'Asia Pacific', 'Middle East']
+    },
+    differentiators: [
+      'Agentless device discovery and classification',
+      'Extensive IoT device support and visibility',
+      'Strong OT/ICS security capabilities',
+      'Network segmentation orchestration',
+      'Comprehensive device visibility across network segments'
+    ]
+  },
+  
+  'fortinac': {
+    name: 'FortiNAC',
+    shortName: 'FortiNAC',
+    logoUrl: './img/vendors/fortinac.png',
+    cloudNative: false,
+    architecture: 'hybrid',
+    deployment: {
+      timeToValue: 60, // Days
+      complexity: 'Moderate',
+      requiresHardware: true,
+      requiresAgents: false,
+      remoteWorkSupport: true,
+      cloudManaged: false
+    },
+    costs: {
+      pricing: 'perpetual',
+      licensePerDevice: 45,
+      hardware: 90000,
+      implementation: 60000,
+      maintenance: 65000,
+      yearlySubscription: 0,
+      personnel: 140000,
+      training: 12000,
+      tco3Year: 385000
+    },
+    security: {
+      zeroTrust: 80,
+      deviceAuth: 80,
+      riskAssessment: 75,
+      remediationSpeed: 35,
+      complianceCoverage: 80,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: true,
+      automatedResponse: true
+    },
+    compliance: {
+      pciDss: 85,
+      hipaa: 80,
+      gdpr: 75,
+      nist: 80,
+      iso27001: 80,
+      sox: 80,
+      cmmc: 85,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 80, details: {identify: 80, protect: 85, detect: 80, respond: 75, recover: 75}},
+        {name: 'PCI DSS', coverage: 85},
+        {name: 'HIPAA', coverage: 80},
+        {name: 'GDPR', coverage: 75},
+        {name: 'ISO 27001', coverage: 80},
+        {name: 'SOX', coverage: 80}
+      ]
+    },
+    features: {
+      byod: true,
+      iot: true,
+      wireless: true,
+      wired: true,
+      vpn: true,
+      cloudIntegration: true,
+      legacyDevices: true,
+      remoteUsers: true,
+      mdm: true,
+      siem: true,
+      sso: true,
+      api: true,
+      automatedProvisioning: true,
+      dashboards: true,
+      customReporting: true,
+      userPortal: true
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: false,
+      aws: false,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: true,
+      siem: true,
+      ticketing: true,
+      cmdb: false
+    },
+    technical: {
+      maxDevices: '50,000+',
+      performanceImpact: 'Moderate',
+      scalability: 'Enterprise-grade',
+      reliability: 99.9,
+      redundancy: 'Manual Configuration',
+      disasterRecovery: 'Manual',
+      updateFrequency: 'Quarterly'
+    },
+    customers: {
+      industries: ['Government', 'Education', 'Healthcare', 'Retail', 'Manufacturing'],
+      companySize: ['Medium', 'Large', 'Enterprise'],
+      geoLocations: ['North America', 'Europe', 'Asia Pacific', 'Latin America']
+    },
+    differentiators: [
+      'Integrated with Fortinet Security Fabric',
+      'Strong focus on IoT security',
+      'Good automation and orchestration capabilities',
+      'Integration with FortiSOAR for incident response',
+      'Rogue device detection and mitigation'
+    ]
+  },
+  
+  'juniper': {
+    name: 'Juniper NAC',
+    shortName: 'Juniper',
+    logoUrl: './img/vendors/juniper.png',
+    cloudNative: false,
+    architecture: 'on-premises',
+    deployment: {
+      timeToValue: 60, // Days
+      complexity: 'Moderate',
+      requiresHardware: true,
+      requiresAgents: true,
+      remoteWorkSupport: true,
+      cloudManaged: false
+    },
+    costs: {
+      pricing: 'perpetual',
+      licensePerDevice: 50,
+      hardware: 95000,
+      implementation: 70000,
+      maintenance: 70000,
+      yearlySubscription: 0,
+      personnel: 150000,
+      training: 15000,
+      tco3Year: 410000
+    },
+    security: {
+      zeroTrust: 75,
+      deviceAuth: 80,
+      riskAssessment: 75,
+      remediationSpeed: 40,
+      complianceCoverage: 80,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: true,
+      automatedResponse: true
+    },
+    compliance: {
+      pciDss: 85,
+      hipaa: 80,
+      gdpr: 75,
+      nist: 80,
+      iso27001: 80,
+      sox: 75,
+      cmmc: 80,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 80, details: {identify: 75, protect: 85, detect: 80, respond: 75, recover: 75}},
+        {name: 'PCI DSS', coverage: 85},
+        {name: 'HIPAA', coverage: 80},
+        {name: 'GDPR', coverage: 75},
+        {name: 'ISO 27001', coverage: 80},
+        {name: 'SOX', coverage: 75}
+      ]
+    },
+    features: {
+      byod: true,
+      iot: true,
+      wireless: true,
+      wired: true,
+      vpn: true,
+      cloudIntegration: true,
+      legacyDevices: true,
+      remoteUsers: true,
+      mdm: true,
+      siem: true,
+      sso: true,
+      api: true,
+      automatedProvisioning: true,
+      dashboards: true,
+      customReporting: true,
+      userPortal: true
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: false,
+      aws: false,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: true,
+      siem: true,
+      ticketing: true,
+      cmdb: false
+    },
+    technical: {
+      maxDevices: '50,000+',
+      performanceImpact: 'Moderate',
+      scalability: 'Enterprise-grade',
+      reliability: 99.9,
+      redundancy: 'Manual Configuration',
+      disasterRecovery: 'Manual',
+      updateFrequency: 'Quarterly'
+    },
+    customers: {
+      industries: ['Service Providers', 'Finance', 'Government', 'Education', 'Healthcare'],
+      companySize: ['Medium', 'Large', 'Enterprise'],
+      geoLocations: ['North America', 'Europe', 'Asia Pacific']
+    },
+    differentiators: [
+      'Deep integration with Juniper networking components',
+      'Strong security fabric cross-product integration',
+      'Good policy enforcement mechanisms',
+      'Integration with Juniper's security intelligence',
+      'Suitable for service provider environments'
+    ]
+  },
+  
+  'microsoft': {
+    name: 'Microsoft NPS',
+    shortName: 'Microsoft',
+    logoUrl: './img/vendors/microsoft.png',
+    cloudNative: false,
+    architecture: 'on-premises',
+    deployment: {
+      timeToValue: 45,
+      complexity: 'Moderate',
+      requiresHardware: true,
+      requiresAgents: true,
+      remoteWorkSupport: false,
+      cloudManaged: false
+    },
+    costs: {
+      pricing: 'included',
+      licensePerDevice: 0,
+      hardware: 30000,
+      implementation: 45000,
+      maintenance: 40000,
+      yearlySubscription: 0,
+      personnel: 100000,
+      training: 15000,
+      tco3Year: 290000
+    },
+    security: {
+      zeroTrust: 60,
+      deviceAuth: 70,
+      riskAssessment: 60,
+      remediationSpeed: 50,
+      complianceCoverage: 65,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: false,
+      automatedResponse: false
+    },
+    compliance: {
+      pciDss: 70,
+      hipaa: 70,
+      gdpr: 70,
+      nist: 65,
+      iso27001: 75,
+      sox: 70,
+      cmmc: 75,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 65, details: {identify: 60, protect: 70, detect: 65, respond: 60, recover: 65}},
+        {name: 'PCI DSS', coverage: 70},
+        {name: 'HIPAA', coverage: 70},
+        {name: 'GDPR', coverage: 70},
+        {name: 'ISO 27001', coverage: 75},
+        {name: 'SOX', coverage: 70}
+      ]
+    },
+    features: {
+      byod: false,
+      iot: false,
+      wireless: true,
+      wired: true,
+      vpn: true,
+      cloudIntegration: false,
+      legacyDevices: true,
+      remoteUsers: false,
+      mdm: false,
+      siem: false,
+      sso: true,
+      api: false,
+      automatedProvisioning: false,
+      dashboards: false,
+      customReporting: false,
+      userPortal: false
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: false,
+      aws: false,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: false,
+      siem: false,
+      ticketing: false,
+      cmdb: false
+    },
+    technical: {
+      maxDevices: '25,000+',
+      performanceImpact: 'Moderate',
+      scalability: 'Limited',
+      reliability: 99.5,
+      redundancy: 'Manual Configuration',
+      disasterRecovery: 'Manual',
+      updateFrequency: 'With Windows Updates'
+    },
+    customers: {
+      industries: ['Government', 'Education', 'Small Business', 'Healthcare'],
+      companySize: ['Small', 'Medium'],
+      geoLocations: ['North America', 'Europe']
+    },
+    differentiators: [
+      'Included with Windows Server',
+      'Tight integration with Active Directory',
+      'Low acquisition cost',
+      'Familiar Microsoft management interface',
+      'Simple deployment for basic use cases'
+    ]
+  },
+  
+  'securew2': {
+    name: 'SecureW2',
+    shortName: 'SecureW2',
+    logoUrl: './img/vendors/securew2.png',
+    cloudNative: true,
+    architecture: 'cloud',
+    deployment: {
+      timeToValue: 7,
+      complexity: 'Low',
+      requiresHardware: false,
+      requiresAgents: false,
+      remoteWorkSupport: true,
+      cloudManaged: true
+    },
+    costs: {
+      pricing: 'subscription',
+      licensePerDevice: 35,
+      hardware: 0,
+      implementation: 25000,
+      maintenance: 0,
+      yearlySubscription: 140000,
+      personnel: 50000,
+      training: 10000,
+      tco3Year: 280000
+    },
+    security: {
+      zeroTrust: 85,
+      deviceAuth: 90,
+      riskAssessment: 75,
+      remediationSpeed: 20,
+      complianceCoverage: 75,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: true,
+      automatedResponse: false
+    },
+    compliance: {
+      pciDss: 80,
+      hipaa: 75,
+      gdpr: 80,
+      nist: 75,
+      iso27001: 75,
+      sox: 70,
+      cmmc: 70,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 75, details: {identify: 75, protect: 85, detect: 75, respond: 70, recover: 70}},
+        {name: 'PCI DSS', coverage: 80},
+        {name: 'HIPAA', coverage: 75},
+        {name: 'GDPR', coverage: 80},
+        {name: 'ISO 27001', coverage: 75},
+        {name: 'SOX', coverage: 70}
+      ]
+    },
+    features: {
+      byod: true,
+      iot: false,
+      wireless: true,
+      wired: false,
+      vpn: true,
+      cloudIntegration: true,
+      legacyDevices: false,
+      remoteUsers: true,
+      mdm: true,
+      siem: false,
+      sso: true,
+      api: true,
+      automatedProvisioning: true,
+      dashboards: true,
+      customReporting: true,
+      userPortal: true
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: true,
+      aws: true,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: true,
+      siem: false,
+      ticketing: false,
+      cmdb: false
+    },
+    technical: {
+      maxDevices: 'Unlimited',
+      performanceImpact: 'Minimal',
+      scalability: 'Highly Scalable',
+      reliability: 99.9,
+      redundancy: 'Built-in',
+      disasterRecovery: 'Automatic',
+      updateFrequency: 'Continuous'
+    },
+    customers: {
+      industries: ['Education', 'Healthcare', 'Retail', 'Technology'],
+      companySize: ['Small', 'Medium', 'Large'],
+      geoLocations: ['North America', 'Europe']
+    },
+    differentiators: [
+      'Cloud-based certificate management',
+      'Focus on wireless & BYOD security',
+      'Simple onboarding experience',
+      'No on-premises infrastructure required',
+      'Fast deployment and time-to-value'
+    ]
+  },
+  
+  'extreme': {
+    name: 'Extreme Networks NAC',
+    shortName: 'Extreme',
+    logoUrl: './img/vendors/extreme.png',
+    cloudNative: false,
+    architecture: 'hybrid',
+    deployment: {
+      timeToValue: 45,
+      complexity: 'Moderate',
+      requiresHardware: true,
+      requiresAgents: false,
+      remoteWorkSupport: true,
+      cloudManaged: true
+    },
+    costs: {
+      pricing: 'hybrid',
+      licensePerDevice: 40,
+      hardware: 70000,
+      implementation: 55000,
+      maintenance: 45000,
+      yearlySubscription: 80000,
+      personnel: 120000,
+      training: 15000,
+      tco3Year: 320000
+    },
+    security: {
+      zeroTrust: 75,
+      deviceAuth: 80,
+      riskAssessment: 70,
+      remediationSpeed: 30,
+      complianceCoverage: 75,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: true,
+      automatedResponse: false
+    },
+    compliance: {
+      pciDss: 80,
+      hipaa: 75,
+      gdpr: 75,
+      nist: 75,
+      iso27001: 75,
+      sox: 70,
+      cmmc: 70,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 75, details: {identify: 70, protect: 80, detect: 75, respond: 70, recover: 70}},
+        {name: 'PCI DSS', coverage: 80},
+        {name: 'HIPAA', coverage: 75},
+        {name: 'GDPR', coverage: 75},
+        {name: 'ISO 27001', coverage: 75},
+        {name: 'SOX', coverage: 70}
+      ]
+    },
+    features: {
+      byod: true,
+      iot: true,
+      wireless: true,
+      wired: true,
+      vpn: true,
+      cloudIntegration: true,
+      legacyDevices: true,
+      remoteUsers: true,
+      mdm: false,
+      siem: true,
+      sso: true,
+      api: true,
+      automatedProvisioning: true,
+      dashboards: true,
+      customReporting: true,
+      userPortal: true
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: false,
+      aws: false,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: false,
+      siem: true,
+      ticketing: true,
+      cmdb: false
+    },
+    technical: {
+      maxDevices: '50,000+',
+      performanceImpact: 'Moderate',
+      scalability: 'Good',
+      reliability: 99.8,
+      redundancy: 'Available',
+      disasterRecovery: 'Available',
+      updateFrequency: 'Quarterly'
+    },
+    customers: {
+      industries: ['Education', 'Manufacturing', 'Healthcare', 'Retail'],
+      companySize: ['Medium', 'Large'],
+      geoLocations: ['North America', 'Europe', 'Asia Pacific']
+    },
+    differentiators: [
+      'Integration with Extreme management platforms',
+      'Cloud management options',
+      'Strong wireless network integration',
+      'Good IoT device profiling',
+      'Campus network focus'
+    ]
+  },
+  
+  'foxpass': {
+    name: 'Foxpass',
+    shortName: 'Foxpass',
+    logoUrl: './img/vendors/foxpass.png',
+    cloudNative: true,
+    architecture: 'cloud',
+    deployment: {
+      timeToValue: 3,
+      complexity: 'Low',
+      requiresHardware: false,
+      requiresAgents: false,
+      remoteWorkSupport: true,
+      cloudManaged: true
+    },
+    costs: {
+      pricing: 'subscription',
+      licensePerDevice: 20,
+      hardware: 0,
+      implementation: 20000,
+      maintenance: 0,
+      yearlySubscription: 80000,
+      personnel: 50000,
+      training: 5000,
+      tco3Year: 270000
+    },
+    security: {
+      zeroTrust: 70,
+      deviceAuth: 75,
+      riskAssessment: 60,
+      remediationSpeed: 25,
+      complianceCoverage: 65,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: false,
+      automatedResponse: false
+    },
+    compliance: {
+      pciDss: 70,
+      hipaa: 65,
+      gdpr: 70,
+      nist: 60,
+      iso27001: 65,
+      sox: 60,
+      cmmc: 60,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 60, details: {identify: 60, protect: 70, detect: 60, respond: 55, recover: 55}},
+        {name: 'PCI DSS', coverage: 70},
+        {name: 'HIPAA', coverage: 65},
+        {name: 'GDPR', coverage: 70},
+        {name: 'ISO 27001', coverage: 65},
+        {name: 'SOX', coverage: 60}
+      ]
+    },
+    features: {
+      byod: true,
+      iot: false,
+      wireless: true,
+      wired: true,
+      vpn: true,
+      cloudIntegration: true,
+      legacyDevices: false,
+      remoteUsers: true,
+      mdm: false,
+      siem: false,
+      sso: true,
+      api: true,
+      automatedProvisioning: true,
+      dashboards: true,
+      customReporting: false,
+      userPortal: true
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: true,
+      aws: true,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: false,
+      siem: false,
+      ticketing: false,
+      cmdb: false
+    },
+    technical: {
+      maxDevices: '10,000+',
+      performanceImpact: 'Minimal',
+      scalability: 'Good',
+      reliability: 99.9,
+      redundancy: 'Built-in',
+      disasterRecovery: 'Automatic',
+      updateFrequency: 'Continuous'
+    },
+    customers: {
+      industries: ['Technology', 'Education', 'Retail', 'Services'],
+      companySize: ['Small', 'Medium'],
+      geoLocations: ['North America', 'Europe']
+    },
+    differentiators: [
+      'Cloud-based RADIUS and LDAP',
+      'Simple deployment and management',
+      'Developer-friendly approach',
+      'API-first architecture',
+      'Affordable for smaller organizations'
+    ]
+  },
+  
+  'arista': {
+    name: 'Arista CloudVision',
+    shortName: 'Arista',
+    logoUrl: './img/vendors/arista.png',
+    cloudNative: false,
+    architecture: 'hybrid',
+    deployment: {
+      timeToValue: 45,
+      complexity: 'Moderate',
+      requiresHardware: true,
+      requiresAgents: false,
+      remoteWorkSupport: false,
+      cloudManaged: true
+    },
+    costs: {
+      pricing: 'hybrid',
+      licensePerDevice: 35,
+      hardware: 50000,
+      implementation: 45000,
+      maintenance: 35000,
+      yearlySubscription: 70000,
+      personnel: 110000,
+      training: 10000,
+      tco3Year: 320000
+    },
+    security: {
+      zeroTrust: 65,
+      deviceAuth: 75,
+      riskAssessment: 70,
+      remediationSpeed: 30,
+      complianceCoverage: 70,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: true,
+      automatedResponse: false
+    },
+    compliance: {
+      pciDss: 75,
+      hipaa: 70,
+      gdpr: 75,
+      nist: 70,
+      iso27001: 75,
+      sox: 70,
+      cmmc: 70,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 70, details: {identify: 70, protect: 75, detect: 70, respond: 65, recover: 65}},
+        {name: 'PCI DSS', coverage: 75},
+        {name: 'HIPAA', coverage: 70},
+        {name: 'GDPR', coverage: 75},
+        {name: 'ISO 27001', coverage: 75},
+        {name: 'SOX', coverage: 70}
+      ]
+    },
+    features: {
+      byod: true,
+      iot: true,
+      wireless: true,
+      wired: true,
+      vpn: false,
+      cloudIntegration: true,
+      legacyDevices: true,
+      remoteUsers: false,
+      mdm: false,
+      siem: true,
+      sso: true,
+      api: true,
+      automatedProvisioning: true,
+      dashboards: true,
+      customReporting: true,
+      userPortal: false
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: false,
+      aws: true,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: false,
+      siem: true,
+      ticketing: false,
+      cmdb: false
+    },
+    technical: {
+      maxDevices: '40,000+',
+      performanceImpact: 'Low',
+      scalability: 'Good',
+      reliability: 99.8,
+      redundancy: 'Available',
+      disasterRecovery: 'Available',
+      updateFrequency: 'Quarterly'
+    },
+    customers: {
+      industries: ['Financial Services', 'Technology', 'Cloud Providers', 'Healthcare'],
+      companySize: ['Large', 'Enterprise'],
+      geoLocations: ['North America', 'Europe', 'Asia Pacific']
+    },
+    differentiators: [
+      'Strong integration with Arista networks',
+      'Good for data center environments',
+      'Cognitive network management',
+      'Network telemetry and analytics',
+      'Streaming network state information'
+    ]
+  },
+  
+  'no-nac': {
+    name: 'No NAC Solution',
+    shortName: 'No NAC',
+    logoUrl: './img/vendors/no-nac.png',
+    cloudNative: false,
+    architecture: 'none',
+    deployment: {
+      timeToValue: 0,
+      complexity: 'None',
+      requiresHardware: false,
+      requiresAgents: false,
+      remoteWorkSupport: false,
+      cloudManaged: false
+    },
+    costs: {
+      pricing: 'none',
+      licensePerDevice: 0,
+      hardware: 0,
+      implementation: 0,
+      maintenance: 0,
+      yearlySubscription: 0,
+      personnel: 0,
+      training: 0,
+      tco3Year: 0
+    },
+    security: {
+      zeroTrust: 0,
+      deviceAuth: 0,
+      riskAssessment: 0,
+      remediationSpeed: 120,
+      complianceCoverage: 0,
+      mfa: false,
+      certificateSupport: false,
+      encryptionLevel: 'None',
+      continuousMonitoring: false,
+      automatedResponse: false
+    },
+    compliance: {
+      pciDss: 0,
+      hipaa: 0,
+      gdpr: 0,
+      nist: 0,
+      iso27001: 0,
+      sox: 0,
+      cmmc: 0,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 0, details: {identify: 0, protect: 0, detect: 0, respond: 0, recover: 0}},
+        {name: 'PCI DSS', coverage: 0},
+        {name: 'HIPAA', coverage: 0},
+        {name: 'GDPR', coverage: 0},
+        {name: 'ISO 27001', coverage: 0},
+        {name: 'SOX', coverage: 0}
+      ]
+    },
+    features: {
+      byod: false,
+      iot: false,
+      wireless: false,
+      wired: false,
+      vpn: false,
+      cloudIntegration: false,
+      legacyDevices: false,
+      remoteUsers: false,
+      mdm: false,
+      siem: false,
+      sso: false,
+      api: false,
+      automatedProvisioning: false,
+      dashboards: false,
+      customReporting: false,
+      userPortal: false
+    },
+    integration: {
+      azure: false,
+      googleWorkspace: false,
+      aws: false,
+      activedirectory: false,
+      ldap: false,
+      radius: false,
+      mdm: false,
+      siem: false,
+      ticketing: false,
+      cmdb: false
+    },
+    technical: {
+      maxDevices: 'N/A',
+      performanceImpact: 'None',
+      scalability: 'N/A',
+      reliability: 0,
+      redundancy: 'None',
+      disasterRecovery: 'None',
+      updateFrequency: 'N/A'
+    },
+    customers: {
+      industries: ['Various'],
+      companySize: ['Small'],
+      geoLocations: ['Various']
+    },
+    differentiators: [
+      'No upfront costs',
+      'No implementation time',
+      'No ongoing maintenance',
+      'No training required',
+      'High security risk'
+    ]
+  }
+};
+
+// Make it globally available
+window.VENDORS = VENDORS;
+
+/**
+ * Compliance Framework Data
+ * Contains detailed information on compliance frameworks
+ */
+const COMPLIANCE_FRAMEWORKS = {
+  'nist-csf': {
+    name: 'NIST Cybersecurity Framework',
+    shortName: 'NIST CSF',
+    description: 'The NIST Cybersecurity Framework (CSF) provides a policy framework of computer security guidance for how organizations can assess and improve their ability to prevent, detect, and respond to cyber attacks.',
+    version: '1.1',
+    categories: [
+      {
+        id: 'identify',
+        name: 'Identify',
+        description: 'Develop organizational understanding to manage cybersecurity risk to systems, people, assets, data, and capabilities.',
+        subcategories: ['Asset Management', 'Business Environment', 'Governance', 'Risk Assessment', 'Risk Management Strategy']
+      },
+      {
+        id: 'protect',
+        name: 'Protect',
+        description: 'Develop and implement appropriate safeguards to ensure delivery of critical services.',
+        subcategories: ['Identity Management', 'Access Control', 'Awareness and Training', 'Data Security', 'Protective Technology']
+      },
+      {
+        id: 'detect',
+        name: 'Detect',
+        description: 'Develop and implement appropriate activities to identify the occurrence of a cybersecurity event.',
+        subcategories: ['Anomalies and Events', 'Security Continuous Monitoring', 'Detection Processes']
+      },
+      {
+        id: 'respond',
+        name: 'Respond',
+        description: 'Develop and implement appropriate activities to take action regarding a detected cybersecurity incident.',
+        subcategories: ['Response Planning', 'Communications', 'Analysis', 'Mitigation', 'Improvements']
+      },
+      {
+        id: 'recover',
+        name: 'Recover',
+        description: 'Develop and implement appropriate activities to maintain plans for resilience and to restore any capabilities or services that were impaired due to a cybersecurity incident.',
+        subcategories: ['Recovery Planning', 'Improvements', 'Communications']
+      }
+    ]
+  }
+};
+
+// Make it globally available
+window.COMPLIANCE_FRAMEWORKS = COMPLIANCE_FRAMEWORKS;
+EOF
+
+# Create modern CSS styling
+echo "Creating modern CSS styles..."
+cat > css/modern-styles.css << 'EOF'
+/**
+ * Modern Styles for Portnox Total Cost Analyzer
+ * Clean, flat design with sharp edges and modern aesthetic
+ */
+
+:root {
+  /* Primary colors */
+  --color-primary-50: #e6f2ff;
+  --color-primary-100: #cce5ff;
+  --color-primary-200: #99cbff;
+  --color-primary-300: #66b0ff;
+  --color-primary-400: #3396ff;
+  --color-primary-500: #007bff;
+  --color-primary-600: #0062cc;
+  --color-primary-700: #0049a3;
+  --color-primary-800: #003180;
+  --color-primary-900: #001a40;
+  
+  /* Secondary colors */
+  --color-secondary-50: #f5f0ff;
+  --color-secondary-100: #ede0ff;
+  --color-secondary-200: #d8c2ff;
+  --color-secondary-300: #c4a3ff;
+  --color-secondary-400: #b085ff;
+  --color-secondary-500: #9c66ff;
+  --color-secondary-600: #7d52cc;
+  --color-secondary-700: #5e3d99;
+  --color-secondary-800: #3e2966;
+  --color-secondary-900: #1f1433;
+  
+  /* Success colors */
+  --color-success-50: #e6fff0;
+  --color-success-100: #ccffe0;
+  --color-success-200: #99ffc2;
+  --color-success-300: #66ffa3;
+  --color-success-400: #33ff85;
+  --color-success-500: #00ff66;
+  --color-success-600: #00cc52;
+  --color-success-700: #00993d;
+  --color-success-800: #006629;
+  --color-success-900: #003314;
+  
+  /* Warning colors */
+  --color-warning-50: #fffbe6;
+  --color-warning-100: #fff8cc;
+  --color-warning-200: #fff099;
+  --color-warning-300: #ffe966;
+  --color-warning-400: #ffe333;
+  --color-warning-500: #ffdd00;
+  --color-warning-600: #ccb000;
+  --color-warning-700: #998400;
+  --color-warning-800: #665800;
+  --color-warning-900: #332c00;
+  
+  /* Danger colors */
+  --color-danger-50: #ffe6e6;
+  --color-danger-100: #ffcccc;
+  --color-danger-200: #ff9999;
+  --color-danger-300: #ff6666;
+  --color-danger-400: #ff3333;
+  --color-danger-500: #ff0000;
+  --color-danger-600: #cc0000;
+  --color-danger-700: #990000;
+  --color-danger-800: #660000;
+  --color-danger-900: #330000;
+  
+  /* Neutral colors */
+  --color-neutral-50: #f7f7f7;
+  --color-neutral-100: #e6e6e6;
+  --color-neutral-200: #cccccc;
+  --color-neutral-300: #b3b3b3;
+  --color-neutral-400: #999999;
+  --color-neutral-500: #808080;
+  --color-neutral-600: #666666;
+  --color-neutral-700: #4d4d4d;
+  --color-neutral-800: #333333;
+  --color-neutral-900: #1a1a1a;
+  
+  /* Layout */
+  --header-height: 60px;
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 64px;
+  --content-max-width: 1440px;
+  --border-radius: 0px;
+  --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  
+  /* Typography */
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  --font-size-base: 14px;
+  --line-height-base: 1.5;
+  
+  /* Spacing */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  
+  /* Z-index */
+  --z-index-header: 100;
+  --z-index-sidebar: 90;
+  --z-index-dropdown: 80;
+  --z-index-modal: 1000;
+  --z-index-toast: 1100;
+}
+
+/* Base styles */
+body {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--color-neutral-800);
+  background-color: var(--color-neutral-50);
+  margin: 0;
+  padding: 0;
+}
+
+/* Layout */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.header {
+  height: var(--header-height);
+  background-color: var(--color-primary-600);
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--spacing-4);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-index-header);
+  box-shadow: var(--box-shadow);
+}
+
+.content-wrapper {
+  display: flex;
+  min-height: calc(100vh - var(--header-height));
+  margin-top: var(--header-height);
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: white;
+  box-shadow: var(--box-shadow);
+  transition: width 0.3s ease;
+  position: fixed;
+  top: var(--header-height);
+  bottom: 0;
+  left: 0;
+  z-index: var(--z-index-sidebar);
+  overflow-y: auto;
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+.content-area {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  padding: var(--spacing-6);
+  transition: margin-left 0.3s ease;
+}
+
+.content-area.expanded {
+  margin-left: var(--sidebar-collapsed-width);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-4);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+h2 {
+  font-size: 1.75rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+h4 {
+  font-size: 1.25rem;
+}
+
+h5 {
+  font-size: 1.125rem;
+}
+
+h6 {
+  font-size: 1rem;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: var(--spacing-4);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2) var(--spacing-4);
+  background-color: var(--color-primary-500);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  text-decoration: none;
+  height: 36px;
+}
+
+.btn:hover {
+  background-color: var(--color-primary-600);
+}
+
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary-200);
+}
+
+.btn-sm {
+  height: 28px;
+  padding: var(--spacing-1) var(--spacing-3);
+  font-size: 0.875rem;
+}
+
+.btn-lg {
+  height: 44px;
+  padding: var(--spacing-3) var(--spacing-6);
+  font-size: 1.125rem;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--color-primary-500);
+  border: 1px solid var(--color-primary-500);
+}
+
+.btn-outline:hover {
+  background-color: var(--color-primary-50);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary-500);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-secondary-600);
+}
+
+.btn-success {
+  background-color: var(--color-success-500);
+}
+
+.btn-success:hover {
+  background-color: var(--color-success-600);
+}
+
+.btn-warning {
+  background-color: var(--color-warning-500);
+  color: var(--color-neutral-800);
+}
+
+.btn-warning:hover {
+  background-color: var(--color-warning-600);
+}
+
+.btn-danger {
+  background-color: var(--color-danger-500);
+}
+
+.btn-danger:hover {
+  background-color: var(--color-danger-600);
+}
+
+/* Tab Navigator */
+.tab-container {
+  margin-bottom: var(--spacing-6);
+}
+
+.main-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-neutral-200);
+  background-color: white;
+}
+
+.main-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-3) var(--spacing-4);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.main-tab:hover {
+  background-color: var(--color-neutral-50);
+}
+
+.main-tab.active {
+  border-bottom-color: var(--color-primary-500);
+  color: var(--color-primary-500);
+}
+
+.tab-icon {
+  font-size: 1.25rem;
+  margin-bottom: var(--spacing-1);
+}
+
+.tab-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.sub-tabs-container {
+  background-color: white;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.sub-tabs {
+  display: none;
+  flex-wrap: wrap;
+}
+
+.sub-tabs.active {
+  display: flex;
+}
+
+.sub-tab {
+  padding: var(--spacing-2) var(--spacing-4);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sub-tab:hover {
+  background-color: var(--color-neutral-50);
+}
+
+.sub-tab.active {
+  color: var(--color-primary-500);
+  font-weight: 500;
+}
+
+.view-container {
+  min-height: 600px;
+}
+
+.view-content {
+  display: none;
+}
+
+.view-content.active {
+  display: block;
+}
+
+/* Section Banner */
+.section-banner {
+  background-color: var(--color-primary-600);
+  color: white;
+  padding: var(--spacing-6);
+  margin-bottom: var(--spacing-6);
+}
+
+.section-banner h2 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-2);
+  font-size: 1.5rem;
+}
+
+.section-banner p {
+  margin-bottom: 0;
+  opacity: 0.8;
+}
+
+.banner-gradient-cool {
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-secondary-600));
+}
+
+.banner-gradient-warm {
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-warning-500));
+}
+
+.banner-gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+.stat-card {
+  background-color: white;
+  padding: var(--spacing-4);
+}
+
+.stat-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: var(--spacing-2);
+  color: var(--color-neutral-700);
+  display: flex;
+  align-items: center;
+}
+
+.stat-title i {
+  margin-right: var(--spacing-2);
+  color: var(--color-primary-500);
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-2);
+  color: var(--color-neutral-900);
+}
+
+.stat-indicator {
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+}
+
+.stat-indicator.positive {
+  color: var(--color-success-600);
+}
+
+.stat-indicator.negative {
+  color: var(--color-danger-600);
+}
+
+.stat-indicator i {
+  margin-right: var(--spacing-1);
+}
+
+.stat-text {
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+}
+
+/* Chart Section */
+.chart-section {
+  margin-bottom: var(--spacing-8);
+}
+
+.section-title {
+  font-size: 1.25rem;
+  margin-bottom: var(--spacing-4);
+  display: flex;
+  align-items: center;
+}
+
+.section-title i {
+  margin-right: var(--spacing-2);
+  color: var(--color-primary-500);
+}
+
+.chart-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+.chart-wrapper {
+  background-color: white;
+  padding: var(--spacing-4);
+  height: 300px;
+  position: relative;
+}
+
+.chart-wrapper.large-chart {
+  height: 400px;
+  grid-column: 1 / -1;
+}
+
+.chart-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-1);
+}
+
+.chart-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+  margin-bottom: var(--spacing-4);
+}
+
+.chart-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.chart-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-neutral-200);
+  border-top-color: var(--color-primary-500);
+  border-radius: 50%;
+  margin: 0 auto var(--spacing-3);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Insight Panel */
+.insight-panel {
+  background-color: white;
+  padding: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+.insight-list {
+  margin: 0;
+  padding-left: var(--spacing-5);
+}
+
+.insight-list li {
+  margin-bottom: var(--spacing-3);
+}
+
+.insight-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* Recommendations Section */
+.recommendations-section {
+  margin-bottom: var(--spacing-8);
+}
+
+.recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.recommendation-card {
+  background-color: white;
+  padding: var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.recommendation-icon {
+  font-size: 2rem;
+  color: var(--color-primary-500);
+  margin-bottom: var(--spacing-3);
+}
+
+.recommendation-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-2);
+}
+
+.recommendation-text {
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+}
+
+/* NIST Framework Section */
+.nist-framework-section {
+  margin-bottom: var(--spacing-8);
+}
+
+.nist-framework {
+  background-color: white;
+  padding: var(--spacing-4);
+  min-height: 400px;
+  position: relative;
+}
+
+/* Vendor Position Section */
+.market-position-section {
+  margin-bottom: var(--spacing-8);
+}
+
+.vendor-position-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.vendor-position-card {
+  background-color: white;
+  padding: var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vendor-position-logo {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--spacing-3);
+}
+
+.vendor-position-logo img {
+  max-height: 100%;
+  max-width: 120px;
+}
+
+.vendor-position-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-2);
+}
+
+.vendor-position-text {
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+  text-align: center;
+}
+
+/* Cost Table Section */
+.cost-table-section {
+  margin-bottom: var(--spacing-6);
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: var(--spacing-3);
+  text-align: left;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.data-table th {
+  background-color: var(--color-primary-600);
+  color: white;
+  font-weight: 500;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table .total-row {
+  font-weight: 700;
+}
+
+.data-table .savings {
+  color: var(--color-success-600);
+}
+
+.data-table .negative {
+  color: var(--color-danger-600);
+}
+
+.data-table .total-savings {
+  color: var(--color-success-600);
+  font-weight: 700;
+}
+
+/* Architecture Section */
+.architecture-section {
+  margin-bottom: var(--spacing-8);
+}
+
+.architecture-types {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.arch-type {
+  background-color: white;
+  padding: var(--spacing-4);
+}
+
+.arch-type-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.arch-type-icon {
+  font-size: 1.5rem;
+  margin-right: var(--spacing-3);
+  color: var(--color-primary-500);
+}
+
+.arch-type-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-right: auto;
+}
+
+.arch-type-vendor {
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+}
+
+.arch-type-diagram {
+  margin-bottom: var(--spacing-4);
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arch-type-diagram img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.arch-type-advantages {
+  font-size: 0.875rem;
+}
+
+.advantage-item,
+.disadvantage-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-2);
+}
+
+.advantage-item i {
+  margin-right: var(--spacing-2);
+  color: var(--color-success-500);
+}
+
+.disadvantage-item i {
+  margin-right: var(--spacing-2);
+  color: var(--color-danger-500);
+}
+
+/* Deployment Section */
+.deployment-section {
+  margin-bottom: var(--spacing-8);
+}
+
+.timeline-comparison {
+  margin-top: var(--spacing-4);
+}
+
+.timeline-vendor {
+  margin-bottom: var(--spacing-5);
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-3);
+}
+
+.timeline-header img {
+  height: 24px;
+  margin-right: var(--spacing-3);
+}
+
+.timeline-title {
+  font-weight: 600;
+}
+
+.timeline {
+  display: flex;
+  height: 40px;
+  background-color: var(--color-neutral-100);
+  margin-bottom: var(--spacing-2);
+}
+
+.timeline-stage {
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-900);
+  font-size: 0.75rem;
+  overflow: hidden;
+}
+
+.timeline-portnox .timeline-stage {
+  background-color: var(--color-success-100);
+  color: var(--color-success-900);
+}
+
+.timeline-traditional .timeline-stage:nth-child(1) {
+  background-color: var(--color-primary-100);
+}
+
+.timeline-traditional .timeline-stage:nth-child(2) {
+  background-color: var(--color-primary-200);
+}
+
+.timeline-traditional .timeline-stage:nth-child(3) {
+  background-color: var(--color-primary-300);
+}
+
+.timeline-traditional .timeline-stage:nth-child(4) {
+  background-color: var(--color-primary-400);
+  color: white;
+}
+
+.stage-label {
+  font-weight: 600;
+  margin-right: var(--spacing-2);
+}
+
+.timeline-total {
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-align: right;
+}
+
+/* Zero Trust Section */
+.zero-trust-section {
+  margin-bottom: var(--spacing-8);
+}
+
+.zero-trust-description {
+  margin-bottom: var(--spacing-4);
+}
+
+.zero-trust-capabilities {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.capability-item {
+  text-align: center;
+}
+
+.capability-icon {
+  font-size: 2rem;
+  color: var(--color-primary-500);
+  margin-bottom: var(--spacing-2);
+}
+
+.capability-name {
+  font-weight: 600;
+  margin-bottom: var(--spacing-1);
+}
+
+.capability-description {
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+}
+
+/* Glass Panel */
+.glass-panel {
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  padding: var(--spacing-4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .sidebar {
+    width: var(--sidebar-collapsed-width);
+  }
+  
+  .content-area {
+    margin-left: var(--sidebar-collapsed-width);
+  }
+  
+  .chart-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 0 var(--spacing-3);
+  }
+  
+  .content-area {
+    padding: var(--spacing-3);
+  }
+  
+  .recommendations-grid,
+  .stats-grid,
+  .zero-trust-capabilities {
+    grid-template-columns: 1fr;
+  }
+  
+  .architecture-types {
+    grid-template-columns: 1fr;
+  }
+}
+EOF
+
+# Create comprehensive fix script
 echo "Creating comprehensive-fix.js..."
-cat > js/utils/comprehensive-fix.js << 'EOL'
+cat > js/utils/comprehensive-fix.js << 'EOF'
 /**
  * Comprehensive Fix for Portnox Total Cost Analyzer
  * Fixes various issues and applies UI improvements
@@ -2493,15 +3255,6 @@ function addModernStyles() {
     link.rel = 'stylesheet';
     link.href = './css/modern-styles.css';
     document.head.appendChild(link);
-    
-    // Add Font Awesome if not already present
-    if (!document.querySelector('link[href*="fontawesome"]')) {
-      const fontAwesome = document.createElement('link');
-      fontAwesome.rel = 'stylesheet';
-      fontAwesome.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
-      document.head.appendChild(fontAwesome);
-    }
-    
     console.log('Modern styles added');
   }
 }
@@ -2517,16 +3270,6 @@ function ensureVendorData() {
     // Load vendor-data.js
     const script = document.createElement('script');
     script.src = './js/data/vendor-data.js';
-    script.onload = function() {
-      console.log('Vendor data loaded successfully');
-    };
-    script.onerror = function() {
-      console.error('Failed to load vendor data from js/data/vendor-data.js');
-      // Try alternative location
-      const altScript = document.createElement('script');
-      altScript.src = './js/models/vendor-data.js';
-      document.body.appendChild(altScript);
-    };
     document.body.appendChild(script);
   } else {
     console.log('VENDORS is already defined with', Object.keys(window.VENDORS).length, 'vendors');
@@ -2549,35 +3292,11 @@ function ensureTabNavigator() {
       if (typeof window.TabNavigator !== 'undefined') {
         window.tabNavigator = new TabNavigator().init();
         console.log('TabNavigator initialized');
-        
-        // Load other required components
-        loadComponentScripts();
       }
     };
     document.body.appendChild(script);
   } else {
     console.log('TabNavigator is already defined');
-    // Load other required components
-    loadComponentScripts();
-  }
-}
-
-/**
- * Load additional component scripts
- */
-function loadComponentScripts() {
-  // Load VendorComparison
-  if (typeof window.VendorComparison === 'undefined') {
-    const vendorCompScript = document.createElement('script');
-    vendorCompScript.src = './js/components/vendorComparison.js';
-    document.body.appendChild(vendorCompScript);
-  }
-  
-  // Load NistCSFVisualization
-  if (typeof window.NistCSFVisualization === 'undefined') {
-    const nistScript = document.createElement('script');
-    nistScript.src = './js/components/nistCsfVisualization.js';
-    document.body.appendChild(nistScript);
   }
 }
 
@@ -2731,38 +3450,13 @@ function fixCalculator() {
   if (typeof window.TcoCalculator === 'undefined') {
     console.warn('TcoCalculator not defined, loading calculator-fix.js');
     
-    // Try to load various calculator fixes
-    loadScript('./js/models/calculator-fix.js');
+    // Load calculator-fix.js
+    const script = document.createElement('script');
+    script.src = './js/models/calculator-fix.js';
+    document.body.appendChild(script);
   } else {
     console.log('TcoCalculator already defined');
   }
-}
-
-/**
- * Load script with fallbacks
- */
-function loadScript(url, fallbacks = [], callback) {
-  const script = document.createElement('script');
-  script.src = url;
-  
-  script.onload = function() {
-    console.log(`Loaded script: ${url}`);
-    if (callback) callback();
-  };
-  
-  script.onerror = function() {
-    console.error(`Failed to load: ${url}`);
-    
-    // Try fallbacks if available
-    if (fallbacks && fallbacks.length > 0) {
-      const nextUrl = fallbacks.shift();
-      loadScript(nextUrl, fallbacks, callback);
-    } else if (callback) {
-      callback();
-    }
-  };
-  
-  document.body.appendChild(script);
 }
 
 /**
@@ -3027,8 +3721,8 @@ function enhanceUI() {
       // Calculate breach costs (simplified example)
       const breachCost = 4800000; // Average cost of a data breach
       const series = vendorIds.map(id => {
-        const vendor = vendors[id];
-        return Math.round(breachCost * ((vendor?.security?.breachReduction || 0) / 100));
+        const reductionPct = vendors[id]?.security?.breachReduction || 0;
+        return Math.round(breachCost * (reductionPct / 100));
       });
       
       const options = {
@@ -3186,12 +3880,11 @@ function enhanceUI() {
       // Prepare chart data
       const frameworks = ['NIST CSF', 'PCI DSS', 'HIPAA', 'GDPR', 'ISO 27001'];
       const series = vendorIds.map(id => {
-        const vendor = vendors[id] || {};
         return {
-          name: vendor.shortName || id,
+          name: vendors[id]?.shortName || id,
           data: frameworks.map(framework => {
-            const frameworkKey = framework.toLowerCase().replace(/[^a-z0-9]/g, '');
-            return vendor.compliance?.[frameworkKey] || vendor.compliance?.[framework] || 0;
+            const frameworkKey = framework.toLowerCase().replace(/\s+/g, '');
+            return vendors[id]?.compliance?.[frameworkKey] || 0;
           })
         };
       });
@@ -3254,11 +3947,11 @@ function enhanceUI() {
   
   console.log('UI enhancements applied');
 }
-EOL
+EOF
 
-# Create Vendor Comparison Component
+# Create vendor comparison fix script
 echo "Creating vendorComparison.js..."
-cat > js/components/vendorComparison.js << 'EOL'
+cat > js/components/vendorComparison.js << 'EOF'
 /**
  * Enhanced Vendor Comparison for Portnox Total Cost Analyzer
  * Creates interactive comparison charts and tables for vendor analysis
@@ -3602,7 +4295,7 @@ const VendorComparison = {
       { name: 'NIST CSF', icon: 'fa-shield-alt', key: 'nist' },
       { name: 'PCI DSS', icon: 'fa-credit-card', key: 'pciDss' },
       { name: 'HIPAA', icon: 'fa-hospital', key: 'hipaa' },
-      { name: 'GDPR', icon: 'fa-globe', key: 'gdpr' },
+      { name: 'GDPR', icon: 'fa-globe-europe', key: 'gdpr' },
       { name: 'ISO 27001', icon: 'fa-certificate', key: 'iso27001' }
     ];
     
@@ -3822,6 +4515,7 @@ const VendorComparison = {
       .integration-vendor {
         font-size: 0.75rem;
         padding: 4px 8px;
+        border-radius: 4px;
       }
       
       .integration-vendor.supported {
@@ -3876,6 +4570,50 @@ const VendorComparison = {
       .vendor-name {
         font-weight: 500;
       }
+      
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-right: 12px;
+      }
+      
+      .legend-color {
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+      }
+      
+      .heatmap-legend {
+        display: flex;
+        justify-content: center;
+        margin-top: 12px;
+      }
+      
+      .score-excellent {
+        background-color: var(--color-success-500);
+        color: white;
+      }
+      
+      .score-good {
+        background-color: var(--color-success-300);
+        color: var(--color-neutral-800);
+      }
+      
+      .score-average {
+        background-color: var(--color-warning-300);
+        color: var(--color-neutral-800);
+      }
+      
+      .score-poor {
+        background-color: var(--color-danger-300);
+        color: var(--color-neutral-800);
+      }
+      
+      .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        font-size: 0.75rem;
+      }
     `);
   },
   
@@ -3913,11 +4651,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Make globally available
   window.VendorComparison = VendorComparison;
 });
-EOL
+EOF
 
 # Create NIST CSF Visualization component
-echo "Creating nistCsfVisualization.js..."
-cat > js/components/nistCsfVisualization.js << 'EOL'
+echo "Creating NIST CSF Visualization..."
+cat > js/components/nistCsfVisualization.js << 'EOF'
 /**
  * NIST CSF Visualization Component for Portnox Total Cost Analyzer
  * Creates an interactive visualization of the NIST Cybersecurity Framework
@@ -4444,11 +5182,11 @@ window.NistCSFVisualization = NistCSFVisualization;
 document.addEventListener('DOMContentLoaded', () => {
   console.log('NIST CSF Visualization component loaded');
 });
-EOL
+EOF
 
-# Create finalfixes.js that loads all modules
+# Create main script that applies all fixes
 echo "Creating finalfixes.js..."
-cat > js/finalfixes.js << 'EOL'
+cat > js/finalfixes.js << 'EOF'
 /**
  * Final Fixes for Portnox Total Cost Analyzer
  * Apply all fixes and enhancements in one go
@@ -4456,34 +5194,22 @@ cat > js/finalfixes.js << 'EOL'
 
 // Load all required fixes and enhancements
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('Applying all fixes and enhancements for Portnox Total Cost Analyzer...');
+  console.log('Applying all fixes and enhancements...');
   
   // Add modern CSS
   loadResource('css/modern-styles.css', 'css');
   
-  // Add Font Awesome if not already present
-  if (!document.querySelector('link[href*="fontawesome"]')) {
-    loadResource('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css', 'css');
-  }
-  
-  // Add ApexCharts
-  loadResource('https://cdn.jsdelivr.net/npm/apexcharts', 'js');
-  
   // Load vendor data
-  loadResource('js/data/vendor-data.js', 'js', function() {
-    // If vendor data wasn't found in the first location, try another
-    if (typeof window.VENDORS === 'undefined') {
-      loadResource('js/models/vendor-data.js', 'js');
-    }
-  });
+  loadResource('js/data/vendor-data.js', 'js');
   
-  // Load custom components
+  // Load tab navigator
   loadResource('js/components/tab-navigator-enhanced.js', 'js');
-  loadResource('js/components/vendorComparison.js', 'js');
-  loadResource('js/components/nistCsfVisualization.js', 'js');
   
-  // Load calculator fixes
-  loadResource('js/models/calculator-fix.js', 'js');
+  // Load vendor comparison
+  loadResource('js/components/vendorComparison.js', 'js');
+  
+  // Load NIST CSF visualization
+  loadResource('js/components/nistCsfVisualization.js', 'js');
   
   // Load comprehensive fixes
   loadResource('js/utils/comprehensive-fix.js', 'js', function() {
@@ -4491,7 +5217,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize fixes
     if (typeof initializeFixes === 'function') {
-      setTimeout(initializeFixes, 500); // Slight delay to ensure all scripts are processed
+      initializeFixes();
     }
   });
 });
@@ -4526,16 +5252,16 @@ function loadResource(url, type, callback) {
   document.head.appendChild(element);
   console.log(`Loaded ${type} resource: ${url}`);
 }
-EOL
+EOF
 
-# Make script executable
-chmod +x apply-fixes.sh
+# Update script to make it executable
+chmod +x comprehensive-fix.sh
+
+# Execute the script
+echo "Comprehensive fix script created. Running it now..."
+./comprehensive-fix.sh
 
 echo "===================================================="
 echo "Portnox Total Cost Analyzer has been enhanced!"
 echo "All issues have been fixed and the UI has been modernized."
-echo "You can now add the following script tag to your HTML to apply all fixes:"
-echo "<script src=\"js/finalfixes.js\"></script>"
-echo "===================================================="
-echo "To apply all fixes at once, run the script: ./apply-fixes.sh"
 echo "===================================================="

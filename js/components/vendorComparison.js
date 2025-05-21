@@ -341,7 +341,7 @@ const VendorComparison = {
       { name: 'NIST CSF', icon: 'fa-shield-alt', key: 'nist' },
       { name: 'PCI DSS', icon: 'fa-credit-card', key: 'pciDss' },
       { name: 'HIPAA', icon: 'fa-hospital', key: 'hipaa' },
-      { name: 'GDPR', icon: 'fa-globe', key: 'gdpr' },
+      { name: 'GDPR', icon: 'fa-globe-europe', key: 'gdpr' },
       { name: 'ISO 27001', icon: 'fa-certificate', key: 'iso27001' }
     ];
     
@@ -561,6 +561,7 @@ const VendorComparison = {
       .integration-vendor {
         font-size: 0.75rem;
         padding: 4px 8px;
+        border-radius: 4px;
       }
       
       .integration-vendor.supported {
@@ -614,6 +615,50 @@ const VendorComparison = {
       
       .vendor-name {
         font-weight: 500;
+      }
+      
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-right: 12px;
+      }
+      
+      .legend-color {
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+      }
+      
+      .heatmap-legend {
+        display: flex;
+        justify-content: center;
+        margin-top: 12px;
+      }
+      
+      .score-excellent {
+        background-color: var(--color-success-500);
+        color: white;
+      }
+      
+      .score-good {
+        background-color: var(--color-success-300);
+        color: var(--color-neutral-800);
+      }
+      
+      .score-average {
+        background-color: var(--color-warning-300);
+        color: var(--color-neutral-800);
+      }
+      
+      .score-poor {
+        background-color: var(--color-danger-300);
+        color: var(--color-neutral-800);
+      }
+      
+      .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        font-size: 0.75rem;
       }
     `);
   },
