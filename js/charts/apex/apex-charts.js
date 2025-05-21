@@ -1,15 +1,9 @@
 /**
- * ApexChartsManager for Portnox Total Cost Analyzer
- * Auto-fixed by maintenance script
- */
-
-// Prevent redeclaration
-if (typeof window.ApexChartsManager === 'undefined') {
-/**
  * ApexCharts Integration for Portnox Total Cost Analyzer
  * Provides chart rendering functions for the application
  */
 
+const ApexChartsManager = {
   renderTcoComparisonChart: function(containerId, data) {
     if (!window.ApexCharts) {
       console.error("ApexCharts library not available");
@@ -18,7 +12,7 @@ if (typeof window.ApexChartsManager === 'undefined') {
     
     const element = document.getElementById(containerId);
     if (!element) {
-      console.error(`Container element ${containerId} not found`);
+      console.error("Container element " + containerId + " not found");
       return;
     }
     
@@ -168,7 +162,7 @@ if (typeof window.ApexChartsManager === 'undefined') {
     
     const element = document.getElementById(containerId);
     if (!element) {
-      console.error(`Container element ${containerId} not found`);
+      console.error("Container element " + containerId + " not found");
       return;
     }
     
@@ -373,4 +367,3 @@ if (typeof window.ApexChartsManager === 'undefined') {
 
 // Make it globally available
 window.ApexChartsManager = ApexChartsManager;
-}

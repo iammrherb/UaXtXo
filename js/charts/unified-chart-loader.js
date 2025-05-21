@@ -107,11 +107,15 @@ const UnifiedChartLoader = {
      * Queue a chart for loading
      */
     queueChart: function(chartType, containerId, chartId, data) {
+        if (!this.chartsToLoad) {
+            this.chartsToLoad = [];
+        }
+        
         this.chartsToLoad.push({
             type: chartType,
             containerId: containerId,
             chartId: chartId,
-            data: data
+            data: data || null
         });
         
         // If it's the first chart, start loading
@@ -124,7 +128,7 @@ const UnifiedChartLoader = {
      * Load the next chart in the queue
      */
     loadNextChart: function() {
-        if (this.chartsToLoad.length === 0) return;
+        if (!this.chartsToLoad || this.chartsToLoad.length === 0) return;
         
         const chart = this.chartsToLoad.shift();
         
@@ -146,12 +150,6 @@ const UnifiedChartLoader = {
                 case 'apex-cost':
                     if (window.ApexChartsManager) {
                         window.ApexChartsManager.renderCumulativeCostChart(chart.containerId, chart.data);
-                    }
-                    break;
-                case 'highcharts-security':
-                    if (window.HighchartsManager) {
-                        const manager = new window.HighchartsManager();
-                        manager.createRiskComparisonChart(chart.data, chart.containerId, chart.chartId);
                     }
                     break;
                 case 'treemap-security':
@@ -228,9 +226,24 @@ const UnifiedChartLoader = {
             };
         }
         
+        // Process the data for D3
+        let processedData = [];
+        
+        // Create leaf nodes from the features
+        data.vendors.forEach(vendor => {
+            vendor.features.forEach(feature => {
+                processedData.push({
+                    vendor: vendor.name,
+                    feature: feature.name,
+                    value: feature.value,
+                    color: vendor.color
+                });
+            });
+        });
+        
         // Calculate dimensions
-        const width = container.clientWidth;
-        const height = 500;
+        const width = container.clientWidth || 800;
+        const height = 400;
         
         // Create SVG
         const svg = d3.select("#" + containerId)
@@ -238,94 +251,100 @@ const UnifiedChartLoader = {
             .attr("width", width)
             .attr("height", height);
         
+        // Group by vendor for the treemap
+        const nested = d3.group(processedData, d => d.vendor);
+        
+        // Create hierarchical data
+        const root = {
+            name: "root",
+            children: Array.from(nested, ([key, value]) => {
+                return {
+                    name: key,
+                    children: value.map(d => ({
+                        name: d.feature,
+                        value: d.value,
+                        color: d.color
+                    }))
+                };
+            })
+        };
+        
+        // Create hierarchy
+        const hierarchy = d3.hierarchy(root)
+            .sum(d => d.value)
+            .sort((a, b) => b.value - a.value);
+        
         // Create treemap layout
         const treemap = d3.treemap()
             .size([width, height])
-            .padding(2)
+            .paddingOuter(10)
+            .paddingTop(20)
+            .paddingInner(2)
             .round(true);
         
-        // Process data for treemap
-        const root = d3.hierarchy({ children: [] })
-            .sum(d => d.value);
+        // Apply layout
+        const nodes = treemap(hierarchy);
         
-        // Add vendor hierarchies
-        data.vendors.forEach(vendor => {
-            // Create vendor node
-            const vendorNode = {
-                name: vendor.name,
-                children: vendor.features.map(feature => ({
-                    name: feature.name,
-                    value: feature.value,
-                    vendorName: vendor.name,
-                    color: vendor.color
-                }))
-            };
-            
-            // Add to root
-            root.children.push(d3.hierarchy(vendorNode)
-                .sum(d => d.value));
-        });
-        
-        // Apply treemap layout
-        treemap(root);
-        
-        // Create container for each vendor
-        const vendorGroups = svg.selectAll(".vendor-group")
-            .data(root.children)
+        // Create vendor groups
+        const vendorGroups = svg.selectAll('.vendor-group')
+            .data(nodes.children)
             .enter()
-            .append("g")
-            .attr("class", "vendor-group")
-            .attr("transform", d => "translate(0," + d.x0 + ")");
+            .append('g')
+            .attr('class', 'vendor-group')
+            .attr('transform', d => `translate(${d.x0},${d.y0})`);
         
         // Add vendor labels
-        vendorGroups.append("text")
-            .attr("x", 5)
-            .attr("y", 20)
-            .attr("font-weight", "bold")
-            .attr("font-size", "16px")
+        vendorGroups.append('text')
+            .attr('x', 5)
+            .attr('y', 15)
+            .attr('font-size', '16px')
+            .attr('font-weight', 'bold')
             .text(d => d.data.name);
         
-        // Add cells for each feature
-        vendorGroups.selectAll(".feature-cell")
-            .data(d => d.leaves())
+        // Create nodes for each feature
+        const featureNodes = vendorGroups.selectAll('.feature-node')
+            .data(d => d.children)
             .enter()
-            .append("g")
-            .attr("class", "feature-cell")
-            .attr("transform", d => "translate(" + d.x0 + "," + d.y0 + ")");
+            .append('g')
+            .attr('class', 'feature-node')
+            .attr('transform', d => `translate(${d.x0 - d.parent.x0},${d.y0 - d.parent.y0 + 25})`);
         
-        // Add rectangles for each feature
-        vendorGroups.selectAll(".feature-cell")
-            .append("rect")
-            .attr("width", d => d.x1 - d.x0)
-            .attr("height", d => d.y1 - d.y0)
-            .attr("fill", d => d.data.color)
-            .attr("opacity", d => d.data.value / 100)
-            .attr("stroke", "#fff")
-            .attr("rx", 4)
-            .attr("ry", 4);
+        // Add rectangles
+        featureNodes.append('rect')
+            .attr('width', d => d.x1 - d.x0)
+            .attr('height', d => d.y1 - d.y0 - 25)
+            .attr('fill', d => d.data.color)
+            .attr('opacity', d => d.data.value / 100)
+            .attr('rx', 4)
+            .attr('ry', 4);
         
         // Add feature names
-        vendorGroups.selectAll(".feature-cell")
-            .append("text")
-            .attr("x", 5)
-            .attr("y", 15)
-            .attr("font-size", "12px")
-            .attr("fill", "#fff")
+        featureNodes.append('text')
+            .attr('x', d => (d.x1 - d.x0) / 2)
+            .attr('y', d => (d.y1 - d.y0 - 25) / 2 - 10)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', '14px')
+            .attr('font-weight', 'bold')
+            .attr('fill', '#ffffff')
             .text(d => d.data.name);
         
-        // Add feature values
-        vendorGroups.selectAll(".feature-cell")
-            .append("text")
-            .attr("x", 5)
-            .attr("y", 35)
-            .attr("font-size", "14px")
-            .attr("font-weight", "bold")
-            .attr("fill", "#fff")
-            .text(d => d.data.value + "%");
+        // Add values
+        featureNodes.append('text')
+            .attr('x', d => (d.x1 - d.x0) / 2)
+            .attr('y', d => (d.y1 - d.y0 - 25) / 2 + 10)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', '16px')
+            .attr('font-weight', 'bold')
+            .attr('fill', '#ffffff')
+            .text(d => d.data.value + '%');
     }
 };
 
 // Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    window.chartLoader = UnifiedChartLoader.init();
-});
+if (typeof window !== 'undefined') {
+    window.UnifiedChartLoader = UnifiedChartLoader;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        window.chartLoader = UnifiedChartLoader.init();
+    });
+}

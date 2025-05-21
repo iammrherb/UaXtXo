@@ -1,15 +1,9 @@
 /**
- * SecurityCharts for Portnox Total Cost Analyzer
- * Auto-fixed by maintenance script
- */
-
-// Prevent redeclaration
-if (typeof window.SecurityCharts === 'undefined') {
-/**
  * Security Charts for Portnox Total Cost Analyzer
  * Renders security-specific visualizations
  */
 
+const SecurityCharts = {
   renderNistFrameworkChart: function(containerId, data) {
     if (!window.ApexCharts) {
       console.error("ApexCharts library not available");
@@ -18,7 +12,7 @@ if (typeof window.SecurityCharts === 'undefined') {
     
     const element = document.getElementById(containerId);
     if (!element) {
-      console.error(`Container element ${containerId} not found`);
+      console.error("Container element " + containerId + " not found");
       return;
     }
     
@@ -141,7 +135,7 @@ if (typeof window.SecurityCharts === 'undefined') {
     
     const element = document.getElementById(containerId);
     if (!element) {
-      console.error(`Container element ${containerId} not found`);
+      console.error("Container element " + containerId + " not found");
       return;
     }
     
@@ -339,4 +333,3 @@ if (typeof window.SecurityCharts === 'undefined') {
 
 // Make it globally available
 window.SecurityCharts = SecurityCharts;
-}

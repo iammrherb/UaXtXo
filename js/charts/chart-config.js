@@ -1,15 +1,9 @@
 /**
- * ChartConfig for Portnox Total Cost Analyzer
- * Auto-fixed by maintenance script
- */
-
-// Prevent redeclaration
-if (typeof window.ChartConfig === 'undefined') {
-/**
  * Chart Configuration for Portnox Total Cost Analyzer
  * Provides centralized configuration for all charts
  */
 
+const ChartConfig = {
   colors: {
     primary: '#1a5a96',
     secondary: '#0d4275',
@@ -30,42 +24,15 @@ if (typeof window.ChartConfig === 'undefined') {
     ]
   },
   
-  fonts: {
-    family: '"Nunito", sans-serif',
-    sizes: {
-      title: '18px',
-      subtitle: '14px',
-      axis: '12px',
-      tooltip: '12px'
-    }
-  },
-  
-  defaultOptions: {
-    animation: {
-      enabled: true,
-      easing: 'easeinout',
-      speed: 800,
-      dynamicAnimation: {
-        enabled: true,
-        speed: 350
-      }
-    },
-    toolbar: {
-      show: true,
-      tools: {
-        download: true,
-        selection: false,
-        zoom: false,
-        zoomin: false,
-        zoomout: false,
-        pan: false,
-        reset: false
-      }
-    }
+  defaults: {
+    fontFamily: '"Nunito", sans-serif',
+    fontSize: 12
   },
   
   // Get colors for vendor IDs
-  getVendorColor: function(vendorId, opacity = 1) {
+  getVendorColor: function(vendorId, opacity) {
+    if (opacity === undefined) opacity = 1;
+    
     // Map vendor IDs to color indexes
     const vendorColorMap = {
       'portnox': 0,
@@ -89,7 +56,7 @@ if (typeof window.ChartConfig === 'undefined') {
       const r = parseInt(hex.substring(0, 2), 16);
       const g = parseInt(hex.substring(2, 4), 16);
       const b = parseInt(hex.substring(4, 6), 16);
-      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+      return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + opacity + ')';
     }
     
     return color;
@@ -108,4 +75,3 @@ if (typeof window.ChartConfig === 'undefined') {
 
 // Make it globally available
 window.ChartConfig = ChartConfig;
-}

@@ -197,11 +197,11 @@ class TabNavigator {
         this.activeSubTabs[parentTab] = tabName;
         
         // Update active subtab UI
-        const subTabs = document.querySelectorAll(".sub-tab[data-parent-tab='" + parentTab + "']");
+        const subTabs = document.querySelectorAll('.sub-tab');
         subTabs.forEach(tab => {
-            if (tab.dataset.tab === tabName) {
+            if (tab.dataset.parentTab === parentTab && tab.dataset.tab === tabName) {
                 tab.classList.add('active');
-            } else {
+            } else if (tab.dataset.parentTab === parentTab) {
                 tab.classList.remove('active');
             }
         });
@@ -498,7 +498,10 @@ class TabNavigator {
      */
     initializeChartsForView(mainTab, subTab) {
         // Only initialize if chart loader is available
-        if (!window.chartLoader) return;
+        if (!window.chartLoader) {
+            console.error('Chart loader not available');
+            return;
+        }
         
         const viewId = mainTab + "-" + subTab;
         
@@ -506,7 +509,7 @@ class TabNavigator {
         const chartMap = {
             'executive-summary': [
                 { type: 'apex-tco', containerId: 'tco-comparison-chart', chartId: 'executiveTcoChart' },
-                { type: 'apex-roi', containerId: 'roi-summary-chart', chartId: 'executiveRoiChart' }
+                { type: 'apex-cost', containerId: 'roi-summary-chart', chartId: 'executiveRoiChart' }
             ],
             'financial-tco': [
                 { type: 'apex-tco', containerId: 'tco-comparison-chart', chartId: 'financialTcoChart' },
@@ -517,8 +520,8 @@ class TabNavigator {
                 { type: 'd3-security', containerId: 'security-frameworks-chart', chartId: 'securityFrameworksChart' }
             ],
             'technical-architecture': [
-                { type: 'highcharts-security', containerId: 'architecture-chart', chartId: 'architectureChart' },
-                { type: 'highcharts-feature', containerId: 'feature-radar-chart', chartId: 'featureRadarChart' }
+                { type: 'apex-tco', containerId: 'architecture-chart', chartId: 'architectureChart' },
+                { type: 'apex-tco', containerId: 'feature-radar-chart', chartId: 'featureRadarChart' }
             ]
         };
         
@@ -535,8 +538,7 @@ class TabNavigator {
      * Refresh charts in a view
      */
     refreshChartsInView(mainTab, subTab) {
-        // Check if we need to refresh charts
-        // This would be called when data changes
+        // For future use when data changes
     }
     
     /**
@@ -561,7 +563,12 @@ class TabNavigator {
     }
 }
 
+// Make it globally available
+window.TabNavigator = TabNavigator;
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.tabNavigator = new TabNavigator().init();
+    if (!window.tabNavigator) {
+        window.tabNavigator = new TabNavigator().init();
+    }
 });

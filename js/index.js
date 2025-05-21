@@ -3,6 +3,13 @@
  * Ensures proper initialization order
  */
 
+// Create fallback empty objects if missing
+window.ApexChartsManager = window.ApexChartsManager || {};
+window.D3ChartsManager = window.D3ChartsManager || {};
+window.SecurityCharts = window.SecurityCharts || {};
+window.ChartConfig = window.ChartConfig || {};
+window.UnifiedChartLoader = window.UnifiedChartLoader || { chartsToLoad: [] };
+
 // Load dependencies in the correct order
 const dependencies = [
     './js/charts/chart-config.js',
@@ -20,7 +27,8 @@ const dependencies = [
 ];
 
 // Load scripts in order
-function loadScripts(scripts, index = 0) {
+function loadScripts(scripts, index) {
+    if (index === undefined) index = 0;
     if (index >= scripts.length) {
         console.log('All scripts loaded successfully');
         return;

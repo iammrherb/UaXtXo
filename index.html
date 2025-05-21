@@ -22,8 +22,76 @@
     <!-- Particle.js -->
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     
-    <!-- Theme CSS -->
-    <link rel="stylesheet" href="./css/vibrant-theme.css">
+    <!-- CSS -->
+    <style>
+        /* Basic styling until main CSS loads */
+        :root {
+            --primary: #1a5a96;
+            --secondary: #e74c3c;
+            --neutral: #ecf0f1;
+            --dark: #2c3e50;
+        }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+        }
+        
+        .app-header {
+            background: linear-gradient(135deg, #2980b9 0%, #1a5a96 100%);
+            color: white;
+            padding: 16px 24px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - 64px);
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            overflow-y: auto;
+        }
+        
+        .content-area {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
+        
+        .chart-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 200px;
+        }
+        
+        .chart-loading-spinner {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    
+    <!-- Theme CSS (loaded by JS) -->
     
     <!-- Main Loader -->
     <script src="./js/index.js"></script>

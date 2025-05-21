@@ -119,23 +119,25 @@ function ensureViewContent(mainTab, subTab) {
  * Fix chart initializations
  */
 function fixChartInitialization() {
-    if (window.chartLoader) {
-        console.log('Chart Loader already initialized');
-    } else {
-        // Try to initialize UnifiedChartLoader
-        if (typeof UnifiedChartLoader !== 'undefined') {
-            window.chartLoader = UnifiedChartLoader.init();
-        } else {
-            console.error('UnifiedChartLoader not defined, cannot initialize');
+    // Fix global variables
+    if (!window.chartLoader && typeof UnifiedChartLoader !== 'undefined') {
+        window.chartLoader = Object.assign({}, UnifiedChartLoader);
+        if (!window.chartLoader.chartsToLoad) {
+            window.chartLoader.chartsToLoad = [];
         }
+        window.chartLoader.init();
     }
     
     // Define a backup loader if needed
     if (!window.chartLoader) {
         window.chartLoader = {
+            loadedCharts: {},
+            chartsToLoad: [],
             queueChart: function(type, containerId, chartId, data) {
                 console.log("Chart loader not available. Would load " + type + " chart to " + containerId);
-            }
+                this.chartsToLoad.push({type, containerId, chartId, data});
+            },
+            loadNextChart: function() {}
         };
     }
 }

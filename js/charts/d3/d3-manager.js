@@ -1,15 +1,9 @@
 /**
- * D3ChartsManager for Portnox Total Cost Analyzer
- * Auto-fixed by maintenance script
- */
-
-// Prevent redeclaration
-if (typeof window.D3ChartsManager === 'undefined') {
-/**
  * D3 Charts Manager for Portnox Total Cost Analyzer
  * Provides advanced visualizations using D3.js
  */
 
+const D3ChartsManager = {
   renderSecurityFrameworksChart: function(containerId, data) {
     if (!window.d3) {
       console.error("D3.js library not available");
@@ -18,7 +12,7 @@ if (typeof window.D3ChartsManager === 'undefined') {
     
     const container = document.getElementById(containerId);
     if (!container) {
-      console.error(`Container element ${containerId} not found`);
+      console.error("Container element " + containerId + " not found");
       return;
     }
     
@@ -39,17 +33,17 @@ if (typeof window.D3ChartsManager === 'undefined') {
     container.innerHTML = '';
     
     // Set up dimensions and margins
-    const margin = {top: 30, right: 120, bottom: 70, left: 80},
-          width = container.clientWidth - margin.left - margin.right,
-          height = 400 - margin.top - margin.bottom;
+    const margin = {top: 30, right: 120, bottom: 70, left: 80};
+    const width = container.clientWidth - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
     
     // Create SVG element
-    const svg = d3.select(`#${containerId}`)
+    const svg = d3.select("#" + containerId)
       .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
       .append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     
     // X axis
     const x = d3.scaleBand()
@@ -58,7 +52,7 @@ if (typeof window.D3ChartsManager === 'undefined') {
       .padding(0.2);
     
     svg.append("g")
-      .attr("transform", `translate(0, ${height})`)
+      .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(x))
       .selectAll("text")
         .attr("transform", "translate(-10,0)rotate(-45)")
@@ -119,7 +113,7 @@ if (typeof window.D3ChartsManager === 'undefined') {
         .attr("y", d => y(d.portnoxCoverage) - 5)
         .attr("text-anchor", "middle")
         .style("font-size", "11px")
-        .text(d => `${d.portnoxCoverage}%`);
+        .text(d => d.portnoxCoverage + "%");
     
     svg.selectAll(".industryLabel")
       .data(data.frameworks)
@@ -130,7 +124,7 @@ if (typeof window.D3ChartsManager === 'undefined') {
         .attr("y", d => y(d.industryAverage) - 5)
         .attr("text-anchor", "middle")
         .style("font-size", "11px")
-        .text(d => `${d.industryAverage}%`);
+        .text(d => d.industryAverage + "%");
     
     // Add Legend
     const legend = svg.append("g")
@@ -140,7 +134,7 @@ if (typeof window.D3ChartsManager === 'undefined') {
       .selectAll("g")
       .data(["Portnox Cloud", "Industry Average"])
       .enter().append("g")
-      .attr("transform", (d, i) => `translate(0,${i * 20})`);
+      .attr("transform", (d, i) => "translate(0," + (i * 20) + ")");
 
     legend.append("rect")
       .attr("x", width + 20)
@@ -164,4 +158,3 @@ if (typeof window.D3ChartsManager === 'undefined') {
 
 // Make it globally available
 window.D3ChartsManager = D3ChartsManager;
-}
