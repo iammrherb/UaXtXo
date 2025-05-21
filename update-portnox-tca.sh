@@ -1,0 +1,244 @@
+#!/bin/bash
+
+# Portnox Total Cost Analyzer Update Script
+# This script automates the update process for the TCA application
+
+set -e
+
+echo "Portnox Total Cost Analyzer Update Script"
+echo "========================================"
+echo
+
+# Check if we're in the right directory
+if [ ! -f "index.html" ] || [ ! -d "js" ]; then
+    echo "Error: Please run this script from the root of the TCA application"
+    exit 1
+fi
+
+# Create backup
+BACKUP_DIR="./backup-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$BACKUP_DIR"
+echo "Creating backup in $BACKUP_DIR"
+
+cp -r ./js "$BACKUP_DIR/" 2>/dev/null || echo "No JS directory found"
+cp -r ./css "$BACKUP_DIR/" 2>/dev/null || echo "No CSS directory found"
+cp -r ./img "$BACKUP_DIR/" 2>/dev/null || echo "No IMG directory found"
+cp *.html "$BACKUP_DIR/" 2>/dev/null || echo "No HTML files found"
+
+echo "Backup completed"
+
+# Update application files
+echo "Updating application files..."
+
+# Replace index.html with a clean version
+cat > ./index.html << 'EOHTML'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portnox Total Cost Analyzer</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="./img/favicon.png">
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Chart Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.36.3/dist/apexcharts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.2/dist/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@10.3.3/highcharts.js"></script>
+    
+    <!-- Particle.js -->
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="./css/vibrant-theme.css">
+    
+    <!-- Main Loader -->
+    <script src="./js/index.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div id="particles-header"></div>
+        <div class="header-content">
+            <div class="header-branding">
+                <h1 class="header-title">Portnox Total Cost Analyzer</h1>
+                <div class="header-subtitle">Compare NAC solutions for your enterprise</div>
+            </div>
+            <div class="header-actions">
+                <button id="dark-mode-toggle" class="btn btn-sm btn-light">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar">
+            <div class="sidebar-content">
+                <!-- Organization Config -->
+                <div id="organization-config" class="config-card">
+                    <div class="config-card-header">
+                        <h3><i class="fas fa-building"></i> Organization</h3>
+                        <i class="fas fa-chevron-up toggle-icon"></i>
+                    </div>
+                    <div class="config-card-content">
+                        <div class="form-group">
+                            <label for="company-size">Company Size</label>
+                            <select id="company-size" class="form-control">
+                                <option value="small">Small (50-250 employees)</option>
+                                <option value="medium" selected>Medium (251-1000 employees)</option>
+                                <option value="large">Large (1001-5000 employees)</option>
+                                <option value="enterprise">Enterprise (5000+ employees)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="device-count">Device Count</label>
+                            <input type="number" id="device-count" class="form-control" value="1000">
+                        </div>
+                        <div class="form-group">
+                            <label for="industry">Industry</label>
+                            <select id="industry" class="form-control">
+                                <option value="healthcare">Healthcare</option>
+                                <option value="finance">Finance & Banking</option>
+                                <option value="retail">Retail</option>
+                                <option value="manufacturing">Manufacturing</option>
+                                <option value="education">Education</option>
+                                <option value="government">Government</option>
+                                <option value="technology" selected>Technology</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vendor Selection -->
+                <div id="vendor-selection" class="config-card">
+                    <div class="config-card-header">
+                        <h3><i class="fas fa-check-square"></i> Vendor Selection</h3>
+                        <i class="fas fa-chevron-up toggle-icon"></i>
+                    </div>
+                    <div class="config-card-content">
+                        <div class="vendor-select-grid">
+                            <div class="vendor-select-card selected" data-vendor="portnox">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/portnox.png" alt="Portnox">
+                                </div>
+                                <div class="vendor-name">Portnox Cloud</div>
+                            </div>
+                            <div class="vendor-select-card" data-vendor="cisco">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/cisco.png" alt="Cisco">
+                                </div>
+                                <div class="vendor-name">Cisco ISE</div>
+                            </div>
+                            <div class="vendor-select-card" data-vendor="aruba">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/aruba.png" alt="Aruba">
+                                </div>
+                                <div class="vendor-name">Aruba ClearPass</div>
+                            </div>
+                            <div class="vendor-select-card" data-vendor="forescout">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/forescout.png" alt="Forescout">
+                                </div>
+                                <div class="vendor-name">Forescout</div>
+                            </div>
+                            <div class="vendor-select-card" data-vendor="fortinac">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/fortinac.png" alt="FortiNAC">
+                                </div>
+                                <div class="vendor-name">FortiNAC</div>
+                            </div>
+                            <div class="vendor-select-card" data-vendor="juniper">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/juniper.png" alt="Juniper">
+                                </div>
+                                <div class="vendor-name">Juniper NAC</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cost Parameters -->
+                <div id="cost-config" class="config-card">
+                    <div class="config-card-header">
+                        <h3><i class="fas fa-dollar-sign"></i> Cost Parameters</h3>
+                        <i class="fas fa-chevron-up toggle-icon"></i>
+                    </div>
+                    <div class="config-card-content">
+                        <div class="range-slider">
+                            <div class="range-slider-header">
+                                <span class="range-slider-label">License Cost ($/device/year)</span>
+                                <span class="range-slider-value" id="license-cost-value">$50</span>
+                            </div>
+                            <input type="range" id="license-cost" min="0" max="200" value="50" step="1">
+                        </div>
+                        
+                        <div class="range-slider">
+                            <div class="range-slider-header">
+                                <span class="range-slider-label">Hardware Cost ($/device)</span>
+                                <span class="range-slider-value" id="hardware-cost-value">$100</span>
+                            </div>
+                            <input type="range" id="hardware-cost" min="0" max="500" value="100" step="10">
+                        </div>
+                        
+                        <div class="range-slider">
+                            <div class="range-slider-header">
+                                <span class="range-slider-label">Implementation Cost ($)</span>
+                                <span class="range-slider-value" id="implementation-cost-value">$10,000</span>
+                            </div>
+                            <input type="range" id="implementation-cost" min="0" max="100000" value="10000" step="1000">
+                        </div>
+                        
+                        <div class="range-slider">
+                            <div class="range-slider-header">
+                                <span class="range-slider-label">Maintenance (% of license)</span>
+                                <span class="range-slider-value" id="maintenance-value">20%</span>
+                            </div>
+                            <input type="range" id="maintenance-percentage" min="0" max="40" value="20" step="1">
+                        </div>
+                        
+                        <div class="range-slider">
+                            <div class="range-slider-header">
+                                <span class="range-slider-label">FTE Cost ($/year)</span>
+                                <span class="range-slider-value" id="fte-cost-value">$100,000</span>
+                            </div>
+                            <input type="range" id="fte-cost" min="60000" max="180000" value="100000" step="5000">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Tab container added by JS -->
+            <!-- View container added by JS -->
+        </div>
+    </div>
+    
+    <!-- Particles Background -->
+    <div id="particles-js"></div>
+</body>
+</html>
+EOHTML
+
+echo "Creating missing directories..."
+mkdir -p ./js/views 2>/dev/null || echo "js/views directory already exists"
+
+echo "Updating complete"
+echo "Please open index.html in your browser to view the updated application"
+
+# Make sure the script is executable
+chmod +x ./update-portnox-tca.sh
+
+echo "✓ Update script created and made executable"
