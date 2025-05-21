@@ -3,7 +3,7 @@
  * Provides centralized chart creation and configuration
  */
 
-class PortnoxApexChartManager {
+class ApexChartManager {
   constructor() {
     this.charts = {};
     this.colors = {
@@ -759,4 +759,4 @@ class PortnoxApexChartManager {
 }
 
 // Create global instance
-window.apexChartManager = new PortnoxApexChartManager();
+window.apexChartManager = new ApexChartManager();
