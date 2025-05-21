@@ -275,6 +275,8 @@ class ZeroTrustUI {
           this.configuration.deviceCount = 1000;
         }
         this.calculationResults = this.calculateTCO();
+        console.log("✅ Calculation completed, rendering view...");
+        this.renderCurrentView();
         this.renderCurrentView();
         this.hideLoadingOverlay();
         this.showSuccessNotification('TCO calculation completed successfully!');
@@ -476,6 +478,10 @@ class ZeroTrustUI {
   
   renderCurrentView() {
     const viewContent = document.querySelector(`#${this.currentView}-view .view-content`);
+    console.log("🎯 View container found:", viewContent);
+    console.log("🔍 renderCurrentView called for:", this.currentView);
+    console.log("🔍 calculationResults:", this.calculationResults);
+    const viewContent = document.querySelector(`#${this.currentView}-view .view-content`);
     if (!viewContent || !this.calculationResults) return;
     
     switch (this.currentView) {
@@ -498,6 +504,7 @@ class ZeroTrustUI {
   }
   
   renderExecutiveView() {
+    console.log("📊 Rendering executive view");
     const { summary, vendors } = this.calculationResults;
     const portnoxData = vendors['portnox'];
     
@@ -600,6 +607,7 @@ class ZeroTrustUI {
   }
   
   renderFinancialView() {
+    console.log("💰 Rendering financial view");
     const { vendors, summary } = this.calculationResults;
     
     return `
