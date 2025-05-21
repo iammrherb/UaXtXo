@@ -1,1017 +1,669 @@
 /**
- * Enhanced D3 implementation for Portnox Total Cost Analyzer
- * Creates advanced, interactive visualizations for complex data
+ * D3 Charts Manager for Portnox Total Cost Analyzer
+ * Provides advanced visualizations using D3.js
  */
 
 class D3Manager {
-  constructor(config = {}) {
-    this.config = {
-      colors: window.ChartConfig ? window.ChartConfig.colors : {
-        chart: ['#1a5a96', '#2ecc71', '#f39c12', '#e74c3c', '#9b59b6', '#3498db']
-      },
-      theme: window.ChartConfig ? window.ChartConfig.d3Theme : {
-        fontFamily: "'Nunito', sans-serif"
-      },
-      ...config
-    };
-    
+  constructor() {
     this.charts = {};
-    
-    // Initialize responsive handlers
-    this.initResponsiveHandlers();
+    this.colors = {
+      primary: '#1a5a96',
+      secondary: '#2ecc71',
+      warning: '#f39c12',
+      danger: '#e74c3c',
+      info: '#3498db',
+      purple: '#9b59b6',
+      gray: '#95a5a6'
+    };
   }
   
   /**
-   * Initialize responsive handlers for resizing
+   * Destroy chart if it exists
    */
-  initResponsiveHandlers() {
-    // Debounced resize handler for chart responsiveness
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        // Redraw all active charts on resize
-        Object.keys(this.charts).forEach(chartId => {
-          const chart = this.charts[chartId];
-          if (chart && chart.resize) {
-            chart.resize();
-          }
-        });
-      }, 250);
-    });
-    
-    // Handle theme changes
-    window.addEventListener('themechange', () => {
-      // Update all active charts with new theme
-      Object.keys(this.charts).forEach(chartId => {
-        const chart = this.charts[chartId];
-        if (chart && chart.updateTheme) {
-          chart.updateTheme();
-        }
-      });
-    });
-  }
-  
-  /**
-   * Create Vendor Comparison Heatmap
-   * Shows strengths and weaknesses across different categories
-   */
-  createVendorHeatmap(data, elementId, chartId) {
-    const element = document.getElementById(elementId);
-    if (!element || !window.d3) return null;
-    
-    // Clear any existing chart
-    while (element.firstChild) {
-      element.removeChild(element.firstChild);
-    }
-    
-    // Define comparison data
-    const categories = [
-      'Implementation', 'User Experience', 'Cloud Integration', 
-      'On-Premises Support', 'Legacy Devices', 'BYOD Support',
-      'IoT Security', 'API Flexibility', 'Compliance', 'Cost Efficiency'
-    ];
-    
-    // Selected vendors for comparison
-    const selectedVendors = window.sidebarManager ? 
-      window.sidebarManager.getSelectedVendors() : 
-      ['portnox', 'cisco', 'forescout'];
-    
-    // Vendor capabilities data (0-100 scale)
-    const vendorCapabilities = {
-      'portnox': {
-        'Implementation': 95,
-        'User Experience': 90,
-        'Cloud Integration': 95,
-        'On-Premises Support': 80,
-        'Legacy Devices': 85,
-        'BYOD Support': 95,
-        'IoT Security': 90,
-        'API Flexibility': 90,
-        'Compliance': 95,
-        'Cost Efficiency': 95
-      },
-      'cisco': {
-        'Implementation': 70,
-        'User Experience': 75,
-        'Cloud Integration': 75,
-        'On-Premises Support': 90,
-        'Legacy Devices': 90,
-        'BYOD Support': 80,
-        'IoT Security': 85,
-        'API Flexibility': 75,
-        'Compliance': 90,
-        'Cost Efficiency': 65
-      },
-      'forescout': {
-        'Implementation': 75,
-        'User Experience': 80,
-        'Cloud Integration': 70,
-        'On-Premises Support': 85,
-        'Legacy Devices': 90,
-        'BYOD Support': 85,
-        'IoT Security': 90,
-        'API Flexibility': 80,
-        'Compliance': 85,
-        'Cost Efficiency': 70
-      },
-      'aruba': {
-        'Implementation': 75,
-        'User Experience': 80,
-        'Cloud Integration': 75,
-        'On-Premises Support': 85,
-        'Legacy Devices': 80,
-        'BYOD Support': 85,
-        'IoT Security': 80,
-        'API Flexibility': 75,
-        'Compliance': 85,
-        'Cost Efficiency': 75
-      },
-      'fortinac': {
-        'Implementation': 70,
-        'User Experience': 75,
-        'Cloud Integration': 65,
-        'On-Premises Support': 85,
-        'Legacy Devices': 85,
-        'BYOD Support': 75,
-        'IoT Security': 80,
-        'API Flexibility': 70,
-        'Compliance': 80,
-        'Cost Efficiency': 70
-      }
-    };
-    
-    // Filter vendors
-    const vendors = selectedVendors.filter(v => vendorCapabilities[v] !== undefined);
-    
-    // Create heatmap data
-    const heatmapData = [];
-    vendors.forEach(vendorId => {
-      categories.forEach(category => {
-        heatmapData.push({
-          vendor: window.VENDORS ? window.VENDORS[vendorId].name : vendorId,
-          vendorId: vendorId,
-          category: category,
-          value: vendorCapabilities[vendorId][category]
-        });
-      });
-    });
-    
-    // Get theme
-    const isDarkMode = document.body.classList.contains('dark-mode');
-    const theme = window.ChartConfig ? window.ChartConfig.getCurrentTheme() : 
-      (isDarkMode ? this.config.colors.dark : this.config.colors.light);
-    
-    // Set dimensions
-    const margin = { top: 50, right: 80, bottom: 70, left: 140 };
-    const width = Math.max(600, element.clientWidth) - margin.left - margin.right;
-    const height = 450 - margin.top - margin.bottom;
-    
-    // Create SVG
-    const svg = d3.select(element)
-      .append('svg')
-      .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom)
-      .append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
-    
-    // Scales
-    const x = d3.scaleBand()
-      .range([0, width])
-      .domain(categories)
-      .padding(0.05);
-    
-    const y = d3.scaleBand()
-      .range([height, 0])
-      .domain(vendors.map(v => window.VENDORS ? window.VENDORS[v].name : v))
-      .padding(0.05);
-    
-    // Color scale
-    const colorScale = d3.scaleSequential()
-      .interpolator(d3.interpolateViridis)
-      .domain([0, 100]);
-    
-    // Add axes
-    svg.append('g')
-      .attr('class', 'x-axis')
-      .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(x))
-      .selectAll('text')
-      .attr('transform', 'translate(-10,0)rotate(-45)')
-      .style('text-anchor', 'end')
-      .style('font-size', '12px')
-      .style('fill', theme.textColor);
-    
-    svg.append('g')
-      .attr('class', 'y-axis')
-      .call(d3.axisLeft(y))
-      .selectAll('text')
-      .style('font-size', '12px')
-      .style('fill', theme.textColor);
-    
-    // Create tooltip
-    const tooltip = d3.select(element)
-      .append('div')
-      .style('opacity', 0)
-      .attr('class', 'd3-tooltip')
-      .style('position', 'absolute')
-      .style('background-color', theme.cardBackground)
-      .style('color', theme.textColor)
-      .style('border', `1px solid ${theme.borderColor}`)
-      .style('border-radius', '5px')
-      .style('padding', '10px')
-      .style('box-shadow', '0 4px 10px rgba(0, 0, 0, 0.15)')
-      .style('pointer-events', 'none')
-      .style('z-index', 10)
-      .style('font-family', this.config.theme.fontFamily)
-      .style('font-size', '12px');
-    
-    // Mouse functions
-    const mouseover = function(event, d) {
-      tooltip.style('opacity', 1);
-      d3.select(this)
-        .style('stroke', 'black')
-        .style('opacity', 1);
-    };
-    
-    const mousemove = function(event, d) {
-      // Find Portnox value for comparison
-      let comparisonText = '';
-      if (d.vendorId !== 'portnox' && vendors.includes('portnox')) {
-        const portnoxValue = vendorCapabilities['portnox'][d.category];
-        const diff = d.value - portnoxValue;
-        if (Math.abs(diff) > 0) {
-          if (diff < 0) {
-            comparisonText = `<br><span style="color:#e74c3c;">${Math.abs(diff)} points below Portnox</span>`;
-          } else {
-            comparisonText = `<br><span style="color:#2ecc71;">${diff} points above Portnox</span>`;
-          }
-        }
+  destroyChart(chartId) {
+    if (this.charts[chartId]) {
+      // Remove all SVG elements
+      const chartContainer = this.charts[chartId];
+      while (chartContainer.firstChild) {
+        chartContainer.removeChild(chartContainer.firstChild);
       }
       
-      // Show tooltip
-      tooltip
-        .html(`
-          <strong>${d.vendor}</strong><br>
-          ${d.category}: <strong>${d.value}/100</strong>
-          ${comparisonText}
-        `)
-        .style('left', (event.pageX + 10) + 'px')
-        .style('top', (event.pageY - 15) + 'px');
-    };
-    
-    const mouseleave = function(event, d) {
-      tooltip.style('opacity', 0);
-      d3.select(this)
-        .style('stroke', 'none')
-        .style('opacity', 0.9);
-    };
-    
-    // Add cells with animation
-    const cells = svg.selectAll()
-      .data(heatmapData)
-      .enter()
-      .append('rect')
-      .attr('x', d => x(d.category))
-      .attr('y', d => y(d.vendor))
-      .attr('width', x.bandwidth())
-      .attr('height', y.bandwidth())
-      .style('fill', d => colorScale(d.value))
-      .style('rx', 3)
-      .style('ry', 3)
-      .style('stroke-width', 0)
-      .style('opacity', 0)
-      .on('mouseover', mouseover)
-      .on('mousemove', mousemove)
-      .on('mouseleave', mouseleave);
-    
-    // Add animation
-    cells.transition()
-      .duration(700)
-      .delay((d, i) => i * 20)
-      .style('opacity', 0.9);
-    
-    // Add title
-    svg.append('text')
-      .attr('x', width / 2)
-      .attr('y', -20)
-      .attr('text-anchor', 'middle')
-      .style('font-size', '18px')
-      .style('font-weight', 'bold')
-      .style('fill', theme.textColor)
-      .text('Vendor Capability Comparison');
-    
-    // Add legend
-    const legendWidth = 20;
-    const legendHeight = 150;
-    
-    const defs = svg.append('defs');
-    
-    // Create gradient for legend
-    const linearGradient = defs.append('linearGradient')
-      .attr('id', 'heatmap-gradient')
-      .attr('x1', '0%')
-      .attr('y1', '100%')
-      .attr('x2', '0%')
-      .attr('y2', '0%');
-    
-    // Add color stops
-    linearGradient.selectAll('stop')
-      .data(d3.range(0, 1.01, 0.1))
-      .enter()
-      .append('stop')
-      .attr('offset', d => d * 100 + '%')
-      .attr('stop-color', d => colorScale(d * 100));
-    
-    // Add legend rectangle
-    svg.append('rect')
-      .attr('x', width + 20)
-      .attr('y', 0)
-      .attr('width', legendWidth)
-      .attr('height', legendHeight)
-      .style('fill', 'url(#heatmap-gradient)')
-      .style('rx', 3)
-      .style('ry', 3);
-    
-    // Add legend scale
-    const legendScale = d3.scaleLinear()
-      .domain([0, 100])
-      .range([legendHeight, 0]);
-    
-    const legendAxis = d3.axisRight(legendScale)
-      .tickValues([0, 25, 50, 75, 100])
-      .tickFormat(d => d + '%');
-    
-    svg.append('g')
-      .attr('transform', `translate(${width + 20 + legendWidth},0)`)
-      .call(legendAxis)
-      .selectAll('text')
-      .style('font-size', '10px')
-      .style('fill', theme.textColor);
-    
-    // Add legend title
-    svg.append('text')
-      .attr('transform', `translate(${width + 20 + legendWidth / 2},${legendHeight + 35})`)
-      .attr('text-anchor', 'middle')
-      .style('font-size', '12px')
-      .style('fill', theme.textColor)
-      .text('Score');
-    
-    // Store reference for updates
-    this.charts[chartId] = {
-      svg,
-      data: heatmapData,
-      resize: () => {
-        // Resize handling
-        const newWidth = Math.max(600, element.clientWidth) - margin.left - margin.right;
-        
-        // Update scales
-        x.range([0, newWidth]);
-        
-        // Update elements
-        svg.selectAll('rect')
-          .filter(function() { return !this.classList.contains('legend-rect'); })
-          .attr('x', d => x(d.category))
-          .attr('width', x.bandwidth());
-          
-        // Update legend position
-        svg.selectAll('.legend')
-          .attr('transform', `translate(${newWidth + 20},0)`);
-          
-        // Update title position
-        svg.select('text').attr('x', newWidth / 2);
-      },
-      updateTheme: () => {
-        // Update theme colors
-        const newTheme = window.ChartConfig ? window.ChartConfig.getCurrentTheme() : 
-          (document.body.classList.contains('dark-mode') ? this.config.colors.dark : this.config.colors.light);
-        
-        // Update text colors
-        svg.selectAll('text').style('fill', newTheme.textColor);
-        svg.selectAll('.x-axis text, .y-axis text').style('fill', newTheme.textColor);
-        
-        // Update tooltip style
-        tooltip
-          .style('background-color', newTheme.cardBackground)
-          .style('color', newTheme.textColor)
-          .style('border', `1px solid ${newTheme.borderColor}`);
-      },
-      destroy: () => {
-        // Remove chart
-        while (element.firstChild) {
-          element.removeChild(element.firstChild);
-        }
-      }
-    };
-    
-    return this.charts[chartId];
+      delete this.charts[chartId];
+    }
   }
   
   /**
-   * Create NIST Framework Radar Chart
-   * Shows coverage across different NIST Cybersecurity Framework categories
+   * Create NIST framework chart
    */
   createNistFrameworkChart(data, elementId, chartId) {
     const element = document.getElementById(elementId);
-    if (!element || !window.d3) return null;
+    if (!element || !window.d3) return;
     
     // Clear any existing chart
-    while (element.firstChild) {
-      element.removeChild(element.firstChild);
+    element.innerHTML = '';
+    
+    // Store reference to container
+    this.charts[chartId] = element;
+    
+    // Check if D3 is available
+    if (!window.d3) {
+      element.innerHTML = '<div class="chart-error">D3.js library not available</div>';
+      return;
     }
     
-    // Define NIST framework categories
-    const categories = [
-      'Identify', 'Protect', 'Detect', 'Respond', 'Recover'
-    ];
-    
-    // Selected vendors for comparison
-    const selectedVendors = window.sidebarManager ? 
-      window.sidebarManager.getSelectedVendors() : 
-      ['portnox', 'cisco', 'forescout'];
-      
-    // NIST framework coverage data (0-100 scale)
-    const frameworkCoverage = {
-      'portnox': {
-        'Identify': 92,
-        'Protect': 95,
-        'Detect': 90,
-        'Respond': 85,
-        'Recover': 80
-      },
-      'cisco': {
-        'Identify': 85,
-        'Protect': 90,
-        'Detect': 85,
-        'Respond': 80,
-        'Recover': 75
-      },
-      'forescout': {
-        'Identify': 90,
-        'Protect': 85,
-        'Detect': 90,
-        'Respond': 80,
-        'Recover': 70
-      },
-      'aruba': {
-        'Identify': 80,
-        'Protect': 85,
-        'Detect': 80,
-        'Respond': 75,
-        'Recover': 70
-      },
-      'fortinac': {
-        'Identify': 80,
-        'Protect': 80,
-        'Detect': 85,
-        'Respond': 75,
-        'Recover': 65
-      }
+    // Sample data for NIST framework
+    const nistData = {
+      name: 'NIST Cybersecurity Framework',
+      children: [
+        {
+          name: 'Identify',
+          description: 'Asset Management, Business Environment, Governance, Risk Assessment, Risk Management',
+          value: 92,
+          children: [
+            { name: 'Asset Management', value: 95 },
+            { name: 'Business Environment', value: 90 },
+            { name: 'Governance', value: 88 },
+            { name: 'Risk Assessment', value: 94 },
+            { name: 'Risk Management', value: 93 }
+          ]
+        },
+        {
+          name: 'Protect',
+          description: 'Access Control, Awareness Training, Data Security, Protective Technology',
+          value: 95,
+          children: [
+            { name: 'Access Control', value: 98 },
+            { name: 'Awareness Training', value: 90 },
+            { name: 'Data Security', value: 94 },
+            { name: 'Info Protection', value: 95 },
+            { name: 'Protective Technology', value: 96 }
+          ]
+        },
+        {
+          name: 'Detect',
+          description: 'Anomalies & Events, Security Monitoring, Detection Processes',
+          value: 94,
+          children: [
+            { name: 'Anomalies & Events', value: 96 },
+            { name: 'Security Monitoring', value: 95 },
+            { name: 'Detection Processes', value: 92 }
+          ]
+        },
+        {
+          name: 'Respond',
+          description: 'Response Planning, Communications, Analysis, Mitigation, Improvements',
+          value: 93,
+          children: [
+            { name: 'Response Planning', value: 94 },
+            { name: 'Communications', value: 95 },
+            { name: 'Analysis', value: 93 },
+            { name: 'Mitigation', value: 92 },
+            { name: 'Improvements', value: 91 }
+          ]
+        },
+        {
+          name: 'Recover',
+          description: 'Recovery Planning, Improvements, Communications',
+          value: 90,
+          children: [
+            { name: 'Recovery Planning', value: 91 },
+            { name: 'Improvements', value: 89 },
+            { name: 'Communications', value: 90 }
+          ]
+        }
+      ]
     };
     
-    // Filter vendors
-    const vendors = selectedVendors.filter(v => frameworkCoverage[v] !== undefined);
-    
-    // Get theme
-    const isDarkMode = document.body.classList.contains('dark-mode');
-    const theme = window.ChartConfig ? window.ChartConfig.getCurrentTheme() : 
-      (isDarkMode ? this.config.colors.dark : this.config.colors.light);
-    
-    // Set dimensions
-    const margin = { top: 70, right: 70, bottom: 70, left: 70 };
-    const width = Math.min(600, element.clientWidth) - margin.left - margin.right;
-    const height = 500 - margin.top - margin.bottom;
-    const radius = Math.min(width, height) / 2;
-    
     // Create SVG
+    const width = element.clientWidth;
+    const height = 400;
+    const margin = { top: 50, right: 20, bottom: 50, left: 20 };
+    
     const svg = d3.select(element)
       .append('svg')
-      .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom)
+      .attr('width', width)
+      .attr('height', height)
       .append('g')
-      .attr('transform', `translate(${margin.left + width/2},${margin.top + height/2})`);
+      .attr('transform', `translate(${margin.left}, ${margin.top})`);
     
-    // Scales and axes
-    const angleScale = d3.scalePoint()
-      .range([0, 2 * Math.PI])
-      .domain(categories)
-      .padding(0.5);
+    // Create color scale
+    const color = d3.scaleOrdinal()
+      .domain(['Identify', 'Protect', 'Detect', 'Respond', 'Recover'])
+      .range([this.colors.primary, this.colors.secondary, this.colors.info, this.colors.warning, this.colors.purple]);
     
-    const radiusScale = d3.scaleLinear()
-      .range([0, radius])
-      .domain([0, 100]);
+    // Create treemap layout
+    const treemap = d3.treemap()
+      .size([width - margin.left - margin.right, height - margin.top - margin.bottom])
+      .padding(4);
     
-    // Create axes (spokes)
-    categories.forEach(category => {
-      const angle = angleScale(category);
-      
-      // Draw axis line
-      svg.append('line')
-        .attr('x1', 0)
-        .attr('y1', 0)
-        .attr('x2', radius * Math.cos(angle - Math.PI / 2))
-        .attr('y2', radius * Math.sin(angle - Math.PI / 2))
-        .attr('stroke', theme.borderColor)
-        .attr('stroke-width', 1)
-        .attr('opacity', 0.7);
-      
-      // Add axis label
-      svg.append('text')
-        .attr('x', (radius + 20) * Math.cos(angle - Math.PI / 2))
-        .attr('y', (radius + 20) * Math.sin(angle - Math.PI / 2))
-        .attr('text-anchor', angle === 0 || angle === Math.PI ? 'middle' : (angle < Math.PI ? 'start' : 'end'))
-        .attr('dominant-baseline', angle === Math.PI / 2 || angle === 3 * Math.PI / 2 ? 'middle' : (angle < Math.PI ? 'hanging' : 'auto'))
-        .attr('font-size', '14px')
-        .attr('font-weight', 'bold')
-        .attr('fill', theme.textColor)
-        .text(category);
-    });
+    // Create hierarchy
+    const root = d3.hierarchy(nistData)
+      .sum(d => d.value)
+      .sort((a, b) => b.value - a.value);
     
-    // Draw concentric circles
-    [20, 40, 60, 80, 100].forEach(value => {
-      svg.append('circle')
-        .attr('cx', 0)
-        .attr('cy', 0)
-        .attr('r', radiusScale(value))
-        .attr('fill', 'none')
-        .attr('stroke', theme.borderColor)
-        .attr('stroke-width', value === 100 ? 1.5 : 0.7)
-        .attr('stroke-dasharray', value % 40 === 0 ? 'none' : '2,2')
-        .attr('opacity', value === 100 ? 0.7 : 0.4);
-        
-      // Add value label (only for major ticks)
-      if (value % 40 === 0) {
-        svg.append('text')
-          .attr('x', 5)
-          .attr('y', -radiusScale(value) + 3)
-          .attr('font-size', '10px')
-          .attr('fill', theme.textLight)
-          .text(value);
-      }
-    });
+    // Apply treemap layout
+    treemap(root);
     
-    // Create tooltip
-    const tooltip = d3.select(element)
-      .append('div')
-      .style('opacity', 0)
-      .attr('class', 'd3-tooltip')
-      .style('position', 'absolute')
-      .style('background-color', theme.cardBackground)
-      .style('color', theme.textColor)
-      .style('border', `1px solid ${theme.borderColor}`)
-      .style('border-radius', '5px')
-      .style('padding', '10px')
-      .style('box-shadow', '0 4px 10px rgba(0, 0, 0, 0.15)')
-      .style('pointer-events', 'none')
-      .style('z-index', 10)
-      .style('font-family', this.config.theme.fontFamily)
-      .style('font-size', '12px');
+    // Create cells
+    const cell = svg.selectAll('g')
+      .data(root.descendants().filter(d => d.depth === 1))
+      .enter()
+      .append('g')
+      .attr('transform', d => `translate(${d.x0}, ${d.y0})`);
     
-    // Create line generator
-    const lineGenerator = d3.lineRadial()
-      .angle(d => angleScale(d.category) - Math.PI / 2)
-      .radius(d => radiusScale(d.value))
-      .curve(d3.curveLinearClosed);
+    // Create rectangles
+    cell.append('rect')
+      .attr('width', d => d.x1 - d.x0)
+      .attr('height', d => d.y1 - d.y0)
+      .attr('fill', d => color(d.data.name))
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 2)
+      .attr('rx', 4)
+      .attr('ry', 4);
     
-    // Create paths for each vendor
-    vendors.forEach((vendorId, index) => {
-      // Create data array
-      const vendorData = categories.map(category => ({
-        category: category,
-        value: frameworkCoverage[vendorId][category]
-      }));
-      
-      // Get vendor color
-      const vendorColor = window.ChartConfig ? 
-        window.ChartConfig.getVendorColor(vendorId) : 
-        this.config.colors.chart[index % this.config.colors.chart.length];
-      
-      // Create path with animation
-      const path = svg.append('path')
-        .datum(vendorData)
-        .attr('fill', vendorColor)
-        .attr('fill-opacity', 0.2)
-        .attr('stroke', vendorColor)
-        .attr('stroke-width', 2)
-        .attr('d', lineGenerator)
-        .attr('opacity', 0);
-      
-      // Animate path
-      path.transition()
-        .duration(1000)
-        .delay(index * 200)
-        .attr('opacity', 1);
-      
-      // Add points with tooltips
-      vendorData.forEach((d, i) => {
-        const angle = angleScale(d.category) - Math.PI / 2;
-        const x = radiusScale(d.value) * Math.cos(angle);
-        const y = radiusScale(d.value) * Math.sin(angle);
-        
-        svg.append('circle')
-          .attr('cx', x)
-          .attr('cy', y)
-          .attr('r', 5)
-          .attr('fill', vendorColor)
-          .attr('stroke', '#fff')
-          .attr('stroke-width', 1.5)
-          .attr('opacity', 0)
-          .on('mouseover', function(event) {
-            d3.select(this).attr('r', 7);
-            tooltip.style('opacity', 1);
-          })
-          .on('mousemove', function(event) {
-            tooltip
-              .html(`
-                <strong>${window.VENDORS ? window.VENDORS[vendorId].name : vendorId}</strong><br>
-                ${d.category}: <strong>${d.value}%</strong>
-              `)
-              .style('left', (event.pageX + 10) + 'px')
-              .style('top', (event.pageY - 15) + 'px');
-          })
-          .on('mouseleave', function() {
-            d3.select(this).attr('r', 5);
-            tooltip.style('opacity', 0);
-          })
-          .transition()
-          .duration(500)
-          .delay(index * 200 + 200 + i * 100)
-          .attr('opacity', 1);
-      });
-    });
+    // Add labels
+    cell.append('text')
+      .attr('x', 10)
+      .attr('y', 20)
+      .attr('font-size', '14px')
+      .attr('font-weight', 'bold')
+      .attr('fill', '#fff')
+      .text(d => d.data.name);
+    
+    // Add scores
+    cell.append('text')
+      .attr('x', 10)
+      .attr('y', 40)
+      .attr('font-size', '16px')
+      .attr('font-weight', 'bold')
+      .attr('fill', '#fff')
+      .text(d => d.data.value + '%');
     
     // Add title
     svg.append('text')
-      .attr('x', 0)
-      .attr('y', -radius - 40)
+      .attr('x', (width - margin.left - margin.right) / 2)
+      .attr('y', -20)
       .attr('text-anchor', 'middle')
       .attr('font-size', '18px')
       .attr('font-weight', 'bold')
-      .attr('fill', theme.textColor)
       .text('NIST Cybersecurity Framework Coverage');
+    
+    // Add subtitle
+    svg.append('text')
+      .attr('x', (width - margin.left - margin.right) / 2)
+      .attr('y', height - margin.top - margin.bottom + 20)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .text('Overall Framework Coverage: 93%');
+      
+    return svg;
+  }
+  
+  /**
+   * Create threat model visualization
+   */
+  createThreatModelVisualization(data, elementId, chartId) {
+    const element = document.getElementById(elementId);
+    if (!element || !window.d3) return;
+    
+    // Clear any existing chart
+    element.innerHTML = '';
+    
+    // Store reference to container
+    this.charts[chartId] = element;
+    
+    // Check if D3 is available
+    if (!window.d3) {
+      element.innerHTML = '<div class="chart-error">D3.js library not available</div>';
+      return;
+    }
+    
+    // Sample data for threat impact analysis
+    const threatData = [
+      { threat: 'Unauthorized Access', impact: 'Critical', baseline: 85, withNAC: 15, reduction: 82 },
+      { threat: 'Data Exfiltration', impact: 'Critical', baseline: 90, withNAC: 20, reduction: 78 },
+      { threat: 'Malware Propagation', impact: 'High', baseline: 75, withNAC: 15, reduction: 80 },
+      { threat: 'Lateral Movement', impact: 'Critical', baseline: 95, withNAC: 10, reduction: 89 },
+      { threat: 'Rogue Devices', impact: 'High', baseline: 85, withNAC: 5, reduction: 94 },
+      { threat: 'Insider Threats', impact: 'High', baseline: 70, withNAC: 15, reduction: 79 },
+      { threat: 'Application Exploits', impact: 'Medium', baseline: 60, withNAC: 20, reduction: 67 },
+      { threat: 'Network Reconnaissance', impact: 'Medium', baseline: 80, withNAC: 10, reduction: 88 }
+    ];
+    
+    // Set up SVG
+    const width = element.clientWidth;
+    const height = 400;
+    const margin = { top: 50, right: 150, bottom: 70, left: 80 };
+    
+    const svg = d3.select(element)
+      .append('svg')
+      .attr('width', width)
+      .attr('height', height);
+    
+    const chartArea = svg.append('g')
+      .attr('transform', `translate(${margin.left}, ${margin.top})`);
+    
+    // Set up scales
+    const xScale = d3.scaleBand()
+      .domain(threatData.map(d => d.threat))
+      .range([0, width - margin.left - margin.right])
+      .padding(0.3);
+    
+    const yScale = d3.scaleLinear()
+      .domain([0, 100])
+      .range([height - margin.top - margin.bottom, 0]);
+    
+    // Create x-axis
+    chartArea.append('g')
+      .attr('transform', `translate(0, ${height - margin.top - margin.bottom})`)
+      .call(d3.axisBottom(xScale))
+      .selectAll('text')
+      .attr('transform', 'rotate(-45)')
+      .style('text-anchor', 'end')
+      .attr('dx', '-.8em')
+      .attr('dy', '.15em');
+    
+    // Create y-axis
+    chartArea.append('g')
+      .call(d3.axisLeft(yScale));
+    
+    // Create color scale for impact
+    const colorScale = d3.scaleOrdinal()
+      .domain(['Critical', 'High', 'Medium', 'Low'])
+      .range([this.colors.danger, this.colors.warning, this.colors.info, this.colors.secondary]);
+    
+    // Add baseline bars
+    chartArea.selectAll('.baseline-bar')
+      .data(threatData)
+      .enter()
+      .append('rect')
+      .attr('class', 'baseline-bar')
+      .attr('x', d => xScale(d.threat))
+      .attr('y', d => yScale(d.baseline))
+      .attr('width', xScale.bandwidth())
+      .attr('height', d => height - margin.top - margin.bottom - yScale(d.baseline))
+      .attr('fill', 'rgba(231, 76, 60, 0.3)')
+      .attr('stroke', '#e74c3c')
+      .attr('stroke-width', 1);
+    
+    // Add NAC bars
+    chartArea.selectAll('.nac-bar')
+      .data(threatData)
+      .enter()
+      .append('rect')
+      .attr('class', 'nac-bar')
+      .attr('x', d => xScale(d.threat))
+      .attr('y', d => yScale(d.withNAC))
+      .attr('width', xScale.bandwidth())
+      .attr('height', d => height - margin.top - margin.bottom - yScale(d.withNAC))
+      .attr('fill', d => colorScale(d.impact))
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 1);
+    
+    // Add reduction arrows
+    chartArea.selectAll('.reduction-arrow')
+      .data(threatData)
+      .enter()
+      .append('line')
+      .attr('class', 'reduction-arrow')
+      .attr('x1', d => xScale(d.threat) + xScale.bandwidth() / 2)
+      .attr('y1', d => yScale(d.baseline))
+      .attr('x2', d => xScale(d.threat) + xScale.bandwidth() / 2)
+      .attr('y2', d => yScale(d.withNAC))
+      .attr('stroke', '#2ecc71')
+      .attr('stroke-width', 2)
+      .attr('stroke-dasharray', '5,3')
+      .attr('marker-end', 'url(#arrowhead)');
+    
+    // Define arrowhead marker
+    svg.append('defs').append('marker')
+      .attr('id', 'arrowhead')
+      .attr('viewBox', '0 -5 10 10')
+      .attr('refX', 5)
+      .attr('refY', 0)
+      .attr('markerWidth', 5)
+      .attr('markerHeight', 5)
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,-5L10,0L0,5')
+      .attr('fill', '#2ecc71');
+    
+    // Add reduction percentage labels
+    chartArea.selectAll('.reduction-label')
+      .data(threatData)
+      .enter()
+      .append('text')
+      .attr('class', 'reduction-label')
+      .attr('x', d => xScale(d.threat) + xScale.bandwidth() / 2 + 5)
+      .attr('y', d => yScale(d.baseline / 2 + d.withNAC / 2))
+      .attr('text-anchor', 'start')
+      .attr('font-size', '10px')
+      .attr('font-weight', 'bold')
+      .attr('fill', '#2ecc71')
+      .text(d => `-${d.reduction}%`);
     
     // Add legend
     const legend = svg.append('g')
-      .attr('transform', `translate(${0},${radius + 30})`);
-      
-    vendors.forEach((vendorId, i) => {
-      const vendorColor = window.ChartConfig ? 
-        window.ChartConfig.getVendorColor(vendorId) : 
-        this.config.colors.chart[i % this.config.colors.chart.length];
-      
+      .attr('transform', `translate(${width - margin.right + 20}, ${margin.top})`);
+    
+    // Add legend title
+    legend.append('text')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('font-size', '14px')
+      .attr('font-weight', 'bold')
+      .text('Risk Impact');
+    
+    // Add legend items
+    const impacts = ['Critical', 'High', 'Medium', 'Low'];
+    impacts.forEach((impact, i) => {
       const legendItem = legend.append('g')
-        .attr('transform', `translate(${(-vendors.length / 2 + i) * 120},0)`)
-        .style('cursor', 'pointer')
-        .on('mouseover', function() {
-          // Highlight this vendor's path
-          svg.selectAll('path')
-            .filter((d, j) => j !== i)
-            .transition()
-            .duration(200)
-            .attr('opacity', 0.2);
-        })
-        .on('mouseleave', function() {
-          // Reset all paths
-          svg.selectAll('path')
-            .transition()
-            .duration(200)
-            .attr('opacity', 1);
-        });
+        .attr('transform', `translate(0, ${i * 25 + 20})`);
       
       legendItem.append('rect')
         .attr('width', 15)
         .attr('height', 15)
-        .attr('rx', 2)
-        .attr('fill', vendorColor);
+        .attr('fill', colorScale(impact));
       
       legendItem.append('text')
-        .attr('x', 20)
+        .attr('x', 25)
         .attr('y', 12)
         .attr('font-size', '12px')
-        .attr('fill', theme.textColor)
-        .text(window.VENDORS ? window.VENDORS[vendorId].name : vendorId);
+        .text(impact);
     });
     
-    // Store reference for updates
-    this.charts[chartId] = {
-      svg,
-      resize: () => {
-        // Resize functionality
-      },
-      updateTheme: () => {
-        // Theme update functionality
-      },
-      destroy: () => {
-        // Remove chart
-        while (element.firstChild) {
-          element.removeChild(element.firstChild);
-        }
-      }
-    };
+    // Add second legend for bar types
+    const legend2 = svg.append('g')
+      .attr('transform', `translate(${width - margin.right + 20}, ${margin.top + 130})`);
     
-    return this.charts[chartId];
-  }
-  
-  /**
-   * Create Threat Model Visualization
-   * Shows different threat types and their impact before/after NAC
-   */
-  createThreatModelVisualization(data, elementId, chartId) {
-    const element = document.getElementById(elementId);
-    if (!element || !window.d3) return null;
-    
-    // Clear any existing chart
-    while (element.firstChild) {
-      element.removeChild(element.firstChild);
-    }
-    
-    // Define threat categories and impact
-    const threats = [
-      { name: 'Unauthorized Access', beforeNAC: 85, afterNAC: 25, description: 'External actors gaining access to network resources' },
-      { name: 'Data Exfiltration', beforeNAC: 75, afterNAC: 30, description: 'Theft of sensitive data from the network' },
-      { name: 'Lateral Movement', beforeNAC: 80, afterNAC: 20, description: 'Attackers moving between systems after initial breach' },
-      { name: 'Shadow IT', beforeNAC: 70, afterNAC: 15, description: 'Unauthorized devices and applications on network' },
-      { name: 'Malware Spread', beforeNAC: 75, afterNAC: 30, description: 'Rapid infection across network systems' },
-      { name: 'Device Spoofing', beforeNAC: 90, afterNAC: 10, description: 'Impersonation of legitimate network devices' },
-      { name: 'Privilege Escalation', beforeNAC: 65, afterNAC: 35, description: 'Gaining higher access rights than authorized' }
-    ];
-    
-    // Get theme
-    const isDarkMode = document.body.classList.contains('dark-mode');
-    const theme = window.ChartConfig ? window.ChartConfig.getCurrentTheme() : 
-      (isDarkMode ? this.config.colors.dark : this.config.colors.light);
-    
-    // Set dimensions
-    const margin = { top: 50, right: 180, bottom: 70, left: 150 };
-    const width = Math.max(500, element.clientWidth) - margin.left - margin.right;
-    const height = 450 - margin.top - margin.bottom;
-    
-    // Create SVG
-    const svg = d3.select(element)
-      .append('svg')
-      .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom)
-      .append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
-    
-    // Scales
-    const y = d3.scaleBand()
-      .range([0, height])
-      .domain(threats.map(d => d.name))
-      .padding(0.2);
-    
-    const x = d3.scaleLinear()
-      .range([0, width])
-      .domain([0, 100]);
-    
-    // Axes
-    svg.append('g')
-      .attr('class', 'x-axis')
-      .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(x).ticks(5).tickFormat(d => d + '%'))
-      .selectAll('text')
-      .style('font-size', '12px')
-      .style('fill', theme.textColor);
-    
-    svg.append('g')
-      .attr('class', 'y-axis')
-      .call(d3.axisLeft(y))
-      .selectAll('text')
-      .style('font-size', '12px')
-      .style('fill', theme.textColor);
-    
-    // Create tooltip
-    const tooltip = d3.select(element)
-      .append('div')
-      .style('opacity', 0)
-      .attr('class', 'd3-tooltip')
-      .style('position', 'absolute')
-      .style('background-color', theme.cardBackground)
-      .style('color', theme.textColor)
-      .style('border', `1px solid ${theme.borderColor}`)
-      .style('border-radius', '5px')
-      .style('padding', '10px')
-      .style('box-shadow', '0 4px 10px rgba(0, 0, 0, 0.15)')
-      .style('pointer-events', 'none')
-      .style('z-index', 10)
-      .style('font-family', this.config.theme.fontFamily)
-      .style('font-size', '12px')
-      .style('max-width', '250px');
-    
-    // Add bars for before NAC (risk level)
-    svg.selectAll('.bar-before')
-      .data(threats)
-      .enter()
-      .append('rect')
-      .attr('class', 'bar-before')
-      .attr('y', d => y(d.name))
-      .attr('height', y.bandwidth() / 2)
+    // Add legend title
+    legend2.append('text')
       .attr('x', 0)
-      .attr('width', 0) // Start at 0 for animation
-      .attr('fill', '#e74c3c')
-      .attr('opacity', 0.8)
-      .attr('rx', 4)
-      .attr('ry', 4)
-      .on('mouseover', function(event, d) {
-        tooltip.style('opacity', 1);
-        d3.select(this).attr('opacity', 1);
-      })
-      .on('mousemove', function(event, d) {
-        tooltip
-          .html(`
-            <strong>${d.name}</strong><br>
-            <div>${d.description}</div><br>
-            <strong>Risk Level Before NAC:</strong> ${d.beforeNAC}%
-          `)
-          .style('left', (event.pageX + 10) + 'px')
-          .style('top', (event.pageY - 15) + 'px');
-      })
-      .on('mouseleave', function() {
-        tooltip.style('opacity', 0);
-        d3.select(this).attr('opacity', 0.8);
-      })
-      // Animate the bars
-      .transition()
-      .duration(1000)
-      .delay((d, i) => i * 100)
-      .attr('width', d => x(d.beforeNAC));
+      .attr('y', 0)
+      .attr('font-size', '14px')
+      .attr('font-weight', 'bold')
+      .text('Risk Level');
     
-    // Add bars for after NAC (reduced risk)
-    svg.selectAll('.bar-after')
-      .data(threats)
-      .enter()
-      .append('rect')
-      .attr('class', 'bar-after')
-      .attr('y', d => y(d.name) + y.bandwidth() / 2)
-      .attr('height', y.bandwidth() / 2)
-      .attr('x', 0)
-      .attr('width', 0) // Start at 0 for animation
-      .attr('fill', '#2ecc71')
-      .attr('opacity', 0.8)
-      .attr('rx', 4)
-      .attr('ry', 4)
-      .on('mouseover', function(event, d) {
-        tooltip.style('opacity', 1);
-        d3.select(this).attr('opacity', 1);
-      })
-      .on('mousemove', function(event, d) {
-        const reduction = d.beforeNAC - d.afterNAC;
-        tooltip
-          .html(`
-            <strong>${d.name}</strong><br>
-            <div>${d.description}</div><br>
-            <strong>Risk Level After NAC:</strong> ${d.afterNAC}%<br>
-            <strong>Reduction:</strong> ${reduction}% (${Math.round(reduction / d.beforeNAC * 100)}%)
-          `)
-          .style('left', (event.pageX + 10) + 'px')
-          .style('top', (event.pageY - 15) + 'px');
-      })
-      .on('mouseleave', function() {
-        tooltip.style('opacity', 0);
-        d3.select(this).attr('opacity', 0.8);
-      })
-      // Animate the bars
-      .transition()
-      .duration(1000)
-      .delay((d, i) => 500 + i * 100)
-      .attr('width', d => x(d.afterNAC));
+    // Add baseline legend item
+    const baselineLegend = legend2.append('g')
+      .attr('transform', 'translate(0, 20)');
     
-    // Add legend
-    const legend = svg.append('g')
-      .attr('transform', `translate(${width + 20},0)`);
-    
-    // Before NAC legend item
-    const beforeLegend = legend.append('g')
-      .attr('transform', 'translate(0,0)');
-    
-    beforeLegend.append('rect')
+    baselineLegend.append('rect')
       .attr('width', 15)
       .attr('height', 15)
-      .attr('fill', '#e74c3c')
-      .attr('opacity', 0.8)
-      .attr('rx', 2)
-      .attr('ry', 2);
+      .attr('fill', 'rgba(231, 76, 60, 0.3)')
+      .attr('stroke', '#e74c3c')
+      .attr('stroke-width', 1);
     
-    beforeLegend.append('text')
+    baselineLegend.append('text')
       .attr('x', 25)
       .attr('y', 12)
       .attr('font-size', '12px')
-      .attr('fill', theme.textColor)
-      .text('Before NAC');
+      .text('Without NAC');
     
-    // After NAC legend item
-    const afterLegend = legend.append('g')
-      .attr('transform', 'translate(0,25)');
+    // Add NAC legend item
+    const nacLegend = legend2.append('g')
+      .attr('transform', 'translate(0, 45)');
     
-    afterLegend.append('rect')
+    nacLegend.append('rect')
       .attr('width', 15)
       .attr('height', 15)
-      .attr('fill', '#2ecc71')
-      .attr('opacity', 0.8)
-      .attr('rx', 2)
-      .attr('ry', 2);
+      .attr('fill', this.colors.primary)
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 1);
     
-    afterLegend.append('text')
+    nacLegend.append('text')
       .attr('x', 25)
       .attr('y', 12)
       .attr('font-size', '12px')
-      .attr('fill', theme.textColor)
-      .text('After NAC');
+      .text('With Portnox Cloud');
+    
+    // Add axes titles
+    svg.append('text')
+      .attr('transform', `translate(${width / 2}, ${height - 10})`)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .attr('font-weight', 'bold')
+      .text('Threat Vector');
+    
+    svg.append('text')
+      .attr('transform', 'rotate(-90)')
+      .attr('x', -(height / 2))
+      .attr('y', 20)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .attr('font-weight', 'bold')
+      .text('Risk Level (%)');
     
     // Add title
     svg.append('text')
       .attr('x', width / 2)
-      .attr('y', -20)
+      .attr('y', 30)
       .attr('text-anchor', 'middle')
       .attr('font-size', '18px')
       .attr('font-weight', 'bold')
-      .attr('fill', theme.textColor)
-      .text('Threat Impact Analysis');
+      .text('Threat Impact Reduction with Portnox Cloud');
     
-    // Add subtitle
+    return svg;
+  }
+  
+  /**
+   * Create vendor heatmap visualization
+   */
+  createVendorHeatmap(data, elementId, chartId) {
+    const element = document.getElementById(elementId);
+    if (!element || !window.d3) return;
+    
+    // Clear any existing chart
+    element.innerHTML = '';
+    
+    // Store reference to container
+    this.charts[chartId] = element;
+    
+    // Check if D3 is available
+    if (!window.d3) {
+      element.innerHTML = '<div class="chart-error">D3.js library not available</div>';
+      return;
+    }
+    
+    // Sample data for vendor capability comparison
+    const vendorData = [
+      { vendor: 'Portnox Cloud', category: 'Zero Trust', score: 95 },
+      { vendor: 'Portnox Cloud', category: 'Device Authentication', score: 95 },
+      { vendor: 'Portnox Cloud', category: 'Network Visibility', score: 90 },
+      { vendor: 'Portnox Cloud', category: 'Threat Prevention', score: 85 },
+      { vendor: 'Portnox Cloud', category: 'Automated Response', score: 90 },
+      { vendor: 'Portnox Cloud', category: 'Compliance', score: 95 },
+      
+      { vendor: 'Cisco ISE', category: 'Zero Trust', score: 75 },
+      { vendor: 'Cisco ISE', category: 'Device Authentication', score: 85 },
+      { vendor: 'Cisco ISE', category: 'Network Visibility', score: 80 },
+      { vendor: 'Cisco ISE', category: 'Threat Prevention', score: 80 },
+      { vendor: 'Cisco ISE', category: 'Automated Response', score: 75 },
+      { vendor: 'Cisco ISE', category: 'Compliance', score: 80 },
+      
+      { vendor: 'Aruba ClearPass', category: 'Zero Trust', score: 70 },
+      { vendor: 'Aruba ClearPass', category: 'Device Authentication', score: 85 },
+      { vendor: 'Aruba ClearPass', category: 'Network Visibility', score: 75 },
+      { vendor: 'Aruba ClearPass', category: 'Threat Prevention', score: 75 },
+      { vendor: 'Aruba ClearPass', category: 'Automated Response', score: 70 },
+      { vendor: 'Aruba ClearPass', category: 'Compliance', score: 75 },
+      
+      { vendor: 'Forescout', category: 'Zero Trust', score: 65 },
+      { vendor: 'Forescout', category: 'Device Authentication', score: 80 },
+      { vendor: 'Forescout', category: 'Network Visibility', score: 90 },
+      { vendor: 'Forescout', category: 'Threat Prevention', score: 75 },
+      { vendor: 'Forescout', category: 'Automated Response', score: 70 },
+      { vendor: 'Forescout', category: 'Compliance', score: 70 }
+    ];
+    
+    // Extract unique vendors and categories
+    const vendors = Array.from(new Set(vendorData.map(d => d.vendor)));
+    const categories = Array.from(new Set(vendorData.map(d => d.category)));
+    
+    // Set up SVG
+    const width = element.clientWidth;
+    const height = 400;
+    const margin = { top: 80, right: 50, bottom: 80, left: 150 };
+    
+    const svg = d3.select(element)
+      .append('svg')
+      .attr('width', width)
+      .attr('height', height);
+    
+    const chartArea = svg.append('g')
+      .attr('transform', `translate(${margin.left}, ${margin.top})`);
+    
+    // Set up scales
+    const xScale = d3.scaleBand()
+      .domain(categories)
+      .range([0, width - margin.left - margin.right])
+      .padding(0.1);
+    
+    const yScale = d3.scaleBand()
+      .domain(vendors)
+      .range([0, height - margin.top - margin.bottom])
+      .padding(0.1);
+    
+    // Create color scale
+    const colorScale = d3.scaleLinear()
+      .domain([50, 75, 95])
+      .range(['#e74c3c', '#f39c12', '#2ecc71']);
+    
+    // Create x-axis
+    chartArea.append('g')
+      .attr('transform', `translate(0, ${height - margin.top - margin.bottom})`)
+      .call(d3.axisBottom(xScale))
+      .selectAll('text')
+      .attr('transform', 'rotate(-45)')
+      .style('text-anchor', 'end')
+      .attr('dx', '-.8em')
+      .attr('dy', '.15em');
+    
+    // Create y-axis
+    chartArea.append('g')
+      .call(d3.axisLeft(yScale));
+    
+    // Add vendor logos to y-axis
+    chartArea.selectAll('.y-axis-image')
+      .data(vendors)
+      .enter()
+      .append('image')
+      .attr('class', 'y-axis-image')
+      .attr('x', -140)
+      .attr('y', d => yScale(d) + yScale.bandwidth() / 2 - 10)
+      .attr('width', 120)
+      .attr('height', 20)
+      .attr('xlink:href', d => {
+        // Return appropriate logo based on vendor name
+        if (d.includes('Portnox')) return 'img/vendors/portnox-logo.png';
+        if (d.includes('Cisco')) return 'img/vendors/cisco-logo.png';
+        if (d.includes('Aruba')) return 'img/vendors/aruba-logo.png';
+        if (d.includes('Forescout')) return 'img/vendors/forescout-logo.png';
+        return '';
+      });
+    
+    // Create heatmap cells
+    chartArea.selectAll('.heatmap-cell')
+      .data(vendorData)
+      .enter()
+      .append('rect')
+      .attr('class', 'heatmap-cell')
+      .attr('x', d => xScale(d.category))
+      .attr('y', d => yScale(d.vendor))
+      .attr('width', xScale.bandwidth())
+      .attr('height', yScale.bandwidth())
+      .attr('fill', d => colorScale(d.score))
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 2)
+      .attr('rx', 4)
+      .attr('ry', 4);
+    
+    // Add score labels
+    chartArea.selectAll('.score-label')
+      .data(vendorData)
+      .enter()
+      .append('text')
+      .attr('class', 'score-label')
+      .attr('x', d => xScale(d.category) + xScale.bandwidth() / 2)
+      .attr('y', d => yScale(d.vendor) + yScale.bandwidth() / 2)
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'middle')
+      .attr('font-size', '14px')
+      .attr('font-weight', 'bold')
+      .attr('fill', d => d.score > 70 ? '#fff' : '#333')
+      .text(d => d.score);
+    
+    // Add title
     svg.append('text')
       .attr('x', width / 2)
-      .attr('y', -2)
+      .attr('y', 30)
       .attr('text-anchor', 'middle')
-      .attr('font-size', '12px')
-      .attr('fill', theme.textLight)
-      .text('Risk level before and after implementing NAC');
+      .attr('font-size', '18px')
+      .attr('font-weight', 'bold')
+      .text('NAC Vendor Capabilities Comparison');
     
-    // Add X-axis label
+    // Add legend
+    const legendWidth = 300;
+    const legendHeight = 20;
+    
+    const legendX = (width - legendWidth) / 2;
+    const legendY = height - 30;
+    
+    const defs = svg.append('defs');
+    
+    // Create gradient
+    const linearGradient = defs.append('linearGradient')
+      .attr('id', 'heatmap-gradient')
+      .attr('x1', '0%')
+      .attr('y1', '0%')
+      .attr('x2', '100%')
+      .attr('y2', '0%');
+    
+    linearGradient.append('stop')
+      .attr('offset', '0%')
+      .attr('stop-color', '#e74c3c');
+    
+    linearGradient.append('stop')
+      .attr('offset', '50%')
+      .attr('stop-color', '#f39c12');
+    
+    linearGradient.append('stop')
+      .attr('offset', '100%')
+      .attr('stop-color', '#2ecc71');
+    
+    // Draw legend rect
+    svg.append('rect')
+      .attr('x', legendX)
+      .attr('y', legendY)
+      .attr('width', legendWidth)
+      .attr('height', legendHeight)
+      .style('fill', 'url(#heatmap-gradient)');
+    
+    // Draw legend axis
+    const legendScale = d3.scaleLinear()
+      .domain([50, 95])
+      .range([0, legendWidth]);
+    
+    const legendAxis = d3.axisBottom(legendScale)
+      .tickValues([50, 60, 70, 80, 90, 95])
+      .tickFormat(d => d);
+    
+    svg.append('g')
+      .attr('transform', `translate(${legendX}, ${legendY + legendHeight})`)
+      .call(legendAxis);
+    
+    // Add legend title
     svg.append('text')
-      .attr('x', width / 2)
-      .attr('y', height + 40)
-      .attr('text-anchor', 'middle')
+      .attr('x', legendX)
+      .attr('y', legendY - 10)
       .attr('font-size', '12px')
-      .attr('fill', theme.textColor)
-      .text('Risk Level (%)');
+      .attr('text-anchor', 'start')
+      .text('Capability Score:');
     
-    // Store reference for updates
-    this.charts[chartId] = {
-      svg,
-      resize: () => {
-        // Resize functionality
-      },
-      updateTheme: () => {
-        // Theme update functionality
-      },
-      destroy: () => {
-        // Remove chart
-        while (element.firstChild) {
-          element.removeChild(element.firstChild);
-        }
-      }
-    };
-    
-    return this.charts[chartId];
-  }
-  
-  /**
-   * Initialize charts for Security & Compliance View
-   */
-  initSecurityCharts(resultsData) {
-    // Clear any existing charts
-    this.destroyCharts(['nistFrameworkChart', 'threatModelChart']);
-    
-    // Create NIST framework radar chart
-    this.createNistFrameworkChart(resultsData, 'nist-framework-chart', 'nistFrameworkChart');
-    
-    // Create threat model visualization
-    this.createThreatModelVisualization(resultsData, 'threat-model-chart', 'threatModelChart');
-    
-    return this.charts;
-  }
-  
-  /**
-   * Initialize charts for Executive View
-   */
-  initExecutiveCharts(resultsData) {
-    // Clear any existing charts
-    this.destroyCharts(['vendorRadarChart']);
-    
-    // Create vendor radar chart
-    this.createVendorHeatmap(resultsData, 'vendor-radar-chart', 'vendorRadarChart');
-    
-    return this.charts;
-  }
-  
-  /**
-   * Helper method to destroy charts
-   */
-  destroyCharts(chartIds) {
-    chartIds.forEach(id => {
-      if (this.charts[id] && this.charts[id].destroy) {
-        this.charts[id].destroy();
-        delete this.charts[id];
-      }
-    });
+    return svg;
   }
 }
 
 // Create global instance
 window.d3Manager = new D3Manager();
-
-// Export for use across the application
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { D3Manager };
-}
