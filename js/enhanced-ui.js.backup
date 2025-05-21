@@ -668,7 +668,7 @@ class ZeroTrustUI {
                 <tr>
                   <th>Cost Component</th>
                   ${Array.from(this.selectedVendors).map(vendorId => 
-                    `<th>N/A</th>`
+                    `<th>${window.ENHANCED_VENDORS[vendorId]?.shortName || vendorId}</th>`
                   ).join('')}
                 </tr>
               </thead>
@@ -816,8 +816,8 @@ class ZeroTrustUI {
                   ${Array.from(this.selectedVendors).map(vendorId => 
                     `<th>
                       <div class="vendor-header">
-                        <img src="N/A" alt="N/A" class="vendor-logo-small">
-                        <span>N/A</span>
+                        <img src="${window.ENHANCED_VENDORS[vendorId]?.logo}" alt="${window.ENHANCED_VENDORS[vendorId]?.shortName}" class="vendor-logo-small">
+                        <span>${window.ENHANCED_VENDORS[vendorId]?.shortName}</span>
                       </div>
                     </th>`
                   ).join('')}
@@ -948,7 +948,7 @@ class ZeroTrustUI {
         ${Array.from(this.selectedVendors).map(vendorId => {
           const vendor = vendors[vendorId];
           const isLowest = vendor?.totalTCO === Math.min(...Array.from(this.selectedVendors).map(id => vendors[id]?.totalTCO || Infinity));
-          return `<td class="${isLowest ? 'total-savings' : ''}">N/A</td>`;
+          return `<td class="${isLowest ? 'total-savings' : ''}">${vendor ? ' + this.formatCurrency(vendor.totalTCO) : 'N/A'}</td>`;
         }).join('')}
       </tr>
     `;
