@@ -1118,7 +1118,7 @@ class ZeroTrustUI {
       }],
       xaxis: { categories: vendors.map(v => v.name) },
       yaxis: { 
-        labels: { formatter: (val) => ' + this.formatCurrency(val) }
+        labels: { formatter: (val) => "$" + this.formatCurrency(val) }
       },
       colors: ['#1a5a96'],
       title: { text: '3-Year TCO Comparison' }
