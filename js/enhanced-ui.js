@@ -267,6 +267,13 @@ class ZeroTrustUI {
     // Simulate calculation delay for better UX
     setTimeout(() => {
       try {
+        // Validate configuration before calculation
+        if (!this.selectedVendors || this.selectedVendors.size === 0) {
+          this.selectedVendors = new Set(["portnox"]);
+        }
+        if (!this.configuration.deviceCount || this.configuration.deviceCount <= 0) {
+          this.configuration.deviceCount = 1000;
+        }
         this.calculationResults = this.calculateTCO();
         this.renderCurrentView();
         this.hideLoadingOverlay();
@@ -901,6 +908,23 @@ class ZeroTrustUI {
   }
   
   // Helper methods for rendering components
+  validateChartData(data) {
+    if (!data || !Array.isArray(data)) return [];
+    return data.map(item => {
+      if (typeof item === "number") {
+        return isNaN(item) || !isFinite(item) ? 0 : item;
+      }
+      return item;
+    });
+  }
+
+  safeFormatCurrency(value) {
+    if (typeof value !== "number" || isNaN(value) || !isFinite(value)) {
+      return "0";
+    }
+    return this.formatCurrency(value);
+  }
+
   formatCurrency(amount) {
     if (amount >= 1000000) {
       return (amount / 1000000).toFixed(1) + 'M';
@@ -1114,7 +1138,7 @@ class ZeroTrustUI {
       chart: { type: 'bar', height: 300 },
       series: [{
         name: 'Total Cost of Ownership',
-        data: vendors.map(v => v.tco)
+        data: this.validateChartData(vendors.map(v => v.tco || 0))
       }],
       xaxis: { categories: vendors.map(v => v.name) },
       yaxis: { 
@@ -1141,7 +1165,7 @@ class ZeroTrustUI {
       chart: { type: 'bar', height: 300 },
       series: [{
         name: 'Implementation Time (Days)',
-        data: vendors.map(v => v.days)
+        data: this.validateChartData(vendors.map(v => v.days || 0))
       }],
       xaxis: { categories: vendors.map(v => v.name) },
       colors: ['#2ecc71'],
@@ -1159,7 +1183,7 @@ class ZeroTrustUI {
     const categories = ['licensing', 'hardware', 'implementation', 'personnel', 'maintenance'];
     const series = Array.from(this.selectedVendors).map(vendorId => ({
       name: window.ENHANCED_VENDORS[vendorId]?.shortName || vendorId,
-      data: categories.map(cat => this.calculationResults.vendors[vendorId]?.breakdown[cat] || 0)
+      data: this.validateChartData(categories.map(cat => this.calculationResults.vendors[vendorId]?.breakdown[cat] || 0))
     }));
     
     const options = {
@@ -1490,3 +1514,37 @@ class ZeroTrustUI {
 document.addEventListener('DOMContentLoaded', function() {
   window.zeroTrustUI = new ZeroTrustUI();
 });
+
+// Add default calculation results to prevent NaN errors
+if (typeof window.zeroTrustUI !== 'undefined') {
+  const originalCalculateTCO = window.zeroTrustUI.calculateTCO;
+  if (originalCalculateTCO) {
+    window.zeroTrustUI.calculateTCO = function() {
+      try {
+        const results = originalCalculateTCO.call(this);
+        
+        // Validate and clean results
+        if (results && results.vendors) {
+          Object.keys(results.vendors).forEach(vendorId => {
+            const vendor = results.vendors[vendorId];
+            if (vendor.breakdown) {
+              Object.keys(vendor.breakdown).forEach(key => {
+                if (isNaN(vendor.breakdown[key]) || !isFinite(vendor.breakdown[key])) {
+                  vendor.breakdown[key] = 0;
+                }
+              });
+            }
+            if (isNaN(vendor.totalTCO) || !isFinite(vendor.totalTCO)) {
+              vendor.totalTCO = 0;
+            }
+          });
+        }
+        
+        return results;
+      } catch (error) {
+        console.error('Calculation error:', error);
+        return this.getDefaultResults();
+      }
+    };
+  }
+}
