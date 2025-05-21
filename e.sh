@@ -1,376 +1,1359 @@
 #!/bin/bash
 
-# Portnox Total Cost Analyzer - Targeted Fix Script
-# This script addresses specific issues with view organization and UI
-
-# Set color variables for output
+# Color codes for better readability
 GREEN='\033[0;32m'
-BLUE='\033[0;34m'
 RED='\033[0;31m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}=== Portnox Total Cost Analyzer - Targeted Fix Script ===${NC}"
-echo "Fixing specific issues with JavaScript errors, view organization, and UI..."
+echo -e "${BLUE}🔧 Portnox Total Cost Analyzer - Direct Fix Script${NC}"
+echo -e "${YELLOW}This script will directly modify files in your current directory${NC}"
 
-# Create a backup directory
-BACKUP_DIR="./portnox-fix-backup-$(date +%Y%m%d%H%M%S)"
-mkdir -p $BACKUP_DIR
-
-# Function to backup a file before modifying it
-backup_file() {
-  local file=$1
-  if [ -f "$file" ]; then
-    cp "$file" "$BACKUP_DIR/$(basename $file)"
-    echo -e "${GREEN}✓${NC} Backed up $file"
-  else
-    echo -e "${RED}✗${NC} File not found: $file"
-    return 1
-  fi
-}
-
-# ============================================================
-# 1. Fix JavaScript syntax errors
-# ============================================================
-echo -e "\n${BLUE}Fixing JavaScript syntax errors...${NC}"
-
-# Fix chart-config.js
-if [ -f "js/charts/chart-config.js" ]; then
-  backup_file "js/charts/chart-config.js"
-  
-  # Rename global variables to avoid conflicts
-  sed -i 's/const CHART_COLORS/const PORTNOX_CHART_COLORS/g' js/charts/chart-config.js
-  sed -i 's/const CHART_FONT_FAMILY/const PORTNOX_CHART_FONT_FAMILY/g' js/charts/chart-config.js
-  sed -i 's/const CHART_ANIMATIONS/const PORTNOX_CHART_ANIMATIONS/g' js/charts/chart-config.js
-  sed -i 's/const APEX_COMMON_OPTIONS/const PORTNOX_APEX_COMMON_OPTIONS/g' js/charts/chart-config.js
-  sed -i 's/const APEX_DARK_MODE_OVERRIDES/const PORTNOX_APEX_DARK_MODE_OVERRIDES/g' js/charts/chart-config.js
-  
-  echo -e "${GREEN}✓${NC} Fixed chart-config.js variable conflicts"
+# Check if we're in the right directory
+if [ ! -f "index.html" ] || [ ! -d "js" ] || [ ! -d "css" ]; then
+  echo -e "${RED}Error: This doesn't appear to be the Portnox project directory.${NC}"
+  echo -e "${RED}Please run this script from the directory containing index.html, js/ and css/ folders.${NC}"
+  exit 1
 fi
 
-# Fix security-charts.js
-if [ -f "js/charts/security-charts.js" ]; then
-  backup_file "js/charts/security-charts.js"
-  
-  # Check for syntax errors at line 1
-  head -n 5 js/charts/security-charts.js > /tmp/security-charts-head.txt
-  if grep -q ":" /tmp/security-charts-head.txt; then
-    # Fix unexpected token by ensuring the file starts with a proper JS statement
-    cat > js/charts/security-charts.js << 'EOF'
-/**
- * Security Charts for Portnox Total Cost Analyzer
- * Provides security-specific chart configurations
- */
+echo -e "${GREEN}Project directory verified, proceeding with fixes...${NC}"
 
-class SecurityCharts {
-  constructor() {
-    this.charts = {};
-    this.colors = {
-      primary: '#1a5a96',
-      secondary: '#2ecc71',
-      warning: '#f39c12',
-      danger: '#e74c3c',
-      info: '#3498db'
-    };
-  }
-  
-  // The rest of the file remains the same
-EOF
-    
-    # Append the original file content starting from line 6
-    tail -n +6 "$BACKUP_DIR/security-charts.js" >> js/charts/security-charts.js
-    
-    echo -e "${GREEN}✓${NC} Fixed security-charts.js syntax error"
-  else
-    echo -e "${BLUE}✓${NC} security-charts.js appears to have no syntax error at beginning"
-  fi
-fi
-
-# Fix apex-charts.js
-if [ -f "js/charts/apex/apex-charts.js" ]; then
-  backup_file "js/charts/apex/apex-charts.js"
-  
-  # Change class name to avoid conflicts
-  sed -i 's/class ApexChartManager/class PortnoxApexChartManager/g' js/charts/apex/apex-charts.js
-  # Update instance creation
-  sed -i 's/window.apexChartManager = new ApexChartManager/window.apexChartManager = new PortnoxApexChartManager/g' js/charts/apex/apex-charts.js
-  
-  echo -e "${GREEN}✓${NC} Fixed apex-charts.js class conflicts"
-fi
-
-# Fix d3-manager.js
-if [ -f "js/charts/d3/d3-manager.js" ]; then
-  backup_file "js/charts/d3/d3-manager.js"
-  
-  # Change class name to avoid conflicts
-  sed -i 's/class D3Manager/class PortnoxD3Manager/g' js/charts/d3/d3-manager.js
-  # Update instance creation
-  sed -i 's/window.d3Manager = new D3Manager/window.d3Manager = new PortnoxD3Manager/g' js/charts/d3/d3-manager.js
-  
-  echo -e "${GREEN}✓${NC} Fixed d3-manager.js class conflicts"
-fi
-
-# ============================================================
-# 2. Create View Organization Fix
-# ============================================================
-echo -e "\n${BLUE}Creating view organization fix...${NC}"
-
+# Create directories if they don't exist
+mkdir -p js/charts/apex
+mkdir -p js/charts/d3
+mkdir -p js/models
 mkdir -p js/fixes
-cat > js/fixes/view-organization-fix.js << 'EOF'
+mkdir -p css/custom
+
+# Create app-integration.js
+echo -e "${BLUE}Creating js/app-integration.js...${NC}"
+cat > js/app-integration.js << 'EOF'
 /**
- * View Organization Fix for Portnox Total Cost Analyzer
- * Ensures each view is properly placed under its correct tab
+ * Enhanced Application Integration for Portnox Total Cost Analyzer
+ * Provides proper initialization and integration between components
  */
+
+console.log("Initializing Portnox Total Cost Analyzer with enhanced components...");
 
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('Applying view organization fix...');
-  
-  // Wait for the DOM to be fully ready
-  setTimeout(organizeViews, 500);
-  
-  function organizeViews() {
-    // Get main content container
-    const contentArea = document.querySelector('.content-area');
-    if (!contentArea) {
-      console.error('Content area not found, cannot organize views');
-      return;
+  // Ensure vendor data is loaded before initializing views
+  window.addEventListener('vendorDataLoaded', function() {
+    // Initialize all the views
+    if (window.executiveView && !window.executiveView.initialized) {
+      window.executiveView.init();
     }
     
-    // Get all view panels
-    const viewPanels = contentArea.querySelectorAll('.view-panel');
-    if (!viewPanels || viewPanels.length === 0) {
-      console.error('No view panels found, cannot organize views');
-      return;
+    if (window.securityView && !window.securityView.initialized) {
+      window.securityView.init();
     }
     
-    // Ensure each main tab exists
-    const mainTabs = ['executive', 'financial', 'security', 'technical'];
-    const mainTabsContainer = document.querySelector('.main-tabs');
+    // Setup global calculation function
+    window.updateAllViews = function(data) {
+      if (window.executiveView && window.executiveView.initialized) {
+        window.executiveView.update(data);
+      }
+      
+      if (window.securityView && window.securityView.initialized) {
+        window.securityView.update(data);
+      }
+    };
     
-    // Create main tabs if they don't exist
-    if (!mainTabsContainer) {
-      console.log('Creating main tabs container...');
-      const newMainTabsContainer = document.createElement('div');
-      newMainTabsContainer.className = 'main-tabs';
-      
-      mainTabs.forEach((tabId, index) => {
-        const tabButton = document.createElement('button');
-        tabButton.className = 'main-tab' + (index === 0 ? ' active' : '');
-        tabButton.setAttribute('data-view', tabId);
-        
-        let icon, text;
-        switch(tabId) {
-          case 'executive':
-            icon = 'chart-pie';
-            text = 'Executive';
-            break;
-          case 'financial':
-            icon = 'coins';
-            text = 'Financial';
-            break;
-          case 'security':
-            icon = 'shield-alt';
-            text = 'Security';
-            break;
-          case 'technical':
-            icon = 'cogs';
-            text = 'Technical';
-            break;
-        }
-        
-        tabButton.innerHTML = `<i class="fas fa-${icon}"></i> ${text}`;
-        newMainTabsContainer.appendChild(tabButton);
-      });
-      
-      // Add to content area
-      const contentWrapper = contentArea.querySelector('.content-wrapper');
-      if (contentWrapper) {
-        contentWrapper.prepend(newMainTabsContainer);
-      } else {
-        // Create content wrapper if it doesn't exist
-        const newContentWrapper = document.createElement('div');
-        newContentWrapper.className = 'content-wrapper';
-        newContentWrapper.appendChild(newMainTabsContainer);
-        contentArea.appendChild(newContentWrapper);
-      }
-      
-      // Store for further use
-      mainTabsContainer = newMainTabsContainer;
-    }
-    
-    // Ensure each view panel exists
-    mainTabs.forEach((viewId) => {
-      let viewPanel = contentArea.querySelector(`.view-panel[data-view="${viewId}"]`);
-      
-      // Create the view panel if it doesn't exist
-      if (!viewPanel) {
-        console.log(`Creating view panel for ${viewId}...`);
-        viewPanel = document.createElement('div');
-        viewPanel.className = 'view-panel';
-        viewPanel.setAttribute('data-view', viewId);
-        
-        // Add to content wrapper
-        const contentWrapper = contentArea.querySelector('.content-wrapper');
-        if (contentWrapper) {
-          contentWrapper.appendChild(viewPanel);
-        }
-      }
-      
-      // Ensure only the first view panel is active
-      if (viewId === 'executive') {
-        viewPanel.classList.add('active');
-      } else {
-        viewPanel.classList.remove('active');
-      }
-    });
-    
-    // Move any misplaced panels to their correct locations
-    viewPanels.forEach((panel) => {
-      const panelId = panel.id || '';
-      let targetViewId = '';
-      
-      // Determine which main view this panel belongs to
-      if (panelId.startsWith('executive-') || panelId === 'executive-summary') {
-        targetViewId = 'executive';
-      } else if (panelId.startsWith('financial-') || panelId === 'financial-summary') {
-        targetViewId = 'financial';
-      } else if (panelId.startsWith('security-') || panelId === 'security-overview') {
-        targetViewId = 'security';
-      } else if (panelId.startsWith('technical-') || panelId === 'technical-overview') {
-        targetViewId = 'technical';
-      } else {
-        // If no match, check the data-panel attribute instead
-        const dataPanelAttr = panel.getAttribute('data-panel');
-        if (dataPanelAttr) {
-          if (dataPanelAttr.startsWith('executive-')) targetViewId = 'executive';
-          else if (dataPanelAttr.startsWith('financial-')) targetViewId = 'financial';
-          else if (dataPanelAttr.startsWith('security-')) targetViewId = 'security';
-          else if (dataPanelAttr.startsWith('technical-')) targetViewId = 'technical';
-        }
-      }
-      
-      // Skip if we couldn't determine the target view
-      if (!targetViewId) return;
-      
-      // Get the target view panel
-      const targetPanel = contentArea.querySelector(`.view-panel[data-view="${targetViewId}"]`);
-      if (!targetPanel) return;
-      
-      // Move the panel to the target view if it's not already there
-      const currentParent = panel.parentElement;
-      if (currentParent && !currentParent.classList.contains('view-panel')) {
-        console.log(`Moving ${panelId} to ${targetViewId} view...`);
-        targetPanel.appendChild(panel);
-      }
-    });
-    
-    // Set up tab navigation
-    setupTabNavigation();
-    console.log('Views organized successfully');
-  }
+    console.log("Portnox Total Cost Analyzer initialized successfully.");
+  });
   
-  function setupTabNavigation() {
-    // Add click event to main tabs
-    const mainTabs = document.querySelectorAll('.main-tab');
-    const viewPanels = document.querySelectorAll('.view-panel');
-    
-    mainTabs.forEach(tab => {
-      // Remove existing event listeners by cloning
-      const newTab = tab.cloneNode(true);
-      tab.parentNode.replaceChild(newTab, tab);
-      
-      // Add new event listener
-      newTab.addEventListener('click', function() {
-        const view = this.getAttribute('data-view');
-        
-        // Remove active class from all tabs and panels
-        mainTabs.forEach(t => t.classList.remove('active'));
-        viewPanels.forEach(p => p.classList.remove('active'));
-        
-        // Add active class to clicked tab and corresponding panel
-        this.classList.add('active');
-        const viewPanel = document.querySelector(`.view-panel[data-view="${view}"]`);
-        if (viewPanel) {
-          viewPanel.classList.add('active');
-          
-          // Refresh charts in the active view
-          if (view === 'executive' && window.executiveView) {
-            window.executiveView.refreshChartsInPanel(window.executiveView.currentTab);
-          } else if (view === 'security' && window.securityView) {
-            window.securityView.refreshChartsInPanel(window.securityView.currentTab);
-          }
-        }
-      });
-    });
+  // Trigger vendor data load if it hasn't happened already
+  if (window.VENDORS) {
+    window.dispatchEvent(new Event('vendorDataLoaded'));
+  } else {
+    console.error("VENDORS data not available. Loading vendor-data.js...");
+    const script = document.createElement('script');
+    script.src = 'js/models/vendor-data.js';
+    script.onload = function() {
+      window.dispatchEvent(new Event('vendorDataLoaded'));
+    };
+    document.head.appendChild(script);
   }
 });
 EOF
+echo -e "${GREEN}Created js/app-integration.js${NC}"
 
-echo -e "${GREEN}✓${NC} Created view organization fix"
-
-# ============================================================
-# 3. Create modern Portnox theme
-# ============================================================
-echo -e "\n${BLUE}Creating modern Portnox theme...${NC}"
-
-mkdir -p css/fixes
-cat > css/fixes/portnox-modern-theme.css << 'EOF'
+# Create chart-config.js
+echo -e "${BLUE}Creating js/charts/chart-config.js...${NC}"
+cat > js/charts/chart-config.js << 'EOF'
 /**
- * Modern Portnox Theme for Total Cost Analyzer
- * Creates a sleek, modern UI with Portnox branding
+ * Chart Configuration for Portnox Total Cost Analyzer
+ * Provides centralized configuration for all charts
+ */
+
+const ChartConfig = {
+  colors: {
+    primary: '#1a5a96',
+    secondary: '#0d4275',
+    highlight: '#27ae60',
+    warning: '#e74c3c',
+    neutral: '#3498db',
+    chart: [
+      '#1a5a96', // Portnox Blue
+      '#e74c3c', // Cisco Red
+      '#e67e22', // Aruba Orange
+      '#f39c12', // Forescout Amber
+      '#2ecc71', // FortiNAC Green
+      '#3498db', // Juniper Blue
+      '#9b59b6', // SecureW2 Purple
+      '#34495e', // Microsoft Navy
+      '#16a085', // Arista Teal
+      '#27ae60'  // Foxpass Green
+    ]
+  },
+  
+  fonts: {
+    family: '"Nunito", sans-serif',
+    sizes: {
+      title: '18px',
+      subtitle: '14px',
+      axis: '12px',
+      tooltip: '12px'
+    }
+  },
+  
+  defaultOptions: {
+    animation: {
+      enabled: true,
+      easing: 'easeinout',
+      speed: 800,
+      dynamicAnimation: {
+        enabled: true,
+        speed: 350
+      }
+    },
+    toolbar: {
+      show: true,
+      tools: {
+        download: true,
+        selection: false,
+        zoom: false,
+        zoomin: false,
+        zoomout: false,
+        pan: false,
+        reset: false
+      }
+    }
+  },
+  
+  // Get colors for vendor IDs
+  getVendorColor: function(vendorId, opacity = 1) {
+    // Map vendor IDs to color indexes
+    const vendorColorMap = {
+      'portnox': 0,
+      'cisco': 1,
+      'aruba': 2,
+      'forescout': 3,
+      'fortinac': 4,
+      'juniper': 5,
+      'securew2': 6,
+      'microsoft': 7,
+      'arista': 8,
+      'foxpass': 9
+    };
+    
+    const colorIndex = vendorColorMap[vendorId] !== undefined ? vendorColorMap[vendorId] : 0;
+    const color = this.colors.chart[colorIndex];
+    
+    // If opacity is not 1, convert to rgba
+    if (opacity < 1) {
+      const hex = color.replace('#', '');
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
+    
+    return color;
+  },
+  
+  // Format currency values
+  formatCurrency: function(value) {
+    return '$' + value.toLocaleString();
+  },
+  
+  // Format percentage values
+  formatPercentage: function(value) {
+    return value + '%';
+  }
+};
+
+// Make it globally available
+window.ChartConfig = ChartConfig;
+EOF
+echo -e "${GREEN}Created js/charts/chart-config.js${NC}"
+
+# Create security-charts.js
+echo -e "${BLUE}Creating js/charts/security-charts.js...${NC}"
+cat > js/charts/security-charts.js << 'EOF'
+/**
+ * Security Charts for Portnox Total Cost Analyzer
+ * Renders security-specific visualizations
+ */
+
+const SecurityCharts = {
+  renderNistFrameworkChart: function(containerId, data) {
+    if (!window.ApexCharts) {
+      console.error("ApexCharts library not available");
+      return;
+    }
+    
+    const element = document.getElementById(containerId);
+    if (!element) {
+      console.error(`Container element ${containerId} not found`);
+      return;
+    }
+    
+    // Use default data if none provided
+    if (!data) {
+      data = {
+        portnox: {
+          identify: 95,
+          protect: 90,
+          detect: 95,
+          respond: 92,
+          recover: 88
+        },
+        competitors: {
+          identify: 75,
+          protect: 72,
+          detect: 70,
+          respond: 68,
+          recover: 65
+        }
+      };
+    }
+    
+    const options = {
+      series: [
+        {
+          name: 'Portnox Cloud',
+          data: [
+            data.portnox.identify,
+            data.portnox.protect,
+            data.portnox.detect,
+            data.portnox.respond,
+            data.portnox.recover
+          ]
+        },
+        {
+          name: 'Industry Average',
+          data: [
+            data.competitors.identify,
+            data.competitors.protect,
+            data.competitors.detect,
+            data.competitors.respond,
+            data.competitors.recover
+          ]
+        }
+      ],
+      chart: {
+        type: 'radar',
+        height: 350,
+        fontFamily: '"Nunito", sans-serif',
+        toolbar: {
+          show: true,
+          tools: {
+            download: true
+          }
+        },
+        dropShadow: {
+          enabled: true,
+          blur: 1,
+          left: 1,
+          top: 1
+        }
+      },
+      colors: ['#1a5a96', '#e74c3c'],
+      stroke: {
+        width: 2
+      },
+      fill: {
+        opacity: 0.2
+      },
+      markers: {
+        size: 4,
+        hover: {
+          size: 6
+        }
+      },
+      title: {
+        text: 'NIST Cybersecurity Framework Coverage',
+        style: {
+          fontSize: '18px',
+          fontWeight: 600
+        },
+        offsetY: 10
+      },
+      xaxis: {
+        categories: ['Identify', 'Protect', 'Detect', 'Respond', 'Recover'],
+        labels: {
+          style: {
+            fontSize: '12px'
+          }
+        }
+      },
+      yaxis: {
+        max: 100,
+        min: 0,
+        show: false
+      },
+      tooltip: {
+        y: {
+          formatter: function(val) {
+            return val + '%';
+          }
+        }
+      }
+    };
+    
+    // Clear any existing chart
+    element.innerHTML = '';
+    
+    // Create and render the chart
+    const chart = new ApexCharts(element, options);
+    chart.render();
+  },
+  
+  renderBreachImpactChart: function(containerId, data) {
+    if (!window.ApexCharts) {
+      console.error("ApexCharts library not available");
+      return;
+    }
+    
+    const element = document.getElementById(containerId);
+    if (!element) {
+      console.error(`Container element ${containerId} not found`);
+      return;
+    }
+    
+    // Use default data if none provided
+    if (!data) {
+      data = {
+        categories: ['No NAC Solution', 'Traditional NAC', 'Portnox Cloud'],
+        avgBreachCost: [4350000, 1525000, 650000],
+        avgResponseTime: [280, 72, 15]
+      };
+    }
+    
+    const options = {
+      series: [
+        {
+          name: 'Average Data Breach Cost',
+          type: 'column',
+          data: data.avgBreachCost
+        },
+        {
+          name: 'Avg. Response Time (Hours)',
+          type: 'line',
+          data: data.avgResponseTime
+        }
+      ],
+      chart: {
+        height: 350,
+        type: 'line',
+        fontFamily: '"Nunito", sans-serif',
+        toolbar: {
+          show: true,
+          tools: {
+            download: true
+          }
+        },
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 800,
+          dynamicAnimation: {
+            enabled: true,
+            speed: 350
+          }
+        }
+      },
+      stroke: {
+        width: [0, 4],
+        curve: 'smooth'
+      },
+      plotOptions: {
+        bar: {
+          columnWidth: '50%',
+          borderRadius: 5
+        }
+      },
+      fill: {
+        opacity: [0.85, 1],
+        gradient: {
+          inverseColors: false,
+          shade: 'light',
+          type: "vertical",
+          opacityFrom: 0.85,
+          opacityTo: 0.55,
+          stops: [0, 100, 100, 100]
+        }
+      },
+      markers: {
+        size: 6
+      },
+      xaxis: {
+        categories: data.categories,
+        labels: {
+          style: {
+            fontSize: '12px'
+          }
+        }
+      },
+      yaxis: [
+        {
+          title: {
+            text: 'Breach Cost ($)',
+            style: {
+              fontSize: '14px',
+              fontWeight: 500
+            }
+          },
+          labels: {
+            formatter: function(val) {
+              return '$' + Math.round(val / 1000000) + 'M';
+            }
+          }
+        },
+        {
+          opposite: true,
+          title: {
+            text: 'Response Time (Hours)',
+            style: {
+              fontSize: '14px',
+              fontWeight: 500
+            }
+          },
+          labels: {
+            formatter: function(val) {
+              return Math.round(val) + ' hrs';
+            }
+          }
+        }
+      ],
+      colors: ['#e74c3c', '#1a5a96'],
+      legend: {
+        position: 'top',
+        horizontalAlign: 'right'
+      },
+      annotations: {
+        points: [
+          {
+            x: 'Portnox Cloud',
+            y: 650000,
+            marker: {
+              size: 6,
+              fillColor: '#27ae60',
+              strokeColor: '#fff',
+              strokeWidth: 2
+            },
+            label: {
+              text: 'Lowest Breach Cost',
+              borderColor: '#27ae60',
+              style: {
+                background: '#27ae60',
+                color: '#fff',
+                fontSize: '12px',
+                fontWeight: 600
+              },
+              offsetY: -30
+            }
+          },
+          {
+            x: 'Portnox Cloud',
+            y: 15,
+            seriesIndex: 1,
+            marker: {
+              size: 6,
+              fillColor: '#27ae60',
+              strokeColor: '#fff',
+              strokeWidth: 2
+            },
+            label: {
+              text: 'Fastest Response',
+              borderColor: '#27ae60',
+              style: {
+                background: '#27ae60',
+                color: '#fff',
+                fontSize: '12px',
+                fontWeight: 600
+              },
+              offsetY: 15
+            }
+          }
+        ]
+      },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        y: [{
+          formatter: function(y) {
+            if (typeof y !== "undefined") {
+              return "$" + y.toLocaleString();
+            }
+            return y;
+          }
+        }, {
+          formatter: function(y) {
+            if (typeof y !== "undefined") {
+              return y.toFixed(0) + " hours";
+            }
+            return y;
+          }
+        }]
+      }
+    };
+    
+    // Clear any existing chart
+    element.innerHTML = '';
+    
+    // Create and render the chart
+    const chart = new ApexCharts(element, options);
+    chart.render();
+  },
+  
+  initializeCharts: function() {
+    this.renderNistFrameworkChart('nist-framework-chart');
+    this.renderBreachImpactChart('breach-impact-chart');
+  }
+};
+
+// Make it globally available
+window.SecurityCharts = SecurityCharts;
+EOF
+echo -e "${GREEN}Created js/charts/security-charts.js${NC}"
+
+# Create apex-charts.js
+echo -e "${BLUE}Creating js/charts/apex/apex-charts.js...${NC}"
+cat > js/charts/apex/apex-charts.js << 'EOF'
+/**
+ * ApexCharts Integration for Portnox Total Cost Analyzer
+ * Provides chart rendering functions for the application
+ */
+
+const ApexChartsManager = {
+  renderTcoComparisonChart: function(containerId, data) {
+    if (!window.ApexCharts) {
+      console.error("ApexCharts library not available");
+      return;
+    }
+    
+    const element = document.getElementById(containerId);
+    if (!element) {
+      console.error(`Container element ${containerId} not found`);
+      return;
+    }
+    
+    // Use data from calculation if available, otherwise use demo data
+    if (!data) {
+      data = this.getDemoData();
+    }
+    
+    // Extract data for chart
+    const vendors = Object.keys(data);
+    const tcoValues = vendors.map(id => data[id].tco);
+    const vendorNames = vendors.map(id => data[id].name);
+    
+    const options = {
+      series: [{
+        name: '3-Year TCO',
+        data: tcoValues
+      }],
+      chart: {
+        type: 'bar',
+        height: 350,
+        fontFamily: '"Nunito", sans-serif',
+        toolbar: {
+          show: true,
+          tools: {
+            download: true
+          }
+        },
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 800,
+          dynamicAnimation: {
+            enabled: true,
+            speed: 350
+          }
+        }
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '55%',
+          borderRadius: 8,
+          dataLabels: {
+            position: 'top'
+          }
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: function(val) {
+          return '$' + Math.round(val).toLocaleString();
+        },
+        offsetY: -20,
+        style: {
+          fontSize: '12px',
+          colors: ["#304758"]
+        }
+      },
+      stroke: {
+        show: true,
+        width: 2,
+        colors: ['transparent']
+      },
+      xaxis: {
+        categories: vendorNames,
+        labels: {
+          style: {
+            fontSize: '12px'
+          }
+        }
+      },
+      yaxis: {
+        title: {
+          text: 'Total Cost ($)',
+          style: {
+            fontSize: '14px',
+            fontWeight: 500
+          }
+        },
+        labels: {
+          formatter: function(val) {
+            return '$' + Math.round(val).toLocaleString();
+          }
+        }
+      },
+      fill: {
+        opacity: 1,
+        type: 'gradient',
+        gradient: {
+          shade: 'light',
+          type: "vertical",
+          shadeIntensity: 0.25,
+          gradientToColors: undefined,
+          inverseColors: true,
+          opacityFrom: 1,
+          opacityTo: 0.85,
+          stops: [50, 100]
+        }
+      },
+      colors: ['#1a5a96', '#e74c3c', '#e67e22', '#f39c12', '#2ecc71', '#3498db', '#9b59b6', '#34495e', '#16a085', '#27ae60'],
+      tooltip: {
+        y: {
+          formatter: function(val) {
+            return '$' + val.toLocaleString();
+          }
+        }
+      },
+      annotations: {
+        points: [{
+          x: vendorNames[0],
+          y: tcoValues[0],
+          marker: {
+            size: 6,
+            fillColor: '#27ae60',
+            strokeColor: '#fff',
+            strokeWidth: 2
+          },
+          label: {
+            text: 'Best Value',
+            borderColor: '#27ae60',
+            style: {
+              background: '#27ae60',
+              color: '#fff',
+              fontSize: '12px',
+              fontWeight: 600
+            },
+            offsetY: -15
+          }
+        }]
+      }
+    };
+
+    // Clear any existing chart
+    element.innerHTML = '';
+    
+    // Create and render the chart
+    const chart = new ApexCharts(element, options);
+    chart.render();
+  },
+  
+  renderCumulativeCostChart: function(containerId, data) {
+    if (!window.ApexCharts) {
+      console.error("ApexCharts library not available");
+      return;
+    }
+    
+    const element = document.getElementById(containerId);
+    if (!element) {
+      console.error(`Container element ${containerId} not found`);
+      return;
+    }
+    
+    // Use data from calculation if available, otherwise use demo data
+    if (!data) {
+      data = this.getDemoData();
+    }
+    
+    // Sample data for cumulative costs over 3 years
+    const years = ['Initial', 'Year 1', 'Year 2', 'Year 3'];
+    
+    // Generate cumulative costs for vendors
+    const seriesData = [];
+    
+    // Take only first 4 vendors for clarity
+    const vendors = Object.keys(data).slice(0, 4);
+    
+    vendors.forEach(vendorId => {
+      const vendor = data[vendorId];
+      
+      // Calculate initial cost (implementation + hardware)
+      const initialCost = vendor.implementationCost + (vendor.hardware || 0);
+      
+      // Calculate annual cost (subscription/maintenance + personnel)
+      const annualCost = (vendor.subscription || 0) + (vendor.maintenance || 0) + vendor.personnel;
+      
+      // Generate cumulative costs
+      const costs = [
+        initialCost,
+        initialCost + annualCost,
+        initialCost + (annualCost * 2),
+        initialCost + (annualCost * 3)
+      ];
+      
+      seriesData.push({
+        name: vendor.name,
+        data: costs
+      });
+    });
+    
+    const options = {
+      series: seriesData,
+      chart: {
+        height: 350,
+        type: 'line',
+        fontFamily: '"Nunito", sans-serif',
+        dropShadow: {
+          enabled: true,
+          color: '#000',
+          top: 18,
+          left: 7,
+          blur: 10,
+          opacity: 0.2
+        },
+        toolbar: {
+          show: true,
+          tools: {
+            download: true
+          }
+        },
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 800,
+          dynamicAnimation: {
+            enabled: true,
+            speed: 350
+          }
+        }
+      },
+      colors: ['#1a5a96', '#e74c3c', '#e67e22', '#f39c12'],
+      dataLabels: {
+        enabled: true,
+        formatter: function(val) {
+          return '$' + Math.round(val / 1000) + 'K';
+        },
+        background: {
+          enabled: true,
+          foreColor: '#fff',
+          padding: 4,
+          borderRadius: 2,
+          borderWidth: 1,
+          borderColor: '#fff',
+          opacity: 0.9,
+          dropShadow: {
+            enabled: false
+          }
+        }
+      },
+      stroke: {
+        curve: 'smooth',
+        width: 3
+      },
+      grid: {
+        borderColor: '#e7e7e7',
+        row: {
+          colors: ['#f3f3f3', 'transparent'],
+          opacity: 0.5
+        }
+      },
+      markers: {
+        size: 6,
+        hover: {
+          size: 8
+        }
+      },
+      xaxis: {
+        categories: years,
+        title: {
+          text: 'Timeline',
+          style: {
+            fontSize: '14px',
+            fontWeight: 500
+          }
+        }
+      },
+      yaxis: {
+        title: {
+          text: 'Cumulative Cost ($)',
+          style: {
+            fontSize: '14px',
+            fontWeight: 500
+          }
+        },
+        labels: {
+          formatter: function(val) {
+            return '$' + Math.round(val).toLocaleString();
+          }
+        }
+      },
+      legend: {
+        position: 'top',
+        horizontalAlign: 'right',
+        floating: true,
+        offsetY: -25,
+        offsetX: -5
+      },
+      tooltip: {
+        y: {
+          formatter: function(val) {
+            return '$' + val.toLocaleString();
+          }
+        }
+      }
+    };
+    
+    // Clear any existing chart
+    element.innerHTML = '';
+    
+    // Create and render the chart
+    const chart = new ApexCharts(element, options);
+    chart.render();
+  },
+  
+  getDemoData: function() {
+    // This is only used if real vendor data is not available
+    return {
+      'portnox': {
+        name: 'Portnox Cloud',
+        tco: 245000,
+        implementationCost: 15000,
+        hardware: 0,
+        maintenance: 12500,
+        subscription: 172000,
+        personnel: 25000
+      },
+      'cisco': {
+        name: 'Cisco ISE',
+        tco: 520000,
+        implementationCost: 85000,
+        hardware: 130000,
+        maintenance: 98000,
+        subscription: 0,
+        personnel: 200000
+      },
+      'aruba': {
+        name: 'Aruba ClearPass',
+        tco: 480000,
+        implementationCost: 65000,
+        hardware: 110000,
+        maintenance: 85000,
+        subscription: 0,
+        personnel: 175000
+      },
+      'forescout': {
+        name: 'Forescout',
+        tco: 430000,
+        implementationCost: 75000,
+        hardware: 100000,
+        maintenance: 75000,
+        subscription: 0,
+        personnel: 150000
+      }
+    };
+  },
+  
+  initializeCharts: function() {
+    this.renderTcoComparisonChart('tco-comparison-chart');
+    this.renderCumulativeCostChart('cumulative-cost-chart');
+  }
+};
+
+// Make it globally available
+window.ApexChartsManager = ApexChartsManager;
+EOF
+echo -e "${GREEN}Created js/charts/apex/apex-charts.js${NC}"
+
+# Create d3-manager.js
+echo -e "${BLUE}Creating js/charts/d3/d3-manager.js...${NC}"
+cat > js/charts/d3/d3-manager.js << 'EOF'
+/**
+ * D3 Charts Manager for Portnox Total Cost Analyzer
+ * Provides advanced visualizations using D3.js
+ */
+
+const D3ChartsManager = {
+  renderSecurityFrameworksChart: function(containerId, data) {
+    if (!window.d3) {
+      console.error("D3.js library not available");
+      return;
+    }
+    
+    const container = document.getElementById(containerId);
+    if (!container) {
+      console.error(`Container element ${containerId} not found`);
+      return;
+    }
+    
+    // Use default data if none provided
+    if (!data) {
+      data = {
+        frameworks: [
+          { id: 'hipaa', name: 'HIPAA', portnoxCoverage: 95, industryAverage: 72 },
+          { id: 'pci', name: 'PCI DSS', portnoxCoverage: 92, industryAverage: 68 },
+          { id: 'nist', name: 'NIST CSF', portnoxCoverage: 94, industryAverage: 70 },
+          { id: 'gdpr', name: 'GDPR', portnoxCoverage: 90, industryAverage: 65 },
+          { id: 'iso27001', name: 'ISO 27001', portnoxCoverage: 93, industryAverage: 69 }
+        ]
+      };
+    }
+    
+    // Clear any existing content
+    container.innerHTML = '';
+    
+    // Set up dimensions and margins
+    const margin = {top: 30, right: 120, bottom: 70, left: 80},
+          width = container.clientWidth - margin.left - margin.right,
+          height = 400 - margin.top - margin.bottom;
+    
+    // Create SVG element
+    const svg = d3.select(`#${containerId}`)
+      .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+    // X axis
+    const x = d3.scaleBand()
+      .range([0, width])
+      .domain(data.frameworks.map(d => d.name))
+      .padding(0.2);
+    
+    svg.append("g")
+      .attr("transform", `translate(0, ${height})`)
+      .call(d3.axisBottom(x))
+      .selectAll("text")
+        .attr("transform", "translate(-10,0)rotate(-45)")
+        .style("text-anchor", "end")
+        .style("font-size", "12px");
+    
+    // Y axis
+    const y = d3.scaleLinear()
+      .domain([0, 100])
+      .range([height, 0]);
+    
+    svg.append("g")
+      .call(d3.axisLeft(y));
+    
+    // Y axis label
+    svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margin.left)
+      .attr("x", 0 - (height / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .style("font-size", "14px")
+      .text("Coverage (%)");
+    
+    // Portnox bars
+    svg.selectAll("portnoxBars")
+      .data(data.frameworks)
+      .enter()
+      .append("rect")
+        .attr("x", d => x(d.name))
+        .attr("y", d => y(d.portnoxCoverage))
+        .attr("width", x.bandwidth()/2)
+        .attr("height", d => height - y(d.portnoxCoverage))
+        .attr("fill", "#1a5a96")
+        .attr("rx", 4)
+        .attr("ry", 4);
+    
+    // Industry average bars
+    svg.selectAll("industryBars")
+      .data(data.frameworks)
+      .enter()
+      .append("rect")
+        .attr("x", d => x(d.name) + x.bandwidth()/2)
+        .attr("y", d => y(d.industryAverage))
+        .attr("width", x.bandwidth()/2)
+        .attr("height", d => height - y(d.industryAverage))
+        .attr("fill", "#e74c3c")
+        .attr("rx", 4)
+        .attr("ry", 4);
+    
+    // Add labels to the bars
+    svg.selectAll(".portnoxLabel")
+      .data(data.frameworks)
+      .enter()
+      .append("text")
+        .attr("class", "portnoxLabel")
+        .attr("x", d => x(d.name) + x.bandwidth()/4)
+        .attr("y", d => y(d.portnoxCoverage) - 5)
+        .attr("text-anchor", "middle")
+        .style("font-size", "11px")
+        .text(d => `${d.portnoxCoverage}%`);
+    
+    svg.selectAll(".industryLabel")
+      .data(data.frameworks)
+      .enter()
+      .append("text")
+        .attr("class", "industryLabel")
+        .attr("x", d => x(d.name) + 3*x.bandwidth()/4)
+        .attr("y", d => y(d.industryAverage) - 5)
+        .attr("text-anchor", "middle")
+        .style("font-size", "11px")
+        .text(d => `${d.industryAverage}%`);
+    
+    // Add Legend
+    const legend = svg.append("g")
+      .attr("font-family", "sans-serif")
+      .attr("font-size", 12)
+      .attr("text-anchor", "end")
+      .selectAll("g")
+      .data(["Portnox Cloud", "Industry Average"])
+      .enter().append("g")
+      .attr("transform", (d, i) => `translate(0,${i * 20})`);
+
+    legend.append("rect")
+      .attr("x", width + 20)
+      .attr("width", 19)
+      .attr("height", 19)
+      .attr("rx", 4)
+      .attr("ry", 4)
+      .attr("fill", (d, i) => i === 0 ? "#1a5a96" : "#e74c3c");
+
+    legend.append("text")
+      .attr("x", width + 15)
+      .attr("y", 9.5)
+      .attr("dy", "0.32em")
+      .text(d => d);
+  },
+  
+  initializeCharts: function() {
+    this.renderSecurityFrameworksChart('security-frameworks-chart');
+  }
+};
+
+// Make it globally available
+window.D3ChartsManager = D3ChartsManager;
+EOF
+echo -e "${GREEN}Created js/charts/d3/d3-manager.js${NC}"
+
+# Create models/vendors-data-fix.js
+echo -e "${BLUE}Creating js/models/vendors-data-fix.js...${NC}"
+cat > js/models/vendors-data-fix.js << 'EOF'
+/**
+ * Vendor Data Fix for Portnox Total Cost Analyzer
+ * Ensures vendor data is available and properly structured
+ */
+
+console.log("Applying vendor data fix...");
+
+// Create the VENDORS object if it doesn't exist
+if (!window.VENDORS) {
+  console.log("Creating VENDORS data structure...");
+  
+  window.VENDORS = {
+    'portnox': {
+      name: 'Portnox Cloud',
+      logo: 'img/vendors/portnox-logo.png',
+      architecture: 'cloud',
+      tco: 245000,
+      implementationTime: 21,
+      implementationCost: 15000,
+      fte: 0.25,
+      hardware: 0,
+      maintenance: 12500,
+      subscription: 172000,
+      personnel: 25000,
+      paybackPeriod: 7,
+      roi: 325,
+      securityScore: 92,
+      complianceScore: 95,
+      zeroTrustScore: 95,
+      breachReduction: 85,
+      automationLevel: 90
+    },
+    'cisco': {
+      name: 'Cisco ISE',
+      logo: 'img/vendors/cisco-logo.png',
+      architecture: 'on-premises',
+      tco: 520000,
+      implementationTime: 90,
+      implementationCost: 85000,
+      fte: 2.0,
+      hardware: 130000,
+      maintenance: 98000,
+      subscription: 0,
+      personnel: 200000,
+      paybackPeriod: 32,
+      roi: -8,
+      securityScore: 85,
+      complianceScore: 90,
+      zeroTrustScore: 75,
+      breachReduction: 70,
+      automationLevel: 60
+    },
+    'aruba': {
+      name: 'Aruba ClearPass',
+      logo: 'img/vendors/aruba-logo.png',
+      architecture: 'on-premises',
+      tco: 480000,
+      implementationTime: 75,
+      implementationCost: 65000,
+      fte: 1.75,
+      hardware: 110000,
+      maintenance: 85000,
+      subscription: 0,
+      personnel: 175000,
+      paybackPeriod: 28,
+      roi: 5,
+      securityScore: 82,
+      complianceScore: 88,
+      zeroTrustScore: 70,
+      breachReduction: 72,
+      automationLevel: 65
+    },
+    'forescout': {
+      name: 'Forescout',
+      logo: 'img/vendors/forescout-logo.png',
+      architecture: 'on-premises',
+      tco: 430000,
+      implementationTime: 60,
+      implementationCost: 75000,
+      fte: 1.5,
+      hardware: 100000,
+      maintenance: 75000,
+      subscription: 0,
+      personnel: 150000,
+      paybackPeriod: 25,
+      roi: 12,
+      securityScore: 80,
+      complianceScore: 85,
+      zeroTrustScore: 72,
+      breachReduction: 68,
+      automationLevel: 70
+    },
+    'fortinac': {
+      name: 'FortiNAC',
+      logo: 'img/vendors/fortinac-logo.png',
+      architecture: 'on-premises',
+      tco: 400000,
+      implementationTime: 60,
+      implementationCost: 60000,
+      fte: 1.25,
+      hardware: 90000,
+      maintenance: 70000,
+      subscription: 0,
+      personnel: 125000,
+      paybackPeriod: 22,
+      roi: 15,
+      securityScore: 75,
+      complianceScore: 80,
+      zeroTrustScore: 65,
+      breachReduction: 65,
+      automationLevel: 60
+    },
+    'juniper': {
+      name: 'Juniper Mist',
+      logo: 'img/vendors/juniper-logo.png',
+      architecture: 'hybrid',
+      tco: 350000,
+      implementationTime: 45,
+      implementationCost: 50000,
+      fte: 1.0,
+      hardware: 60000,
+      maintenance: 50000,
+      subscription: 100000,
+      personnel: 100000,
+      paybackPeriod: 18,
+      roi: 40,
+      securityScore: 78,
+      complianceScore: 82,
+      zeroTrustScore: 80,
+      breachReduction: 70,
+      automationLevel: 75
+    },
+    'securew2': {
+      name: 'SecureW2',
+      logo: 'img/vendors/securew2-logo.png',
+      architecture: 'cloud',
+      tco: 280000,
+      implementationTime: 30,
+      implementationCost: 25000,
+      fte: 0.5,
+      hardware: 0,
+      maintenance: 15000,
+      subscription: 190000,
+      personnel: 50000,
+      paybackPeriod: 12,
+      roi: 180,
+      securityScore: 72,
+      complianceScore: 70,
+      zeroTrustScore: 85,
+      breachReduction: 60,
+      automationLevel: 80
+    },
+    'microsoft': {
+      name: 'Microsoft NPS',
+      logo: 'img/vendors/microsoft-logo.png',
+      architecture: 'on-premises',
+      tco: 290000,
+      implementationTime: 30,
+      implementationCost: 20000,
+      fte: 1.0,
+      hardware: 30000,
+      maintenance: 40000,
+      subscription: 0,
+      personnel: 100000,
+      paybackPeriod: 20,
+      roi: 25,
+      securityScore: 60,
+      complianceScore: 65,
+      zeroTrustScore: 50,
+      breachReduction: 45,
+      automationLevel: 40
+    },
+    'arista': {
+      name: 'Arista CloudVision',
+      logo: 'img/vendors/arista-logo.png',
+      architecture: 'hybrid',
+      tco: 320000,
+      implementationTime: 45,
+      implementationCost: 45000,
+      fte: 1.0,
+      hardware: 50000,
+      maintenance: 55000,
+      subscription: 70000,
+      personnel: 100000,
+      paybackPeriod: 15,
+      roi: 35,
+      securityScore: 70,
+      complianceScore: 75,
+      zeroTrustScore: 65,
+      breachReduction: 60,
+      automationLevel: 65
+    },
+    'foxpass': {
+      name: 'Foxpass',
+      logo: 'img/vendors/foxpass-logo.png',
+      architecture: 'cloud',
+      tco: 270000,
+      implementationTime: 25,
+      implementationCost: 20000,
+      fte: 0.5,
+      hardware: 0,
+      maintenance: 10000,
+      subscription: 180000,
+      personnel: 50000,
+      paybackPeriod: 10,
+      roi: 160,
+      securityScore: 65,
+      complianceScore: 60,
+      zeroTrustScore: 70,
+      breachReduction: 55,
+      automationLevel: 75
+    }
+  };
+  
+  // Trigger the vendorDataLoaded event
+  window.dispatchEvent(new Event('vendorDataLoaded'));
+  
+  console.log("VENDORS data structure created and event fired");
+}
+
+console.log("Vendor data fix applied");
+EOF
+echo -e "${GREEN}Created js/models/vendors-data-fix.js${NC}"
+
+# Create enhanced-styles.css file with improved color scheme
+echo -e "${BLUE}Creating css/custom/enhanced-styles.css...${NC}"
+cat > css/custom/enhanced-styles.css << 'EOF'
+/**
+ * Enhanced Styles for Portnox Total Cost Analyzer
+ * Improves visibility of headers, banners, and overall UI
  */
 
 :root {
-  /* Portnox Brand Colors */
-  --portnox-primary: #1a5a96;  /* Portnox Blue */
-  --portnox-primary-dark: #0d4275;
-  --portnox-primary-light: #4c90d2;
-  --portnox-secondary: #2ecc71;  /* Accent Green */
-  --portnox-secondary-dark: #27ae60;
-  --portnox-accent: #f65c20;  /* Portnox Orange */
-  --portnox-accent-dark: #d14210;
-  
-  /* UI Colors */
-  --portnox-bg-light: #f8f9fc;
-  --portnox-bg-dark: #1a2130;
-  --portnox-card-light: #ffffff;
-  --portnox-card-dark: #2d3748;
-  --portnox-text-light: #333333;
-  --portnox-text-dark: #f0f2f5;
-  
-  /* Update global variables */
-  --primary-color: var(--portnox-primary);
-  --primary-dark-color: var(--portnox-primary-dark);
-  --highlight-background: rgba(26, 90, 150, 0.05);
-  --bg-color: var(--portnox-bg-light);
-  --card-bg: var(--portnox-card-light);
-  --text-primary: var(--portnox-text-light);
+  --primary-color: #1a5a96;
+  --primary-dark-color: #0d4275;
+  --primary-light-color: #4287c8;
+  --secondary-color: #27ae60;
+  --warning-color: #e74c3c;
+  --neutral-color: #3498db;
+  --background-color: #f8fafc;
+  --card-background: #ffffff;
+  --text-color: #333333;
+  --text-light-color: #666666;
+  --header-text-color: #ffffff;
+  --border-color: #e1e8ed;
+  --highlight-background: rgba(26, 90, 150, 0.08);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 }
 
-/* Dark mode variables */
-.dark-mode {
-  --primary-color: var(--portnox-primary-light);
-  --primary-dark-color: var(--portnox-primary);
-  --bg-color: var(--portnox-bg-dark);
-  --card-bg: var(--portnox-card-dark);
-  --text-primary: var(--portnox-text-dark);
-}
-
-/* Enhanced Modern Header */
-.app-header, .enhanced-header {
-  background: linear-gradient(135deg, var(--portnox-primary), var(--portnox-primary-dark));
-  border-bottom: none;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  height: auto;
+/* Body and Global Styles */
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: 'Nunito', sans-serif;
+  margin: 0;
   padding: 0;
+  line-height: 1.6;
 }
 
-.header-content {
-  padding: 1.5rem 2rem;
+/* Enhanced Header Styles */
+.app-header, .enhanced-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color)) !important;
+  color: var(--header-text-color) !important;
+  border-bottom: none !important;
+  box-shadow: var(--shadow-lg) !important;
+  position: relative !important;
+  z-index: 100 !important;
+  padding: 1rem 2rem !important;
+}
+
+.enhanced-header .header-content {
+  position: relative;
+  z-index: 10;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: relative;
-  z-index: 5;
 }
 
 .logo-section {
@@ -379,1081 +1362,1035 @@ cat > css/fixes/portnox-modern-theme.css << 'EOF'
 }
 
 .company-logo {
-  height: 45px;
+  height: 40px;
   margin-right: 1.5rem;
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.2));
+  filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.2));
 }
 
 .app-title h1 {
-  color: white;
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin: 0;
-  letter-spacing: 0.5px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: var(--header-text-color) !important;
+  font-size: 1.8rem !important;
+  margin: 0 !important;
+  font-weight: 600 !important;
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2) !important;
 }
 
 .app-title .subtitle {
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9) !important;
+  margin: 0 !important;
+  font-size: 1rem !important;
 }
 
-.header-actions {
-  display: flex;
-  gap: 0.8rem;
-}
-
-.header-actions .btn {
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.header-actions .btn i {
-  font-size: 1rem;
-}
-
-.header-actions .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.header-actions .btn-primary {
-  background: var(--portnox-accent);
-  border: 1px solid var(--portnox-accent);
-  color: white;
-}
-
-.header-actions .btn-primary:hover {
-  background: var(--portnox-accent-dark);
-}
-
-.header-actions .btn-outline {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-}
-
-.header-actions .btn-outline:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* Particles Header Enhancement */
-.particles-header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-}
-
-/* Animated Entry Effects */
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.app-title h1 {
-  animation: fade-in-up 0.6s ease forwards;
-}
-
-.app-title .subtitle {
-  animation: fade-in-up 0.6s ease 0.2s forwards;
-  opacity: 0;
-}
-
-.header-actions {
-  animation: fade-in-up 0.6s ease 0.4s forwards;
-  opacity: 0;
-}
-
-/* Enhanced Main Tabs */
-.main-tabs {
-  background: linear-gradient(to right, rgba(26, 90, 150, 0.05), rgba(26, 90, 150, 0.1));
-  border-radius: 10px;
-  padding: 8px;
-  margin-bottom: 25px;
-  display: flex;
-  gap: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.main-tab {
-  padding: 12px 20px;
-  background: rgba(255, 255, 255, 0.8);
-  border: none;
-  border-radius: 8px;
-  color: var(--text-primary);
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  outline: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.main-tab i {
-  font-size: 16px;
-  color: var(--primary-color);
-}
-
-.main-tab:hover {
-  background: rgba(255, 255, 255, 0.95);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.main-tab.active {
-  background: var(--primary-color);
-  color: white;
-  box-shadow: 0 4px 10px rgba(26, 90, 150, 0.3);
-}
-
-.main-tab.active i {
-  color: white;
-}
-
-/* Enhanced Results Tabs */
-.results-tabs {
-  display: flex;
-  border-bottom: 2px solid rgba(26, 90, 150, 0.1);
-  margin-bottom: 25px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding-bottom: 2px;
-}
-
-.results-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.results-tab {
-  padding: 12px 22px;
-  background: transparent;
-  border: none;
-  border-bottom: 3px solid transparent;
-  color: var(--text-secondary);
-  font-weight: 500;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  outline: none;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: -2px;
-}
-
-.results-tab i {
-  font-size: 14px;
-}
-
-.results-tab:hover {
-  color: var(--primary-color);
-  border-bottom-color: rgba(26, 90, 150, 0.5);
-}
-
-.results-tab.active {
-  color: var(--primary-color);
-  border-bottom-color: var(--primary-color);
-  font-weight: 600;
-}
-
-/* Enhanced Metric Cards */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.metric-card, .dashboard-card {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.metric-card:hover, .dashboard-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-}
-
-.metric-card.primary, .dashboard-card.highlight-card {
-  background: linear-gradient(135deg, var(--portnox-primary), var(--portnox-primary-dark));
-  color: white;
-  border: none;
-}
-
-.metric-card.secondary, .dashboard-card.secondary-card {
-  background: linear-gradient(135deg, var(--portnox-secondary), var(--portnox-secondary-dark));
-  color: white;
-  border: none;
-}
-
-.metric-card.accent, .dashboard-card.accent-card {
-  background: linear-gradient(135deg, var(--portnox-accent), var(--portnox-accent-dark));
-  color: white;
-  border: none;
-}
-
-.metric-card .card-icon, .dashboard-card .card-icon {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  font-size: 24px;
-  opacity: 0.8;
-}
-
-.metric-card h3, .dashboard-card h3 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-top: 0;
-  margin-bottom: 12px;
-}
-
-.metric-card .metric-value, .dashboard-card .metric-value {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 10px;
-}
-
-.metric-card .metric-description, .dashboard-card .metric-label {
-  font-size: 14px;
-  opacity: 0.9;
-  margin-bottom: 12px;
-}
-
-.metric-card .metric-trend, .dashboard-card .metric-trend {
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-  font-weight: 600;
-  margin-top: auto;
-}
-
-.metric-card .metric-trend i, .dashboard-card .metric-trend i {
-  margin-right: 5px;
-}
-
-.metric-card .metric-trend.up, .dashboard-card .metric-trend.up {
-  color: var(--portnox-secondary);
-}
-
-.metric-card .metric-trend.down, .dashboard-card .metric-trend.down {
-  color: var(--portnox-accent);
-}
-
-.metric-card.primary .metric-trend.up,
-.metric-card.secondary .metric-trend.up,
-.metric-card.accent .metric-trend.up,
-.dashboard-card.highlight-card .metric-trend.up,
-.dashboard-card.secondary-card .metric-trend.up,
-.dashboard-card.accent-card .metric-trend.up {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.metric-card.primary .metric-trend.down,
-.metric-card.secondary .metric-trend.down,
-.metric-card.accent .metric-trend.down,
-.dashboard-card.highlight-card .metric-trend.down,
-.dashboard-card.secondary-card .metric-trend.down,
-.dashboard-card.accent-card .metric-trend.down {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-/* Enhanced Chart Containers */
-.chart-container, .executive-chart-container {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 25px;
-  margin-bottom: 30px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.chart-container .chart-title, .executive-chart-container .chart-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-}
-
-.chart-container .chart-title i, .executive-chart-container .chart-title i {
-  margin-right: 10px;
-  color: var(--primary-color);
-}
-
-.chart-container .chart-subtitle, .executive-chart-container .chart-subtitle {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-top: -15px;
-  margin-bottom: 20px;
-}
-
-.chart-container .chart-wrapper, .executive-chart-container .chart-wrapper {
-  height: 400px;
-  position: relative;
-}
-
-/* Dark Mode Adjustments */
-.dark-mode .main-tab {
-  background: rgba(45, 55, 72, 0.8);
-  color: var(--text-primary);
-}
-
-.dark-mode .main-tab:hover {
-  background: rgba(45, 55, 72, 0.95);
-}
-
-.dark-mode .main-tab.active {
-  background: var(--primary-color);
-  color: white;
-}
-
-.dark-mode .metric-card,
-.dark-mode .dashboard-card,
-.dark-mode .chart-container,
-.dark-mode .executive-chart-container {
-  border-color: rgba(255, 255, 255, 0.05);
-}
-
-/* Modern Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(26, 90, 150, 0.5);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(26, 90, 150, 0.7);
-}
-
-.dark-mode ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.dark-mode ::-webkit-scrollbar-thumb {
-  background: rgba(26, 90, 150, 0.6);
-}
-
-.dark-mode ::-webkit-scrollbar-thumb:hover {
-  background: rgba(26, 90, 150, 0.8);
-}
-
-/* Sidebar Enhancements */
+/* Improved Sidebar Styles */
 .sidebar {
-  background-color: var(--card-bg);
-  box-shadow: 2px 0 15px rgba(0, 0, 0, 0.05);
-  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: var(--card-background) !important;
+  border-right: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-sm) !important;
+  overflow-y: auto !important;
+  transition: all 0.3s ease !important;
 }
 
 .sidebar-header {
-  padding: 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background: linear-gradient(to right, var(--primary-color), var(--primary-dark-color)) !important;
+  color: var(--header-text-color) !important;
+  padding: 1rem !important;
+  border-bottom: 1px solid var(--border-color) !important;
 }
 
 .sidebar-header h2 {
-  font-size: 18px;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--primary-color);
-}
-
-.sidebar-header h2 i {
-  font-size: 20px;
+  margin: 0 !important;
+  font-size: 1.3rem !important;
+  font-weight: 600 !important;
+  color: white !important;
 }
 
 .config-card {
-  border-radius: 10px;
-  margin-bottom: 15px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: var(--card-background) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  margin-bottom: 1rem !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease !important;
+}
+
+.config-card:hover {
+  box-shadow: var(--shadow-md) !important;
 }
 
 .config-card-header {
-  padding: 15px 20px;
-  background-color: rgba(26, 90, 150, 0.05);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background-color: var(--primary-light-color) !important;
+  color: var(--header-text-color) !important;
+  padding: 0.75rem 1rem !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  border-bottom: 1px solid var(--border-color) !important;
 }
 
 .config-card-header h3 {
-  font-size: 16px;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.config-card-header h3 i {
-  color: var(--primary-color);
+  margin: 0 !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: white !important;
 }
 
 .config-card-content {
-  padding: 15px 20px;
+  padding: 1rem !important;
 }
 
-.form-group {
-  margin-bottom: 15px;
+/* Enhanced Content Area Styles */
+.content-area {
+  background-color: var(--background-color) !important;
+  padding: 1.5rem !important;
+  overflow-y: auto !important;
+  flex: 1 !important;
 }
 
-.form-label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  font-size: 14px;
+.content-wrapper {
+  max-width: 1400px !important;
+  margin: 0 auto !important;
 }
 
-.form-control, .form-select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 6px;
-  font-size: 14px;
-  transition: all 0.3s ease;
+/* Improved Panel Styles */
+.panel-header {
+  background: linear-gradient(to right, var(--primary-color), var(--primary-dark-color)) !important;
+  color: var(--header-text-color) !important;
+  padding: 1.5rem !important;
+  border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+  margin-bottom: 1.5rem !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
-.form-control:focus, .form-select:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(26, 90, 150, 0.15);
-  outline: none;
+.panel-header h2 {
+  margin: 0 0 0.5rem 0 !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: white !important;
 }
 
-.dark-mode .sidebar {
-  border-color: rgba(255, 255, 255, 0.05);
+.panel-header .subtitle {
+  margin: 0 !important;
+  opacity: 0.9 !important;
+  font-size: 1rem !important;
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 
-.dark-mode .sidebar-header {
-  border-color: rgba(255, 255, 255, 0.05);
+/* Dashboard Cards */
+.dashboard-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+  gap: 1.5rem !important;
+  margin-bottom: 2rem !important;
 }
 
-.dark-mode .config-card {
-  border-color: rgba(255, 255, 255, 0.05);
+.dashboard-card {
+  background-color: var(--card-background) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: 1.5rem !important;
+  transition: all 0.3s ease !important;
 }
 
-.dark-mode .config-card-header {
-  background-color: rgba(26, 90, 150, 0.1);
-  border-color: rgba(255, 255, 255, 0.05);
+.dashboard-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
-.dark-mode .form-control, .dark-mode .form-select {
-  background-color: rgba(45, 55, 72, 0.8);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
+.dashboard-card h3 {
+  margin: 0 0 1rem 0 !important;
+  font-size: 1.1rem !important;
+  color: var(--text-light-color) !important;
+  font-weight: 600 !important;
 }
 
-.dark-mode .form-control:focus, .dark-mode .form-select:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(26, 90, 150, 0.25);
+.metric-value {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 0.5rem !important;
+  color: var(--primary-color) !important;
 }
 
-/* Sidebar Toggle Button */
-.sidebar-toggle {
-  background-color: var(--primary-color);
-  color: white;
-  border-radius: 0 6px 6px 0;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+.highlight-card {
+  background: linear-gradient(135deg, var(--primary-light-color), var(--primary-color)) !important;
+  color: var(--header-text-color) !important;
 }
 
-.sidebar-toggle:hover {
-  background-color: var(--primary-dark-color);
+.highlight-card h3,
+.highlight-card .metric-label,
+.highlight-card .metric-trend {
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 
-/* Calculate Button */
+.highlight-value {
+  color: var(--header-text-color) !important;
+}
+
+.metric-label {
+  font-size: 0.9rem !important;
+  color: var(--text-light-color) !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.metric-trend {
+  font-size: 0.85rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+}
+
+.metric-trend.up {
+  color: var(--secondary-color) !important;
+}
+
+.metric-trend.down {
+  color: var(--warning-color) !important;
+}
+
+/* Chart Containers */
+.chart-container {
+  background-color: var(--card-background) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: 1.5rem !important;
+  margin-bottom: 2rem !important;
+}
+
+.chart-container h3 {
+  margin: 0 0 1.5rem 0 !important;
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  color: var(--text-color) !important;
+}
+
+.chart-wrapper {
+  width: 100% !important;
+  height: 350px !important;
+}
+
+/* Benefit Cards */
+.benefits-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+  gap: 1.5rem !important;
+}
+
+.benefit-card {
+  background-color: var(--card-background) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: 1.5rem !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.benefit-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.benefit-icon {
+  width: 50px !important;
+  height: 50px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color)) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-bottom: 1rem !important;
+  color: var(--header-text-color) !important;
+  font-size: 1.5rem !important;
+}
+
+.benefit-card h4 {
+  margin: 0 0 0.75rem 0 !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: var(--text-color) !important;
+}
+
+.benefit-card p {
+  margin: 0 !important;
+  font-size: 0.95rem !important;
+  color: var(--text-light-color) !important;
+  line-height: 1.5 !important;
+}
+
+/* Tabs Styling */
+.results-tabs {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  margin-bottom: 1.5rem !important;
+  border-bottom: 2px solid var(--border-color) !important;
+  padding-bottom: 0.5rem !important;
+}
+
+.results-tab {
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0.75rem 1.25rem !important;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0 !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: var(--text-light-color) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.results-tab:hover {
+  color: var(--primary-color) !important;
+  background-color: rgba(26, 90, 150, 0.05) !important;
+}
+
+.results-tab.active {
+  color: var(--primary-color) !important;
+  border-bottom: 3px solid var(--primary-color) !important;
+  margin-bottom: -2px !important;
+}
+
+/* Footer Styling */
+.app-footer {
+  background-color: var(--primary-dark-color) !important;
+  color: var(--header-text-color) !important;
+  padding: 1.5rem !important;
+  text-align: center !important;
+}
+
+.footer-content {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 1rem !important;
+}
+
+.footer-links a {
+  color: rgba(255, 255, 255, 0.8) !important;
+  text-decoration: none !important;
+  margin: 0 0.5rem !important;
+  transition: color 0.2s ease !important;
+}
+
+.footer-links a:hover {
+  color: var(--header-text-color) !important;
+  text-decoration: underline !important;
+}
+
+/* Button Styling */
+.btn {
+  padding: 0.5rem 1rem !important;
+  border-radius: var(--radius-sm) !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.btn-primary {
+  background-color: var(--primary-color) !important;
+  color: var(--header-text-color) !important;
+  border: none !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark-color) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.btn-outline {
+  background-color: transparent !important;
+  color: var(--primary-color) !important;
+  border: 1px solid var(--primary-color) !important;
+}
+
+.btn-outline:hover {
+  background-color: rgba(26, 90, 150, 0.1) !important;
+  transform: translateY(-2px) !important;
+}
+
 .btn-calculate {
-  background: linear-gradient(135deg, var(--portnox-accent), var(--portnox-accent-dark));
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 12px 20px;
-  font-weight: 600;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color)) !important;
+  color: var(--header-text-color) !important;
+  border: none !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: var(--radius-md) !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  width: 100% !important;
 }
 
 .btn-calculate:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(246, 92, 32, 0.3);
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
-.btn-calculate i {
-  font-size: 16px;
+/* Fix vendor cards in sidebar */
+.vendor-select-card {
+  height: 80px !important;
+  padding: 8px 4px !important;
+}
+
+.vendor-select-card .vendor-logo img {
+  max-height: 28px !important;
+  max-width: 80px !important;
+  object-fit: contain !important;
+}
+
+.vendor-select-card .vendor-name {
+  font-size: 11px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 95% !important;
+  text-align: center !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .benefits-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .sidebar {
+    width: 100% !important;
+    position: fixed !important;
+    top: 60px !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    z-index: 90 !important;
+    transform: translateX(-100%) !important;
+  }
+  
+  .sidebar.active {
+    transform: translateX(0) !important;
+  }
+  
+  .header-content {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+  }
+  
+  .header-actions {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+}
+
+/* Dark Mode Support */
+.dark-mode {
+  --background-color: #1a1a2e !important;
+  --card-background: #282846 !important;
+  --text-color: #e1e1e1 !important;
+  --text-light-color: #b3b3b3 !important;
+  --border-color: #3a3a5c !important;
+  --highlight-background: rgba(26, 90, 150, 0.15) !important;
+}
+
+.dark-mode .app-header,
+.dark-mode .enhanced-header {
+  background: linear-gradient(135deg, #0d4275, #051e38) !important;
+}
+
+.dark-mode .config-card-header {
+  background-color: #0d4275 !important;
+}
+
+.dark-mode .panel-header {
+  background: linear-gradient(to right, #0d4275, #051e38) !important;
+}
+
+.dark-mode .benefit-icon {
+  background: linear-gradient(135deg, #0d4275, #051e38) !important;
+}
+
+.dark-mode .benefit-card,
+.dark-mode .dashboard-card,
+.dark-mode .chart-container {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark-mode .highlight-card {
+  background: linear-gradient(135deg, #0d4275, #051e38) !important;
 }
 EOF
+echo -e "${GREEN}Created css/custom/enhanced-styles.css${NC}"
 
-echo -e "${GREEN}✓${NC} Created modern Portnox theme"
+# Create security-specific CSS improvements
+echo -e "${BLUE}Creating css/security-view.css...${NC}"
+cat > css/security-view.css << 'EOF'
+/* Specialized styles for Security & Compliance View */
 
-# ============================================================
-# 4. Create view initialization fix
-# ============================================================
-echo -e "\n${BLUE}Creating view initialization fix...${NC}"
+.security-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
 
-cat > js/fixes/view-init-fix.js << 'EOF'
+.security-metric-card {
+  background-color: var(--card-background, #ffffff);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.security-metric-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.security-metric-card h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: var(--text-light-color, #666666);
+  font-weight: 600;
+}
+
+.security-metric-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--primary-color, #1a5a96);
+}
+
+.security-highlight-card {
+  background: linear-gradient(135deg, #1a5a96, #0d4275);
+  color: white;
+}
+
+.security-highlight-card h3,
+.security-highlight-card .security-metric-label,
+.security-highlight-card .security-metric-trend {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.security-highlight-value {
+  color: white;
+}
+
+.security-metric-label {
+  font-size: 0.9rem;
+  color: var(--text-light-color, #666666);
+  margin-bottom: 0.5rem;
+}
+
+.compliance-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--card-background, #ffffff);
+  border: 1px solid var(--border-color, #e1e8ed);
+  border-radius: 50px;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.compliance-badge:hover {
+  background-color: rgba(26, 90, 150, 0.08);
+  border-color: var(--primary-color, #1a5a96);
+}
+
+.compliance-badge.active {
+  background-color: var(--primary-color, #1a5a96);
+  color: white;
+  border-color: var(--primary-color, #1a5a96);
+}
+
+.compliance-badge i {
+  margin-right: 0.5rem;
+}
+
+.compliance-selector {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  justify-content: center;
+}
+
+.threat-card {
+  background-color: var(--card-background, #ffffff);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.threat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.threat-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.threat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.threat-title h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.threat-title span {
+  font-size: 0.85rem;
+  color: var(--text-light-color, #666666);
+}
+
+.threat-impact {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.impact-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.impact-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color, #1a5a96);
+  margin-bottom: 0.25rem;
+}
+
+.impact-label {
+  font-size: 0.8rem;
+  color: var(--text-light-color, #666666);
+}
+
+.protection-bar {
+  height: 8px;
+  background-color: #ecf0f1;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+
+.protection-progress {
+  height: 100%;
+  background: linear-gradient(to right, #1a5a96, #2ecc71);
+  border-radius: 4px;
+}
+
+.protection-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-light-color, #666666);
+}
+
+.security-tabs-content {
+  background-color: var(--card-background, #ffffff);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.industry-selector {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.industry-selector select {
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  border: 1px solid var(--border-color, #e1e8ed);
+  background-color: var(--card-background, #ffffff);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color, #333333);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 250px;
+  text-align: center;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
+}
+
+.industry-selector select:hover {
+  border-color: var(--primary-color, #1a5a96);
+}
+
+.industry-selector select:focus {
+  outline: none;
+  border-color: var(--primary-color, #1a5a96);
+  box-shadow: 0 0 0 3px rgba(26, 90, 150, 0.25);
+}
+
+.dark-mode .security-metric-card {
+  background-color: var(--card-background, #282846);
+}
+
+.dark-mode .compliance-badge {
+  background-color: var(--card-background, #282846);
+  border-color: var(--border-color, #3a3a5c);
+}
+
+.dark-mode .threat-card {
+  background-color: var(--card-background, #282846);
+}
+
+.dark-mode .protection-bar {
+  background-color: #2c3e50;
+}
+
+.dark-mode .industry-selector select {
+  background-color: var(--card-background, #282846);
+  border-color: var(--border-color, #3a3a5c);
+  color: var(--text-color, #e1e1e1);
+}
+EOF
+echo -e "${GREEN}Created css/security-view.css${NC}"
+
+# Create comprehensive-fix.js
+echo -e "${BLUE}Creating js/comprehensive-fix.js...${NC}"
+cat > js/comprehensive-fix.js << 'EOF'
 /**
- * View Initialization Fix for Portnox Total Cost Analyzer
- * Ensures each view is properly initialized with its container
+ * Comprehensive Fix for Portnox Total Cost Analyzer
+ * Addresses all critical issues in one script
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('Applying view initialization fix...');
+console.log("Applying comprehensive fix...");
+
+// Functions to ensure proper loading of dependencies
+function ensureScript(src, callback) {
+  if (document.querySelector(`script[src="${src}"]`)) {
+    if (callback) callback();
+    return;
+  }
   
-  // Wait for content to be properly loaded
-  setTimeout(initializeViews, 800);
+  const script = document.createElement('script');
+  script.src = src;
+  script.onload = callback;
+  document.head.appendChild(script);
+}
+
+function ensureStyle(href) {
+  if (document.querySelector(`link[href="${href}"]`)) return;
   
-  function initializeViews() {
-    // Initialize executive view
-    if (window.executiveView) {
-      const executivePanel = document.querySelector('.view-panel[data-view="executive"]');
-      if (executivePanel) {
-        console.log('Re-initializing executive view with proper container...');
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = href;
+  document.head.appendChild(link);
+}
+
+// Ensure vendor data is available
+function ensureVendorData() {
+  if (!window.VENDORS) {
+    console.error("VENDORS data not defined, application may not function correctly");
+    ensureScript('js/models/vendors-data-fix.js');
+  }
+}
+
+// Fix sidebar toggle functionality
+function fixSidebarToggles() {
+  const sidebarToggleButtons = document.querySelectorAll(".sidebar-toggle, #sidebar-toggle");
+  const sidebar = document.getElementById("sidebar");
+  const contentArea = document.querySelector(".content-area");
+  
+  if (sidebar && contentArea) {
+    sidebarToggleButtons.forEach(function(sidebarToggle) {
+      if (sidebarToggle) {
+        // Remove existing event listeners by cloning and replacing
+        const newToggle = sidebarToggle.cloneNode(true);
+        sidebarToggle.parentNode.replaceChild(newToggle, sidebarToggle);
         
-        // Save current tab if already initialized
-        const currentTab = window.executiveView.currentTab || 'executive-summary';
-        
-        // Re-initialize with correct container
-        window.executiveView.container = executivePanel;
-        window.executiveView.currentTab = currentTab;
-        window.executiveView.initialized = true;
-        
-        // Initialize tabs if needed
-        if (!executivePanel.querySelector('.results-tabs')) {
-          window.executiveView.createTabsIfNeeded();
-        }
-        
-        // Initialize panels if needed
-        window.executiveView.createPanelsIfNeeded();
-        
-        // Refresh current panel
-        window.executiveView.refreshChartsInPanel(currentTab);
-        
-        console.log('Executive view re-initialized successfully');
+        newToggle.addEventListener("click", function(e) {
+          e.preventDefault();
+          sidebar.classList.toggle("collapsed");
+          newToggle.classList.toggle("collapsed");
+          contentArea.classList.toggle("expanded");
+        });
       }
-    }
-    
-    // Initialize security view
-    if (window.securityView) {
-      const securityPanel = document.querySelector('.view-panel[data-view="security"]');
-      if (securityPanel) {
-        console.log('Re-initializing security view with proper container...');
-        
-        // Save current tab if already initialized
-        const currentTab = window.securityView.currentTab || 'security-overview';
-        
-        // Re-initialize with correct container
-        window.securityView.container = securityPanel;
-        window.securityView.currentTab = currentTab;
-        window.securityView.initialized = true;
-        
-        // Initialize tabs if needed
-        if (!securityPanel.querySelector('.results-tabs')) {
-          window.securityView.createTabsIfNeeded();
-        }
-        
-        // Initialize panels if needed
-        window.securityView.createPanelsIfNeeded();
-        
-        // Refresh current panel
-        window.securityView.refreshChartsInPanel(currentTab);
-        
-        console.log('Security view re-initialized successfully');
-      }
-    }
-    
-    // Initialize financial view if needed
-    initializeFinancialView();
-    
-    // Initialize technical view if needed
-    initializeTechnicalView();
-    
-    // Setup main tab navigation
-    setupMainTabsNavigation();
+    });
   }
   
-  function initializeFinancialView() {
-    const financialPanel = document.querySelector('.view-panel[data-view="financial"]');
-    if (!financialPanel) return;
-    
-    // Check if any content exists
-    if (financialPanel.children.length === 0) {
-      console.log('Creating basic financial view content...');
-      
-      // Create tabs
-      const tabsContainer = document.createElement('div');
-      tabsContainer.className = 'results-tabs';
-      tabsContainer.innerHTML = `
-        <button class="results-tab active" data-panel="financial-summary">
-          <i class="fas fa-chart-line"></i> Financial Summary
-        </button>
-        <button class="results-tab" data-panel="financial-tco">
-          <i class="fas fa-money-bill-wave"></i> TCO Analysis
-        </button>
-        <button class="results-tab" data-panel="financial-roi">
-          <i class="fas fa-percentage"></i> ROI Calculation
-        </button>
-        <button class="results-tab" data-panel="financial-projections">
-          <i class="fas fa-chart-area"></i> Projections
-        </button>
-      `;
-      financialPanel.appendChild(tabsContainer);
-      
-      // Create first panel
-      const summaryPanel = document.createElement('div');
-      summaryPanel.id = 'financial-summary';
-      summaryPanel.className = 'results-panel active';
-      summaryPanel.innerHTML = `
-        <div class="panel-header">
-          <h2>Financial Summary</h2>
-          <p class="subtitle">Comprehensive financial analysis and TCO breakdown</p>
-        </div>
-        
-        <div class="dashboard-grid">
-          <div class="metric-card primary">
-            <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
-            <div class="metric-title">3-Year TCO</div>
-            <div class="metric-value" id="financial-tco-value">$245,000</div>
-            <div class="metric-description">Total cost of ownership</div>
-            <div class="metric-trend up">
-              <i class="fas fa-arrow-up"></i> 53% below competitors
-            </div>
-          </div>
-          
-          <div class="metric-card secondary">
-            <div class="card-icon"><i class="fas fa-percentage"></i></div>
-            <div class="metric-title">ROI</div>
-            <div class="metric-value" id="financial-roi-value">325%</div>
-            <div class="metric-description">Return on investment</div>
-            <div class="metric-trend up">
-              <i class="fas fa-arrow-up"></i> Industry leading returns
-            </div>
-          </div>
-          
-          <div class="metric-card accent">
-            <div class="card-icon"><i class="fas fa-calendar-check"></i></div>
-            <div class="metric-title">Payback Period</div>
-            <div class="metric-value" id="financial-payback-value">7 months</div>
-            <div class="metric-description">Time to positive ROI</div>
-            <div class="metric-trend up">
-              <i class="fas fa-arrow-up"></i> 4.5x faster than on-premises
-            </div>
-          </div>
-          
-          <div class="metric-card">
-            <div class="card-icon"><i class="fas fa-money-bill-alt"></i></div>
-            <div class="metric-title">Annual Savings</div>
-            <div class="metric-value" id="financial-savings-value">$91,700</div>
-            <div class="metric-description">Average yearly benefit</div>
-            <div class="metric-trend up">
-              <i class="fas fa-arrow-up"></i> Significant cost reduction
-            </div>
-          </div>
-        </div>
-        
-        <div class="chart-container">
-          <div class="chart-title"><i class="fas fa-chart-bar"></i> Total Cost of Ownership Breakdown</div>
-          <div class="chart-subtitle">Detailed cost analysis by category over 3 years</div>
-          <div class="chart-wrapper" id="financial-tco-breakdown-chart"></div>
-        </div>
-      `;
-      
-      financialPanel.appendChild(summaryPanel);
-      
-      // Setup tab navigation
-      setupTabsNavigation(financialPanel);
-    }
-  }
+  console.log("Sidebar toggles fixed");
+}
+
+// Fix tab navigation
+function fixTabNavigation() {
+  // Fix results tabs navigation
+  const allResultsTabs = document.querySelectorAll('.results-tabs .results-tab');
   
-  function initializeTechnicalView() {
-    const technicalPanel = document.querySelector('.view-panel[data-view="technical"]');
-    if (!technicalPanel) return;
+  allResultsTabs.forEach(tab => {
+    // Remove existing event listeners by cloning and replacing
+    const newTab = tab.cloneNode(true);
+    tab.parentNode.replaceChild(newTab, tab);
     
-    // Check if any content exists
-    if (technicalPanel.children.length === 0) {
-      console.log('Creating basic technical view content...');
+    newTab.addEventListener('click', function() {
+      const panelId = newTab.getAttribute('data-panel');
+      const tabsContainer = newTab.closest('.results-tabs');
       
-      // Create tabs
-      const tabsContainer = document.createElement('div');
-      tabsContainer.className = 'results-tabs';
-      tabsContainer.innerHTML = `
-        <button class="results-tab active" data-panel="technical-overview">
-          <i class="fas fa-cogs"></i> Technical Overview
-        </button>
-        <button class="results-tab" data-panel="technical-architecture">
-          <i class="fas fa-network-wired"></i> Architecture
-        </button>
-        <button class="results-tab" data-panel="technical-deployment">
-          <i class="fas fa-rocket"></i> Deployment
-        </button>
-        <button class="results-tab" data-panel="technical-integrations">
-          <i class="fas fa-plug"></i> Integrations
-        </button>
-      `;
-      technicalPanel.appendChild(tabsContainer);
+      if (!panelId || !tabsContainer) return;
       
-      // Create first panel
-      const overviewPanel = document.createElement('div');
-      overviewPanel.id = 'technical-overview';
-      overviewPanel.className = 'results-panel active';
-      overviewPanel.innerHTML = `
-        <div class="panel-header">
-          <h2>Technical Overview</h2>
-          <p class="subtitle">Comprehensive technical analysis and comparison</p>
-        </div>
-        
-        <div class="dashboard-grid">
-          <div class="metric-card primary">
-            <div class="card-icon"><i class="fas fa-server"></i></div>
-            <div class="metric-title">Architecture</div>
-            <div class="metric-value">Cloud-Native</div>
-            <div class="metric-description">No on-premises infrastructure required</div>
-            <div class="metric-trend up">
-              <i class="fas fa-arrow-up"></i> Zero hardware maintenance
-            </div>
-          </div>
-          
-          <div class="metric-card secondary">
-            <div class="card-icon"><i class="fas fa-clock"></i></div>
-            <div class="metric-title">Deployment Time</div>
-            <div class="metric-value">3 weeks</div>
-            <div class="metric-description">Average implementation timeframe</div>
-            <div class="metric-trend up">
-              <i class="fas fa-arrow-up"></i> 75% faster than competitors
-            </div>
-          </div>
-          
-          <div class="metric-card accent">
-            <div class="card-icon"><i class="fas fa-users-cog"></i></div>
-            <div class="metric-title">IT Resources</div>
-            <div class="metric-value">0.25 FTE</div>
-            <div class="metric-description">IT staff allocation required</div>
-            <div class="metric-trend up">
-              <i class="fas fa-arrow-up"></i> 8x less than on-premises
-            </div>
-          </div>
-          
-          <div class="metric-card">
-            <div class="card-icon"><i class="fas fa-sync-alt"></i></div>
-            <div class="metric-title">Updates</div>
-            <div class="metric-value">Automatic</div>
-            <div class="metric-description">No manual updates required</div>
-            <div class="metric-trend up">
-              <i class="fas fa-arrow-up"></i> Always up-to-date
-            </div>
-          </div>
-        </div>
-        
-        <div class="chart-container">
-          <div class="chart-title"><i class="fas fa-network-wired"></i> Architecture Comparison</div>
-          <div class="chart-subtitle">Key differences between deployment models</div>
-          <div class="benefits-grid">
-            <div class="benefit-card">
-              <div class="benefit-icon" style="background: linear-gradient(135deg, #1a5a96, #0d4275);">
-                <i class="fas fa-cloud"></i>
-              </div>
-              <h3>Portnox: Cloud-Native</h3>
-              <p><strong>Pros:</strong> No infrastructure, automatic updates, global scalability, rapid deployment, no maintenance overhead</p>
-              <p><strong>Cons:</strong> Internet connectivity required</p>
-            </div>
-            
-            <div class="benefit-card">
-              <div class="benefit-icon" style="background: linear-gradient(135deg, #00bceb, #0078d4);">
-                <i class="fas fa-server"></i>
-              </div>
-              <h3>Competitors: On-Premises</h3>
-              <p><strong>Pros:</strong> Full control over infrastructure, offline operation capability</p>
-              <p><strong>Cons:</strong> High hardware costs, complex deployment, significant maintenance, long implementation</p>
-            </div>
-          </div>
-        </div>
-      `;
+      // Remove active class from all tabs in this container
+      tabsContainer.querySelectorAll('.results-tab').forEach(t => {
+        t.classList.remove('active');
+      });
       
-      technicalPanel.appendChild(overviewPanel);
+      // Add active class to clicked tab
+      newTab.classList.add('active');
       
-      // Setup tab navigation
-      setupTabsNavigation(technicalPanel);
-    }
-  }
-  
-  function setupTabsNavigation(panel) {
-    const tabs = panel.querySelectorAll('.results-tab');
-    
-    tabs.forEach(tab => {
-      tab.addEventListener('click', function() {
-        const panelId = this.getAttribute('data-panel');
+      // Hide all panels in this view
+      const viewPanel = tabsContainer.closest('.view-panel, .results-panel');
+      if (viewPanel) {
+        viewPanel.querySelectorAll('.results-panel').forEach(panel => {
+          panel.classList.remove('active');
+        });
         
-        // Remove active class from all tabs and panels
-        tabs.forEach(t => t.classList.remove('active'));
-        const panels = panel.querySelectorAll('.results-panel');
-        panels.forEach(p => p.classList.remove('active'));
-        
-        // Add active class to clicked tab
-        this.classList.add('active');
-        
-        // Show corresponding panel
+        // Show the corresponding panel
         const targetPanel = document.getElementById(panelId);
         if (targetPanel) {
           targetPanel.classList.add('active');
-        } else {
-          // Create panel if it doesn't exist
-          const newPanel = document.createElement('div');
-          newPanel.id = panelId;
-          newPanel.className = 'results-panel active';
           
-          // Add basic content based on panel id
-          newPanel.innerHTML = `
-            <div class="panel-header">
-              <h2>${getPanelTitle(panelId)}</h2>
-              <p class="subtitle">${getPanelSubtitle(panelId)}</p>
-            </div>
-            
-            <div class="chart-container">
-              <div class="chart-title"><i class="fas fa-info-circle"></i> Panel Content</div>
-              <div class="chart-subtitle">This panel content will be populated with data</div>
-              <div class="chart-wrapper" id="${panelId}-chart"></div>
-            </div>
-          `;
+          // If there's a chart refresh function available, call it
+          if (window.executiveView && window.executiveView.refreshChartsInPanel) {
+            window.executiveView.refreshChartsInPanel(panelId);
+          }
           
-          panel.appendChild(newPanel);
-        }
-      });
-    });
-  }
-  
-  function getPanelTitle(panelId) {
-    switch(panelId) {
-      case 'financial-tco': return 'TCO Analysis';
-      case 'financial-roi': return 'ROI Calculation';
-      case 'financial-projections': return 'Financial Projections';
-      case 'technical-architecture': return 'Technical Architecture';
-      case 'technical-deployment': return 'Deployment Process';
-      case 'technical-integrations': return 'Integration Capabilities';
-      default: return panelId.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
-    }
-  }
-  
-  function getPanelSubtitle(panelId) {
-    switch(panelId) {
-      case 'financial-tco': return 'Detailed total cost of ownership breakdown and analysis';
-      case 'financial-roi': return 'Return on investment calculation and value drivers';
-      case 'financial-projections': return 'Multi-year financial projections and forecasts';
-      case 'technical-architecture': return 'Technical architecture details and comparison';
-      case 'technical-deployment': return 'Deployment process and implementation timeline';
-      case 'technical-integrations': return 'Integration capabilities with existing systems';
-      default: return 'Detailed analysis and metrics';
-    }
-  }
-  
-  function setupMainTabsNavigation() {
-    // Add click event to main tabs if not already set up
-    const mainTabs = document.querySelectorAll('.main-tab');
-    if (!mainTabs || mainTabs.length === 0) return;
-    
-    mainTabs.forEach(tab => {
-      // Check if event listener is already attached (by presence of data attribute)
-      if (tab.getAttribute('data-event-attached') === 'true') return;
-      
-      // Clone to remove any existing event listeners
-      const newTab = tab.cloneNode(true);
-      tab.parentNode.replaceChild(newTab, tab);
-      
-      // Add new event listener
-      newTab.addEventListener('click', function() {
-        const view = this.getAttribute('data-view');
-        
-        // Remove active class from all tabs
-        mainTabs.forEach(t => t.classList.remove('active'));
-        
-        // Add active class to clicked tab
-        this.classList.add('active');
-        
-        // Show corresponding panel
-        const viewPanels = document.querySelectorAll('.view-panel');
-        viewPanels.forEach(p => p.classList.remove('active'));
-        
-        const viewPanel = document.querySelector(`.view-panel[data-view="${view}"]`);
-        if (viewPanel) {
-          viewPanel.classList.add('active');
-          
-          // Refresh charts in the active view
-          if (view === 'executive' && window.executiveView) {
-            window.executiveView.refreshChartsInPanel(window.executiveView.currentTab);
-          } else if (view === 'security' && window.securityView) {
-            window.securityView.refreshChartsInPanel(window.securityView.currentTab);
+          if (window.securityView && window.securityView.refreshChartsInPanel) {
+            window.securityView.refreshChartsInPanel(panelId);
           }
         }
-      });
-      
-      // Mark as event attached
-      newTab.setAttribute('data-event-attached', 'true');
+      }
     });
+  });
+  
+  console.log("Tab navigation fixed");
+}
+
+// Fix vendor selection functionality
+function fixVendorSelection() {
+  const vendorCards = document.querySelectorAll('.vendor-select-card');
+  
+  vendorCards.forEach(card => {
+    // Make sure the card has proper styling
+    card.style.height = "80px";
+    card.style.padding = "8px 4px";
+    
+    const logoImg = card.querySelector('.vendor-logo img');
+    if (logoImg) {
+      logoImg.style.maxHeight = "28px";
+      logoImg.style.maxWidth = "80px";
+      logoImg.style.objectFit = "contain";
+    }
+    
+    const nameElement = card.querySelector('.vendor-name');
+    if (nameElement) {
+      nameElement.style.fontSize = "11px";
+      nameElement.style.whiteSpace = "nowrap";
+      nameElement.style.overflow = "hidden";
+      nameElement.style.textOverflow = "ellipsis";
+      nameElement.style.maxWidth = "95%";
+      nameElement.style.textAlign = "center";
+    }
+  });
+  
+  console.log("Vendor selection fixed");
+}
+
+// Fix loading overlay and toast notifications
+function fixOverlays() {
+  const loadingOverlay = document.getElementById('loading-overlay');
+  if (loadingOverlay) {
+    loadingOverlay.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+    loadingOverlay.style.color = "white";
+    loadingOverlay.style.zIndex = "9999";
   }
+  
+  console.log("Overlays fixed");
+}
+
+// Add fallback for vendor icons
+function addVendorIconFallbacks() {
+  document.querySelectorAll('.vendor-logo img').forEach(img => {
+    img.onerror = function() {
+      // Try to load a generic fallback icon
+      this.src = 'img/vendors/generic-vendor.png';
+      this.onerror = function() {
+        // If that also fails, use a data URI for a simple icon
+        this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWE1YTk2IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iMiIgeT0iMyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjE0IiByeD0iMiIgcnk9IjIiPjwvcmVjdD48bGluZSB4MT0iOCIgeTE9IjIxIiB4Mj0iMTYiIHkyPSIyMSI+PC9saW5lPjxsaW5lIHgxPSIxMiIgeTE9IjE3IiB4Mj0iMTIiIHkyPSIyMSI+PC9saW5lPjwvc3ZnPg==';
+      };
+    };
+  });
+  
+  console.log("Vendor icon fallbacks added");
+}
+
+// Ensure content is visible in all views
+function ensureViewContent() {
+  // Make sure executive view is initialized
+  if (window.executiveView && !window.executiveView.initialized) {
+    const executivePanel = document.querySelector('.view-panel[data-view="executive"]');
+    if (executivePanel) {
+      window.executiveView.init('executive');
+    }
+  }
+  
+  // Make sure security view is initialized
+  if (window.securityView && !window.securityView.initialized) {
+    const securityPanel = document.querySelector('.view-panel[data-view="security"]');
+    if (securityPanel) {
+      window.securityView.init('security');
+    }
+  }
+}
+
+// Initialize charts
+function initializeAllCharts() {
+  // Initialize ApexCharts
+  if (window.ApexChartsManager && window.ApexChartsManager.initializeCharts) {
+    window.ApexChartsManager.initializeCharts();
+  }
+  
+  // Initialize SecurityCharts
+  if (window.SecurityCharts && window.SecurityCharts.initializeCharts) {
+    window.SecurityCharts.initializeCharts();
+  }
+  
+  // Initialize D3 charts
+  if (window.D3ChartsManager && window.D3ChartsManager.initializeCharts) {
+    window.D3ChartsManager.initializeCharts();
+  }
+}
+
+// Run all fixes
+ensureStyle('css/custom/enhanced-styles.css');
+ensureVendorData();
+fixSidebarToggles();
+fixTabNavigation();
+fixVendorSelection();
+fixOverlays();
+addVendorIconFallbacks();
+ensureViewContent();
+
+// Ensure all critical JavaScript files are loaded
+ensureScript('js/charts/chart-config.js', function() {
+  ensureScript('js/charts/apex/apex-charts.js', function() {
+    ensureScript('js/charts/security-charts.js', function() {
+      ensureScript('js/charts/d3/d3-manager.js', function() {
+        // Initialize charts after all scripts are loaded
+        initializeAllCharts();
+      });
+    });
+  });
+});
+
+console.log("Comprehensive fix applied successfully");
+EOF
+echo -e "${GREEN}Created js/comprehensive-fix.js${NC}"
+
+# Create a load-fixes.js file to include in index.html
+echo -e "${BLUE}Creating js/load-fixes.js...${NC}"
+cat > js/load-fixes.js << 'EOF'
+/**
+ * Load all fixes for Portnox Total Cost Analyzer
+ */
+
+document.addEventListener('DOMContentLoaded', function() {
+  console.log("Loading fixes for Portnox Total Cost Analyzer...");
+  
+  // Load CSS fixes
+  function loadCSS(href) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+    console.log(`Loaded CSS: ${href}`);
+  }
+  
+  // Load JavaScript fixes
+  function loadScript(src, callback) {
+    const script = document.createElement('script');
+    script.src = src;
+    if (callback) {
+      script.onload = callback;
+    }
+    document.head.appendChild(script);
+    console.log(`Loaded script: ${src}`);
+  }
+  
+  // Load essential CSS fixes
+  loadCSS('css/custom/enhanced-styles.css');
+  loadCSS('css/security-view.css');
+  
+  // Load JavaScript fixes in sequence
+  loadScript('js/models/vendors-data-fix.js', function() {
+    loadScript('js/charts/chart-config.js', function() {
+      loadScript('js/charts/apex/apex-charts.js', function() {
+        loadScript('js/charts/security-charts.js', function() {
+          loadScript('js/charts/d3/d3-manager.js', function() {
+            loadScript('js/comprehensive-fix.js', function() {
+              console.log("All fixes loaded successfully!");
+            });
+          });
+        });
+      });
+    });
+  });
 });
 EOF
+echo -e "${GREEN}Created js/load-fixes.js${NC}"
 
-echo -e "${GREEN}✓${NC} Created view initialization fix"
-
-# ============================================================
-# 5. Add fix scripts to index.html
-# ============================================================
-echo -e "\n${BLUE}Adding fix scripts to index.html...${NC}"
-backup_file "index.html"
-
-if [ -f "index.html" ]; then
-  # Add CSS file reference
-  sed -i '/<link rel="stylesheet" href="css\/main.css">/a \    <link rel="stylesheet" href="css/fixes/portnox-modern-theme.css">' index.html
-  
-  # Add JS file references
-  sed -i 's|</body>|    <!-- Targeted Fixes -->\\n    <script src="js/fixes/view-organization-fix.js"></script>\\n    <script src="js/fixes/view-init-fix.js"></script>\\n</body>|' index.html
-  
-  echo -e "${GREEN}✓${NC} Added fix scripts to index.html"
-fi
-
-# ============================================================
-# 6. Update header in index.html
-# ============================================================
-echo -e "\n${BLUE}Updating header in index.html...${NC}"
-
-if [ -f "index.html" ]; then
-  # Update header classes for modern styling
-  sed -i 's/class="app-header"/class="app-header enhanced-header"/g' index.html
-  
-  # Update header content with more modern layout if not already using enhanced header
-  if ! grep -q "header-content" index.html; then
-    sed -i '/<header class="app-header enhanced-header">/,/<\/header>/c\
-    <!-- Enhanced Modern Header -->\\n    <header class="app-header enhanced-header">\\n        <div id="particles-header" class="particles-header"></div>\\n        <div class="header-content">\\n            <div class="logo-section">\\n                <img src="img/vendors/portnox-logo.png" alt="Portnox Logo" class="company-logo">\\n                <div class="app-title">\\n                    <h1>Zero Trust Total Cost Analyzer</h1>\\n                    <p class="subtitle">Multi-Vendor NAC Solution Comparison Platform</p>\\n                </div>\\n            </div>\\n            <div class="header-actions">\\n                <button id="calculate-btn-header" class="btn btn-primary" title="Calculate TCO & ROI">\\n                    <i class="fas fa-calculator"></i> <span>Calculate</span>\\n                </button>\\n                <button id="export-pdf" class="btn btn-outline btn-icon" title="Export Report">\\n                    <i class="fas fa-file-pdf"></i>\\n                    <span>Export</span>\\n                </button>\\n                <button id="help-btn" class="btn btn-outline btn-icon" title="Help">\\n                    <i class="fas fa-question-circle"></i>\\n                </button>\\n                <button id="dark-mode-toggle" class="btn btn-outline btn-icon" title="Toggle Dark Mode">\\n                    <i class="fas fa-moon"></i>\\n                </button>\\n            </div>\\n        </div>\\n    </header>' index.html
-  fi
-  
-  echo -e "${GREEN}✓${NC} Updated header in index.html"
-fi
-
-# ============================================================
-# 7. Git commands to stage and commit changes
-# ============================================================
-echo -e "\n${BLUE}Preparing Git operations...${NC}"
-
-GIT_MESSAGE="Fixed Portnox Total Cost Analyzer UI Issues
-
-- Fixed JavaScript syntax errors in chart files
-- Properly organized views under their respective tabs (Executive, Financial, Security, Technical)
-- Updated banner and header with modern Portnox branding
-- Enhanced UI with better color scheme and visual improvements
-- Fixed view initialization issues
-- Added placeholder content for Financial and Technical views"
-
-echo -e "Would you like to commit these changes with the following message?
-${GREEN}${GIT_MESSAGE}${NC}
-"
-echo -e "Type 'yes' to proceed or any other key to skip Git operations:"
-read -p "> " PROCEED_GIT
-
-if [ "$PROCEED_GIT" = "yes" ]; then
-  # Check if git is installed
-  if ! command -v git &> /dev/null; then
-    echo -e "${RED}Git is not installed. Please install Git to use version control.${NC}"
-  else
-    # Check if we're in a git repository
-    if ! git rev-parse --is-inside-work-tree &> /dev/null; then
-      echo -e "${RED}Not inside a Git repository. Initializing a new repository...${NC}"
-      git init
-      echo -e "${GREEN}Git repository initialized.${NC}"
-    fi
-    
-    # Stage all changed files
-    git add .
-    echo -e "${GREEN}✓${NC} Staged all changes"
-    
-    # Commit the changes
-    git commit -m "$GIT_MESSAGE"
-    echo -e "${GREEN}✓${NC} Committed changes"
-    
-    # Ask if user wants to push
-    echo -e "Do you want to push these changes to remote repository?"
-    echo -e "Type 'yes' to proceed or any other key to skip pushing:"
-    read -p "> " PROCEED_PUSH
-    
-    if [ "$PROCEED_PUSH" = "yes" ]; then
-      # Check if remote exists
-      if git remote -v | grep origin &> /dev/null; then
-        git push origin HEAD
-        PUSH_STATUS=$?
-        
-        if [ $PUSH_STATUS -eq 0 ]; then
-          echo -e "${GREEN}✓${NC} Successfully pushed changes to remote repository"
-        else
-          echo -e "${RED}✗${NC} Failed to push changes. Please check your connection and repository permissions."
-        fi
-      else
-        echo -e "${RED}No remote repository found.${NC}"
-        echo -e "Please set up a remote repository with:"
-        echo -e "  git remote add origin <repository-url>"
-        echo -e "Then push your changes with:"
-        echo -e "  git push -u origin master"
-      fi
-    else
-      echo -e "${BLUE}Skipping push operation.${NC}"
-    fi
-  fi
+# Update index.html to include fix scripts
+echo -e "${BLUE}Updating index.html to include fixes...${NC}"
+if grep -q "load-fixes.js" index.html; then
+  echo -e "${YELLOW}load-fixes.js already included in index.html${NC}"
 else
-  echo -e "${BLUE}Skipping Git operations.${NC}"
+  # Insert the script before the closing </head> tag
+  sed -i '/<\/head>/i \    <!-- Critical Fixes -->\n    <script src="js/load-fixes.js"></script>' index.html
+  echo -e "${GREEN}Updated index.html to include fixes${NC}"
 fi
 
-# ============================================================
-# 8. Final message
-# ============================================================
-echo -e "\n${GREEN}=== Portnox Total Cost Analyzer Fixes Complete ===${NC}"
-echo -e "The following issues have been fixed:"
-echo -e "  1. JavaScript syntax errors in chart files"
-echo -e "  2. View organization issues (views now properly under respective tabs)"
-echo -e "  3. Enhanced banner and header with modern Portnox branding"
-echo -e "  4. Improved UI with better color scheme and visual components"
-echo -e "  5. Fixed view initialization issues"
-echo -e "  6. Added placeholder content for Financial and Technical views"
-echo -e "\nBackups of all modified files are stored in: ${BACKUP_DIR}"
-echo -e "\n${BLUE}To test the changes, open index.html in your browser.${NC}"
-echo -e "\n${GREEN}Complete!${NC}"
+echo -e "${GREEN}✅ All fixes have been applied!${NC}"
+echo -e "${BLUE}Application Structure:${NC}"
+echo -e "${YELLOW}1. Created missing JavaScript files${NC}"
+echo -e "${YELLOW}2. Updated CSS to improve visibility of headers and banners${NC}"
+echo -e "${YELLOW}3. Fixed vendor data initialization${NC}"
+echo -e "${YELLOW}4. Enhanced chart rendering${NC}"
+echo -e "${YELLOW}5. Fixed view initialization${NC}"
+echo -e "${GREEN}The fixes are now active in your application.${NC}"

@@ -1,160 +1,221 @@
 /**
- * VENDORS Data Fix for Portnox Total Cost Analyzer
- * Ensures all vendors have timeInDays property
+ * Vendor Data Fix for Portnox Total Cost Analyzer
+ * Ensures vendor data is available and properly structured
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('Applying VENDORS data fix...');
-  
-  // Apply after a short delay to ensure script loads after other dependencies
-  setTimeout(fixVendorsData, 500);
-});
+console.log("Applying vendor data fix...");
 
-function fixVendorsData() {
-  // Ensure VENDORS global object exists
-  if (typeof window.VENDORS === 'undefined') {
-    console.log('Creating VENDORS object with default values...');
-    
-    window.VENDORS = {
-      'portnox': {
-        name: 'Portnox Cloud',
-        architecture: 'cloud',
-        implementation: { timeInDays: 21 }
-      },
-      'cisco': { 
-        name: 'Cisco ISE',
-        architecture: 'on-premises',
-        implementation: { timeInDays: 90 }
-      },
-      'aruba': {
-        name: 'Aruba ClearPass',
-        architecture: 'on-premises',
-        implementation: { timeInDays: 60 }
-      },
-      'forescout': {
-        name: 'Forescout',
-        architecture: 'on-premises',
-        implementation: { timeInDays: 60 }
-      },
-      'fortinac': {
-        name: 'FortiNAC',
-        architecture: 'on-premises',
-        implementation: { timeInDays: 45 }
-      },
-      'juniper': {
-        name: 'Juniper',
-        architecture: 'hybrid',
-        implementation: { timeInDays: 45 }
-      },
-      'securew2': {
-        name: 'SecureW2',
-        architecture: 'cloud',
-        implementation: { timeInDays: 30 }
-      },
-      'microsoft': {
-        name: 'Microsoft',
-        architecture: 'on-premises',
-        implementation: { timeInDays: 30 }
-      },
-      'arista': {
-        name: 'Arista',
-        architecture: 'hybrid',
-        implementation: { timeInDays: 45 }
-      },
-      'foxpass': {
-        name: 'Foxpass',
-        architecture: 'cloud',
-        implementation: { timeInDays: 30 }
-      },
-      'no-nac': {
-        name: 'No NAC',
-        architecture: 'none',
-        implementation: { timeInDays: 0 }
-      }
-    };
-  } else {
-    console.log('Fixing existing VENDORS data structure...');
-    
-    // Make sure all vendors have implementation.timeInDays
-    for (const vendorId in window.VENDORS) {
-      const vendor = window.VENDORS[vendorId];
-      
-      // If implementation doesn't exist, create it
-      if (!vendor.implementation) {
-        console.log(`Adding implementation data for ${vendorId}`);
-        
-        let timeInDays = 0;
-        
-        // Set reasonable defaults based on vendor
-        switch(vendorId) {
-          case 'portnox':
-            timeInDays = 21;
-            break;
-          case 'cisco':
-            timeInDays = 90;
-            break;
-          case 'aruba':
-          case 'forescout':
-            timeInDays = 60;
-            break;
-          case 'fortinac':
-          case 'juniper':
-          case 'arista':
-            timeInDays = 45;
-            break;
-          case 'securew2':
-          case 'microsoft':
-          case 'foxpass':
-            timeInDays = 30;
-            break;
-          case 'no-nac':
-            timeInDays = 0;
-            break;
-          default:
-            timeInDays = 30; // Default value
-        }
-        
-        vendor.implementation = { timeInDays: timeInDays };
-      } 
-      // If implementation exists but timeInDays is missing
-      else if (typeof vendor.implementation.timeInDays === 'undefined') {
-        console.log(`Adding timeInDays for ${vendorId}`);
-        
-        let timeInDays = 0;
-        
-        // Set reasonable defaults based on vendor
-        switch(vendorId) {
-          case 'portnox':
-            timeInDays = 21;
-            break;
-          case 'cisco':
-            timeInDays = 90;
-            break;
-          case 'aruba':
-          case 'forescout':
-            timeInDays = 60;
-            break;
-          case 'fortinac':
-          case 'juniper':
-          case 'arista':
-            timeInDays = 45;
-            break;
-          case 'securew2':
-          case 'microsoft':
-          case 'foxpass':
-            timeInDays = 30;
-            break;
-          case 'no-nac':
-            timeInDays = 0;
-            break;
-          default:
-            timeInDays = 30; // Default value
-        }
-        
-        vendor.implementation.timeInDays = timeInDays;
-      }
-    }
-  }
+// Create the VENDORS object if it doesn't exist
+if (!window.VENDORS) {
+  console.log("Creating VENDORS data structure...");
   
-  console.log('VENDORS data structure fixed');
+  window.VENDORS = {
+    'portnox': {
+      name: 'Portnox Cloud',
+      logo: 'img/vendors/portnox-logo.png',
+      architecture: 'cloud',
+      tco: 245000,
+      implementationTime: 21,
+      implementationCost: 15000,
+      fte: 0.25,
+      hardware: 0,
+      maintenance: 12500,
+      subscription: 172000,
+      personnel: 25000,
+      paybackPeriod: 7,
+      roi: 325,
+      securityScore: 92,
+      complianceScore: 95,
+      zeroTrustScore: 95,
+      breachReduction: 85,
+      automationLevel: 90
+    },
+    'cisco': {
+      name: 'Cisco ISE',
+      logo: 'img/vendors/cisco-logo.png',
+      architecture: 'on-premises',
+      tco: 520000,
+      implementationTime: 90,
+      implementationCost: 85000,
+      fte: 2.0,
+      hardware: 130000,
+      maintenance: 98000,
+      subscription: 0,
+      personnel: 200000,
+      paybackPeriod: 32,
+      roi: -8,
+      securityScore: 85,
+      complianceScore: 90,
+      zeroTrustScore: 75,
+      breachReduction: 70,
+      automationLevel: 60
+    },
+    'aruba': {
+      name: 'Aruba ClearPass',
+      logo: 'img/vendors/aruba-logo.png',
+      architecture: 'on-premises',
+      tco: 480000,
+      implementationTime: 75,
+      implementationCost: 65000,
+      fte: 1.75,
+      hardware: 110000,
+      maintenance: 85000,
+      subscription: 0,
+      personnel: 175000,
+      paybackPeriod: 28,
+      roi: 5,
+      securityScore: 82,
+      complianceScore: 88,
+      zeroTrustScore: 70,
+      breachReduction: 72,
+      automationLevel: 65
+    },
+    'forescout': {
+      name: 'Forescout',
+      logo: 'img/vendors/forescout-logo.png',
+      architecture: 'on-premises',
+      tco: 430000,
+      implementationTime: 60,
+      implementationCost: 75000,
+      fte: 1.5,
+      hardware: 100000,
+      maintenance: 75000,
+      subscription: 0,
+      personnel: 150000,
+      paybackPeriod: 25,
+      roi: 12,
+      securityScore: 80,
+      complianceScore: 85,
+      zeroTrustScore: 72,
+      breachReduction: 68,
+      automationLevel: 70
+    },
+    'fortinac': {
+      name: 'FortiNAC',
+      logo: 'img/vendors/fortinac-logo.png',
+      architecture: 'on-premises',
+      tco: 400000,
+      implementationTime: 60,
+      implementationCost: 60000,
+      fte: 1.25,
+      hardware: 90000,
+      maintenance: 70000,
+      subscription: 0,
+      personnel: 125000,
+      paybackPeriod: 22,
+      roi: 15,
+      securityScore: 75,
+      complianceScore: 80,
+      zeroTrustScore: 65,
+      breachReduction: 65,
+      automationLevel: 60
+    },
+    'juniper': {
+      name: 'Juniper Mist',
+      logo: 'img/vendors/juniper-logo.png',
+      architecture: 'hybrid',
+      tco: 350000,
+      implementationTime: 45,
+      implementationCost: 50000,
+      fte: 1.0,
+      hardware: 60000,
+      maintenance: 50000,
+      subscription: 100000,
+      personnel: 100000,
+      paybackPeriod: 18,
+      roi: 40,
+      securityScore: 78,
+      complianceScore: 82,
+      zeroTrustScore: 80,
+      breachReduction: 70,
+      automationLevel: 75
+    },
+    'securew2': {
+      name: 'SecureW2',
+      logo: 'img/vendors/securew2-logo.png',
+      architecture: 'cloud',
+      tco: 280000,
+      implementationTime: 30,
+      implementationCost: 25000,
+      fte: 0.5,
+      hardware: 0,
+      maintenance: 15000,
+      subscription: 190000,
+      personnel: 50000,
+      paybackPeriod: 12,
+      roi: 180,
+      securityScore: 72,
+      complianceScore: 70,
+      zeroTrustScore: 85,
+      breachReduction: 60,
+      automationLevel: 80
+    },
+    'microsoft': {
+      name: 'Microsoft NPS',
+      logo: 'img/vendors/microsoft-logo.png',
+      architecture: 'on-premises',
+      tco: 290000,
+      implementationTime: 30,
+      implementationCost: 20000,
+      fte: 1.0,
+      hardware: 30000,
+      maintenance: 40000,
+      subscription: 0,
+      personnel: 100000,
+      paybackPeriod: 20,
+      roi: 25,
+      securityScore: 60,
+      complianceScore: 65,
+      zeroTrustScore: 50,
+      breachReduction: 45,
+      automationLevel: 40
+    },
+    'arista': {
+      name: 'Arista CloudVision',
+      logo: 'img/vendors/arista-logo.png',
+      architecture: 'hybrid',
+      tco: 320000,
+      implementationTime: 45,
+      implementationCost: 45000,
+      fte: 1.0,
+      hardware: 50000,
+      maintenance: 55000,
+      subscription: 70000,
+      personnel: 100000,
+      paybackPeriod: 15,
+      roi: 35,
+      securityScore: 70,
+      complianceScore: 75,
+      zeroTrustScore: 65,
+      breachReduction: 60,
+      automationLevel: 65
+    },
+    'foxpass': {
+      name: 'Foxpass',
+      logo: 'img/vendors/foxpass-logo.png',
+      architecture: 'cloud',
+      tco: 270000,
+      implementationTime: 25,
+      implementationCost: 20000,
+      fte: 0.5,
+      hardware: 0,
+      maintenance: 10000,
+      subscription: 180000,
+      personnel: 50000,
+      paybackPeriod: 10,
+      roi: 160,
+      securityScore: 65,
+      complianceScore: 60,
+      zeroTrustScore: 70,
+      breachReduction: 55,
+      automationLevel: 75
+    }
+  };
+  
+  // Trigger the vendorDataLoaded event
+  window.dispatchEvent(new Event('vendorDataLoaded'));
+  
+  console.log("VENDORS data structure created and event fired");
 }
+
+console.log("Vendor data fix applied");
