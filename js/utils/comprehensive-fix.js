@@ -45,6 +45,15 @@ function addModernStyles() {
     link.rel = 'stylesheet';
     link.href = './css/modern-styles.css';
     document.head.appendChild(link);
+    
+    // Add Font Awesome if not already present
+    if (!document.querySelector('link[href*="fontawesome"]')) {
+      const fontAwesome = document.createElement('link');
+      fontAwesome.rel = 'stylesheet';
+      fontAwesome.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+      document.head.appendChild(fontAwesome);
+    }
+    
     console.log('Modern styles added');
   }
 }
@@ -60,6 +69,16 @@ function ensureVendorData() {
     // Load vendor-data.js
     const script = document.createElement('script');
     script.src = './js/data/vendor-data.js';
+    script.onload = function() {
+      console.log('Vendor data loaded successfully');
+    };
+    script.onerror = function() {
+      console.error('Failed to load vendor data from js/data/vendor-data.js');
+      // Try alternative location
+      const altScript = document.createElement('script');
+      altScript.src = './js/models/vendor-data.js';
+      document.body.appendChild(altScript);
+    };
     document.body.appendChild(script);
   } else {
     console.log('VENDORS is already defined with', Object.keys(window.VENDORS).length, 'vendors');
@@ -82,11 +101,35 @@ function ensureTabNavigator() {
       if (typeof window.TabNavigator !== 'undefined') {
         window.tabNavigator = new TabNavigator().init();
         console.log('TabNavigator initialized');
+        
+        // Load other required components
+        loadComponentScripts();
       }
     };
     document.body.appendChild(script);
   } else {
     console.log('TabNavigator is already defined');
+    // Load other required components
+    loadComponentScripts();
+  }
+}
+
+/**
+ * Load additional component scripts
+ */
+function loadComponentScripts() {
+  // Load VendorComparison
+  if (typeof window.VendorComparison === 'undefined') {
+    const vendorCompScript = document.createElement('script');
+    vendorCompScript.src = './js/components/vendorComparison.js';
+    document.body.appendChild(vendorCompScript);
+  }
+  
+  // Load NistCSFVisualization
+  if (typeof window.NistCSFVisualization === 'undefined') {
+    const nistScript = document.createElement('script');
+    nistScript.src = './js/components/nistCsfVisualization.js';
+    document.body.appendChild(nistScript);
   }
 }
 
@@ -240,13 +283,38 @@ function fixCalculator() {
   if (typeof window.TcoCalculator === 'undefined') {
     console.warn('TcoCalculator not defined, loading calculator-fix.js');
     
-    // Load calculator-fix.js
-    const script = document.createElement('script');
-    script.src = './js/models/calculator-fix.js';
-    document.body.appendChild(script);
+    // Try to load various calculator fixes
+    loadScript('./js/models/calculator-fix.js');
   } else {
     console.log('TcoCalculator already defined');
   }
+}
+
+/**
+ * Load script with fallbacks
+ */
+function loadScript(url, fallbacks = [], callback) {
+  const script = document.createElement('script');
+  script.src = url;
+  
+  script.onload = function() {
+    console.log(`Loaded script: ${url}`);
+    if (callback) callback();
+  };
+  
+  script.onerror = function() {
+    console.error(`Failed to load: ${url}`);
+    
+    // Try fallbacks if available
+    if (fallbacks && fallbacks.length > 0) {
+      const nextUrl = fallbacks.shift();
+      loadScript(nextUrl, fallbacks, callback);
+    } else if (callback) {
+      callback();
+    }
+  };
+  
+  document.body.appendChild(script);
 }
 
 /**
@@ -511,8 +579,8 @@ function enhanceUI() {
       // Calculate breach costs (simplified example)
       const breachCost = 4800000; // Average cost of a data breach
       const series = vendorIds.map(id => {
-        const reductionPct = vendors[id]?.security?.breachReduction || 0;
-        return Math.round(breachCost * (reductionPct / 100));
+        const vendor = vendors[id];
+        return Math.round(breachCost * ((vendor?.security?.breachReduction || 0) / 100));
       });
       
       const options = {
@@ -670,11 +738,12 @@ function enhanceUI() {
       // Prepare chart data
       const frameworks = ['NIST CSF', 'PCI DSS', 'HIPAA', 'GDPR', 'ISO 27001'];
       const series = vendorIds.map(id => {
+        const vendor = vendors[id] || {};
         return {
-          name: vendors[id]?.shortName || id,
+          name: vendor.shortName || id,
           data: frameworks.map(framework => {
-            const frameworkKey = framework.toLowerCase().replace(/\s+/g, '');
-            return vendors[id]?.compliance?.[frameworkKey] || 0;
+            const frameworkKey = framework.toLowerCase().replace(/[^a-z0-9]/g, '');
+            return vendor.compliance?.[frameworkKey] || vendor.compliance?.[framework] || 0;
           })
         };
       });

@@ -55,7 +55,7 @@ const VENDORS = {
         {name: 'HIPAA', coverage: 95},
         {name: 'GDPR', coverage: 90},
         {name: 'ISO 27001', coverage: 90},
-        {name: 'SOX', coverage: 90},
+        {name: 'SOX', coverage: 90}
       ]
     },
     features: {
@@ -162,7 +162,7 @@ const VENDORS = {
         {name: 'HIPAA', coverage: 90},
         {name: 'GDPR', coverage: 85},
         {name: 'ISO 27001', coverage: 90},
-        {name: 'SOX', coverage: 85},
+        {name: 'SOX', coverage: 85}
       ]
     },
     features: {
@@ -269,7 +269,7 @@ const VENDORS = {
         {name: 'HIPAA', coverage: 85},
         {name: 'GDPR', coverage: 80},
         {name: 'ISO 27001', coverage: 85},
-        {name: 'SOX', coverage: 80},
+        {name: 'SOX', coverage: 80}
       ]
     },
     features: {
@@ -376,7 +376,7 @@ const VENDORS = {
         {name: 'HIPAA', coverage: 85},
         {name: 'GDPR', coverage: 80},
         {name: 'ISO 27001', coverage: 85},
-        {name: 'SOX', coverage: 85},
+        {name: 'SOX', coverage: 85}
       ]
     },
     features: {
@@ -483,7 +483,7 @@ const VENDORS = {
         {name: 'HIPAA', coverage: 80},
         {name: 'GDPR', coverage: 75},
         {name: 'ISO 27001', coverage: 80},
-        {name: 'SOX', coverage: 80},
+        {name: 'SOX', coverage: 80}
       ]
     },
     features: {
@@ -590,7 +590,7 @@ const VENDORS = {
         {name: 'HIPAA', coverage: 80},
         {name: 'GDPR', coverage: 75},
         {name: 'ISO 27001', coverage: 80},
-        {name: 'SOX', coverage: 75},
+        {name: 'SOX', coverage: 75}
       ]
     },
     features: {
@@ -644,6 +644,648 @@ const VENDORS = {
       'Integration with Juniper's security intelligence',
       'Suitable for service provider environments'
     ]
+  },
+  
+  'microsoft': {
+    name: 'Microsoft NPS',
+    shortName: 'Microsoft',
+    logoUrl: './img/vendors/microsoft.png',
+    cloudNative: false,
+    architecture: 'on-premises',
+    deployment: {
+      timeToValue: 45,
+      complexity: 'Moderate',
+      requiresHardware: true,
+      requiresAgents: true,
+      remoteWorkSupport: false,
+      cloudManaged: false
+    },
+    costs: {
+      pricing: 'included',
+      licensePerDevice: 0,
+      hardware: 30000,
+      implementation: 45000,
+      maintenance: 40000,
+      yearlySubscription: 0,
+      personnel: 100000,
+      training: 15000,
+      tco3Year: 290000
+    },
+    security: {
+      zeroTrust: 60,
+      deviceAuth: 70,
+      riskAssessment: 60,
+      remediationSpeed: 50,
+      complianceCoverage: 65,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: false,
+      automatedResponse: false
+    },
+    compliance: {
+      pciDss: 70,
+      hipaa: 70,
+      gdpr: 70,
+      nist: 65,
+      iso27001: 75,
+      sox: 70,
+      cmmc: 75,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 65, details: {identify: 60, protect: 70, detect: 65, respond: 60, recover: 65}},
+        {name: 'PCI DSS', coverage: 70},
+        {name: 'HIPAA', coverage: 70},
+        {name: 'GDPR', coverage: 70},
+        {name: 'ISO 27001', coverage: 75},
+        {name: 'SOX', coverage: 70}
+      ]
+    },
+    features: {
+      byod: false,
+      iot: false,
+      wireless: true,
+      wired: true,
+      vpn: true,
+      cloudIntegration: false,
+      legacyDevices: true,
+      remoteUsers: false,
+      mdm: false,
+      siem: false,
+      sso: true,
+      api: false,
+      automatedProvisioning: false,
+      dashboards: false,
+      customReporting: false,
+      userPortal: false
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: false,
+      aws: false,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: false,
+      siem: false,
+      ticketing: false,
+      cmdb: false
+    },
+    technical: {
+      maxDevices: '25,000+',
+      performanceImpact: 'Moderate',
+      scalability: 'Limited',
+      reliability: 99.5,
+      redundancy: 'Manual Configuration',
+      disasterRecovery: 'Manual',
+      updateFrequency: 'With Windows Updates'
+    },
+    customers: {
+      industries: ['Government', 'Education', 'Small Business', 'Healthcare'],
+      companySize: ['Small', 'Medium'],
+      geoLocations: ['North America', 'Europe']
+    },
+    differentiators: [
+      'Included with Windows Server',
+      'Tight integration with Active Directory',
+      'Low acquisition cost',
+      'Familiar Microsoft management interface',
+      'Simple deployment for basic use cases'
+    ]
+  },
+  
+  'securew2': {
+    name: 'SecureW2',
+    shortName: 'SecureW2',
+    logoUrl: './img/vendors/securew2.png',
+    cloudNative: true,
+    architecture: 'cloud',
+    deployment: {
+      timeToValue: 7,
+      complexity: 'Low',
+      requiresHardware: false,
+      requiresAgents: false,
+      remoteWorkSupport: true,
+      cloudManaged: true
+    },
+    costs: {
+      pricing: 'subscription',
+      licensePerDevice: 35,
+      hardware: 0,
+      implementation: 25000,
+      maintenance: 0,
+      yearlySubscription: 140000,
+      personnel: 50000,
+      training: 10000,
+      tco3Year: 280000
+    },
+    security: {
+      zeroTrust: 85,
+      deviceAuth: 90,
+      riskAssessment: 75,
+      remediationSpeed: 20,
+      complianceCoverage: 75,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: true,
+      automatedResponse: false
+    },
+    compliance: {
+      pciDss: 80,
+      hipaa: 75,
+      gdpr: 80,
+      nist: 75,
+      iso27001: 75,
+      sox: 70,
+      cmmc: 70,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 75, details: {identify: 75, protect: 85, detect: 75, respond: 70, recover: 70}},
+        {name: 'PCI DSS', coverage: 80},
+        {name: 'HIPAA', coverage: 75},
+        {name: 'GDPR', coverage: 80},
+        {name: 'ISO 27001', coverage: 75},
+        {name: 'SOX', coverage: 70}
+      ]
+    },
+    features: {
+      byod: true,
+      iot: false,
+      wireless: true,
+      wired: false,
+      vpn: true,
+      cloudIntegration: true,
+      legacyDevices: false,
+      remoteUsers: true,
+      mdm: true,
+      siem: false,
+      sso: true,
+      api: true,
+      automatedProvisioning: true,
+      dashboards: true,
+      customReporting: true,
+      userPortal: true
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: true,
+      aws: true,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: true,
+      siem: false,
+      ticketing: false,
+      cmdb: false
+    },
+    technical: {
+      maxDevices: 'Unlimited',
+      performanceImpact: 'Minimal',
+      scalability: 'Highly Scalable',
+      reliability: 99.9,
+      redundancy: 'Built-in',
+      disasterRecovery: 'Automatic',
+      updateFrequency: 'Continuous'
+    },
+    customers: {
+      industries: ['Education', 'Healthcare', 'Retail', 'Technology'],
+      companySize: ['Small', 'Medium', 'Large'],
+      geoLocations: ['North America', 'Europe']
+    },
+    differentiators: [
+      'Cloud-based certificate management',
+      'Focus on wireless & BYOD security',
+      'Simple onboarding experience',
+      'No on-premises infrastructure required',
+      'Fast deployment and time-to-value'
+    ]
+  },
+  
+  'extreme': {
+    name: 'Extreme Networks NAC',
+    shortName: 'Extreme',
+    logoUrl: './img/vendors/extreme.png',
+    cloudNative: false,
+    architecture: 'hybrid',
+    deployment: {
+      timeToValue: 45,
+      complexity: 'Moderate',
+      requiresHardware: true,
+      requiresAgents: false,
+      remoteWorkSupport: true,
+      cloudManaged: true
+    },
+    costs: {
+      pricing: 'hybrid',
+      licensePerDevice: 40,
+      hardware: 70000,
+      implementation: 55000,
+      maintenance: 45000,
+      yearlySubscription: 80000,
+      personnel: 120000,
+      training: 15000,
+      tco3Year: 320000
+    },
+    security: {
+      zeroTrust: 75,
+      deviceAuth: 80,
+      riskAssessment: 70,
+      remediationSpeed: 30,
+      complianceCoverage: 75,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: true,
+      automatedResponse: false
+    },
+    compliance: {
+      pciDss: 80,
+      hipaa: 75,
+      gdpr: 75,
+      nist: 75,
+      iso27001: 75,
+      sox: 70,
+      cmmc: 70,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 75, details: {identify: 70, protect: 80, detect: 75, respond: 70, recover: 70}},
+        {name: 'PCI DSS', coverage: 80},
+        {name: 'HIPAA', coverage: 75},
+        {name: 'GDPR', coverage: 75},
+        {name: 'ISO 27001', coverage: 75},
+        {name: 'SOX', coverage: 70}
+      ]
+    },
+    features: {
+      byod: true,
+      iot: true,
+      wireless: true,
+      wired: true,
+      vpn: true,
+      cloudIntegration: true,
+      legacyDevices: true,
+      remoteUsers: true,
+      mdm: false,
+      siem: true,
+      sso: true,
+      api: true,
+      automatedProvisioning: true,
+      dashboards: true,
+      customReporting: true,
+      userPortal: true
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: false,
+      aws: false,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: false,
+      siem: true,
+      ticketing: true,
+      cmdb: false
+    },
+    technical: {
+      maxDevices: '50,000+',
+      performanceImpact: 'Moderate',
+      scalability: 'Good',
+      reliability: 99.8,
+      redundancy: 'Available',
+      disasterRecovery: 'Available',
+      updateFrequency: 'Quarterly'
+    },
+    customers: {
+      industries: ['Education', 'Manufacturing', 'Healthcare', 'Retail'],
+      companySize: ['Medium', 'Large'],
+      geoLocations: ['North America', 'Europe', 'Asia Pacific']
+    },
+    differentiators: [
+      'Integration with Extreme management platforms',
+      'Cloud management options',
+      'Strong wireless network integration',
+      'Good IoT device profiling',
+      'Campus network focus'
+    ]
+  },
+  
+  'foxpass': {
+    name: 'Foxpass',
+    shortName: 'Foxpass',
+    logoUrl: './img/vendors/foxpass.png',
+    cloudNative: true,
+    architecture: 'cloud',
+    deployment: {
+      timeToValue: 3,
+      complexity: 'Low',
+      requiresHardware: false,
+      requiresAgents: false,
+      remoteWorkSupport: true,
+      cloudManaged: true
+    },
+    costs: {
+      pricing: 'subscription',
+      licensePerDevice: 20,
+      hardware: 0,
+      implementation: 20000,
+      maintenance: 0,
+      yearlySubscription: 80000,
+      personnel: 50000,
+      training: 5000,
+      tco3Year: 270000
+    },
+    security: {
+      zeroTrust: 70,
+      deviceAuth: 75,
+      riskAssessment: 60,
+      remediationSpeed: 25,
+      complianceCoverage: 65,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: false,
+      automatedResponse: false
+    },
+    compliance: {
+      pciDss: 70,
+      hipaa: 65,
+      gdpr: 70,
+      nist: 60,
+      iso27001: 65,
+      sox: 60,
+      cmmc: 60,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 60, details: {identify: 60, protect: 70, detect: 60, respond: 55, recover: 55}},
+        {name: 'PCI DSS', coverage: 70},
+        {name: 'HIPAA', coverage: 65},
+        {name: 'GDPR', coverage: 70},
+        {name: 'ISO 27001', coverage: 65},
+        {name: 'SOX', coverage: 60}
+      ]
+    },
+    features: {
+      byod: true,
+      iot: false,
+      wireless: true,
+      wired: true,
+      vpn: true,
+      cloudIntegration: true,
+      legacyDevices: false,
+      remoteUsers: true,
+      mdm: false,
+      siem: false,
+      sso: true,
+      api: true,
+      automatedProvisioning: true,
+      dashboards: true,
+      customReporting: false,
+      userPortal: true
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: true,
+      aws: true,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: false,
+      siem: false,
+      ticketing: false,
+      cmdb: false
+    },
+    technical: {
+      maxDevices: '10,000+',
+      performanceImpact: 'Minimal',
+      scalability: 'Good',
+      reliability: 99.9,
+      redundancy: 'Built-in',
+      disasterRecovery: 'Automatic',
+      updateFrequency: 'Continuous'
+    },
+    customers: {
+      industries: ['Technology', 'Education', 'Retail', 'Services'],
+      companySize: ['Small', 'Medium'],
+      geoLocations: ['North America', 'Europe']
+    },
+    differentiators: [
+      'Cloud-based RADIUS and LDAP',
+      'Simple deployment and management',
+      'Developer-friendly approach',
+      'API-first architecture',
+      'Affordable for smaller organizations'
+    ]
+  },
+  
+  'arista': {
+    name: 'Arista CloudVision',
+    shortName: 'Arista',
+    logoUrl: './img/vendors/arista.png',
+    cloudNative: false,
+    architecture: 'hybrid',
+    deployment: {
+      timeToValue: 45,
+      complexity: 'Moderate',
+      requiresHardware: true,
+      requiresAgents: false,
+      remoteWorkSupport: false,
+      cloudManaged: true
+    },
+    costs: {
+      pricing: 'hybrid',
+      licensePerDevice: 35,
+      hardware: 50000,
+      implementation: 45000,
+      maintenance: 35000,
+      yearlySubscription: 70000,
+      personnel: 110000,
+      training: 10000,
+      tco3Year: 320000
+    },
+    security: {
+      zeroTrust: 65,
+      deviceAuth: 75,
+      riskAssessment: 70,
+      remediationSpeed: 30,
+      complianceCoverage: 70,
+      mfa: true,
+      certificateSupport: true,
+      encryptionLevel: 'AES-256',
+      continuousMonitoring: true,
+      automatedResponse: false
+    },
+    compliance: {
+      pciDss: 75,
+      hipaa: 70,
+      gdpr: 75,
+      nist: 70,
+      iso27001: 75,
+      sox: 70,
+      cmmc: 70,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 70, details: {identify: 70, protect: 75, detect: 70, respond: 65, recover: 65}},
+        {name: 'PCI DSS', coverage: 75},
+        {name: 'HIPAA', coverage: 70},
+        {name: 'GDPR', coverage: 75},
+        {name: 'ISO 27001', coverage: 75},
+        {name: 'SOX', coverage: 70}
+      ]
+    },
+    features: {
+      byod: true,
+      iot: true,
+      wireless: true,
+      wired: true,
+      vpn: false,
+      cloudIntegration: true,
+      legacyDevices: true,
+      remoteUsers: false,
+      mdm: false,
+      siem: true,
+      sso: true,
+      api: true,
+      automatedProvisioning: true,
+      dashboards: true,
+      customReporting: true,
+      userPortal: false
+    },
+    integration: {
+      azure: true,
+      googleWorkspace: false,
+      aws: true,
+      activedirectory: true,
+      ldap: true,
+      radius: true,
+      mdm: false,
+      siem: true,
+      ticketing: false,
+      cmdb: false
+    },
+    technical: {
+      maxDevices: '40,000+',
+      performanceImpact: 'Low',
+      scalability: 'Good',
+      reliability: 99.8,
+      redundancy: 'Available',
+      disasterRecovery: 'Available',
+      updateFrequency: 'Quarterly'
+    },
+    customers: {
+      industries: ['Financial Services', 'Technology', 'Cloud Providers', 'Healthcare'],
+      companySize: ['Large', 'Enterprise'],
+      geoLocations: ['North America', 'Europe', 'Asia Pacific']
+    },
+    differentiators: [
+      'Strong integration with Arista networks',
+      'Good for data center environments',
+      'Cognitive network management',
+      'Network telemetry and analytics',
+      'Streaming network state information'
+    ]
+  },
+  
+  'no-nac': {
+    name: 'No NAC Solution',
+    shortName: 'No NAC',
+    logoUrl: './img/vendors/no-nac.png',
+    cloudNative: false,
+    architecture: 'none',
+    deployment: {
+      timeToValue: 0,
+      complexity: 'None',
+      requiresHardware: false,
+      requiresAgents: false,
+      remoteWorkSupport: false,
+      cloudManaged: false
+    },
+    costs: {
+      pricing: 'none',
+      licensePerDevice: 0,
+      hardware: 0,
+      implementation: 0,
+      maintenance: 0,
+      yearlySubscription: 0,
+      personnel: 0,
+      training: 0,
+      tco3Year: 0
+    },
+    security: {
+      zeroTrust: 0,
+      deviceAuth: 0,
+      riskAssessment: 0,
+      remediationSpeed: 120,
+      complianceCoverage: 0,
+      mfa: false,
+      certificateSupport: false,
+      encryptionLevel: 'None',
+      continuousMonitoring: false,
+      automatedResponse: false
+    },
+    compliance: {
+      pciDss: 0,
+      hipaa: 0,
+      gdpr: 0,
+      nist: 0,
+      iso27001: 0,
+      sox: 0,
+      cmmc: 0,
+      frameworks: [
+        {name: 'NIST CSF', coverage: 0, details: {identify: 0, protect: 0, detect: 0, respond: 0, recover: 0}},
+        {name: 'PCI DSS', coverage: 0},
+        {name: 'HIPAA', coverage: 0},
+        {name: 'GDPR', coverage: 0},
+        {name: 'ISO 27001', coverage: 0},
+        {name: 'SOX', coverage: 0}
+      ]
+    },
+    features: {
+      byod: false,
+      iot: false,
+      wireless: false,
+      wired: false,
+      vpn: false,
+      cloudIntegration: false,
+      legacyDevices: false,
+      remoteUsers: false,
+      mdm: false,
+      siem: false,
+      sso: false,
+      api: false,
+      automatedProvisioning: false,
+      dashboards: false,
+      customReporting: false,
+      userPortal: false
+    },
+    integration: {
+      azure: false,
+      googleWorkspace: false,
+      aws: false,
+      activedirectory: false,
+      ldap: false,
+      radius: false,
+      mdm: false,
+      siem: false,
+      ticketing: false,
+      cmdb: false
+    },
+    technical: {
+      maxDevices: 'N/A',
+      performanceImpact: 'None',
+      scalability: 'N/A',
+      reliability: 0,
+      redundancy: 'None',
+      disasterRecovery: 'None',
+      updateFrequency: 'N/A'
+    },
+    customers: {
+      industries: ['Various'],
+      companySize: ['Small'],
+      geoLocations: ['Various']
+    },
+    differentiators: [
+      'No upfront costs',
+      'No implementation time',
+      'No ongoing maintenance',
+      'No training required',
+      'High security risk'
+    ]
   }
 };
 
@@ -692,191 +1334,8 @@ const COMPLIANCE_FRAMEWORKS = {
         subcategories: ['Recovery Planning', 'Improvements', 'Communications']
       }
     ]
-  },
-  'pci-dss': {
-    name: 'Payment Card Industry Data Security Standard',
-    shortName: 'PCI DSS',
-    description: 'The Payment Card Industry Data Security Standard (PCI DSS) is an information security standard for organizations that handle branded credit cards from the major card schemes.',
-    version: '4.0',
-    categories: [
-      {id: 'secure-network', name: 'Build and Maintain a Secure Network'},
-      {id: 'protect-data', name: 'Protect Cardholder Data'},
-      {id: 'vulnerability-mgmt', name: 'Maintain a Vulnerability Management Program'},
-      {id: 'access-control', name: 'Implement Strong Access Control Measures'},
-      {id: 'monitoring', name: 'Regularly Monitor and Test Networks'},
-      {id: 'policy', name: 'Maintain an Information Security Policy'}
-    ]
-  },
-  'hipaa': {
-    name: 'Health Insurance Portability and Accountability Act',
-    shortName: 'HIPAA',
-    description: 'The Health Insurance Portability and Accountability Act (HIPAA) sets the standard for protecting sensitive patient data.',
-    version: '2023',
-    categories: [
-      {id: 'privacy', name: 'Privacy Rule'},
-      {id: 'security', name: 'Security Rule'},
-      {id: 'breach', name: 'Breach Notification Rule'},
-      {id: 'enforcement', name: 'Enforcement Rule'}
-    ]
-  },
-  'gdpr': {
-    name: 'General Data Protection Regulation',
-    shortName: 'GDPR',
-    description: 'The General Data Protection Regulation (GDPR) is a regulation in EU law on data protection and privacy for all individuals within the European Union and the European Economic Area.',
-    version: '2018',
-    categories: [
-      {id: 'lawfulness', name: 'Lawfulness, Fairness, and Transparency'},
-      {id: 'purpose', name: 'Purpose Limitation'},
-      {id: 'minimization', name: 'Data Minimization'},
-      {id: 'accuracy', name: 'Accuracy'},
-      {id: 'storage', name: 'Storage Limitation'},
-      {id: 'integrity', name: 'Integrity and Confidentiality'},
-      {id: 'accountability', name: 'Accountability'}
-    ]
-  },
-  'iso27001': {
-    name: 'ISO/IEC 27001 - Information Security Management',
-    shortName: 'ISO 27001',
-    description: 'ISO/IEC 27001 is an international standard on how to manage information security.',
-    version: '2022',
-    categories: [
-      {id: 'security-policy', name: 'Information Security Policies'},
-      {id: 'organization', name: 'Organization of Information Security'},
-      {id: 'human', name: 'Human Resource Security'},
-      {id: 'asset', name: 'Asset Management'},
-      {id: 'access', name: 'Access Control'},
-      {id: 'cryptography', name: 'Cryptography'},
-      {id: 'physical', name: 'Physical and Environmental Security'},
-      {id: 'operations', name: 'Operations Security'},
-      {id: 'communications', name: 'Communications Security'},
-      {id: 'acquisition', name: 'System Acquisition, Development and Maintenance'}
-    ]
   }
 };
 
 // Make it globally available
 window.COMPLIANCE_FRAMEWORKS = COMPLIANCE_FRAMEWORKS;
-
-/**
- * Industry Data
- * Contains information specific to different industries
- */
-const INDUSTRY_DATA = {
-  'healthcare': {
-    name: 'Healthcare',
-    key_regulations: ['HIPAA', 'HITRUST', 'FDA', 'GDPR'],
-    avg_breach_cost: 10100000,
-    security_priorities: ['Patient Data Protection', 'Medical Device Security', 'Regulatory Compliance', 'Zero Trust'],
-    statistics: {
-      breach_likelihood: 0.32,
-      devices_per_bed: 15,
-      iot_percentage: 0.65,
-      average_recovery_time: 236
-    },
-    recommended_vendors: ['portnox', 'cisco', 'forescout'],
-    use_cases: [
-      'Medical device security and inventory',
-      'Clinical workstation protection',
-      'Patient data privacy compliance',
-      'Remote clinician access'
-    ]
-  },
-  'finance': {
-    name: 'Financial Services',
-    key_regulations: ['PCI DSS', 'SOX', 'GLBA', 'GDPR', 'NY-DFS'],
-    avg_breach_cost: 15000000,
-    security_priorities: ['Fraud Prevention', 'Data Protection', 'Continuous Monitoring', 'Zero Trust'],
-    statistics: {
-      breach_likelihood: 0.38,
-      employee_devices: 2.3,
-      iot_percentage: 0.35,
-      average_recovery_time: 185
-    },
-    recommended_vendors: ['portnox', 'cisco', 'aruba'],
-    use_cases: [
-      'Trading floor security',
-      'Mobile banking employee security',
-      'Financial data protection',
-      'Regulatory compliance'
-    ]
-  },
-  'manufacturing': {
-    name: 'Manufacturing',
-    key_regulations: ['NIST CSF', 'IEC 62443', 'CMMC', 'GDPR'],
-    avg_breach_cost: 8200000,
-    security_priorities: ['OT Security', 'IP Protection', 'Supply Chain', 'Zero Trust'],
-    statistics: {
-      breach_likelihood: 0.28,
-      ot_it_ratio: 2.8,
-      iot_percentage: 0.78,
-      average_recovery_time: 265
-    },
-    recommended_vendors: ['portnox', 'forescout', 'fortinac'],
-    use_cases: [
-      'OT/IT convergence security',
-      'Production line device protection',
-      'Supply chain access management',
-      'Legacy systems integration'
-    ]
-  },
-  'retail': {
-    name: 'Retail',
-    key_regulations: ['PCI DSS', 'CCPA', 'GDPR'],
-    avg_breach_cost: 6500000,
-    security_priorities: ['Payment Security', 'Customer Data', 'IoT Security', 'Zero Trust'],
-    statistics: {
-      breach_likelihood: 0.32,
-      pos_devices_ratio: 5.3,
-      iot_percentage: 0.62,
-      average_recovery_time: 210
-    },
-    recommended_vendors: ['portnox', 'aruba', 'fortinac'],
-    use_cases: [
-      'POS terminal security',
-      'In-store digital experience protection',
-      'Customer data privacy',
-      'Inventory system access'
-    ]
-  },
-  'government': {
-    name: 'Government',
-    key_regulations: ['FISMA', 'FedRAMP', 'CMMC', 'NIST SP 800-53'],
-    avg_breach_cost: 12300000,
-    security_priorities: ['Critical Infrastructure', 'Citizen Data', 'Zero Trust', 'Compliance'],
-    statistics: {
-      breach_likelihood: 0.40,
-      classified_systems: 0.21,
-      iot_percentage: 0.38,
-      average_recovery_time: 287
-    },
-    recommended_vendors: ['portnox', 'cisco', 'forescout'],
-    use_cases: [
-      'Secure government facility access',
-      'Classified and unclassified network separation',
-      'BYOD for government employees',
-      'Contractor and visitor management'
-    ]
-  },
-  'education': {
-    name: 'Education',
-    key_regulations: ['FERPA', 'COPPA', 'GDPR', 'HIPAA'],
-    avg_breach_cost: 4800000,
-    security_priorities: ['Student Data Protection', 'Research Security', 'Open Network Security', 'Zero Trust'],
-    statistics: {
-      breach_likelihood: 0.35,
-      student_devices: 3.2,
-      iot_percentage: 0.52,
-      average_recovery_time: 195
-    },
-    recommended_vendors: ['portnox', 'aruba', 'juniper'],
-    use_cases: [
-      'BYOD for students and faculty',
-      'Research network protection',
-      'Campus-wide access control',
-      'Student data privacy'
-    ]
-  }
-};
-
-// Make it globally available
-window.INDUSTRY_DATA = INDUSTRY_DATA;
