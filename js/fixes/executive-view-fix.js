@@ -1,59 +1,74 @@
 /**
  * Executive View Fix for Portnox Total Cost Analyzer
- * Ensures proper initialization and rendering of Executive View
+ * Ensures proper initialization of the Executive View
  */
 
-console.log("Applying executive view fix...");
-
-document.addEventListener('DOMContentLoaded', function() {
-  // Create executive view panel if it doesn't exist
-  if (!document.querySelector('.view-panel[data-view="executive"]')) {
-    console.log("Creating executive view panel");
-    const contentWrapper = document.querySelector('.content-area .content-wrapper');
-    
-    if (contentWrapper) {
-      const execPanel = document.createElement('div');
-      execPanel.className = 'view-panel';
-      execPanel.setAttribute('data-view', 'executive');
-      
-      // Add necessary tabs
-      execPanel.innerHTML = `
-        <div class="results-tabs">
-          <button class="results-tab active" data-panel="executive-summary">Executive Summary</button>
-          <button class="results-tab" data-panel="executive-roi">TCO & ROI</button>
-          <button class="results-tab" data-panel="executive-security">Security Impact</button>
-          <button class="results-tab" data-panel="executive-compliance">Compliance</button>
-          <button class="results-tab" data-panel="executive-comparison">Vendor Comparison</button>
-        </div>
-        
-        <div id="executive-summary" class="results-panel active">
-          <!-- Content will be added by executive-view.js -->
-        </div>
-        
-        <div id="executive-roi" class="results-panel">
-          <!-- Content will be added by executive-view.js -->
-        </div>
-        
-        <div id="executive-security" class="results-panel">
-          <!-- Content will be added by executive-view.js -->
-        </div>
-        
-        <div id="executive-compliance" class="results-panel">
-          <!-- Content will be added by executive-view.js -->
-        </div>
-        
-        <div id="executive-comparison" class="results-panel">
-          <!-- Content will be added by executive-view.js -->
-        </div>
-      `;
-      
-      contentWrapper.appendChild(execPanel);
-    }
+(function() {
+  console.log("Applying Executive View fix...");
+  
+  // Wait for DOM content to be loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    fixExecutiveView();
+  });
+  
+  // If DOM already loaded, fix it now
+  if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    fixExecutiveView();
   }
   
-  // Re-initialize executive view if it failed earlier
-  if (window.executiveView && !window.executiveView.initialized) {
-    console.log("Re-initializing executive view");
-    window.executiveView.init();
+  function fixExecutiveView() {
+    // Check if executiveView is available
+    if (!window.executiveView) {
+      console.error("executiveView object not found");
+      return;
+    }
+    
+    // Find the executive view panel
+    let viewPanel = document.querySelector('.view-panel[data-view="executive"]');
+    
+    // If not found, look for the panel by ID
+    if (!viewPanel) {
+      viewPanel = document.getElementById('executive-view');
+    }
+    
+    // If still not found, create it
+    if (!viewPanel) {
+      console.log("Creating executive view panel...");
+      viewPanel = document.createElement('div');
+      viewPanel.className = 'view-panel';
+      viewPanel.id = 'executive-view';
+      viewPanel.dataset.view = 'executive';
+      
+      // Find content area to append to
+      const contentArea = document.querySelector('.content-wrapper');
+      if (contentArea) {
+        contentArea.appendChild(viewPanel);
+      } else {
+        console.error("Content area not found");
+        return;
+      }
+    }
+    
+    // Reinitialize the executive view with the correct container
+    if (!window.executiveView.initialized) {
+      console.log("Reinitializing executive view...");
+      const result = window.executiveView.init('executive');
+      
+      if (result) {
+        console.log("Executive view initialized successfully");
+      } else {
+        console.error("Failed to initialize executive view");
+      }
+    } else {
+      console.log("Executive view already initialized");
+    }
+    
+    // If charts are not visible, refresh them
+    console.log("Refreshing executive charts...");
+    if (window.executiveView.refreshChartsInPanel) {
+      window.executiveView.refreshChartsInPanel('executive-summary');
+    }
   }
-});
+})();
+
+console.log("Executive view fix script loaded");
