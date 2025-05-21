@@ -1167,7 +1167,7 @@ class ZeroTrustUI {
       series: series,
       xaxis: { categories: categories.map(cat => this.formatCapabilityName(cat)) },
       yaxis: { 
-        labels: { formatter: (val) => ' + this.formatCurrency(val) }
+        labels: { formatter: (val) => "$" + this.formatCurrency(val) }
       },
       colors: ['#1a5a96', '#e74c3c', '#f39c12', '#2ecc71', '#9b59b6'],
       title: { text: 'Cost Component Breakdown' }
@@ -1215,7 +1215,7 @@ class ZeroTrustUI {
         categories: Array.from({length: this.configuration.analysisPeriod}, (_, i) => `Year ${i + 1}`)
       },
       yaxis: { 
-        labels: { formatter: (val) => ' + this.formatCurrency(val) }
+        labels: { formatter: (val) => "$" + this.formatCurrency(val) }
       },
       colors: ['#1a5a96', '#e74c3c', '#f39c12', '#2ecc71', '#9b59b6'],
       title: { text: 'Cumulative Cost Over Time' }
