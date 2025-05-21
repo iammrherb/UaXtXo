@@ -1,5 +1,8 @@
 /* Import enhanced layout CSS */
 @import url("enhanced-comparison.css");
+@import url("executive-view-enhanced.css");
+@import url("notifications.css");
+@import url("enhanced-banner.css");
 @import url("enhanced-layout.css");
 /**
  * Main Stylesheet for Portnox Total Cost Analyzer
