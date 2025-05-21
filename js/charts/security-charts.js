@@ -4,112 +4,53 @@
  */
 
 const SecurityCharts = {
-  renderNistFrameworkChart: function(containerId, data) {
-    if (!window.ApexCharts) {
-      console.error("ApexCharts library not available");
-      return;
-    }
-    
-    const element = document.getElementById(containerId);
-    if (!element) {
-      console.error(`Container element ${containerId} not found`);
-      return;
-    }
-    
-    // Use default data if none provided
-    if (!data) {
-      data = {
-        portnox: {
-          identify: 95,
-          protect: 90,
-          detect: 95,
-          respond: 92,
-          recover: 88
-        },
-        competitors: {
-          identify: 75,
-          protect: 72,
-          detect: 70,
-          respond: 68,
-          recover: 65
-        }
-      };
-    }
+  init: function() {
+    console.log("Initializing security charts module");
+    this.renderNistFrameworkChart();
+    this.renderBreachImpactChart();
+    this.renderSecurityFrameworksChart();
+    this.renderThreatModelChart();
+    this.renderIndustryBreachChart();
+  },
+  
+  renderNistFrameworkChart: function() {
+    const chartElement = document.getElementById('nist-framework-chart');
+    if (!chartElement || !window.ApexCharts) return;
     
     const options = {
       series: [
         {
           name: 'Portnox Cloud',
-          data: [
-            data.portnox.identify,
-            data.portnox.protect,
-            data.portnox.detect,
-            data.portnox.respond,
-            data.portnox.recover
-          ]
+          data: [95, 92, 96, 94, 90]
         },
         {
           name: 'Industry Average',
-          data: [
-            data.competitors.identify,
-            data.competitors.protect,
-            data.competitors.detect,
-            data.competitors.respond,
-            data.competitors.recover
-          ]
+          data: [70, 65, 72, 68, 62]
         }
       ],
       chart: {
         type: 'radar',
         height: 350,
-        fontFamily: '"Nunito", sans-serif',
         toolbar: {
           show: true,
           tools: {
             download: true
           }
-        },
-        dropShadow: {
-          enabled: true,
-          blur: 1,
-          left: 1,
-          top: 1
         }
       },
-      colors: ['#1a5a96', '#e74c3c'],
       stroke: {
         width: 2
       },
       fill: {
-        opacity: 0.2
+        opacity: 0.1
       },
       markers: {
-        size: 4,
-        hover: {
-          size: 6
-        }
-      },
-      title: {
-        text: 'NIST Cybersecurity Framework Coverage',
-        style: {
-          fontSize: '18px',
-          fontWeight: 600
-        },
-        offsetY: 10
+        size: 4
       },
       xaxis: {
-        categories: ['Identify', 'Protect', 'Detect', 'Respond', 'Recover'],
-        labels: {
-          style: {
-            fontSize: '12px'
-          }
-        }
+        categories: ['Identify', 'Protect', 'Detect', 'Respond', 'Recover']
       },
-      yaxis: {
-        max: 100,
-        min: 0,
-        show: false
-      },
+      colors: [ChartConfig.colors.primary, ChartConfig.colors.warning],
       tooltip: {
         y: {
           formatter: function(val) {
@@ -119,217 +60,268 @@ const SecurityCharts = {
       }
     };
     
-    // Clear any existing chart
-    element.innerHTML = '';
-    
-    // Create and render the chart
-    const chart = new ApexCharts(element, options);
+    const chart = new ApexCharts(chartElement, options);
     chart.render();
   },
   
-  renderBreachImpactChart: function(containerId, data) {
-    if (!window.ApexCharts) {
-      console.error("ApexCharts library not available");
-      return;
-    }
-    
-    const element = document.getElementById(containerId);
-    if (!element) {
-      console.error(`Container element ${containerId} not found`);
-      return;
-    }
-    
-    // Use default data if none provided
-    if (!data) {
-      data = {
-        categories: ['No NAC Solution', 'Traditional NAC', 'Portnox Cloud'],
-        avgBreachCost: [4350000, 1525000, 650000],
-        avgResponseTime: [280, 72, 15]
-      };
-    }
+  renderBreachImpactChart: function() {
+    const chartElement = document.getElementById('breach-impact-chart');
+    if (!chartElement || !window.ApexCharts) return;
     
     const options = {
       series: [
         {
-          name: 'Average Data Breach Cost',
+          name: 'Average Breach Cost',
           type: 'column',
-          data: data.avgBreachCost
+          data: [4350000, 1525000, 650000]
         },
         {
-          name: 'Avg. Response Time (Hours)',
+          name: 'Response Time (Hours)',
           type: 'line',
-          data: data.avgResponseTime
+          data: [280, 72, 5]
         }
       ],
       chart: {
         height: 350,
         type: 'line',
-        fontFamily: '"Nunito", sans-serif',
         toolbar: {
-          show: true,
-          tools: {
-            download: true
-          }
-        },
-        animations: {
-          enabled: true,
-          easing: 'easeinout',
-          speed: 800,
-          dynamicAnimation: {
-            enabled: true,
-            speed: 350
-          }
+          show: true
         }
       },
       stroke: {
-        width: [0, 4],
-        curve: 'smooth'
-      },
-      plotOptions: {
-        bar: {
-          columnWidth: '50%',
-          borderRadius: 5
-        }
-      },
-      fill: {
-        opacity: [0.85, 1],
-        gradient: {
-          inverseColors: false,
-          shade: 'light',
-          type: "vertical",
-          opacityFrom: 0.85,
-          opacityTo: 0.55,
-          stops: [0, 100, 100, 100]
-        }
-      },
-      markers: {
-        size: 6
+        width: [0, 4]
       },
       xaxis: {
-        categories: data.categories,
-        labels: {
-          style: {
-            fontSize: '12px'
-          }
-        }
+        categories: ['No NAC', 'Traditional NAC', 'Portnox Cloud']
       },
       yaxis: [
         {
           title: {
-            text: 'Breach Cost ($)',
-            style: {
-              fontSize: '14px',
-              fontWeight: 500
-            }
+            text: 'Breach Cost ($)'
           },
           labels: {
             formatter: function(val) {
-              return '$' + Math.round(val / 1000000) + 'M';
+              return '$' + Math.round(val/1000000) + 'M';
             }
           }
         },
         {
           opposite: true,
           title: {
-            text: 'Response Time (Hours)',
-            style: {
-              fontSize: '14px',
-              fontWeight: 500
-            }
-          },
-          labels: {
-            formatter: function(val) {
-              return Math.round(val) + ' hrs';
-            }
+            text: 'Response Time (Hours)'
           }
         }
       ],
-      colors: ['#e74c3c', '#1a5a96'],
-      legend: {
-        position: 'top',
-        horizontalAlign: 'right'
-      },
-      annotations: {
-        points: [
-          {
-            x: 'Portnox Cloud',
-            y: 650000,
-            marker: {
-              size: 6,
-              fillColor: '#27ae60',
-              strokeColor: '#fff',
-              strokeWidth: 2
-            },
-            label: {
-              text: 'Lowest Breach Cost',
-              borderColor: '#27ae60',
-              style: {
-                background: '#27ae60',
-                color: '#fff',
-                fontSize: '12px',
-                fontWeight: 600
-              },
-              offsetY: -30
-            }
-          },
-          {
-            x: 'Portnox Cloud',
-            y: 15,
-            seriesIndex: 1,
-            marker: {
-              size: 6,
-              fillColor: '#27ae60',
-              strokeColor: '#fff',
-              strokeWidth: 2
-            },
-            label: {
-              text: 'Fastest Response',
-              borderColor: '#27ae60',
-              style: {
-                background: '#27ae60',
-                color: '#fff',
-                fontSize: '12px',
-                fontWeight: 600
-              },
-              offsetY: 15
-            }
-          }
-        ]
-      },
-      tooltip: {
-        shared: true,
-        intersect: false,
-        y: [{
-          formatter: function(y) {
-            if (typeof y !== "undefined") {
-              return "$" + y.toLocaleString();
-            }
-            return y;
-          }
-        }, {
-          formatter: function(y) {
-            if (typeof y !== "undefined") {
-              return y.toFixed(0) + " hours";
-            }
-            return y;
-          }
-        }]
+      colors: [ChartConfig.colors.danger, ChartConfig.colors.primary],
+      dataLabels: {
+        enabled: false
       }
     };
     
-    // Clear any existing chart
-    element.innerHTML = '';
-    
-    // Create and render the chart
-    const chart = new ApexCharts(element, options);
+    const chart = new ApexCharts(chartElement, options);
     chart.render();
   },
   
-  initializeCharts: function() {
-    this.renderNistFrameworkChart('nist-framework-chart');
-    this.renderBreachImpactChart('breach-impact-chart');
+  renderSecurityFrameworksChart: function() {
+    const chartElement = document.getElementById('security-frameworks-chart');
+    if (!chartElement || !window.ApexCharts) return;
+    
+    const options = {
+      series: [
+        {
+          name: 'Portnox Cloud',
+          data: [95, 92, 94, 90, 93, 96, 95, 94]
+        },
+        {
+          name: 'Industry Average',
+          data: [72, 68, 70, 65, 69, 58, 72, 62]
+        }
+      ],
+      chart: {
+        type: 'bar',
+        height: 350,
+        toolbar: {
+          show: true
+        }
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '55%',
+          borderRadius: 4
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      xaxis: {
+        categories: ['HIPAA', 'PCI DSS', 'NIST CSF', 'GDPR', 'ISO 27001', 'CMMC', 'SOX', 'GLBA']
+      },
+      yaxis: {
+        title: {
+          text: 'Coverage (%)'
+        }
+      },
+      colors: [ChartConfig.colors.primary, ChartConfig.colors.warning],
+      tooltip: {
+        y: {
+          formatter: function(val) {
+            return val + '%';
+          }
+        }
+      }
+    };
+    
+    const chart = new ApexCharts(chartElement, options);
+    chart.render();
+  },
+  
+  renderThreatModelChart: function() {
+    const chartElement = document.getElementById('threat-model-chart');
+    if (!chartElement || !window.ApexCharts) return;
+    
+    const options = {
+      series: [
+        {
+          name: 'With Portnox',
+          data: [15, 10, 12, 8, 5, 7]
+        },
+        {
+          name: 'Without NAC',
+          data: [85, 75, 90, 65, 60, 70]
+        }
+      ],
+      chart: {
+        type: 'bar',
+        height: 350,
+        stacked: true,
+        toolbar: {
+          show: true
+        }
+      },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          dataLabels: {
+            total: {
+              enabled: true,
+              offsetX: 0
+            }
+          }
+        }
+      },
+      stroke: {
+        width: 1,
+        colors: ['#fff']
+      },
+      xaxis: {
+        categories: ['Unauthorized Access', 'Malware Propagation', 'Data Exfiltration', 'Lateral Movement', 'Shadow IT', 'Insider Threats'],
+        labels: {
+          formatter: function (val) {
+            return val + '%';
+          }
+        }
+      },
+      yaxis: {
+        title: {
+          text: 'Risk Level'
+        }
+      },
+      tooltip: {
+        y: {
+          formatter: function (val) {
+            return val + '%';
+          }
+        }
+      },
+      fill: {
+        opacity: 1
+      },
+      legend: {
+        position: 'top',
+        horizontalAlign: 'left',
+        offsetX: 40
+      },
+      colors: [ChartConfig.colors.primary, ChartConfig.colors.danger]
+    };
+    
+    const chart = new ApexCharts(chartElement, options);
+    chart.render();
+  },
+  
+  renderIndustryBreachChart: function() {
+    const chartElement = document.getElementById('industry-breach-chart');
+    if (!chartElement || !window.ApexCharts) return;
+    
+    const options = {
+      series: [{
+        name: 'Average Breach Cost',
+        data: [9230000, 5970000, 3280000, 4740000, 8750000, 3580000, 4650000, 5850000]
+      }],
+      chart: {
+        type: 'bar',
+        height: 350,
+        toolbar: {
+          show: true
+        }
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '55%',
+          distributed: true,
+          borderRadius: 4
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      legend: {
+        show: false
+      },
+      xaxis: {
+        categories: ['Healthcare', 'Financial', 'Retail', 'Manufacturing', 'Government', 'Education', 'Energy', 'Insurance'],
+        labels: {
+          style: {
+            fontSize: '12px'
+          }
+        }
+      },
+      yaxis: {
+        title: {
+          text: 'Breach Cost ($)'
+        },
+        labels: {
+          formatter: function(val) {
+            return '$' + Math.round(val/1000000) + 'M';
+          }
+        }
+      },
+      colors: [
+        ChartConfig.colors.primary,
+        ChartConfig.colors.secondary,
+        ChartConfig.colors.highlight,
+        ChartConfig.colors.warning,
+        ChartConfig.colors.danger,
+        '#9b59b6',
+        '#2980b9',
+        '#f39c12'
+      ]
+    };
+    
+    const chart = new ApexCharts(chartElement, options);
+    chart.render();
   }
 };
 
-// Make it globally available
+// Initialize charts when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.ApexCharts) {
+    SecurityCharts.init();
+  } else {
+    console.error('ApexCharts library not loaded');
+  }
+});
+
+// Make SecurityCharts available globally
 window.SecurityCharts = SecurityCharts;

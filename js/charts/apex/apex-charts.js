@@ -1,30 +1,87 @@
 /**
  * ApexCharts Integration for Portnox Total Cost Analyzer
- * Provides chart rendering functions for the application
+ * Provides chart rendering utilities for all views
  */
 
 const ApexChartsManager = {
-  renderTcoComparisonChart: function(containerId, data) {
-    if (!window.ApexCharts) {
-      console.error("ApexCharts library not available");
-      return;
+  init: function() {
+    console.log("Initializing ApexCharts Manager");
+    this.setupDefaultConfig();
+    this.renderInitialCharts();
+  },
+  
+  setupDefaultConfig: function() {
+    // Set global ApexCharts options
+    if (window.ApexCharts) {
+      window.ApexCharts.defaultOptions = {
+        fontFamily: 'Nunito, sans-serif',
+        foreColor: '#333',
+        tooltip: {
+          enabled: true,
+          theme: document.body.classList.contains('dark-mode') ? 'dark' : 'light'
+        },
+        chart: {
+          animations: {
+            enabled: true,
+            easing: 'easeinout',
+            speed: 800,
+            animateGradually: {
+              enabled: true,
+              delay: 150
+            },
+            dynamicAnimation: {
+              enabled: true,
+              speed: 350
+            }
+          },
+          toolbar: {
+            show: true,
+            tools: {
+              download: true,
+              selection: false,
+              zoom: false,
+              zoomin: false,
+              zoomout: false,
+              pan: false,
+              reset: false
+            }
+          }
+        }
+      };
     }
+  },
+  
+  renderInitialCharts: function() {
+    // Executive summary charts
+    this.renderTcoComparisonChart();
+    this.renderCumulativeCostChart();
     
-    const element = document.getElementById(containerId);
-    if (!element) {
-      console.error(`Container element ${containerId} not found`);
-      return;
-    }
+    // Ensure charts are updated when calculate button is clicked
+    const calculateBtns = document.querySelectorAll('#calculate-btn, #calculate-btn-header');
+    calculateBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        setTimeout(() => {
+          this.updateAllCharts();
+        }, 1000); // Allow time for calculations to complete
+      });
+    });
+  },
+  
+  renderTcoComparisonChart: function() {
+    const chartElement = document.getElementById('tco-comparison-chart');
+    if (!chartElement || !window.ApexCharts) return;
     
-    // Use data from calculation if available, otherwise use demo data
-    if (!data) {
-      data = this.getDemoData();
-    }
+    // Use available vendor data or fallback
+    const vendorData = window.VENDORS || {
+      'portnox': { name: 'Portnox Cloud', tco: 245000 },
+      'cisco': { name: 'Cisco ISE', tco: 520000 },
+      'aruba': { name: 'Aruba', tco: 480000 }
+    };
     
     // Extract data for chart
-    const vendors = Object.keys(data);
-    const tcoValues = vendors.map(id => data[id].tco);
-    const vendorNames = vendors.map(id => data[id].name);
+    const vendors = Object.keys(vendorData).slice(0, 5);
+    const vendorNames = vendors.map(id => vendorData[id].name);
+    const tcoValues = vendors.map(id => vendorData[id].tco);
     
     const options = {
       series: [{
@@ -33,65 +90,27 @@ const ApexChartsManager = {
       }],
       chart: {
         type: 'bar',
-        height: 350,
-        fontFamily: '"Nunito", sans-serif',
-        toolbar: {
-          show: true,
-          tools: {
-            download: true
-          }
-        },
-        animations: {
-          enabled: true,
-          easing: 'easeinout',
-          speed: 800,
-          dynamicAnimation: {
-            enabled: true,
-            speed: 350
-          }
-        }
+        height: 350
       },
       plotOptions: {
         bar: {
           horizontal: false,
           columnWidth: '55%',
-          borderRadius: 8,
-          dataLabels: {
-            position: 'top'
-          }
+          borderRadius: 8
         }
       },
       dataLabels: {
         enabled: true,
         formatter: function(val) {
           return '$' + Math.round(val).toLocaleString();
-        },
-        offsetY: -20,
-        style: {
-          fontSize: '12px',
-          colors: ["#304758"]
         }
-      },
-      stroke: {
-        show: true,
-        width: 2,
-        colors: ['transparent']
       },
       xaxis: {
-        categories: vendorNames,
-        labels: {
-          style: {
-            fontSize: '12px'
-          }
-        }
+        categories: vendorNames
       },
       yaxis: {
         title: {
-          text: 'Total Cost ($)',
-          style: {
-            fontSize: '14px',
-            fontWeight: 500
-          }
+          text: 'Total Cost ($)'
         },
         labels: {
           formatter: function(val) {
@@ -99,193 +118,48 @@ const ApexChartsManager = {
           }
         }
       },
-      fill: {
-        opacity: 1,
-        type: 'gradient',
-        gradient: {
-          shade: 'light',
-          type: "vertical",
-          shadeIntensity: 0.25,
-          gradientToColors: undefined,
-          inverseColors: true,
-          opacityFrom: 1,
-          opacityTo: 0.85,
-          stops: [50, 100]
-        }
-      },
-      colors: ['#1a5a96', '#e74c3c', '#e67e22', '#f39c12', '#2ecc71', '#3498db', '#9b59b6', '#34495e', '#16a085', '#27ae60'],
-      tooltip: {
-        y: {
-          formatter: function(val) {
-            return '$' + val.toLocaleString();
-          }
-        }
-      },
-      annotations: {
-        points: [{
-          x: vendorNames[0],
-          y: tcoValues[0],
-          marker: {
-            size: 6,
-            fillColor: '#27ae60',
-            strokeColor: '#fff',
-            strokeWidth: 2
-          },
-          label: {
-            text: 'Best Value',
-            borderColor: '#27ae60',
-            style: {
-              background: '#27ae60',
-              color: '#fff',
-              fontSize: '12px',
-              fontWeight: 600
-            },
-            offsetY: -15
-          }
-        }]
-      }
+      colors: ['#1a5a96', '#e74c3c', '#e67e22', '#f39c12', '#2ecc71']
     };
-
-    // Clear any existing chart
-    element.innerHTML = '';
     
-    // Create and render the chart
-    const chart = new ApexCharts(element, options);
+    const chart = new ApexCharts(chartElement, options);
     chart.render();
   },
   
-  renderCumulativeCostChart: function(containerId, data) {
-    if (!window.ApexCharts) {
-      console.error("ApexCharts library not available");
-      return;
-    }
+  renderCumulativeCostChart: function() {
+    const chartElement = document.getElementById('cumulative-cost-chart');
+    if (!chartElement || !window.ApexCharts) return;
     
-    const element = document.getElementById(containerId);
-    if (!element) {
-      console.error(`Container element ${containerId} not found`);
-      return;
-    }
-    
-    // Use data from calculation if available, otherwise use demo data
-    if (!data) {
-      data = this.getDemoData();
-    }
-    
-    // Sample data for cumulative costs over 3 years
     const years = ['Initial', 'Year 1', 'Year 2', 'Year 3'];
     
-    // Generate cumulative costs for vendors
-    const seriesData = [];
-    
-    // Take only first 4 vendors for clarity
-    const vendors = Object.keys(data).slice(0, 4);
-    
-    vendors.forEach(vendorId => {
-      const vendor = data[vendorId];
-      
-      // Calculate initial cost (implementation + hardware)
-      const initialCost = vendor.implementationCost + (vendor.hardware || 0);
-      
-      // Calculate annual cost (subscription/maintenance + personnel)
-      const annualCost = (vendor.subscription || 0) + (vendor.maintenance || 0) + vendor.personnel;
-      
-      // Generate cumulative costs
-      const costs = [
-        initialCost,
-        initialCost + annualCost,
-        initialCost + (annualCost * 2),
-        initialCost + (annualCost * 3)
-      ];
-      
-      seriesData.push({
-        name: vendor.name,
-        data: costs
-      });
-    });
-    
     const options = {
-      series: seriesData,
+      series: [
+        {
+          name: 'Portnox Cloud',
+          data: [20000, 100000, 170000, 245000]
+        },
+        {
+          name: 'Cisco ISE',
+          data: [215000, 350000, 450000, 520000]
+        },
+        {
+          name: 'Aruba ClearPass',
+          data: [175000, 280000, 380000, 480000]
+        }
+      ],
       chart: {
         height: 350,
-        type: 'line',
-        fontFamily: '"Nunito", sans-serif',
-        dropShadow: {
-          enabled: true,
-          color: '#000',
-          top: 18,
-          left: 7,
-          blur: 10,
-          opacity: 0.2
-        },
-        toolbar: {
-          show: true,
-          tools: {
-            download: true
-          }
-        },
-        animations: {
-          enabled: true,
-          easing: 'easeinout',
-          speed: 800,
-          dynamicAnimation: {
-            enabled: true,
-            speed: 350
-          }
-        }
-      },
-      colors: ['#1a5a96', '#e74c3c', '#e67e22', '#f39c12'],
-      dataLabels: {
-        enabled: true,
-        formatter: function(val) {
-          return '$' + Math.round(val / 1000) + 'K';
-        },
-        background: {
-          enabled: true,
-          foreColor: '#fff',
-          padding: 4,
-          borderRadius: 2,
-          borderWidth: 1,
-          borderColor: '#fff',
-          opacity: 0.9,
-          dropShadow: {
-            enabled: false
-          }
-        }
+        type: 'line'
       },
       stroke: {
         curve: 'smooth',
         width: 3
       },
-      grid: {
-        borderColor: '#e7e7e7',
-        row: {
-          colors: ['#f3f3f3', 'transparent'],
-          opacity: 0.5
-        }
-      },
-      markers: {
-        size: 6,
-        hover: {
-          size: 8
-        }
-      },
       xaxis: {
-        categories: years,
-        title: {
-          text: 'Timeline',
-          style: {
-            fontSize: '14px',
-            fontWeight: 500
-          }
-        }
+        categories: years
       },
       yaxis: {
         title: {
-          text: 'Cumulative Cost ($)',
-          style: {
-            fontSize: '14px',
-            fontWeight: 500
-          }
+          text: 'Cumulative Cost ($)'
         },
         labels: {
           formatter: function(val) {
@@ -293,77 +167,35 @@ const ApexChartsManager = {
           }
         }
       },
-      legend: {
-        position: 'top',
-        horizontalAlign: 'right',
-        floating: true,
-        offsetY: -25,
-        offsetX: -5
-      },
-      tooltip: {
-        y: {
-          formatter: function(val) {
-            return '$' + val.toLocaleString();
-          }
-        }
-      }
+      colors: ['#1a5a96', '#e74c3c', '#e67e22']
     };
     
-    // Clear any existing chart
-    element.innerHTML = '';
-    
-    // Create and render the chart
-    const chart = new ApexCharts(element, options);
+    const chart = new ApexCharts(chartElement, options);
     chart.render();
   },
   
-  getDemoData: function() {
-    // This is only used if real vendor data is not available
-    return {
-      'portnox': {
-        name: 'Portnox Cloud',
-        tco: 245000,
-        implementationCost: 15000,
-        hardware: 0,
-        maintenance: 12500,
-        subscription: 172000,
-        personnel: 25000
-      },
-      'cisco': {
-        name: 'Cisco ISE',
-        tco: 520000,
-        implementationCost: 85000,
-        hardware: 130000,
-        maintenance: 98000,
-        subscription: 0,
-        personnel: 200000
-      },
-      'aruba': {
-        name: 'Aruba ClearPass',
-        tco: 480000,
-        implementationCost: 65000,
-        hardware: 110000,
-        maintenance: 85000,
-        subscription: 0,
-        personnel: 175000
-      },
-      'forescout': {
-        name: 'Forescout',
-        tco: 430000,
-        implementationCost: 75000,
-        hardware: 100000,
-        maintenance: 75000,
-        subscription: 0,
-        personnel: 150000
-      }
-    };
-  },
-  
-  initializeCharts: function() {
-    this.renderTcoComparisonChart('tco-comparison-chart');
-    this.renderCumulativeCostChart('cumulative-cost-chart');
+  updateAllCharts: function() {
+    console.log("Updating all charts with new data");
+    
+    // Re-render all charts with current data
+    this.renderTcoComparisonChart();
+    this.renderCumulativeCostChart();
+    
+    // Update security charts if they exist
+    if (window.SecurityCharts) {
+      window.SecurityCharts.init();
+    }
   }
 };
 
-// Make it globally available
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.ApexCharts) {
+    ApexChartsManager.init();
+  } else {
+    console.error("ApexCharts library not loaded");
+  }
+});
+
+// Make ApexChartsManager available globally
 window.ApexChartsManager = ApexChartsManager;
