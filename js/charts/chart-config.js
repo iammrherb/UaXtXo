@@ -1,6 +1,6 @@
 /**
  * Chart Configuration for Portnox Total Cost Analyzer
- * Defines common settings for all charts
+ * Provides centralized configuration for all charts
  */
 
 const ChartConfig = {
@@ -8,70 +8,97 @@ const ChartConfig = {
     primary: '#1a5a96',
     secondary: '#0d4275',
     highlight: '#27ae60',
-    warning: '#e67e22',
-    danger: '#e74c3c',
-    neutral: '#7f8c8d',
-    vendors: {
-      portnox: '#1a5a96',
-      cisco: '#e74c3c',
-      aruba: '#e67e22',
-      forescout: '#f39c12',
-      fortinac: '#3498db',
-      juniper: '#9b59b6',
-      securew2: '#2ecc71',
-      microsoft: '#34495e',
-      arista: '#16a085',
-      foxpass: '#d35400'
-    }
+    warning: '#e74c3c',
+    neutral: '#3498db',
+    chart: [
+      '#1a5a96', // Portnox Blue
+      '#e74c3c', // Cisco Red
+      '#e67e22', // Aruba Orange
+      '#f39c12', // Forescout Amber
+      '#2ecc71', // FortiNAC Green
+      '#3498db', // Juniper Blue
+      '#9b59b6', // SecureW2 Purple
+      '#34495e', // Microsoft Navy
+      '#16a085', // Arista Teal
+      '#27ae60'  // Foxpass Green
+    ]
   },
+  
   fonts: {
-    family: 'Nunito, sans-serif',
-    size: {
-      small: '10px',
-      default: '12px',
-      medium: '14px',
-      large: '16px',
-      title: '18px'
-    },
-    weight: {
-      normal: 400,
-      medium: 500,
-      semibold: 600,
-      bold: 700
+    family: '"Nunito", sans-serif',
+    sizes: {
+      title: '18px',
+      subtitle: '14px',
+      axis: '12px',
+      tooltip: '12px'
     }
   },
-  animation: {
-    enabled: true,
-    duration: 800,
-    easing: 'easeinout'
-  },
-  tooltip: {
-    enabled: true,
-    shared: true,
-    intersect: false,
-    formatter: {
-      currency: function(val) {
-        return '$' + val.toLocaleString();
-      },
-      percentage: function(val) {
-        return val + '%';
-      },
-      time: function(val) {
-        return val + ' days';
+  
+  defaultOptions: {
+    animation: {
+      enabled: true,
+      easing: 'easeinout',
+      speed: 800,
+      dynamicAnimation: {
+        enabled: true,
+        speed: 350
+      }
+    },
+    toolbar: {
+      show: true,
+      tools: {
+        download: true,
+        selection: false,
+        zoom: false,
+        zoomin: false,
+        zoomout: false,
+        pan: false,
+        reset: false
       }
     }
   },
-  getVendorColor: function(vendorId) {
-    return this.colors.vendors[vendorId] || this.colors.neutral;
-  },
-  getLegendStyle: function() {
-    return {
-      fontFamily: this.fonts.family,
-      fontSize: this.fonts.size.default,
-      fontWeight: this.fonts.weight.medium
+  
+  // Get colors for vendor IDs
+  getVendorColor: function(vendorId, opacity = 1) {
+    // Map vendor IDs to color indexes
+    const vendorColorMap = {
+      'portnox': 0,
+      'cisco': 1,
+      'aruba': 2,
+      'forescout': 3,
+      'fortinac': 4,
+      'juniper': 5,
+      'securew2': 6,
+      'microsoft': 7,
+      'arista': 8,
+      'foxpass': 9
     };
+    
+    const colorIndex = vendorColorMap[vendorId] !== undefined ? vendorColorMap[vendorId] : 0;
+    const color = this.colors.chart[colorIndex];
+    
+    // If opacity is not 1, convert to rgba
+    if (opacity < 1) {
+      const hex = color.replace('#', '');
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
+    
+    return color;
+  },
+  
+  // Format currency values
+  formatCurrency: function(value) {
+    return '$' + value.toLocaleString();
+  },
+  
+  // Format percentage values
+  formatPercentage: function(value) {
+    return value + '%';
   }
 };
 
-// Make chart config available globally
+// Make it globally available
 window.ChartConfig = ChartConfig;
