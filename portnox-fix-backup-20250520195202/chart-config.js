@@ -4,7 +4,7 @@
  */
 
 // Global chart colors
-const PORTNOX_CHART_COLORS = {
+const CHART_COLORS = {
   primary: '#1a5a96',
   primaryLight: 'rgba(26, 90, 150, 0.2)',
   primaryDark: '#0d4275',
@@ -29,10 +29,10 @@ const PORTNOX_CHART_COLORS = {
 };
 
 // Font settings
-const PORTNOX_CHART_FONT_FAMILY = 'Nunito, sans-serif';
+const CHART_FONT_FAMILY = 'Nunito, sans-serif';
 
 // Animation settings
-const PORTNOX_CHART_ANIMATIONS = {
+const CHART_ANIMATIONS = {
   enabled: true,
   easing: 'easeinout',
   speed: 800,
@@ -47,7 +47,7 @@ const PORTNOX_CHART_ANIMATIONS = {
 };
 
 // Common chart options for ApexCharts
-const PORTNOX_APEX_COMMON_OPTIONS = {
+const APEX_COMMON_OPTIONS = {
   chart: {
     fontFamily: CHART_FONT_FAMILY,
     toolbar: {
@@ -84,7 +84,7 @@ const PORTNOX_APEX_COMMON_OPTIONS = {
 };
 
 // Dark mode overrides for ApexCharts
-const PORTNOX_APEX_DARK_MODE_OVERRIDES = {
+const APEX_DARK_MODE_OVERRIDES = {
   chart: {
     foreColor: 'rgba(255, 255, 255, 0.8)'
   },

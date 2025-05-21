@@ -3,7 +3,7 @@
  * Provides advanced visualizations using D3.js
  */
 
-class PortnoxD3Manager {
+class D3Manager {
   constructor() {
     this.charts = {};
     this.colors = {
@@ -666,4 +666,4 @@ class PortnoxD3Manager {
 }
 
 // Create global instance
-window.d3Manager = new PortnoxD3Manager();
+window.d3Manager = new D3Manager();
