@@ -177,13 +177,16 @@ class TabNavigator {
         container.classList.add('active');
       } else {
         container.classList.remove('active');
+# Continue with the enhanced tab-navigator-enhanced.js file
+cat >> ./js/components/tab-navigator-enhanced.js << 'EOF'
+        container.classList.remove('active');
       }
     });
-    
+
     // Activate the current subtab for this main tab
     this.activateSubTab(tabName, this.activeSubTabs[tabName]);
   }
-  
+
   /**
    * Activate a subtab
    */
@@ -193,9 +196,9 @@ class TabNavigator {
       console.error("Invalid tab combination: " + parentTab + "/" + tabName);
       return;
     }
-    
+
     this.activeSubTabs[parentTab] = tabName;
-    
+
     // Update active subtab UI
     const subTabs = document.querySelectorAll('.sub-tab');
     subTabs.forEach(tab => {
@@ -205,21 +208,21 @@ class TabNavigator {
         tab.classList.remove('active');
       }
     });
-    
+
     // Show appropriate view content
     this.showViewContent(parentTab, tabName);
   }
-  
+
   /**
    * Show appropriate view content
    */
   showViewContent(mainTab, subTab) {
     const viewId = mainTab + "-" + subTab;
-    
+
     // Hide all views
     const views = document.querySelectorAll('.view-content');
     views.forEach(view => view.classList.remove('active'));
-    
+
     // Show selected view
     const targetView = document.getElementById(viewId);
     if (targetView) {
@@ -228,40 +231,40 @@ class TabNavigator {
       // Create view if it doesn't exist
       this.createViewContent(mainTab, subTab);
     }
-    
+
     // Refresh charts if needed
     this.refreshChartsInView(mainTab, subTab);
   }
-  
+
   /**
    * Create view content
    */
   createViewContent(mainTab, subTab) {
     const viewId = mainTab + "-" + subTab;
     const viewContainer = document.querySelector('.view-container');
-    
+
     if (!viewContainer) {
       console.error('View container not found');
       return;
     }
-    
+
     // Create view content
     const viewContent = document.createElement('div');
     viewContent.id = viewId;
     viewContent.className = 'view-content active';
-    
+
     // Add appropriate content based on the view
     viewContent.innerHTML = this.getViewTemplate(mainTab, subTab);
-    
+
     viewContainer.appendChild(viewContent);
-    
+
     // Initialize charts for this view
     this.initializeChartsForView(mainTab, subTab);
-    
+
     // Initialize other components for this view
     this.initializeComponentsForView(mainTab, subTab);
   }
-  
+
   /**
    * Get view template
    */
