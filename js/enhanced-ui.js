@@ -938,7 +938,7 @@ class ZeroTrustUI {
           const vendor = vendors[vendorId];
           const cost = vendor?.breakdown[category] || 0;
           const isLowest = this.isLowestCost(category, vendorId, vendors);
-          return `<td class="${isLowest ? 'highlight-cell' : ''}">${cost > 0 ? ' + this.formatCurrency(cost) : 'Included'}</td>`;
+          return `<td class="${isLowest ? 'highlight-cell' : ''}">${cost > 0 ? "$" + this.formatCurrency(cost) : "Included"}</td>`;
         }).join('')}
       </tr>`;
       return row;
