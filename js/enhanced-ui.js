@@ -491,7 +491,9 @@ class ZeroTrustUI {
     try {
       switch (this.currentView) {
         case "executive":
-          viewContent.innerHTML = this.renderExecutiveView();
+          const executiveHTML = this.renderExecutiveView();
+          console.log("🎯 Executive HTML:", executiveHTML);
+          viewContent.innerHTML = executiveHTML;
           break;
         case "financial":
           viewContent.innerHTML = this.renderFinancialView();
