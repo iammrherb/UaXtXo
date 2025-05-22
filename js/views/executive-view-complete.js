@@ -1265,7 +1265,7 @@ class ExecutiveViewComplete {
             
           }
         },
-        colors: vendors.map(v => v.color)
+
       },
       tooltip: {
         custom: function({ series, seriesIndex, dataPointIndex, w }) {
