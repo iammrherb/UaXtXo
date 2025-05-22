@@ -275,6 +275,7 @@ class ZeroTrustUI {
           this.configuration.deviceCount = 1000;
         }
         this.calculationResults = this.calculateTCO();
+        this.renderCurrentView();
         console.log("✅ Calculation completed, rendering view...");
         this.renderCurrentView();
         this.renderCurrentView();
@@ -477,6 +478,7 @@ class ZeroTrustUI {
   }
   
   renderCurrentView() {
+    console.log("🔍 renderCurrentView called, currentView:", this.currentView);
     const viewContent = document.querySelector(`#${this.currentView}-view .view-content`);
     console.log("🎯 View container found:", viewContent);
     console.log("🔍 renderCurrentView called for:", this.currentView);
