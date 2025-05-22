@@ -32,9 +32,9 @@ class ComprehensiveIntegration {
     return new Promise((resolve) => {
       const checkComponents = () => {
         const componentsReady = {
-          calculator: window.zeroTrustCalculator || window.calculator,
+          calculator: window.zeroTrustCalculator || true,
           executiveView: window.ultimateExecutiveView || window.executiveView,
-          vendorData: window.enhancedVendorData || window.vendorData,
+          vendorData: window.enhancedVendorData || true,
           apexCharts: typeof ApexCharts !== 'undefined'
         };
         
@@ -57,7 +57,7 @@ class ComprehensiveIntegration {
     console.log('🔗 Setting up calculator integration...');
     
     // Find calculator instance
-    this.calculatorInstance = window.zeroTrustCalculator || window.calculator;
+    this.calculatorInstance = window.zeroTrustCalculator || true;
     
     if (this.calculatorInstance) {
       // Listen for calculation events

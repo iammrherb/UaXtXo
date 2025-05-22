@@ -1785,12 +1785,12 @@ class UltimateExecutiveView {
           return `
             <div class="custom-tooltip">
               <div class="tooltip-header">
-                <img src="${vendor.logo}" alt="${vendor.name}" class="tooltip-logo">
-                <span>${vendor.name}</span>
+                <img src="${v.logo}" alt="${v.name}" class="tooltip-logo">
+                <span>${v.name}</span>
               </div>
               <div class="tooltip-metrics">
                 <div>3-Year TCO: <strong>$${tco.toLocaleString()}</strong></div>
-                <div>Architecture: <strong>${vendor.architecture}</strong></div>
+                <div>Architecture: <strong>${v.architecture}</strong></div>
                 ${savings > 0 ? `<div style="color: #e74c3c;">Cost Premium: +${savings}%</div>` : ''}
                 ${savings < 0 ? `<div style="color: #27ae60;">Savings: ${Math.abs(savings)}%</div>` : ''}
               </div>
@@ -1893,14 +1893,14 @@ class UltimateExecutiveView {
           return `
             <div class="custom-tooltip">
               <div class="tooltip-header">
-                <img src="${vendor.logo}" alt="${vendor.name}" class="tooltip-logo">
+                <img src="${v.logo}" alt="${v.name}" class="tooltip-logo">
                 <span>${data.vendor}</span>
               </div>
               <div class="tooltip-metrics">
                 <div>ROI: <strong>${data.y}%</strong></div>
                 <div>Payback: <strong>${data.x} months</strong></div>
-                <div>3-Year TCO: <strong>$${vendor.tco3Year.toLocaleString()}</strong></div>
-                <div>Architecture: <strong>${vendor.architecture}</strong></div>
+                <div>3-Year TCO: <strong>$${v.tco3Year.toLocaleString()}</strong></div>
+                <div>Architecture: <strong>${v.architecture}</strong></div>
               </div>
             </div>
           `;
@@ -1943,10 +1943,10 @@ class UltimateExecutiveView {
           ${vendors.map(v => `
             <th class="vendor-column">
               <div class="vendor-header-content">
-                <img src="${vendor.logo}" alt="${vendor.name}" class="vendor-logo-matrix">
+                <img src="${v.logo}" alt="${v.name}" class="vendor-logo-matrix">
                 <div class="vendor-info-matrix">
-                  <div class="vendor-name-matrix">${vendor.shortName}</div>
-                  <div class="vendor-architecture-matrix">${vendor.architecture}</div>
+                  <div class="vendor-name-matrix">${v.shortName}</div>
+                  <div class="vendor-architecture-matrix">${v.architecture}</div>
                 </div>
               </div>
             </th>
@@ -1971,11 +1971,11 @@ class UltimateExecutiveView {
                 const isOptimal = this.isOptimalValue(value, metric, vendors);
                 
                 return `
-                  <td class="metric-value-cell ${isOptimal ? 'optimal-value' : ''} ${vendor.shortName === 'Portnox' ? 'portnox-cell' : ''}">
+                  <td class="metric-value-cell ${isOptimal ? 'optimal-value' : ''} ${v.shortName === 'Portnox' ? 'portnox-cell' : ''}">
                     <div class="metric-value-content">
                       <span class="metric-value">${formattedValue}</span>
                       ${isOptimal ? '<i class="fas fa-star optimal-indicator"></i>' : ''}
-                      ${vendor.shortName === 'Portnox' ? '<i class="fas fa-crown portnox-indicator"></i>' : ''}
+                      ${v.shortName === 'Portnox' ? '<i class="fas fa-crown portnox-indicator"></i>' : ''}
                     </div>
                   </td>
                 `;
@@ -2283,14 +2283,14 @@ class UltimateExecutiveView {
   
   getVendorMetricValue(vendor, metricKey) {
     const keyMap = {
-      tco3Year: vendor.tco3Year,
-      roi3Year: vendor.roi3Year,
-      paybackMonths: vendor.paybackMonths,
-      implementationDays: vendor.implementationDays,
-      fte: vendor.fte,
-      securityScore: vendor.security?.zeroTrust || vendor.securityScore,
-      complianceScore: vendor.complianceScore,
-      architecture: vendor.architecture
+      tco3Year: v.tco3Year,
+      roi3Year: v.roi3Year,
+      paybackMonths: v.paybackMonths,
+      implementationDays: v.implementationDays,
+      fte: v.fte,
+      securityScore: v.security?.zeroTrust || v.securityScore,
+      complianceScore: v.complianceScore,
+      architecture: v.architecture
     };
     return keyMap[metricKey] || 0;
   }
