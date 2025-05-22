@@ -480,23 +480,32 @@ class ZeroTrustUI {
   renderCurrentView() {
     console.log("🔍 renderCurrentView called, currentView:", this.currentView);
     const viewContent = document.querySelector(`#${this.currentView}-view .view-content`);
+    if (!viewContent) {
+      console.warn("⚠️ View content container not found for:", this.currentView);
+      return;
+    }
     console.log("🎯 View container found:", viewContent);
     console.log("🔍 renderCurrentView called for:", this.currentView);
     console.log("🔍 calculationResults:", this.calculationResults);
     
-    switch (this.currentView) {
-      case 'executive':
-        viewContent.innerHTML = this.renderExecutiveView();
-        break;
-      case 'financial':
-        viewContent.innerHTML = this.renderFinancialView();
-        break;
-      case 'security':
-        viewContent.innerHTML = this.renderSecurityView();
-        break;
-      case 'technical':
-        viewContent.innerHTML = this.renderTechnicalView();
-        break;
+    try {
+      switch (this.currentView) {
+        case "executive":
+          viewContent.innerHTML = this.renderExecutiveView();
+          break;
+        case "financial":
+          viewContent.innerHTML = this.renderFinancialView();
+          break;
+        case "security":
+          viewContent.innerHTML = this.renderSecurityView();
+          break;
+        case "technical":
+          viewContent.innerHTML = this.renderTechnicalView();
+          break;
+      }
+    } catch (error) {
+      console.error("❌ Error rendering view:", error);
+      viewContent.innerHTML = "<div class=\"error-message\">Error loading view. Please try again.</div>";
     }
     
     // Initialize charts after content is rendered
@@ -504,106 +513,14 @@ class ZeroTrustUI {
   }
   
   renderExecutiveView() {
-    console.log("📊 Rendering executive view");
-    const { summary, vendors } = this.calculationResults;
-    const portnoxData = vendors['portnox'];
-    
-    return `
-      <div class="executive-dashboard">
-        <div class="section-banner gradient-primary">
-          <h2><i class="fas fa-chart-line"></i> Executive Summary</h2>
-          <p>Strategic analysis of Zero Trust NAC solutions and their total cost of ownership</p>
-        </div>
-        
-        <div class="metrics-grid">
-          <div class="metric-card primary">
-            <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
-            <div class="metric-title">Total Cost Savings</div>
-            <div class="metric-value">${this.formatCurrency(summary.portnoxSavings)}</div>
-            <div class="metric-description">Compared to average competitor</div>
-            <div class="metric-trend up">
-              <i class="fas fa-arrow-up"></i>
-              ${summary.savingsPercentage.toFixed(1)}% savings
-            </div>
-          </div>
-          
-          <div class="metric-card secondary">
-            <div class="card-icon"><i class="fas fa-clock"></i></div>
-            <div class="metric-title">Implementation Time</div>
-            <div class="metric-value">${portnoxData?.implementation.timeToValue || 1} Day${portnoxData?.implementation.timeToValue > 1 ? 's' : ''}</div>
-            <div class="metric-description">Time to value with Portnox</div>
-            <div class="metric-trend up">
-              <i class="fas fa-rocket"></i>
-              ${Math.round((summary.averageImplementationTime - (portnoxData?.implementation.timeToValue || 1)) / summary.averageImplementationTime * 100)}% faster
-            </div>
-          </div>
-          
-          <div class="metric-card warning">
-            <div class="card-icon"><i class="fas fa-shield-alt"></i></div>
-            <div class="metric-title">Zero Trust Score</div>
-            <div class="metric-value">${portnoxData?.zeroTrustScore || 95}%</div>
-            <div class="metric-description">Security capability rating</div>
-            <div class="metric-trend up">
-              <i class="fas fa-star"></i>
-              Industry leading
-            </div>
-          </div>
-          
-          <div class="metric-card danger">
-            <div class="card-icon"><i class="fas fa-exclamation-triangle"></i></div>
-            <div class="metric-title">Risk Reduction</div>
-            <div class="metric-value">85%</div>
-            <div class="metric-description">Breach risk mitigation</div>
-            <div class="metric-trend up">
-              <i class="fas fa-shield-check"></i>
-              High protection
-            </div>
-          </div>
-        </div>
-        
-        <div class="chart-section">
-          <div class="chart-row">
-            <div class="chart-wrapper">
-              <h3><i class="fas fa-chart-bar"></i> Total Cost of Ownership Comparison</h3>
-              <div class="chart-subtitle">3-year TCO analysis across selected vendors</div>
-              <div id="tco-comparison-chart" class="chart-placeholder">
-                <div class="chart-loading-spinner"></div>
-                <p>Loading TCO comparison...</p>
-              </div>
-            </div>
-            
-            <div class="chart-wrapper">
-              <h3><i class="fas fa-clock"></i> Implementation Timeline</h3>
-              <div class="chart-subtitle">Time to value comparison</div>
-              <div id="implementation-timeline-chart" class="chart-placeholder">
-                <div class="chart-loading-spinner"></div>
-                <p>Loading timeline...</p>
-              </div>
-            </div>
-          </div>
-          
-          <div class="chart-wrapper large-chart">
-            <h3><i class="fas fa-chart-line"></i> Cost Breakdown Analysis</h3>
-            <div class="chart-subtitle">Detailed cost component analysis by vendor</div>
-            <div id="cost-breakdown-chart" class="chart-placeholder">
-              <div class="chart-loading-spinner"></div>
-              <p>Loading cost breakdown...</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="insight-panel">
-          <h3><i class="fas fa-lightbulb"></i> Key Insights</h3>
-          <ul class="insight-list">
-            <li><strong>Significant Cost Savings:</strong> Portnox delivers ${summary.savingsPercentage.toFixed(1)}% lower TCO compared to traditional solutions</li>
-            <li><strong>Rapid Deployment:</strong> Zero infrastructure requirements enable same-day implementation</li>
-            <li><strong>Zero Trust Ready:</strong> Built-in Zero Trust architecture eliminates need for additional security tools</li>
-            <li><strong>Predictable Costs:</strong> Subscription model provides predictable OpEx with no unexpected hardware refreshes</li>
-            <li><strong>Compliance Advantage:</strong> Built-in compliance reporting reduces audit preparation time by 65%</li>
-          </ul>
-        </div>
-      </div>
-    `;
+    try {
+      console.log("📊 Rendering executive view");
+      const { summary, vendors } = this.calculationResults;
+      return "<div class=\"executive-dashboard\"><h2>Executive Dashboard</h2><p>Zero Trust TCO Analysis</p></div>";
+    } catch (error) {
+      console.error("Executive view error:", error);
+      return "<div>Error loading executive dashboard</div>";
+    }
   }
   
   renderFinancialView() {
@@ -620,7 +537,7 @@ class ZeroTrustUI {
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-title"><i class="fas fa-piggy-bank"></i> Lowest TCO</div>
-            <div class="stat-value">${this.formatCurrency(summary.lowestTCO)}</div>
+            <div class="stat-value">${this.formatCurrency(isNaN(summary.lowestTCO) ? 0 : summary.lowestTCO)}</div>
             <div class="stat-indicator positive">
               <i class="fas fa-arrow-down"></i>
               Best value option
@@ -930,7 +847,7 @@ class ZeroTrustUI {
     if (typeof value !== "number" || isNaN(value) || !isFinite(value)) {
       return "0";
     }
-    return this.formatCurrency(value);
+    return this.formatCurrency(isNaN(value) ? 0 : value);
   }
 
   formatCurrency(amount) {
@@ -970,7 +887,7 @@ class ZeroTrustUI {
           const vendor = vendors[vendorId];
           const cost = vendor?.breakdown[category] || 0;
           const isLowest = this.isLowestCost(category, vendorId, vendors);
-          return `<td class="${isLowest ? 'highlight-cell' : ''}">${cost > 0 ? "$" + this.formatCurrency(cost) : "Included"}</td>`;
+          return `<td class="${isLowest ? 'highlight-cell' : ''}">${cost > 0 ? "$" + this.formatCurrency(isNaN(cost) ? 0 : cost) : "Included"}</td>`;
         }).join('')}
       </tr>`;
       return row;
@@ -1112,24 +1029,24 @@ class ZeroTrustUI {
   
   initializeCharts() {
     // Initialize different charts based on current view
-    switch (this.currentView) {
-      case 'executive':
-        this.initializeTCOComparisonChart();
-        this.initializeImplementationTimelineChart();
-        this.initializeCostBreakdownChart();
-        break;
-      case 'financial':
-        this.initializeCostStructureChart();
-        this.initializeCumulativeCostChart();
-        break;
-      case 'security':
-        this.initializeZeroTrustRadarChart();
-        this.initializeComplianceCoverageChart();
-        break;
-      case 'technical':
-        this.initializePerformanceMetricsChart();
-        this.initializeScalabilityChart();
-        break;
+    try {
+      switch (this.currentView) {
+        case "executive":
+          viewContent.innerHTML = this.renderExecutiveView();
+          break;
+        case "financial":
+          viewContent.innerHTML = this.renderFinancialView();
+          break;
+        case "security":
+          viewContent.innerHTML = this.renderSecurityView();
+          break;
+        case "technical":
+          viewContent.innerHTML = this.renderTechnicalView();
+          break;
+      }
+    } catch (error) {
+      console.error("❌ Error rendering view:", error);
+      viewContent.innerHTML = "<div class=\"error-message\">Error loading view. Please try again.</div>";
     }
   }
   
@@ -1150,7 +1067,7 @@ class ZeroTrustUI {
       }],
       xaxis: { categories: vendors.map(v => v.name) },
       yaxis: { 
-        labels: { formatter: (val) => "$" + this.formatCurrency(val) }
+        labels: { formatter: (val) => "$" + this.formatCurrency(isNaN(val) ? 0 : val) }
       },
       colors: ['#1a5a96'],
       title: { text: '3-Year TCO Comparison' }
@@ -1199,7 +1116,7 @@ class ZeroTrustUI {
       series: series,
       xaxis: { categories: categories.map(cat => this.formatCapabilityName(cat)) },
       yaxis: { 
-        labels: { formatter: (val) => "$" + this.formatCurrency(val) }
+        labels: { formatter: (val) => "$" + this.formatCurrency(isNaN(val) ? 0 : val) }
       },
       colors: ['#1a5a96', '#e74c3c', '#f39c12', '#2ecc71', '#9b59b6'],
       title: { text: 'Cost Component Breakdown' }
@@ -1247,7 +1164,7 @@ class ZeroTrustUI {
         categories: Array.from({length: this.configuration.analysisPeriod}, (_, i) => `Year ${i + 1}`)
       },
       yaxis: { 
-        labels: { formatter: (val) => "$" + this.formatCurrency(val) }
+        labels: { formatter: (val) => "$" + this.formatCurrency(isNaN(val) ? 0 : val) }
       },
       colors: ['#1a5a96', '#e74c3c', '#f39c12', '#2ecc71', '#9b59b6'],
       title: { text: 'Cumulative Cost Over Time' }
