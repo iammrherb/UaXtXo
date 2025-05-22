@@ -1256,7 +1256,7 @@ class ExecutiveViewComplete {
       },
       markers: {
         size: 15,
-          const size = 15;
+        size: 15,
           
         },
         hover: {

@@ -516,7 +516,8 @@ class ZeroTrustUI {
   
   renderExecutiveView() {
     try {
-        console.log("🚫 Executive view rendering disabled - using ExecutiveViewComplete instead");
+        // Executive view HTML
+        html = `<div class="executive-dashboard"><h2>Executive Dashboard</h2><div class="metrics-grid"><div class="metric-card"><div class="metric-title">Total Savings</div><div class="metric-value">$0</div></div><div class="metric-card"><div class="metric-title">Time to Value</div><div class="metric-value">1 Days</div></div></div></div>`;
         </div>
         <div class="arch-type-description">${arch.description}</div>
         <div class="arch-type-vendors">
