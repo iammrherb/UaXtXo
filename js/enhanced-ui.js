@@ -483,8 +483,6 @@ class ZeroTrustUI {
     console.log("🎯 View container found:", viewContent);
     console.log("🔍 renderCurrentView called for:", this.currentView);
     console.log("🔍 calculationResults:", this.calculationResults);
-    const viewContent = document.querySelector(`#${this.currentView}-view .view-content`);
-    if (!viewContent || !this.calculationResults) return;
     
     switch (this.currentView) {
       case 'executive':
@@ -1558,3 +1556,14 @@ if (typeof window.zeroTrustUI !== 'undefined') {
     };
   }
 }
+
+// Initialize the application when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Creating ZeroTrustUI instance...');
+  window.zeroTrustUI = new ZeroTrustUI();
+  console.log('ZeroTrustUI instance created:', window.zeroTrustUI);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  window.zeroTrustUI = new ZeroTrustUI();
+});
