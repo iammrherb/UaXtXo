@@ -1853,7 +1853,7 @@ class UltimateExecutiveView {
         data: vendors.map(v => ({
           x: v.paybackMonths,
           y: v.roi3Year,
-          z: Math.max(8, Math.min(25, v.tco3Year / 20000)),
+          z: 15
           vendor: v.name,
           color: v.color
         }))
@@ -1879,14 +1879,10 @@ class UltimateExecutiveView {
         }
       },
       markers: {
-        size: function(seriesIndex, dataPointIndex, w) {
-          return w.config.series[seriesIndex].data[dataPointIndex].z;
-        },
+        size: 15,
         colors: vendors.map(v => v.color),
         hover: {
-          size: function(seriesIndex, dataPointIndex, w) {
-            return w.config.series[seriesIndex].data[dataPointIndex].z + 5;
-          }
+          size: 20
         }
       },
       tooltip: {
@@ -2489,4 +2485,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // Export for module usage
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { UltimateExecutiveView };
+}
+
+// Sync with enhanced vendor data if available
+if (window.enhancedVendorData) {
+  Object.keys(window.enhancedVendorData).forEach(vendorId => {
+    if (window.ultimateExecutiveView && window.ultimateExecutiveView.vendorConfigs[vendorId]) {
+      // Merge enhanced data
+      Object.assign(window.ultimateExecutiveView.vendorConfigs[vendorId], window.enhancedVendorData[vendorId]);
+    }
+  });
 }
