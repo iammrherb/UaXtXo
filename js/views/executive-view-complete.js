@@ -1261,7 +1261,7 @@ class ExecutiveViewComplete {
         },
         hover: {
           size: 15,
-            const size = 
+        size: 15,
             
           }
         },

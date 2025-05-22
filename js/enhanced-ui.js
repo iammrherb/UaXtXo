@@ -518,7 +518,7 @@ class ZeroTrustUI {
     try {
         // Executive view HTML
         html = `<div class="executive-dashboard"><h2>Executive Dashboard</h2><div class="metrics-grid"><div class="metric-card"><div class="metric-title">Total Savings</div><div class="metric-value">$0</div></div><div class="metric-card"><div class="metric-title">Time to Value</div><div class="metric-value">1 Days</div></div></div></div>`;
-        </div>
+        html = `<div class="executive-dashboard"><h2>Executive Dashboard</h2><div class="metrics-grid"><div class="metric-card"><div class="metric-title">Total Savings</div><div class="metric-value">$0</div></div><div class="metric-card"><div class="metric-title">Time to Value</div><div class="metric-value">1 Days</div></div></div></div>`;
         <div class="arch-type-description">${arch.description}</div>
         <div class="arch-type-vendors">
           ${arch.vendors.filter(v => this.selectedVendors.has(v)).map(vendorId => 
@@ -1005,6 +1005,7 @@ if (typeof window.zeroTrustUI !== 'undefined') {
 // Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
   console.log('Creating ZeroTrustUI instance...');
+    window.zeroTrustUI = this;
   window.zeroTrustUI = new ZeroTrustUI();
   console.log('ZeroTrustUI instance created:', window.zeroTrustUI);
 });
