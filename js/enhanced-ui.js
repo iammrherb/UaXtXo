@@ -1032,21 +1032,9 @@ class ZeroTrustUI {
     try {
       switch (this.currentView) {
         case "executive":
-          viewContent.innerHTML = this.renderExecutiveView();
-          break;
-        case "financial":
-          viewContent.innerHTML = this.renderFinancialView();
-          break;
-        case "security":
-          viewContent.innerHTML = this.renderSecurityView();
-          break;
-        case "technical":
-          viewContent.innerHTML = this.renderTechnicalView();
-          break;
-      }
+    }
     } catch (error) {
-      console.error("❌ Error rendering view:", error);
-      viewContent.innerHTML = "<div class=\"error-message\">Error loading view. Please try again.</div>";
+      console.error("Error:", error);
     }
   }
   
