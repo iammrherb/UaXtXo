@@ -1854,7 +1854,7 @@ class UltimateExecutiveView {
           x: v.paybackMonths,
           y: v.roi3Year,
           z: 15,
-          v: v.name,
+          vendor: v.name,
           color: v.color
         }))
       }],

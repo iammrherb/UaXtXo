@@ -1853,8 +1853,8 @@ class UltimateExecutiveView {
         data: vendors.map(v => ({
           x: v.paybackMonths,
           y: v.roi3Year,
-          z: 15,
-          v: v.name,
+          z: 15
+          vendor: v.name,
           color: v.color
         }))
       }],
@@ -1940,7 +1940,7 @@ class UltimateExecutiveView {
       <thead>
         <tr>
           <th class="metric-column">Evaluation Criteria</th>
-          ${vendors.map(v => `
+          ${vendors.map(vendor => `
             <th class="vendor-column">
               <div class="vendor-header-content">
                 <img src="${vendor.logo}" alt="${vendor.name}" class="vendor-logo-matrix">
@@ -1965,7 +1965,7 @@ class UltimateExecutiveView {
                   </div>
                 </div>
               </td>
-              ${vendors.map(v => {
+              ${vendors.map(vendor => {
                 const value = this.getVendorMetricValue(vendor, metric.key);
                 const formattedValue = this.formatMetricValue(value, metric.format);
                 const isOptimal = this.isOptimalValue(value, metric, vendors);
@@ -2310,7 +2310,7 @@ class UltimateExecutiveView {
   isOptimalValue(value, metric, vendors) {
     if (metric.optimal === 'none') return false;
     
-    const allValues = vendors.map(v => 
+    const allValues = vendors.map(vendor => 
       this.getVendorMetricValue(vendor, metric.key)
     );
     

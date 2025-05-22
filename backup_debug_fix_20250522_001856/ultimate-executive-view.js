@@ -1853,7 +1853,7 @@ class UltimateExecutiveView {
         data: vendors.map(v => ({
           x: v.paybackMonths,
           y: v.roi3Year,
-          z: 15,
+          z: 15
           v: v.name,
           color: v.color
         }))
