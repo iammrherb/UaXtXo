@@ -1257,12 +1257,12 @@ class ExecutiveViewComplete {
       markers: {
         size: 15,
           const size = 15;
-          return size;
+          
         },
         hover: {
           size: 15,
-            const size = Math.max(12, Math.min(30, w.config.series[seriesIndex].data[dataPointIndex].z + 5));
-            return size;
+            const size = 
+            
           }
         },
         colors: vendors.map(v => v.color)
