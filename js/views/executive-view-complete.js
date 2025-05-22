@@ -1255,12 +1255,12 @@ class ExecutiveViewComplete {
         }
       },
       markers: {
-        size: function(seriesIndex, dataPointIndex, w) {
-          const size = Math.max(8, Math.min(25, w.config.series[seriesIndex].data[dataPointIndex].z));
+        size: 15,
+          const size = 15;
           return size;
         },
         hover: {
-          size: function(seriesIndex, dataPointIndex, w) {
+          size: 15,
             const size = Math.max(12, Math.min(30, w.config.series[seriesIndex].data[dataPointIndex].z + 5));
             return size;
           }
@@ -1812,3 +1812,115 @@ document.addEventListener('DOMContentLoaded', function() {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { ExecutiveViewComplete };
 }
+
+  /**
+   * Create compliance coverage chart (missing method)
+   */
+  createComplianceCoverageChart() {
+    const container = document.getElementById('compliance-coverage-chart');
+    if (!container || typeof ApexCharts === 'undefined') return;
+    
+    const frameworks = ['PCI-DSS', 'HIPAA', 'GDPR', 'SOX', 'NIST', 'ISO27001'];
+    const portnoxCoverage = [95, 92, 90, 88, 94, 93];
+    const industryAverage = [72, 68, 75, 65, 70, 69];
+    
+    const options = {
+      chart: {
+        type: 'bar',
+        height: 350,
+        toolbar: { show: false }
+      },
+      series: [
+        { name: 'Portnox Cloud', data: portnoxCoverage },
+        { name: 'Industry Average', data: industryAverage }
+      ],
+      xaxis: { categories: frameworks },
+      colors: ['#1a5a96', '#95a5a6']
+    };
+    
+    const chart = new ApexCharts(container, options);
+    chart.render();
+    this.chartInstances.complianceChart = chart;
+  }
+
+  /**
+   * Create market position chart (missing method)
+   */
+  createMarketPositionChart() {
+    const container = document.getElementById('market-position-chart');
+    if (!container || typeof ApexCharts === 'undefined') return;
+    
+    const vendors = Object.values(this.vendorConfigs).slice(0, 4);
+    
+    const options = {
+      chart: {
+        type: 'scatter',
+        height: 350,
+        toolbar: { show: false }
+      },
+      series: [{
+        name: 'Market Position',
+        data: vendors.map(v => ({ x: v.marketShare, y: v.customerSat, z: 20 }))
+      }],
+      xaxis: { title: { text: 'Market Share (%)' } },
+      yaxis: { title: { text: 'Customer Satisfaction' } },
+      colors: ['#1a5a96']
+    };
+    
+    const chart = new ApexCharts(container, options);
+    chart.render();
+    this.chartInstances.marketChart = chart;
+  }
+
+  /**
+   * Create risk assessment chart (missing method)
+   */
+  createRiskAssessmentChart() {
+    const container = document.getElementById('risk-assessment-chart');
+    if (!container || typeof ApexCharts === 'undefined') return;
+    
+    const vendors = Object.values(this.vendorConfigs).slice(0, 4);
+    
+    const options = {
+      chart: {
+        type: 'heatmap',
+        height: 350,
+        toolbar: { show: false }
+      },
+      series: [{
+        name: 'Risk Assessment',
+        data: vendors.map((v, i) => ({ x: v.shortName, y: 100 - v.securityScore }))
+      }],
+      colors: ['#1a5a96']
+    };
+    
+    const chart = new ApexCharts(container, options);
+    chart.render();
+    this.chartInstances.riskChart = chart;
+  }
+
+  /**
+   * Create business value chart (missing method)
+   */
+  createBusinessValueChart() {
+    const container = document.getElementById('business-value-chart');
+    if (!container || typeof ApexCharts === 'undefined') return;
+    
+    const values = [40, 30, 20, 10]; // Cost savings, productivity, risk reduction, compliance
+    const labels = ['Cost Savings', 'Productivity', 'Risk Reduction', 'Compliance'];
+    
+    const options = {
+      chart: {
+        type: 'pie',
+        height: 350,
+        toolbar: { show: false }
+      },
+      series: values,
+      labels: labels,
+      colors: ['#1a5a96', '#2ecc71', '#f39c12', '#e74c3c']
+    };
+    
+    const chart = new ApexCharts(container, options);
+    chart.render();
+    this.chartInstances.businessChart = chart;
+  }
