@@ -1266,7 +1266,6 @@ class ExecutiveViewComplete {
           }
         },
 
-      },
       tooltip: {
         custom: function({ series, seriesIndex, dataPointIndex, w }) {
           const data = w.config.series[seriesIndex].data[dataPointIndex];
