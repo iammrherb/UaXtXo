@@ -1,13 +1,26 @@
 {
   "name": "portnox-total-cost-analyzer",
-  "version": "5.0.0",
-  "description": "Comprehensive Zero Trust NAC Total Cost Analyzer",
+  "version": "1.0.0",
+  "description": "A comprehensive tool for calculating and visualizing TCO and ROI for NAC vendors",
+  "main": "index.html",
   "scripts": {
-    "start": "python -m http.server 8080",
-    "build": "echo 'No build required for static site'",
-    "update": "./comprehensive-update.sh"
+    "start": "serve",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["portnox", "nac", "zero-trust", "tco", "roi"],
+  "keywords": [
+    "portnox",
+    "tco",
+    "roi",
+    "nac",
+    "network-access-control"
+  ],
   "author": "Portnox",
-  "license": "Proprietary"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "apexcharts": "^3.41.0",
+    "d3": "^7.8.5",
+    "highcharts": "^11.1.0",
+    "lodash": "^4.17.21",
+    "serve": "^14.2.0"
+  }
 }

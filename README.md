@@ -1,55 +1,196 @@
-# Portnox Total Cost Analyzer v5.0
+# Portnox Total Cost Analyzer
 
-## Comprehensive Zero Trust NAC Solution Analysis Platform
+A comprehensive web application for calculating and visualizing the Total Cost of Ownership (TCO) and Return on Investment (ROI) for Network Access Control (NAC) solutions.
 
-### Features
+## Overview
 
-- **Real Vendor Data**: Comprehensive market research data for 11 NAC vendors
-- **Industry-Specific Analysis**: Tailored insights for 7 major industries
-- **Risk & Compliance Modeling**: Advanced threat analysis and regulatory compliance tracking
-- **Financial Analysis**: Detailed TCO, ROI, and cost-per-device calculations
-- **Executive Dashboard**: Beautiful, modern UI with interactive visualizations
-- **Cyber Insurance Calculator**: Premium estimates based on security posture
-- **Implementation Roadmap**: Detailed deployment timelines and comparisons
+The Portnox Total Cost Analyzer helps organizations compare different NAC vendors and solutions, with a focus on:
 
-### Quick Start
+- Calculating the true TCO over 3-5 years
+- Analyzing ROI and business value
+- Evaluating security and compliance benefits
+- Comparing technical features and capabilities
 
-1. Open `index.html` in a web browser
-2. Or run a local server: `python -m http.server 8080`
-3. Navigate to `http://localhost:8080`
+This tool provides multiple perspectives for different stakeholders:
 
-### Key Components
+- **Executive View**: High-level TCO, ROI, and strategic benefits
+- **Financial View**: Detailed cost breakdown and financial analysis
+- **Security View**: Security posture improvement and compliance coverage
+- **Technical View**: Feature comparison and implementation considerations
 
-- **Executive Dashboard**: Comprehensive overview with KPIs and strategic insights
-- **Financial Analysis**: Detailed cost breakdowns and projections
-- **Risk & Compliance**: Threat modeling and regulatory framework coverage
-- **Technical Comparison**: Architecture, features, and integration capabilities
-- **Implementation Roadmap**: Step-by-step deployment guidance
+## Vendors Included
 
-### Customization
+The analyzer includes data for the following NAC vendors:
 
-Click the "Customize" button in the Executive Dashboard to:
-- Set your company name
-- Configure IT budget
-- Select current NAC solution
-- Adjust device counts and industry
+- Portnox Cloud (Cloud-native NAC)
+- Cisco ISE (Enterprise NAC)
+- Aruba ClearPass (Policy manager)
+- Forescout (Device visibility)
+- FortiNAC (Fortinet NAC)
+- Juniper Mist (AI-driven NAC)
+- SecureW2 (Cloud RADIUS)
+- Microsoft NPS (Windows Server NAC)
+- Arista Agni (Network control)
+- Foxpass (Cloud RADIUS/LDAP)
+- Extreme NAC (Extreme Networks NAC)
+- No NAC (Baseline for comparison)
 
-### Export Capabilities
+## Features
 
-Generate comprehensive executive reports including:
-- Executive summary
-- Financial analysis
-- Risk assessment
-- Compliance gaps
-- Implementation recommendations
+- **Interactive Visualization**: Vibrant, animated charts using ApexCharts, Highcharts, and D3.js
+- **Comprehensive Cost Modeling**: Accounts for hardware, software, implementation, maintenance, personnel, and operational costs
+- **Risk and Compliance Analysis**: Security posture improvement and compliance coverage evaluation
+- **Flexible Configuration**: Adjust parameters for your specific organization size, industry, and requirements
+- **Multi-Stakeholder Views**: Different perspectives for executives, financial analysts, security professionals, and technical staff
+- **Export Capability**: Generate detailed PDF reports for stakeholders
 
-### Browser Support
+## Directory Structure
 
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
+```
+.
+├── css/                   # Stylesheets
+│   ├── components/        # Component-specific styles
+│   ├── themes/            # Theme-related styles
+│   └── main.css           # Main stylesheet
+├── js/                    # JavaScript files
+│   ├── core/              # Core application logic
+│   ├── models/            # Data models and calculations
+│   ├── vendors/           # Vendor-specific logic
+│   ├── charts/            # Charting implementations
+│   │   ├── apex/          # ApexCharts implementation
+│   │   ├── highcharts/    # Highcharts implementation
+│   │   └── d3/            # D3.js visualizations
+│   ├── views/             # View-specific logic
+│   └── utils/             # Utility functions
+├── data/                  # Data files
+├── img/                   # Images and icons
+│   └── vendors/           # Vendor logos
+├── docs/                  # Documentation
+├── index.html             # Main HTML file
+└── package.json           # Project dependencies
+```
 
-### Contact
+## Getting Started
 
-For questions or support, contact Portnox at support@portnox.com
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Start the development server: `npm start`
+4. Open the application in your browser at `http://localhost:5000`
+
+## Technology Stack
+
+- HTML5, CSS3, and JavaScript (ES6+)
+- Visualization libraries:
+  - ApexCharts: Modern, interactive charts
+  - Highcharts: Advanced charting capabilities
+  - D3.js: Custom, complex visualizations
+- Font Awesome: Icons and visual elements
+- Google Fonts (Nunito): Typography
+
+## License
+
+This project is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited.
+
+© 2025 Portnox Ltd. All rights reserved.
+
+## New Features
+
+### Advanced Visualization
+- Interactive heatmaps for security risk assessment
+- Radar charts for vendor capability comparison
+- Drill-down chart for breach impact analysis
+- Feature comparison matrix
+
+### Enhanced UI
+- Dark mode support with theme customization
+- Mobile responsive design for all screen sizes
+- Animated UI elements for better user experience
+- Interactive vendor cards with visual feedback
+
+### Additional Features
+- Detailed vendor comparison view
+- PDF report generation with comprehensive analysis
+- Modern, accessible UI with proper contrast and readability
+- Support for touch devices with swipe gestures
+
+## Mobile Support
+The application is now fully responsive and works on all device sizes:
+- Desktop: Full-featured experience with all charts and visualizations
+- Tablet: Optimized layout with adapting chart sizes
+- Mobile: Streamlined interface with touch-friendly controls and swipe gestures
+
+## Accessibility Features
+- Proper color contrast for all UI elements
+- Keyboard navigation support
+- Screen reader friendly markup
+- Touch-friendly controls for mobile devices
+
+## Browser Compatibility
+- Chrome: Full support
+- Firefox: Full support
+- Safari: Full support
+- Edge: Full support
+- Opera: Full support
+- Mobile browsers: Full support
+
+## Development
+To contribute to this project:
+1. Fork the repository
+2. Install dependencies: `npm install`
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+© 2025 Portnox Ltd. All Rights Reserved.
+
+## New Features
+
+### Advanced Visualization
+- Interactive heatmaps for security risk assessment
+- Radar charts for vendor capability comparison
+- Drill-down chart for breach impact analysis
+- Feature comparison matrix
+
+### Enhanced UI
+- Dark mode support with theme customization
+- Mobile responsive design for all screen sizes
+- Animated UI elements for better user experience
+- Interactive vendor cards with visual feedback
+
+### Additional Features
+- Detailed vendor comparison view
+- PDF report generation with comprehensive analysis
+- Modern, accessible UI with proper contrast and readability
+- Support for touch devices with swipe gestures
+
+## Mobile Support
+The application is now fully responsive and works on all device sizes:
+- Desktop: Full-featured experience with all charts and visualizations
+- Tablet: Optimized layout with adapting chart sizes
+- Mobile: Streamlined interface with touch-friendly controls and swipe gestures
+
+## Accessibility Features
+- Proper color contrast for all UI elements
+- Keyboard navigation support
+- Screen reader friendly markup
+- Touch-friendly controls for mobile devices
+
+## Browser Compatibility
+- Chrome: Full support
+- Firefox: Full support
+- Safari: Full support
+- Edge: Full support
+- Opera: Full support
+- Mobile browsers: Full support
+
+## Development
+To contribute to this project:
+1. Fork the repository
+2. Install dependencies: `npm install`
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+© 2025 Portnox Ltd. All Rights Reserved.

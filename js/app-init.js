@@ -1,62 +1,241 @@
 /**
- * Application Initialization
- * Loads all components in correct order
+ * Application Initialization for Portnox Total Cost Analyzer
+ * Initializes all enhanced components and ensures proper layout
  */
 
-console.log('🚀 Initializing Portnox Total Cost Analyzer...');
-
-// Load order is important
-const scripts = [
-  // Data models
-  'js/models/vendor-data-comprehensive.js',
-  'js/models/industry-compliance-data.js',
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Initializing Portnox Total Cost Analyzer with enhanced UI...');
   
-  // Components
-  'js/components/risk-threat-modeling.js',
-  'js/components/nistCsfVisualization.js',
-  'js/components/vendorComparison.js',
-  
-  // Views
-  'js/views/executive-dashboard-enhanced.js',
-  
-  // Fixes and integration
-  'js/integration/executive-integration-fixed.js'
-];
-
-function loadScript(src, callback) {
-  const script = document.createElement('script');
-  script.src = src;
-  script.onload = callback;
-  script.onerror = () => console.error(`Failed to load: ${src}`);
-  document.head.appendChild(script);
-}
-
-function loadScriptsSequentially(scripts, index = 0) {
-  if (index >= scripts.length) {
-    console.log('✅ All scripts loaded successfully');
-    initializeApplication();
-    return;
+  // Initialize sidebar manager
+  if (window.sidebarManager) {
+    window.sidebarManager.init();
+  } else {
+    console.warn('SidebarManager not found. Sidebar enhancements will not be applied.');
   }
   
-  console.log(`Loading: ${scripts[index]}`);
-  loadScript(scripts[index], () => {
-    loadScriptsSequentially(scripts, index + 1);
+  // Initialize header particles
+  if (typeof particlesJS !== 'undefined') {
+    // Initialize header particles
+    initHeaderParticles();
+  } else {
+    console.warn('ParticlesJS not found. Header particles will not be initialized.');
+  }
+  
+  // Initialize main background particles
+  if (typeof particlesJS !== 'undefined') {
+    // Initialize main background particles with reduced opacity
+    initMainBackgroundParticles();
+  }
+  
+  // Fix layout issues
+  fixLayoutIssues();
+  
+  console.log('Enhanced UI initialization complete.');
+});
+
+function initHeaderParticles() {
+  const particlesContainer = document.getElementById('particles-header');
+  if (!particlesContainer) return;
+  
+  particlesJS('particles-header', {
+    "particles": {
+      "number": {
+        "value": 30,
+        "density": {
+          "enable": true,
+          "value_area": 800
+        }
+      },
+      "color": {
+        "value": "#ffffff"
+      },
+      "shape": {
+        "type": "circle",
+        "stroke": {
+          "width": 0,
+          "color": "#000000"
+        }
+      },
+      "opacity": {
+        "value": 0.3,
+        "random": true,
+        "anim": {
+          "enable": false,
+          "speed": 1,
+          "opacity_min": 0.1,
+          "sync": false
+        }
+      },
+      "size": {
+        "value": 3,
+        "random": true,
+        "anim": {
+          "enable": false,
+          "speed": 40,
+          "size_min": 0.1,
+          "sync": false
+        }
+      },
+      "line_linked": {
+        "enable": true,
+        "distance": 150,
+        "color": "#ffffff",
+        "opacity": 0.2,
+        "width": 1
+      },
+      "move": {
+        "enable": true,
+        "speed": 2,
+        "direction": "none",
+        "random": false,
+        "straight": false,
+        "out_mode": "out",
+        "bounce": false,
+        "attract": {
+          "enable": false,
+          "rotateX": 600,
+          "rotateY": 1200
+        }
+      }
+    },
+    "interactivity": {
+      "detect_on": "canvas",
+      "events": {
+        "onhover": {
+          "enable": false
+        },
+        "onclick": {
+          "enable": false
+        },
+        "resize": true
+      }
+    },
+    "retina_detect": true
   });
 }
 
-function initializeApplication() {
-  console.log('🎯 Initializing application components...');
+function initMainBackgroundParticles() {
+  const particlesContainer = document.getElementById('particles-js');
+  if (!particlesContainer) return;
   
-  // Initialize executive dashboard
-  if (window.executiveDashboard) {
-    window.executiveDashboard.init();
-  }
-  
-  // Initialize other components as needed
-  console.log('✅ Application initialized successfully');
+  particlesJS('particles-js', {
+    "particles": {
+      "number": {
+        "value": 50,
+        "density": {
+          "enable": true,
+          "value_area": 1000
+        }
+      },
+      "color": {
+        "value": "#1a5a96"
+      },
+      "shape": {
+        "type": "circle",
+        "stroke": {
+          "width": 0,
+          "color": "#000000"
+        }
+      },
+      "opacity": {
+        "value": 0.1,  // Reduced opacity for better readability
+        "random": true,
+        "anim": {
+          "enable": false,
+          "speed": 1,
+          "opacity_min": 0.05,
+          "sync": false
+        }
+      },
+      "size": {
+        "value": 3,
+        "random": true,
+        "anim": {
+          "enable": false,
+          "speed": 40,
+          "size_min": 0.1,
+          "sync": false
+        }
+      },
+      "line_linked": {
+        "enable": true,
+        "distance": 150,
+        "color": "#1a5a96",
+        "opacity": 0.1,  // Reduced opacity for better readability
+        "width": 1
+      },
+      "move": {
+        "enable": true,
+        "speed": 1,   // Slower speed for less distraction
+        "direction": "none",
+        "random": false,
+        "straight": false,
+        "out_mode": "out",
+        "bounce": false,
+        "attract": {
+          "enable": false,
+          "rotateX": 600,
+          "rotateY": 1200
+        }
+      }
+    },
+    "interactivity": {
+      "detect_on": "canvas",
+      "events": {
+        "onhover": {
+          "enable": true,
+          "mode": "repulse"
+        },
+        "onclick": {
+          "enable": false
+        },
+        "resize": true
+      }
+    },
+    "retina_detect": true
+  });
 }
 
-// Start loading
-document.addEventListener('DOMContentLoaded', () => {
-  loadScriptsSequentially(scripts);
-});
+function fixLayoutIssues() {
+  // Make sure all config cards are expanded
+  const configCards = document.querySelectorAll('.config-card');
+  configCards.forEach(card => {
+    const content = card.querySelector('.config-card-content');
+    const toggleIcon = card.querySelector('.toggle-icon');
+    
+    if (content) {
+      content.style.display = 'block';
+      content.style.maxHeight = '100%';
+      content.style.overflow = 'visible';
+      content.style.opacity = '1';
+    }
+    
+    if (toggleIcon) {
+      toggleIcon.style.display = 'none';
+    }
+  });
+  
+  // Fix sidebar toggle button positioning
+  const sidebar = document.getElementById('sidebar');
+  const sidebarToggle = document.getElementById('sidebar-toggle');
+  
+  if (sidebar && sidebarToggle) {
+    const sidebarWidth = sidebar.offsetWidth;
+    sidebarToggle.style.left = `${sidebarWidth}px`;
+  }
+  
+  // Ensure content area is properly positioned
+  const contentArea = document.querySelector('.content-area');
+  
+  if (contentArea && sidebar) {
+    contentArea.style.marginLeft = '0';
+  }
+  
+  // Fix particles background z-index
+  const particlesBackground = document.getElementById('particles-js');
+  
+  if (particlesBackground) {
+    particlesBackground.style.zIndex = '0';
+    particlesBackground.style.pointerEvents = 'none';
+  }
+}

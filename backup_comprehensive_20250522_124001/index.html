@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero Trust Total Cost Analyzer | Portnox</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="./img/vendors/portnox-icon.png">
+
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/highcharts.js"></script>
+
+    <!-- Particle.js -->
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="./css/zero-trust-enhanced.css">
+    <link rel="stylesheet" href="./css/modern-theme.css">
+    <link rel="stylesheet" href="./css/enhanced-animations.css">
+
+    <!-- Core Scripts -->
+    <script src="./js/data/enhanced-vendor-data.js"></script>
+    <script src="./js/zero-trust-calculator.js"></script>
+    <link rel="stylesheet" href="./css/executive-enhanced-complete.css">
+    <link rel="stylesheet" href="./css/ultimate-executive.css">
+    <link rel="stylesheet" href="./css/executive-enhanced-fixed.css">
+</head>
+<body>
+    <!-- Enhanced Zero Trust Header -->
+    <header class="zero-trust-header">
+        <div id="particles-header"></div>
+        <div class="header-content">
+            <div class="header-branding">
+                <div class="portnox-logo">
+                    <img src="./img/vendors/portnox-logo.png" alt="Portnox" class="logo-image">
+                </div>
+                <div class="header-titles">
+                    <h1 class="main-title">Zero Trust Total Cost Analyzer</h1>
+                    <p class="sub-title">Multi-Vendor NAC Solution Comparison Platform</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="calculate-btn" class="header-btn primary">
+                    <i class="fas fa-calculator"></i>
+                    <span>Calculate</span>
+                </button>
+                <button id="export-btn" class="header-btn secondary">
+                    <i class="fas fa-download"></i>
+                    <span>Export</span>
+                </button>
+                <button id="refresh-btn" class="header-btn utility">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="dark-mode-toggle" class="header-btn utility">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Enhanced Sidebar -->
+        <aside id="sidebar" class="zero-trust-sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-sliders-h"></i> Configuration</h2>
+            </div>
+            
+            <div class="sidebar-content">
+                <!-- Organization Profile -->
+                <div class="config-section" id="organization-config">
+                    <div class="config-header" data-toggle="organization">
+                        <h3><i class="fas fa-building"></i> Organization Profile</h3>
+                        <i class="fas fa-chevron-up toggle-icon"></i>
+                    </div>
+                    <div class="config-content">
+                        <div class="form-group">
+                            <label for="company-size">Company Size</label>
+                            <select id="company-size" class="enhanced-select">
+                                <option value="very-small">Very Small (10-50 employees)</option>
+                                <option value="small">Small (51-250 employees)</option>
+                                <option value="medium" selected>Medium (251-1000 employees)</option>
+                                <option value="large">Large (1001-5000 employees)</option>
+                                <option value="enterprise">Enterprise (5000+ employees)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="device-count">Device Count</label>
+                            <input type="number" id="device-count" class="enhanced-input" value="1000" min="10" max="100000">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="location-count">Locations</label>
+                            <input type="number" id="location-count" class="enhanced-input" value="3" min="1" max="100">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="industry">Industry Vertical</label>
+                            <select id="industry" class="enhanced-select">
+                                <option value="healthcare">Healthcare & Life Sciences</option>
+                                <option value="finance">Financial Services & Banking</option>
+                                <option value="retail">Retail & E-commerce</option>
+                                <option value="manufacturing">Manufacturing & Industrial</option>
+                                <option value="education">Education & Research</option>
+                                <option value="government">Government & Public Sector</option>
+                                <option value="technology" selected>Technology & Software</option>
+                                <option value="energy">Energy & Utilities</option>
+                                <option value="transportation">Transportation & Logistics</option>
+                                <option value="media">Media & Entertainment</option>
+                                <option value="telecom">Telecommunications</option>
+                                <option value="insurance">Insurance</option>
+                                <option value="legal">Legal Services</option>
+                                <option value="consulting">Professional Services</option>
+                                <option value="real-estate">Real Estate</option>
+                                <option value="non-profit">Non-Profit Organization</option>
+                                <option value="aerospace">Aerospace & Defense</option>
+                                <option value="automotive">Automotive</option>
+                                <option value="pharmaceuticals">Pharmaceuticals</option>
+                                <option value="hospitality">Hospitality & Tourism</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Compliance Requirements</label>
+                            <div class="compliance-grid">
+                                <label class="compliance-item">
+                                    <input type="checkbox" value="pci-dss">
+                                    <span class="checkmark"></span>
+                                    <span class="compliance-name">PCI DSS</span>
+                                </label>
+                                <label class="compliance-item">
+                                    <input type="checkbox" value="hipaa">
+                                    <span class="checkmark"></span>
+                                    <span class="compliance-name">HIPAA</span>
+                                </label>
+                                <label class="compliance-item">
+                                    <input type="checkbox" value="gdpr">
+                                    <span class="checkmark"></span>
+                                    <span class="compliance-name">GDPR</span>
+                                </label>
+                                <label class="compliance-item">
+                                    <input type="checkbox" value="sox">
+                                    <span class="checkmark"></span>
+                                    <span class="compliance-name">SOX</span>
+                                </label>
+                                <label class="compliance-item">
+                                    <input type="checkbox" value="nist">
+                                    <span class="checkmark"></span>
+                                    <span class="compliance-name">NIST CSF</span>
+                                </label>
+                                <label class="compliance-item">
+                                    <input type="checkbox" value="iso27001">
+                                    <span class="checkmark"></span>
+                                    <span class="compliance-name">ISO 27001</span>
+                                </label>
+                                <label class="compliance-item">
+                                    <input type="checkbox" value="cmmc">
+                                    <span class="checkmark"></span>
+                                    <span class="compliance-name">CMMC</span>
+                                </label>
+                                <label class="compliance-item">
+                                    <input type="checkbox" value="fedramp">
+                                    <span class="checkmark"></span>
+                                    <span class="compliance-name">FedRAMP</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NAC Vendor Selection -->
+                <div class="config-section" id="vendor-selection">
+                    <div class="config-header" data-toggle="vendor">
+                        <h3><i class="fas fa-network-wired"></i> NAC Vendor Selection</h3>
+                        <i class="fas fa-chevron-up toggle-icon"></i>
+                    </div>
+                    <div class="config-content">
+                        <div class="vendor-grid">
+                            <div class="vendor-card selected" data-vendor="portnox">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/portnox-logo.png" alt="Portnox Cloud">
+                                </div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name">Portnox Cloud</div>
+                                    <div class="vendor-type cloud">Cloud Native</div>
+                                </div>
+                            </div>
+                            
+                            <div class="vendor-card" data-vendor="cisco">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/cisco-logo.png" alt="Cisco ISE">
+                                </div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name">Cisco ISE</div>
+                                    <div class="vendor-type on-premises">On-Premises</div>
+                                </div>
+                            </div>
+                            
+                            <div class="vendor-card" data-vendor="aruba">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/aruba-logo.png" alt="Aruba ClearPass">
+                                </div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name">Aruba ClearPass</div>
+                                    <div class="vendor-type on-premises">On-Premises</div>
+                                </div>
+                            </div>
+                            
+                            <div class="vendor-card" data-vendor="forescout">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/forescout-logo.png" alt="Forescout">
+                                </div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name">Forescout</div>
+                                    <div class="vendor-type hybrid">Hybrid</div>
+                                </div>
+                            </div>
+                            
+                            <div class="vendor-card" data-vendor="fortinac">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/fortinac-logo.png" alt="FortiNAC">
+                                </div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name">FortiNAC</div>
+                                    <div class="vendor-type hybrid">Hybrid</div>
+                                </div>
+                            </div>
+                            
+                            <div class="vendor-card" data-vendor="juniper">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/juniper-logo.png" alt="Juniper NAC">
+                                </div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name">Juniper NAC</div>
+                                    <div class="vendor-type on-premises">On-Premises</div>
+                                </div>
+                            </div>
+                            
+                            <div class="vendor-card" data-vendor="securew2">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/securew2-logo.png" alt="SecureW2">
+                                </div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name">SecureW2</div>
+                                    <div class="vendor-type cloud">Cloud</div>
+                                </div>
+                            </div>
+                            
+                            <div class="vendor-card" data-vendor="extreme">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/extreme-logo.png" alt="Extreme Networks">
+                                </div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name">Extreme Networks</div>
+                                    <div class="vendor-type hybrid">Hybrid</div>
+                                </div>
+                            </div>
+                            
+                            <div class="vendor-card" data-vendor="foxpass">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/foxpass-logo.png" alt="Foxpass">
+                                </div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name">Foxpass</div>
+                                    <div class="vendor-type cloud">Cloud</div>
+                                </div>
+                            </div>
+                            
+                            <div class="vendor-card" data-vendor="microsoft">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/microsoft-logo.png" alt="Microsoft NPS">
+                                </div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name">Microsoft NPS</div>
+                                    <div class="vendor-type on-premises">On-Premises</div>
+                                </div>
+                            </div>
+                            
+                            <div class="vendor-card" data-vendor="arista">
+                                <div class="vendor-logo">
+                                    <img src="./img/vendors/arista-logo.png" alt="Arista CloudVision">
+                                </div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name">Arista CloudVision</div>
+                                    <div class="vendor-type hybrid">Hybrid</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="vendor-summary">
+                            <div class="selection-counter">
+                                <span class="selected-count">1</span> of <span class="total-count">11</span> vendors selected
+                            </div>
+                            <button class="select-all-btn">
+                                <i class="fas fa-check-double"></i> Select All
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cost Configuration -->
+                <div class="config-section" id="cost-config">
+                    <div class="config-header" data-toggle="cost">
+                        <h3><i class="fas fa-dollar-sign"></i> Cost Parameters</h3>
+                        <i class="fas fa-chevron-up toggle-icon"></i>
+                    </div>
+                    <div class="config-content">
+                        <div class="cost-parameter">
+                            <div class="parameter-header">
+                                <label>Analysis Period</label>
+                                <span class="parameter-value" id="analysis-period-value">3 Years</span>
+                            </div>
+                            <input type="range" id="analysis-period" min="1" max="5" value="3" step="1" class="cost-slider">
+                            <div class="slider-labels">
+                                <span>1 Year</span>
+                                <span>5 Years</span>
+                            </div>
+                        </div>
+
+                        <div class="cost-parameter">
+                            <div class="parameter-header">
+                                <label>Annual FTE Cost</label>
+                                <span class="parameter-value" id="fte-cost-value">$100,000</span>
+                            </div>
+                            <input type="range" id="fte-cost" min="60000" max="200000" value="100000" step="5000" class="cost-slider">
+                            <div class="slider-labels">
+                                <span>$60K</span>
+                                <span>$200K</span>
+                            </div>
+                        </div>
+
+                        <div class="cost-parameter">
+                            <div class="parameter-header">
+                                <label>FTE Allocation (%)</label>
+                                <span class="parameter-value" id="fte-allocation-value">25%</span>
+                            </div>
+                            <input type="range" id="fte-allocation" min="10" max="100" value="25" step="5" class="cost-slider">
+                            <div class="slider-labels">
+                                <span>10%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+
+                        <div class="cost-parameter">
+                            <div class="parameter-header">
+                                <label>Downtime Cost ($/hour)</label>
+                                <span class="parameter-value" id="downtime-cost-value">$5,000</span>
+                            </div>
+                            <input type="range" id="downtime-cost" min="1000" max="50000" value="5000" step="500" class="cost-slider">
+                            <div class="slider-labels">
+                                <span>$1K</span>
+                                <span>$50K</span>
+                            </div>
+                        </div>
+
+                        <div class="cost-parameter">
+                            <div class="parameter-header">
+                                <label>Data Breach Cost</label>
+                                <span class="parameter-value" id="breach-cost-value">$4.35M</span>
+                            </div>
+                            <input type="range" id="breach-cost" min="1000000" max="10000000" value="4350000" step="100000" class="cost-slider">
+                            <div class="slider-labels">
+                                <span>$1M</span>
+                                <span>$10M</span>
+                            </div>
+                        </div>
+
+                        <div class="cost-parameter">
+                            <div class="parameter-header">
+                                <label>Implementation Risk Factor</label>
+                                <span class="parameter-value" id="risk-multiplier-value">1.0x</span>
+                            </div>
+                            <input type="range" id="risk-multiplier" min="0.5" max="3.0" value="1.0" step="0.1" class="cost-slider">
+                            <div class="slider-labels">
+                                <span>0.5x</span>
+                                <span>3.0x</span>
+                            </div>
+                        </div>
+
+                        <div class="reset-section">
+                            <button class="reset-btn">
+                                <i class="fas fa-undo"></i> Reset to Defaults
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calculate Button -->
+                <div class="sidebar-footer">
+                    <button id="main-calculate-btn" class="calculate-button">
+                        <i class="fas fa-calculator"></i>
+                        <span>Calculate Zero Trust TCO</span>
+                        <div class="button-glow"></div>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content-area">
+            <!-- Enhanced Tab Navigation -->
+            <nav class="tab-navigation">
+                <div class="main-tabs">
+                    <button class="main-tab active" data-view="executive">
+                        <div class="tab-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="tab-content">
+                            <span class="tab-title">Executive</span>
+                            <span class="tab-subtitle">Dashboard</span>
+                        </div>
+                    </button>
+                    
+                    <button class="main-tab" data-view="financial">
+                        <div class="tab-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="tab-content">
+                            <span class="tab-title">Financial</span>
+                            <span class="tab-subtitle">Analysis</span>
+                        </div>
+                    </button>
+                    
+                    <button class="main-tab" data-view="security">
+                        <div class="tab-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="tab-content">
+                            <span class="tab-title">Security</span>
+                            <span class="tab-subtitle">& Compliance</span>
+                        </div>
+                    </button>
+                    
+                    <button class="main-tab" data-view="technical">
+                        <div class="tab-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <div class="tab-content">
+                            <span class="tab-title">Technical</span>
+                            <span class="tab-subtitle">Comparison</span>
+                        </div>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- View Container -->
+            <div class="view-container">
+                <!-- Executive View -->
+                <div id="executive-view" class="view-panel active">
+                    <div class="view-content">
+                        <!-- Dynamic content will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Financial View -->
+                <div id="financial-view" class="view-panel">
+                    <div class="view-content">
+                        <!-- Dynamic content will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Security View -->
+                <div id="security-view" class="view-panel">
+                    <div class="view-content">
+                        <!-- Dynamic content will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Technical View -->
+                <div id="technical-view" class="view-panel">
+                    <div class="view-content">
+                        <!-- Dynamic content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Particles Background -->
+    <div id="particles-js"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <div class="loading-text">Calculating Zero Trust TCO...</div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="export-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Export Analysis</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="export-options">
+                    <button class="export-btn" data-format="pdf">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>PDF Report</span>
+                    </button>
+                    <button class="export-btn" data-format="excel">
+                        <i class="fas fa-file-excel"></i>
+                        <span>Excel Workbook</span>
+                    </button>
+                    <button class="export-btn" data-format="powerpoint">
+                        <i class="fas fa-file-powerpoint"></i>
+                        <span>PowerPoint</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="./js/views/executive-view-complete.js"></script>
+    <script src="./js/views/ultimate-executive-view.js"></script>
+    <script src="./js/ultimate-executive-integration.js"></script>
+    <script src="./js/fixes/event-integration-fix.js"></script>
+    <script src="./js/debug-charts.js"></script>
+    <script src="./js/integration/comprehensive-integration.js"></script>
+    <script src="./js/charts/chart-implementations.js"></script>
+    <script src="./js/debug/functionality-test.js"></script>
+    <script src="./js/fixes/calculator-integration-fix.js"></script>
+    <script src="./js/data/latest-vendor-data.js"></script>
+    <script src="./js/fixes/initialization-cleanup.js"></script>
+</body>
+</html>
