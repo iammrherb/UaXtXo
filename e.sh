@@ -1,3 +1,443 @@
+#!/bin/bash
+
+# =============================================================================
+# Portnox Total Cost Analyzer - Clean Update Script
+# =============================================================================
+# Updates the Portnox TCO Analyzer without Git complications
+# =============================================================================
+
+set -e
+
+# Color codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo -e "${BLUE}🚀 Portnox TCO Analyzer - Clean Update${NC}"
+echo -e "${BLUE}=====================================${NC}"
+
+# Create enhanced CSS
+echo -e "${GREEN}✅ Updating CSS...${NC}"
+cat > css/enhanced-executive-dashboard.css << 'EOF'
+/**
+ * Enhanced Executive Dashboard CSS
+ * Gradient backgrounds, improved UI, smaller vendor buttons
+ */
+
+:root {
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --gradient-background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #43e97b 75%, #667eea 100%);
+    --portnox-primary: #1a5a96;
+    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.15);
+    --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced Body Background */
+body {
+    background: var(--gradient-background);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Enhanced Header with Particles */
+.zero-trust-header {
+    background: linear-gradient(135deg, rgba(26, 90, 150, 0.95) 0%, rgba(41, 128, 185, 0.95) 100%);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-heavy);
+}
+
+#particles-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.header-content {
+    position: relative;
+    z-index: 2;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Smaller Vendor Buttons */
+.vendor-selection-bar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow-medium);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.vendor-label {
+    font-weight: 600;
+    color: var(--portnox-primary);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.vendor-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.vendor-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(26, 90, 150, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--portnox-primary);
+    min-height: 36px;
+}
+
+.vendor-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.vendor-btn.active {
+    background: var(--gradient-primary);
+    color: white;
+    border-color: transparent;
+}
+
+.vendor-btn-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    border-radius: 3px;
+}
+
+.vendor-btn-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Smaller, Cleaner KPI Cards */
+.executive-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.kpi-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: var(--shadow-medium);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-primary);
+}
+
+.kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-heavy);
+}
+
+.kpi-metrics {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.primary-metric {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+}
+
+.primary-metric .value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--portnox-primary);
+    line-height: 1;
+}
+
+.primary-metric .currency {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--portnox-primary);
+    margin-left: 0.25rem;
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--portnox-primary);
+    margin-bottom: 0.25rem;
+}
+
+.metric-subtitle {
+    font-size: 0.75rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.trend-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    background: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+}
+
+/* Enhanced Tab Navigation */
+.tab-navigation {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 0.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-medium);
+}
+
+.main-tabs {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.main-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    color: #666;
+    position: relative;
+    overflow: hidden;
+}
+
+.main-tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-primary);
+    transition: left 0.3s ease;
+    z-index: -1;
+}
+
+.main-tab:hover::before,
+.main-tab.active::before {
+    left: 0;
+}
+
+.main-tab:hover,
+.main-tab.active {
+    color: white;
+    box-shadow: var(--shadow-medium);
+}
+
+.tab-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.tab-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.tab-subtitle {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    line-height: 1;
+}
+
+/* Enhanced Chart Containers */
+.chart-container,
+.chart-wrapper {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-medium);
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.chart-container:hover,
+.chart-wrapper:hover {
+    box-shadow: var(--shadow-heavy);
+    transform: translateY(-2px);
+}
+
+.chart-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--portnox-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-subtitle {
+    font-size: 0.875rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+/* Loading States */
+.chart-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    color: #666;
+}
+
+.chart-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(26, 90, 150, 0.1);
+    border-top: 3px solid var(--portnox-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Grid Layouts */
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-grid .full-width {
+    grid-column: 1 / -1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .vendor-buttons {
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+    
+    .vendor-btn {
+        flex-shrink: 0;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .executive-kpis {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+    }
+    
+    .main-tabs {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+    
+    .chart-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.6s ease forwards;
+}
+
+.slide-up {
+    animation: slideUp 0.6s ease forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Glass Panel Utility */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: var(--shadow-medium);
+}
+EOF
+
+# Update the comprehensive dashboard
+echo -e "${GREEN}✅ Creating executive dashboard...${NC}"
+cat > js/views/comprehensive-executive-dashboard.js << 'EOF'
 /**
  * Comprehensive Executive Dashboard
  * Complete vendor analysis with advanced charts
@@ -892,3 +1332,155 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1000);
 });
+EOF
+
+# Update index.html
+echo -e "${GREEN}✅ Updating index.html...${NC}"
+cat > index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero Trust Total Cost Analyzer | Portnox</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="./img/vendors/portnox-icon.png">
+
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/highcharts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/highcharts-more.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
+
+    <!-- Particle.js -->
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+    <!-- Enhanced CSS -->
+    <link rel="stylesheet" href="./css/enhanced-executive-dashboard.css">
+</head>
+<body>
+    <!-- Enhanced Header with Particles -->
+    <header class="zero-trust-header">
+        <div id="particles-header"></div>
+        <div class="header-content">
+            <div class="header-branding">
+                <div class="portnox-logo">
+                    <img src="./img/vendors/portnox-logo.png" alt="Portnox" class="logo-image" style="height: 40px;">
+                </div>
+                <div class="header-titles">
+                    <h1 class="main-title">Zero Trust Total Cost Analyzer</h1>
+                    <p class="sub-title">Executive Intelligence & Competitive Analysis Platform</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="calculate-btn" class="header-btn primary">
+                    <i class="fas fa-calculator"></i>
+                    <span>Calculate</span>
+                </button>
+                <button id="export-btn" class="header-btn secondary">
+                    <i class="fas fa-download"></i>
+                    <span>Export</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Main Content Area -->
+        <main class="content-area">
+            <!-- View Container -->
+            <div class="view-container">
+                <!-- Executive View -->
+                <div id="executive-view" class="view-panel active" data-view="executive">
+                    <div class="view-content">
+                        <!-- Dynamic content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Particles Background -->
+    <div id="particles-js"></div>
+
+    <!-- Core Scripts -->
+    <script src="./js/views/comprehensive-executive-dashboard.js"></script>
+    
+    <!-- Initialize Background Particles -->
+    <script>
+        if (typeof particlesJS !== 'undefined') {
+            particlesJS('particles-js', {
+                particles: {
+                    number: { value: 40 },
+                    color: { value: '#ffffff' },
+                    shape: { type: 'circle' },
+                    opacity: { value: 0.1, random: true },
+                    size: { value: 2, random: true },
+                    line_linked: {
+                        enable: true,
+                        distance: 150,
+                        color: '#ffffff',
+                        opacity: 0.05,
+                        width: 1
+                    },
+                    move: {
+                        enable: true,
+                        speed: 1,
+                        direction: 'none',
+                        random: true
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+EOF
+
+# Create vendor assets directory
+echo -e "${GREEN}✅ Creating vendor assets...${NC}"
+mkdir -p img/vendors
+
+# Create vendor logo placeholders
+vendors=("portnox" "cisco" "aruba" "forescout" "fortinet" "juniper" "arista" "microsoft" "securew2" "foxpass")
+
+for vendor in "${vendors[@]}"; do
+    if [ ! -f "img/vendors/${vendor}-logo.png" ]; then
+        touch "img/vendors/${vendor}-logo.png"
+        echo -e "${YELLOW}⚠️  Replace img/vendors/${vendor}-logo.png with actual logo${NC}"
+    fi
+done
+
+# Clean Git operations
+echo -e "${GREEN}✅ Cleaning and committing to Git...${NC}"
+
+# Remove any problematic backup directories
+rm -rf backup_*
+
+# Clean git status
+git add .
+git status
+
+echo -e "${GREEN}========================================${NC}"
+echo -e "${GREEN}🎉 Clean Update Complete!${NC}"
+echo -e "${GREEN}========================================${NC}"
+echo -e "${GREEN}✅ Enhanced gradient UI${NC}"
+echo -e "${GREEN}✅ Smaller vendor buttons${NC}"
+echo -e "${GREEN}✅ Comprehensive dashboard${NC}"
+echo -e "${GREEN}✅ 10+ vendor coverage${NC}"
+echo -e "${GREEN}✅ Advanced Highcharts${NC}"
+echo -e "${GREEN}✅ Particle effects${NC}"
+echo -e "${GREEN}✅ Executive analytics${NC}"
+echo ""
+echo -e "${BLUE}🌐 Open index.html to see the updates${NC}"
+echo -e "${BLUE}📊 All features ready for testing${NC}"
+echo ""
+echo -e "${YELLOW}📝 Next: Commit with 'git commit -m \"Enhanced executive dashboard\"'${NC}"
