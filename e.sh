@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # =============================================================================
-# Portnox Theme Fix & JavaScript Syntax Repair
+# Zero Trust Platform Comprehensive Enhancement Script
 # =============================================================================
-# Fixes the gradient colors to Portnox branding and repairs JavaScript syntax
+# Adds comprehensive industries, compliance, cost analysis, and export features
+# WITHOUT rewriting the existing UI - only enhancing functionality
 # =============================================================================
 
 set -e
@@ -13,2725 +14,2162 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
+PURPLE='\033[0;35m'
 NC='\033[0m'
 
-echo -e "${BLUE}🔧 Portnox Theme Fix & JavaScript Repair${NC}"
-echo -e "${BLUE}======================================${NC}"
+echo -e "${BLUE}🚀 Zero Trust Platform Comprehensive Enhancement${NC}"
+echo -e "${BLUE}===============================================${NC}"
 
-# Fix CSS with proper Portnox colors
-echo -e "${GREEN}✅ Updating Portnox color scheme...${NC}"
-cat > css/executive-command-center.css << 'EOF'
+# Create enhanced data and functionality extensions
+echo -e "${GREEN}✅ Adding comprehensive industries and compliance frameworks...${NC}"
+cat > js/enhancements/comprehensive-data-enhancement.js << 'EOF'
 /**
- * Executive Command Center CSS - Portnox Theme
- * Professional Portnox branding with subtle gradients
+ * Comprehensive Data Enhancement for Zero Trust Executive Platform
+ * Extends existing platform with complete industries, compliance, and advanced features
  */
 
-:root {
-    /* Portnox Brand Colors - Professional Palette */
-    --portnox-primary: #1a5a96;
-    --portnox-secondary: #2980b9;
-    --portnox-accent: #3498db;
-    --portnox-dark: #0f3c5f;
-    --portnox-light: #e8f4f8;
+// Extend the existing platform with comprehensive data
+if (window.ZeroTrustExecutivePlatform) {
+    console.log("🔧 Applying comprehensive data enhancements...");
     
-    /* Subtle Professional Gradients */
-    --gradient-primary: linear-gradient(135deg, #1a5a96 0%, #2980b9 100%);
-    --gradient-background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    --gradient-command: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #1a5a96 100%);
-    --gradient-secondary: linear-gradient(135deg, #1a5a96 0%, #3498db 100%);
-    --gradient-success: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-    --gradient-warning: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-    --gradient-info: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    // Enhanced Industries - Comprehensive Coverage
+    const comprehensiveIndustries = {
+        'technology': {
+            name: 'Technology & Software',
+            riskMultiplier: 1.2,
+            complianceWeight: 0.9,
+            breachCost: 4350000,
+            avgDevices: 2500,
+            regulatoryRequirements: ['GDPR', 'CCPA', 'SOX', 'ISO 27001'],
+            averageDeviceCost: 65,
+            fteCostRange: [80000, 150000]
+        },
+        'healthcare': {
+            name: 'Healthcare & Life Sciences',
+            riskMultiplier: 1.8,
+            complianceWeight: 1.5,
+            breachCost: 7800000,
+            avgDevices: 1800,
+            regulatoryRequirements: ['HIPAA', 'GDPR', 'NIST CSF', 'FDA CFR 21'],
+            averageDeviceCost: 85,
+            fteCostRange: [75000, 140000]
+        },
+        'finance': {
+            name: 'Financial Services & Banking',
+            riskMultiplier: 2.0,
+            complianceWeight: 1.8,
+            breachCost: 5720000,
+            avgDevices: 3200,
+            regulatoryRequirements: ['PCI DSS', 'SOX', 'GDPR', 'NIST CSF', 'GLBA'],
+            averageDeviceCost: 95,
+            fteCostRange: [90000, 180000]
+        },
+        'government': {
+            name: 'Government & Public Sector',
+            riskMultiplier: 1.5,
+            complianceWeight: 2.0,
+            breachCost: 4100000,
+            avgDevices: 2800,
+            regulatoryRequirements: ['FedRAMP', 'FISMA', 'NIST CSF', 'FIPS 140-2'],
+            averageDeviceCost: 75,
+            fteCostRange: [70000, 130000]
+        },
+        'education': {
+            name: 'Education & Research',
+            riskMultiplier: 1.1,
+            complianceWeight: 1.2,
+            breachCost: 3200000,
+            avgDevices: 1500,
+            regulatoryRequirements: ['FERPA', 'GDPR', 'COPPA'],
+            averageDeviceCost: 45,
+            fteCostRange: [60000, 110000]
+        },
+        'retail': {
+            name: 'Retail & E-commerce',
+            riskMultiplier: 1.3,
+            complianceWeight: 1.1,
+            breachCost: 3800000,
+            avgDevices: 2200,
+            regulatoryRequirements: ['PCI DSS', 'GDPR', 'CCPA'],
+            averageDeviceCost: 55,
+            fteCostRange: [65000, 120000]
+        },
+        'manufacturing': {
+            name: 'Manufacturing & Industrial',
+            riskMultiplier: 1.4,
+            complianceWeight: 1.0,
+            breachCost: 4200000,
+            avgDevices: 1900,
+            regulatoryRequirements: ['ISO 27001', 'NIST CSF', 'IEC 62443'],
+            averageDeviceCost: 70,
+            fteCostRange: [70000, 125000]
+        },
+        'energy': {
+            name: 'Energy & Utilities',
+            riskMultiplier: 1.6,
+            complianceWeight: 1.4,
+            breachCost: 6500000,
+            avgDevices: 2600,
+            regulatoryRequirements: ['NERC CIP', 'NIST CSF', 'ISO 27001'],
+            averageDeviceCost: 80,
+            fteCostRange: [75000, 135000]
+        },
+        'telecommunications': {
+            name: 'Telecommunications',
+            riskMultiplier: 1.5,
+            complianceWeight: 1.3,
+            breachCost: 5100000,
+            avgDevices: 3500,
+            regulatoryRequirements: ['GDPR', 'CALEA', 'FCC Rules'],
+            averageDeviceCost: 90,
+            fteCostRange: [80000, 145000]
+        },
+        'aerospace': {
+            name: 'Aerospace & Defense',
+            riskMultiplier: 1.7,
+            complianceWeight: 1.9,
+            breachCost: 6200000,
+            avgDevices: 2100,
+            regulatoryRequirements: ['CMMC', 'NIST SP 800-171', 'ITAR'],
+            averageDeviceCost: 100,
+            fteCostRange: [85000, 160000]
+        },
+        'pharmaceuticals': {
+            name: 'Pharmaceuticals & Biotech',
+            riskMultiplier: 1.6,
+            complianceWeight: 1.7,
+            breachCost: 7200000,
+            avgDevices: 1600,
+            regulatoryRequirements: ['FDA CFR 21', 'HIPAA', 'GDPR', 'GxP'],
+            averageDeviceCost: 85,
+            fteCostRange: [80000, 150000]
+        },
+        'automotive': {
+            name: 'Automotive & Transportation',
+            riskMultiplier: 1.3,
+            complianceWeight: 1.1,
+            breachCost: 4600000,
+            avgDevices: 2400,
+            regulatoryRequirements: ['ISO 27001', 'UNECE WP.29', 'GDPR'],
+            averageDeviceCost: 75,
+            fteCostRange: [70000, 130000]
+        },
+        'media': {
+            name: 'Media & Entertainment',
+            riskMultiplier: 1.2,
+            complianceWeight: 0.8,
+            breachCost: 3900000,
+            avgDevices: 1800,
+            regulatoryRequirements: ['GDPR', 'CCPA', 'DMCA'],
+            averageDeviceCost: 60,
+            fteCostRange: [65000, 115000]
+        },
+        'insurance': {
+            name: 'Insurance & Financial Services',
+            riskMultiplier: 1.8,
+            complianceWeight: 1.6,
+            breachCost: 5500000,
+            avgDevices: 2700,
+            regulatoryRequirements: ['SOX', 'GDPR', 'NAIC', 'PCI DSS'],
+            averageDeviceCost: 85,
+            fteCostRange: [85000, 155000]
+        },
+        'real_estate': {
+            name: 'Real Estate & Construction',
+            riskMultiplier: 1.1,
+            complianceWeight: 0.9,
+            breachCost: 3400000,
+            avgDevices: 1200,
+            regulatoryRequirements: ['GDPR', 'CCPA', 'Local Building Codes'],
+            averageDeviceCost: 50,
+            fteCostRange: [60000, 110000]
+        },
+        'hospitality': {
+            name: 'Hospitality & Travel',
+            riskMultiplier: 1.2,
+            complianceWeight: 1.0,
+            breachCost: 3700000,
+            avgDevices: 1500,
+            regulatoryRequirements: ['PCI DSS', 'GDPR', 'CCPA'],
+            averageDeviceCost: 55,
+            fteCostRange: [60000, 115000]
+        },
+        'legal': {
+            name: 'Legal & Professional Services',
+            riskMultiplier: 1.4,
+            complianceWeight: 1.3,
+            breachCost: 4800000,
+            avgDevices: 800,
+            regulatoryRequirements: ['GDPR', 'CCPA', 'Attorney-Client Privilege'],
+            averageDeviceCost: 70,
+            fteCostRange: [80000, 140000]
+        },
+        'nonprofit': {
+            name: 'Non-Profit & NGOs',
+            riskMultiplier: 1.0,
+            complianceWeight: 1.1,
+            breachCost: 2800000,
+            avgDevices: 600,
+            regulatoryRequirements: ['GDPR', 'CCPA', 'IRS Regulations'],
+            averageDeviceCost: 40,
+            fteCostRange: [50000, 90000]
+        }
+    };
+
+    // Comprehensive Compliance Frameworks
+    const comprehensiveCompliance = {
+        'nist-csf': {
+            name: 'NIST Cybersecurity Framework',
+            priority: 'High',
+            categories: ['Identify', 'Protect', 'Detect', 'Respond', 'Recover'],
+            applicableIndustries: 'All',
+            penaltyRange: '$100K - $10M',
+            implementationCost: 150000,
+            annualCost: 50000
+        },
+        'pci-dss': {
+            name: 'PCI Data Security Standard',
+            priority: 'Critical',
+            categories: ['Build', 'Maintain', 'Protect', 'Monitor', 'Test'],
+            applicableIndustries: 'Retail, Finance, E-commerce',
+            penaltyRange: '$5K - $100K per month',
+            implementationCost: 200000,
+            annualCost: 75000
+        },
+        'hipaa': {
+            name: 'Health Insurance Portability and Accountability Act',
+            priority: 'Critical',
+            categories: ['Administrative', 'Physical', 'Technical'],
+            applicableIndustries: 'Healthcare, Insurance',
+            penaltyRange: '$100 - $50K per violation',
+            implementationCost: 180000,
+            annualCost: 60000
+        },
+        'gdpr': {
+            name: 'General Data Protection Regulation',
+            priority: 'High',
+            categories: ['Lawfulness', 'Purpose', 'Minimization', 'Accuracy'],
+            applicableIndustries: 'Global (EU data)',
+            penaltyRange: '4% of annual revenue',
+            implementationCost: 300000,
+            annualCost: 100000
+        },
+        'iso27001': {
+            name: 'ISO/IEC 27001 Information Security Management',
+            priority: 'Medium',
+            categories: ['Context', 'Leadership', 'Planning', 'Support'],
+            applicableIndustries: 'All',
+            penaltyRange: 'Certification costs',
+            implementationCost: 120000,
+            annualCost: 40000
+        },
+        'sox': {
+            name: 'Sarbanes-Oxley Act',
+            priority: 'High',
+            categories: ['Financial', 'IT Controls', 'Documentation'],
+            applicableIndustries: 'Public Companies',
+            penaltyRange: '$1M - $25M',
+            implementationCost: 250000,
+            annualCost: 80000
+        },
+        'fedramp': {
+            name: 'Federal Risk and Authorization Management Program',
+            priority: 'Critical',
+            categories: ['Low', 'Moderate', 'High'],
+            applicableIndustries: 'Government Contractors',
+            penaltyRange: 'Contract termination',
+            implementationCost: 400000,
+            annualCost: 120000
+        },
+        'fisma': {
+            name: 'Federal Information Security Management Act',
+            priority: 'Critical',
+            categories: ['Categorize', 'Select', 'Implement', 'Assess'],
+            applicableIndustries: 'Federal Agencies',
+            penaltyRange: 'Legal penalties',
+            implementationCost: 350000,
+            annualCost: 100000
+        },
+        'ccpa': {
+            name: 'California Consumer Privacy Act',
+            priority: 'High',
+            categories: ['Notice', 'Choice', 'Access', 'Deletion'],
+            applicableIndustries: 'California businesses',
+            penaltyRange: '$2,500 - $7,500 per violation',
+            implementationCost: 150000,
+            annualCost: 50000
+        },
+        'cis': {
+            name: 'CIS Critical Security Controls',
+            priority: 'Medium',
+            categories: ['Basic', 'Foundational', 'Organizational'],
+            applicableIndustries: 'All',
+            penaltyRange: 'Best practice framework',
+            implementationCost: 100000,
+            annualCost: 30000
+        },
+        'cmmc': {
+            name: 'Cybersecurity Maturity Model Certification',
+            priority: 'Critical',
+            categories: ['Level 1', 'Level 2', 'Level 3'],
+            applicableIndustries: 'Defense Contractors',
+            penaltyRange: 'Contract ineligibility',
+            implementationCost: 300000,
+            annualCost: 90000
+        },
+        'nerc-cip': {
+            name: 'NERC Critical Infrastructure Protection',
+            priority: 'Critical',
+            categories: ['Cyber Security', 'Physical Security', 'Personnel'],
+            applicableIndustries: 'Electric Utilities',
+            penaltyRange: '$1M per day per violation',
+            implementationCost: 500000,
+            annualCost: 150000
+        },
+        'ferpa': {
+            name: 'Family Educational Rights and Privacy Act',
+            priority: 'High',
+            categories: ['Privacy', 'Access', 'Disclosure'],
+            applicableIndustries: 'Education',
+            penaltyRange: 'Funding termination',
+            implementationCost: 80000,
+            annualCost: 25000
+        },
+        'glba': {
+            name: 'Gramm-Leach-Bliley Act',
+            priority: 'High',
+            categories: ['Privacy', 'Safeguards', 'Pretexting'],
+            applicableIndustries: 'Financial Services',
+            penaltyRange: '$100K - $1.5M',
+            implementationCost: 200000,
+            annualCost: 70000
+        },
+        'itar': {
+            name: 'International Traffic in Arms Regulations',
+            priority: 'Critical',
+            categories: ['Export Control', 'Technology Transfer', 'Defense Articles'],
+            applicableIndustries: 'Defense, Aerospace',
+            penaltyRange: '$1M+ criminal penalties',
+            implementationCost: 400000,
+            annualCost: 120000
+        },
+        'fda-cfr21': {
+            name: 'FDA Code of Federal Regulations Title 21',
+            priority: 'Critical',
+            categories: ['Part 11', 'Data Integrity', 'Electronic Records'],
+            applicableIndustries: 'Pharmaceuticals, Medical Devices',
+            penaltyRange: 'Product recalls, fines',
+            implementationCost: 250000,
+            annualCost: 80000
+        },
+        'coppa': {
+            name: 'Children\'s Online Privacy Protection Act',
+            priority: 'High',
+            categories: ['Parental Consent', 'Data Collection', 'Privacy Policies'],
+            applicableIndustries: 'Online Services, Education',
+            penaltyRange: '$43,792 per violation',
+            implementationCost: 100000,
+            annualCost: 30000
+        },
+        'pipeda': {
+            name: 'Personal Information Protection and Electronic Documents Act',
+            priority: 'High',
+            categories: ['Consent', 'Collection', 'Use and Disclosure'],
+            applicableIndustries: 'Canadian Organizations',
+            penaltyRange: 'Up to $100K CAD',
+            implementationCost: 120000,
+            annualCost: 40000
+        },
+        'australia-privacy': {
+            name: 'Australian Privacy Principles',
+            priority: 'High',
+            categories: ['Collection', 'Use', 'Disclosure', 'Data Quality'],
+            applicableIndustries: 'Australian Organizations',
+            penaltyRange: 'Up to $2.2M AUD',
+            implementationCost: 150000,
+            annualCost: 50000
+        },
+        'lgpd': {
+            name: 'Lei Geral de Proteção de Dados (Brazil)',
+            priority: 'High',
+            categories: ['Data Processing', 'Data Subject Rights', 'DPO Requirements'],
+            applicableIndustries: 'Brazilian Organizations',
+            penaltyRange: 'Up to 2% of revenue',
+            implementationCost: 180000,
+            annualCost: 60000
+        }
+    };
+
+    // Enhanced Organization Settings
+    const organizationSettings = {
+        sizes: {
+            'startup': {
+                name: 'Startup (1-50 employees)',
+                deviceMultiplier: 0.7,
+                complexityFactor: 0.8,
+                avgDeviceCount: 75,
+                budgetConstraints: 'High'
+            },
+            'small': {
+                name: 'Small Business (51-250 employees)',
+                deviceMultiplier: 0.9,
+                complexityFactor: 0.9,
+                avgDeviceCount: 200,
+                budgetConstraints: 'Medium'
+            },
+            'medium': {
+                name: 'Medium Enterprise (251-1000 employees)',
+                deviceMultiplier: 1.0,
+                complexityFactor: 1.0,
+                avgDeviceCount: 750,
+                budgetConstraints: 'Medium'
+            },
+            'large': {
+                name: 'Large Enterprise (1001-5000 employees)',
+                deviceMultiplier: 1.2,
+                complexityFactor: 1.3,
+                avgDeviceCount: 2500,
+                budgetConstraints: 'Low'
+            },
+            'enterprise': {
+                name: 'Global Enterprise (5000+ employees)',
+                deviceMultiplier: 1.5,
+                complexityFactor: 1.6,
+                avgDeviceCount: 8000,
+                budgetConstraints: 'Very Low'
+            }
+        },
+        regions: {
+            'north_america': {
+                name: 'North America',
+                regulatoryComplexity: 1.2,
+                costMultiplier: 1.0,
+                primaryRegulations: ['SOX', 'CCPA', 'NIST CSF']
+            },
+            'europe': {
+                name: 'Europe',
+                regulatoryComplexity: 1.8,
+                costMultiplier: 1.1,
+                primaryRegulations: ['GDPR', 'NIS Directive', 'ISO 27001']
+            },
+            'asia_pacific': {
+                name: 'Asia Pacific',
+                regulatoryComplexity: 1.3,
+                costMultiplier: 0.9,
+                primaryRegulations: ['PDPA', 'Cybersecurity Law', 'Privacy Act']
+            },
+            'latin_america': {
+                name: 'Latin America',
+                regulatoryComplexity: 1.1,
+                costMultiplier: 0.8,
+                primaryRegulations: ['LGPD', 'Local Privacy Laws']
+            },
+            'middle_east_africa': {
+                name: 'Middle East & Africa',
+                regulatoryComplexity: 1.0,
+                costMultiplier: 0.9,
+                primaryRegulations: ['Local Cybersecurity Laws']
+            }
+        },
+        deploymentModels: {
+            'cloud_first': {
+                name: 'Cloud-First Strategy',
+                costReduction: 0.15,
+                implementationSpeed: 1.8,
+                maintenanceReduction: 0.25
+            },
+            'hybrid': {
+                name: 'Hybrid Deployment',
+                costReduction: 0.08,
+                implementationSpeed: 1.2,
+                maintenanceReduction: 0.12
+            },
+            'on_premises': {
+                name: 'On-Premises Only',
+                costReduction: 0.0,
+                implementationSpeed: 1.0,
+                maintenanceReduction: 0.0
+            },
+            'multi_cloud': {
+                name: 'Multi-Cloud Strategy',
+                costReduction: 0.12,
+                implementationSpeed: 1.5,
+                maintenanceReduction: 0.18
+            }
+        }
+    };
+
+    // Add comprehensive debugging
+    console.log("📊 Enhanced Data Loaded:");
+    console.log(`- Industries: ${Object.keys(comprehensiveIndustries).length}`);
+    console.log(`- Compliance Frameworks: ${Object.keys(comprehensiveCompliance).length}`);
+    console.log(`- Organization Sizes: ${Object.keys(organizationSettings.sizes).length}`);
+    console.log(`- Regions: ${Object.keys(organizationSettings.regions).length}`);
+    console.log(`- Deployment Models: ${Object.keys(organizationSettings.deploymentModels).length}`);
+
+    // Expose enhanced data globally
+    window.comprehensiveIndustries = comprehensiveIndustries;
+    window.comprehensiveCompliance = comprehensiveCompliance;
+    window.organizationSettings = organizationSettings;
     
-    /* Professional Shadows */
-    --shadow-command: 0 8px 32px rgba(26, 90, 150, 0.15);
-    --shadow-elevated: 0 12px 48px rgba(0, 0, 0, 0.1);
-    --shadow-float: 0 4px 16px rgba(0, 0, 0, 0.08);
-    --shadow-glow: 0 0 30px rgba(26, 90, 150, 0.2);
-}
-
-/* Subtle Animated Background */
-body {
-    background: var(--gradient-background);
-    background-size: 200% 200%;
-    animation: subtleGradientShift 30s ease infinite;
-    min-height: 100vh;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    overflow-x: hidden;
-}
-
-@keyframes subtleGradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* Professional Header */
-.zero-trust-header {
-    background: linear-gradient(135deg, rgba(26, 90, 150, 0.95) 0%, rgba(41, 128, 185, 0.90) 100%);
-    backdrop-filter: blur(15px);
-    position: relative;
-    overflow: hidden;
-    box-shadow: var(--shadow-command);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    z-index: 1000;
-}
-
-.zero-trust-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.03) 50%, transparent 70%);
-    animation: headerShimmer 4s ease-in-out infinite;
-}
-
-@keyframes headerShimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(200%); }
-}
-
-#particles-header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    pointer-events: none;
-}
-
-.header-content {
-    position: relative;
-    z-index: 2;
-    padding: 1.5rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.header-branding {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.portnox-logo img {
-    height: 50px;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-}
-
-.header-titles .main-title {
-    font-size: 2rem;
-    font-weight: 800;
-    color: white;
-    margin: 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.header-titles .sub-title {
-    font-size: 1rem;
-    color: rgba(255, 255, 255, 0.9);
-    margin: 0;
-    font-weight: 500;
-}
-
-/* Professional Header Actions */
-.header-actions {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-}
-
-.header-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-}
-
-.header-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-    transition: left 0.5s ease;
-}
-
-.header-btn:hover::before {
-    left: 100%;
-}
-
-.header-btn.primary {
-    background: var(--gradient-success);
-    color: white;
-    box-shadow: var(--shadow-float);
-}
-
-.header-btn.secondary {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.header-btn.utility {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.header-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-elevated);
-}
-
-/* Executive Command Center */
-.executive-command-center {
-    padding: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.command-header {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(15px);
-    border-radius: 16px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow-command);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    position: relative;
-    overflow: hidden;
-}
-
-.command-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--gradient-primary);
-}
-
-.executive-branding {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.brand-logo {
-    height: 60px;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
-}
-
-.brand-text h1 {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin: 0;
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.brand-text p {
-    font-size: 1.1rem;
-    color: #666;
-    margin: 0.5rem 0 0 0;
-    font-weight: 500;
-}
-
-.command-actions {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.cmd-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.875rem 1.5rem;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.cmd-btn.primary {
-    background: var(--gradient-primary);
-    color: white;
-    box-shadow: var(--shadow-command);
-}
-
-.cmd-btn.secondary {
-    background: var(--gradient-info);
-    color: white;
-    box-shadow: var(--shadow-float);
-}
-
-.cmd-btn.utility {
-    background: rgba(108, 117, 125, 0.1);
-    color: var(--portnox-primary);
-    border: 1px solid rgba(108, 117, 125, 0.2);
-}
-
-.cmd-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-elevated);
-}
-
-/* Professional Vendor Selection */
-.vendor-selection-bar {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(15px);
-    padding: 1rem 2rem;
-    border-radius: 16px;
-    box-shadow: var(--shadow-float);
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.vendor-label {
-    font-weight: 700;
-    color: var(--portnox-primary);
-    font-size: 1rem;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.vendor-buttons {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    align-items: center;
-    flex: 1;
-}
-
-.vendor-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.9);
-    border: 2px solid rgba(26, 90, 150, 0.15);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--portnox-primary);
-    min-height: 44px;
-    position: relative;
-    overflow: hidden;
-}
-
-.vendor-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: var(--gradient-primary);
-    transition: left 0.3s ease;
-    z-index: -1;
-}
-
-.vendor-btn:hover::before {
-    left: 0;
-}
-
-.vendor-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-float);
-    color: white;
-    border-color: transparent;
-}
-
-.vendor-btn.active {
-    background: var(--gradient-primary);
-    color: white;
-    border-color: transparent;
-    box-shadow: var(--shadow-glow);
-}
-
-.vendor-btn.active::before {
-    left: 0;
-}
-
-.vendor-btn-logo {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-    border-radius: 4px;
-    background: white;
-    padding: 2px;
-}
-
-.vendor-btn-name {
-    font-size: 0.8rem;
-    font-weight: 700;
-}
-
-.vendor-stats {
-    font-weight: 600;
-    color: var(--portnox-primary);
-    font-size: 0.9rem;
-    white-space: nowrap;
-}
-
-.selected-count {
-    background: var(--gradient-primary);
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
-    font-weight: 700;
-}
-
-/* Professional KPI Cards */
-.executive-kpis {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.kpi-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(15px);
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: var(--shadow-float);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--gradient-primary);
-}
-
-.kpi-card.strategic::before { background: var(--gradient-primary); }
-.kpi-card.financial::before { background: var(--gradient-success); }
-.kpi-card.operational::before { background: var(--gradient-warning); }
-.kpi-card.security::before { background: var(--gradient-info); }
-
-.kpi-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-elevated);
-}
-
-.kpi-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    background: var(--gradient-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: var(--shadow-float);
-}
-
-.kpi-card.financial .kpi-icon { background: var(--gradient-success); }
-.kpi-card.operational .kpi-icon { background: var(--gradient-warning); }
-.kpi-card.security .kpi-icon { background: var(--gradient-info); }
-
-.kpi-metrics {
-    display: flex;
-    flex-direction: column;
-}
-
-.primary-metric {
-    display: flex;
-    align-items: baseline;
-    margin-bottom: 1rem;
-}
-
-.primary-metric .value {
-    font-size: 2.5rem;
-    font-weight: 900;
-    color: var(--portnox-primary);
-    line-height: 1;
-}
-
-.primary-metric .currency {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--portnox-secondary);
-    margin-left: 0.25rem;
-}
-
-.metric-label {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--portnox-primary);
-    margin-bottom: 0.5rem;
-}
-
-.metric-subtitle {
-    font-size: 0.85rem;
-    color: #666;
-    margin-bottom: 1rem;
-    line-height: 1.4;
-}
-
-.trend-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    padding: 0.5rem 0.75rem;
-    border-radius: 8px;
-    background: rgba(39, 174, 96, 0.1);
-    color: #27ae60;
-    border: 1px solid rgba(39, 174, 96, 0.2);
-}
-
-.trend-indicator.positive {
-    background: rgba(39, 174, 96, 0.1);
-    color: #27ae60;
-    border-color: rgba(39, 174, 96, 0.2);
-}
-
-.trend-indicator.negative {
-    background: rgba(231, 76, 60, 0.1);
-    color: #e74c3c;
-    border-color: rgba(231, 76, 60, 0.2);
-}
-
-/* Professional Tab Navigation */
-.tab-navigation {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(15px);
-    border-radius: 16px;
-    padding: 1rem;
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow-float);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.main-tabs {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.main-tab {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 1.5rem;
-    background: transparent;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    color: #666;
-    position: relative;
-    overflow: hidden;
-    min-height: 60px;
-}
-
-.main-tab::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: var(--gradient-primary);
-    transition: left 0.3s ease;
-    z-index: -1;
-}
-
-.main-tab:hover::before,
-.main-tab.active::before {
-    left: 0;
-}
-
-.main-tab:hover,
-.main-tab.active {
-    color: white;
-    box-shadow: var(--shadow-float);
-}
-
-.tab-icon {
-    font-size: 1.25rem;
-    width: 24px;
-    text-align: center;
-}
-
-.tab-content {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.tab-title {
-    font-size: 1rem;
-    font-weight: 700;
-    line-height: 1.2;
-}
-
-.tab-subtitle {
-    font-size: 0.8rem;
-    opacity: 0.8;
-    line-height: 1.2;
-}
-
-/* Professional Chart Containers */
-.chart-container,
-.chart-wrapper {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(15px);
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: var(--shadow-float);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.chart-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--gradient-primary);
-}
-
-.chart-container:hover,
-.chart-wrapper:hover {
-    box-shadow: var(--shadow-elevated);
-    transform: translateY(-2px);
-}
-
-.chart-header {
-    margin-bottom: 1.5rem;
-}
-
-.chart-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--portnox-primary);
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.chart-title i {
-    width: 24px;
-    text-align: center;
-}
-
-.chart-subtitle {
-    font-size: 0.95rem;
-    color: #666;
-    line-height: 1.4;
-}
-
-/* Cost Analysis Controls */
-.cost-analysis-controls {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(15px);
-    border-radius: 16px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow-float);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.controls-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1rem;
-}
-
-.control-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.control-group label {
-    font-weight: 600;
-    color: var(--portnox-primary);
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.control-group input[type="range"] {
-    appearance: none;
-    height: 8px;
-    background: rgba(26, 90, 150, 0.1);
-    border-radius: 4px;
-    outline: none;
-    margin: 0.5rem 0;
-}
-
-.control-group input[type="range"]::-webkit-slider-thumb {
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    background: var(--gradient-primary);
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: var(--shadow-float);
-}
-
-.control-group select {
-    padding: 0.75rem;
-    border: 1px solid rgba(26, 90, 150, 0.2);
-    border-radius: 8px;
-    background: white;
-    color: var(--portnox-primary);
-    font-weight: 600;
-}
-
-.control-value {
-    font-weight: 700;
-    color: var(--portnox-primary);
-    font-size: 1.1rem;
-    text-align: center;
-    padding: 0.5rem;
-    background: rgba(26, 90, 150, 0.05);
-    border-radius: 6px;
-    border: 1px solid rgba(26, 90, 150, 0.1);
-}
-
-/* Grid Layouts */
-.chart-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
-}
-
-.chart-grid .full-width {
-    grid-column: 1 / -1;
-}
-
-/* Loading States */
-.chart-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
-    color: #666;
-}
-
-.chart-loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid rgba(26, 90, 150, 0.1);
-    border-top: 4px solid var(--portnox-primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Data Tables */
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: var(--shadow-float);
-    margin-top: 1rem;
-}
-
-.data-table th {
-    background: var(--gradient-primary);
-    color: white;
-    padding: 1rem;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-align: left;
-}
-
-.data-table td {
-    padding: 1rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.data-table tr:hover {
-    background: rgba(26, 90, 150, 0.05);
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-    .chart-grid {
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    }
-}
-
-@media (max-width: 768px) {
-    .executive-command-center {
-        padding: 1rem;
-    }
-    
-    .command-header {
-        padding: 1.5rem;
-    }
-    
-    .vendor-buttons {
-        justify-content: flex-start;
-        overflow-x: auto;
-        padding-bottom: 0.5rem;
-    }
-    
-    .vendor-btn {
-        flex-shrink: 0;
-        padding: 0.375rem 0.75rem;
-        font-size: 0.8rem;
-    }
-    
-    .executive-kpis {
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 1rem;
-    }
-    
-    .main-tabs {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .chart-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .controls-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Animation Classes */
-.fade-in {
-    animation: fadeIn 0.8s ease forwards;
-}
-
-.slide-up {
-    animation: slideUp 0.8s ease forwards;
-}
-
-.scale-in {
-    animation: scaleIn 0.6s ease forwards;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from { transform: translateY(30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes scaleIn {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-/* Utility Classes */
-.glass-panel {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(15px);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: var(--shadow-float);
-}
-
-.gradient-text {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.highlight-positive {
-    color: #27ae60;
-    font-weight: 700;
-}
-
-.highlight-negative {
-    color: #e74c3c;
-    font-weight: 700;
-}
-
-.highlight-neutral {
-    color: #f39c12;
-    font-weight: 700;
-}
-
-/* Executive Insights Panel */
-.insights-panel {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(15px);
-    border-radius: 16px;
-    padding: 2rem;
-    margin-top: 2rem;
-    box-shadow: var(--shadow-float);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.insights-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-}
-
-.insight-card {
-    padding: 1.5rem;
-    background: rgba(26, 90, 150, 0.05);
-    border-radius: 12px;
-    border: 1px solid rgba(26, 90, 150, 0.1);
-    transition: all 0.3s ease;
-}
-
-.insight-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-float);
-}
-
-.insight-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    background: var(--gradient-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
-}
-
-.insight-content h4 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--portnox-primary);
-    margin: 0 0 0.5rem 0;
-}
-
-.insight-content p {
-    font-size: 0.9rem;
-    color: #666;
-    line-height: 1.5;
-    margin: 0;
-}
-
-/* Loading Overlay */
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(26, 90, 150, 0.8);
-    backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-}
-
-.loading-spinner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: white;
-}
-
-.loading-text {
-    margin-top: 1rem;
-    font-size: 1.1rem;
-    font-weight: 600;
+    console.log("✅ Comprehensive data enhancement completed successfully");
+} else {
+    console.warn("⚠️ ZeroTrustExecutivePlatform not found - enhancement will be applied when platform loads");
 }
 EOF
 
-# Fix the JavaScript syntax error
-echo -e "${GREEN}✅ Fixing JavaScript syntax error...${NC}"
-cat > js/views/zero-trust-executive-platform.js << 'EOF'
+echo -e "${GREEN}✅ Creating advanced cost analysis enhancements...${NC}"
+cat > js/enhancements/advanced-cost-analysis.js << 'EOF'
 /**
- * Zero Trust Total Cost Analyzer - Executive Intelligence Platform
- * Complete analytics platform with advanced visualizations and comprehensive data
+ * Advanced Cost Analysis Enhancement
+ * Adds comprehensive cost configuration and calculation capabilities
  */
 
-class ZeroTrustExecutivePlatform {
+class AdvancedCostAnalysis {
     constructor() {
         this.initialized = false;
-        this.currentTab = 'overview';
-        this.selectedVendors = ['portnox', 'cisco', 'aruba', 'forescout'];
-        this.chartInstances = {};
-        this.animationQueue = [];
-        this.eventListeners = [];
-        
-        // Configuration parameters
-        this.config = {
-            deviceCount: 1000,
-            analysisPeriod: 3,
-            riskFactor: 1.0,
-            industry: 'technology',
-            companySize: 'medium',
-            fteCost: 100000,
-            breachCost: 4350000,
-            downtimeCost: 5000
-        };
-        
-        // Initialize comprehensive data
-        this.vendorData = this.initializeComprehensiveVendorData();
-        this.industryData = this.initializeIndustryData();
-        this.complianceData = this.initializeComplianceData();
-        this.riskProfiles = this.initializeRiskProfiles();
+        this.costFactors = this.initializeCostFactors();
+        this.pricingModels = this.initializePricingModels();
     }
-    
-    initializeComprehensiveVendorData() {
+
+    initializeCostFactors() {
         return {
-            'portnox': {
-                name: 'Portnox Cloud',
-                shortName: 'Portnox',
-                logo: './img/vendors/portnox-logo.png',
-                color: '#1a5a96',
-                architecture: 'Cloud-Native',
-                marketPosition: 'Visionary',
-                costs: {
-                    tco1Year: 85000,
-                    tco3Year: 245000,
-                    tco5Year: 390000,
-                    licensePerDevice: 45,
-                    implementationCost: 15000,
-                    maintenanceCost: 0,
-                    personnelCostPerYear: 25000,
-                    trainingCost: 5000
-                },
-                metrics: {
-                    roi1Year: 180,
-                    roi3Year: 325,
-                    roi5Year: 485,
-                    paybackMonths: 7,
-                    implementationDays: 21,
-                    fteRequired: 0.25,
-                    securityScore: 95,
-                    complianceScore: 92,
-                    performanceScore: 94,
-                    reliabilityScore: 98,
-                    userSatisfaction: 92,
-                    marketShare: 12
-                },
-                capabilities: {
-                    zeroTrust: 95,
-                    deviceAuth: 98,
-                    riskAssessment: 92,
-                    automatedRemediation: 90,
-                    cloudIntegration: 98,
-                    mobileSupport: 95,
-                    iotSupport: 88,
-                    byodSupport: 96,
-                    aiMl: 85,
-                    reporting: 92
-                },
-                compliance: {
-                    nistCsf: 94,
-                    pciDss: 91,
-                    hipaa: 89,
-                    gdpr: 93,
-                    iso27001: 90,
-                    sox: 88,
-                    fedramp: 85,
-                    fisma: 87,
-                    ccpa: 91,
-                    cis: 93
-                }
+            deviceTypes: {
+                'desktop': { name: 'Desktop Computers', multiplier: 1.0, avgCost: 65 },
+                'laptop': { name: 'Laptops', multiplier: 1.1, avgCost: 70 },
+                'mobile': { name: 'Mobile Devices', multiplier: 0.8, avgCost: 50 },
+                'tablet': { name: 'Tablets', multiplier: 0.9, avgCost: 55 },
+                'iot': { name: 'IoT Devices', multiplier: 0.6, avgCost: 35 },
+                'server': { name: 'Servers', multiplier: 2.5, avgCost: 150 },
+                'network': { name: 'Network Equipment', multiplier: 1.8, avgCost: 120 },
+                'printer': { name: 'Printers/Peripherals', multiplier: 0.7, avgCost: 45 }
             },
-            'cisco': {
-                name: 'Cisco Identity Services Engine (ISE)',
-                shortName: 'Cisco ISE',
-                logo: './img/vendors/cisco-logo.png',
-                color: '#00bceb',
-                architecture: 'On-Premises',
-                marketPosition: 'Leader',
-                costs: {
-                    tco1Year: 185000,
-                    tco3Year: 520000,
-                    tco5Year: 780000,
-                    licensePerDevice: 85,
-                    implementationCost: 75000,
-                    maintenanceCost: 45000,
-                    personnelCostPerYear: 85000,
-                    trainingCost: 25000
-                },
-                metrics: {
-                    roi1Year: -15,
-                    roi3Year: 45,
-                    roi5Year: 125,
-                    paybackMonths: 32,
-                    implementationDays: 90,
-                    fteRequired: 2.0,
-                    securityScore: 85,
-                    complianceScore: 82,
-                    performanceScore: 78,
-                    reliabilityScore: 88,
-                    userSatisfaction: 75,
-                    marketShare: 35
-                },
-                capabilities: {
-                    zeroTrust: 75,
-                    deviceAuth: 88,
-                    riskAssessment: 80,
-                    automatedRemediation: 70,
-                    cloudIntegration: 65,
-                    mobileSupport: 75,
-                    iotSupport: 82,
-                    byodSupport: 78,
-                    aiMl: 60,
-                    reporting: 85
-                },
-                compliance: {
-                    nistCsf: 85,
-                    pciDss: 88,
-                    hipaa: 82,
-                    gdpr: 75,
-                    iso27001: 85,
-                    sox: 80,
-                    fedramp: 90,
-                    fisma: 88,
-                    ccpa: 78,
-                    cis: 82
-                }
+            implementationFactors: {
+                'complexity_low': { name: 'Low Complexity', multiplier: 0.8 },
+                'complexity_medium': { name: 'Medium Complexity', multiplier: 1.0 },
+                'complexity_high': { name: 'High Complexity', multiplier: 1.4 },
+                'complexity_very_high': { name: 'Very High Complexity', multiplier: 1.8 }
             },
-            'aruba': {
-                name: 'Aruba ClearPass',
-                shortName: 'Aruba',
-                logo: './img/vendors/aruba-logo.png',
-                color: '#ff6900',
-                architecture: 'On-Premises/Hybrid',
-                costs: {
-                    tco1Year: 165000,
-                    tco3Year: 480000,
-                    tco5Year: 720000,
-                    licensePerDevice: 75,
-                    implementationCost: 65000,
-                    maintenanceCost: 38000,
-                    personnelCostPerYear: 75000,
-                    trainingCost: 20000
-                },
-                metrics: {
-                    roi1Year: 5,
-                    roi3Year: 85,
-                    roi5Year: 165,
-                    paybackMonths: 28,
-                    implementationDays: 75,
-                    fteRequired: 1.75,
-                    securityScore: 82,
-                    complianceScore: 78,
-                    performanceScore: 85,
-                    reliabilityScore: 82,
-                    userSatisfaction: 78,
-                    marketShare: 18
-                }
-            },
-            'forescout': {
-                name: 'Forescout Platform',
-                shortName: 'Forescout',
-                logo: './img/vendors/forescout-logo.png',
-                color: '#7a2a90',
-                architecture: 'On-Premises',
-                costs: {
-                    tco1Year: 155000,
-                    tco3Year: 430000,
-                    tco5Year: 650000,
-                    licensePerDevice: 70,
-                    implementationCost: 55000,
-                    maintenanceCost: 35000,
-                    personnelCostPerYear: 65000,
-                    trainingCost: 18000
-                },
-                metrics: {
-                    roi1Year: 12,
-                    roi3Year: 95,
-                    roi5Year: 185,
-                    paybackMonths: 25,
-                    implementationDays: 60,
-                    fteRequired: 1.5,
-                    securityScore: 88,
-                    complianceScore: 85,
-                    performanceScore: 80,
-                    reliabilityScore: 85,
-                    userSatisfaction: 80,
-                    marketShare: 15
-                }
-            },
-            'fortinac': {
-                name: 'Fortinet FortiNAC',
-                shortName: 'FortiNAC',
-                logo: './img/vendors/fortinet-logo.png',
-                color: '#ee3124',
-                architecture: 'On-Premises',
-                costs: {
-                    tco1Year: 145000,
-                    tco3Year: 400000,
-                    tco5Year: 600000,
-                    licensePerDevice: 65,
-                    implementationCost: 50000,
-                    maintenanceCost: 30000,
-                    personnelCostPerYear: 60000,
-                    trainingCost: 15000
-                },
-                metrics: {
-                    roi1Year: 15,
-                    roi3Year: 105,
-                    roi5Year: 195,
-                    paybackMonths: 22,
-                    implementationDays: 60,
-                    fteRequired: 1.25,
-                    securityScore: 80,
-                    complianceScore: 82,
-                    performanceScore: 75,
-                    reliabilityScore: 80,
-                    userSatisfaction: 75,
-                    marketShare: 8
-                }
-            },
-            'juniper': {
-                name: 'Juniper Mist Access Assurance',
-                shortName: 'Juniper',
-                logo: './img/vendors/juniper-logo.png',
-                color: '#84bd00',
-                architecture: 'Cloud-Managed',
-                costs: {
-                    tco1Year: 125000,
-                    tco3Year: 350000,
-                    tco5Year: 525000,
-                    licensePerDevice: 55,
-                    implementationCost: 35000,
-                    maintenanceCost: 20000,
-                    personnelCostPerYear: 45000,
-                    trainingCost: 12000
-                },
-                metrics: {
-                    roi1Year: 40,
-                    roi3Year: 125,
-                    roi5Year: 225,
-                    paybackMonths: 18,
-                    implementationDays: 45,
-                    fteRequired: 1.0,
-                    securityScore: 78,
-                    complianceScore: 75,
-                    performanceScore: 88,
-                    reliabilityScore: 85,
-                    userSatisfaction: 82,
-                    marketShare: 6
-                }
-            },
-            'arista': {
-                name: 'Arista CloudVision',
-                shortName: 'Arista',
-                logo: './img/vendors/arista-logo.png',
-                color: '#ff6600',
-                architecture: 'Hybrid',
-                costs: {
-                    tco1Year: 135000,
-                    tco3Year: 320000,
-                    tco5Year: 480000,
-                    licensePerDevice: 50,
-                    implementationCost: 40000,
-                    maintenanceCost: 25000,
-                    personnelCostPerYear: 50000,
-                    trainingCost: 10000
-                },
-                metrics: {
-                    roi1Year: 35,
-                    roi3Year: 115,
-                    roi5Year: 205,
-                    paybackMonths: 15,
-                    implementationDays: 45,
-                    fteRequired: 1.0,
-                    securityScore: 75,
-                    complianceScore: 78,
-                    performanceScore: 85,
-                    reliabilityScore: 88,
-                    userSatisfaction: 79,
-                    marketShare: 3
-                }
-            },
-            'microsoft': {
-                name: 'Microsoft Network Policy Server',
-                shortName: 'Microsoft',
-                logo: './img/vendors/microsoft-logo.png',
-                color: '#00bcf2',
-                architecture: 'On-Premises',
-                costs: {
-                    tco1Year: 105000,
-                    tco3Year: 290000,
-                    tco5Year: 435000,
-                    licensePerDevice: 40,
-                    implementationCost: 25000,
-                    maintenanceCost: 15000,
-                    personnelCostPerYear: 55000,
-                    trainingCost: 8000
-                },
-                metrics: {
-                    roi1Year: 25,
-                    roi3Year: 95,
-                    roi5Year: 175,
-                    paybackMonths: 20,
-                    implementationDays: 30,
-                    fteRequired: 1.0,
-                    securityScore: 65,
-                    complianceScore: 70,
-                    performanceScore: 70,
-                    reliabilityScore: 75,
-                    userSatisfaction: 68,
-                    marketShare: 10
-                }
-            },
-            'securew2': {
-                name: 'SecureW2 JoinNow',
-                shortName: 'SecureW2',
-                logo: './img/vendors/securew2-logo.png',
-                color: '#2c5aa0',
-                architecture: 'Cloud',
-                costs: {
-                    tco1Year: 95000,
-                    tco3Year: 280000,
-                    tco5Year: 420000,
-                    licensePerDevice: 35,
-                    implementationCost: 20000,
-                    maintenanceCost: 10000,
-                    personnelCostPerYear: 35000,
-                    trainingCost: 6000
-                },
-                metrics: {
-                    roi1Year: 180,
-                    roi3Year: 285,
-                    roi5Year: 395,
-                    paybackMonths: 12,
-                    implementationDays: 30,
-                    fteRequired: 0.5,
-                    securityScore: 72,
-                    complianceScore: 68,
-                    performanceScore: 78,
-                    reliabilityScore: 80,
-                    userSatisfaction: 76,
-                    marketShare: 4
-                }
-            },
-            'foxpass': {
-                name: 'Foxpass RADIUS',
-                shortName: 'Foxpass',
-                logo: './img/vendors/foxpass-logo.png',
-                color: '#ff4444',
-                architecture: 'Cloud',
-                costs: {
-                    tco1Year: 85000,
-                    tco3Year: 270000,
-                    tco5Year: 405000,
-                    licensePerDevice: 30,
-                    implementationCost: 15000,
-                    maintenanceCost: 8000,
-                    personnelCostPerYear: 30000,
-                    trainingCost: 5000
-                },
-                metrics: {
-                    roi1Year: 160,
-                    roi3Year: 265,
-                    roi5Year: 375,
-                    paybackMonths: 10,
-                    implementationDays: 25,
-                    fteRequired: 0.5,
-                    securityScore: 68,
-                    complianceScore: 65,
-                    performanceScore: 75,
-                    reliabilityScore: 78,
-                    userSatisfaction: 73,
-                    marketShare: 2
-                }
+            geographicFactors: {
+                'tier1_cities': { name: 'Tier 1 Cities', multiplier: 1.3 },
+                'tier2_cities': { name: 'Tier 2 Cities', multiplier: 1.1 },
+                'tier3_cities': { name: 'Tier 3 Cities', multiplier: 0.9 },
+                'rural': { name: 'Rural Areas', multiplier: 0.8 }
             }
         };
     }
-    
-    initializeIndustryData() {
+
+    initializePricingModels() {
         return {
-            'technology': {
-                name: 'Technology',
-                riskMultiplier: 1.2,
-                complianceWeight: 0.9,
-                breachCost: 4350000,
-                avgDevices: 2500
+            'per_device': {
+                name: 'Per Device Pricing',
+                description: 'Cost calculated per managed device',
+                baseCalculation: (devices, pricePerDevice) => devices * pricePerDevice
             },
-            'healthcare': {
-                name: 'Healthcare',
-                riskMultiplier: 1.8,
-                complianceWeight: 1.5,
-                breachCost: 7800000,
-                avgDevices: 1800
+            'per_user': {
+                name: 'Per User Pricing',
+                description: 'Cost calculated per user account',
+                baseCalculation: (users, pricePerUser) => users * pricePerUser
             },
-            'finance': {
-                name: 'Financial Services',
-                riskMultiplier: 2.0,
-                complianceWeight: 1.8,
-                breachCost: 5720000,
-                avgDevices: 3200
+            'tiered': {
+                name: 'Tiered Pricing',
+                description: 'Volume-based pricing tiers',
+                tiers: [
+                    { min: 1, max: 100, pricePerDevice: 75 },
+                    { min: 101, max: 500, pricePerDevice: 65 },
+                    { min: 501, max: 1000, pricePerDevice: 55 },
+                    { min: 1001, max: 5000, pricePerDevice: 45 },
+                    { min: 5001, max: Infinity, pricePerDevice: 35 }
+                ]
             },
-            'government': {
-                name: 'Government',
-                riskMultiplier: 1.5,
-                complianceWeight: 2.0,
-                breachCost: 4100000,
-                avgDevices: 2800
-            },
-            'education': {
-                name: 'Education',
-                riskMultiplier: 1.1,
-                complianceWeight: 1.2,
-                breachCost: 3200000,
-                avgDevices: 1500
-            },
-            'retail': {
-                name: 'Retail',
-                riskMultiplier: 1.3,
-                complianceWeight: 1.1,
-                breachCost: 3800000,
-                avgDevices: 2200
-            },
-            'manufacturing': {
-                name: 'Manufacturing',
-                riskMultiplier: 1.4,
-                complianceWeight: 1.0,
-                breachCost: 4200000,
-                avgDevices: 1900
-            },
-            'energy': {
-                name: 'Energy & Utilities',
-                riskMultiplier: 1.6,
-                complianceWeight: 1.4,
-                breachCost: 6500000,
-                avgDevices: 2600
+            'enterprise': {
+                name: 'Enterprise Licensing',
+                description: 'Flat rate for unlimited devices',
+                baseCalculation: (devices) => Math.max(50000, devices * 0.8)
             }
         };
     }
-    
-    initializeComplianceData() {
-        return {
-            'nist-csf': { name: 'NIST Cybersecurity Framework', priority: 'High' },
-            'pci-dss': { name: 'PCI DSS', priority: 'Critical' },
-            'hipaa': { name: 'HIPAA', priority: 'Critical' },
-            'gdpr': { name: 'GDPR', priority: 'High' },
-            'iso27001': { name: 'ISO 27001', priority: 'Medium' },
-            'sox': { name: 'Sarbanes-Oxley', priority: 'High' },
-            'fedramp': { name: 'FedRAMP', priority: 'Critical' },
-            'fisma': { name: 'FISMA', priority: 'Critical' },
-            'ccpa': { name: 'CCPA', priority: 'High' },
-            'cis': { name: 'CIS Controls', priority: 'Medium' }
-        };
-    }
-    
-    initializeRiskProfiles() {
-        return {
-            'dataBreachCost': { name: 'Data Breach Cost', averageCost: 4350000 },
-            'downtimeCost': { name: 'Network Downtime', costPerHour: 5000 },
-            'compliancePenalty': { name: 'Compliance Penalties', averageCost: 2500000 },
-            'reputationImpact': { name: 'Reputation Damage', multiplier: 1.5 }
-        };
-    }
-    
-    init() {
-        if (this.initialized) return this;
+
+    createAdvancedCostControls() {
+        console.log("🔧 Creating advanced cost analysis controls...");
         
-        console.log("🚀 Initializing Zero Trust Executive Platform...");
-        
-        try {
-            this.createExecutiveCommandCenter();
-            this.createVendorSelection();
-            this.createExecutiveKPIs();
-            this.createCostAnalysisControls();
-            this.createTabNavigation();
-            this.createTabContent();
-            this.setupEventListeners();
-            this.initializeParticles();
-            this.startAnimations();
-            this.bindCalculationEvents();
-            
-            this.initialized = true;
-            console.log("✅ Zero Trust Executive Platform initialized successfully");
-            
-            // Hide loading indicator
-            const loadingElement = document.querySelector('.initial-loading');
-            if (loadingElement) {
-                loadingElement.style.display = 'none';
-            }
-            
-            return this;
-        } catch (error) {
-            console.error("❌ Platform initialization failed:", error);
-            this.showErrorMessage("Platform initialization failed. Please refresh the page.");
-            return null;
+        const existingContainer = document.getElementById('cost-analysis-container');
+        if (!existingContainer) {
+            console.warn("⚠️ Cost analysis container not found");
+            return;
         }
-    }
-    
-    createExecutiveCommandCenter() {
-        const container = document.querySelector('#executive-view .view-content');
-        if (!container) return;
-        
-        container.innerHTML = `
-            <div class="executive-command-center fade-in">
-                <!-- Executive Command Center Header -->
-                <div class="command-header">
-                    <div class="executive-branding">
-                        <img src="./img/vendors/portnox-logo.png" alt="Portnox" class="brand-logo">
-                        <div class="brand-text">
-                            <h1>Executive Command Center</h1>
-                            <p>Zero Trust NAC Solution Analysis & Strategic Intelligence Platform</p>
-                        </div>
-                    </div>
-                    <div class="command-actions">
-                        <button class="cmd-btn primary" id="live-demo">
-                            <i class="fas fa-play"></i> Live Demo
-                        </button>
-                        <button class="cmd-btn secondary" id="export-executive">
-                            <i class="fas fa-file-export"></i> Export Report
-                        </button>
-                        <button class="cmd-btn utility" id="customize-dashboard">
-                            <i class="fas fa-cogs"></i> Customize
-                        </button>
-                        <button class="cmd-btn utility" id="schedule-meeting">
-                            <i class="fas fa-calendar-plus"></i> Schedule
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Vendor Selection -->
-                <div id="vendor-selection-container"></div>
-                
-                <!-- Cost Analysis Controls -->
-                <div id="cost-analysis-container"></div>
-                
-                <!-- Executive KPIs -->
-                <div id="executive-kpis-container"></div>
-                
-                <!-- Tab Navigation -->
-                <div id="tab-navigation-container"></div>
-                
-                <!-- Tab Content -->
-                <div id="tab-content-container"></div>
-            </div>
-        `;
-    }
-    
-    createVendorSelection() {
-        const container = document.getElementById('vendor-selection-container');
-        if (!container) return;
-        
-        const vendorButtons = Object.keys(this.vendorData).map(vendorId => {
-            const vendor = this.vendorData[vendorId];
-            const isActive = this.selectedVendors.includes(vendorId);
-            
-            return `
-                <button class="vendor-btn ${isActive ? 'active' : ''}" data-vendor="${vendorId}">
-                    <img src="${vendor.logo}" alt="${vendor.name}" class="vendor-btn-logo">
-                    <span class="vendor-btn-name">${vendor.shortName}</span>
-                </button>
-            `;
-        }).join('');
-        
-        container.innerHTML = `
-            <div class="vendor-selection-bar slide-up">
-                <div class="vendor-label">
-                    <i class="fas fa-balance-scale"></i>
-                    Compare Solutions:
-                </div>
-                <div class="vendor-buttons">
-                    ${vendorButtons}
-                </div>
-                <div class="vendor-stats">
-                    <span class="selected-count">${this.selectedVendors.length}</span> vendors selected
-                    <span style="margin-left: 1rem; color: #666;">|</span>
-                    <span style="margin-left: 1rem;">Market Coverage: ${this.calculateMarketCoverage()}%</span>
-                </div>
-            </div>
-        `;
-    }
-    
-    createCostAnalysisControls() {
-        const container = document.getElementById('cost-analysis-container');
-        if (!container) return;
-        
-        container.innerHTML = `
-            <div class="cost-analysis-controls slide-up">
-                <div class="chart-header">
-                    <h3 class="chart-title">
-                        <i class="fas fa-sliders-h"></i>
-                        Cost Analysis & Configuration
-                    </h3>
-                    <div class="chart-subtitle">Customize analysis parameters for accurate TCO calculations</div>
-                </div>
+
+        // Enhance existing controls without replacing
+        const enhancedControls = document.createElement('div');
+        enhancedControls.className = 'advanced-cost-controls';
+        enhancedControls.innerHTML = `
+            <div class="cost-enhancement-section">
+                <h4><i class="fas fa-cogs"></i> Advanced Cost Configuration</h4>
                 
                 <div class="controls-grid">
                     <div class="control-group">
-                        <label for="device-count-slider">Device Count</label>
-                        <input type="range" id="device-count-slider" min="100" max="10000" value="${this.config.deviceCount}" step="100">
-                        <span class="control-value" id="device-count-value">${this.config.deviceCount.toLocaleString()}</span>
+                        <label for="avg-device-price">Average Price Per Device ($)</label>
+                        <input type="range" id="avg-device-price" min="20" max="200" value="65" step="5">
+                        <span class="control-value" id="avg-device-price-value">$65</span>
                     </div>
                     
                     <div class="control-group">
-                        <label for="analysis-period-slider">Analysis Period (Years)</label>
-                        <input type="range" id="analysis-period-slider" min="1" max="5" value="${this.config.analysisPeriod}" step="1">
-                        <span class="control-value" id="analysis-period-value">${this.config.analysisPeriod}</span>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label for="risk-factor-slider">Risk Factor</label>
-                        <input type="range" id="risk-factor-slider" min="0.5" max="2.0" value="${this.config.riskFactor}" step="0.1">
-                        <span class="control-value" id="risk-factor-value">${this.config.riskFactor}x</span>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label for="industry-select">Industry</label>
-                        <select id="industry-select" class="control-value">
-                            ${Object.keys(this.industryData).map(industryId => 
-                                `<option value="${industryId}" ${industryId === this.config.industry ? 'selected' : ''}>${this.industryData[industryId].name}</option>`
-                            ).join('')}
+                        <label for="organization-size">Organization Size</label>
+                        <select id="organization-size" class="control-value">
+                            <option value="startup">Startup (1-50 employees)</option>
+                            <option value="small">Small Business (51-250)</option>
+                            <option value="medium" selected>Medium Enterprise (251-1000)</option>
+                            <option value="large">Large Enterprise (1001-5000)</option>
+                            <option value="enterprise">Global Enterprise (5000+)</option>
                         </select>
                     </div>
                     
                     <div class="control-group">
-                        <label for="fte-cost-slider">FTE Cost ($/year)</label>
-                        <input type="range" id="fte-cost-slider" min="60000" max="180000" value="${this.config.fteCost}" step="5000">
-                        <span class="control-value" id="fte-cost-value">$${this.config.fteCost.toLocaleString()}</span>
+                        <label for="geographic-region">Geographic Region</label>
+                        <select id="geographic-region" class="control-value">
+                            <option value="north_america" selected>North America</option>
+                            <option value="europe">Europe</option>
+                            <option value="asia_pacific">Asia Pacific</option>
+                            <option value="latin_america">Latin America</option>
+                            <option value="middle_east_africa">Middle East & Africa</option>
+                        </select>
                     </div>
                     
                     <div class="control-group">
-                        <label for="breach-cost-slider">Breach Cost ($)</label>
-                        <input type="range" id="breach-cost-slider" min="1000000" max="10000000" value="${this.config.breachCost}" step="100000">
-                        <span class="control-value" id="breach-cost-value">$${(this.config.breachCost / 1000000).toFixed(1)}M</span>
+                        <label for="deployment-model">Deployment Strategy</label>
+                        <select id="deployment-model" class="control-value">
+                            <option value="cloud_first" selected>Cloud-First</option>
+                            <option value="hybrid">Hybrid</option>
+                            <option value="on_premises">On-Premises</option>
+                            <option value="multi_cloud">Multi-Cloud</option>
+                        </select>
                     </div>
-                </div>
-            </div>
-        `;
-    }
-    
-    createExecutiveKPIs() {
-        const container = document.getElementById('executive-kpis-container');
-        if (!container) return;
-        
-        const portnoxData = this.vendorData.portnox;
-        const averageCompetitor = this.calculateAverageCompetitor();
-        const industryData = this.industryData[this.config.industry];
-        
-        // Calculate dynamic values based on configuration
-        const adjustedBreachCost = this.config.breachCost * industryData.riskMultiplier;
-        const costSavings = Math.round((averageCompetitor.tco3Year - portnoxData.costs.tco3Year) / 1000);
-        const riskReduction = Math.round((portnoxData.metrics.securityScore - averageCompetitor.securityScore));
-        const efficiencyGain = Math.round(((averageCompetitor.fteRequired - portnoxData.metrics.fteRequired) / averageCompetitor.fteRequired) * 100);
-        
-        container.innerHTML = `
-            <div class="executive-kpis slide-up">
-                <div class="kpi-card strategic">
-                    <div class="kpi-icon">
-                        <i class="fas fa-piggy-bank"></i>
+                    
+                    <div class="control-group">
+                        <label for="implementation-complexity">Implementation Complexity</label>
+                        <select id="implementation-complexity" class="control-value">
+                            <option value="complexity_low">Low Complexity</option>
+                            <option value="complexity_medium" selected>Medium Complexity</option>
+                            <option value="complexity_high">High Complexity</option>
+                            <option value="complexity_very_high">Very High Complexity</option>
+                        </select>
                     </div>
-                    <div class="kpi-metrics">
-                        <div class="primary-metric">
-                            <span class="value" data-animate="${costSavings}">0</span>
-                            <span class="currency">K</span>
-                        </div>
-                        <div class="metric-label">Strategic Savings</div>
-                        <div class="metric-subtitle">3-Year TCO Reduction vs Competition</div>
-                        <div class="trend-indicator positive">
-                            <i class="fas fa-arrow-down"></i>
-                            <span>${Math.round(((averageCompetitor.tco3Year - portnoxData.costs.tco3Year) / averageCompetitor.tco3Year) * 100)}% Lower Cost</span>
-                        </div>
+                    
+                    <div class="control-group">
+                        <label for="pricing-model">Pricing Model</label>
+                        <select id="pricing-model" class="control-value">
+                            <option value="per_device" selected>Per Device</option>
+                            <option value="per_user">Per User</option>
+                            <option value="tiered">Tiered Pricing</option>
+                            <option value="enterprise">Enterprise License</option>
+                        </select>
                     </div>
                 </div>
                 
-                <div class="kpi-card financial">
-                    <div class="kpi-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="kpi-metrics">
-                        <div class="primary-metric">
-                            <span class="value" data-animate="${portnoxData.metrics.roi3Year}">0</span>
-                            <span class="currency">%</span>
+                <div class="cost-breakdown-preview">
+                    <h5><i class="fas fa-calculator"></i> Cost Calculation Preview</h5>
+                    <div class="cost-preview-grid">
+                        <div class="cost-item">
+                            <span class="cost-label">Base Cost:</span>
+                            <span class="cost-value" id="preview-base-cost">$65,000</span>
                         </div>
-                        <div class="metric-label">Investment ROI</div>
-                        <div class="metric-subtitle">3-Year Return on Investment</div>
-                        <div class="trend-indicator positive">
-                            <i class="fas fa-rocket"></i>
-                            <span>${portnoxData.metrics.paybackMonths}-Month Payback</span>
+                        <div class="cost-item">
+                            <span class="cost-label">Adjustments:</span>
+                            <span class="cost-value" id="preview-adjustments">+$5,200</span>
                         </div>
-                    </div>
-                </div>
-                
-                <div class="kpi-card operational">
-                    <div class="kpi-icon">
-                        <i class="fas fa-users-cog"></i>
-                    </div>
-                    <div class="kpi-metrics">
-                        <div class="primary-metric">
-                            <span class="value" data-animate="${efficiencyGain}">0</span>
-                            <span class="currency">%</span>
-                        </div>
-                        <div class="metric-label">Efficiency Gain</div>
-                        <div class="metric-subtitle">IT Resource Optimization</div>
-                        <div class="trend-indicator positive">
-                            <i class="fas fa-user-minus"></i>
-                            <span>${portnoxData.metrics.fteRequired} vs ${averageCompetitor.fteRequired.toFixed(1)} FTE</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="kpi-card security">
-                    <div class="kpi-icon">
-                        <i class="fas fa-shield-check"></i>
-                    </div>
-                    <div class="kpi-metrics">
-                        <div class="primary-metric">
-                            <span class="value" data-animate="${portnoxData.metrics.securityScore}">0</span>
-                            <span class="currency">%</span>
-                        </div>
-                        <div class="metric-label">Security Score</div>
-                        <div class="metric-subtitle">Zero Trust Readiness Level</div>
-                        <div class="trend-indicator positive">
-                            <i class="fas fa-shield-virus"></i>
-                            <span>+${riskReduction}% vs Industry</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="kpi-card financial">
-                    <div class="kpi-icon">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div class="kpi-metrics">
-                        <div class="primary-metric">
-                            <span class="value" data-animate="${Math.round(adjustedBreachCost / 1000000)}">0</span>
-                            <span class="currency">M</span>
-                        </div>
-                        <div class="metric-label">Breach Risk</div>
-                        <div class="metric-subtitle">Potential ${industryData.name} Impact</div>
-                        <div class="trend-indicator positive">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>${riskReduction}% Risk Reduction</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="kpi-card operational">
-                    <div class="kpi-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="kpi-metrics">
-                        <div class="primary-metric">
-                            <span class="value" data-animate="${portnoxData.metrics.implementationDays}">0</span>
-                            <span class="currency">Days</span>
-                        </div>
-                        <div class="metric-label">Time to Value</div>
-                        <div class="metric-subtitle">Implementation Speed</div>
-                        <div class="trend-indicator positive">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>${Math.round(((averageCompetitor.implementationDays - portnoxData.metrics.implementationDays) / averageCompetitor.implementationDays) * 100)}% Faster Deploy</span>
+                        <div class="cost-item">
+                            <span class="cost-label">Total Estimated:</span>
+                            <span class="cost-value highlight-positive" id="preview-total">$70,200</span>
                         </div>
                     </div>
                 </div>
             </div>
         `;
+
+        existingContainer.appendChild(enhancedControls);
+        this.bindAdvancedCostControls();
+        console.log("✅ Advanced cost controls created successfully");
     }
-    
-    calculateMarketCoverage() {
-        const totalMarketShare = this.selectedVendors.reduce((total, vendorId) => {
-            return total + (this.vendorData[vendorId]?.metrics?.marketShare || 0);
-        }, 0);
-        return Math.round(totalMarketShare);
-    }
-    
-    calculateAverageCompetitor() {
-        const competitors = Object.keys(this.vendorData).filter(id => id !== 'portnox');
-        const totals = competitors.reduce((acc, vendorId) => {
-            const vendor = this.vendorData[vendorId];
-            return {
-                tco3Year: acc.tco3Year + vendor.costs.tco3Year,
-                implementationDays: acc.implementationDays + vendor.metrics.implementationDays,
-                securityScore: acc.securityScore + vendor.metrics.securityScore,
-                fteRequired: acc.fteRequired + vendor.metrics.fteRequired
-            };
-        }, { tco3Year: 0, implementationDays: 0, securityScore: 0, fteRequired: 0 });
+
+    bindAdvancedCostControls() {
+        console.log("🔗 Binding advanced cost control event listeners...");
         
-        return {
-            tco3Year: totals.tco3Year / competitors.length,
-            implementationDays: totals.implementationDays / competitors.length,
-            securityScore: totals.securityScore / competitors.length,
-            fteRequired: totals.fteRequired / competitors.length
-        };
-    }
-    
-    createTabNavigation() {
-        const container = document.getElementById('tab-navigation-container');
-        if (!container) return;
-        
-        container.innerHTML = `
-            <div class="tab-navigation fade-in">
-                <div class="main-tabs">
-                    <button class="main-tab active" data-tab="overview">
-                        <div class="tab-icon"><i class="fas fa-tachometer-alt"></i></div>
-                        <div class="tab-content">
-                            <span class="tab-title">Overview</span>
-                            <span class="tab-subtitle">Executive Dashboard</span>
-                        </div>
-                    </button>
-                    
-                    <button class="main-tab" data-tab="financial">
-                        <div class="tab-icon"><i class="fas fa-chart-line"></i></div>
-                        <div class="tab-content">
-                            <span class="tab-title">Financial</span>
-                            <span class="tab-subtitle">TCO & ROI Analysis</span>
-                        </div>
-                    </button>
-                    
-                    <button class="main-tab" data-tab="security">
-                        <div class="tab-icon"><i class="fas fa-shield-alt"></i></div>
-                        <div class="tab-content">
-                            <span class="tab-title">Security</span>
-                            <span class="tab-subtitle">Risk & Compliance</span>
-                        </div>
-                    </button>
-                    
-                    <button class="main-tab" data-tab="vendors">
-                        <div class="tab-icon"><i class="fas fa-balance-scale"></i></div>
-                        <div class="tab-content">
-                            <span class="tab-title">Vendors</span>
-                            <span class="tab-subtitle">Competitive Matrix</span>
-                        </div>
-                    </button>
-                    
-                    <button class="main-tab" data-tab="compliance">
-                        <div class="tab-icon"><i class="fas fa-clipboard-check"></i></div>
-                        <div class="tab-content">
-                            <span class="tab-title">Compliance</span>
-                            <span class="tab-subtitle">Regulatory Coverage</span>
-                        </div>
-                    </button>
-                    
-                    <button class="main-tab" data-tab="insurance">
-                        <div class="tab-icon"><i class="fas fa-umbrella"></i></div>
-                        <div class="tab-content">
-                            <span class="tab-title">Insurance</span>
-                            <span class="tab-subtitle">Cyber Risk Impact</span>
-                        </div>
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-    
-    createTabContent() {
-        const container = document.getElementById('tab-content-container');
-        if (!container) return;
-        
-        container.innerHTML = `
-            <div class="tab-content-area">
-                <!-- Overview Tab -->
-                <div class="tab-panel active" data-panel="overview">
-                    <div class="chart-grid">
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h3 class="chart-title">
-                                    <i class="fas fa-chart-bar"></i>
-                                    Total Cost of Ownership Comparison
-                                </h3>
-                                <div class="chart-subtitle">3-Year TCO analysis across selected NAC solutions</div>
-                            </div>
-                            <div class="chart-wrapper" id="overview-tco-chart"></div>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h3 class="chart-title">
-                                    <i class="fas fa-clock"></i>
-                                    Implementation Timeline
-                                </h3>
-                                <div class="chart-subtitle">Time to deployment comparison</div>
-                            </div>
-                            <div class="chart-wrapper" id="overview-timeline-chart"></div>
-                        </div>
-                        
-                        <div class="chart-container full-width">
-                            <div class="chart-header">
-                                <h3 class="chart-title">
-                                    <i class="fas fa-chart-area"></i>
-                                    Multi-Year ROI Projection
-                                </h3>
-                                <div class="chart-subtitle">Return on investment over 5-year period</div>
-                            </div>
-                            <div class="chart-wrapper" id="overview-roi-chart"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Financial Tab -->
-                <div class="tab-panel" data-panel="financial">
-                    <div class="chart-grid">
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h3 class="chart-title">
-                                    <i class="fas fa-dollar-sign"></i>
-                                    Per Device Cost Analysis
-                                </h3>
-                            </div>
-                            <div class="chart-wrapper" id="financial-per-device-chart"></div>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h3 class="chart-title">
-                                    <i class="fas fa-users"></i>
-                                    FTE Requirements
-                                </h3>
-                            </div>
-                            <div class="chart-wrapper" id="financial-fte-chart"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Security Tab -->
-                <div class="tab-panel" data-panel="security">
-                    <div class="chart-grid">
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h3 class="chart-title">
-                                    <i class="fas fa-shield-alt"></i>
-                                    Security Capabilities
-                                </h3>
-                            </div>
-                            <div class="chart-wrapper" id="security-radar-chart"></div>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h3 class="chart-title">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    Risk Reduction
-                                </h3>
-                            </div>
-                            <div class="chart-wrapper" id="security-risk-chart"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Vendors Tab -->
-                <div class="tab-panel" data-panel="vendors">
-                    <div class="chart-container">
-                        <div class="chart-header">
-                            <h3 class="chart-title">
-                                <i class="fas fa-table"></i>
-                                Vendor Comparison Matrix
-                            </h3>
-                        </div>
-                        <div id="vendor-comparison-matrix"></div>
-                    </div>
-                </div>
-                
-                <!-- Compliance Tab -->
-                <div class="tab-panel" data-panel="compliance">
-                    <div class="chart-grid">
-                        <div class="chart-container full-width">
-                            <div class="chart-header">
-                                <h3 class="chart-title">
-                                    <i class="fas fa-clipboard-check"></i>
-                                    Compliance Framework Coverage
-                                </h3>
-                            </div>
-                            <div class="chart-wrapper" id="compliance-chart"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Insurance Tab -->
-                <div class="tab-panel" data-panel="insurance">
-                    <div class="chart-grid">
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h3 class="chart-title">
-                                    <i class="fas fa-umbrella"></i>
-                                    Cyber Insurance Impact
-                                </h3>
-                            </div>
-                            <div class="chart-wrapper" id="insurance-chart"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-    
-    setupEventListeners() {
-        this.bindVendorSelection();
-        this.bindTabNavigation();
-        this.bindCostAnalysisControls();
-        this.bindActionButtons();
-    }
-    
-    bindVendorSelection() {
-        document.querySelectorAll('.vendor-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                btn.classList.toggle('active');
-                this.updateSelectedVendors();
-                this.updateSelectedCount();
-                this.refreshCurrentTab();
-            });
-        });
-    }
-    
-    bindTabNavigation() {
-        document.querySelectorAll('.main-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabId = tab.getAttribute('data-tab');
-                this.switchToTab(tabId);
-            });
-        });
-    }
-    
-    bindCostAnalysisControls() {
-        // Device count slider
-        const deviceSlider = document.getElementById('device-count-slider');
-        if (deviceSlider) {
-            deviceSlider.addEventListener('input', (e) => {
-                this.config.deviceCount = parseInt(e.target.value);
-                document.getElementById('device-count-value').textContent = this.config.deviceCount.toLocaleString();
-                this.refreshKPIs();
-                this.refreshCurrentTab();
+        // Average device price
+        const devicePriceSlider = document.getElementById('avg-device-price');
+        if (devicePriceSlider) {
+            devicePriceSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                document.getElementById('avg-device-price-value').textContent = `$${value}`;
+                this.updateCostPreview();
+                console.log(`💰 Device price updated: $${value}`);
             });
         }
-        
-        // Analysis period slider
-        const periodSlider = document.getElementById('analysis-period-slider');
-        if (periodSlider) {
-            periodSlider.addEventListener('input', (e) => {
-                this.config.analysisPeriod = parseInt(e.target.value);
-                document.getElementById('analysis-period-value').textContent = this.config.analysisPeriod;
-                this.refreshKPIs();
-                this.refreshCurrentTab();
+
+        // Organization size
+        const orgSizeSelect = document.getElementById('organization-size');
+        if (orgSizeSelect) {
+            orgSizeSelect.addEventListener('change', (e) => {
+                this.updateCostPreview();
+                console.log(`🏢 Organization size changed: ${e.target.value}`);
             });
         }
-        
-        // Risk factor slider
-        const riskSlider = document.getElementById('risk-factor-slider');
-        if (riskSlider) {
-            riskSlider.addEventListener('input', (e) => {
-                this.config.riskFactor = parseFloat(e.target.value);
-                document.getElementById('risk-factor-value').textContent = this.config.riskFactor + 'x';
-                this.refreshKPIs();
-                this.refreshCurrentTab();
+
+        // Geographic region
+        const regionSelect = document.getElementById('geographic-region');
+        if (regionSelect) {
+            regionSelect.addEventListener('change', (e) => {
+                this.updateCostPreview();
+                console.log(`🌍 Region changed: ${e.target.value}`);
             });
         }
-        
-        // Industry select
-        const industrySelect = document.getElementById('industry-select');
-        if (industrySelect) {
-            industrySelect.addEventListener('change', (e) => {
-                this.config.industry = e.target.value;
-                this.refreshKPIs();
-                this.refreshCurrentTab();
+
+        // Deployment model
+        const deploymentSelect = document.getElementById('deployment-model');
+        if (deploymentSelect) {
+            deploymentSelect.addEventListener('change', (e) => {
+                this.updateCostPreview();
+                console.log(`☁️ Deployment model changed: ${e.target.value}`);
             });
         }
-        
-        // FTE cost slider
-        const fteSlider = document.getElementById('fte-cost-slider');
-        if (fteSlider) {
-            fteSlider.addEventListener('input', (e) => {
-                this.config.fteCost = parseInt(e.target.value);
-                document.getElementById('fte-cost-value').textContent = '$' + this.config.fteCost.toLocaleString();
-                this.refreshKPIs();
-                this.refreshCurrentTab();
+
+        // Implementation complexity
+        const complexitySelect = document.getElementById('implementation-complexity');
+        if (complexitySelect) {
+            complexitySelect.addEventListener('change', (e) => {
+                this.updateCostPreview();
+                console.log(`⚙️ Complexity changed: ${e.target.value}`);
             });
         }
-        
-        // Breach cost slider
-        const breachSlider = document.getElementById('breach-cost-slider');
-        if (breachSlider) {
-            breachSlider.addEventListener('input', (e) => {
-                this.config.breachCost = parseInt(e.target.value);
-                document.getElementById('breach-cost-value').textContent = '$' + (this.config.breachCost / 1000000).toFixed(1) + 'M';
-                this.refreshKPIs();
-                this.refreshCurrentTab();
+
+        // Pricing model
+        const pricingSelect = document.getElementById('pricing-model');
+        if (pricingSelect) {
+            pricingSelect.addEventListener('change', (e) => {
+                this.updateCostPreview();
+                console.log(`💳 Pricing model changed: ${e.target.value}`);
             });
         }
+
+        console.log("✅ Advanced cost control bindings completed");
     }
-    
-    bindActionButtons() {
-        document.getElementById('export-executive')?.addEventListener('click', () => {
-            this.handleExport();
-        });
-        
-        document.getElementById('live-demo')?.addEventListener('click', () => {
-            this.handleLiveDemo();
-        });
-        
-        document.getElementById('customize-dashboard')?.addEventListener('click', () => {
-            this.handleCustomize();
-        });
-        
-        document.getElementById('schedule-meeting')?.addEventListener('click', () => {
-            this.handleScheduleMeeting();
-        });
-    }
-    
-    bindCalculationEvents() {
-        document.addEventListener('calculationComplete', (event) => {
-            this.updateFromCalculation(event.detail);
-        });
-        
-        document.addEventListener('configurationChanged', (event) => {
-            this.updateFromConfiguration(event.detail);
-        });
-    }
-    
-    updateSelectedVendors() {
-        this.selectedVendors = Array.from(document.querySelectorAll('.vendor-btn.active'))
-            .map(btn => btn.getAttribute('data-vendor'));
-    }
-    
-    updateSelectedCount() {
-        const counter = document.querySelector('.selected-count');
-        if (counter) {
-            counter.textContent = this.selectedVendors.length;
+
+    updateCostPreview() {
+        try {
+            console.log("📊 Updating cost preview calculations...");
+            
+            const deviceCount = parseInt(document.getElementById('device-count-slider')?.value || 1000);
+            const devicePrice = parseInt(document.getElementById('avg-device-price')?.value || 65);
+            const orgSize = document.getElementById('organization-size')?.value || 'medium';
+            const region = document.getElementById('geographic-region')?.value || 'north_america';
+            const deployment = document.getElementById('deployment-model')?.value || 'cloud_first';
+            const complexity = document.getElementById('implementation-complexity')?.value || 'complexity_medium';
+
+            // Calculate base cost
+            let baseCost = deviceCount * devicePrice;
+
+            // Apply organization size multiplier
+            if (window.organizationSettings?.sizes[orgSize]) {
+                baseCost *= window.organizationSettings.sizes[orgSize].deviceMultiplier;
+            }
+
+            // Apply regional multiplier
+            if (window.organizationSettings?.regions[region]) {
+                baseCost *= window.organizationSettings.regions[region].costMultiplier;
+            }
+
+            // Apply deployment model adjustments
+            let deploymentAdjustment = 0;
+            if (window.organizationSettings?.deploymentModels[deployment]) {
+                deploymentAdjustment = baseCost * window.organizationSettings.deploymentModels[deployment].costReduction;
+            }
+
+            // Apply complexity multiplier
+            let complexityMultiplier = 1.0;
+            if (this.costFactors.implementationFactors[complexity]) {
+                complexityMultiplier = this.costFactors.implementationFactors[complexity].multiplier;
+            }
+
+            const finalBaseCost = baseCost * complexityMultiplier;
+            const totalCost = finalBaseCost - deploymentAdjustment;
+
+            // Update preview display
+            document.getElementById('preview-base-cost').textContent = `$${Math.round(finalBaseCost).toLocaleString()}`;
+            document.getElementById('preview-adjustments').textContent = `-$${Math.round(deploymentAdjustment).toLocaleString()}`;
+            document.getElementById('preview-total').textContent = `$${Math.round(totalCost).toLocaleString()}`;
+
+            console.log(`💰 Cost preview updated - Total: $${Math.round(totalCost).toLocaleString()}`);
+            
+            // Trigger global update if platform exists
+            if (window.zeroTrustExecutivePlatform) {
+                window.zeroTrustExecutivePlatform.refreshKPIs();
+            }
+
+        } catch (error) {
+            console.error("❌ Error updating cost preview:", error);
         }
-        
-        const marketCoverage = document.querySelector('.vendor-stats span:last-child');
-        if (marketCoverage) {
-            marketCoverage.textContent = `Market Coverage: ${this.calculateMarketCoverage()}%`;
-        }
     }
-    
-    switchToTab(tabId) {
-        document.querySelectorAll('.main-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+
+    init() {
+        if (this.initialized) return;
         
-        document.querySelectorAll('.tab-panel').forEach(panel => {
-            panel.classList.remove('active');
-        });
-        document.querySelector(`[data-panel="${tabId}"]`).classList.add('active');
+        console.log("🚀 Initializing Advanced Cost Analysis...");
         
-        this.currentTab = tabId;
-        this.refreshCurrentTab();
-    }
-    
-    refreshKPIs() {
-        this.createExecutiveKPIs();
-        this.startAnimations();
-    }
-    
-    refreshCurrentTab() {
+        // Wait for main platform to be ready
         setTimeout(() => {
-            switch(this.currentTab) {
-                case 'overview':
-                    this.createOverviewCharts();
-                    break;
-                case 'financial':
-                    this.createFinancialCharts();
-                    break;
-                case 'security':
-                    this.createSecurityCharts();
-                    break;
-                case 'vendors':
-                    this.createVendorCharts();
-                    break;
-                case 'compliance':
-                    this.createComplianceCharts();
-                    break;
-                case 'insurance':
-                    this.createInsuranceCharts();
-                    break;
-            }
-        }, 100);
-    }
-    
-    createOverviewCharts() {
-        this.createTCOChart();
-        this.createTimelineChart();
-        this.createROIChart();
-    }
-    
-    createTCOChart() {
-        const container = document.getElementById('overview-tco-chart');
-        if (!container || typeof Highcharts === 'undefined') return;
-        
-        const selectedData = this.selectedVendors.map(vendorId => {
-            const vendor = this.vendorData[vendorId];
-            return {
-                name: vendor.shortName,
-                y: vendor.costs.tco3Year,
-                color: vendor.color
-            };
-        });
-        
-        Highcharts.chart(container, {
-            chart: { type: 'column', height: 400 },
-            title: { text: null },
-            xAxis: { type: 'category' },
-            yAxis: {
-                title: { text: '3-Year TCO ($)' },
-                labels: {
-                    formatter: function() {
-                        return '$' + Highcharts.numberFormat(this.value / 1000, 0) + 'K';
-                    }
-                }
-            },
-            series: [{
-                name: 'TCO',
-                data: selectedData,
-                dataLabels: {
-                    enabled: true,
-                    formatter: function() {
-                        return '$' + Highcharts.numberFormat(this.y / 1000, 0) + 'K';
-                    }
-                }
-            }],
-            credits: { enabled: false },
-            legend: { enabled: false }
-        });
-    }
-    
-    createTimelineChart() {
-        const container = document.getElementById('overview-timeline-chart');
-        if (!container || typeof Highcharts === 'undefined') return;
-        
-        const selectedData = this.selectedVendors.map(vendorId => {
-            const vendor = this.vendorData[vendorId];
-            return {
-                name: vendor.shortName,
-                y: vendor.metrics.implementationDays,
-                color: vendor.color
-            };
-        });
-        
-        Highcharts.chart(container, {
-            chart: { type: 'bar', height: 400 },
-            title: { text: null },
-            xAxis: { type: 'category' },
-            yAxis: { title: { text: 'Days' } },
-            series: [{
-                name: 'Implementation Days',
-                data: selectedData,
-                dataLabels: {
-                    enabled: true,
-                    formatter: function() {
-                        return this.y + ' days';
-                    }
-                }
-            }],
-            credits: { enabled: false },
-            legend: { enabled: false }
-        });
-    }
-    
-    createROIChart() {
-        const container = document.getElementById('overview-roi-chart');
-        if (!container || typeof Highcharts === 'undefined') return;
-        
-        const series = this.selectedVendors.map(vendorId => {
-            const vendor = this.vendorData[vendorId];
-            return {
-                name: vendor.shortName,
-                color: vendor.color,
-                data: [0, vendor.metrics.roi1Year || 0, vendor.metrics.roi3Year, vendor.metrics.roi5Year || vendor.metrics.roi3Year * 1.5]
-            };
-        });
-        
-        Highcharts.chart(container, {
-            chart: { type: 'line', height: 400 },
-            title: { text: null },
-            xAxis: { categories: ['Initial', 'Year 1', 'Year 3', 'Year 5'] },
-            yAxis: { title: { text: 'ROI (%)' } },
-            series: series,
-            credits: { enabled: false }
-        });
-    }
-    
-    createFinancialCharts() {
-        this.createPerDeviceChart();
-        this.createFTEChart();
-    }
-    
-    createPerDeviceChart() {
-        const container = document.getElementById('financial-per-device-chart');
-        if (!container || typeof Highcharts === 'undefined') return;
-        
-        const selectedData = this.selectedVendors.map(vendorId => {
-            const vendor = this.vendorData[vendorId];
-            return {
-                name: vendor.shortName,
-                y: vendor.costs.licensePerDevice,
-                color: vendor.color
-            };
-        });
-        
-        Highcharts.chart(container, {
-            chart: { type: 'column', height: 400 },
-            title: { text: null },
-            xAxis: { type: 'category' },
-            yAxis: { title: { text: 'Cost per Device ($)' } },
-            series: [{
-                name: 'Per Device Cost',
-                data: selectedData,
-                dataLabels: {
-                    enabled: true,
-                    formatter: function() {
-                        return '$' + this.y;
-                    }
-                }
-            }],
-            credits: { enabled: false },
-            legend: { enabled: false }
-        });
-    }
-    
-    createFTEChart() {
-        const container = document.getElementById('financial-fte-chart');
-        if (!container || typeof Highcharts === 'undefined') return;
-        
-        const selectedData = this.selectedVendors.map(vendorId => {
-            const vendor = this.vendorData[vendorId];
-            return {
-                name: vendor.shortName,
-                y: vendor.metrics.fteRequired,
-                color: vendor.color
-            };
-        });
-        
-        Highcharts.chart(container, {
-            chart: { type: 'column', height: 400 },
-            title: { text: null },
-            xAxis: { type: 'category' },
-            yAxis: { title: { text: 'FTE Required' } },
-            series: [{
-                name: 'FTE',
-                data: selectedData,
-                dataLabels: {
-                    enabled: true,
-                    formatter: function() {
-                        return this.y + ' FTE';
-                    }
-                }
-            }],
-            credits: { enabled: false },
-            legend: { enabled: false }
-        });
-    }
-    
-    createSecurityCharts() {
-        console.log("Creating security charts...");
-    }
-    
-    createVendorCharts() {
-        this.createVendorMatrix();
-    }
-    
-    createVendorMatrix() {
-        const container = document.getElementById('vendor-comparison-matrix');
-        if (!container) return;
-        
-        const metrics = [
-            { key: 'tco3Year', label: '3-Year TCO', category: 'costs', format: 'currency' },
-            { key: 'roi3Year', label: 'ROI (%)', category: 'metrics', format: 'percentage' },
-            { key: 'implementationDays', label: 'Implementation', category: 'metrics', format: 'days' },
-            { key: 'fteRequired', label: 'FTE Required', category: 'metrics', format: 'number' },
-            { key: 'securityScore', label: 'Security Score', category: 'metrics', format: 'percentage' }
-        ];
-        
-        let tableHTML = `
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Metric</th>
-                        ${this.selectedVendors.map(vendorId => {
-                            const vendor = this.vendorData[vendorId];
-                            return `<th style="text-align: center;">
-                                <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-                                    <img src="${vendor.logo}" alt="${vendor.shortName}" style="width: 32px; height: 32px; object-fit: contain;">
-                                    <span>${vendor.shortName}</span>
-                                </div>
-                            </th>`;
-                        }).join('')}
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        
-        metrics.forEach(metric => {
-            tableHTML += `<tr><td style="font-weight: 600;">${metric.label}</td>`;
-            
-            this.selectedVendors.forEach(vendorId => {
-                const vendor = this.vendorData[vendorId];
-                const value = vendor[metric.category]?.[metric.key] || 0;
-                
-                let formattedValue;
-                switch(metric.format) {
-                    case 'currency':
-                        formattedValue = '$' + (value / 1000).toLocaleString() + 'K';
-                        break;
-                    case 'percentage':
-                        formattedValue = value + '%';
-                        break;
-                    case 'days':
-                        formattedValue = value + ' days';
-                        break;
-                    case 'number':
-                        formattedValue = value.toString();
-                        break;
-                    default:
-                        formattedValue = value.toString();
-                }
-                
-                tableHTML += `<td style="text-align: center;">${formattedValue}</td>`;
-            });
-            
-            tableHTML += `</tr>`;
-        });
-        
-        tableHTML += `</tbody></table>`;
-        container.innerHTML = tableHTML;
-    }
-    
-    createComplianceCharts() {
-        console.log("Creating compliance charts...");
-    }
-    
-    createInsuranceCharts() {
-        console.log("Creating insurance charts...");
-    }
-    
-    initializeParticles() {
-        if (typeof particlesJS !== 'undefined') {
-            particlesJS('particles-header', {
-                particles: {
-                    number: { 
-                        value: 60,
-                        density: {
-                            enable: true,
-                            value_area: 800
-                        }
-                    },
-                    color: { value: '#ffffff' },
-                    shape: { 
-                        type: 'circle',
-                        stroke: {
-                            width: 0,
-                            color: '#000000'
-                        }
-                    },
-                    opacity: { 
-                        value: 0.4, 
-                        random: true,
-                        anim: {
-                            enable: true,
-                            speed: 1,
-                            opacity_min: 0.1,
-                            sync: false
-                        }
-                    },
-                    size: { 
-                        value: 4, 
-                        random: true,
-                        anim: {
-                            enable: true,
-                            speed: 2,
-                            size_min: 0.1,
-                            sync: false
-                        }
-                    },
-                    line_linked: {
-                        enable: true,
-                        distance: 150,
-                        color: '#ffffff',
-                        opacity: 0.3,
-                        width: 1
-                    },
-                    move: {
-                        enable: true,
-                        speed: 2,
-                        direction: 'none',
-                        random: true,
-                        straight: false,
-                        out_mode: 'out',
-                        bounce: false
-                    }
-                },
-                interactivity: {
-                    detect_on: 'canvas',
-                    events: {
-                        onhover: { 
-                            enable: true, 
-                            mode: 'bubble' 
-                        },
-                        onclick: { 
-                            enable: true, 
-                            mode: 'push' 
-                        },
-                        resize: true
-                    },
-                    modes: {
-                        bubble: {
-                            distance: 200,
-                            size: 6,
-                            duration: 2,
-                            opacity: 0.6,
-                            speed: 3
-                        },
-                        push: {
-                            particles_nb: 3
-                        }
-                    }
-                },
-                retina_detect: true
-            });
-        }
-    }
-    
-    startAnimations() {
-        const kpiValues = document.querySelectorAll('[data-animate]');
-        kpiValues.forEach((element, index) => {
-            setTimeout(() => {
-                const targetValue = parseInt(element.getAttribute('data-animate'));
-                this.animateValue(element, 0, targetValue, 2500);
-            }, index * 300);
-        });
-        
-        const cards = document.querySelectorAll('.kpi-card, .chart-container, .vendor-btn');
-        cards.forEach((card, index) => {
-            setTimeout(() => {
-                card.classList.add('scale-in');
-            }, index * 100);
-        });
-    }
-    
-    animateValue(element, start, end, duration) {
-        const startTime = performance.now();
-        
-        const updateValue = (currentTime) => {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const easeOut = 1 - Math.pow(1 - progress, 3);
-            
-            const current = Math.round(start + (end - start) * easeOut);
-            element.textContent = current.toLocaleString();
-            
-            if (progress < 1) {
-                requestAnimationFrame(updateValue);
-            }
-        };
-        
-        requestAnimationFrame(updateValue);
-    }
-    
-    handleExport() {
-        console.log("📤 Exporting executive report...");
-        this.showNotification('Executive report exported successfully!', 'success');
-    }
-    
-    handleLiveDemo() {
-        console.log("🎬 Starting live demo...");
-        this.showNotification('Live demo session initiated. Contact us for personalized demonstration.', 'info');
-    }
-    
-    handleCustomize() {
-        console.log("⚙️ Opening customization options...");
-        this.showNotification('Customization options coming soon!', 'info');
-    }
-    
-    handleScheduleMeeting() {
-        console.log("📅 Opening meeting scheduler...");
-        this.showNotification('Redirecting to meeting scheduler...', 'info');
-    }
-    
-    showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            z-index: 10000;
-            font-weight: 600;
-            max-width: 300px;
-        `;
-        
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            document.body.removeChild(notification);
-        }, 4000);
-    }
-    
-    showErrorMessage(message) {
-        const container = document.querySelector('#executive-view .view-content');
-        if (container) {
-            container.innerHTML = `
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; color: #e74c3c;">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 4rem; margin-bottom: 2rem;"></i>
-                    <h2 style="margin-bottom: 1rem;">${message}</h2>
-                    <button onclick="location.reload()" style="background: #1a5a96; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer;">
-                        <i class="fas fa-redo"></i> Reload Platform
-                    </button>
-                </div>
-            `;
-        }
-    }
-    
-    updateFromCalculation(data) {
-        if (data && data.results) {
-            this.refreshKPIs();
-            this.refreshCurrentTab();
-        }
-    }
-    
-    updateFromConfiguration(config) {
-        if (config) {
-            Object.assign(this.config, config);
-            this.refreshKPIs();
-            this.refreshCurrentTab();
-        }
-    }
-    
-    destroy() {
-        this.eventListeners.forEach(listener => {
-            listener.element.removeEventListener(listener.event, listener.handler);
-        });
-        
-        Object.values(this.chartInstances).forEach(chart => {
-            if (chart && chart.destroy) {
-                chart.destroy();
-            }
-        });
-        
-        this.initialized = false;
-        console.log("🧹 Zero Trust Executive Platform cleaned up");
+            this.createAdvancedCostControls();
+            this.initialized = true;
+            console.log("✅ Advanced Cost Analysis initialized successfully");
+        }, 2000);
     }
 }
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
-        try {
-            if (!window.zeroTrustExecutivePlatform) {
-                window.zeroTrustExecutivePlatform = new ZeroTrustExecutivePlatform();
-                
-                const executiveView = document.querySelector('#executive-view');
-                if (executiveView) {
-                    const result = window.zeroTrustExecutivePlatform.init();
-                    if (result) {
-                        console.log("🚀 Zero Trust Executive Platform fully loaded and ready");
-                    }
-                }
-            }
-        } catch (error) {
-            console.error("❌ Platform initialization failed:", error);
+        if (!window.advancedCostAnalysis) {
+            window.advancedCostAnalysis = new AdvancedCostAnalysis();
+            window.advancedCostAnalysis.init();
         }
-    }, 1000);
+    }, 1500);
 });
 
-// Global access
-window.ZeroTrustExecutivePlatform = ZeroTrustExecutivePlatform;
-
-// Cleanup on page unload
-window.addEventListener('beforeunload', () => {
-    if (window.zeroTrustExecutivePlatform) {
-        window.zeroTrustExecutivePlatform.destroy();
-    }
-});
+window.AdvancedCostAnalysis = AdvancedCostAnalysis;
 EOF
 
-echo -e "${GREEN}✅ Git preparation...${NC}"
+echo -e "${GREEN}✅ Creating comprehensive export and reporting system...${NC}"
+cat > js/enhancements/advanced-export-system.js << 'EOF'
+/**
+ * Advanced Export and Reporting System
+ * Comprehensive report generation for PDF, Excel, and PowerPoint
+ */
 
-# Add all changes
+class AdvancedExportSystem {
+    constructor() {
+        this.initialized = false;
+        this.reportTemplates = this.initializeReportTemplates();
+    }
+
+    initializeReportTemplates() {
+        return {
+            'executive_summary': {
+                name: 'Executive Summary Report',
+                description: 'High-level strategic overview for C-suite executives',
+                sections: ['Executive Overview', 'Financial Impact', 'Strategic Recommendations', 'ROI Analysis'],
+                targetAudience: 'C-Suite Executives'
+            },
+            'technical_analysis': {
+                name: 'Technical Analysis Report',
+                description: 'Detailed technical comparison and implementation guide',
+                sections: ['Technical Comparison', 'Architecture Analysis', 'Implementation Timeline', 'Integration Requirements'],
+                targetAudience: 'IT Leadership'
+            },
+            'financial_deep_dive': {
+                name: 'Financial Deep Dive',
+                description: 'Comprehensive financial analysis and projections',
+                sections: ['TCO Breakdown', 'ROI Projections', 'Budget Planning', 'Cost-Benefit Analysis'],
+                targetAudience: 'CFO and Finance Teams'
+            },
+            'compliance_report': {
+                name: 'Compliance & Risk Assessment',
+                description: 'Regulatory compliance and risk analysis',
+                sections: ['Compliance Coverage', 'Risk Assessment', 'Regulatory Requirements', 'Audit Readiness'],
+                targetAudience: 'Compliance Officers'
+            },
+            'vendor_comparison': {
+                name: 'Vendor Comparison Matrix',
+                description: 'Side-by-side vendor analysis and evaluation',
+                sections: ['Vendor Overview', 'Feature Comparison', 'Pricing Analysis', 'Recommendation Matrix'],
+                targetAudience: 'Procurement Teams'
+            }
+        };
+    }
+
+    generateExecutiveSummaryData() {
+        console.log("📋 Generating executive summary data...");
+        
+        const platform = window.zeroTrustExecutivePlatform;
+        if (!platform) {
+            console.warn("⚠️ Platform not available for data generation");
+            return null;
+        }
+
+        const portnoxData = platform.vendorData?.portnox;
+        const avgCompetitor = platform.calculateAverageCompetitor?.();
+        const industryData = platform.industryData?.[platform.config?.industry];
+
+        const executiveData = {
+            reportMetadata: {
+                title: 'Zero Trust NAC Executive Analysis Report',
+                generated: new Date().toLocaleDateString(),
+                generatedBy: 'Portnox Executive Intelligence Platform',
+                reportType: 'Executive Summary',
+                confidentiality: 'Confidential - Internal Use Only'
+            },
+            executiveSummary: {
+                costSavings: avgCompetitor ? Math.round((avgCompetitor.tco3Year - portnoxData?.costs?.tco3Year) / 1000) : 275,
+                roiPercent: portnoxData?.metrics?.roi3Year || 325,
+                paybackMonths: portnoxData?.metrics?.paybackMonths || 7,
+                implementationDays: portnoxData?.metrics?.implementationDays || 21,
+                securityScore: portnoxData?.metrics?.securityScore || 95,
+                industryName: industryData?.name || 'Technology'
+            },
+            strategicInsights: [
+                {
+                    title: 'Market Leadership Position',
+                    insight: 'Portnox Cloud demonstrates superior TCO performance with significant cost reduction compared to traditional NAC solutions.',
+                    impact: 'High',
+                    category: 'Financial'
+                },
+                {
+                    title: 'Accelerated Digital Transformation',
+                    insight: 'Cloud-native architecture enables rapid deployment and faster time-to-value realization.',
+                    impact: 'High',
+                    category: 'Operational'
+                },
+                {
+                    title: 'Enhanced Security Posture',
+                    insight: 'Superior security capabilities reduce breach risk and strengthen compliance position.',
+                    impact: 'Critical',
+                    category: 'Security'
+                }
+            ],
+            recommendations: [
+                {
+                    priority: 'Immediate',
+                    action: 'Initiate Portnox Cloud pilot program to validate projected benefits',
+                    timeline: '2-4 weeks',
+                    expectedOutcome: 'Proof of concept validation'
+                },
+                {
+                    priority: 'Short-term',
+                    action: 'Develop comprehensive migration strategy and implementation roadmap',
+                    timeline: '1-2 months',
+                    expectedOutcome: 'Detailed deployment plan'
+                },
+                {
+                    priority: 'Long-term',
+                    action: 'Leverage cost savings for additional cybersecurity investments',
+                    timeline: '6-12 months',
+                    expectedOutcome: 'Enhanced overall security posture'
+                }
+            ]
+        };
+
+        console.log("✅ Executive summary data generated successfully");
+        return executiveData;
+    }
+
+    async generatePDFReport(reportType = 'executive_summary') {
+        console.log(`📄 Generating PDF report: ${reportType}`);
+        
+        try {
+            const reportData = this.generateExecutiveSummaryData();
+            if (!reportData) {
+                throw new Error('Failed to generate report data');
+            }
+
+            const pdfContent = this.createPDFContent(reportData);
+            
+            // Create PDF blob
+            const blob = new Blob([pdfContent], { type: 'text/html' });
+            this.downloadFile(blob, `zero-trust-executive-report-${Date.now()}.html`);
+            
+            console.log("✅ PDF report generated successfully");
+            return { success: true, format: 'PDF (HTML)', filename: `zero-trust-executive-report-${Date.now()}.html` };
+            
+        } catch (error) {
+            console.error("❌ PDF generation failed:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async generateExcelReport(reportType = 'executive_summary') {
+        console.log(`📊 Generating Excel report: ${reportType}`);
+        
+        try {
+            const reportData = this.generateExecutiveSummaryData();
+            if (!reportData) {
+                throw new Error('Failed to generate report data');
+            }
+
+            const csvContent = this.createCSVContent(reportData);
+            
+            // Create CSV blob (Excel compatible)
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            this.downloadFile(blob, `zero-trust-executive-report-${Date.now()}.csv`);
+            
+            console.log("✅ Excel report generated successfully");
+            return { success: true, format: 'Excel (CSV)', filename: `zero-trust-executive-report-${Date.now()}.csv` };
+            
+        } catch (error) {
+            console.error("❌ Excel generation failed:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async generatePowerPointReport(reportType = 'executive_summary') {
+        console.log(`📽️ Generating PowerPoint report: ${reportType}`);
+        
+        try {
+            const reportData = this.generateExecutiveSummaryData();
+            if (!reportData) {
+                throw new Error('Failed to generate report data');
+            }
+
+            const pptContent = this.createPowerPointContent(reportData);
+            
+            // Create PowerPoint-compatible HTML
+            const blob = new Blob([pptContent], { type: 'text/html' });
+            this.downloadFile(blob, `zero-trust-executive-presentation-${Date.now()}.html`);
+            
+            console.log("✅ PowerPoint report generated successfully");
+            return { success: true, format: 'PowerPoint (HTML)', filename: `zero-trust-executive-presentation-${Date.now()}.html` };
+            
+        } catch (error) {
+            console.error("❌ PowerPoint generation failed:", error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    createPDFContent(data) {
+        return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${data.reportMetadata.title}</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 40px; line-height: 1.6; color: #333; }
+        .header { border-bottom: 3px solid #1a5a96; padding-bottom: 20px; margin-bottom: 30px; }
+        .header h1 { color: #1a5a96; font-size: 2.5rem; margin: 0; }
+        .header .subtitle { color: #666; font-size: 1.1rem; margin-top: 10px; }
+        .metadata { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 30px; }
+        .section { margin-bottom: 40px; }
+        .section h2 { color: #1a5a96; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; }
+        .kpi-card { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid #1a5a96; }
+        .kpi-value { font-size: 2rem; font-weight: bold; color: #1a5a96; }
+        .kpi-label { font-size: 0.9rem; color: #666; margin-top: 5px; }
+        .insight-card { background: #fff; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin: 15px 0; }
+        .insight-title { font-weight: bold; color: #1a5a96; margin-bottom: 10px; }
+        .recommendation { background: #e8f4f8; border-left: 4px solid #1a5a96; padding: 15px; margin: 10px 0; }
+        .priority { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .priority.immediate { background: #dc3545; color: white; }
+        .priority.short-term { background: #ffc107; color: black; }
+        .priority.long-term { background: #28a745; color: white; }
+        @media print { body { margin: 20px; } .no-print { display: none; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>${data.reportMetadata.title}</h1>
+        <div class="subtitle">Comprehensive Strategic Analysis & Investment Decision Support</div>
+    </div>
+
+    <div class="metadata">
+        <strong>Report Generated:</strong> ${data.reportMetadata.generated} |
+        <strong>Report Type:</strong> ${data.reportMetadata.reportType} |
+        <strong>Classification:</strong> ${data.reportMetadata.confidentiality}
+    </div>
+
+    <div class="section">
+        <h2>Executive Summary</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-value">$${data.executiveSummary.costSavings}K</div>
+                <div class="kpi-label">3-Year Cost Savings</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value">${data.executiveSummary.roiPercent}%</div>
+                <div class="kpi-label">ROI (3-Year)</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value">${data.executiveSummary.paybackMonths}</div>
+                <div class="kpi-label">Payback (Months)</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value">${data.executiveSummary.implementationDays}</div>
+                <div class="kpi-label">Implementation (Days)</div>
+            </div>
+        </div>
+        <p><strong>Bottom Line:</strong> Portnox Cloud delivers exceptional value with $${data.executiveSummary.costSavings}K in cost savings over 3 years, ${data.executiveSummary.roiPercent}% ROI, and ${data.executiveSummary.paybackMonths}-month payback period. The solution provides superior security capabilities with a ${data.executiveSummary.securityScore}% security score while enabling rapid ${data.executiveSummary.implementationDays}-day deployment.</p>
+    </div>
+
+    <div class="section">
+        <h2>Strategic Insights</h2>
+        ${data.strategicInsights.map(insight => `
+            <div class="insight-card">
+                <div class="insight-title">${insight.title} (${insight.impact} Impact)</div>
+                <p>${insight.insight}</p>
+                <small><strong>Category:</strong> ${insight.category}</small>
+            </div>
+        `).join('')}
+    </div>
+
+    <div class="section">
+        <h2>Strategic Recommendations</h2>
+        ${data.recommendations.map(rec => `
+            <div class="recommendation">
+                <span class="priority ${rec.priority.toLowerCase().replace('-', '_')}">${rec.priority.toUpperCase()}</span>
+                <h4>${rec.action}</h4>
+                <p><strong>Timeline:</strong> ${rec.timeline}</p>
+                <p><strong>Expected Outcome:</strong> ${rec.expectedOutcome}</p>
+            </div>
+        `).join('')}
+    </div>
+
+    <div class="section">
+        <h2>Next Steps</h2>
+        <ol>
+            <li><strong>Immediate Action:</strong> Schedule executive presentation to review findings and recommendations</li>
+            <li><strong>Pilot Program:</strong> Initiate limited pilot deployment to validate projected benefits</li>
+            <li><strong>Stakeholder Alignment:</strong> Engage key stakeholders for deployment planning and budget approval</li>
+            <li><strong>Implementation Planning:</strong> Develop detailed project timeline and resource allocation</li>
+        </ol>
+    </div>
+
+    <footer style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #e9ecef; font-size: 0.9rem; color: #666;">
+        <p><strong>Generated by:</strong> ${data.reportMetadata.generatedBy} | <strong>Contact:</strong> For questions about this analysis, please contact your Portnox representative.</p>
+    </footer>
+</body>
+</html>`;
+    }
+
+    createCSVContent(data) {
+        const csvRows = [
+            ['Zero Trust NAC Executive Analysis Report'],
+            ['Generated', data.reportMetadata.generated],
+            ['Report Type', data.reportMetadata.reportType],
+            [''],
+            ['Executive Summary Metrics'],
+            ['Metric', 'Value', 'Unit'],
+            ['3-Year Cost Savings', data.executiveSummary.costSavings, 'K USD'],
+            ['ROI (3-Year)', data.executiveSummary.roiPercent, '%'],
+            ['Payback Period', data.executiveSummary.paybackMonths, 'Months'],
+            ['Implementation Time', data.executiveSummary.implementationDays, 'Days'],
+            ['Security Score', data.executiveSummary.securityScore, '%'],
+            [''],
+            ['Strategic Insights'],
+            ['Title', 'Impact', 'Category', 'Description'],
+            ...data.strategicInsights.map(insight => [
+                insight.title,
+                insight.impact,
+                insight.category,
+                insight.insight
+            ]),
+            [''],
+            ['Recommendations'],
+            ['Priority', 'Action', 'Timeline', 'Expected Outcome'],
+            ...data.recommendations.map(rec => [
+                rec.priority,
+                rec.action,
+                rec.timeline,
+                rec.expectedOutcome
+            ])
+        ];
+
+        return csvRows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    }
+
+    createPowerPointContent(data) {
+        return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${data.reportMetadata.title} - Presentation</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 0; background: #f5f5f5; }
+        .slide { width: 1024px; height: 768px; margin: 20px auto; background: white; padding: 60px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); page-break-after: always; position: relative; }
+        .slide h1 { color: #1a5a96; font-size: 3rem; margin-bottom: 30px; text-align: center; }
+        .slide h2 { color: #1a5a96; font-size: 2.5rem; margin-bottom: 40px; border-bottom: 3px solid #1a5a96; padding-bottom: 10px; }
+        .slide-number { position: absolute; bottom: 20px; right: 30px; color: #666; font-size: 1rem; }
+        .kpi-showcase { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; margin: 40px 0; }
+        .kpi-large { text-align: center; background: linear-gradient(135deg, #1a5a96, #2980b9); color: white; padding: 40px; border-radius: 15px; }
+        .kpi-large .value { font-size: 4rem; font-weight: bold; margin-bottom: 10px; }
+        .kpi-large .label { font-size: 1.5rem; opacity: 0.9; }
+        .bullet-point { font-size: 1.5rem; margin: 20px 0; padding-left: 30px; position: relative; }
+        .bullet-point::before { content: '▶'; color: #1a5a96; position: absolute; left: 0; }
+        .highlight-box { background: #e8f4f8; border: 2px solid #1a5a96; padding: 30px; border-radius: 10px; margin: 30px 0; }
+        .recommendation-slide { background: linear-gradient(135deg, #1a5a96, #2980b9); color: white; }
+        .recommendation-slide h2 { color: white; border-bottom-color: white; }
+    </style>
+</head>
+<body>
+    <!-- Slide 1: Title Slide -->
+    <div class="slide">
+        <div style="text-align: center; margin-top: 150px;">
+            <h1>Zero Trust NAC Strategic Analysis</h1>
+            <div style="font-size: 2rem; color: #666; margin: 40px 0;">Executive Decision Support</div>
+            <div style="font-size: 1.5rem; color: #1a5a96; margin-top: 60px;">
+                Comprehensive evaluation of Network Access Control solutions<br>
+                Focus on Portnox Cloud competitive advantages
+            </div>
+            <div style="margin-top: 80px; font-size: 1.2rem; color: #666;">
+                Generated: ${data.reportMetadata.generated}
+            </div>
+        </div>
+        <div class="slide-number">1</div>
+    </div>
+
+    <!-- Slide 2: Executive Summary -->
+    <div class="slide">
+        <h2>Executive Summary</h2>
+        <div class="kpi-showcase">
+            <div class="kpi-large">
+                <div class="value">$${data.executiveSummary.costSavings}K</div>
+                <div class="label">3-Year Savings</div>
+            </div>
+            <div class="kpi-large">
+                <div class="value">${data.executiveSummary.roiPercent}%</div>
+                <div class="label">ROI (3-Year)</div>
+            </div>
+            <div class="kpi-large">
+                <div class="value">${data.executiveSummary.paybackMonths}</div>
+                <div class="label">Months to Payback</div>
+            </div>
+            <div class="kpi-large">
+                <div class="value">${data.executiveSummary.implementationDays}</div>
+                <div class="label">Days to Deploy</div>
+            </div>
+        </div>
+        <div class="highlight-box">
+            <strong>Bottom Line:</strong> Portnox Cloud delivers exceptional value with significant cost savings, rapid deployment, and superior security capabilities.
+        </div>
+        <div class="slide-number">2</div>
+    </div>
+
+    <!-- Slide 3: Strategic Insights -->
+    <div class="slide">
+        <h2>Strategic Insights</h2>
+        ${data.strategicInsights.map(insight => `
+            <div class="bullet-point">
+                <strong>${insight.title}</strong> (${insight.impact} Impact)<br>
+                <div style="font-size: 1.2rem; margin-left: 0; margin-top: 10px; color: #666;">${insight.insight}</div>
+            </div>
+        `).join('')}
+        <div class="slide-number">3</div>
+    </div>
+
+    <!-- Slide 4: Recommendations -->
+    <div class="slide recommendation-slide">
+        <h2>Strategic Recommendations</h2>
+        ${data.recommendations.map((rec, index) => `
+            <div style="margin: 30px 0; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                <div style="font-size: 1.8rem; font-weight: bold; margin-bottom: 15px;">${index + 1}. ${rec.priority} Priority</div>
+                <div style="font-size: 1.4rem; margin-bottom: 10px;">${rec.action}</div>
+                <div style="font-size: 1.1rem; opacity: 0.9;">Timeline: ${rec.timeline} | Outcome: ${rec.expectedOutcome}</div>
+            </div>
+        `).join('')}
+        <div class="slide-number">4</div>
+    </div>
+
+    <!-- Slide 5: Next Steps -->
+    <div class="slide">
+        <h2>Next Steps</h2>
+        <div class="bullet-point">Schedule executive presentation to review findings</div>
+        <div class="bullet-point">Initiate pilot program for proof of concept</div>
+        <div class="bullet-point">Engage stakeholders for deployment planning</div>
+        <div class="bullet-point">Develop detailed implementation timeline</div>
+        
+        <div class="highlight-box" style="margin-top: 60px;">
+            <div style="text-align: center; font-size: 1.5rem;">
+                <strong>Ready to move forward with Portnox Cloud?</strong><br>
+                Contact your Portnox representative to schedule a personalized demonstration
+            </div>
+        </div>
+        <div class="slide-number">5</div>
+    </div>
+</body>
+</html>`;
+    }
+
+    downloadFile(blob, filename) {
+        console.log(`💾 Downloading file: ${filename}`);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    async exportReport(format, reportType = 'executive_summary') {
+        console.log(`📤 Starting export process - Format: ${format}, Type: ${reportType}`);
+        
+        let result;
+        switch (format.toLowerCase()) {
+            case 'pdf':
+                result = await this.generatePDFReport(reportType);
+                break;
+            case 'excel':
+                result = await this.generateExcelReport(reportType);
+                break;
+            case 'powerpoint':
+                result = await this.generatePowerPointReport(reportType);
+                break;
+            default:
+                console.error(`❌ Unsupported format: ${format}`);
+                return { success: false, error: `Unsupported format: ${format}` };
+        }
+
+        if (result.success) {
+            console.log(`✅ Export completed successfully: ${result.filename}`);
+            // Show success notification
+            if (window.zeroTrustExecutivePlatform?.showNotification) {
+                window.zeroTrustExecutivePlatform.showNotification(
+                    `Report exported successfully as ${result.format}!`, 
+                    'success'
+                );
+            }
+        } else {
+            console.error(`❌ Export failed: ${result.error}`);
+            if (window.zeroTrustExecutivePlatform?.showNotification) {
+                window.zeroTrustExecutivePlatform.showNotification(
+                    `Export failed: ${result.error}`, 
+                    'error'
+                );
+            }
+        }
+
+        return result;
+    }
+
+    init() {
+        if (this.initialized) return;
+        
+        console.log("🚀 Initializing Advanced Export System...");
+        this.initialized = true;
+        console.log("✅ Advanced Export System initialized successfully");
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        if (!window.advancedExportSystem) {
+            window.advancedExportSystem = new AdvancedExportSystem();
+            window.advancedExportSystem.init();
+        }
+    }, 1500);
+});
+
+window.AdvancedExportSystem = AdvancedExportSystem;
+EOF
+
+echo -e "${GREEN}✅ Creating enhanced debugging and logging system...${NC}"
+cat > js/enhancements/enhanced-debugging.js << 'EOF'
+/**
+ * Enhanced Debugging and Logging System
+ * Comprehensive logging for all platform components
+ */
+
+class EnhancedDebugging {
+    constructor() {
+        this.initialized = false;
+        this.logLevel = 'INFO'; // DEBUG, INFO, WARN, ERROR
+        this.logs = [];
+        this.maxLogs = 1000;
+        this.componentStatus = {};
+    }
+
+    log(level, component, message, data = null) {
+        const timestamp = new Date().toISOString();
+        const logEntry = {
+            timestamp,
+            level,
+            component,
+            message,
+            data
+        };
+
+        this.logs.unshift(logEntry);
+        if (this.logs.length > this.maxLogs) {
+            this.logs.pop();
+        }
+
+        // Console output with formatting
+        const emoji = this.getLogEmoji(level);
+        const style = this.getLogStyle(level);
+        
+        if (data) {
+            console.log(`%c${emoji} [${component}] ${message}`, style, data);
+        } else {
+            console.log(`%c${emoji} [${component}] ${message}`, style);
+        }
+
+        // Update component status
+        this.updateComponentStatus(component, level);
+    }
+
+    getLogEmoji(level) {
+        switch (level) {
+            case 'DEBUG': return '🔍';
+            case 'INFO': return 'ℹ️';
+            case 'WARN': return '⚠️';
+            case 'ERROR': return '❌';
+            case 'SUCCESS': return '✅';
+            default: return '📝';
+        }
+    }
+
+    getLogStyle(level) {
+        switch (level) {
+            case 'DEBUG': return 'color: #6c757d; font-weight: normal;';
+            case 'INFO': return 'color: #0d6efd; font-weight: normal;';
+            case 'WARN': return 'color: #fd7e14; font-weight: bold;';
+            case 'ERROR': return 'color: #dc3545; font-weight: bold;';
+            case 'SUCCESS': return 'color: #198754; font-weight: bold;';
+            default: return 'color: #000; font-weight: normal;';
+        }
+    }
+
+    updateComponentStatus(component, level) {
+        if (!this.componentStatus[component]) {
+            this.componentStatus[component] = {
+                lastUpdate: new Date(),
+                status: 'UNKNOWN',
+                errorCount: 0,
+                warnCount: 0
+            };
+        }
+
+        this.componentStatus[component].lastUpdate = new Date();
+        
+        if (level === 'ERROR') {
+            this.componentStatus[component].errorCount++;
+            this.componentStatus[component].status = 'ERROR';
+        } else if (level === 'WARN') {
+            this.componentStatus[component].warnCount++;
+            if (this.componentStatus[component].status !== 'ERROR') {
+                this.componentStatus[component].status = 'WARNING';
+            }
+        } else if (level === 'SUCCESS' && this.componentStatus[component].status !== 'ERROR') {
+            this.componentStatus[component].status = 'HEALTHY';
+        }
+    }
+
+    debug(component, message, data = null) {
+        this.log('DEBUG', component, message, data);
+    }
+
+    info(component, message, data = null) {
+        this.log('INFO', component, message, data);
+    }
+
+    warn(component, message, data = null) {
+        this.log('WARN', component, message, data);
+    }
+
+    error(component, message, data = null) {
+        this.log('ERROR', component, message, data);
+    }
+
+    success(component, message, data = null) {
+        this.log('SUCCESS', component, message, data);
+    }
+
+    // Enhanced monitoring for charts and tabs
+    monitorChartLoading(chartId, chartType) {
+        this.info('CHARTS', `Loading chart: ${chartId} (${chartType})`);
+        
+        // Monitor chart container
+        const container = document.getElementById(chartId);
+        if (!container) {
+            this.error('CHARTS', `Chart container not found: ${chartId}`);
+            return false;
+        }
+
+        // Check if Highcharts is available
+        if (typeof Highcharts === 'undefined' && chartType === 'highcharts') {
+            this.error('CHARTS', 'Highcharts library not loaded');
+            return false;
+        }
+
+        // Monitor chart creation
+        setTimeout(() => {
+            const hasContent = container.children.length > 0;
+            if (hasContent) {
+                this.success('CHARTS', `Chart loaded successfully: ${chartId}`);
+            } else {
+                this.warn('CHARTS', `Chart may not have loaded properly: ${chartId}`);
+            }
+        }, 1000);
+
+        return true;
+    }
+
+    monitorTabLoading(tabId, panelId) {
+        this.info('TABS', `Loading tab: ${tabId} -> panel: ${panelId}`);
+        
+        // Check tab exists
+        const tab = document.querySelector(`[data-tab="${tabId}"]`);
+        if (!tab) {
+            this.error('TABS', `Tab not found: ${tabId}`);
+            return false;
+        }
+
+        // Check panel exists
+        const panel = document.querySelector(`[data-panel="${panelId}"]`);
+        if (!panel) {
+            this.error('TABS', `Panel not found: ${panelId}`);
+            return false;
+        }
+
+        // Monitor tab activation
+        const isActive = tab.classList.contains('active');
+        const isPanelActive = panel.classList.contains('active');
+        
+        if (isActive && isPanelActive) {
+            this.success('TABS', `Tab and panel active: ${tabId}`);
+        } else {
+            this.warn('TABS', `Tab/panel activation issue: ${tabId}`, { tabActive: isActive, panelActive: isPanelActive });
+        }
+
+        return true;
+    }
+
+    monitorDataLoading(dataType, dataSize) {
+        this.info('DATA', `Loading ${dataType} data: ${dataSize} items`);
+        
+        if (dataSize === 0) {
+            this.warn('DATA', `No data loaded for: ${dataType}`);
+            return false;
+        }
+
+        this.success('DATA', `Data loaded successfully: ${dataType} (${dataSize} items)`);
+        return true;
+    }
+
+    monitorVendorSelection(selectedVendors) {
+        this.info('VENDORS', `Vendor selection updated: ${selectedVendors.length} selected`, selectedVendors);
+        
+        if (selectedVendors.length === 0) {
+            this.warn('VENDORS', 'No vendors selected - charts may not display');
+            return false;
+        }
+
+        if (selectedVendors.length > 6) {
+            this.warn('VENDORS', 'Many vendors selected - performance may be impacted');
+        }
+
+        this.success('VENDORS', `Vendor selection valid: ${selectedVendors.length} vendors`);
+        return true;
+    }
+
+    generateDiagnosticReport() {
+        this.info('DIAGNOSTICS', 'Generating platform diagnostic report...');
+        
+        const report = {
+            timestamp: new Date().toISOString(),
+            platform: {
+                initialized: !!window.zeroTrustExecutivePlatform?.initialized,
+                advancedCostAnalysis: !!window.advancedCostAnalysis?.initialized,
+                exportSystem: !!window.advancedExportSystem?.initialized
+            },
+            libraries: {
+                highcharts: typeof Highcharts !== 'undefined',
+                d3: typeof d3 !== 'undefined',
+                particlesJS: typeof particlesJS !== 'undefined'
+            },
+            dom: {
+                executiveView: !!document.getElementById('executive-view'),
+                costControls: !!document.getElementById('cost-analysis-container'),
+                tabNavigation: !!document.getElementById('tab-navigation-container'),
+                vendorSelection: !!document.getElementById('vendor-selection-container')
+            },
+            componentStatus: this.componentStatus,
+            recentLogs: this.logs.slice(0, 50) // Last 50 logs
+        };
+
+        this.success('DIAGNOSTICS', 'Diagnostic report generated', report);
+        return report;
+    }
+
+    createDebugPanel() {
+        this.info('DEBUG_PANEL', 'Creating debug panel...');
+        
+        // Check if panel already exists
+        if (document.getElementById('debug-panel')) {
+            this.warn('DEBUG_PANEL', 'Debug panel already exists');
+            return;
+        }
+
+        const debugPanel = document.createElement('div');
+        debugPanel.id = 'debug-panel';
+        debugPanel.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 400px;
+            max-height: 600px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 10001;
+            overflow-y: auto;
+            border: 1px solid #333;
+            display: none;
+        `;
+
+        debugPanel.innerHTML = `
+            <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                <h4 style="margin: 0; color: #00ff00;">🔧 Debug Panel</h4>
+                <button id="close-debug" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">×</button>
+            </div>
+            <div id="debug-content"></div>
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #333;">
+                <button id="refresh-debug" style="background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">Refresh</button>
+                <button id="export-logs" style="background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Export Logs</button>
+            </div>
+        `;
+
+        document.body.appendChild(debugPanel);
+
+        // Bind events
+        document.getElementById('close-debug').addEventListener('click', () => {
+            debugPanel.style.display = 'none';
+        });
+
+        document.getElementById('refresh-debug').addEventListener('click', () => {
+            this.updateDebugPanel();
+        });
+
+        document.getElementById('export-logs').addEventListener('click', () => {
+            this.exportDebugLogs();
+        });
+
+        // Add keyboard shortcut (Ctrl+D)
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                const panel = document.getElementById('debug-panel');
+                panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                if (panel.style.display === 'block') {
+                    this.updateDebugPanel();
+                }
+            }
+        });
+
+        this.updateDebugPanel();
+        this.success('DEBUG_PANEL', 'Debug panel created successfully');
+    }
+
+    updateDebugPanel() {
+        const content = document.getElementById('debug-content');
+        if (!content) return;
+
+        const report = this.generateDiagnosticReport();
+        
+        content.innerHTML = `
+            <div style="margin-bottom: 10px;">
+                <strong style="color: #00ff00;">Platform Status:</strong><br>
+                Main Platform: ${report.platform.initialized ? '✅' : '❌'}<br>
+                Cost Analysis: ${report.platform.advancedCostAnalysis ? '✅' : '❌'}<br>
+                Export System: ${report.platform.exportSystem ? '✅' : '❌'}
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+                <strong style="color: #00ff00;">Libraries:</strong><br>
+                Highcharts: ${report.libraries.highcharts ? '✅' : '❌'}<br>
+                D3.js: ${report.libraries.d3 ? '✅' : '❌'}<br>
+                Particles: ${report.libraries.particlesJS ? '✅' : '❌'}
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+                <strong style="color: #00ff00;">DOM Elements:</strong><br>
+                Executive View: ${report.dom.executiveView ? '✅' : '❌'}<br>
+                Cost Controls: ${report.dom.costControls ? '✅' : '❌'}<br>
+                Tab Navigation: ${report.dom.tabNavigation ? '✅' : '❌'}<br>
+                Vendor Selection: ${report.dom.vendorSelection ? '✅' : '❌'}
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+                <strong style="color: #00ff00;">Recent Logs:</strong><br>
+                <div style="max-height: 200px; overflow-y: auto; background: rgba(255,255,255,0.1); padding: 5px; border-radius: 4px;">
+                    ${this.logs.slice(0, 10).map(log => 
+                        `<div style="margin-bottom: 2px; font-size: 11px;">
+                            <span style="color: ${this.getLogColor(log.level)}">[${log.level}]</span> 
+                            <span style="color: #ccc">${log.component}:</span> 
+                            ${log.message}
+                        </div>`
+                    ).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    getLogColor(level) {
+        switch (level) {
+            case 'DEBUG': return '#6c757d';
+            case 'INFO': return '#0dcaf0';
+            case 'WARN': return '#ffc107';
+            case 'ERROR': return '#dc3545';
+            case 'SUCCESS': return '#198754';
+            default: return '#fff';
+        }
+    }
+
+    exportDebugLogs() {
+        const report = this.generateDiagnosticReport();
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+        
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `debug-report-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        this.success('DEBUG_PANEL', 'Debug logs exported successfully');
+    }
+
+    init() {
+        if (this.initialized) return;
+        
+        console.log("🚀 Initializing Enhanced Debugging System...");
+        
+        // Create debug panel
+        this.createDebugPanel();
+        
+        // Log system initialization
+        this.success('DEBUGGING', 'Enhanced debugging system initialized');
+        this.info('DEBUGGING', 'Use Ctrl+D to toggle debug panel');
+        
+        this.initialized = true;
+        console.log("✅ Enhanced Debugging System ready");
+    }
+}
+
+// Initialize debugging system
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.enhancedDebugging) {
+        window.enhancedDebugging = new EnhancedDebugging();
+        window.enhancedDebugging.init();
+    }
+});
+
+window.EnhancedDebugging = EnhancedDebugging;
+EOF
+
+echo -e "${GREEN}✅ Creating comprehensive integration script...${NC}"
+cat > js/enhancements/comprehensive-integration.js << 'EOF'
+/**
+ * Comprehensive Integration Script
+ * Integrates all enhancements with the main platform
+ */
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🔧 Starting comprehensive platform integration...");
+    
+    // Wait for main platform to be ready
+    setTimeout(() => {
+        integrateEnhancements();
+    }, 2500);
+});
+
+function integrateEnhancements() {
+    console.log("🔗 Integrating comprehensive enhancements...");
+    
+    // Enhance the main platform with comprehensive data
+    if (window.zeroTrustExecutivePlatform && window.comprehensiveIndustries) {
+        console.log("📊 Integrating comprehensive industry data...");
+        window.zeroTrustExecutivePlatform.industryData = window.comprehensiveIndustries;
+        window.zeroTrustExecutivePlatform.complianceData = window.comprehensiveCompliance;
+        
+        // Update industry select if it exists
+        updateIndustrySelect();
+        
+        console.log("✅ Industry and compliance data integrated");
+    }
+    
+    // Enhance export functionality
+    if (window.zeroTrustExecutivePlatform && window.advancedExportSystem) {
+        console.log("📤 Integrating advanced export system...");
+        
+        // Override the handleExport method
+        const originalHandleExport = window.zeroTrustExecutivePlatform.handleExport;
+        window.zeroTrustExecutivePlatform.handleExport = async function() {
+            console.log("📋 Using enhanced export system...");
+            
+            // Show export options dialog
+            showExportDialog();
+        };
+        
+        console.log("✅ Export system integration completed");
+    }
+    
+    // Add debugging to chart creation
+    if (window.zeroTrustExecutivePlatform && window.enhancedDebugging) {
+        enhanceChartCreation();
+    }
+    
+    // Setup global error handling
+    setupGlobalErrorHandling();
+    
+    console.log("🎉 Comprehensive integration completed successfully!");
+}
+
+function updateIndustrySelect() {
+    const industrySelect = document.getElementById('industry-select');
+    if (industrySelect && window.comprehensiveIndustries) {
+        console.log("🏭 Updating industry dropdown with comprehensive data...");
+        
+        // Clear existing options
+        industrySelect.innerHTML = '';
+        
+        // Add comprehensive industries
+        Object.keys(window.comprehensiveIndustries).forEach(industryId => {
+            const industry = window.comprehensiveIndustries[industryId];
+            const option = document.createElement('option');
+            option.value = industryId;
+            option.textContent = industry.name;
+            if (industryId === 'technology') {
+                option.selected = true;
+            }
+            industrySelect.appendChild(option);
+        });
+        
+        console.log(`✅ Industry dropdown updated with ${Object.keys(window.comprehensiveIndustries).length} industries`);
+    }
+}
+
+function showExportDialog() {
+    console.log("📋 Showing comprehensive export dialog...");
+    
+    // Create modal dialog
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10002;
+    `;
+    
+    modal.innerHTML = `
+        <div style="
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        ">
+            <h3 style="color: #1a5a96; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-file-export"></i>
+                Export Executive Report
+            </h3>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Report Type:</label>
+                <select id="export-report-type" style="width: 100%; padding: 0.75rem; border: 2px solid #e9ecef; border-radius: 8px;">
+                    <option value="executive_summary">Executive Summary Report</option>
+                    <option value="technical_analysis">Technical Analysis Report</option>
+                    <option value="financial_deep_dive">Financial Deep Dive</option>
+                    <option value="compliance_report">Compliance & Risk Assessment</option>
+                    <option value="vendor_comparison">Vendor Comparison Matrix</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Export Format:</label>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                    <button class="export-format-btn" data-format="pdf" style="
+                        padding: 1rem;
+                        border: 2px solid #e9ecef;
+                        border-radius: 8px;
+                        background: white;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        text-align: center;
+                    ">
+                        <i class="fas fa-file-pdf" style="color: #dc3545; font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
+                        <strong>PDF</strong><br>
+                        <small>Executive Report</small>
+                    </button>
+                    
+                    <button class="export-format-btn" data-format="excel" style="
+                        padding: 1rem;
+                        border: 2px solid #e9ecef;
+                        border-radius: 8px;
+                        background: white;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        text-align: center;
+                    ">
+                        <i class="fas fa-file-excel" style="color: #198754; font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
+                        <strong>Excel</strong><br>
+                        <small>Data Analysis</small>
+                    </button>
+                    
+                    <button class="export-format-btn" data-format="powerpoint" style="
+                        padding: 1rem;
+                        border: 2px solid #e9ecef;
+                        border-radius: 8px;
+                        background: white;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        text-align: center;
+                    ">
+                        <i class="fas fa-file-powerpoint" style="color: #fd7e14; font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
+                        <strong>PowerPoint</strong><br>
+                        <small>Presentation</small>
+                    </button>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button id="cancel-export" style="
+                    padding: 0.75rem 1.5rem;
+                    border: 2px solid #6c757d;
+                    border-radius: 8px;
+                    background: white;
+                    color: #6c757d;
+                    cursor: pointer;
+                    font-weight: 600;
+                ">Cancel</button>
+                
+                <button id="start-export" style="
+                    padding: 0.75rem 1.5rem;
+                    border: none;
+                    border-radius: 8px;
+                    background: linear-gradient(135deg, #1a5a96, #2980b9);
+                    color: white;
+                    cursor: pointer;
+                    font-weight: 600;
+                " disabled>
+                    <i class="fas fa-download"></i> Export Report
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    let selectedFormat = null;
+    
+    // Format selection
+    modal.querySelectorAll('.export-format-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove previous selection
+            modal.querySelectorAll('.export-format-btn').forEach(b => {
+                b.style.borderColor = '#e9ecef';
+                b.style.background = 'white';
+            });
+            
+            // Highlight selected
+            this.style.borderColor = '#1a5a96';
+            this.style.background = '#e8f4f8';
+            
+            selectedFormat = this.getAttribute('data-format');
+            document.getElementById('start-export').disabled = false;
+        });
+    });
+    
+    // Cancel button
+    document.getElementById('cancel-export').addEventListener('click', () => {
+        document.body.removeChild(modal);
+    });
+    
+    // Export button
+    document.getElementById('start-export').addEventListener('click', async () => {
+        if (!selectedFormat) return;
+        
+        const reportType = document.getElementById('export-report-type').value;
+        
+        // Show loading state
+        document.getElementById('start-export').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+        document.getElementById('start-export').disabled = true;
+        
+        try {
+            const result = await window.advancedExportSystem.exportReport(selectedFormat, reportType);
+            
+            if (result.success) {
+                console.log("✅ Export completed successfully");
+                document.body.removeChild(modal);
+            } else {
+                console.error("❌ Export failed:", result.error);
+                alert(`Export failed: ${result.error}`);
+                document.getElementById('start-export').innerHTML = '<i class="fas fa-download"></i> Export Report';
+                document.getElementById('start-export').disabled = false;
+            }
+        } catch (error) {
+            console.error("❌ Export error:", error);
+            alert(`Export error: ${error.message}`);
+            document.getElementById('start-export').innerHTML = '<i class="fas fa-download"></i> Export Report';
+            document.getElementById('start-export').disabled = false;
+        }
+    });
+    
+    // Close on background click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+        }
+    });
+}
+
+function enhanceChartCreation() {
+    console.log("📈 Enhancing chart creation with debugging...");
+    
+    const platform = window.zeroTrustExecutivePlatform;
+    const debugging = window.enhancedDebugging;
+    
+    if (!platform || !debugging) return;
+    
+    // Enhance TCO chart creation
+    const originalCreateTCOChart = platform.createTCOChart;
+    platform.createTCOChart = function() {
+        debugging.info('CHARTS', 'Creating TCO comparison chart...');
+        debugging.monitorChartLoading('overview-tco-chart', 'highcharts');
+        
+        try {
+            const result = originalCreateTCOChart.call(this);
+            debugging.success('CHARTS', 'TCO chart created successfully');
+            return result;
+        } catch (error) {
+            debugging.error('CHARTS', 'TCO chart creation failed', error);
+            throw error;
+        }
+    };
+    
+    // Enhance timeline chart creation
+    const originalCreateTimelineChart = platform.createTimelineChart;
+    platform.createTimelineChart = function() {
+        debugging.info('CHARTS', 'Creating timeline chart...');
+        debugging.monitorChartLoading('overview-timeline-chart', 'highcharts');
+        
+        try {
+            const result = originalCreateTimelineChart.call(this);
+            debugging.success('CHARTS', 'Timeline chart created successfully');
+            return result;
+        } catch (error) {
+            debugging.error('CHARTS', 'Timeline chart creation failed', error);
+            throw error;
+        }
+    };
+    
+    // Enhance tab switching
+    const originalSwitchToTab = platform.switchToTab;
+    platform.switchToTab = function(tabId) {
+        debugging.info('TABS', `Switching to tab: ${tabId}`);
+        debugging.monitorTabLoading(tabId, tabId);
+        
+        try {
+            const result = originalSwitchToTab.call(this, tabId);
+            debugging.success('TABS', `Successfully switched to tab: ${tabId}`);
+            return result;
+        } catch (error) {
+            debugging.error('TABS', `Failed to switch to tab: ${tabId}`, error);
+            throw error;
+        }
+    };
+    
+    console.log("✅ Chart creation enhancement completed");
+}
+
+function setupGlobalErrorHandling() {
+    console.log("🛡️ Setting up global error handling...");
+    
+    // Catch unhandled errors
+    window.addEventListener('error', (event) => {
+        if (window.enhancedDebugging) {
+            window.enhancedDebugging.error('GLOBAL', 'Unhandled error occurred', {
+                message: event.message,
+                filename: event.filename,
+                lineno: event.lineno,
+                colno: event.colno,
+                error: event.error
+            });
+        }
+    });
+    
+    // Catch unhandled promise rejections
+    window.addEventListener('unhandledrejection', (event) => {
+        if (window.enhancedDebugging) {
+            window.enhancedDebugging.error('GLOBAL', 'Unhandled promise rejection', {
+                reason: event.reason
+            });
+        }
+    });
+    
+    console.log("✅ Global error handling setup completed");
+}
+EOF
+
+echo -e "${GREEN}✅ Creating directory structure...${NC}"
+mkdir -p js/enhancements
+
+echo -e "${GREEN}✅ Moving enhancement files...${NC}"
+mv js/enhancements/comprehensive-data-enhancement.js js/enhancements/
+mv js/enhancements/advanced-cost-analysis.js js/enhancements/
+mv js/enhancements/advanced-export-system.js js/enhancements/
+mv js/enhancements/enhanced-debugging.js js/enhancements/
+mv js/enhancements/comprehensive-integration.js js/enhancements/
+
+echo -e "${GREEN}✅ Updating index.html to include enhancements...${NC}"
+# Add enhancement scripts to index.html before closing body tag
+sed -i '/<\/body>/i\
+    <!-- Platform Enhancements -->\
+    <script src="./js/enhancements/comprehensive-data-enhancement.js"></script>\
+    <script src="./js/enhancements/advanced-cost-analysis.js"></script>\
+    <script src="./js/enhancements/advanced-export-system.js"></script>\
+    <script src="./js/enhancements/enhanced-debugging.js"></script>\
+    <script src="./js/enhancements/comprehensive-integration.js"></script>' index.html
+
+echo -e "${GREEN}✅ Adding changes to git...${NC}"
 git add .
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}🎉 Portnox Theme Fixed & Platform Ready!${NC}"
+echo -e "${GREEN}🎉 Comprehensive Enhancement Complete!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
-echo -e "${GREEN}✅ Professional Portnox color scheme applied${NC}"
-echo -e "${GREEN}✅ JavaScript syntax error fixed${NC}"
-echo -e "${GREEN}✅ Platform initialization improved${NC}"
-echo -e "${GREEN}✅ Error handling enhanced${NC}"
-echo -e "${GREEN}✅ Loading states optimized${NC}"
+echo -e "${GREEN}✅ Comprehensive Industries (18 industries)${NC}"
+echo -e "${GREEN}✅ Complete Compliance Frameworks (20 frameworks)${NC}"
+echo -e "${GREEN}✅ Advanced Cost Analysis with device pricing${NC}"
+echo -e "${GREEN}✅ Organization settings and configurations${NC}"
+echo -e "${GREEN}✅ Full export system (PDF, Excel, PowerPoint)${NC}"
+echo -e "${GREEN}✅ Enhanced debugging and logging${NC}"
+echo -e "${GREEN}✅ Chart and tab monitoring${NC}"
+echo -e "${GREEN}✅ Global error handling${NC}"
 echo ""
-echo -e "${BLUE}🎨 Color Changes:${NC}"
-echo -e "${BLUE}   • Subtle professional gradients${NC}"
-echo -e "${BLUE}   • Portnox brand colors throughout${NC}"
-echo -e "${BLUE}   • Less bright, more professional appearance${NC}"
-echo -e "${BLUE}   • Enhanced glass-morphism effects${NC}"
+echo -e "${BLUE}🎯 New Features Added:${NC}"
+echo -e "${BLUE}   • 18 comprehensive industries with specific metrics${NC}"
+echo -e "${BLUE}   • 20 compliance frameworks with implementation costs${NC}"
+echo -e "${BLUE}   • Average price per device configuration${NC}"
+echo -e "${BLUE}   • Organization size and region settings${NC}"
+echo -e "${BLUE}   • Advanced export dialog with multiple formats${NC}"
+echo -e "${BLUE}   • Real-time cost preview calculations${NC}"
+echo -e "${BLUE}   • Comprehensive debugging panel (Ctrl+D)${NC}"
+echo -e "${BLUE}   • Chart loading monitoring and validation${NC}"
+echo -e "${BLUE}   • Tab switching debugging and verification${NC}"
 echo ""
-echo -e "${BLUE}🔧 Technical Fixes:${NC}"
-echo -e "${BLUE}   • JavaScript syntax error resolved${NC}"
-echo -e "${BLUE}   • Platform initialization stabilized${NC}"
-echo -e "${BLUE}   • Better error handling and fallbacks${NC}"
-echo -e "${BLUE}   • Loading indicators improved${NC}"
+echo -e "${YELLOW}📝 Usage Instructions:${NC}"
+echo -e "${YELLOW}1. Commit: git commit -m \"Comprehensive platform enhancements\"${NC}"
+echo -e "${YELLOW}2. Open index.html to test all new features${NC}"
+echo -e "${YELLOW}3. Use Ctrl+D to open the debug panel${NC}"
+echo -e "${YELLOW}4. Test export functionality with multiple formats${NC}"
+echo -e "${YELLOW}5. Configure cost analysis with new parameters${NC}"
 echo ""
-echo -e "${YELLOW}📝 Next Steps:${NC}"
-echo -e "${YELLOW}1. Commit: git commit -m \"Portnox theme fix and platform stabilization\"${NC}"
-echo -e "${YELLOW}2. Test: Open index.html to verify platform loads${NC}"
-echo -e "${YELLOW}3. Replace vendor logos in img/vendors/ directory${NC}"
+echo -e "${PURPLE}🔧 Debug Features:${NC}"
+echo -e "${PURPLE}   • Press Ctrl+D to toggle debug panel${NC}"
+echo -e "${PURPLE}   • Monitor all chart loading in real-time${NC}"
+echo -e "${PURPLE}   • Track tab switching and panel activation${NC}"
+echo -e "${PURPLE}   • Export debug logs for troubleshooting${NC}"
 echo ""
-echo -e "${GREEN}🚀 Platform should now load without errors!${NC}"
+echo -e "${GREEN}🚀 Platform now includes game-changing features for all stakeholders!${NC}"
