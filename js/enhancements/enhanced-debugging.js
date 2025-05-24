@@ -386,10 +386,26 @@ class EnhancedDebugging {
 }
 
 // Initialize debugging system
+// Initialize debugging system when explicitly enabled
 document.addEventListener('DOMContentLoaded', function() {
-    if (!window.enhancedDebugging) {
-        window.enhancedDebugging = new EnhancedDebugging();
-        window.enhancedDebugging.init();
+    const debugEnabled = window.DEBUG_MODE === true ||
+        localStorage.getItem('enableDebug') === 'true';
+
+    if (debugEnabled) {
+        if (!window.enhancedDebugging) {
+            window.enhancedDebugging = new EnhancedDebugging();
+            window.enhancedDebugging.init();
+        }
+    } else {
+        // Provide lightweight stub to avoid errors when debugging is disabled
+        if (!window.enhancedDebugging) {
+            window.enhancedDebugging = {
+                log() {}, debug() {}, info() {}, warn() {}, error() {}, success() {},
+                monitorChartLoading() {}, monitorTabLoading() {},
+                monitorDataLoading() {}, monitorVendorSelection() {},
+                generateDiagnosticReport() { return {}; }
+            };
+        }
     }
 });
 

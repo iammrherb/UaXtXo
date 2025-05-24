@@ -141,6 +141,12 @@ To contribute to this project:
 4. Test thoroughly
 5. Submit a pull request
 
+## Debugging
+The application includes an optional enhanced debugging system. To enable it,
+set `window.DEBUG_MODE = true` or save `enableDebug=true` in `localStorage`
+before loading the page. When enabled, a diagnostic panel and verbose console
+logs will help troubleshoot loading issues.
+
 ## License
 © 2025 Portnox Ltd. All Rights Reserved.
 
