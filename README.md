@@ -141,6 +141,11 @@ To contribute to this project:
 4. Test thoroughly
 5. Submit a pull request
 
+## Debugging
+The platform includes an optional debugging panel. Press **Ctrl+D** to toggle it.
+You can also enable debugging automatically by appending `?debug=true` to the
+page URL.
+
 ## License
 © 2025 Portnox Ltd. All Rights Reserved.
 

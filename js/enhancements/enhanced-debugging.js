@@ -387,7 +387,12 @@ class EnhancedDebugging {
 
 // Initialize debugging system
 document.addEventListener('DOMContentLoaded', function() {
-    if (!window.enhancedDebugging) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const debugParam = urlParams.get('debug');
+    const debugEnabled = (!window.enhancedDebugging) &&
+        (localStorage.getItem('debug-enabled') === 'true' || debugParam === 'true');
+
+    if (debugEnabled) {
         window.enhancedDebugging = new EnhancedDebugging();
         window.enhancedDebugging.init();
     }
