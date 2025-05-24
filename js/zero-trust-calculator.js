@@ -6,7 +6,7 @@
 // Enhanced TCO Calculator class
 class ZeroTrustCalculator {
   constructor() {
-    this.vendorData = window.ENHANCED_VENDORS || {};
+    this.vendorData = window.VENDORS || {};
     this.results = null;
   }
   
