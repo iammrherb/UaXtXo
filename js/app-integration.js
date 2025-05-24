@@ -32,15 +32,18 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   
   // Trigger vendor data load if it hasn't happened already
-  if (window.VENDORS) {
-    window.dispatchEvent(new Event('vendorDataLoaded'));
+  const vendorReady = () => window.dispatchEvent(new Event('vendorDataLoaded'));
+
+  if (window.VENDOR_DATA) {
+    vendorReady();
+  } else if (window.VENDORS) {
+    window.VENDOR_DATA = window.VENDORS;
+    vendorReady();
   } else {
-    console.error("VENDORS data not available. Loading vendor-data.js...");
+    console.error("Vendor data not available. Loading vendors.js...");
     const script = document.createElement('script');
-    script.src = 'js/models/vendor-data.js';
-    script.onload = function() {
-      window.dispatchEvent(new Event('vendorDataLoaded'));
-    };
+    script.src = 'js/data/vendors.js';
+    script.onload = vendorReady;
     document.head.appendChild(script);
   }
 });
