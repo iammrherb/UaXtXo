@@ -1,1 +1,7 @@
-data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzY2MzM5OSIvPgo8dGV4dCB4PSI1IiB5PSIyNSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iMTIiPkU8L3RleHQ+Cjwvc3ZnPgo=
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#6f2c91" rx="20"/>
+  <text x="100" y="100" font-family="Arial, sans-serif" font-size="60" font-weight="bold" 
+        text-anchor="middle" dominant-baseline="middle" fill="#ffffff">
+    EX
+  </text>
+</svg>
