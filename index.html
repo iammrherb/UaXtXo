@@ -3,156 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zero Trust NAC Executive Command Center | Portnox</title>
-    <meta name="description" content="Comprehensive Zero Trust NAC analysis with executive intelligence, vendor comparisons, and strategic insights.">
-    
+    <title>Zero Trust Total Cost Analyzer | Portnox Ultimate Executive Intelligence Platform</title>
+    <meta name="description" content="Ultimate Executive Intelligence Platform - Comprehensive Zero Trust NAC analysis with full vendor comparison, all industry coverage, and complete compliance frameworks.">
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="./img/vendors/portnox-icon.png">
-    
-    <!-- Fonts -->
+
+    <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
-    
-    <!-- Icons -->
+
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Chart Libraries -->
+
+    <!-- Advanced Chart Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/highcharts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     
-    <!-- Main CSS -->
-    <link rel="stylesheet" href="./css/executive-command-center.css">
-    <link rel="stylesheet" href="./css/enhanced-executive-command-center.css">
-    <link rel="stylesheet" href="./css/ui-enhancements.css">
-    <link rel="stylesheet" href="./css/ui-enhancements.css">
-    <link rel="stylesheet" href="./css/components/enhanced-ui-elements.css">
-    <link rel="stylesheet" href="./css/components/enhanced-ui-elements.css">
-    <link rel="stylesheet" href="./css/components/enhanced-ui-elements.css">
-    <link rel="stylesheet" href="./css/components/enhanced-ui-elements.css">
+    <!-- Highcharts for Advanced Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/highcharts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/highcharts-more.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/exporting.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/export-data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/accessibility.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/funnel.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/waterfall.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/treemap.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/heatmap.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/sankey.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/networkgraph.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/gantt.js"></script>
+    
+    <!-- Particle.js for Ultimate Effects -->
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+    <!-- Ultimate Executive CSS -->
+    <link rel="stylesheet" href="./css/ultimate-executive-center.css">
+    
+    <!-- Performance Optimization -->
+    <link rel="preload" href="./img/vendors/portnox-logo.png" as="image">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
 </head>
 <body>
-    <!-- Main Application Container -->
-    <div id="executive-view" class="executive-view">
-        <div class="view-content">
-            <!-- Platform will be initialized here -->
-            <div class="loading-screen" style="display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column;">
-                <div class="spinner"></div>
-                <h2 style="margin-top: 20px; color: #3498db;">Loading Executive Command Center...</h2>
+    <!-- Ultimate Zero Trust Header with Advanced Particles -->
+    <header class="ultimate-header">
+        <div id="particles-header"></div>
+        <div class="header-content">
+            <div class="header-branding">
+                <div class="portnox-logo">
+                    <img src="./img/vendors/portnox-logo.png" alt="Portnox" class="logo-image">
+                </div>
+                <div class="header-titles">
+                    <h1 class="main-title">Ultimate Executive Intelligence Platform</h1>
+                    <p class="sub-title">Zero Trust NAC Total Cost Analysis | Complete Vendor Comparison | All Industries & Compliance</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="main-calculate-btn" class="header-btn primary pulse">
+                    <i class="fas fa-calculator"></i>
+                    <span>Calculate TCO</span>
+                </button>
+                <button id="export-btn" class="header-btn secondary">
+                    <i class="fas fa-file-export"></i>
+                    <span>Export Analysis</span>
+                </button>
+                <button id="refresh-btn" class="header-btn utility">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Refresh</span>
+                </button>
+                <button id="live-demo" class="header-btn highlight">
+                    <i class="fas fa-video"></i>
+                    <span>Live Demo</span>
+                </button>
             </div>
         </div>
+    </header>
+
+    <!-- Main Application Container -->
+    <div class="ultimate-container">
+        <!-- Advanced Sidebar Configuration -->
+        <aside class="ultimate-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-cogs"></i> Configuration Center</h3>
+                <button class="sidebar-toggle" id="sidebar-toggle">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+            
+            <div class="sidebar-content">
+                <!-- Device Configuration -->
+                <div class="config-section">
+                    <h4><i class="fas fa-network-wired"></i> Device Configuration</h4>
+                    <div class="config-grid">
+                        <div class="config-item">
+                            <label for="device-count">Device Count</label>
+                            <input type="number" id="device-count" class="enhanced-input" value="1000" min="100" max="50000">
+                        </div>
+                        <div class="config-item">
+                            <label for="location-count">Locations</label>
+                            <input type="number" id="location-count" class="enhanced-input" value="3" min="1" max="100">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Organization Profile -->
+                <div class="config-section">
+                    <h4><i class="fas fa-building"></i> Organization Profile</h4>
+                    <div class="config-grid">
+                        <div class="config-item full-width">
+                            <label for="company-size">Company Size</label>
+                            <select id="company-size" class="enhanced-select">
+                                <option value="startup">Startup (1-50)</option>
+                                <option value="small">Small (51-250)</option>
+                                <option value="medium" selected>Medium (251-1000)</option>
+                                <option value="large">Large (1001-5000)</option>
+                                <option value="enterprise">Enterprise (5000+)</option>
+                            </select>
+                        </div>
+                        <div class="config-item full-width">
+                            <label for="industry">Industry</label>
+                            <select id="industry" class="enhanced-select">
+                                <!-- Will be populated dynamically with ALL industries -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Financial Parameters -->
+                <div class="config-section">
+                    <h4><i class="fas fa-dollar-sign"></i> Financial Parameters</h4>
+                    <div class="config-grid">
+                        <div class="config-item">
+                            <label for="analysis-period">Analysis Period</label>
+                            <select id="analysis-period" class="enhanced-select">
+                                <option value="1">1 Year</option>
+                                <option value="3" selected>3 Years</option>
+                                <option value="5">5 Years</option>
+                            </select>
+                        </div>
+                        <div class="config-item">
+                            <label for="fte-cost">FTE Cost ($/year)</label>
+                            <input type="number" id="fte-cost" class="enhanced-input" value="100000" min="50000" max="200000">
+                        </div>
+                        <div class="config-item">
+                            <label for="fte-allocation">FTE Allocation (%)</label>
+                            <input type="number" id="fte-allocation" class="enhanced-input" value="25" min="10" max="100">
+                        </div>
+                        <div class="config-item">
+                            <label for="downtime-cost">Downtime Cost ($/hr)</label>
+                            <input type="number" id="downtime-cost" class="enhanced-input" value="5000" min="1000" max="50000">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Risk & Security -->
+                <div class="config-section">
+                    <h4><i class="fas fa-shield-alt"></i> Risk & Security</h4>
+                    <div class="config-grid">
+                        <div class="config-item">
+                            <label for="breach-cost">Breach Cost ($)</label>
+                            <input type="number" id="breach-cost" class="enhanced-input" value="4350000" min="1000000" max="20000000">
+                        </div>
+                        <div class="config-item">
+                            <label for="risk-multiplier">Risk Multiplier</label>
+                            <input type="range" id="risk-multiplier" min="0.5" max="2.0" step="0.1" value="1.0">
+                            <span class="range-value">1.0x</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Compliance Requirements -->
+                <div class="config-section">
+                    <h4><i class="fas fa-clipboard-check"></i> Compliance Requirements</h4>
+                    <div class="compliance-grid" id="compliance-requirements">
+                        <!-- Will be populated dynamically with ALL compliance frameworks -->
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Ultimate Executive Content Area -->
+        <main class="ultimate-content">
+            <!-- Loading Overlay -->
+            <div id="loading-overlay" class="loading-overlay" style="display: none;">
+                <div class="loading-spinner">
+                    <div class="ultimate-spinner"></div>
+                    <div class="loading-text">Loading Ultimate Executive Intelligence...</div>
+                </div>
+            </div>
+            
+            <!-- Main View Container -->
+            <div class="view-container">
+                <div id="executive-view" class="view-panel active" data-view="executive">
+                    <div class="view-content" id="ultimate-executive-content">
+                        <!-- Dynamic Ultimate Executive content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
-    
-    <!-- Core Scripts -->
-    <script src="./js/fixes/chart-loader-safety.js"></script>
-    <script src="./js/views/zero-trust-executive-platform.js"></script>
-    
-    <!-- Enhancements -->
+
+    <!-- Background Particles -->
+    <div id="particles-js"></div>
+
+    <!-- Core Scripts - Load comprehensive data first -->
     <script src="./js/enhancements/comprehensive-data-enhancement.js"></script>
+    <script src="./js/views/ultimate-executive-platform.js"></script>
     <script src="./js/enhancements/advanced-cost-analysis.js"></script>
     <script src="./js/enhancements/advanced-export-system.js"></script>
     <script src="./js/enhancements/enhanced-debugging.js"></script>
-    <script src="./js/integration/enhanced-comprehensive-integration.js"></script>
+    <script src="./js/integration/comprehensive-integration.js"></script>
     
-    <!-- Fixes -->
-    <script src="./js/fixes/chart-compatibility.js"></script>
-    <script src="./js/fixes/tab-and-chart-fixes.js"></script>
-    
-    <!-- Validation -->
-    <script src="./js/platform-validator.js"></script>
-    <script src="./js/performance-optimizer.js"></script>
-    <!-- Chart and Calculation Fixes -->
-    <script src="./js/calculations/enhanced-calculation-engine.js"></script>
-    <script src="./js/views/executive-platform-fix.js"></script>
-    <!-- Enhanced UI Components -->
-    <script src="./js/components/enhanced-ui-components.js"></script>
-    <script src="./js/components/advanced-tab-content.js"></script>
-    
-    <!-- Initialize Enhanced UI -->
+    <!-- Initialize Ultimate Platform -->
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Initialize enhanced UI components when platform is ready
-            const initEnhancedUI = setInterval(() => {
-                if (window.zeroTrustExecutivePlatform && window.zeroTrustExecutivePlatform.initialized) {
-                    window.enhancedUI.init();
-                    clearInterval(initEnhancedUI);
-                    console.log("✅ Enhanced UI initialized");
+        // Initialize Ultimate Executive Platform
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("🚀 Initializing Ultimate Executive Intelligence Platform...");
+            
+            // Ensure comprehensive data is loaded
+            setTimeout(() => {
+                if (window.ultimateExecutiveView && window.comprehensiveIndustries && window.comprehensiveCompliance) {
+                    window.ultimateExecutiveView.init();
+                    console.log("✅ Ultimate Executive Platform initialized with ALL data");
+                } else {
+                    console.error("❌ Failed to load comprehensive data");
                 }
-            }, 100);
+            }, 1500);
         });
     </script>
-    <!-- Enhanced UI Components -->
-    <script src="./js/components/enhanced-ui-components.js"></script>
-    <script src="./js/components/advanced-tab-content.js"></script>
-    
-    <!-- Initialize Enhanced UI -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Initialize enhanced UI components when platform is ready
-            const initEnhancedUI = setInterval(() => {
-                if (window.zeroTrustExecutivePlatform && window.zeroTrustExecutivePlatform.initialized) {
-                    window.enhancedUI.init();
-                    clearInterval(initEnhancedUI);
-                    console.log("✅ Enhanced UI initialized");
-                }
-            }, 100);
-        });
-    </script>
-    
-    <!-- Data Export Module -->
-    <script src="./js/utils/data-export.js"></script>
-    
-    <!-- Final Integration -->
-    <script src="./js/integration/final-integration.js"></script>
-    <!-- Enhanced UI Components -->
-    <script src="./js/components/enhanced-ui-components.js"></script>
-    <script src="./js/components/advanced-tab-content.js"></script>
-    
-    <!-- Initialize Enhanced UI -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Initialize enhanced UI components when platform is ready
-            const initEnhancedUI = setInterval(() => {
-                if (window.zeroTrustExecutivePlatform && window.zeroTrustExecutivePlatform.initialized) {
-                    window.enhancedUI.init();
-                    clearInterval(initEnhancedUI);
-                    console.log("✅ Enhanced UI initialized");
-                }
-            }, 100);
-        });
-    </script>
-    <!-- Enhanced UI Components -->
-    <script src="./js/components/enhanced-ui-components.js"></script>
-    <script src="./js/components/advanced-tab-content.js"></script>
-    
-    <!-- Initialize Enhanced UI -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Initialize enhanced UI components when platform is ready
-            const initEnhancedUI = setInterval(() => {
-                if (window.zeroTrustExecutivePlatform && window.zeroTrustExecutivePlatform.initialized) {
-                    window.enhancedUI.init();
-                    clearInterval(initEnhancedUI);
-                    console.log("✅ Enhanced UI initialized");
-                }
-            }, 100);
-        });
-    </script>
-    
-    <!-- Data Export Module -->
-    <script src="./js/utils/data-export.js"></script>
-    
-    <!-- Final Integration -->
-    <script src="./js/integration/final-integration.js"></script>
-    
-    <!-- UI Enhancements (Non-destructive) -->
-    <script src="./js/components/ui-enhancements.js"></script>
-    <script src="./js/integration/verify-enhancements.js"></script>
-    
-    <!-- UI Enhancements (Non-destructive) -->
-    <script src="./js/components/ui-enhancements.js"></script>
-    <script src="./js/integration/verify-enhancements.js"></script>
-    
-    <!-- Safe Platform Enhancement Module -->
-    <script src="./js/enhancements/safe-integration-module.js"></script>
-    <script src="./js/test-minimal.js"></script>
 </body>
 </html>
