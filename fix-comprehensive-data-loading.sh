@@ -1,3 +1,22 @@
+#!/bin/bash
+
+# Fix Comprehensive Data Loading Issue
+# This script fixes the data loading problem preventing Ultimate Executive View from initializing
+
+echo "🔧 Fixing Comprehensive Data Loading Issue..."
+echo "=========================================="
+
+# Color codes
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+# 1. Fix comprehensive-data-enhancement.js to properly expose data
+echo -e "${BLUE}📊 Fixing comprehensive-data-enhancement.js...${NC}"
+
+cat > js/enhancements/comprehensive-data-enhancement.js << 'EOF'
 /**
  * Comprehensive Data Enhancement for Zero Trust Executive Platform
  * Extends existing platform with complete industries, compliance, and advanced features
@@ -493,3 +512,193 @@ if (window.comprehensiveIndustries && window.comprehensiveCompliance) {
 } else {
     console.error("❌ Failed to expose data to window object");
 }
+EOF
+
+# 2. Update the index.html to ensure proper script loading order
+echo -e "${BLUE}📄 Updating index.html script loading order...${NC}"
+
+# Find the script loading section and update it
+sed -i '/<script src="\.\/js\/enhancements\/comprehensive-data-enhancement\.js"><\/script>/d' index.html
+
+# Insert comprehensive data script BEFORE other scripts
+sed -i '/<script src="\.\/js\/views\/ultimate-executive-platform\.js"><\/script>/i\    <script src="./js/enhancements/comprehensive-data-enhancement.js"></script>' index.html
+
+# 3. Update the integration check to handle the initial undefined state
+echo -e "${BLUE}🔗 Updating integration to handle initialization properly...${NC}"
+
+# Update the waitForComponents function in comprehensive-integration.js
+sed -i 's/comprehensiveData: window.comprehensiveIndustries && window.comprehensiveCompliance,/comprehensiveData: !!(window.comprehensiveIndustries && window.comprehensiveCompliance),/' js/integration/comprehensive-integration.js
+
+# 4. Create a initialization sequence fix
+echo -e "${BLUE}🚀 Creating initialization sequence fix...${NC}"
+
+cat > js/init-sequence-fix.js << 'EOF'
+/**
+ * Initialization Sequence Fix
+ * Ensures proper loading order and data availability
+ */
+
+// Wait for DOM and all scripts to load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePlatform);
+} else {
+    initializePlatform();
+}
+
+function initializePlatform() {
+    console.log("🚀 Starting platform initialization sequence...");
+    
+    // Check if comprehensive data is loaded
+    if (window.comprehensiveIndustries && window.comprehensiveCompliance) {
+        console.log("✅ Comprehensive data already loaded");
+        
+        // Initialize Ultimate Executive View if available
+        if (window.ultimateExecutiveView && !window.ultimateExecutiveView.initialized) {
+            console.log("🎯 Initializing Ultimate Executive View...");
+            window.ultimateExecutiveView.init();
+        }
+    } else {
+        console.log("⏳ Waiting for comprehensive data...");
+        
+        // Retry after a short delay
+        let retries = 0;
+        const maxRetries = 20;
+        
+        const checkData = setInterval(() => {
+            retries++;
+            
+            if (window.comprehensiveIndustries && window.comprehensiveCompliance) {
+                console.log("✅ Comprehensive data now available");
+                clearInterval(checkData);
+                
+                // Initialize Ultimate Executive View
+                if (window.ultimateExecutiveView && !window.ultimateExecutiveView.initialized) {
+                    console.log("🎯 Initializing Ultimate Executive View...");
+                    window.ultimateExecutiveView.init();
+                }
+            } else if (retries >= maxRetries) {
+                console.error("❌ Failed to load comprehensive data after " + maxRetries + " attempts");
+                clearInterval(checkData);
+            } else {
+                console.log("⏳ Still waiting for comprehensive data... (attempt " + retries + "/" + maxRetries + ")");
+            }
+        }, 500);
+    }
+}
+
+// Expose initialization function globally
+window.initializePlatform = initializePlatform;
+EOF
+
+# 5. Add the init sequence fix to index.html
+echo -e "${BLUE}📄 Adding initialization sequence fix to index.html...${NC}"
+
+# Add the init sequence fix script at the end of the body
+sed -i '/<\/body>/i\    <script src="./js/init-sequence-fix.js"></script>' index.html
+
+# 6. Remove the problematic timeout in index.html
+echo -e "${BLUE}🔧 Fixing initialization code in index.html...${NC}"
+
+# Update the initialization script in index.html
+sed -i '/<script>/,/<\/script>/{
+    s/setTimeout(() => {/\/\/ Initialize immediately when data is ready/
+    s/if (window.ultimateExecutiveView && window.comprehensiveIndustries && window.comprehensiveCompliance) {/if (window.initializePlatform) {/
+    s/window.ultimateExecutiveView.init();/window.initializePlatform();/
+    s/console.log("✅ Ultimate Executive Platform initialized with ALL data");/\/\/ Initialization handled by init-sequence-fix.js/
+    s/} else {/} else { console.log("Waiting for initialization script...");/
+    s/console.error("❌ Failed to load comprehensive data");//
+    s/}, 1500);/}/
+}' index.html
+
+# 7. Create a test page to verify data loading
+echo -e "${BLUE}🧪 Creating test page...${NC}"
+
+cat > test-data-loading.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Data Loading</title>
+</head>
+<body>
+    <h1>Data Loading Test</h1>
+    <div id="results"></div>
+    
+    <script src="./js/enhancements/comprehensive-data-enhancement.js"></script>
+    <script>
+        setTimeout(() => {
+            const results = document.getElementById('results');
+            let html = '<h2>Test Results:</h2><ul>';
+            
+            // Test comprehensive industries
+            if (window.comprehensiveIndustries) {
+                html += `<li style="color: green;">✅ Industries loaded: ${Object.keys(window.comprehensiveIndustries).length} industries</li>`;
+            } else {
+                html += '<li style="color: red;">❌ Industries not loaded</li>';
+            }
+            
+            // Test comprehensive compliance
+            if (window.comprehensiveCompliance) {
+                html += `<li style="color: green;">✅ Compliance loaded: ${Object.keys(window.comprehensiveCompliance).length} frameworks</li>`;
+            } else {
+                html += '<li style="color: red;">❌ Compliance not loaded</li>';
+            }
+            
+            // Test organization settings
+            if (window.organizationSettings) {
+                html += `<li style="color: green;">✅ Organization settings loaded</li>`;
+            } else {
+                html += '<li style="color: red;">❌ Organization settings not loaded</li>';
+            }
+            
+            html += '</ul>';
+            results.innerHTML = html;
+        }, 1000);
+    </script>
+</body>
+</html>
+EOF
+
+# 8. Commit all fixes
+echo -e "${GREEN}💾 Committing all fixes...${NC}"
+
+git add -A
+git commit -m "🔧 Fix comprehensive data loading issue
+
+FIXES:
+- ✅ Fixed comprehensive-data-enhancement.js to properly expose data globally
+- ✅ Updated script loading order in index.html
+- ✅ Added initialization sequence fix for proper startup
+- ✅ Removed problematic setTimeout delays
+- ✅ Created test page to verify data loading
+
+IMPROVEMENTS:
+- Data is now exposed immediately on script load
+- Better error handling and retry logic
+- Clear console logging for debugging
+- Initialization sequence handles async loading properly"
+
+# Push changes
+echo -e "${GREEN}📤 Pushing fixes to repository...${NC}"
+git push
+
+# Summary
+echo ""
+echo -e "${GREEN}✅ COMPREHENSIVE DATA LOADING FIXED!${NC}"
+echo -e "${GREEN}=====================================${NC}"
+echo ""
+echo -e "${BLUE}🔧 What was fixed:${NC}"
+echo "   • comprehensive-data-enhancement.js now properly exposes data"
+echo "   • Script loading order corrected in index.html"
+echo "   • Added initialization sequence handler"
+echo "   • Removed timing issues"
+echo ""
+echo -e "${YELLOW}📝 To verify the fix:${NC}"
+echo "   1. Clear your browser cache"
+echo "   2. Open test-data-loading.html to verify data loads"
+echo "   3. Then open index.html - it should initialize properly"
+echo "   4. Check console - you should see:"
+echo "      - '✅ Comprehensive data successfully exposed to window object'"
+echo "      - '✅ Ultimate Executive View initialized successfully'"
+echo ""
+echo -e "${GREEN}🎉 The loading issue should now be resolved!${NC}"

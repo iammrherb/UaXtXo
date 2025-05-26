@@ -222,15 +222,16 @@
             console.log("🚀 Initializing Ultimate Executive Intelligence Platform...");
             
             // Ensure comprehensive data is loaded
-            setTimeout(() => {
-                if (window.ultimateExecutiveView && window.comprehensiveIndustries && window.comprehensiveCompliance) {
-                    window.ultimateExecutiveView.init();
-                    console.log("✅ Ultimate Executive Platform initialized with ALL data");
-                } else {
-                    console.error("❌ Failed to load comprehensive data");
+            // Initialize immediately when data is ready
+                if (window.initializePlatform) {
+                    window.initializePlatform();
+                    // Initialization handled by init-sequence-fix.js
+                } else { console.log("Waiting for initialization script...");
+                    
                 }
-            }, 1500);
+            }
         });
     </script>
+    <script src="./js/init-sequence-fix.js"></script>
 </body>
 </html>

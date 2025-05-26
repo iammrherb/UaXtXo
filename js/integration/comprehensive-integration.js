@@ -33,7 +33,7 @@ class ComprehensiveIntegration {
       const checkComponents = () => {
         const componentsReady = {
           ultimateView: window.ultimateExecutiveView,
-          comprehensiveData: window.comprehensiveIndustries && window.comprehensiveCompliance,
+          comprehensiveData: !!(window.comprehensiveIndustries comprehensiveData: window.comprehensiveIndustries && window.comprehensiveCompliance,comprehensiveData: window.comprehensiveIndustries && window.comprehensiveCompliance, window.comprehensiveCompliance),
           chartLibraries: typeof Highcharts !== 'undefined' || typeof ApexCharts !== 'undefined'
         };
         
