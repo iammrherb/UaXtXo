@@ -18,7 +18,8 @@
   "license": "UNLICENSED",
   "dependencies": {
     "apexcharts": "^3.41.0",
-    "d3": "^7.8.5",
+    "chart.js": "^4.4.9",
+    "d3": "^7.9.0",
     "highcharts": "^11.1.0",
     "lodash": "^4.17.21",
     "serve": "^14.2.0"

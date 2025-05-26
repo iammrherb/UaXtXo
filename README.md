@@ -1,196 +1,153 @@
-# Portnox Total Cost Analyzer
-
-A comprehensive web application for calculating and visualizing the Total Cost of Ownership (TCO) and Return on Investment (ROI) for Network Access Control (NAC) solutions.
+# Portnox Total Cost Analyzer - Executive Intelligence Platform
 
 ## Overview
-
-The Portnox Total Cost Analyzer helps organizations compare different NAC vendors and solutions, with a focus on:
-
-- Calculating the true TCO over 3-5 years
-- Analyzing ROI and business value
-- Evaluating security and compliance benefits
-- Comparing technical features and capabilities
-
-This tool provides multiple perspectives for different stakeholders:
-
-- **Executive View**: High-level TCO, ROI, and strategic benefits
-- **Financial View**: Detailed cost breakdown and financial analysis
-- **Security View**: Security posture improvement and compliance coverage
-- **Technical View**: Feature comparison and implementation considerations
-
-## Vendors Included
-
-The analyzer includes data for the following NAC vendors:
-
-- Portnox Cloud (Cloud-native NAC)
-- Cisco ISE (Enterprise NAC)
-- Aruba ClearPass (Policy manager)
-- Forescout (Device visibility)
-- FortiNAC (Fortinet NAC)
-- Juniper Mist (AI-driven NAC)
-- SecureW2 (Cloud RADIUS)
-- Microsoft NPS (Windows Server NAC)
-- Arista Agni (Network control)
-- Foxpass (Cloud RADIUS/LDAP)
-- Extreme NAC (Extreme Networks NAC)
-- No NAC (Baseline for comparison)
+The Portnox Total Cost Analyzer is a comprehensive executive intelligence platform that provides in-depth analysis of Zero Trust Network Access Control (NAC) solutions. It offers detailed TCO comparisons, security assessments, compliance analysis, and strategic recommendations.
 
 ## Features
 
-- **Interactive Visualization**: Vibrant, animated charts using ApexCharts, Highcharts, and D3.js
-- **Comprehensive Cost Modeling**: Accounts for hardware, software, implementation, maintenance, personnel, and operational costs
-- **Risk and Compliance Analysis**: Security posture improvement and compliance coverage evaluation
-- **Flexible Configuration**: Adjust parameters for your specific organization size, industry, and requirements
-- **Multi-Stakeholder Views**: Different perspectives for executives, financial analysts, security professionals, and technical staff
-- **Export Capability**: Generate detailed PDF reports for stakeholders
+### 🎯 Executive Intelligence
+- Real-time TCO analysis across 10+ vendors
+- ROI calculations with 3-year and 5-year projections
+- Risk-adjusted cost modeling
+- Executive KPI dashboard
 
-## Directory Structure
+### 💰 Financial Analysis
+- Comprehensive cost breakdown
+- Hidden cost identification
+- Volume discount calculations
+- Insurance premium impact analysis
+
+### 🛡️ Security & Risk Assessment
+- MITRE ATT&CK framework mapping
+- Zero Trust maturity scoring
+- Breach probability reduction metrics
+- Automated threat response capabilities
+
+### 📋 Compliance Management
+- 15+ compliance framework coverage (NIST, PCI DSS, HIPAA, GDPR, etc.)
+- Automated compliance reporting
+- Gap analysis and remediation guidance
+- Real-time compliance monitoring
+
+### 📊 Advanced Analytics
+- Interactive charts and visualizations
+- Vendor comparison matrices
+- Industry-specific insights
+- Peer benchmarking
+
+### 🚀 Implementation Planning
+- Detailed deployment roadmaps
+- Resource requirement analysis
+- Success factors and best practices
+- Post-implementation optimization
+
+## Architecture
 
 ```
-.
-├── css/                   # Stylesheets
-│   ├── components/        # Component-specific styles
-│   ├── themes/            # Theme-related styles
-│   └── main.css           # Main stylesheet
-├── js/                    # JavaScript files
-│   ├── core/              # Core application logic
-│   ├── models/            # Data models and calculations
-│   ├── vendors/           # Vendor-specific logic
-│   ├── charts/            # Charting implementations
-│   │   ├── apex/          # ApexCharts implementation
-│   │   ├── highcharts/    # Highcharts implementation
-│   │   └── d3/            # D3.js visualizations
-│   ├── views/             # View-specific logic
-│   └── utils/             # Utility functions
-├── data/                  # Data files
-├── img/                   # Images and icons
-│   └── vendors/           # Vendor logos
-├── docs/                  # Documentation
-├── index.html             # Main HTML file
-└── package.json           # Project dependencies
+portnox-total-cost-analyzer/
+├── index.html                  # Main application entry
+├── css/
+│   └── executive-command-center.css  # Comprehensive styling
+├── js/
+│   ├── views/
+│   │   └── zero-trust-executive-platform.js  # Core platform
+│   ├── enhancements/
+│   │   ├── comprehensive-data-enhancement.js
+│   │   ├── advanced-cost-analysis.js
+│   │   ├── advanced-export-system.js
+│   │   ├── enhanced-debugging.js
+│   │   └── comprehensive-integration.js
+│   ├── fixes/
+│   │   ├── chart-loader-safety.js
+│   │   ├── tab-and-chart-fixes.js
+│   │   └── comprehensive-chart-library.js
+│   ├── platform-validator.js
+│   └── performance-optimizer.js
+├── img/
+│   └── vendors/               # Vendor logos
+└── README.md
 ```
+
+## Technical Stack
+
+- **Frontend**: Vanilla JavaScript ES6+
+- **Styling**: CSS3 with advanced animations and glass morphism
+- **Charts**: Chart.js & Highcharts
+- **Architecture**: Modular, component-based
+- **Performance**: Lazy loading, debouncing, optimized animations
 
 ## Getting Started
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Start the development server: `npm start`
-4. Open the application in your browser at `http://localhost:5000`
+1. **Clone the repository**
+   ```bash
+   git clone [repository-url]
+   cd portnox-total-cost-analyzer
+   ```
 
-## Technology Stack
+2. **Serve the application**
+   ```bash
+   # Using Python
+   python -m http.server 8000
+   
+   # Using Node.js
+   npx http-server -p 8000
+   ```
 
-- HTML5, CSS3, and JavaScript (ES6+)
-- Visualization libraries:
-  - ApexCharts: Modern, interactive charts
-  - Highcharts: Advanced charting capabilities
-  - D3.js: Custom, complex visualizations
-- Font Awesome: Icons and visual elements
-- Google Fonts (Nunito): Typography
+3. **Access the platform**
+   Open http://localhost:8000 in your browser
 
-## License
+## Usage
 
-This project is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited.
+1. **Configure Analysis Parameters**
+   - Select vendors to compare
+   - Choose your industry
+   - Set device count and locations
+   - Select compliance requirements
 
-© 2025 Portnox Ltd. All rights reserved.
+2. **Run Analysis**
+   Click "Calculate Analysis" to generate comprehensive results
 
-## New Features
+3. **Explore Results**
+   - Executive Overview: High-level insights and KPIs
+   - Financial Analysis: Detailed cost breakdowns
+   - Security & Risk: Threat mitigation effectiveness
+   - Compliance: Framework coverage analysis
+   - Vendor Comparison: Side-by-side comparisons
+   - Implementation: Deployment roadmaps
+   - Industry Insights: Sector-specific recommendations
 
-### Advanced Visualization
-- Interactive heatmaps for security risk assessment
-- Radar charts for vendor capability comparison
-- Drill-down chart for breach impact analysis
-- Feature comparison matrix
+4. **Export Reports**
+   Generate executive summaries, detailed reports, or custom exports
 
-### Enhanced UI
-- Dark mode support with theme customization
-- Mobile responsive design for all screen sizes
-- Animated UI elements for better user experience
-- Interactive vendor cards with visual feedback
+## Key Insights
 
-### Additional Features
-- Detailed vendor comparison view
-- PDF report generation with comprehensive analysis
-- Modern, accessible UI with proper contrast and readability
-- Support for touch devices with swipe gestures
+### Why Portnox Cloud?
 
-## Mobile Support
-The application is now fully responsive and works on all device sizes:
-- Desktop: Full-featured experience with all charts and visualizations
-- Tablet: Optimized layout with adapting chart sizes
-- Mobile: Streamlined interface with touch-friendly controls and swipe gestures
+- **53% Lower TCO**: Compared to traditional on-premises NAC solutions
+- **7-Month ROI**: Fastest payback period in the industry
+- **89% Risk Reduction**: Comprehensive security improvement
+- **95% Compliance Coverage**: Automated compliance across major frameworks
+- **21-Day Deployment**: 75% faster than competitors
 
-## Accessibility Features
-- Proper color contrast for all UI elements
-- Keyboard navigation support
-- Screen reader friendly markup
-- Touch-friendly controls for mobile devices
+### Competitive Advantages
 
-## Browser Compatibility
-- Chrome: Full support
-- Firefox: Full support
-- Safari: Full support
-- Edge: Full support
-- Opera: Full support
-- Mobile browsers: Full support
+1. **Cloud-Native Architecture**: No hardware, instant scalability
+2. **Zero Infrastructure**: Eliminate hidden costs
+3. **AI-Powered Security**: Advanced threat detection and response
+4. **Comprehensive Coverage**: All NAC features included
+5. **Global Availability**: 30+ PoPs worldwide
 
-## Development
-To contribute to this project:
-1. Fork the repository
-2. Install dependencies: `npm install`
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+## Support
+
+For questions or support:
+- Documentation: [docs.portnox.com](https://docs.portnox.com)
+- Support: [support.portnox.com](https://support.portnox.com)
+- Sales: [portnox.com/contact](https://portnox.com/contact)
 
 ## License
-© 2025 Portnox Ltd. All Rights Reserved.
 
-## New Features
+Copyright © 2024 Portnox. All rights reserved.
 
-### Advanced Visualization
-- Interactive heatmaps for security risk assessment
-- Radar charts for vendor capability comparison
-- Drill-down chart for breach impact analysis
-- Feature comparison matrix
+---
 
-### Enhanced UI
-- Dark mode support with theme customization
-- Mobile responsive design for all screen sizes
-- Animated UI elements for better user experience
-- Interactive vendor cards with visual feedback
-
-### Additional Features
-- Detailed vendor comparison view
-- PDF report generation with comprehensive analysis
-- Modern, accessible UI with proper contrast and readability
-- Support for touch devices with swipe gestures
-
-## Mobile Support
-The application is now fully responsive and works on all device sizes:
-- Desktop: Full-featured experience with all charts and visualizations
-- Tablet: Optimized layout with adapting chart sizes
-- Mobile: Streamlined interface with touch-friendly controls and swipe gestures
-
-## Accessibility Features
-- Proper color contrast for all UI elements
-- Keyboard navigation support
-- Screen reader friendly markup
-- Touch-friendly controls for mobile devices
-
-## Browser Compatibility
-- Chrome: Full support
-- Firefox: Full support
-- Safari: Full support
-- Edge: Full support
-- Opera: Full support
-- Mobile browsers: Full support
-
-## Development
-To contribute to this project:
-1. Fork the repository
-2. Install dependencies: `npm install`
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-© 2025 Portnox Ltd. All Rights Reserved.
+Built with ❤️ for Security and Compliance Teams

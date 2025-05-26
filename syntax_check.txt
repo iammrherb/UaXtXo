@@ -1,0 +1,11 @@
+875:     setTimeout(() => {
+876:         window.zeroTrustPlatform = new ZeroTrustExecutivePlatform();
+877:         window.zeroTrustPlatform.init();
+878:     }, 1000);
+879: });
+880:     }
+881: 
+882:     createExecutiveInterface() {
+883:     createExecutiveInterface() {
+884:         const container = document.querySelector('#executive-view .view-content');
+885:         if (!container) return;

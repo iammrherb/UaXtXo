@@ -1,0 +1,486 @@
+/* UI Enhancement Styles - Non-destructive additions */
+
+/* Subtab Navigation */
+.enhanced-tab-wrapper {
+    animation: fadeIn 0.5s ease;
+}
+
+.subtab-navigation {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-wrap: wrap;
+}
+
+.subtab-btn {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.subtab-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.subtab-btn.active {
+    background: var(--primary-gradient, linear-gradient(135deg, #1a5a96, #2980b9));
+    border-color: transparent;
+    color: white;
+    font-weight: 600;
+}
+
+.subtab-panel {
+    display: none;
+    animation: fadeInUp 0.5s ease;
+}
+
+.subtab-panel.active {
+    display: block;
+}
+
+/* Enhanced Select Styles */
+.enhanced-select {
+    transition: all 0.3s ease;
+}
+
+.enhanced-select.changed {
+    box-shadow: 0 0 0 3px rgba(26, 90, 150, 0.3);
+}
+
+/* View Options Dropdown */
+.view-options-dropdown {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+}
+
+.view-options-dropdown label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.875rem;
+}
+
+/* Advanced Filters Section */
+.advanced-filters-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.advanced-filters-section h3 {
+    margin-bottom: 1rem;
+    color: white;
+    font-size: 1.125rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-group {
+    margin-bottom: 1.5rem;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.875rem;
+}
+
+.range-filter {
+    position: relative;
+}
+
+.range-slider {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.range-values {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Button Enhancements */
+.btn-primary,
+.btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.btn-primary {
+    background: var(--primary-gradient, linear-gradient(135deg, #1a5a96, #2980b9));
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26, 90, 150, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Content Enhancements */
+.insights-content,
+.quick-comparison,
+.hidden-costs-analysis,
+.savings-analysis,
+.zero-trust-analysis,
+.threat-analysis,
+.compliance-gap-analysis,
+.compliance-roadmap,
+.unique-features,
+.integration-analysis,
+.resource-requirements,
+.implementation-checklist {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.insight-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.insight-card {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.insight-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26, 90, 150, 0.2);
+}
+
+.insight-card i {
+    font-size: 2rem;
+    color: var(--primary-color, #1a5a96);
+    margin-bottom: 1rem;
+}
+
+.insight-card h4 {
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.insight-card p {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+}
+
+/* Comparison Selector */
+.comparison-selector {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+}
+
+/* Progress Bars */
+.progress-bar {
+    width: 100%;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+}
+
+.progress {
+    height: 100%;
+    background: var(--primary-gradient, linear-gradient(135deg, #1a5a96, #2980b9));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: width 1s ease;
+}
+
+/* Tables */
+.threat-table,
+.resource-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.threat-table th,
+.threat-table td,
+.resource-table th,
+.resource-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.threat-table th,
+.resource-table th {
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+    color: white;
+}
+
+.excellent {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.good {
+    color: #3b82f6;
+    font-weight: 600;
+}
+
+.moderate {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.poor {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.zero {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.savings {
+    color: #10b981;
+    font-weight: 600;
+}
+
+/* Roadmap Styles */
+.roadmap-timeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.roadmap-phase {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.phase-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.phase-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--primary-gradient, linear-gradient(135deg, #1a5a96, #2980b9));
+    border-radius: 50%;
+    color: white;
+    font-weight: 700;
+}
+
+/* Feature Showcase */
+.feature-showcase {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.unique-feature {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    position: relative;
+}
+
+.unique-feature i {
+    font-size: 2.5rem;
+    color: var(--primary-color, #1a5a96);
+    margin-bottom: 1rem;
+}
+
+.exclusive-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #10b981;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Integration Lists */
+.integration-categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.integration-category h4 {
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.integration-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.integration-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.integration-item i {
+    color: #10b981;
+}
+
+/* Checklist Styles */
+.checklist-phases {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.checklist-phase {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.checklist-phase h4 {
+    margin-bottom: 1rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checklist-phase label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+}
+
+.checklist-phase input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .subtab-navigation {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.5rem;
+    }
+    
+    .comparison-selector {
+        flex-direction: column;
+    }
+    
+    .roadmap-timeline,
+    .checklist-phases,
+    .integration-categories,
+    .feature-showcase {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* View Mode Styles */
+[data-view-mode="executive"] .technical-detail {
+    display: none !important;
+}
+
+[data-view-mode="technical"] .executive-summary {
+    display: none !important;
+}
+
+/* Animation Classes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

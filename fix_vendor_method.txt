@@ -1,0 +1,13 @@
+    createVendorSelectionGrid() {
+        return Object.entries(this.vendorData).map(([vendorId, vendor]) => {
+            const isSelected = this.selectedVendors.includes(vendorId);
+            const isPortnox = vendorId === "portnox";
+            return `
+                <div class="vendor-select-card ${isSelected ? "selected" : ""}" data-vendor="${vendorId}">
+                    <img src="${vendor.logo}" alt="${vendor.name}" class="vendor-logo-sm">
+                    <div class="vendor-name-sm">${vendor.shortName}</div>
+                    ${isPortnox ? '<span class="recommended-badge">Recommended</span>' : ""}
+                </div>
+            `;
+        }).join("");
+    }
