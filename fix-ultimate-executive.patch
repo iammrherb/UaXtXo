@@ -1,0 +1,6 @@
+// Fix for line 907 - remove HPE properly
+// Look for the hpe vendor object and remove it completely
+// This needs to be done carefully to avoid syntax errors
+
+// The issue is likely a trailing comma or missing brace
+// We need to ensure proper JSON structure
