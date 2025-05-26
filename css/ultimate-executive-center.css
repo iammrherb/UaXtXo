@@ -1023,3 +1023,237 @@ input[type="range"]::-moz-range-thumb {
 .close-modal:hover {
     background: var(--bg-hover);
 }
+
+/* AI Insights Modal Styles */
+.ai-insights-modal,
+.scenarios-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10003;
+    animation: fadeIn 0.3s ease;
+}
+
+.ai-insights-dialog,
+.scenarios-dialog {
+    background: var(--bg-card);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-xl);
+}
+
+.ai-header,
+.scenarios-header {
+    padding: 2rem;
+    background: var(--secondary-gradient);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ai-header h2,
+.scenarios-header h2 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.close-modal {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.ai-insights-content,
+.scenarios-content {
+    padding: 2rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.insights-intro {
+    margin-bottom: 2rem;
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+}
+
+.insights-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.insight-card {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    border-left: 4px solid;
+    animation: slideInRight 0.5s ease backwards;
+}
+
+.insight-card.priority-critical {
+    border-color: #e74c3c;
+}
+
+.insight-card.priority-high {
+    border-color: #f39c12;
+}
+
+.insight-card.priority-medium {
+    border-color: #3498db;
+}
+
+.insight-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--primary-gradient);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.insight-content {
+    flex: 1;
+}
+
+.insight-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+}
+
+.insight-content p {
+    margin: 0 0 1rem 0;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.insight-action {
+    font-size: 0.875rem;
+    color: #3498db;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.insights-footer,
+.scenarios-footer {
+    padding: 1.5rem 2rem;
+    background: var(--bg-tertiary);
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Scenario Comparison Styles */
+.scenario-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+}
+
+.scenario-section h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.scenario-description {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.scenario-comparison {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.scenario-card {
+    background: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-primary);
+}
+
+.scenario-card h4 {
+    margin: 0 0 1rem 0;
+    color: #3498db;
+}
+
+.scenario-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+}
+
+.metric-label {
+    color: var(--text-muted);
+    text-transform: capitalize;
+}
+
+.metric-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.scenario-recommendation {
+    padding: 1rem;
+    background: rgba(52, 152, 219, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.scenario-recommendation i {
+    color: #3498db;
+    font-size: 1.25rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+    from { 
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

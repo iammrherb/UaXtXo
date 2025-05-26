@@ -849,25 +849,6 @@ class UltimateExecutiveView {
                     'lgpd': 68
                 }
             },
-            'hpe': {
-                name: 'HPE ClearPass',
-                shortName: 'HPE ClearPass',
-                logo: './img/vendors/hpe-logo.png',
-                color: '#01a982',
-                architecture: 'Appliance/VM',
-                marketPosition: 'Enterprise Grade',
-                description: 'Enterprise-grade NAC with extensive features',
-                costs: {
-                    tco1Year: 170000,
-                    tco3Year: 485000,
-                    tco5Year: 730000,
-                    licensePerDevice: 78,
-                    implementationCost: 68000,
-                    maintenanceCost: 40000,
-                    personnelCostPerYear: 78000,
-                    trainingCost: 21000,
-                    hiddenCosts: 13000
-                },
                 metrics: {
                     roi1Year: 0,
                     roi3Year: 75,
