@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zero Trust Total Cost Analyzer | Portnox</title>
+    <title>Zero Trust Total Cost Analyzer | Portnox Executive Intelligence Platform</title>
+    <meta name="description" content="Comprehensive Zero Trust NAC analysis platform with executive intelligence, vendor comparisons, and strategic insights for decision makers.">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="./img/vendors/portnox-icon.png">
@@ -14,25 +15,36 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Chart Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+    <!-- Advanced Chart Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/highcharts.js"></script>
-
-    <!-- Particle.js -->
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/highcharts-more.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/exporting.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/export-data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/accessibility.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/funnel.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/waterfall.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/treemap.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/heatmap.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/sankey.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/networkgraph.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/gantt.js"></script>
+    
+    <!-- D3.js for Advanced Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+    
+    <!-- Particle.js for Background Effects -->
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 
-    <!-- CSS Files -->
-    <link rel="stylesheet" href="./css/zero-trust-enhanced.css">
-    <link rel="stylesheet" href="./css/modern-theme.css">
-    <link rel="stylesheet" href="./css/enhanced-animations.css">
-
-    <!-- Core Scripts -->
-    <script src="./js/zero-trust-calculator.js"></script>
-    <link rel="stylesheet" href="./css/comprehensive-executive.css">
+    <!-- Executive Command Center CSS -->
+    <link rel="stylesheet" href="./css/executive-command-center.css">
+    
+    <!-- Performance Optimization -->
+    <link rel="preload" href="./img/vendors/portnox-logo.png" as="image">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
 </head>
 <body>
-    <!-- Enhanced Zero Trust Header -->
+    <!-- Zero Trust Header with Particles -->
     <header class="zero-trust-header">
         <div id="particles-header"></div>
         <div class="header-content">
@@ -42,149 +54,231 @@
                 </div>
                 <div class="header-titles">
                     <h1 class="main-title">Zero Trust Total Cost Analyzer</h1>
-                    <p class="sub-title">Multi-Vendor NAC Solution Comparison Platform</p>
+                    <p class="sub-title">Executive Intelligence & Strategic Decision Support Platform</p>
                 </div>
             </div>
             <div class="header-actions">
                 <button id="calculate-btn" class="header-btn primary">
                     <i class="fas fa-calculator"></i>
-                    <span>Calculate</span>
+                    <span>Calculate ROI</span>
                 </button>
                 <button id="export-btn" class="header-btn secondary">
                     <i class="fas fa-download"></i>
-                    <span>Export</span>
+                    <span>Export Report</span>
                 </button>
-                <button id="refresh-btn" class="header-btn utility">
-                    <i class="fas fa-sync-alt"></i>
+                <button id="demo-btn" class="header-btn utility">
+                    <i class="fas fa-play"></i>
+                    <span>Live Demo</span>
                 </button>
-                <button id="dark-mode-toggle" class="header-btn utility">
-                    <i class="fas fa-moon"></i>
+                <button id="support-btn" class="header-btn utility">
+                    <i class="fas fa-headset"></i>
+                    <span>Support</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <div class="main-container full-width">
-        <!-- Enhanced Sidebar -->
-
-        <!-- Main Content Area -->
+    <!-- Main Application Container -->
+    <div class="main-container">
+        <!-- Executive Content Area -->
         <main class="content-area">
-            <!-- Enhanced Tab Navigation -->
-            <nav class="tab-navigation">
-                <div class="main-tabs">
-                    <button class="main-tab active" data-view="executive">
-                        <div class="tab-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="tab-content">
-                            <span class="tab-title">Executive</span>
-                            <span class="tab-subtitle">Dashboard</span>
-                        </div>
-                    </button>
-                    
-                    <button class="main-tab" data-view="financial">
-                        <div class="tab-icon">
-                            <i class="fas fa-coins"></i>
-                        </div>
-                        <div class="tab-content">
-                            <span class="tab-title">Financial</span>
-                            <span class="tab-subtitle">Analysis</span>
-                        </div>
-                    </button>
-                    
-                    <button class="main-tab" data-view="security">
-                        <div class="tab-icon">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <div class="tab-content">
-                            <span class="tab-title">Security</span>
-                            <span class="tab-subtitle">& Compliance</span>
-                        </div>
-                    </button>
-                    
-                    <button class="main-tab" data-view="technical">
-                        <div class="tab-icon">
-                            <i class="fas fa-cogs"></i>
-                        </div>
-                        <div class="tab-content">
-                            <span class="tab-title">Technical</span>
-                            <span class="tab-subtitle">Comparison</span>
-                        </div>
-                    </button>
+            <!-- Loading Indicator -->
+            <div id="loading-overlay" class="loading-overlay" style="display: none;">
+                <div class="loading-spinner">
+                    <div class="chart-loading-spinner"></div>
+                    <div class="loading-text">Loading Executive Intelligence Platform...</div>
                 </div>
-            </nav>
-
-            <!-- View Container -->
+            </div>
+            
+            <!-- Executive View Container -->
             <div class="view-container">
-                <!-- Executive View -->
-                <div id="executive-view" class="view-panel active">
+                <div id="executive-view" class="view-panel active" data-view="executive">
                     <div class="view-content">
-                        <!-- Dynamic content will be loaded here -->
-                    </div>
-                </div>
-
-                <!-- Financial View -->
-                <div id="financial-view" class="view-panel">
-                    <div class="view-content">
-                        <!-- Dynamic content will be loaded here -->
-                    </div>
-                </div>
-
-                <!-- Security View -->
-                <div id="security-view" class="view-panel">
-                    <div class="view-content">
-                        <!-- Dynamic content will be loaded here -->
-                    </div>
-                </div>
-
-                <!-- Technical View -->
-                <div id="technical-view" class="view-panel">
-                    <div class="view-content">
-                        <!-- Dynamic content will be loaded here -->
+                        <!-- Dynamic Executive Command Center content will be loaded here -->
+                        <div class="initial-loading" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; color: white;">
+                            <div class="chart-loading-spinner"></div>
+                            <h2 style="margin-top: 2rem; font-weight: 300;">Initializing Executive Command Center...</h2>
+                            <p style="margin-top: 1rem; opacity: 0.8;">Loading comprehensive vendor analysis and strategic insights</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Particles Background -->
+    <!-- Background Particles -->
     <div id="particles-js"></div>
 
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="loading-spinner">
-            <div class="spinner"></div>
-            <div class="loading-text">Calculating Zero Trust TCO...</div>
-        </div>
+    <!-- Emergency Error Fallback -->
+    <div id="error-fallback" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 10000;">
+        <h3 style="color: #e74c3c; margin-bottom: 1rem;"><i class="fas fa-exclamation-triangle"></i> Platform Loading Error</h3>
+        <p style="margin-bottom: 1rem;">The Executive Intelligence Platform failed to load properly.</p>
+        <button onclick="location.reload()" style="background: #1a5a96; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
+            <i class="fas fa-redo"></i> Reload Platform
+        </button>
     </div>
 
-    <!-- Export Modal -->
-    <div id="export-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Export Analysis</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="export-options">
-                    <button class="export-btn" data-format="pdf">
-                        <i class="fas fa-file-pdf"></i>
-                        <span>PDF Report</span>
-                    </button>
-                    <button class="export-btn" data-format="excel">
-                        <i class="fas fa-file-excel"></i>
-                        <span>Excel Workbook</span>
-                    </button>
-                    <button class="export-btn" data-format="powerpoint">
-                        <i class="fas fa-file-powerpoint"></i>
-                        <span>PowerPoint</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script src="./js/fixes/event-integration-fix.js"></script>
-    <script src="./js/views/comprehensive-executive-dashboard.js"></script>
+    <!-- Core Executive Platform Script -->
+    <script src="./js/views/zero-trust-executive-platform.js"></script>
+    
+    <!-- Background Particles Initialization -->
+    <script>
+        // Initialize main background particles
+        if (typeof particlesJS !== 'undefined') {
+            particlesJS('particles-js', {
+                particles: {
+                    number: { 
+                        value: 50,
+                        density: {
+                            enable: true,
+                            value_area: 1000
+                        }
+                    },
+                    color: { value: '#ffffff' },
+                    shape: { 
+                        type: 'circle',
+                        stroke: {
+                            width: 0,
+                            color: '#000000'
+                        }
+                    },
+                    opacity: { 
+                        value: 0.15, 
+                        random: true,
+                        anim: {
+                            enable: true,
+                            speed: 1,
+                            opacity_min: 0.05,
+                            sync: false
+                        }
+                    },
+                    size: { 
+                        value: 3, 
+                        random: true,
+                        anim: {
+                            enable: true,
+                            speed: 2,
+                            size_min: 0.5,
+                            sync: false
+                        }
+                    },
+                    line_linked: {
+                        enable: true,
+                        distance: 150,
+                        color: '#ffffff',
+                        opacity: 0.1,
+                        width: 1
+                    },
+                    move: {
+                        enable: true,
+                        speed: 1.5,
+                        direction: 'none',
+                        random: true,
+                        straight: false,
+                        out_mode: 'out',
+                        bounce: false
+                    }
+                },
+                interactivity: {
+                    detect_on: 'canvas',
+                    events: {
+                        onhover: { 
+                            enable: true, 
+                            mode: 'bubble' 
+                        },
+                        onclick: { 
+                            enable: false
+                        },
+                        resize: true
+                    },
+                    modes: {
+                        bubble: {
+                            distance: 200,
+                            size: 5,
+                            duration: 2,
+                            opacity: 0.3,
+                            speed: 3
+                        }
+                    }
+                },
+                retina_detect: true
+            });
+        }
+
+        // Global error handling
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+            setTimeout(() => {
+                const errorFallback = document.getElementById('error-fallback');
+                if (errorFallback) {
+                    errorFallback.style.display = 'block';
+                }
+            }, 5000);
+        });
+
+        // Platform readiness check
+        setTimeout(() => {
+            if (!window.zeroTrustExecutivePlatform || !window.zeroTrustExecutivePlatform.initialized) {
+                console.warn('Platform initialization taking longer than expected...');
+                const initialLoading = document.querySelector('.initial-loading');
+                if (initialLoading) {
+                    initialLoading.innerHTML = `
+                        <div class="chart-loading-spinner"></div>
+                        <h2 style="margin-top: 2rem; font-weight: 300;">Platform Loading...</h2>
+                        <p style="margin-top: 1rem; opacity: 0.8;">Please wait while we load the comprehensive analytics...</p>
+                        <button onclick="location.reload()" style="margin-top: 2rem; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">
+                            Reload Platform
+                        </button>
+                    `;
+                }
+            }
+        }, 8000);
+
+        // Header button functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Export button
+            document.getElementById('export-btn')?.addEventListener('click', () => {
+                if (window.zeroTrustExecutivePlatform) {
+                    window.zeroTrustExecutivePlatform.handleExport();
+                }
+            });
+
+            // Demo button
+            document.getElementById('demo-btn')?.addEventListener('click', () => {
+                if (window.zeroTrustExecutivePlatform) {
+                    window.zeroTrustExecutivePlatform.handleLiveDemo();
+                }
+            });
+
+            // Calculate button
+            document.getElementById('calculate-btn')?.addEventListener('click', () => {
+                if (window.zeroTrustExecutivePlatform) {
+                    window.zeroTrustExecutivePlatform.refreshCurrentTab();
+                }
+            });
+
+            // Support button
+            document.getElementById('support-btn')?.addEventListener('click', () => {
+                window.open('https://www.portnox.com/support/', '_blank');
+            });
+        });
+    </script>
+
+    <!-- Performance Analytics -->
+    <script>
+        // Performance monitoring
+        window.addEventListener('load', () => {
+            if (performance.mark) {
+                performance.mark('platform-loaded');
+                console.log('✅ Zero Trust Executive Platform loaded successfully');
+            }
+        });
+    </script>
+    <!-- Platform Enhancements -->
+    <script src="./js/enhancements/comprehensive-data-enhancement.js"></script>
+    <script src="./js/enhancements/advanced-cost-analysis.js"></script>
+    <script src="./js/enhancements/advanced-export-system.js"></script>
+    <script src="./js/enhancements/enhanced-debugging.js"></script>
+    <script src="./js/enhancements/comprehensive-integration.js"></script>
 </body>
 </html>
