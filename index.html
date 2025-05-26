@@ -3,188 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zero Trust Total Cost Analyzer | Portnox</title>
-
+    <title>Zero Trust NAC Executive Command Center | Portnox</title>
+    <meta name="description" content="Comprehensive Zero Trust NAC analysis with executive intelligence, vendor comparisons, and strategic insights.">
+    
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="./img/vendors/portnox-icon.png">
-
-    <!-- Google Fonts -->
+    
+    <!-- Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
-
-    <!-- Font Awesome -->
+    
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    
     <!-- Chart Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/highcharts.js"></script>
-
-    <!-- Particle.js -->
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-
-    <!-- CSS Files -->
-    <link rel="stylesheet" href="./css/zero-trust-enhanced.css">
-    <link rel="stylesheet" href="./css/modern-theme.css">
-    <link rel="stylesheet" href="./css/enhanced-animations.css">
-
-    <!-- Core Scripts -->
-    <script src="./js/zero-trust-calculator.js"></script>
-    <link rel="stylesheet" href="./css/comprehensive-executive.css">
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="./css/executive-command-center.css">
+    <link rel="stylesheet" href="./css/enhanced-executive-command-center.css">
+    <link rel="stylesheet" href="./css/ui-enhancements.css">
+    <link rel="stylesheet" href="./css/ui-enhancements.css">
+    <link rel="stylesheet" href="./css/components/enhanced-ui-elements.css">
+    <link rel="stylesheet" href="./css/components/enhanced-ui-elements.css">
+    <link rel="stylesheet" href="./css/components/enhanced-ui-elements.css">
+    <link rel="stylesheet" href="./css/components/enhanced-ui-elements.css">
 </head>
 <body>
-    <!-- Enhanced Zero Trust Header -->
-    <header class="zero-trust-header">
-        <div id="particles-header"></div>
-        <div class="header-content">
-            <div class="header-branding">
-                <div class="portnox-logo">
-                    <img src="./img/vendors/portnox-logo.png" alt="Portnox" class="logo-image">
-                </div>
-                <div class="header-titles">
-                    <h1 class="main-title">Zero Trust Total Cost Analyzer</h1>
-                    <p class="sub-title">Multi-Vendor NAC Solution Comparison Platform</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <button id="calculate-btn" class="header-btn primary">
-                    <i class="fas fa-calculator"></i>
-                    <span>Calculate</span>
-                </button>
-                <button id="export-btn" class="header-btn secondary">
-                    <i class="fas fa-download"></i>
-                    <span>Export</span>
-                </button>
-                <button id="refresh-btn" class="header-btn utility">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-                <button id="dark-mode-toggle" class="header-btn utility">
-                    <i class="fas fa-moon"></i>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Container -->
-    <div class="main-container full-width">
-        <!-- Enhanced Sidebar -->
-
-        <!-- Main Content Area -->
-        <main class="content-area">
-            <!-- Enhanced Tab Navigation -->
-            <nav class="tab-navigation">
-                <div class="main-tabs">
-                    <button class="main-tab active" data-view="executive">
-                        <div class="tab-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="tab-content">
-                            <span class="tab-title">Executive</span>
-                            <span class="tab-subtitle">Dashboard</span>
-                        </div>
-                    </button>
-                    
-                    <button class="main-tab" data-view="financial">
-                        <div class="tab-icon">
-                            <i class="fas fa-coins"></i>
-                        </div>
-                        <div class="tab-content">
-                            <span class="tab-title">Financial</span>
-                            <span class="tab-subtitle">Analysis</span>
-                        </div>
-                    </button>
-                    
-                    <button class="main-tab" data-view="security">
-                        <div class="tab-icon">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <div class="tab-content">
-                            <span class="tab-title">Security</span>
-                            <span class="tab-subtitle">& Compliance</span>
-                        </div>
-                    </button>
-                    
-                    <button class="main-tab" data-view="technical">
-                        <div class="tab-icon">
-                            <i class="fas fa-cogs"></i>
-                        </div>
-                        <div class="tab-content">
-                            <span class="tab-title">Technical</span>
-                            <span class="tab-subtitle">Comparison</span>
-                        </div>
-                    </button>
-                </div>
-            </nav>
-
-            <!-- View Container -->
-            <div class="view-container">
-                <!-- Executive View -->
-                <div id="executive-view" class="view-panel active">
-                    <div class="view-content">
-                        <!-- Dynamic content will be loaded here -->
-                    </div>
-                </div>
-
-                <!-- Financial View -->
-                <div id="financial-view" class="view-panel">
-                    <div class="view-content">
-                        <!-- Dynamic content will be loaded here -->
-                    </div>
-                </div>
-
-                <!-- Security View -->
-                <div id="security-view" class="view-panel">
-                    <div class="view-content">
-                        <!-- Dynamic content will be loaded here -->
-                    </div>
-                </div>
-
-                <!-- Technical View -->
-                <div id="technical-view" class="view-panel">
-                    <div class="view-content">
-                        <!-- Dynamic content will be loaded here -->
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Particles Background -->
-    <div id="particles-js"></div>
-
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="loading-spinner">
-            <div class="spinner"></div>
-            <div class="loading-text">Calculating Zero Trust TCO...</div>
-        </div>
-    </div>
-
-    <!-- Export Modal -->
-    <div id="export-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Export Analysis</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="export-options">
-                    <button class="export-btn" data-format="pdf">
-                        <i class="fas fa-file-pdf"></i>
-                        <span>PDF Report</span>
-                    </button>
-                    <button class="export-btn" data-format="excel">
-                        <i class="fas fa-file-excel"></i>
-                        <span>Excel Workbook</span>
-                    </button>
-                    <button class="export-btn" data-format="powerpoint">
-                        <i class="fas fa-file-powerpoint"></i>
-                        <span>PowerPoint</span>
-                    </button>
-                </div>
+    <!-- Main Application Container -->
+    <div id="executive-view" class="executive-view">
+        <div class="view-content">
+            <!-- Platform will be initialized here -->
+            <div class="loading-screen" style="display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column;">
+                <div class="spinner"></div>
+                <h2 style="margin-top: 20px; color: #3498db;">Loading Executive Command Center...</h2>
             </div>
         </div>
     </div>
-    <script src="./js/fixes/event-integration-fix.js"></script>
-    <script src="./js/views/comprehensive-executive-dashboard.js"></script>
+    
+    <!-- Core Scripts -->
+    <script src="./js/fixes/chart-loader-safety.js"></script>
+    <script src="./js/views/zero-trust-executive-platform.js"></script>
+    
+    <!-- Enhancements -->
+    <script src="./js/enhancements/comprehensive-data-enhancement.js"></script>
+    <script src="./js/enhancements/advanced-cost-analysis.js"></script>
+    <script src="./js/enhancements/advanced-export-system.js"></script>
+    <script src="./js/enhancements/enhanced-debugging.js"></script>
+    <script src="./js/integration/enhanced-comprehensive-integration.js"></script>
+    
+    <!-- Fixes -->
+    <script src="./js/fixes/chart-compatibility.js"></script>
+    <script src="./js/fixes/tab-and-chart-fixes.js"></script>
+    
+    <!-- Validation -->
+    <script src="./js/platform-validator.js"></script>
+    <script src="./js/performance-optimizer.js"></script>
+    <!-- Chart and Calculation Fixes -->
+    <script src="./js/calculations/enhanced-calculation-engine.js"></script>
+    <script src="./js/views/executive-platform-fix.js"></script>
+    <!-- Enhanced UI Components -->
+    <script src="./js/components/enhanced-ui-components.js"></script>
+    <script src="./js/components/advanced-tab-content.js"></script>
+    
+    <!-- Initialize Enhanced UI -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Initialize enhanced UI components when platform is ready
+            const initEnhancedUI = setInterval(() => {
+                if (window.zeroTrustExecutivePlatform && window.zeroTrustExecutivePlatform.initialized) {
+                    window.enhancedUI.init();
+                    clearInterval(initEnhancedUI);
+                    console.log("✅ Enhanced UI initialized");
+                }
+            }, 100);
+        });
+    </script>
+    <!-- Enhanced UI Components -->
+    <script src="./js/components/enhanced-ui-components.js"></script>
+    <script src="./js/components/advanced-tab-content.js"></script>
+    
+    <!-- Initialize Enhanced UI -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Initialize enhanced UI components when platform is ready
+            const initEnhancedUI = setInterval(() => {
+                if (window.zeroTrustExecutivePlatform && window.zeroTrustExecutivePlatform.initialized) {
+                    window.enhancedUI.init();
+                    clearInterval(initEnhancedUI);
+                    console.log("✅ Enhanced UI initialized");
+                }
+            }, 100);
+        });
+    </script>
+    
+    <!-- Data Export Module -->
+    <script src="./js/utils/data-export.js"></script>
+    
+    <!-- Final Integration -->
+    <script src="./js/integration/final-integration.js"></script>
+    <!-- Enhanced UI Components -->
+    <script src="./js/components/enhanced-ui-components.js"></script>
+    <script src="./js/components/advanced-tab-content.js"></script>
+    
+    <!-- Initialize Enhanced UI -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Initialize enhanced UI components when platform is ready
+            const initEnhancedUI = setInterval(() => {
+                if (window.zeroTrustExecutivePlatform && window.zeroTrustExecutivePlatform.initialized) {
+                    window.enhancedUI.init();
+                    clearInterval(initEnhancedUI);
+                    console.log("✅ Enhanced UI initialized");
+                }
+            }, 100);
+        });
+    </script>
+    <!-- Enhanced UI Components -->
+    <script src="./js/components/enhanced-ui-components.js"></script>
+    <script src="./js/components/advanced-tab-content.js"></script>
+    
+    <!-- Initialize Enhanced UI -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Initialize enhanced UI components when platform is ready
+            const initEnhancedUI = setInterval(() => {
+                if (window.zeroTrustExecutivePlatform && window.zeroTrustExecutivePlatform.initialized) {
+                    window.enhancedUI.init();
+                    clearInterval(initEnhancedUI);
+                    console.log("✅ Enhanced UI initialized");
+                }
+            }, 100);
+        });
+    </script>
+    
+    <!-- Data Export Module -->
+    <script src="./js/utils/data-export.js"></script>
+    
+    <!-- Final Integration -->
+    <script src="./js/integration/final-integration.js"></script>
+    
+    <!-- UI Enhancements (Non-destructive) -->
+    <script src="./js/components/ui-enhancements.js"></script>
+    <script src="./js/integration/verify-enhancements.js"></script>
+    
+    <!-- UI Enhancements (Non-destructive) -->
+    <script src="./js/components/ui-enhancements.js"></script>
+    <script src="./js/integration/verify-enhancements.js"></script>
+    
+    <!-- Safe Platform Enhancement Module -->
+    <script src="./js/enhancements/safe-integration-module.js"></script>
+    <script src="./js/test-minimal.js"></script>
 </body>
 </html>
