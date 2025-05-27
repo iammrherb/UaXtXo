@@ -1,9 +1,12 @@
 // Temporary fix to add missing method to comprehensive integration
 
-// Check if we need to add the populateComplianceGrid method
-const checkInterval = setInterval(() => {
-    if (window.comprehensiveIntegration && window.comprehensiveIntegration.ultimateView) {
-        const view = window.comprehensiveIntegration.ultimateView;
+// Check if we need to add the populateComplianceGrid method.
+// Use a namespaced interval to avoid re-declaration errors when this script
+// is loaded multiple times.
+if (!window.comprehensiveIntegrationFixInterval) {
+    window.comprehensiveIntegrationFixInterval = setInterval(() => {
+        if (window.comprehensiveIntegration && window.comprehensiveIntegration.ultimateView) {
+            const view = window.comprehensiveIntegration.ultimateView;
         
         // Add populateComplianceGrid if missing
         if (!view.populateComplianceGrid) {
@@ -34,10 +37,12 @@ const checkInterval = setInterval(() => {
             };
         }
         
-        clearInterval(checkInterval);
+        clearInterval(window.comprehensiveIntegrationFixInterval);
+        window.comprehensiveIntegrationFixInterval = null;
         console.log("✅ Comprehensive integration fixed");
     }
 }, 100);
+}
 
 // Also ensure the method exists on the prototype
 if (typeof UltimateExecutiveView !== 'undefined' && !UltimateExecutiveView.prototype.populateComplianceGrid) {
