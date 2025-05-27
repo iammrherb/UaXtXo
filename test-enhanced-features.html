@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enhanced Features Test - Portnox Total Cost Analyzer</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status { 
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        h1 { color: #2E7EE5; }
+    </style>
+</head>
+<body>
+    <h1>Enhanced Features Test</h1>
+    
+    <div class="test-section">
+        <h2>Component Status</h2>
+        <div id="status-checks"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Vendor Data Summary</h2>
+        <div id="vendor-summary"></div>
+    </div>
+    
+    <script>
+        // Check if components are loaded
+        const checks = [
+            { name: 'Complete Vendor Data', test: () => window.completeVendorData && Object.keys(window.completeVendorData).length === 15 },
+            { name: 'Ultimate Chart System', test: () => window.ultimateChartSystem },
+            { name: 'Comprehensive Industries', test: () => window.comprehensiveIndustries },
+            { name: 'Comprehensive Compliance', test: () => window.comprehensiveCompliance }
+        ];
+        
+        const statusDiv = document.getElementById('status-checks');
+        checks.forEach(check => {
+            const status = check.test() ? 'success' : 'error';
+            const text = check.test() ? 'Loaded' : 'Not Found';
+            statusDiv.innerHTML += `<p>${check.name}: <span class="status ${status}">${text}</span></p>`;
+        });
+        
+        // Show vendor summary if loaded
+        if (window.completeVendorData) {
+            const summaryDiv = document.getElementById('vendor-summary');
+            const vendors = Object.values(window.completeVendorData);
+            summaryDiv.innerHTML = `
+                <p>Total Vendors: ${vendors.length}</p>
+                <p>Vendors: ${vendors.map(v => v.name).join(', ')}</p>
+                <p>Portnox TCO: $${(window.completeVendorData.portnox.costs.tco3Year / 1000).toFixed(0)}K</p>
+            `;
+        }
+    </script>
+    
+    <script src="./js/data/complete-vendor-data.js"></script>
+    <script src="./js/enhancements/ultimate-chart-system.js"></script>
+</body>
+</html>
