@@ -1,111 +1,151 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Fix Verification</title>
+    <meta charset="UTF-8">
+    <title>Fix Verification - Portnox TCO Analyzer</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
-        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
-        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .status-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .status-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            background: #2E7EE5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #1e5eb8;
+        }
     </style>
 </head>
 <body>
-    <h1>Platform Fix Verification</h1>
-    
-    <h2>Component Status:</h2>
-    <div id="status"></div>
-    
-    <h2>Vendor Data:</h2>
-    <div id="vendors"></div>
-    
-    <h2>Test Actions:</h2>
-    <button onclick="testAIInsights()">Test AI Insights</button>
-    <button onclick="testScenarios()">Test Scenarios</button>
-    <button onclick="testExport('pdf')">Test PDF Export</button>
-    <button onclick="testExport('excel')">Test Excel Export</button>
-    <button onclick="testExport('powerpoint')">Test PowerPoint Export</button>
-    
-    <h2>Console Output:</h2>
-    <pre id="console"></pre>
+    <div class="status-container">
+        <h1>🔧 Fix Verification for Portnox TCO Analyzer</h1>
+        
+        <div id="status-checks"></div>
+        
+        <button onclick="window.location.href='index.html'">Go to Application</button>
+    </div>
     
     <script>
-        const statusDiv = document.getElementById('status');
-        const vendorsDiv = document.getElementById('vendors');
-        const consoleDiv = document.getElementById('console');
+        // Load required scripts
+        const scripts = [
+            './js/data/complete-vendor-data-fixed.js',
+            './js/views/ultimate-executive-platform.js',
+            './js/integration/comprehensive-integration.js'
+        ];
         
-        // Override console.log
-        const originalLog = console.log;
-        console.log = function(...args) {
-            originalLog(...args);
-            consoleDiv.innerHTML += args.join(' ') + '\n';
-        };
+        let loadedCount = 0;
         
-        function checkComponents() {
-            const components = [
-                { name: 'UltimateExecutiveView class', obj: window.UltimateExecutiveView },
-                { name: 'ultimateExecutiveView instance', obj: window.ultimateExecutiveView },
-                { name: 'Comprehensive Industries', obj: window.comprehensiveIndustries },
-                { name: 'Comprehensive Compliance', obj: window.comprehensiveCompliance },
-                { name: 'AI Insights Engine', obj: window.aiInsightsEngine },
-                { name: 'Advanced Export System', obj: window.advancedExportSystem },
-                { name: 'Export Report Method', obj: window.advancedExportSystem?.exportReport }
-            ];
+        scripts.forEach(src => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = () => {
+                loadedCount++;
+                if (loadedCount === scripts.length) {
+                    checkStatus();
+                }
+            };
+            script.onerror = () => {
+                addStatus(`Failed to load: ${src}`, 'error');
+            };
+            document.head.appendChild(script);
+        });
+        
+        function addStatus(message, type) {
+            const container = document.getElementById('status-checks');
+            const item = document.createElement('div');
+            item.className = `status-item ${type}`;
+            item.innerHTML = `<span>${message}</span><span>${type.toUpperCase()}</span>`;
+            container.appendChild(item);
+        }
+        
+        function checkStatus() {
+            // Check vendor data
+            if (window.completeVendorData || window.vendorData) {
+                const vendorCount = Object.keys(window.completeVendorData || window.vendorData).length;
+                addStatus(`Vendor data loaded: ${vendorCount} vendors`, 'success');
+            } else {
+                addStatus('Vendor data not loaded', 'error');
+            }
             
-            let html = '';
-            components.forEach(comp => {
-                const exists = !!comp.obj;
-                html += `<div class="status ${exists ? 'success' : 'error'}">
-                    ${exists ? '✅' : '❌'} ${comp.name}: ${exists ? 'Loaded' : 'Not Found'}
-                </div>`;
-            });
+            // Check Ultimate Executive View
+            if (window.ultimateExecutiveView) {
+                addStatus('Ultimate Executive View loaded', 'success');
+                if (window.ultimateExecutiveView.initialized) {
+                    addStatus('Ultimate Executive View initialized', 'success');
+                } else {
+                    addStatus('Ultimate Executive View not initialized yet', 'warning');
+                }
+            } else {
+                addStatus('Ultimate Executive View not loaded', 'error');
+            }
             
-            statusDiv.innerHTML = html;
+            // Check Comprehensive Integration
+            if (window.comprehensiveIntegration) {
+                addStatus('Comprehensive Integration loaded', 'success');
+                if (window.comprehensiveIntegration.initialized) {
+                    addStatus('Comprehensive Integration initialized', 'success');
+                } else {
+                    addStatus('Comprehensive Integration not initialized yet', 'warning');
+                }
+            } else {
+                addStatus('Comprehensive Integration not loaded', 'error');
+            }
             
-            // Check vendors
-            if (window.ultimateExecutiveView?.vendorData) {
-                const vendors = Object.keys(window.ultimateExecutiveView.vendorData);
-                vendorsDiv.innerHTML = `
-                    <div class="status success">
-                        ✅ ${vendors.length} vendors loaded: ${vendors.join(', ')}
-                    </div>
-                `;
-            } else {
-                vendorsDiv.innerHTML = '<div class="status error">❌ No vendor data found</div>';
+            // Check for syntax errors
+            if (!window.syntaxError) {
+                addStatus('No syntax errors detected', 'success');
+            }
+            
+            // Check for infinite loops
+            if (window.comprehensiveIntegration && window.comprehensiveIntegration.initAttempts < 10) {
+                addStatus('No infinite loops detected', 'success');
             }
         }
         
-        function testAIInsights() {
-            console.log('Testing AI Insights...');
-            if (window.ultimateExecutiveView?.generateAIInsights) {
-                window.ultimateExecutiveView.generateAIInsights();
-            } else {
-                console.log('❌ AI Insights method not found');
+        // Catch syntax errors
+        window.addEventListener('error', (e) => {
+            if (e.message.includes('Unexpected token')) {
+                window.syntaxError = true;
+                addStatus(`Syntax error: ${e.message}`, 'error');
             }
-        }
-        
-        function testScenarios() {
-            console.log('Testing Scenarios...');
-            if (window.ultimateExecutiveView?.compareScenarios) {
-                window.ultimateExecutiveView.compareScenarios();
-            } else {
-                console.log('❌ Compare Scenarios method not found');
-            }
-        }
-        
-        function testExport(format) {
-            console.log(`Testing ${format} export...`);
-            if (window.advancedExportSystem?.exportReport) {
-                window.advancedExportSystem.exportReport(format, 'test_report');
-            } else {
-                console.log('❌ Export system not ready');
-            }
-        }
-        
-        // Check on load
-        setTimeout(checkComponents, 1000);
+        });
     </script>
 </body>
 </html>
