@@ -21,19 +21,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     
     <!-- Highcharts for Advanced Analytics -->
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/highcharts.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/highcharts-more.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/highcharts-more.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/exporting.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/export-data.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/accessibility.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/funnel.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/waterfall.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/treemap.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/heatmap.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/sankey.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/networkgraph.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/modules/gantt.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://code.highcharts.com/modules/funnel.js"></script>
+    <script src="https://code.highcharts.com/modules/waterfall.js"></script>
+    <script src="https://code.highcharts.com/modules/treemap.js"></script>
+    <script src="https://code.highcharts.com/modules/heatmap.js"></script>
+    <script src="https://code.highcharts.com/modules/sankey.js"></script>
     
     <!-- Particle.js for Ultimate Effects -->
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
@@ -44,9 +41,21 @@
     <!-- Performance Optimization -->
     <link rel="preload" href="./img/vendors/portnox-logo.png" as="image">
     <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
-    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="//code.highcharts.com">
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <img src="./img/vendors/portnox-logo.png" alt="Portnox" class="loading-logo">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Initializing Executive Intelligence Platform...</div>
+            <div class="loading-progress">
+                <div class="loading-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Ultimate Zero Trust Header with Advanced Particles -->
     <header class="ultimate-header">
         <div id="particles-header"></div>
@@ -93,6 +102,25 @@
             </div>
             
             <div class="sidebar-content">
+                <!-- Quick Actions -->
+                <div class="config-section">
+                    <h4><i class="fas fa-bolt"></i> Quick Actions</h4>
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" id="quick-compare">
+                            <i class="fas fa-balance-scale"></i>
+                            Quick Compare
+                        </button>
+                        <button class="quick-action-btn" id="quick-insights">
+                            <i class="fas fa-lightbulb"></i>
+                            AI Insights
+                        </button>
+                        <button class="quick-action-btn" id="quick-report">
+                            <i class="fas fa-file-alt"></i>
+                            Generate Report
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Device Configuration -->
                 <div class="config-section">
                     <h4><i class="fas fa-network-wired"></i> Device Configuration</h4>
@@ -100,10 +128,12 @@
                         <div class="config-item">
                             <label for="device-count">Device Count</label>
                             <input type="number" id="device-count" class="enhanced-input" value="1000" min="100" max="50000">
+                            <span class="input-helper">100 - 50,000 devices</span>
                         </div>
                         <div class="config-item">
                             <label for="location-count">Locations</label>
                             <input type="number" id="location-count" class="enhanced-input" value="3" min="1" max="100">
+                            <span class="input-helper">Number of sites</span>
                         </div>
                     </div>
                 </div>
@@ -125,7 +155,7 @@
                         <div class="config-item full-width">
                             <label for="industry">Industry</label>
                             <select id="industry" class="enhanced-select">
-                                <!-- Will be populated dynamically with ALL industries -->
+                                <!-- Will be populated dynamically -->
                             </select>
                         </div>
                     </div>
@@ -178,7 +208,7 @@
                 <div class="config-section">
                     <h4><i class="fas fa-clipboard-check"></i> Compliance Requirements</h4>
                     <div class="compliance-grid" id="compliance-requirements">
-                        <!-- Will be populated dynamically with ALL compliance frameworks -->
+                        <!-- Will be populated dynamically -->
                     </div>
                 </div>
             </div>
@@ -190,7 +220,7 @@
             <div id="loading-overlay" class="loading-overlay" style="display: none;">
                 <div class="loading-spinner">
                     <div class="ultimate-spinner"></div>
-                    <div class="loading-text">Loading Ultimate Executive Intelligence...</div>
+                    <div class="loading-text">Processing analysis...</div>
                 </div>
             </div>
             
@@ -208,48 +238,46 @@
     <!-- Background Particles -->
     <div id="particles-js"></div>
 
-    <!-- Core Scripts - Load comprehensive data first -->
+    <!-- Core Scripts - Load in correct order without duplicates -->
     <script src="./js/enhancements/comprehensive-data-enhancement.js"></script>
+    <script src="./js/data/complete-vendor-data-fixed.js"></script>
+    <script src="./js/enhancements/ultimate-chart-system-fixed.js"></script>
     <script src="./js/views/ultimate-executive-platform.js"></script>
     <script src="./js/enhancements/advanced-cost-analysis.js"></script>
     <script src="./js/enhancements/advanced-export-system.js"></script>
     <script src="./js/enhancements/enhanced-debugging.js"></script>
     <script src="./js/integration/comprehensive-integration.js"></script>
+    <script src="./js/features/ai-insights.js"></script>
+    <script src="./js/integration/enhanced-platform-integration.js"></script>
+    <script src="./js/enhancements/ui-workflow-enhancements.js"></script>
     
     <!-- Initialize Ultimate Platform -->
     <script>
-        // Initialize Ultimate Executive Platform
+        // Enhanced initialization with loading screen
         document.addEventListener('DOMContentLoaded', function() {
             console.log("🚀 Initializing Ultimate Executive Intelligence Platform...");
             
-            // Ensure comprehensive data is loaded
-            // Initialize immediately when data is ready
-                if (window.initializePlatform) {
-                    window.initializePlatform();
-                    // Initialization handled by init-sequence-fix.js
-                } else { console.log("Waiting for initialization script..."); console.log("Waiting for initialization script...");
-                    
+            // Show loading progress
+            let progress = 0;
+            const progressBar = document.querySelector('.loading-progress-bar');
+            const loadingText = document.querySelector('.loading-text');
+            
+            const progressInterval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = progress + '%';
+                
+                if (progress === 30) loadingText.textContent = 'Loading vendor data...';
+                if (progress === 60) loadingText.textContent = 'Initializing charts...';
+                if (progress === 90) loadingText.textContent = 'Finalizing dashboard...';
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    setTimeout(() => {
+                        document.getElementById('loading-screen').style.display = 'none';
+                    }, 500);
                 }
-            });
-        });;;;
+            }, 200);
+        });
     </script>
-    <script src="./js/init-sequence-fix.js"></script>
-    <script src="./js/init-sequence-fix.js"></script>
-    <script src="./js/chart-fixes.js"></script>
-    <script src="./js/features/ai-insights.js"></script>
-    <script src="./js/ultimate-init-fix.js"></script>
-    <script src="./js/backup-init.js"></script>
-    <script src="./js/data/complete-vendor-data.js"></script>
-    <script src="./js/enhancements/ultimate-chart-system.js"></script>
-    <script src="./js/integration/enhanced-platform-integration.js"></script>
-    <script src="./js/data/complete-vendor-data.js"></script>
-    <script src="./js/enhancements/ultimate-chart-system.js"></script>
-    <script src="./js/integration/enhanced-platform-integration.js"></script>
-    <script src="./js/enhancements/export-system-fix.js"></script>
-    <script src="./js/fixes/comprehensive-integration-fix.js"></script>
-    <script src="./js/fixes/comprehensive-integration-fix.js"></script>
-    <script src="./js/fixes/comprehensive-integration-fix.js"></script>
-    <script src="./js/fixes/comprehensive-integration-fix.js"></script>
-    <script src="./js/fixes/comprehensive-integration-fix.js"></script>
 </body>
 </html>

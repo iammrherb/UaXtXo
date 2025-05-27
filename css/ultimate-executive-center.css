@@ -2754,3 +2754,326 @@ input[type="range"]::-moz-range-thumb {
         color: white;
     }
 }
+
+/* UI and Workflow Enhancement Styles */
+
+/* Quick Actions */
+.quick-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.quick-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #2E7EE5 0%, #1e5eb8 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46, 126, 229, 0.3);
+}
+
+.quick-action-btn i {
+    font-size: 16px;
+}
+
+/* Input Spinner Wrapper */
+.input-spinner-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.spinner-button {
+    position: absolute;
+    right: 2px;
+    width: 20px;
+    height: 18px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.spinner-button:hover {
+    background: #e0e0e0;
+}
+
+.spinner-button.up {
+    top: 2px;
+    border-radius: 0 4px 0 0;
+}
+
+.spinner-button.down {
+    bottom: 2px;
+    border-radius: 0 0 4px 0;
+}
+
+.spinner-button i {
+    font-size: 10px;
+    color: #666;
+}
+
+/* Input Helper Text */
+.input-helper {
+    display: block;
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* Workflow Progress */
+.workflow-progress {
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.progress-steps {
+    display: flex;
+    align-items: center;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.progress-step.active .step-icon {
+    background: #2E7EE5;
+    color: white;
+}
+
+.progress-step.completed .step-icon {
+    background: #00D4AA;
+    color: white;
+}
+
+.step-label {
+    font-size: 12px;
+    margin-top: 5px;
+    color: #666;
+}
+
+.progress-step.active .step-label {
+    color: #2E7EE5;
+    font-weight: 600;
+}
+
+.progress-line {
+    width: 60px;
+    height: 2px;
+    background: #e0e0e0;
+    margin: 0 10px;
+}
+
+/* Tooltips */
+.has-tooltip {
+    position: relative;
+}
+
+.has-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.has-tooltip:hover::after {
+    opacity: 1;
+}
+
+/* Sidebar Enhancements */
+.ultimate-sidebar {
+    transition: width 0.3s ease;
+}
+
+.ultimate-sidebar.collapsed {
+    width: 60px;
+}
+
+.ultimate-sidebar.collapsed .sidebar-content {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.ultimate-sidebar.collapsed .sidebar-header h3 {
+    display: none;
+}
+
+/* UI Notifications */
+.ui-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    z-index: 10000;
+}
+
+.ui-notification.show {
+    transform: translateX(0);
+}
+
+.ui-notification.success {
+    border-left: 4px solid #00D4AA;
+}
+
+.ui-notification.error {
+    border-left: 4px solid #FF6B6B;
+}
+
+.ui-notification.info {
+    border-left: 4px solid #2E7EE5;
+}
+
+.ui-notification i {
+    font-size: 20px;
+}
+
+.ui-notification.success i {
+    color: #00D4AA;
+}
+
+.ui-notification.error i {
+    color: #FF6B6B;
+}
+
+.ui-notification.info i {
+    color: #2E7EE5;
+}
+
+/* Loading Screen Enhancements */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20000;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-logo {
+    width: 150px;
+    margin-bottom: 30px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #2E7EE5;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text {
+    color: white;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.loading-progress {
+    width: 200px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.loading-progress-bar {
+    height: 100%;
+    background: #2E7EE5;
+    width: 0;
+    transition: width 0.3s ease;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .workflow-progress {
+        display: none;
+    }
+    
+    .ultimate-sidebar {
+        position: fixed;
+        left: -100%;
+        z-index: 1000;
+        transition: left 0.3s ease;
+    }
+    
+    .ultimate-sidebar.mobile-open {
+        left: 0;
+    }
+}
