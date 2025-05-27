@@ -210,6 +210,8 @@
 
     <!-- Core Scripts - Load comprehensive data first -->
     <script src="./js/enhancements/comprehensive-data-enhancement.js"></script>
+    <script src="./js/complete-vendor-data.js"></script>
+    <script src="./js/ultimate-chart-system.js"></script>
     <script src="./js/views/ultimate-executive-platform.js"></script>
     <script src="./js/enhancements/advanced-cost-analysis.js"></script>
     <script src="./js/enhancements/advanced-export-system.js"></script>
@@ -221,19 +223,16 @@
         // Initialize Ultimate Executive Platform
         document.addEventListener('DOMContentLoaded', function() {
             console.log("🚀 Initializing Ultimate Executive Intelligence Platform...");
-            
+
             // Ensure comprehensive data is loaded
-            // Initialize immediately when data is ready
-                if (window.initializePlatform) {
-                    window.initializePlatform();
-                    // Initialization handled by init-sequence-fix.js
-                } else { console.log("Waiting for initialization script..."); console.log("Waiting for initialization script...");
-                    
-                }
-            });
-        });;;;
+            if (window.initializePlatform) {
+                window.initializePlatform();
+                // Initialization handled by init-sequence-fix.js
+            } else {
+                console.log("Waiting for initialization script...");
+            }
+        });
     </script>
-    <script src="./js/init-sequence-fix.js"></script>
     <script src="./js/init-sequence-fix.js"></script>
     <script src="./js/chart-fixes.js"></script>
     <script src="./js/features/ai-insights.js"></script>
