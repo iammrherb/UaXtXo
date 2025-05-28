@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zero Trust Total Cost Analyzer | Portnox Ultimate Executive Intelligence Platform</title>
-    <meta name="description" content="Ultimate Executive Intelligence Platform - Comprehensive Zero Trust NAC analysis with full vendor comparison.">
+    <title>Zero Trust Total Cost Analyzer | Portnox Executive Intelligence Platform</title>
+    <meta name="description" content="Executive Intelligence Platform - Comprehensive Zero Trust NAC analysis with advanced TCO/ROI calculations.">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="./img/vendors/portnox-icon.png">
@@ -19,76 +19,25 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/sankey.js"></script>
     <script src="https://code.highcharts.com/modules/waterfall.js"></script>
     <script src="https://code.highcharts.com/modules/heatmap.js"></script>
+    <script src="https://code.highcharts.com/modules/treemap.js"></script>
 
     <!-- CSS -->
     <link rel="stylesheet" href="./css/ultimate-executive-center.css">
-    
-    <style>
-        /* Loading screen styles */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #f5f7fa;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-        
-        .loading-content {
-            text-align: center;
-        }
-        
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid #e0e0e0;
-            border-top: 3px solid #2E7EE5;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .error-message {
-            text-align: center;
-            padding: 40px;
-        }
-        
-        .error-message h2 {
-            color: #e74c3c;
-            margin-bottom: 20px;
-        }
-    </style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="loading-screen">
-        <div class="loading-content">
-            <div class="loading-spinner"></div>
-            <p>Loading Ultimate Executive Intelligence Platform...</p>
-        </div>
-    </div>
-
     <!-- Header -->
     <header class="ultimate-header">
         <div class="header-content">
             <div class="header-branding">
                 <div class="portnox-logo">
-                    <img src="./img/vendors/portnox-logo.png" alt="Portnox" class="logo-image">
+                    <img src="./img/vendors/portnox-logo.png" alt="Portnox">
                 </div>
                 <div class="header-titles">
-                    <h1 class="main-title">Ultimate Executive Intelligence Platform</h1>
-                    <p class="sub-title">Zero Trust NAC Total Cost Analysis | Complete Vendor Comparison</p>
+                    <h1 class="main-title">Executive Intelligence Platform</h1>
+                    <p class="sub-title">Zero Trust NAC Total Cost Analysis & Strategic Intelligence</p>
                 </div>
             </div>
             <div class="header-actions">
@@ -98,11 +47,11 @@
                 </button>
                 <button id="export-btn" class="header-btn secondary">
                     <i class="fas fa-file-export"></i>
-                    <span>Export Analysis</span>
+                    <span>Export Report</span>
                 </button>
-                <button id="refresh-btn" class="header-btn utility">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>Refresh</span>
+                <button id="ai-insights-btn" class="header-btn secondary">
+                    <i class="fas fa-brain"></i>
+                    <span>AI Insights</span>
                 </button>
                 <button id="live-demo" class="header-btn highlight">
                     <i class="fas fa-video"></i>
@@ -114,14 +63,10 @@
 
     <!-- Main Container -->
     <div class="ultimate-container">
-        <!-- Sidebar -->
+        <!-- Simplified Sidebar -->
         <aside class="ultimate-sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h3><i class="fas fa-cogs"></i> Configuration Center</h3>
-            </div>
-            
             <div class="sidebar-content">
-                <!-- Device Configuration -->
+                <!-- Basic Configuration Only -->
                 <div class="config-section">
                     <h4><i class="fas fa-network-wired"></i> Device Configuration</h4>
                     <div class="config-grid">
@@ -136,9 +81,8 @@
                     </div>
                 </div>
                 
-                <!-- Organization Profile -->
                 <div class="config-section">
-                    <h4><i class="fas fa-building"></i> Organization Profile</h4>
+                    <h4><i class="fas fa-building"></i> Organization</h4>
                     <div class="config-grid">
                         <div class="config-item full-width">
                             <label for="company-size">Company Size</label>
@@ -151,22 +95,6 @@
                             </select>
                         </div>
                         <div class="config-item full-width">
-                            <label for="industry">Industry</label>
-                            <select id="industry" class="enhanced-select">
-                                <option value="technology">Technology</option>
-                                <option value="healthcare">Healthcare</option>
-                                <option value="finance">Finance</option>
-                                <option value="government">Government</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Financial Parameters -->
-                <div class="config-section">
-                    <h4><i class="fas fa-dollar-sign"></i> Financial Parameters</h4>
-                    <div class="config-grid">
-                        <div class="config-item">
                             <label for="analysis-period">Analysis Period</label>
                             <select id="analysis-period" class="enhanced-select">
                                 <option value="1">1 Year</option>
@@ -174,79 +102,92 @@
                                 <option value="5">5 Years</option>
                             </select>
                         </div>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h4><i class="fas fa-dollar-sign"></i> Financial</h4>
+                    <div class="config-grid">
                         <div class="config-item">
                             <label for="fte-cost">FTE Cost ($/year)</label>
                             <input type="number" id="fte-cost" class="enhanced-input" value="100000" min="50000" max="200000">
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Compliance Requirements -->
-                <div class="config-section">
-                    <h4><i class="fas fa-clipboard-check"></i> Compliance Requirements</h4>
-                    <div class="compliance-grid" id="compliance-requirements">
-                        <!-- Will be populated dynamically -->
+                        <div class="config-item">
+                            <label for="breach-cost">Breach Cost ($)</label>
+                            <input type="number" id="breach-cost" class="enhanced-input" value="4350000" min="1000000" max="10000000">
+                        </div>
                     </div>
                 </div>
             </div>
         </aside>
         
-        <!-- Content Area -->
-        <main class="ultimate-content">
-            <div class="view-container">
-                <div id="executive-view" class="view-panel active">
-                    <div class="view-content" id="ultimate-executive-content">
-                        <!-- Dynamic content will be loaded here -->
-                    </div>
-                </div>
-            </div>
+        <!-- Main Content Area -->
+        <main class="ultimate-content" id="main-content">
+            <!-- Content will be dynamically loaded -->
         </main>
     </div>
 
-    <!-- Core Scripts - Load in correct order -->
+    <!-- Scripts -->
     <script src="./js/enhancements/comprehensive-data-enhancement.js"></script>
-    <script src="./js/data/complete-vendor-data-fixed.js"></script>
-    <script src="./js/enhancements/ultimate-chart-system-fixed.js"></script>
-    <script src="./js/views/ultimate-executive-platform.js"></script>
-    <script src="./js/enhancements/advanced-cost-analysis.js"></script>
-    <script src="./js/enhancements/advanced-export-system.js"></script>
-    <script src="./js/enhancements/enhanced-debugging.js"></script>
-    <script src="./js/features/ai-insights.js"></script>
-    <script src="./js/enhancements/ui-workflow-enhancements.js"></script>
-    <script src="./js/performance/performance-optimizer.js"></script>
-    <script src="./js/features/advanced-analytics.js"></script>
-    <script src="./js/features/real-time-collaboration.js"></script>
-    <script src="./js/integration/enhanced-platform-integration.js"></script>
-    <script src="./js/integration/comprehensive-integration.js"></script>
-    
-    <!-- Initialize -->
-    <script>
-        // Hide loading screen when ready
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('loading-screen').style.display = 'none';
-            }, 1000);
-        });
-        
-        // Error handling
-        window.addEventListener('error', (e) => {
-            console.error('Global error:', e);
-            if (e.message.includes('ultimateExecutiveView')) {
-                document.getElementById('loading-screen').style.display = 'none';
-                const content = document.getElementById('ultimate-executive-content');
-                if (content && !content.innerHTML) {
-                    content.innerHTML = `
-                        <div class="error-message">
-                            <h2>⚠️ Loading Error</h2>
-                            <p>There was an issue loading some components.</p>
-                            <button onclick="location.reload()" class="action-btn primary">
-                                <i class="fas fa-sync"></i> Refresh Page
-                            </button>
-                        </div>
-                    `;
-                }
-            }
-        });
-    </script>
+    <script src="./js/data/enhanced-vendor-calculations.js"></script>
+    <script src="./js/views/modern-executive-dashboard.js"></script>
+    <script src="./js/features/industries-compliance-tab.js"></script>
+    <script src="./js/features/ai-insights-engine.js"></script>
+    <script src="./js/core/app-initializer.js"></script>
 </body>
 </html>
+
+<style>
+    /* Loading Screen */
+    #loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease;
+    }
+    
+    .loading-content {
+        text-align: center;
+        color: white;
+    }
+    
+    .loading-spinner {
+        width: 60px;
+        height: 60px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 30px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .loading-content h2 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+    
+    .loading-content p {
+        font-size: 14px;
+        opacity: 0.8;
+    }
+</style>
+
+<div id="loading-screen">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h2>Portnox TCO Analyzer</h2>
+        <p>Loading Executive Intelligence Platform...</p>
+    </div>
+</div>
