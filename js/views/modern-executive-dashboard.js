@@ -555,3 +555,89 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 console.log('✅ Modern Executive Dashboard loaded');
+
+    // Add export functionality integration
+    async exportReport() {
+        const exportData = {
+            vendors: this.vendorData,
+            config: this.config,
+            selectedVendors: this.selectedVendors,
+            generatedDate: new Date().toISOString()
+        };
+        
+        // Show export options modal
+        this.showExportModal(exportData);
+    }
+    
+    showExportModal(data) {
+        const modal = document.createElement('div');
+        modal.className = 'export-modal';
+        modal.innerHTML = `
+            <div class="export-dialog">
+                <div class="export-header">
+                    <h2>Export Executive Report</h2>
+                    <button class="close-btn" onclick="this.closest('.export-modal').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="export-content">
+                    <h3>Select Export Format:</h3>
+                    <div class="export-options">
+                        <button class="export-option" onclick="dashboard.exportPDF()">
+                            <i class="fas fa-file-pdf fa-3x"></i>
+                            <h4>PDF Report</h4>
+                            <p>Comprehensive executive report with charts and analysis</p>
+                        </button>
+                        <button class="export-option" onclick="dashboard.exportExcel()">
+                            <i class="fas fa-file-excel fa-3x"></i>
+                            <h4>Excel Workbook</h4>
+                            <p>Detailed data with multiple analysis sheets</p>
+                        </button>
+                        <button class="export-option" onclick="dashboard.exportPowerPoint()">
+                            <i class="fas fa-file-powerpoint fa-3x"></i>
+                            <h4>PowerPoint Presentation</h4>
+                            <p>Executive presentation ready for meetings</p>
+                        </button>
+                    </div>
+                    <div class="export-all">
+                        <button class="action-btn primary" onclick="dashboard.exportAll()">
+                            <i class="fas fa-download"></i> Export All Formats
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Store export data
+        this.exportData = data;
+    }
+    
+    async exportPDF() {
+        document.querySelector('.export-modal')?.remove();
+        if (window.professionalExportSystem) {
+            await window.professionalExportSystem.generateExecutivePDF(this.exportData);
+        }
+    }
+    
+    async exportExcel() {
+        document.querySelector('.export-modal')?.remove();
+        if (window.professionalExportSystem) {
+            await window.professionalExportSystem.generateExcelReport(this.exportData);
+        }
+    }
+    
+    async exportPowerPoint() {
+        document.querySelector('.export-modal')?.remove();
+        if (window.professionalExportSystem) {
+            await window.professionalExportSystem.generatePowerPointPresentation(this.exportData);
+        }
+    }
+    
+    async exportAll() {
+        document.querySelector('.export-modal')?.remove();
+        if (window.professionalExportSystem) {
+            await window.professionalExportSystem.exportAll(this.exportData);
+        }
+    }
