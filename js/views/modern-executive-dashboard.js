@@ -543,7 +543,6 @@ class ModernExecutiveDashboard {
         }, 3000);
     }
     
-    exportReport() {
         this.showNotification('Generating comprehensive report...', 'info');
         // Implement export functionality
     }
@@ -553,7 +552,6 @@ class ModernExecutiveDashboard {
 document.addEventListener('DOMContentLoaded', () => {
     window.dashboard = new ModernExecutiveDashboard();
 });
-
 
     // Add export functionality integration
     }
