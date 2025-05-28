@@ -557,6 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
 console.log('✅ Modern Executive Dashboard loaded');
 
     // Add export functionality integration
+    }
     async exportReport() {
         const exportData = {
             vendors: this.vendorData,
@@ -643,6 +644,7 @@ console.log('✅ Modern Executive Dashboard loaded');
     }
 
     // Export functionality methods
+    }
     async exportReport() {
         const exportData = {
             vendors: this.vendorData,
