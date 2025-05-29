@@ -1,0 +1,227 @@
+/* VENDOR CARDS - FIXED LAYOUT */
+.vendor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 24px;
+    padding: 20px 0;
+}
+
+.vendor-card {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+    height: 420px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.vendor-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.vendor-card.portnox {
+    border-color: #3b82f6;
+    background: linear-gradient(to bottom, #eff6ff 0%, white 100%);
+}
+
+.vendor-card.selected {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Header Section */
+.vendor-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    height: 60px;
+}
+
+.vendor-logo {
+    width: 60px;
+    height: 60px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vendor-logo img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.vendor-info {
+    flex: 1;
+}
+
+.vendor-info h4 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 6px 0;
+    line-height: 1.2;
+}
+
+.vendor-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.vendor-rating i {
+    font-size: 13px;
+    color: #f59e0b;
+}
+
+.score-badge {
+    background: #f3f4f6;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5563;
+    margin-left: 8px;
+}
+
+/* Metrics Grid - 2x2 Layout */
+.vendor-metrics-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.metric-box {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+}
+
+.metric-box.primary {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-color: #93c5fd;
+}
+
+.metric-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #64748b;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.metric-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1;
+    display: block;
+}
+
+.metric-value.green {
+    color: #10b981;
+}
+
+.metric-value.blue {
+    color: #3b82f6;
+}
+
+/* Feature Tags */
+.vendor-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    min-height: 32px;
+}
+
+.feature-tag {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.feature-tag.cloud {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.feature-tag.zt {
+    background: #fed7aa;
+    color: #92400e;
+}
+
+.feature-tag.auto {
+    background: #e9d5ff;
+    color: #6b21a8;
+}
+
+/* Action Buttons */
+.vendor-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: auto;
+}
+
+.vendor-btn {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 2px solid #e5e7eb;
+    background: white;
+    color: #374151;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.vendor-btn:hover {
+    background: #f9fafb;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+.vendor-btn.selected {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.vendor-btn.selected:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+    .vendor-grid {
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .vendor-grid {
+        grid-template-columns: 1fr;
+    }
+}
