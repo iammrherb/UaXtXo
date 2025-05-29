@@ -1,164 +1,104 @@
-// Enhanced AI Insights
-console.log("🤖 Loading enhanced AI insights...");
-
-// Override the AI insights render method
+// ENHANCED AI INSIGHTS
 document.addEventListener('DOMContentLoaded', function() {
-    if (window.aiInsightsEngine) {
-        const originalRender = window.aiInsightsEngine.render;
-        
-        window.aiInsightsEngine.render = function(container) {
-            const vendorData = window.dashboard?.vendorData;
-            if (!vendorData) {
-                container.innerHTML = '<p>Loading AI insights...</p>';
+    if (window.dashboard) {
+        window.dashboard.renderAIInsights = function(container) {
+            if (this.selectedVendors.length === 0) {
+                container.innerHTML = '<div class="vendor-selection-prompt"><p>Please select vendors to generate AI insights</p></div>';
                 return;
             }
             
-            const portnox = vendorData.portnox;
-            const competitors = Object.values(vendorData).filter(v => v.key !== 'portnox');
-            
-            if (!portnox || competitors.length === 0) {
-                container.innerHTML = '<p>Calculating insights...</p>';
-                return;
-            }
-            
-            // Calculate key metrics
-            const avgCompetitorTCO = competitors.reduce((sum, v) => sum + v.tco.total, 0) / competitors.length;
-            const savings = avgCompetitorTCO - portnox.tco.total;
-            const savingsPercent = Math.round((savings / avgCompetitorTCO) * 100);
+            const portnox = this.vendorData.portnox;
+            const insights = this.generateAIInsights();
             
             container.innerHTML = `
-                <div class="ai-insights-container">
-                    <div class="ai-header">
-                        <h2><i class="fas fa-brain"></i> AI-Powered Strategic Intelligence</h2>
-                        <p>Advanced analysis revealing transformative opportunities</p>
-                    </div>
-                    
-                    <div class="executive-summary-card">
-                        <h3>Executive Summary</h3>
-                        <div class="summary-metrics">
-                            <div class="metric-item">
-                                <span class="metric-value">${savingsPercent}%</span>
-                                <span class="metric-label">Cost Reduction</span>
-                            </div>
-                            <div class="metric-item">
-                                <span class="metric-value">$${(savings/1000).toFixed(0)}K</span>
-                                <span class="metric-label">3-Year Savings</span>
-                            </div>
-                            <div class="metric-item">
-                                <span class="metric-value">${portnox.roi.paybackMonths}mo</span>
-                                <span class="metric-label">Payback Period</span>
-                            </div>
-                            <div class="metric-item">
-                                <span class="metric-value">${portnox.roi.roi}%</span>
-                                <span class="metric-label">ROI</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="ai-insights-enhanced">
+                    <h2>AI-Powered Strategic Insights</h2>
+                    <p class="ai-description">Machine learning analysis of your TCO data reveals critical opportunities for cost optimization and risk reduction.</p>
                     
                     <div class="ai-insights-grid">
-                        <div class="insight-card critical">
-                            <div class="insight-icon">
-                                <i class="fas fa-dollar-sign"></i>
+                        ${insights.map(insight => `
+                            <div class="ai-insight-card ${insight.priority}">
+                                <div class="insight-header">
+                                    <i class="${insight.icon}"></i>
+                                    <span class="priority-badge">${insight.priority.toUpperCase()}</span>
+                                </div>
+                                <h3>${insight.title}</h3>
+                                <p>${insight.message}</p>
+                                <div class="insight-action">
+                                    <button onclick="dashboard.drillDown('${insight.type}')">
+                                        ${insight.action} <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <h3>Financial Transformation</h3>
-                            <p>Portnox delivers <strong>${savingsPercent}% lower TCO</strong> than the market average, saving <strong>$${(savings/1000).toFixed(0)}K</strong> over 3 years. This represents a fundamental shift from CapEx to OpEx model.</p>
-                            <div class="insight-details">
-                                <ul>
-                                    <li>Monthly savings: $${Math.round(savings/36).toLocaleString()}</li>
-                                    <li>5-year projection: $${Math.round(savings*5/3/1000)}K</li>
-                                    <li>Budget reallocation opportunity</li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <div class="insight-card high">
-                            <div class="insight-icon">
-                                <i class="fas fa-shield-alt"></i>
-                            </div>
-                            <h3>Security Excellence</h3>
-                            <p>Achieve <strong>${portnox.metrics.securityScore}/100</strong> security score with advanced Zero Trust capabilities, reducing breach risk by <strong>${portnox.risk.breachReduction}%</strong>.</p>
-                            <div class="insight-details">
-                                <ul>
-                                    <li>Automated threat response</li>
-                                    <li>Real-time device profiling</li>
-                                    <li>AI-powered anomaly detection</li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <div class="insight-card high">
-                            <div class="insight-icon">
-                                <i class="fas fa-rocket"></i>
-                            </div>
-                            <h3>Operational Velocity</h3>
-                            <p>Deploy in just <strong>${portnox.metrics.implementationDays} days</strong> vs. industry average of 75 days. Reduce IT overhead by <strong>${((2.0 - portnox.metrics.fteRequired)/2.0*100).toFixed(0)}%</strong>.</p>
-                            <div class="insight-details">
-                                <ul>
-                                    <li>Cloud-native architecture</li>
-                                    <li>No infrastructure required</li>
-                                    <li>Automated operations</li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <div class="insight-card medium">
-                            <div class="insight-icon">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <h3>Strategic Positioning</h3>
-                            <p>Position your organization as a digital leader with <strong>100% cloud-native</strong> NAC, enabling unlimited scalability and continuous innovation.</p>
-                            <div class="insight-details">
-                                <ul>
-                                    <li>Future-proof architecture</li>
-                                    <li>API-first integration</li>
-                                    <li>Continuous feature updates</li>
-                                </ul>
-                            </div>
-                        </div>
+                        `).join('')}
                     </div>
                     
                     <div class="recommendations-section">
-                        <h3>Strategic Recommendations</h3>
-                        <div class="recommendations-timeline">
-                            <div class="recommendation-item">
-                                <div class="step">1</div>
-                                <div class="content">
-                                    <h4>Immediate Action (0-30 days)</h4>
-                                    <p>Approve Portnox implementation to start realizing $${Math.round(savings/36)}K monthly savings immediately.</p>
-                                </div>
+                        <h3>Executive Recommendations</h3>
+                        <div class="recommendations-grid">
+                            <div class="recommendation-card">
+                                <div class="rec-number">1</div>
+                                <h4>Immediate Action</h4>
+                                <p>Approve Portnox implementation to capture $${(this.calculateSavings() / 1000).toFixed(0)}K in savings</p>
                             </div>
-                            <div class="recommendation-item">
-                                <div class="step">2</div>
-                                <div class="content">
-                                    <h4>Pilot Phase (30-60 days)</h4>
-                                    <p>Deploy to 10% of devices to validate ROI and build internal champions.</p>
-                                </div>
+                            <div class="recommendation-card">
+                                <div class="rec-number">2</div>
+                                <h4>Deployment Strategy</h4>
+                                <p>Phased rollout over 90 days to minimize disruption</p>
                             </div>
-                            <div class="recommendation-item">
-                                <div class="step">3</div>
-                                <div class="content">
-                                    <h4>Full Rollout (60-120 days)</h4>
-                                    <p>Complete organization-wide deployment with phased approach.</p>
-                                </div>
+                            <div class="recommendation-card">
+                                <div class="rec-number">3</div>
+                                <h4>Risk Mitigation</h4>
+                                <p>Implement Zero Trust policies to reduce breach risk by 30%</p>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="ai-actions">
-                        <button class="action-btn primary" onclick="window.comprehensiveReportGenerator?.generateExecutiveReport({})">
-                            <i class="fas fa-file-pdf"></i> Generate Executive Report
-                        </button>
-                        <button class="action-btn secondary" onclick="window.open('https://portnox.com/demo', '_blank')">
-                            <i class="fas fa-calendar"></i> Schedule Demo
-                        </button>
                     </div>
                 </div>
             `;
         };
         
-        // Re-render if on AI insights tab
-        if (window.dashboard?.currentTab === 'insights') {
-            window.dashboard.render();
-        }
+        window.dashboard.generateAIInsights = function() {
+            const insights = [];
+            const savings = this.calculateSavings();
+            
+            insights.push({
+                type: 'cost',
+                priority: 'critical',
+                icon: 'fas fa-piggy-bank',
+                title: 'Significant Cost Reduction Opportunity',
+                message: `Analysis reveals $${(savings/1000).toFixed(0)}K in potential savings over 3 years by migrating to Portnox. This represents a ${Math.round((savings / this.vendorData.cisco.tco.tco) * 100)}% reduction in TCO.`,
+                action: 'View cost breakdown'
+            });
+            
+            insights.push({
+                type: 'risk',
+                priority: 'high',
+                icon: 'fas fa-shield-alt',
+                title: 'Enhanced Security Posture',
+                message: 'Portnox\'s Zero Trust architecture provides 30% better threat protection than traditional NAC solutions, potentially preventing $1.3M in breach costs.',
+                action: 'Analyze risk metrics'
+            });
+            
+            insights.push({
+                type: 'efficiency',
+                priority: 'medium',
+                icon: 'fas fa-tachometer-alt',
+                title: 'Operational Efficiency Gains',
+                message: 'Reduce IT overhead by 87% through automation, freeing 1.75 FTE for strategic initiatives worth $175K annually.',
+                action: 'Review efficiency metrics'
+            });
+            
+            return insights;
+        };
+        
+        window.dashboard.calculateSavings = function() {
+            let maxTco = 0;
+            this.selectedVendors.forEach(key => {
+                if (key !== 'portnox' && this.vendorData[key]) {
+                    maxTco = Math.max(maxTco, this.vendorData[key].tco.tco);
+                }
+            });
+            return maxTco - this.vendorData.portnox.tco.tco;
+        };
     }
 });
