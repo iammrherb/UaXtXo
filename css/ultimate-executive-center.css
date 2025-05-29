@@ -1655,3 +1655,157 @@ body {
     justify-content: center;
 }
 .ultimate-header{background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#334155 100%);position:relative;overflow:hidden}.ultimate-header::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 80%,rgba(40,167,69,0.1) 0%,transparent 50%);animation:float 20s infinite}@keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,-20px)}}.portnox-logo{background:rgba(255,255,255,0.95);padding:0.5rem 1rem;border-radius:8px;box-shadow:0 4px 12px rgba(40,167,69,0.3)}.main-title{font-weight:900;font-size:2rem}
+
+/* ==== VIBRANT MODERN HEADER ==== */
+.ultimate-header {
+    background: linear-gradient(135deg, 
+        #1a1f3a 0%, 
+        #2d1b69 25%, 
+        #0f172a 50%, 
+        #2d1b69 75%, 
+        #1a1f3a 100%);
+    position: relative;
+    min-height: 100px;
+    overflow: hidden;
+    border-bottom: 3px solid #28a745;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.ultimate-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(40, 167, 69, 0.3) 0%, transparent 40%),
+                radial-gradient(circle at 70% 50%, rgba(0, 217, 255, 0.2) 0%, transparent 40%);
+    animation: headerGlow 10s ease-in-out infinite;
+}
+
+@keyframes headerGlow {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.1); }
+}
+
+/* Portnox Logo Enhancement */
+.portnox-logo {
+    min-width: 150px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(40, 167, 69, 0.4),
+                0 0 40px rgba(40, 167, 69, 0.3);
+    animation: logoGlow 3s ease-in-out infinite;
+}
+
+@keyframes logoGlow {
+    0%, 100% { 
+        box-shadow: 0 8px 24px rgba(40, 167, 69, 0.4), 0 0 40px rgba(40, 167, 69, 0.3);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 12px 32px rgba(40, 167, 69, 0.6), 0 0 60px rgba(40, 167, 69, 0.5);
+        transform: scale(1.02);
+    }
+}
+
+.portnox-logo img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Bold Title Styles */
+.main-title {
+    font-size: 2.25rem !important;
+    font-weight: 900 !important;
+    background: linear-gradient(90deg, 
+        #ffffff 0%, 
+        #28a745 35%, 
+        #00d9ff 65%, 
+        #ffffff 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: titleGradient 4s ease infinite;
+    text-shadow: 0 0 30px rgba(40, 167, 69, 0.5);
+}
+
+@keyframes titleGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.sub-title {
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* Header Buttons */
+.header-btn {
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.header-btn.primary {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    box-shadow: 0 4px 20px rgba(40, 167, 69, 0.4);
+}
+
+.header-btn.highlight {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
+    animation: pulse 2s infinite;
+}
+
+/* Vendor Logo Fixes */
+.vendor-logo {
+    width: 100px !important;
+    height: 70px !important;
+    padding: 0.75rem !important;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vendor-logo img {
+    max-width: 80px !important;
+    max-height: 50px !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+}
+
+/* Vendor Card Enhancements */
+.vendor-card {
+    min-height: 400px;
+    transition: all 0.3s ease;
+}
+
+.vendor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.vendor-card.portnox {
+    border: 2px solid #28a745;
+    background: linear-gradient(135deg, 
+        rgba(40, 167, 69, 0.05) 0%, 
+        rgba(40, 167, 69, 0.02) 100%);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .main-title { font-size: 1.75rem !important; }
+}
