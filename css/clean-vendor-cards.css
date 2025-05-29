@@ -1,135 +1,158 @@
-/* Clean Vendor Cards */
+/* CLEAN VENDOR CARDS */
+.vendor-section {
+    padding: 20px;
+}
+
+.vendor-section h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #1e293b;
+}
+
 .vendor-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 16px;
-    padding: 0;
+    width: 100%;
 }
 
 .vendor-card {
     background: white;
     border: 2px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 20px;
-    transition: all 0.2s;
-    cursor: pointer;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    height: 240px;
+    transition: all 0.2s ease;
 }
 
 .vendor-card:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.vendor-card.portnox {
-    border-color: #2563eb;
+    border-color: #94a3b8;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .vendor-card.selected {
-    border-color: #2563eb;
+    border-color: #3b82f6;
     background: #f0f9ff;
 }
 
-.vendor-header {
+.vendor-card.portnox {
+    border-color: #10b981;
+}
+
+/* Card Header */
+.card-header {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 16px;
+    height: 40px;
 }
 
-.vendor-logo {
+.card-logo {
     width: 40px;
     height: 40px;
 }
 
-.vendor-logo img {
+.card-logo img {
     width: 100%;
     height: 100%;
     object-fit: contain;
 }
 
-.vendor-info h4 {
+.card-title {
+    flex: 1;
+}
+
+.card-name {
     font-size: 16px;
     font-weight: 600;
     color: #1e293b;
     margin: 0;
 }
 
-.vendor-rating {
+.card-stars {
     display: flex;
     align-items: center;
-    gap: 4px;
-    margin-top: 4px;
-}
-
-.vendor-rating i {
+    gap: 2px;
     font-size: 12px;
-    color: #facc15;
 }
 
-.score-badge {
-    font-size: 12px;
-    color: #64748b;
-    margin-left: 4px;
+.card-stars i {
+    color: #f59e0b;
 }
 
-.vendor-metrics {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin: 16px 0;
-}
-
-.metric-item {
+/* TCO Display */
+.card-tco {
+    background: #f8fafc;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
     text-align: center;
 }
 
-.metric-label {
+.tco-label {
     font-size: 11px;
     text-transform: uppercase;
-    color: #6b7280;
-    letter-spacing: 0.5px;
+    color: #64748b;
     margin-bottom: 4px;
 }
 
-.metric-value {
-    font-size: 20px;
+.tco-value {
+    font-size: 24px;
     font-weight: 700;
-    color: #1e293b;
+    color: #10b981;
 }
 
-.vendor-badges {
+/* Features */
+.card-features {
     font-size: 12px;
     color: #64748b;
-    margin: 12px 0;
-    min-height: 20px;
+    margin-bottom: 12px;
+    height: 20px;
 }
 
-.vendor-actions {
+/* Actions */
+.card-actions {
     display: flex;
     gap: 8px;
-    margin-top: 16px;
+    margin-top: auto;
 }
 
-.vendor-btn {
+.card-btn {
     flex: 1;
     padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
     border: 1px solid #e5e7eb;
     background: white;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
     color: #374151;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.vendor-btn:hover {
+.card-btn:hover {
     background: #f9fafb;
     border-color: #d1d5db;
 }
 
-.vendor-btn.selected {
-    background: #2563eb;
+.card-btn.primary {
+    background: #3b82f6;
     color: white;
-    border-color: #2563eb;
+    border-color: #3b82f6;
+}
+
+.card-btn.primary:hover {
+    background: #2563eb;
+}
+
+/* Fix overlap issues */
+* {
+    box-sizing: border-box;
+}
+
+.vendor-grid * {
+    max-width: 100%;
 }
