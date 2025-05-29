@@ -1,3 +1,14 @@
+#!/bin/bash
+
+# Script to update index.html with new files
+
+echo "📝 Updating index.html..."
+
+# Backup original
+cp index.html index.html.backup
+
+# Create a temporary file with the updates
+cat > temp_index_update.html << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,6 +37,7 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="./css/ultimate-executive-center.css">
+    <link rel="stylesheet" href="./css/ui-enhancements.css">
 </head>
 <body>
     <!-- Header -->
@@ -128,13 +140,9 @@
     </div>
 
     <!-- Scripts in correct order -->
-    <!-- Scripts in correct order -->
-    <script src="./js/verify-tco-fix.js"></script>
-</body>
     <!-- Core Data -->
     <script src="./js/enhancements/comprehensive-data-enhancement.js"></script>
     <script src="./js/data/comprehensive-vendor-data.js"></script>
-    <script src="./js/data/enhanced-vendor-calculations.js"></script>
     
     <!-- Views -->
     <script src="./js/views/modern-executive-dashboard.js"></script>
@@ -144,28 +152,50 @@
     <script src="./js/features/ai-insights-engine.js"></script>
     <script src="./js/exports/professional-export-system.js"></script>
     
-    <!-- Core -->
-    <script src="./js/core/app-initializer.js"></script>
+    <!-- Updates and Fixes -->
+    <script src="./js/updates/fix-vendor-display.js"></script>
+    <script src="./js/updates/implement-all-charts.js"></script>
+    <script src="./js/update-index.js"></script>
     
-    <!-- Fixes and Enhancements -->
-    <script src="./js/diagnostic-tco.js"></script>
-    <script src="./js/fix-tco-zero-values.js"></script>
-    <script src="./js/fix-kpi-calculations.js"></script>
-    <script src="./js/simplified-calculation-fix.js"></script>
-    <script src="./js/fix-ai-insights-complete.js"></script>
-    <script src="./js/implement-missing-charts.js"></script>
-    <script src="./js/verify-vendor-calculations.js"></script>
-    <script src="./js/vendor-details-modal.js"></script>
-    <script src="./js/enhanced-risk-assessment.js"></script>
-    <script src="./js/enhanced-roi-timeline.js"></script>
-    <script src="./js/cash-flow-analysis.js"></script>
-    <script src="./js/sensitivity-analysis.js"></script>
-    <script src="./js/portnox-compliance-matrix.js"></script>
-    <script src="./js/help-tooltips.js"></script>
-    <script src="./js/add-industry-compliance-selectors.js"></script>
-    <script src="./js/fix-vendor-card-display.js"></script>
-    <script src="./js/fix-kpi-display.js"></script>
-    <script src="./js/proper-initialization.js"></script>
-    <script src="./js/verify-tco-fix.js"></script>
+    <!-- Core App -->
+    <script src="./js/core/app-initializer.js"></script>
 </body>
 </html>
+EOF
+
+# Replace the original index.html
+mv temp_index_update.html index.html
+
+echo "✅ index.html updated successfully!"
+echo "📋 Backup saved as index.html.backup"
+
+# Run the main fix script
+chmod +x fix-tco-bash-script.sh
+./fix-tco-bash-script.sh
+
+# Summary
+echo "
+🎉 ALL UPDATES COMPLETE!
+
+The TCO Analyzer now includes:
+✅ Removed vendors: Genian, Sophos, Palo Alto
+✅ Added vendors: Cisco, Juniper, Microsoft, Aruba, Arista, Extreme, 
+   Foxpass, SecureW2, PacketFence, Fortinet, Forescout, RadiusSaas, Pulse
+✅ Real TCO calculations with accurate market pricing
+✅ All charts implemented (ROI, Cash Flow, Sensitivity, etc.)
+✅ Enhanced UI with comprehensive vendor comparison
+✅ Debugging tools (run debugVendorCalculations() in console)
+
+To complete setup:
+1. git add -A
+2. git commit -m 'Complete TCO fix: remove vendors, add real calculations, implement all charts'
+3. git push
+
+Test the application:
+1. Open index.html in browser
+2. Open Developer Console (F12)
+3. Check for any errors
+4. Run: debugVendorCalculations()
+5. Verify all vendors appear in the UI
+6. Test all tabs and charts
+"
