@@ -7,7 +7,7 @@
 console.log("📊 Loading comprehensive vendor data...");
 
 // Real vendor pricing data based on market research
-const vendorPricingData = {
+window.vendorPricingData = window.vendorPricingData || = {
     // Cloud-Native Solutions
     portnox: {
         name: "Portnox CLEAR",
@@ -160,7 +160,7 @@ const vendorPricingData = {
 };
 
 // Vendor capabilities and scores
-const vendorCapabilities = {
+window.vendorCapabilities = window.vendorCapabilities || = {
     portnox: {
         cloudNative: 100,
         zeroTrust: 95,
@@ -332,7 +332,7 @@ const vendorCapabilities = {
 };
 
 // Enhanced vendor calculator
-class VendorCalculator {
+window.VendorCalculator = window.VendorCalculator || class VendorCalculator {
     constructor() {
         this.vendors = vendorPricingData;
         this.capabilities = vendorCapabilities;

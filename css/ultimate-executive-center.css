@@ -1654,3 +1654,4 @@ body {
     align-items: center;
     justify-content: center;
 }
+.ultimate-header{background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#334155 100%);position:relative;overflow:hidden}.ultimate-header::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 80%,rgba(40,167,69,0.1) 0%,transparent 50%);animation:float 20s infinite}@keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,-20px)}}.portnox-logo{background:rgba(255,255,255,0.95);padding:0.5rem 1rem;border-radius:8px;box-shadow:0 4px 12px rgba(40,167,69,0.3)}.main-title{font-weight:900;font-size:2rem}
