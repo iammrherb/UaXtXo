@@ -1,0 +1,135 @@
+/* Clean Vendor Cards */
+.vendor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    padding: 0;
+}
+
+.vendor-card {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.vendor-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.vendor-card.portnox {
+    border-color: #2563eb;
+}
+
+.vendor-card.selected {
+    border-color: #2563eb;
+    background: #f0f9ff;
+}
+
+.vendor-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.vendor-logo {
+    width: 40px;
+    height: 40px;
+}
+
+.vendor-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.vendor-info h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.vendor-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.vendor-rating i {
+    font-size: 12px;
+    color: #facc15;
+}
+
+.score-badge {
+    font-size: 12px;
+    color: #64748b;
+    margin-left: 4px;
+}
+
+.vendor-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.metric-item {
+    text-align: center;
+}
+
+.metric-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #6b7280;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.metric-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.vendor-badges {
+    font-size: 12px;
+    color: #64748b;
+    margin: 12px 0;
+    min-height: 20px;
+}
+
+.vendor-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.vendor-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.vendor-btn:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.vendor-btn.selected {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
