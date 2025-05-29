@@ -1,0 +1,206 @@
+/* Complete Vendor Card Fix */
+.vendor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    padding: 24px;
+}
+
+.vendor-card {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+}
+
+.vendor-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    border-color: #d1d5db;
+}
+
+/* Portnox Special Styling */
+.vendor-card.portnox {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+}
+
+.vendor-card.portnox::before {
+    content: 'RECOMMENDED';
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    background: #10b981;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Vendor Header */
+.vendor-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.vendor-logo {
+    width: 60px;
+    height: 60px;
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vendor-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.vendor-info {
+    flex: 1;
+}
+
+.vendor-info h4 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    color: #1f2937;
+}
+
+.vendor-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.score-badge {
+    background: #10b981;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Vendor Metrics - Properly Sized */
+.vendor-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.metric-item {
+    background: #f9fafb;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #e5e7eb;
+}
+
+.metric-label {
+    font-size: 11px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.metric-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    display: block;
+}
+
+/* Vendor Badges */
+.vendor-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+    min-height: 28px;
+}
+
+.badge {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.badge.cloud {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.badge.zt {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge.auto {
+    background: #ede9fe;
+    color: #5b21b6;
+}
+
+/* Vendor Actions */
+.vendor-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+}
+
+.vendor-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.vendor-btn:first-child {
+    background: #10b981;
+    color: white;
+}
+
+.vendor-btn:first-child:hover {
+    background: #059669;
+}
+
+.vendor-btn:last-child {
+    background: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+}
+
+.vendor-btn:last-child:hover {
+    background: #e5e7eb;
+}
+
+/* Selected State */
+.vendor-card.selected {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.vendor-card.selected .vendor-btn:first-child {
+    background: #6b7280;
+}
