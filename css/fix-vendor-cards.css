@@ -106,3 +106,40 @@
     font-size: 12px;
     padding: 6px 12px;
 }
+
+/* Additional vendor card fixes for better data display */
+.vendor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.vendor-card.selected {
+    border-color: #28a745;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+}
+
+/* Ensure Portnox card stands out */
+.vendor-card.portnox {
+    border-color: #28a745;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.vendor-card.portnox .vendor-info h4 {
+    color: #166534;
+}
+
+/* Fix metric display for all values */
+.metric-value {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1400px) {
+    .vendor-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+}
