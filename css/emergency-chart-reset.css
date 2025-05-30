@@ -1,0 +1,63 @@
+/* Emergency Chart Reset - Nuclear Option */
+
+/* Force all chart containers to fixed size */
+div[id$="-chart"] {
+    width: 100% !important;
+    height: 400px !important;
+    min-height: 400px !important;
+    max-height: 400px !important;
+    overflow: hidden !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+}
+
+/* Ensure no child can exceed parent */
+div[id$="-chart"] * {
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+/* Force Highcharts containers */
+.highcharts-container {
+    position: relative !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    height: 100% !important;
+    text-align: left !important;
+    line-height: normal !important;
+    z-index: 0 !important;
+    -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+    font-family: Inter, sans-serif !important;
+    font-size: 12px !important;
+    user-select: none !important;
+    touch-action: manipulation !important;
+    outline: none !important;
+}
+
+/* Force SVG to stay within bounds */
+.highcharts-root,
+.highcharts-container svg {
+    position: relative !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+/* Remove any transformations that could cause growth */
+.highcharts-series-group,
+.highcharts-markers,
+.highcharts-data-labels {
+    transform: none !important;
+}
+
+/* Prevent any absolute positioning from escaping */
+div[id$="-chart"] .highcharts-container > div {
+    position: relative !important;
+}
+
+/* Emergency: Hide overflow on body during renders */
+body.rendering-charts {
+    overflow: hidden !important;
+}
