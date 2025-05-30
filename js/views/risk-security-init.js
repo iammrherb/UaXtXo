@@ -1,12 +1,10 @@
 /**
- * Risk & Security Tab Integration
+ * Risk & Security Tab Integration - Fixed
  */
 
-// Wait for platform to be ready
 window.addEventListener('DOMContentLoaded', function() {
     console.log('🛡️ Initializing Risk & Security Tab...');
     
-    // Check if platform exists
     const checkPlatform = setInterval(() => {
         if (window.platform && window.platform.renderRiskAssessment) {
             clearInterval(checkPlatform);
@@ -15,9 +13,6 @@ window.addEventListener('DOMContentLoaded', function() {
     }, 100);
     
     function integrateRiskModule() {
-        // Override the renderRiskAssessment method
-        const originalRender = window.platform.renderRiskAssessment.bind(window.platform);
-        
         window.platform.renderRiskAssessment = function(container) {
             console.log('📊 Rendering Risk & Security Analysis...');
             
@@ -28,25 +23,15 @@ window.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Create and render risk module
             if (!window.riskModule) {
                 window.riskModule = new RiskSecurityModule(this);
             }
             
             window.riskModule.render(container, this.calculationResults);
         };
-        
-        // If we're already on risk assessment tab, re-render
-        if (window.platform.activeTab === 'risk-assessment') {
-            const content = document.getElementById('analysis-content');
-            if (content) {
-                window.platform.renderRiskAssessment(content);
-            }
-        }
     }
 });
 
-// Define the Risk Security Module class inline
 class RiskSecurityModule {
     constructor(platform) {
         this.platform = platform;
@@ -59,10 +44,8 @@ class RiskSecurityModule {
         
         container.innerHTML = `
             <div class="risk-security-dashboard">
-                <!-- Risk Overview Header -->
                 ${this.renderRiskOverview(calculationResults)}
                 
-                <!-- Security Posture Section -->
                 <div class="risk-section security-posture-section">
                     <div class="section-header">
                         <h2><i class="fas fa-shield-alt"></i> Security Posture Analysis</h2>
@@ -99,7 +82,6 @@ class RiskSecurityModule {
                     </div>
                 </div>
                 
-                <!-- Breach Impact Analysis Section -->
                 <div class="risk-section breach-impact-section">
                     <div class="section-header">
                         <h2><i class="fas fa-exclamation-triangle"></i> Breach Impact & Risk Analysis</h2>
@@ -119,7 +101,6 @@ class RiskSecurityModule {
                     </div>
                 </div>
                 
-                <!-- Executive Summary -->
                 <div class="risk-section executive-summary-section">
                     <div class="section-header">
                         <h2><i class="fas fa-chart-pie"></i> Executive Risk Summary</h2>
@@ -131,7 +112,6 @@ class RiskSecurityModule {
             </div>
         `;
         
-        // Render charts after DOM is ready
         setTimeout(() => {
             this.renderAllCharts(calculationResults);
         }, 100);
@@ -156,7 +136,7 @@ class RiskSecurityModule {
                         <div class="metric-icon"><i class="fas fa-dollar-sign"></i></div>
                         <div class="metric-content">
                             <span class="metric-label">Breach Cost Savings</span>
-                            <span class="metric-value">${metrics.breachSavings}K</span>
+                            <span class="metric-value">$${metrics.breachSavings}K</span>
                             <span class="metric-detail">annual exposure reduction</span>
                         </div>
                     </div>
@@ -184,19 +164,15 @@ class RiskSecurityModule {
     renderAllCharts(results) {
         console.log('📊 Rendering Risk & Security charts...');
         
-        // Security Posture Charts
         this.renderSecurityMaturityRadar(results);
         this.renderZeroTrustGauge(results);
         this.renderAttackSurfaceChart(results);
         this.renderSecurityControlsHeatmap(results);
         this.renderVulnerabilityTimeline(results);
-        
-        // Breach Impact Charts
         this.renderBreachCostProjection(results);
         this.renderRiskProbabilityMatrix(results);
     }
     
-    // Security Maturity Radar Chart
     renderSecurityMaturityRadar(results) {
         const categories = [
             'Identity & Access',
@@ -261,7 +237,6 @@ class RiskSecurityModule {
         });
     }
     
-    // Zero Trust Gauge
     renderZeroTrustGauge(results) {
         const portnoxScore = 92;
         
@@ -323,7 +298,6 @@ class RiskSecurityModule {
         });
     }
     
-    // Attack Surface Chart
     renderAttackSurfaceChart(results) {
         const categories = ['External', 'Internal', 'Cloud', 'IoT', 'Remote Access'];
         const currentRisk = [85, 75, 70, 90, 80];
@@ -373,7 +347,6 @@ class RiskSecurityModule {
         });
     }
     
-    // Security Controls Heatmap
     renderSecurityControlsHeatmap(results) {
         const vendors = Object.keys(results).map(k => results[k]?.vendor?.name || k);
         const controls = ['MFA', 'NAC', 'ZTNA', 'DLP', 'SIEM', 'EDR'];
@@ -432,7 +405,6 @@ class RiskSecurityModule {
         });
     }
     
-    // Vulnerability Timeline
     renderVulnerabilityTimeline(results) {
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
         const currentVulns = [45, 48, 52, 49, 55, 58];
@@ -480,7 +452,6 @@ class RiskSecurityModule {
         });
     }
     
-    // Breach Cost Projection
     renderBreachCostProjection(results) {
         const years = ['Year 1', 'Year 2', 'Year 3'];
         const withoutProtection = [];
@@ -514,7 +485,7 @@ class RiskSecurityModule {
                 title: { text: 'Expected Breach Cost ($)', style: { color: '#CBD5E1' } },
                 labels: {
                     formatter: function() {
-                        return ' + Math.round(this.value / 1000) + 'K';
+                        return '$' + Math.round(this.value / 1000) + 'K';
                     },
                     style: { color: '#CBD5E1' }
                 }
@@ -533,7 +504,7 @@ class RiskSecurityModule {
                     dataLabels: {
                         enabled: true,
                         formatter: function() {
-                            return ' + Math.round(this.y / 1000) + 'K';
+                            return '$' + Math.round(this.y / 1000) + 'K';
                         },
                         style: { color: '#FFFFFF', fontSize: '10px' }
                     }
@@ -551,7 +522,6 @@ class RiskSecurityModule {
         });
     }
     
-    // Risk Probability Matrix
     renderRiskProbabilityMatrix(results) {
         const data = [
             { x: 1, y: 4, z: 80, name: 'Data Breach', color: '#EF4444' },
@@ -574,7 +544,7 @@ class RiskSecurityModule {
                 title: { text: 'Probability', style: { color: '#CBD5E1' } },
                 labels: { 
                     formatter: function() {
-                        return ['', 'Very Low', 'Low', 'Medium', 'High', 'Very High'][this.value];
+                        return ['', 'Very Low', 'Low', 'Medium', 'High', 'Very High'][this.value] || '';
                     },
                     style: { color: '#CBD5E1' }
                 },
@@ -587,7 +557,7 @@ class RiskSecurityModule {
                 title: { text: 'Impact', style: { color: '#CBD5E1' } },
                 labels: { 
                     formatter: function() {
-                        return ['', 'Low', 'Medium', 'High', 'Critical'][this.value];
+                        return ['', 'Low', 'Medium', 'High', 'Critical'][this.value] || '';
                     },
                     style: { color: '#CBD5E1' }
                 },
@@ -647,15 +617,15 @@ class RiskSecurityModule {
                         <div class="impact-metrics">
                             <div class="metric">
                                 <span class="label">Annual Risk Exposure</span>
-                                <span class="value">${Math.round(this.platform.config.breachCost * 0.15 / 1000)}K</span>
+                                <span class="value">$${Math.round(this.platform.config.breachCost * 0.15 / 1000)}K</span>
                             </div>
                             <div class="metric">
                                 <span class="label">Mitigation Investment</span>
-                                <span class="value">${Math.round(results.portnox?.year1?.tco?.total / 1000 || 50)}K</span>
+                                <span class="value">$${Math.round(results.portnox?.year1?.tco?.total / 1000 || 50)}K</span>
                             </div>
                             <div class="metric">
                                 <span class="label">Net Risk Reduction</span>
-                                <span class="value positive">${Math.round(metrics.breachSavings * 0.8)}K</span>
+                                <span class="value positive">$${Math.round(metrics.breachSavings * 0.8)}K</span>
                             </div>
                         </div>
                     </div>
@@ -675,5 +645,4 @@ class RiskSecurityModule {
     }
 }
 
-// Make module globally available
 window.RiskSecurityModule = RiskSecurityModule;
