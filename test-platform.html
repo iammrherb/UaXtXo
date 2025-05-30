@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Platform Test</title>
+</head>
+<body>
+    <h1>Platform Test</h1>
+    <script>
+        console.log('Testing platform...');
+        
+        // Check if vendor database exists
+        setTimeout(() => {
+            if (window.ComprehensiveVendorDatabase) {
+                console.log('✅ Vendor database loaded');
+                console.log('Vendors:', Object.keys(window.ComprehensiveVendorDatabase));
+            } else {
+                console.error('❌ Vendor database not found');
+            }
+            
+            if (window.platform) {
+                console.log('✅ Platform initialized');
+                console.log('Selected vendors:', window.platform.selectedVendors);
+            } else {
+                console.error('❌ Platform not initialized');
+            }
+        }, 1000);
+    </script>
+    <script src="./js/data/comprehensive-vendor-database.js"></script>
+    <script src="./js/views/ultimate-visual-platform.js"></script>
+</body>
+</html>

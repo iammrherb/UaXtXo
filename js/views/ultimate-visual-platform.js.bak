@@ -1,0 +1,587 @@
+/**
+ * Portnox Executive Intelligence Platform
+ * Complete Working Version - Professional Light Theme
+ */
+
+// Define the class with all methods INSIDE
+class UltimateVisualPlatform {
+    constructor() {
+        this.selectedVendors = ['portnox'];
+        this.maxAdditionalVendors = 3;
+        this.vendorDatabase = window.ComprehensiveVendorDatabase || {};
+        this.portnoxPricing = 3.50;
+        this.activeTab = 'financial-overview';
+        this.calculationResults = null;
+        
+        this.config = {
+            deviceCount: 500,
+            locationCount: 1,
+            fteCost: 100000,
+            breachCost: 4350000,
+            downtimeCostPerHour: 5000,
+            compliancePenaltyRisk: 250000,
+            industry: 'technology'
+        };
+    }
+    
+    init() {
+        console.log('🚀 Initializing Portnox Executive Platform');
+        this.setupUI();
+        this.bindEvents();
+        this.updateVendorSelection();
+        this.calculate();
+    }
+    
+    setupUI() {
+        const app = document.getElementById('app-container');
+        if (!app) return;
+        
+        app.innerHTML = `
+            <div class="executive-platform">
+                <!-- Professional Header -->
+                <header class="platform-header">
+                    <div class="header-container">
+                        <div class="brand-section">
+                            <img src="./img/vendors/portnox-logo.png" alt="Portnox" class="portnox-logo">
+                            <div class="brand-info">
+                                <h1>Executive Intelligence Suite</h1>
+                                <p>Zero Trust NAC Investment Analytics & Strategic Planning</p>
+                            </div>
+                        </div>
+                        <div class="header-actions">
+                            <button class="action-btn" onclick="window.platform.openSettings()">
+                                <i class="fas fa-cog"></i> Configure
+                            </button>
+                            <button class="action-btn primary" onclick="window.platform.calculate()">
+                                <i class="fas fa-calculator"></i> Analyze
+                            </button>
+                            <button class="action-btn" onclick="window.platform.exportAnalysis()">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <button class="action-btn accent" onclick="window.platform.scheduleDemo()">
+                                <i class="fas fa-video"></i> Live Demo
+                            </button>
+                        </div>
+                    </div>
+                </header>
+                
+                <!-- Vendor Selection Bar -->
+                <div class="vendor-bar">
+                    <div class="vendor-container">
+                        <div class="vendor-info">
+                            <h3><i class="fas fa-layer-group"></i> Vendor Comparison</h3>
+                            <p>Portnox vs. Competition Analysis</p>
+                        </div>
+                        <div class="selected-vendors" id="selected-vendors">
+                            <!-- Vendors will be displayed here -->
+                        </div>
+                        <button class="add-vendor-btn" onclick="window.platform.openVendorSelector()">
+                            <i class="fas fa-plus"></i> Add Competitor
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Navigation Tabs -->
+                <nav class="platform-nav">
+                    <div class="nav-container">
+                        <button class="nav-tab active" data-tab="financial-overview" onclick="window.platform.switchTab('financial-overview')">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Financial Analysis</span>
+                        </button>
+                        <button class="nav-tab" data-tab="risk-assessment" onclick="window.platform.switchTab('risk-assessment')">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Risk & Security</span>
+                        </button>
+                        <button class="nav-tab" data-tab="compliance" onclick="window.platform.switchTab('compliance')">
+                            <i class="fas fa-clipboard-check"></i>
+                            <span>Compliance</span>
+                        </button>
+                        <button class="nav-tab" data-tab="operational" onclick="window.platform.switchTab('operational')">
+                            <i class="fas fa-cogs"></i>
+                            <span>Operational</span>
+                        </button>
+                        <button class="nav-tab" data-tab="insights" onclick="window.platform.switchTab('insights')">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Strategic Insights</span>
+                        </button>
+                    </div>
+                </nav>
+                
+                <!-- Main Content Area -->
+                <div class="platform-content" id="platform-content">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
+                
+                <!-- Settings Modal -->
+                <div class="modal" id="settings-modal" style="display: none;">
+                    <div class="modal-backdrop" onclick="window.platform.closeSettings()"></div>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Configuration Settings</h2>
+                            <button class="close-btn" onclick="window.platform.closeSettings()">×</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="settings-form">
+                                <div class="form-group">
+                                    <label>Number of Devices</label>
+                                    <input type="number" id="devices-input" value="500" min="50" max="50000">
+                                </div>
+                                <div class="form-group">
+                                    <label>Number of Locations</label>
+                                    <input type="number" id="locations-input" value="1" min="1" max="1000">
+                                </div>
+                                <div class="form-group">
+                                    <label>Annual FTE Cost</label>
+                                    <input type="number" id="fte-cost-input" value="100000" step="5000">
+                                </div>
+                                <div class="form-group">
+                                    <label>Industry</label>
+                                    <select id="industry-select">
+                                        <option value="technology">Technology</option>
+                                        <option value="healthcare">Healthcare</option>
+                                        <option value="finance">Financial Services</option>
+                                        <option value="retail">Retail</option>
+                                        <option value="manufacturing">Manufacturing</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn primary" onclick="window.platform.applySettings()">Apply Settings</button>
+                            <button class="btn" onclick="window.platform.closeSettings()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vendor Selector Modal -->
+                <div class="modal" id="vendor-modal" style="display: none;">
+                    <div class="modal-backdrop" onclick="window.platform.closeVendorSelector()"></div>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Select Competitors</h2>
+                            <button class="close-btn" onclick="window.platform.closeVendorSelector()">×</button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Select up to 3 competitors to compare against Portnox</p>
+                            <div class="vendor-grid" id="vendor-grid">
+                                <!-- Vendors will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Portnox Pricing Control -->
+                <div class="pricing-control">
+                    <div class="pricing-content">
+                        <img src="./img/vendors/portnox-logo.png" alt="Portnox" class="pricing-logo">
+                        <div class="pricing-slider-section">
+                            <label>Portnox Pricing</label>
+                            <div class="price-display">$<span id="price-value">3.50</span>/device/month</div>
+                            <input type="range" id="pricing-slider" min="1" max="8" step="0.25" value="3.50">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    bindEvents() {
+        const slider = document.getElementById('pricing-slider');
+        if (slider) {
+            slider.addEventListener('input', (e) => {
+                this.portnoxPricing = parseFloat(e.target.value);
+                document.getElementById('price-value').textContent = this.portnoxPricing.toFixed(2);
+                if (this.vendorDatabase.portnox) {
+                    this.vendorDatabase.portnox.pricing.perDevice.monthly = this.portnoxPricing;
+                    this.vendorDatabase.portnox.pricing.perDevice.annual = this.portnoxPricing * 12;
+                }
+                this.calculate();
+            });
+        }
+    }
+    
+    updateVendorSelection() {
+        const container = document.getElementById('selected-vendors');
+        if (!container) return;
+        
+        container.innerHTML = this.selectedVendors.map(vendorKey => {
+            const vendor = this.vendorDatabase[vendorKey];
+            if (!vendor) return '';
+            
+            return `
+                <div class="vendor-chip ${vendorKey === 'portnox' ? 'portnox' : ''}">
+                    <span>${vendor.name}</span>
+                    ${vendorKey !== 'portnox' ? `
+                        <button onclick="window.platform.removeVendor('${vendorKey}')" class="remove-btn">×</button>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+    
+    calculate() {
+        console.log('📊 Calculating TCO/ROI...');
+        this.calculationResults = {};
+        
+        this.selectedVendors.forEach(vendorKey => {
+            const vendor = this.vendorDatabase[vendorKey];
+            if (vendor) {
+                this.calculationResults[vendorKey] = this.calculateVendorTCO(vendor);
+            }
+        });
+        
+        this.renderCurrentTab();
+    }
+    
+    calculateVendorTCO(vendor) {
+        const devices = this.config.deviceCount;
+        const years = 3;
+        
+        // Basic TCO calculation
+        const licenseCost = vendor.pricing.perDevice.annual * devices * years;
+        const implementationCost = vendor.pricing.implementation.base;
+        const supportCost = vendor.pricing.support.annual * devices * years;
+        const infrastructureCost = vendor.architecture === 'SaaS' ? 0 : vendor.pricing.infrastructure.servers;
+        const fteCost = vendor.metrics.fteRequired * this.config.fteCost * years;
+        
+        const totalTCO = licenseCost + implementationCost + supportCost + infrastructureCost + fteCost;
+        
+        return {
+            total: totalTCO,
+            perDevice: totalTCO / devices,
+            monthly: totalTCO / (years * 12),
+            breakdown: {
+                license: licenseCost,
+                implementation: implementationCost,
+                support: supportCost,
+                infrastructure: infrastructureCost,
+                personnel: fteCost
+            },
+            vendor: vendor
+        };
+    }
+    
+    switchTab(tabName) {
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.tab === tabName);
+        });
+        
+        this.activeTab = tabName;
+        this.renderCurrentTab();
+    }
+    
+    renderCurrentTab() {
+        const content = document.getElementById('platform-content');
+        if (!content) return;
+        
+        switch(this.activeTab) {
+            case 'financial-overview':
+                this.renderFinancialOverview(content);
+                break;
+            case 'risk-assessment':
+                this.renderRiskAssessment(content);
+                break;
+            case 'compliance':
+                this.renderCompliance(content);
+                break;
+            case 'operational':
+                this.renderOperational(content);
+                break;
+            case 'insights':
+                this.renderInsights(content);
+                break;
+        }
+    }
+    
+    renderFinancialOverview(container) {
+        const portnox = this.calculationResults.portnox;
+        if (!portnox) {
+            container.innerHTML = '<div class="no-data">Calculating...</div>';
+            return;
+        }
+        
+        container.innerHTML = `
+            <div class="dashboard-section">
+                <h2>Financial Analysis Dashboard</h2>
+                
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="kpi-value">$${(portnox.total / 1000).toFixed(0)}K</div>
+                        <div class="kpi-label">3-Year TCO</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon"><i class="fas fa-calculator"></i></div>
+                        <div class="kpi-value">$${portnox.perDevice.toFixed(0)}</div>
+                        <div class="kpi-label">Per Device Cost</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon"><i class="fas fa-calendar"></i></div>
+                        <div class="kpi-value">$${(portnox.monthly / 1000).toFixed(1)}K</div>
+                        <div class="kpi-label">Monthly Cost</div>
+                    </div>
+                    <div class="kpi-card success">
+                        <div class="kpi-icon"><i class="fas fa-trophy"></i></div>
+                        <div class="kpi-value">${this.calculateSavings()}%</div>
+                        <div class="kpi-label">Cost Savings</div>
+                    </div>
+                </div>
+                
+                <!-- Charts Section -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Total Cost Comparison</h3>
+                        <div id="tco-chart" class="chart-container"></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Cost Breakdown</h3>
+                        <div id="breakdown-chart" class="chart-container"></div>
+                    </div>
+                </div>
+                
+                <!-- Comparison Table -->
+                <div class="table-section">
+                    <h3>Vendor Comparison</h3>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Vendor</th>
+                                <th>3-Year TCO</th>
+                                <th>Monthly Cost</th>
+                                <th>Implementation Time</th>
+                                <th>Security Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.entries(this.calculationResults).map(([key, result]) => `
+                                <tr ${key === 'portnox' ? 'class="highlight"' : ''}>
+                                    <td>${result.vendor.name}</td>
+                                    <td>$${(result.total / 1000).toFixed(0)}K</td>
+                                    <td>$${(result.monthly / 1000).toFixed(1)}K</td>
+                                    <td>${result.vendor.metrics.deploymentDays} days</td>
+                                    <td>${result.vendor.metrics.securityScore}/100</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        // Render charts
+        setTimeout(() => this.renderCharts(), 100);
+    }
+    
+    renderCharts() {
+        // TCO Comparison Chart
+        const tcoData = Object.entries(this.calculationResults).map(([key, result]) => ({
+            name: result.vendor.name,
+            y: result.total,
+            color: key === 'portnox' ? '#00B4A6' : '#6C757D'
+        }));
+        
+        if (typeof Highcharts !== 'undefined') {
+            Highcharts.chart('tco-chart', {
+                chart: { type: 'column' },
+                title: { text: null },
+                xAxis: { type: 'category' },
+                yAxis: {
+                    title: { text: 'Total Cost ($)' },
+                    labels: {
+                        formatter: function() {
+                            return '$' + (this.value / 1000) + 'K';
+                        }
+                    }
+                },
+                series: [{
+                    name: 'TCO',
+                    data: tcoData,
+                    dataLabels: {
+                        enabled: true,
+                        formatter: function() {
+                            return '$' + (this.y / 1000).toFixed(0) + 'K';
+                        }
+                    }
+                }],
+                credits: { enabled: false }
+            });
+            
+            // Breakdown Chart
+            const portnox = this.calculationResults.portnox;
+            if (portnox) {
+                const breakdownData = Object.entries(portnox.breakdown).map(([key, value]) => ({
+                    name: key.charAt(0).toUpperCase() + key.slice(1),
+                    y: value
+                }));
+                
+                Highcharts.chart('breakdown-chart', {
+                    chart: { type: 'pie' },
+                    title: { text: null },
+                    series: [{
+                        name: 'Cost',
+                        data: breakdownData
+                    }],
+                    credits: { enabled: false }
+                });
+            }
+        }
+    }
+    
+    renderRiskAssessment(container) {
+        container.innerHTML = `
+            <div class="dashboard-section">
+                <h2>Risk & Security Assessment</h2>
+                <div class="coming-soon">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Risk Analysis Module</h3>
+                    <p>Comprehensive security and risk assessment coming soon</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    renderCompliance(container) {
+        container.innerHTML = `
+            <div class="dashboard-section">
+                <h2>Compliance Analysis</h2>
+                <div class="coming-soon">
+                    <i class="fas fa-clipboard-check"></i>
+                    <h3>Compliance Module</h3>
+                    <p>Regulatory compliance analysis coming soon</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    renderOperational(container) {
+        container.innerHTML = `
+            <div class="dashboard-section">
+                <h2>Operational Impact</h2>
+                <div class="coming-soon">
+                    <i class="fas fa-cogs"></i>
+                    <h3>Operational Analysis</h3>
+                    <p>Operational efficiency metrics coming soon</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    renderInsights(container) {
+        container.innerHTML = `
+            <div class="dashboard-section">
+                <h2>Strategic Insights</h2>
+                <div class="insights-grid">
+                    <div class="insight-card">
+                        <i class="fas fa-rocket"></i>
+                        <h3>Quick Deployment</h3>
+                        <p>Portnox deploys in 7 days vs 90+ days for traditional solutions</p>
+                    </div>
+                    <div class="insight-card">
+                        <i class="fas fa-cloud"></i>
+                        <h3>Cloud-Native Architecture</h3>
+                        <p>No infrastructure costs or maintenance overhead</p>
+                    </div>
+                    <div class="insight-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Superior Security</h3>
+                        <p>95/100 security score with Zero Trust architecture</p>
+                    </div>
+                    <div class="insight-card">
+                        <i class="fas fa-dollar-sign"></i>
+                        <h3>Lower TCO</h3>
+                        <p>Save 40-60% compared to traditional NAC solutions</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    calculateSavings() {
+        const portnox = this.calculationResults.portnox;
+        if (!portnox) return 0;
+        
+        const avgCompetitorCost = Object.entries(this.calculationResults)
+            .filter(([key]) => key !== 'portnox')
+            .reduce((sum, [, result]) => sum + result.total, 0) / (this.selectedVendors.length - 1);
+        
+        return Math.round(((avgCompetitorCost - portnox.total) / avgCompetitorCost) * 100);
+    }
+    
+    openSettings() {
+        document.getElementById('settings-modal').style.display = 'flex';
+        // Load current values
+        document.getElementById('devices-input').value = this.config.deviceCount;
+        document.getElementById('locations-input').value = this.config.locationCount;
+        document.getElementById('fte-cost-input').value = this.config.fteCost;
+        document.getElementById('industry-select').value = this.config.industry;
+    }
+    
+    closeSettings() {
+        document.getElementById('settings-modal').style.display = 'none';
+    }
+    
+    applySettings() {
+        this.config.deviceCount = parseInt(document.getElementById('devices-input').value);
+        this.config.locationCount = parseInt(document.getElementById('locations-input').value);
+        this.config.fteCost = parseInt(document.getElementById('fte-cost-input').value);
+        this.config.industry = document.getElementById('industry-select').value;
+        
+        this.closeSettings();
+        this.calculate();
+    }
+    
+    openVendorSelector() {
+        const modal = document.getElementById('vendor-modal');
+        const grid = document.getElementById('vendor-grid');
+        
+        const availableVendors = Object.entries(this.vendorDatabase)
+            .filter(([key]) => !this.selectedVendors.includes(key));
+        
+        grid.innerHTML = availableVendors.map(([key, vendor]) => `
+            <div class="vendor-item" onclick="window.platform.selectVendor('${key}')">
+                <h4>${vendor.name}</h4>
+                <p>${vendor.type}</p>
+                <p>$${vendor.pricing.perDevice.monthly}/device/mo</p>
+            </div>
+        `).join('');
+        
+        modal.style.display = 'flex';
+    }
+    
+    closeVendorSelector() {
+        document.getElementById('vendor-modal').style.display = 'none';
+    }
+    
+    selectVendor(vendorKey) {
+        if (this.selectedVendors.length < this.maxAdditionalVendors + 1) {
+            this.selectedVendors.push(vendorKey);
+            this.updateVendorSelection();
+            this.closeVendorSelector();
+            this.calculate();
+        }
+    }
+    
+    removeVendor(vendorKey) {
+        this.selectedVendors = this.selectedVendors.filter(v => v !== vendorKey);
+        this.updateVendorSelection();
+        this.calculate();
+    }
+    
+    exportAnalysis() {
+        alert('Export functionality will generate PDF, Excel, and PowerPoint reports');
+    }
+    
+    scheduleDemo() {
+        window.open('https://portnox.com/demo', '_blank');
+    }
+}
+
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Create and initialize platform
+    window.platform = new UltimateVisualPlatform();
+    window.platform.init();
+});
+
+console.log('✅ Portnox Executive Platform script loaded');

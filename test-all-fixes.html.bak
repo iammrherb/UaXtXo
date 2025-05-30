@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test All Fixes</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .test { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .pass { background: #d4edda; color: #155724; }
+        .fail { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: white; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Complete Fix Test Suite</h1>
+    
+    <h2>File Syntax Tests:</h2>
+    <div id="syntax-tests"></div>
+    
+    <h2>Component Tests:</h2>
+    <div id="component-tests"></div>
+    
+    <h2>Method Tests:</h2>
+    <div id="method-tests"></div>
+    
+    <h2>Actions:</h2>
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="testLoadFiles()">Test Load Files</button>
+    <button onclick="testMethods()">Test Methods</button>
+    
+    <h2>Console:</h2>
+    <pre id="console"></pre>
+    
+    <script>
+        const log = (msg) => {
+            document.getElementById('console').innerHTML += msg + '\n';
+            console.log(msg);
+        };
+        
+        function testSyntax() {
+            const tests = [];
+            
+            // Test if files load without syntax errors
+            const testFiles = [
+                'js/views/ultimate-executive-platform.js',
+                'js/integration/comprehensive-integration.js',
+                'js/features/ai-insights.js',
+                'js/ultimate-init-fix.js'
+            ];
+            
+            testFiles.forEach(file => {
+                const script = document.createElement('script');
+                script.src = file + '?t=' + Date.now();
+                
+                const test = { file, status: 'loading' };
+                tests.push(test);
+                
+                script.onload = () => {
+                    test.status = 'loaded';
+                    updateSyntaxTests();
+                };
+                
+                script.onerror = (e) => {
+                    test.status = 'error';
+                    test.error = e;
+                    updateSyntaxTests();
+                };
+                
+                document.head.appendChild(script);
+            });
+            
+            window.syntaxTests = tests;
+            updateSyntaxTests();
+        }
+        
+        function updateSyntaxTests() {
+            const container = document.getElementById('syntax-tests');
+            const tests = window.syntaxTests || [];
+            
+            container.innerHTML = tests.map(test => `
+                <div class="test ${test.status === 'loaded' ? 'pass' : test.status === 'error' ? 'fail' : 'info'}">
+                    ${test.status === 'loaded' ? '✅' : test.status === 'error' ? '❌' : '⏳'}
+                    ${test.file}: ${test.status}
+                    ${test.error ? `<br>Error: ${test.error}` : ''}
+                </div>
+            `).join('');
+        }
+        
+        function testComponents() {
+            const tests = [
+                { name: 'UltimateExecutiveView class', check: () => typeof UltimateExecutiveView !== 'undefined' },
+                { name: 'ultimateExecutiveView instance', check: () => window.ultimateExecutiveView !== undefined },
+                { name: 'comprehensiveIntegration', check: () => window.comprehensiveIntegration !== undefined },
+                { name: 'aiInsightsEngine', check: () => window.aiInsightsEngine !== undefined },
+                { name: 'advancedExportSystem', check: () => window.advancedExportSystem !== undefined }
+            ];
+            
+            const container = document.getElementById('component-tests');
+            container.innerHTML = tests.map(test => {
+                const passed = test.check();
+                return `
+                    <div class="test ${passed ? 'pass' : 'fail'}">
+                        ${passed ? '✅' : '❌'} ${test.name}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function testMethods() {
+            const tests = [
+                { 
+                    name: 'populateComplianceGrid on instance',
+                    check: () => window.ultimateExecutiveView?.populateComplianceGrid !== undefined
+                },
+                {
+                    name: 'populateComplianceGrid on prototype',
+                    check: () => typeof UltimateExecutiveView !== 'undefined' && 
+                             UltimateExecutiveView.prototype.populateComplianceGrid !== undefined
+                },
+                {
+                    name: 'generateAIInsights',
+                    check: () => window.ultimateExecutiveView?.generateAIInsights !== undefined
+                },
+                {
+                    name: 'exportReport',
+                    check: () => window.advancedExportSystem?.exportReport !== undefined
+                }
+            ];
+            
+            const container = document.getElementById('method-tests');
+            container.innerHTML = tests.map(test => {
+                const passed = test.check();
+                return `
+                    <div class="test ${passed ? 'pass' : 'fail'}">
+                        ${passed ? '✅' : '❌'} ${test.name}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function runAllTests() {
+            log('Running all tests...');
+            testSyntax();
+            setTimeout(() => {
+                testComponents();
+                testMethods();
+            }, 2000);
+        }
+        
+        function testLoadFiles() {
+            log('Testing file loads...');
+            testSyntax();
+        }
+        
+        // Auto-run tests after page load
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+    
+    <!-- Load the comprehensive integration fix -->
+    <script src="js/fixes/comprehensive-integration-fix.js"></script>
+</body>
+</html>

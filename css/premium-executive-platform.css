@@ -1468,3 +1468,676 @@ body {
     font-size: 0.875rem;
     margin-left: 0.5rem;
 }
+
+/* Enhanced Financial Overview Styles */
+.executive-summary-card.premium {
+    background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%);
+    border: 2px solid var(--primary);
+    box-shadow: 0 10px 30px rgba(0, 212, 170, 0.1);
+}
+
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.summary-badges {
+    display: flex;
+    gap: 1rem;
+}
+
+.badge {
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.badge.recommended {
+    background: var(--primary);
+    color: white;
+}
+
+.badge.savings {
+    background: #10B981;
+    color: white;
+}
+
+.summary-grid.enhanced {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.summary-item.premium {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--gray-200);
+    transition: all 0.3s;
+}
+
+.summary-item.premium:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.summary-item.highlight.premium {
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+    color: white;
+    border: none;
+}
+
+.item-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    font-size: 1.5rem;
+}
+
+.summary-item.highlight .item-icon {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.item-content {
+    flex: 1;
+}
+
+.item-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.8;
+}
+
+.item-content .value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+    line-height: 1;
+}
+
+.progress-bar {
+    height: 8px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.5s ease-out;
+}
+
+.roi-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.roi-indicator.excellent {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+.roi-indicator.good {
+    background: #D1FAE5;
+    color: #059669;
+}
+
+.roi-indicator.moderate {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.comparison-bar {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+    margin-top: 0.5rem;
+}
+
+.mini-chart {
+    height: 60px;
+    margin-top: 0.5rem;
+}
+
+/* Enhanced Chart Sections */
+.chart-section.premium {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.view-toggles {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.toggle {
+    padding: 0.5rem 1rem;
+    background: var(--gray-100);
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.toggle.active {
+    background: var(--primary);
+    color: white;
+}
+
+.chart-container.large {
+    grid-column: span 2;
+}
+
+.tco-insights-bar {
+    display: flex;
+    gap: 2rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.insight-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.insight-item i {
+    color: var(--primary);
+}
+
+.insight-item strong {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* Hidden Costs Grid */
+.hidden-costs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+/* Enhanced Cost Breakdown */
+.cost-breakdown-section.premium {
+    background: var(--gray-50);
+    padding: 2rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+}
+
+.breakdown-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.time-selector {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.time-btn {
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.time-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.cost-breakdown-grid.enhanced {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 1.5rem;
+}
+
+.cost-breakdown-card.enhanced {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    border: 2px solid var(--gray-200);
+    transition: all 0.3s;
+}
+
+.cost-breakdown-card.enhanced:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.cost-breakdown-card.portnox-highlight {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, #FFFFFF 0%, rgba(0, 212, 170, 0.05) 100%);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.header-metrics {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.metric-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    background: var(--gray-100);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.metric-badge.positive {
+    background: #D1FAE5;
+    color: #059669;
+}
+
+.cost-categories.enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.cost-category.enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.category-header i {
+    color: var(--primary);
+    width: 20px;
+}
+
+.category-header .label {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--gray-700);
+}
+
+.category-header .percentage {
+    font-weight: 600;
+    color: var(--gray-600);
+}
+
+.cost-category .value {
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-left: 28px;
+}
+
+.cost-category .bar {
+    height: 8px;
+    background: var(--gray-200);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-left: 28px;
+    position: relative;
+}
+
+.cost-category .fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+    transition: width 0.5s ease-out;
+    position: relative;
+}
+
+.bar-label {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.cost-category:hover .bar-label {
+    opacity: 1;
+}
+
+.total-cost.enhanced {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--gray-200);
+    text-align: center;
+}
+
+.total-label {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    margin-bottom: 0.5rem;
+}
+
+.total-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gray-800);
+}
+
+.comparison-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--danger);
+}
+
+.best-value {
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background: var(--primary);
+    color: white;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* ROI Metrics Bar */
+.roi-metrics-bar {
+    display: flex;
+    justify-content: space-around;
+    padding: 1.5rem;
+    background: var(--gray-50);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.roi-metric {
+    text-align: center;
+}
+
+.roi-metric .label {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    margin-bottom: 0.5rem;
+}
+
+.roi-metric .value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* Enhanced Recommendations */
+.recommendations-section.premium {
+    background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+    padding: 2rem;
+    border-radius: 16px;
+    margin-top: 2rem;
+}
+
+.recommendations-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.recommendations-header p {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+}
+
+.recommendation-cards.enhanced {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.recommendation-card.enhanced {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.recommendation-card.enhanced:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.recommendation-card.critical {
+    border-color: #FEE2E2;
+}
+
+.recommendation-card.high {
+    border-color: #FED7AA;
+}
+
+.recommendation-card.medium {
+    border-color: #BFDBFE;
+}
+
+.card-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.5rem;
+}
+
+.recommendation-card.critical .card-icon {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+.recommendation-card.high .card-icon {
+    background: #FED7AA;
+    color: #EA580C;
+}
+
+.recommendation-card.medium .card-icon {
+    background: #BFDBFE;
+    color: #2563EB;
+}
+
+.card-content {
+    flex: 1;
+}
+
+.priority-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.priority-badge.critical {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+.priority-badge.high {
+    background: #FED7AA;
+    color: #EA580C;
+}
+
+.priority-badge.medium {
+    background: #BFDBFE;
+    color: #2563EB;
+}
+
+.metrics-row {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.metric-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--gray-50);
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+
+.metric-label {
+    color: var(--gray-600);
+}
+
+.metric-value {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* Quick Actions */
+.quick-actions {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.quick-actions h4 {
+    margin: 0 0 1rem 0;
+    color: var(--gray-700);
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-btn.primary {
+    background: var(--primary);
+    color: white;
+}
+
+.action-btn.primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.action-btn:not(.primary) {
+    background: white;
+    border: 2px solid var(--gray-300);
+    color: var(--gray-700);
+}
+
+.action-btn:not(.primary):hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* Responsive Enhancements */
+@media (max-width: 1200px) {
+    .chart-container.large {
+        grid-column: span 1;
+    }
+    
+    .hidden-costs-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .summary-grid.enhanced {
+        grid-template-columns: 1fr;
+    }
+    
+    .recommendation-cards.enhanced {
+        grid-template-columns: 1fr;
+    }
+    
+    .cost-breakdown-grid.enhanced {
+        grid-template-columns: 1fr;
+    }
+    
+    .tco-insights-bar {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
