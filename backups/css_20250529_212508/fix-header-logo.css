@@ -1,0 +1,68 @@
+/* Fix Portnox logo positioning in header */
+.ultimate-header {
+    position: relative;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.header-branding {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Move Portnox logo to the right side */
+.portnox-logo {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+}
+
+.portnox-logo img {
+    height: 40px;
+    width: auto;
+    display: block;
+    filter: brightness(1.1) contrast(1.1);
+}
+
+/* Ensure header actions don't overlap with logo */
+.header-actions {
+    margin-right: 200px; /* Space for logo */
+}
+
+/* Remove any background logo */
+.ultimate-header::before,
+.header-content::before {
+    display: none !important;
+}
+
+/* Additional logo enhancements */
+.portnox-logo {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure logo is always on top */
+.portnox-logo {
+    z-index: 1000;
+}
+
+/* Header responsive adjustments */
+@media (max-width: 1200px) {
+    .header-actions {
+        margin-right: 160px;
+    }
+    
+    .portnox-logo img {
+        height: 35px;
+    }
+}

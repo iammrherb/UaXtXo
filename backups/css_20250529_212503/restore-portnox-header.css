@@ -1,0 +1,126 @@
+/* Portnox Header - Matching Screenshot */
+.ultimate-header {
+    background: #4A90E2;
+    padding: 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 30px;
+    max-width: 100%;
+    margin: 0;
+}
+
+/* Logo on LEFT */
+.header-branding {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.portnox-logo {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+.portnox-logo img {
+    height: 40px !important;
+    width: auto !important;
+    filter: brightness(0) invert(1);
+}
+
+.header-titles {
+    color: white;
+}
+
+.main-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    color: white;
+}
+
+.sub-title {
+    font-size: 14px;
+    margin: 2px 0 0 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
+}
+
+/* Header buttons */
+.header-actions {
+    display: flex;
+    gap: 10px;
+    margin-right: 0 !important;
+}
+
+.header-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.header-btn.primary {
+    background: white;
+    color: #4A90E2;
+}
+
+.header-btn.secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.header-btn.highlight {
+    background: #333;
+    color: white;
+}
+
+.header-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Tab navigation */
+.tab-navigation {
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 0 30px;
+}
+
+.tab-btn {
+    padding: 14px 20px;
+    background: none;
+    border: none;
+    color: #495057;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    color: #4A90E2;
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #4A90E2;
+}

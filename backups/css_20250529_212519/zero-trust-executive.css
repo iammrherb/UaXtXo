@@ -1,0 +1,467 @@
+/* Zero Trust Executive Dashboard Styles */
+
+.zt-executive-dashboard {
+    min-height: 100vh;
+    background: #f8f9fa;
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+
+/* Header */
+.zt-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.zt-branding {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 1rem;
+}
+
+.portnox-logo {
+    height: 50px;
+    width: auto;
+}
+
+.zt-branding h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.zt-branding p {
+    margin: 0.25rem 0 0 0;
+    opacity: 0.9;
+}
+
+.zt-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.zt-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.zt-btn.primary {
+    background: #28a745;
+    color: white;
+}
+
+.zt-btn.secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.zt-btn.highlight {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.zt-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Configuration Panel */
+.zt-config-panel {
+    background: white;
+    padding: 2rem;
+    margin: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.config-section {
+    margin-bottom: 2rem;
+}
+
+.config-section h3 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.config-field label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #666;
+    font-size: 0.875rem;
+}
+
+.config-field input,
+.config-field select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.config-field input:focus,
+.config-field select:focus {
+    outline: none;
+    border-color: #28a745;
+}
+
+/* Pricing Slider */
+.pricing-slider-container {
+    margin: 1rem 0;
+}
+
+.pricing-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: #e0e0e0;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.pricing-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #28a745;
+    cursor: pointer;
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #666;
+}
+
+/* Vendor Selection */
+.zt-vendor-selection {
+    padding: 2rem;
+}
+
+.zt-vendor-selection h2 {
+    margin-bottom: 0.5rem;
+}
+
+.selection-hint {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.vendor-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.vendor-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.vendor-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.vendor-card.selected {
+    border-color: #28a745;
+    background: #f0f9ff;
+}
+
+.vendor-header h4 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.vendor-type {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: #e0e0e0;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.vendor-pricing {
+    margin: 1rem 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.price-metric {
+    text-align: center;
+}
+
+.price-metric label {
+    display: block;
+    font-size: 0.75rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.price-metric span {
+    font-weight: 600;
+    color: #333;
+}
+
+.vendor-scores {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.score-badge {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.score-badge i {
+    font-size: 1.25rem;
+    color: #666;
+}
+
+.vendor-select-btn {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.vendor-card:not(.selected) .vendor-select-btn {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.vendor-card.selected .vendor-select-btn {
+    background: #28a745;
+    color: white;
+}
+
+/* Results Section */
+.zt-results {
+    padding: 2rem;
+}
+
+/* Tabs */
+.zt-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    overflow-x: auto;
+    background: white;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.tab-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    background: #f0f0f0;
+}
+
+.tab-btn.active {
+    background: #28a745;
+    color: white;
+}
+
+/* Tab Content */
+.zt-tab-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Executive Summary Styles */
+.executive-summary h2 {
+    margin-bottom: 2rem;
+    color: #333;
+}
+
+.key-findings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.finding-card {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.finding-card.highlight {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-color: #28a745;
+}
+
+.finding-card.warning {
+    background: #fff5f5;
+    border-color: #dc3545;
+}
+
+.finding-card i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #28a745;
+}
+
+.finding-card.warning i {
+    color: #dc3545;
+}
+
+.finding-card h3 {
+    margin: 0 0 0.5rem 0;
+    color: #666;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+}
+
+.vendor-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #333;
+    margin: 0.5rem 0;
+}
+
+.metric {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #28a745;
+    margin: 0.5rem 0;
+}
+
+.finding-card.warning .metric {
+    color: #dc3545;
+}
+
+.detail {
+    color: #666;
+    font-size: 0.875rem;
+}
+
+.chart-container {
+    margin: 2rem 0;
+}
+
+.chart-container h3 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.stat-card {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-card h4 {
+    margin: 0 0 0.5rem 0;
+    color: #666;
+    font-size: 0.875rem;
+}
+
+.stat-card p {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .zt-header {
+        padding: 1rem;
+    }
+    
+    .zt-branding {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .zt-actions {
+        flex-wrap: wrap;
+    }
+    
+    .config-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .vendor-selection-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .zt-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .key-findings {
+        grid-template-columns: 1fr;
+    }
+}

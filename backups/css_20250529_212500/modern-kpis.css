@@ -1,0 +1,136 @@
+/* Modern Professional KPIs */
+.kpi-dashboard {
+    background: #f8fafc;
+    padding: 32px 24px;
+    border-radius: 16px;
+    margin-bottom: 32px;
+}
+
+.kpi-header {
+    margin-bottom: 24px;
+}
+
+.kpi-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 8px 0;
+}
+
+.kpi-description {
+    font-size: 16px;
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.modern-kpis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.modern-kpi-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.modern-kpi-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.modern-kpi-card.highlight {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+}
+
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    font-size: 20px;
+    color: #3b82f6;
+}
+
+.modern-kpi-card.highlight .kpi-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.kpi-metric {
+    margin-bottom: 12px;
+}
+
+.kpi-metric-value {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.kpi-metric-label {
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+.kpi-detail {
+    font-size: 14px;
+    line-height: 1.6;
+    opacity: 0.7;
+    margin-bottom: 16px;
+}
+
+.kpi-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.modern-kpi-card.highlight .kpi-footer {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.kpi-trend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.kpi-trend.up {
+    color: #10b981;
+}
+
+.modern-kpi-card.highlight .kpi-trend {
+    color: #86efac;
+}
+
+.kpi-action {
+    font-size: 13px;
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.modern-kpi-card.highlight .kpi-action {
+    color: white;
+    opacity: 0.9;
+}

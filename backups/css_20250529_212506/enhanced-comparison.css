@@ -1,0 +1,116 @@
+/**
+ * Enhanced Comparison Table Styles for Portnox Total Cost Analyzer
+ * Improves the visual appearance of comparison tables
+ */
+
+.enhanced-table-container {
+  overflow-x: auto;
+  margin: 20px 0;
+  box-shadow: var(--shadow-md);
+  border-radius: 8px;
+  background: var(--card-bg);
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.comparison-table th {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.comparison-table th:first-child {
+  width: 220px;
+}
+
+.comparison-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.comparison-table tr:last-child td {
+  border-bottom: none;
+}
+
+.comparison-table tr:nth-child(even) {
+  background-color: var(--highlight-background);
+}
+
+.comparison-table tr:hover td {
+  background-color: rgba(26, 90, 150, 0.08);
+}
+
+.highlight-cell {
+  background-color: rgba(46, 204, 113, 0.1) !important;
+  color: #2ecc71;
+  font-weight: 600;
+}
+
+.dark-mode .comparison-table th {
+  background-color: var(--primary-dark-color);
+}
+
+.dark-mode .comparison-table tr:nth-child(even) {
+  background-color: rgba(26, 90, 150, 0.08);
+}
+
+.dark-mode .comparison-table tr:hover td {
+  background-color: rgba(26, 90, 150, 0.15);
+}
+
+.dark-mode .highlight-cell {
+  background-color: rgba(46, 204, 113, 0.15) !important;
+  color: #2ecc71;
+}
+
+/* Add visual indicator for best value */
+.comparison-table .highlight-cell::before {
+  content: '✓ ';
+  color: #2ecc71;
+}
+
+/* Architecture styling */
+.arch-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+}
+
+.arch-badge.cloud {
+  background: linear-gradient(135deg, #1a5a96, #0d4275);
+}
+
+.arch-badge.on-premises {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.arch-badge.hybrid {
+  background: linear-gradient(135deg, #f39c12, #d35400);
+}
+
+/* Feature indicators */
+.feature-supported {
+  color: #2ecc71;
+  font-size: 16px;
+}
+
+.feature-unsupported {
+  color: #e74c3c;
+  font-size: 16px;
+}

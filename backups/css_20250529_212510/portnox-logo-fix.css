@@ -1,0 +1,34 @@
+/* Fix Portnox Logo Visibility */
+.portnox-logo {
+    min-width: 200px !important;
+    height: 80px !important;
+    background: white !important;
+    padding: 1rem 1.5rem !important;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.portnox-logo img {
+    max-width: 180px !important;
+    height: auto !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Ensure header has proper spacing */
+.header-content {
+    padding: 1.5rem 2rem !important;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+}
+
+.header-branding {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}

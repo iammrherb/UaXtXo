@@ -1,0 +1,312 @@
+/* COMPACT 160x160 VENDOR CARDS */
+.vendor-section {
+    padding: 16px;
+}
+
+.vendor-section h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+}
+
+.vendor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    width: 100%;
+}
+
+.vendor-card {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 10px;
+    width: 160px;
+    height: 160px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.vendor-card:hover {
+    border-color: #94a3b8;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.vendor-card.selected {
+    border-color: #3b82f6;
+    background: #f0f9ff;
+}
+
+.vendor-card.portnox {
+    border-color: #10b981;
+}
+
+/* Compact header */
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.card-logo {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.card-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.card-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Score badge */
+.card-score {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 10px;
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #64748b;
+}
+
+/* TCO Display */
+.card-tco {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 8px 0;
+}
+
+.tco-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.tco-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #10b981;
+}
+
+/* Compact actions */
+.card-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.card-btn {
+    flex: 1;
+    padding: 5px 8px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    text-align: center;
+}
+
+.card-btn:hover {
+    background: #f9fafb;
+}
+
+.card-btn.primary {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+/* Selected indicator */
+.vendor-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 16px;
+    height: 16px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 50%;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Portnox Pricing Slider */
+.pricing-slider-section {
+    background: white;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.pricing-slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.pricing-slider-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.pricing-display {
+    font-size: 24px;
+    font-weight: 700;
+    color: #10b981;
+}
+
+.slider-container {
+    position: relative;
+}
+
+.pricing-slider {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #e5e7eb;
+    border-radius: 3px;
+    outline: none;
+}
+
+.pricing-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #10b981;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.pricing-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #10b981;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* Details Modal */
+.vendor-details-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.details-dialog {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.details-header {
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.details-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #1e293b;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #6b7280;
+    cursor: pointer;
+}
+
+.details-content {
+    padding: 20px;
+}
+
+.detail-section {
+    margin-bottom: 24px;
+}
+
+.detail-section h3 {
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #64748b;
+    margin: 0 0 12px 0;
+    letter-spacing: 0.5px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-label {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.detail-value {
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}

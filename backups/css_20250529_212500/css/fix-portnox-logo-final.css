@@ -1,0 +1,32 @@
+/* FIX PORTNOX LOGO - SHOW ACTUAL IMAGE */
+.portnox-logo {
+    position: relative !important;
+    background: transparent !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    display: flex;
+    align-items: center;
+}
+
+.portnox-logo img {
+    height: 40px !important;
+    width: auto !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    /* Remove any filters that make it white */
+    filter: none !important;
+}
+
+/* Remove any white box or pill styling */
+.portnox-logo::before,
+.portnox-logo::after {
+    display: none !important;
+}
+
+/* Hide Live Demo button */
+#live-demo,
+.header-btn.highlight {
+    display: none !important;
+}

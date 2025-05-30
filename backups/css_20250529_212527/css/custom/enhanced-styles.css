@@ -1,0 +1,526 @@
+/**
+ * Enhanced Styles for Portnox Total Cost Analyzer
+ * Improves visibility of headers, banners, and overall UI
+ */
+
+:root {
+  --primary-color: #1a5a96;
+  --primary-dark-color: #0d4275;
+  --primary-light-color: #4287c8;
+  --secondary-color: #27ae60;
+  --warning-color: #e74c3c;
+  --neutral-color: #3498db;
+  --background-color: #f8fafc;
+  --card-background: #ffffff;
+  --text-color: #333333;
+  --text-light-color: #666666;
+  --header-text-color: #ffffff;
+  --border-color: #e1e8ed;
+  --highlight-background: rgba(26, 90, 150, 0.08);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+/* Body and Global Styles */
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: 'Nunito', sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+/* Enhanced Header Styles */
+.app-header, .enhanced-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color)) !important;
+  color: var(--header-text-color) !important;
+  border-bottom: none !important;
+  box-shadow: var(--shadow-lg) !important;
+  position: relative !important;
+  z-index: 100 !important;
+  padding: 1rem 2rem !important;
+}
+
+.enhanced-header .header-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+}
+
+.company-logo {
+  height: 40px;
+  margin-right: 1.5rem;
+  filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.2));
+}
+
+.app-title h1 {
+  color: var(--header-text-color) !important;
+  font-size: 1.8rem !important;
+  margin: 0 !important;
+  font-weight: 600 !important;
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.app-title .subtitle {
+  color: rgba(255, 255, 255, 0.9) !important;
+  margin: 0 !important;
+  font-size: 1rem !important;
+}
+
+/* Improved Sidebar Styles */
+.sidebar {
+  background-color: var(--card-background) !important;
+  border-right: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-sm) !important;
+  overflow-y: auto !important;
+  transition: all 0.3s ease !important;
+}
+
+.sidebar-header {
+  background: linear-gradient(to right, var(--primary-color), var(--primary-dark-color)) !important;
+  color: var(--header-text-color) !important;
+  padding: 1rem !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.sidebar-header h2 {
+  margin: 0 !important;
+  font-size: 1.3rem !important;
+  font-weight: 600 !important;
+  color: white !important;
+}
+
+.config-card {
+  background-color: var(--card-background) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  margin-bottom: 1rem !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease !important;
+}
+
+.config-card:hover {
+  box-shadow: var(--shadow-md) !important;
+}
+
+.config-card-header {
+  background-color: var(--primary-light-color) !important;
+  color: var(--header-text-color) !important;
+  padding: 0.75rem 1rem !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.config-card-header h3 {
+  margin: 0 !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: white !important;
+}
+
+.config-card-content {
+  padding: 1rem !important;
+}
+
+/* Enhanced Content Area Styles */
+.content-area {
+  background-color: var(--background-color) !important;
+  padding: 1.5rem !important;
+  overflow-y: auto !important;
+  flex: 1 !important;
+}
+
+.content-wrapper {
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+}
+
+/* Improved Panel Styles */
+.panel-header {
+  background: linear-gradient(to right, var(--primary-color), var(--primary-dark-color)) !important;
+  color: var(--header-text-color) !important;
+  padding: 1.5rem !important;
+  border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+  margin-bottom: 1.5rem !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.panel-header h2 {
+  margin: 0 0 0.5rem 0 !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: white !important;
+}
+
+.panel-header .subtitle {
+  margin: 0 !important;
+  opacity: 0.9 !important;
+  font-size: 1rem !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Dashboard Cards */
+.dashboard-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+  gap: 1.5rem !important;
+  margin-bottom: 2rem !important;
+}
+
+.dashboard-card {
+  background-color: var(--card-background) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: 1.5rem !important;
+  transition: all 0.3s ease !important;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.dashboard-card h3 {
+  margin: 0 0 1rem 0 !important;
+  font-size: 1.1rem !important;
+  color: var(--text-light-color) !important;
+  font-weight: 600 !important;
+}
+
+.metric-value {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 0.5rem !important;
+  color: var(--primary-color) !important;
+}
+
+.highlight-card {
+  background: linear-gradient(135deg, var(--primary-light-color), var(--primary-color)) !important;
+  color: var(--header-text-color) !important;
+}
+
+.highlight-card h3,
+.highlight-card .metric-label,
+.highlight-card .metric-trend {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.highlight-value {
+  color: var(--header-text-color) !important;
+}
+
+.metric-label {
+  font-size: 0.9rem !important;
+  color: var(--text-light-color) !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.metric-trend {
+  font-size: 0.85rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+}
+
+.metric-trend.up {
+  color: var(--secondary-color) !important;
+}
+
+.metric-trend.down {
+  color: var(--warning-color) !important;
+}
+
+/* Chart Containers */
+.chart-container {
+  background-color: var(--card-background) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: 1.5rem !important;
+  margin-bottom: 2rem !important;
+}
+
+.chart-container h3 {
+  margin: 0 0 1.5rem 0 !important;
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  color: var(--text-color) !important;
+}
+
+.chart-wrapper {
+  width: 100% !important;
+  height: 350px !important;
+}
+
+/* Benefit Cards */
+.benefits-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+  gap: 1.5rem !important;
+}
+
+.benefit-card {
+  background-color: var(--card-background) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: 1.5rem !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.benefit-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.benefit-icon {
+  width: 50px !important;
+  height: 50px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color)) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-bottom: 1rem !important;
+  color: var(--header-text-color) !important;
+  font-size: 1.5rem !important;
+}
+
+.benefit-card h4 {
+  margin: 0 0 0.75rem 0 !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: var(--text-color) !important;
+}
+
+.benefit-card p {
+  margin: 0 !important;
+  font-size: 0.95rem !important;
+  color: var(--text-light-color) !important;
+  line-height: 1.5 !important;
+}
+
+/* Tabs Styling */
+.results-tabs {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  margin-bottom: 1.5rem !important;
+  border-bottom: 2px solid var(--border-color) !important;
+  padding-bottom: 0.5rem !important;
+}
+
+.results-tab {
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0.75rem 1.25rem !important;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0 !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: var(--text-light-color) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.results-tab:hover {
+  color: var(--primary-color) !important;
+  background-color: rgba(26, 90, 150, 0.05) !important;
+}
+
+.results-tab.active {
+  color: var(--primary-color) !important;
+  border-bottom: 3px solid var(--primary-color) !important;
+  margin-bottom: -2px !important;
+}
+
+/* Footer Styling */
+.app-footer {
+  background-color: var(--primary-dark-color) !important;
+  color: var(--header-text-color) !important;
+  padding: 1.5rem !important;
+  text-align: center !important;
+}
+
+.footer-content {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 1rem !important;
+}
+
+.footer-links a {
+  color: rgba(255, 255, 255, 0.8) !important;
+  text-decoration: none !important;
+  margin: 0 0.5rem !important;
+  transition: color 0.2s ease !important;
+}
+
+.footer-links a:hover {
+  color: var(--header-text-color) !important;
+  text-decoration: underline !important;
+}
+
+/* Button Styling */
+.btn {
+  padding: 0.5rem 1rem !important;
+  border-radius: var(--radius-sm) !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.btn-primary {
+  background-color: var(--primary-color) !important;
+  color: var(--header-text-color) !important;
+  border: none !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark-color) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.btn-outline {
+  background-color: transparent !important;
+  color: var(--primary-color) !important;
+  border: 1px solid var(--primary-color) !important;
+}
+
+.btn-outline:hover {
+  background-color: rgba(26, 90, 150, 0.1) !important;
+  transform: translateY(-2px) !important;
+}
+
+.btn-calculate {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color)) !important;
+  color: var(--header-text-color) !important;
+  border: none !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: var(--radius-md) !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  width: 100% !important;
+}
+
+.btn-calculate:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* Fix vendor cards in sidebar */
+.vendor-select-card {
+  height: 80px !important;
+  padding: 8px 4px !important;
+}
+
+.vendor-select-card .vendor-logo img {
+  max-height: 28px !important;
+  max-width: 80px !important;
+  object-fit: contain !important;
+}
+
+.vendor-select-card .vendor-name {
+  font-size: 11px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 95% !important;
+  text-align: center !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .benefits-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .sidebar {
+    width: 100% !important;
+    position: fixed !important;
+    top: 60px !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    z-index: 90 !important;
+    transform: translateX(-100%) !important;
+  }
+  
+  .sidebar.active {
+    transform: translateX(0) !important;
+  }
+  
+  .header-content {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+  }
+  
+  .header-actions {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+}
+
+/* Dark Mode Support */
+.dark-mode {
+  --background-color: #1a1a2e !important;
+  --card-background: #282846 !important;
+  --text-color: #e1e1e1 !important;
+  --text-light-color: #b3b3b3 !important;
+  --border-color: #3a3a5c !important;
+  --highlight-background: rgba(26, 90, 150, 0.15) !important;
+}
+
+.dark-mode .app-header,
+.dark-mode .enhanced-header {
+  background: linear-gradient(135deg, #0d4275, #051e38) !important;
+}
+
+.dark-mode .config-card-header {
+  background-color: #0d4275 !important;
+}
+
+.dark-mode .panel-header {
+  background: linear-gradient(to right, #0d4275, #051e38) !important;
+}
+
+.dark-mode .benefit-icon {
+  background: linear-gradient(135deg, #0d4275, #051e38) !important;
+}
+
+.dark-mode .benefit-card,
+.dark-mode .dashboard-card,
+.dark-mode .chart-container {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark-mode .highlight-card {
+  background: linear-gradient(135deg, #0d4275, #051e38) !important;
+}

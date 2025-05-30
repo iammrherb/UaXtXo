@@ -1,0 +1,444 @@
+/* Modern Polished Design System */
+:root {
+    --portnox-primary: #00a652;
+    --portnox-dark: #006837;
+    --portnox-light: #e8f5e9;
+    --neutral-100: #f8f9fa;
+    --neutral-200: #e9ecef;
+    --neutral-300: #dee2e6;
+    --neutral-400: #ced4da;
+    --neutral-500: #adb5bd;
+    --neutral-600: #6c757d;
+    --neutral-700: #495057;
+    --neutral-800: #343a40;
+    --neutral-900: #212529;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+/* Modern Header Design */
+.ultimate-header {
+    background: #ffffff;
+    border-bottom: 1px solid var(--neutral-200);
+    box-shadow: var(--shadow-md);
+    position: relative;
+    z-index: 1000;
+}
+
+.header-content {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 80px;
+}
+
+/* Professional Logo Container */
+.portnox-logo {
+    background: var(--portnox-light);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    min-width: 180px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--portnox-primary);
+}
+
+.portnox-logo img {
+    max-height: 40px;
+    width: auto;
+}
+
+/* Modern Typography */
+.main-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--neutral-900);
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.sub-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--neutral-600);
+    margin: 0.25rem 0 0 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Professional Header Buttons */
+.header-btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.header-btn.primary {
+    background: var(--portnox-primary);
+    color: white;
+    border-color: var(--portnox-primary);
+}
+
+.header-btn.primary:hover {
+    background: var(--portnox-dark);
+    border-color: var(--portnox-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.header-btn.secondary {
+    background: white;
+    color: var(--neutral-700);
+    border-color: var(--neutral-300);
+}
+
+.header-btn.secondary:hover {
+    background: var(--neutral-100);
+    border-color: var(--neutral-400);
+}
+
+.header-btn.highlight {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    border: none;
+}
+
+/* Modern Vendor Cards */
+.vendor-card {
+    background: white;
+    border: 1px solid var(--neutral-200);
+    border-radius: 12px;
+    padding: 1.5rem;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.vendor-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+    border-color: var(--neutral-300);
+}
+
+.vendor-card.portnox {
+    border: 2px solid var(--portnox-primary);
+    background: linear-gradient(to bottom, rgba(0, 166, 82, 0.02) 0%, white 100%);
+}
+
+.vendor-card.selected {
+    border-color: var(--portnox-primary);
+    box-shadow: 0 0 0 3px rgba(0, 166, 82, 0.1);
+}
+
+/* Vendor Header Section */
+.vendor-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    min-height: 70px;
+}
+
+.vendor-logo {
+    width: 80px;
+    height: 60px;
+    background: var(--neutral-100);
+    border: 1px solid var(--neutral-200);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    flex-shrink: 0;
+}
+
+.vendor-logo img {
+    max-width: 70px;
+    max-height: 50px;
+    object-fit: contain;
+}
+
+.vendor-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.vendor-name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--neutral-900);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+}
+
+.vendor-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.vendor-rating i {
+    color: #ffc107;
+    font-size: 0.75rem;
+}
+
+.score-badge {
+    background: var(--neutral-100);
+    color: var(--neutral-700);
+    padding: 0.125rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Vendor Metrics Section */
+.vendor-metrics {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.metric-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.metric-row.featured {
+    grid-template-columns: 1fr;
+    margin-bottom: 0.5rem;
+}
+
+.metric-item {
+    background: var(--neutral-100);
+    padding: 0.75rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.metric-item.primary {
+    background: var(--portnox-light);
+    border: 1px solid var(--portnox-primary);
+}
+
+.metric-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--neutral-600);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.metric-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--neutral-900);
+}
+
+.metric-value.large {
+    font-size: 1.5rem;
+    color: var(--portnox-primary);
+}
+
+.metric-value.price {
+    color: #007bff;
+}
+
+/* Vendor Badges */
+.vendor-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    min-height: 28px;
+}
+
+.badge {
+    padding: 0.25rem 0.625rem;
+    border-radius: 16px;
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badge.cloud {
+    background: rgba(0, 166, 82, 0.1);
+    color: var(--portnox-primary);
+}
+
+.badge.zt {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+}
+
+.badge.auto {
+    background: rgba(255, 193, 7, 0.1);
+    color: #f39c12;
+}
+
+/* Vendor Actions */
+.vendor-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--neutral-200);
+}
+
+.vendor-btn {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid var(--neutral-300);
+    background: white;
+    color: var(--neutral-700);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.vendor-btn:hover {
+    background: var(--neutral-100);
+    border-color: var(--portnox-primary);
+    color: var(--portnox-primary);
+}
+
+.vendor-btn.selected {
+    background: var(--portnox-primary);
+    border-color: var(--portnox-primary);
+    color: white;
+}
+
+.vendor-btn i {
+    font-size: 0.875rem;
+}
+
+/* Fix Grid Layout */
+.vendor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem 0;
+}
+
+/* Main Content Area */
+.ultimate-content {
+    background: var(--neutral-100);
+    min-height: calc(100vh - 100px);
+}
+
+/* Tab Navigation */
+.tab-navigation {
+    background: white;
+    border-bottom: 1px solid var(--neutral-200);
+    padding: 0 2rem;
+}
+
+.tab-btn {
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    color: var(--neutral-600);
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    color: var(--neutral-800);
+}
+
+.tab-btn.active {
+    color: var(--portnox-primary);
+    border-bottom-color: var(--portnox-primary);
+}
+
+/* KPI Cards */
+.kpi-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--neutral-200);
+}
+
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--neutral-900);
+    margin-bottom: 0.5rem;
+}
+
+.kpi-label {
+    font-size: 0.875rem;
+    color: var(--neutral-600);
+    margin-bottom: 0.25rem;
+}
+
+.kpi-change {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.kpi-change.positive {
+    color: var(--portnox-primary);
+}
+
+/* Chart Containers */
+.chart-container {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--neutral-200);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.chart-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--neutral-900);
+    margin: 0;
+}
+
+/* Remove all glows and animations */
+@keyframes none {}
+* {
+    animation: none !important;
+}

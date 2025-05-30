@@ -1,0 +1,112 @@
+/* Modern Portnox Header */
+.ultimate-header {
+    background: linear-gradient(135deg, #00a652 0%, #007a3d 100%);
+    position: relative;
+    overflow: hidden;
+    min-height: 100px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Background Pattern */
+.ultimate-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Glowing Background Logo */
+.ultimate-header::after {
+    content: 'PORTNOX';
+    position: absolute;
+    right: -100px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 8rem;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.05);
+    letter-spacing: 0.2em;
+    pointer-events: none;
+}
+
+.header-content {
+    position: relative;
+    z-index: 10;
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Visible Portnox Logo */
+.portnox-logo {
+    background: white;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    min-width: 200px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.portnox-logo img {
+    max-height: 50px;
+    width: auto;
+    display: block;
+}
+
+/* If no image, show text */
+.portnox-logo:empty::after {
+    content: 'PORTNOX';
+    font-size: 2rem;
+    font-weight: 900;
+    color: #00a652;
+    letter-spacing: 0.05em;
+}
+
+/* White text for header */
+.main-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin: 0;
+}
+
+.sub-title {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0.25rem 0 0 0;
+}
+
+/* Header buttons */
+.header-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.header-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.header-btn.primary {
+    background: white;
+    color: #00a652;
+    border-color: white;
+}
+
+.header-btn.highlight {
+    background: #ff6b6b;
+    border-color: #ff6b6b;
+}

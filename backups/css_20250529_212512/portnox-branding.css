@@ -1,0 +1,89 @@
+/* Portnox Brand Colors */
+:root {
+    --portnox-green: #00a652;
+    --portnox-dark: #1a1a1a;
+    --portnox-light: #f8f9fa;
+    --portnox-gray: #6c757d;
+}
+
+/* Header - No Glow, Professional Look */
+.ultimate-header {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    border-bottom: 3px solid var(--portnox-green);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.ultimate-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(90deg, transparent 0%, rgba(0, 166, 82, 0.05) 50%, transparent 100%);
+    pointer-events: none;
+}
+
+/* Portnox Logo - No Glow, Clean Professional */
+.portnox-logo {
+    min-width: 180px;
+    height: 60px;
+    background: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: none !important;
+}
+
+.portnox-logo:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.portnox-logo img {
+    max-width: 150px;
+    height: auto;
+}
+
+/* Title - Professional, No Glow */
+.main-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    margin: 0;
+    animation: none !important;
+    text-shadow: none !important;
+    background: none !important;
+    -webkit-text-fill-color: white !important;
+}
+
+.sub-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0.25rem 0 0 0;
+}
+
+/* Header Buttons - Professional */
+.header-btn.primary {
+    background: var(--portnox-green);
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 166, 82, 0.2);
+}
+
+.header-btn.primary:hover {
+    background: #008a43;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 166, 82, 0.3);
+}
+
+/* Remove all glow animations */
+@keyframes logoGlow { }
+@keyframes titleGradient { }
+@keyframes pulse { }

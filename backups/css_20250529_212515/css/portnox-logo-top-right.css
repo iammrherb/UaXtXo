@@ -1,0 +1,31 @@
+/* PORTNOX LOGO - TOP RIGHT, VISIBLE */
+.portnox-logo {
+    position: absolute !important;
+    top: 15px !important;
+    right: 20px !important;
+    left: auto !important;
+    z-index: 9999 !important;
+    background: white !important;
+    padding: 10px 20px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.2) !important;
+}
+
+.portnox-logo img {
+    height: 50px !important;
+    width: auto !important;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Make sure header doesn't cover it */
+.header-content {
+    position: relative !important;
+    padding-right: 250px !important;
+}
+
+/* Move header items to not overlap */
+.header-actions {
+    margin-right: 250px !important;
+}

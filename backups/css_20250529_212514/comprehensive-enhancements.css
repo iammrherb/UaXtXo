@@ -1,0 +1,449 @@
+/* Comprehensive UI Enhancements */
+
+/* Vendor Card Fixes */
+.vendor-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 380px;
+}
+
+.vendor-card.portnox {
+    border: 2px solid #28a745;
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(40, 167, 69, 0.02) 100%);
+}
+
+.vendor-card.selected {
+    border-color: #2E7EE5;
+    box-shadow: 0 0 0 3px rgba(46, 126, 229, 0.1);
+}
+
+.vendor-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.vendor-logo {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vendor-logo img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.vendor-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.vendor-name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vendor-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.vendor-rating i {
+    font-size: 0.875rem;
+    color: #fbbf24;
+}
+
+.score-badge {
+    background: #f3f4f6;
+    padding: 0.125rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.vendor-metrics {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.metric-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.metric-item {
+    flex: 1;
+    text-align: center;
+}
+
+.metric-label {
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    color: #6b7280;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.metric-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.metric-value.primary {
+    color: #2E7EE5;
+    font-size: 1.125rem;
+}
+
+.metric-value.highlight {
+    color: #28a745;
+}
+
+/* Help Tooltips */
+.help-icon {
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0.25rem;
+    margin-left: auto;
+    transition: color 0.2s;
+}
+
+.help-icon:hover {
+    color: #2E7EE5;
+}
+
+.help-tooltip-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 2rem;
+}
+
+.help-tooltip-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.help-tooltip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.help-tooltip-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #111827;
+}
+
+.close-help {
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.help-tooltip-body {
+    padding: 1.5rem;
+}
+
+.help-tooltip-body h4 {
+    color: #374151;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+.help-tooltip-body h4:first-child {
+    margin-top: 0;
+}
+
+.help-tooltip-body ul {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.help-tooltip-body li {
+    margin-bottom: 0.5rem;
+    color: #4b5563;
+}
+
+/* Compliance Matrix Enhancements */
+.compliance-matrix-enhanced {
+    padding: 2rem;
+}
+
+.matrix-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.controls-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.control-card {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.control-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.coverage-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    min-width: 120px;
+}
+
+.coverage-bar {
+    height: 6px;
+    background: #28a745;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.coverage-text {
+    font-weight: 600;
+    color: #111827;
+}
+
+.control-solution h5,
+.control-features h5 {
+    font-size: 0.875rem;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.control-features ul {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.control-features li {
+    font-size: 0.813rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.compliance-summary {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+}
+
+.overall-score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.score-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #28a745;
+}
+
+.score-details {
+    text-align: left;
+    max-width: 500px;
+}
+
+/* Risk Assessment Enhancements */
+.risk-assessment-comprehensive {
+    padding: 2rem;
+}
+
+.risk-summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.risk-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.risk-card.critical {
+    border-top: 4px solid #dc3545;
+}
+
+.risk-card.financial {
+    border-top: 4px solid #28a745;
+}
+
+.risk-card.insurance {
+    border-top: 4px solid #2E7EE5;
+}
+
+.risk-comparison {
+    display: flex;
+    justify-content: space-between;
+    margin: 1rem 0;
+}
+
+.risk-item {
+    text-align: center;
+}
+
+.risk-item .label {
+    display: block;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.risk-item .score {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.score.high {
+    color: #dc3545;
+}
+
+.score.low {
+    color: #28a745;
+}
+
+.risk-reduction {
+    text-align: center;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #28a745;
+}
+
+.risk-factors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.risk-factor-card {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.probability-chart {
+    margin: 1rem 0;
+}
+
+.prob-bar {
+    height: 24px;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    padding: 0 0.75rem;
+    font-size: 0.813rem;
+    font-weight: 500;
+    color: white;
+}
+
+.prob-bar.without-nac {
+    background: #dc3545;
+}
+
+.prob-bar.with-portnox {
+    background: #28a745;
+}
+
+.impact-details ul,
+.mitigation ul {
+    margin: 0.5rem 0;
+    padding-left: 1.25rem;
+}
+
+.impact-details li,
+.mitigation li {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .vendor-card {
+        min-height: auto;
+    }
+    
+    .metric-row {
+        flex-wrap: wrap;
+    }
+    
+    .risk-summary-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .risk-factors-grid {
+        grid-template-columns: 1fr;
+    }
+}
