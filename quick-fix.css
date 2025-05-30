@@ -1,0 +1,111 @@
+/* Quick visibility fixes - add to existing CSS */
+
+/* Force text visibility */
+* {
+    color: inherit !important;
+}
+
+body {
+    color: #FFFFFF !important;
+    background: #0A0E1B !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #FFFFFF !important;
+}
+
+p, span, div {
+    color: #B8BCC8 !important;
+}
+
+/* Fix navigation visibility */
+.nav-tab {
+    background: rgba(36, 43, 61, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #B8BCC8 !important;
+}
+
+.nav-tab.active {
+    background: #00D4AA !important;
+    color: #0A0E1B !important;
+}
+
+.nav-tab:hover {
+    background: rgba(42, 50, 68, 0.9) !important;
+    color: #FFFFFF !important;
+}
+
+/* Ensure content is visible */
+.analysis-content {
+    background: rgba(36, 43, 61, 0.95) !important;
+    color: #FFFFFF !important;
+    min-height: 600px !important;
+}
+
+/* Fix button visibility */
+.control-btn {
+    background: rgba(36, 43, 61, 0.9) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.control-btn:hover {
+    background: rgba(42, 50, 68, 1) !important;
+    border-color: #00D4AA !important;
+}
+
+/* Fix chart text */
+.highcharts-text-outline {
+    stroke: none !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Ensure modals are visible */
+.modal-content {
+    background: #1E2433 !important;
+    color: #FFFFFF !important;
+}
+
+/* Fix pricing bar */
+.portnox-pricing-bar {
+    background: rgba(20, 25, 37, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+/* Ensure all text inputs are visible */
+input, select, textarea {
+    background: rgba(36, 43, 61, 0.9) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+input::placeholder {
+    color: #8B92A4 !important;
+}
+
+/* Fix vendor chips */
+.selected-vendor-chip {
+    background: rgba(36, 43, 61, 0.9) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.selected-vendor-chip.portnox-chip {
+    background: #00D4AA !important;
+    color: #0A0E1B !important;
+}
+
+/* Ensure cost breakdown is visible */
+.cost-breakdown-card {
+    background: rgba(36, 43, 61, 0.9) !important;
+    color: #FFFFFF !important;
+}
+
+.cost-category .label {
+    color: #B8BCC8 !important;
+}
+
+.cost-category .value {
+    color: #00D4AA !important;
+    font-weight: 600 !important;
+}
