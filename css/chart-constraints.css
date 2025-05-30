@@ -1,0 +1,94 @@
+/* Strict Chart Container Constraints */
+.chart-container {
+    position: relative !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    height: 400px !important;
+    max-height: 400px !important;
+    min-height: 400px !important;
+    box-sizing: border-box !important;
+}
+
+/* Prevent any expansion */
+.chart-container * {
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+/* Fixed dimensions for specific charts */
+#tco-comparison-chart,
+#roi-timeline-chart {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+/* Highcharts specific constraints */
+.highcharts-root {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+.highcharts-container {
+    position: relative !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Prevent SVG from growing */
+.highcharts-root svg {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+}
+
+/* No data message styling */
+.no-data {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #94A3B8;
+    font-size: 16px;
+    text-align: center;
+}
+
+/* Loading state */
+.chart-container.loading {
+    background: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart-container.loading::after {
+    content: "Loading chart...";
+    color: #94A3B8;
+    font-size: 14px;
+}
+
+/* Prevent layout shifts */
+.chart-grid,
+.chart-row {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: 1fr 1fr;
+}
+
+.chart-wrapper {
+    min-height: 400px;
+    max-height: 400px;
+    overflow: hidden;
+}
+
+.chart-wrapper.large {
+    grid-column: span 2;
+}
