@@ -17,19 +17,27 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Chart Libraries -->
+    <!-- CRITICAL: Load Highcharts FIRST -->
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/highcharts-more.js"></script>
     <script src="https://code.highcharts.com/modules/heatmap.js"></script>
     <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     
+    <!-- Verify Highcharts loaded -->
+    <script>
+        if (typeof Highcharts !== 'undefined') {
+            console.log('✅ Highcharts loaded successfully');
+        } else {
+            console.error('❌ Highcharts failed to load!');
+        }
+    </script>
+    
     <!-- Styles -->
     <link rel="stylesheet" href="./css/premium-executive-platform.css">
     <link rel="stylesheet" href="./css/ultimate-financial-dashboard.css">
     <link rel="stylesheet" href="./css/risk-security-module.css">
     <link rel="stylesheet" href="./css/chart-stability.css">
-    <link rel="stylesheet" href="./css/chart-constraints.css">
     <link rel="stylesheet" href="./css/chart-constraints.css">
     <link rel="stylesheet" href="./css/emergency-chart-reset.css">
 </head>
@@ -38,10 +46,24 @@
         <!-- Platform will be rendered here -->
     </div>
     
-    <!-- Scripts in correct order -->
+    <!-- Core Dependencies First -->
     <script src="./js/data/comprehensive-vendor-database.js"></script>
+    
+    <!-- Bootstrap and Initialization -->
+    <script src="./js/views/bootstrap-loader.js"></script>
+    <script src="./js/views/init-sequence.js"></script>
+    
+    <!-- Platform Core -->
     <script src="./js/views/premium-executive-platform.js"></script>
-    <script src="./js/views/platform-financial-fix.js"></script>
+    
+    <!-- Fixes and Controllers -->
+    <script src="./js/views/financial-overview-fix.js"></script>
+    <script src="./js/views/unified-chart-controller.js"></script>
+    <script src="./js/views/chart-overrides.js"></script>
+    <script src="./js/views/calculation-debounce.js"></script>
+    <script src="./js/views/platform-init-fixed.js"></script>
+    
+    <!-- Feature Modules -->
     <script src="./js/views/dashboard-init.js"></script>
     <script src="./js/views/risk-security-init.js"></script>
     <script src="./js/views/risk-analytics-enhanced.js"></script>
@@ -49,15 +71,29 @@
     <script src="./js/views/compliance-init.js"></script>
     <script src="./js/views/operational-init.js"></script>
     <script src="./js/views/strategic-init.js"></script>
-    <!-- Chart Management Fixes -->
-    <script src="./js/views/calculation-debounce.js"></script>
-    <script src="./js/views/platform-init-fixed.js"></script>
-    <!-- Enhanced Chart Management -->
-    <script src="./js/views/init-controller.js"></script>
-    <!-- Enhanced Chart Management -->
-    <script src="./js/views/init-controller.js"></script>
-    <!-- Unified Chart System -->
-    <script src="./js/views/unified-chart-controller.js"></script>
-    <script src="./js/views/chart-overrides.js"></script>
+    
+    <!-- Final verification -->
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('=== FINAL STATUS CHECK ===');
+                console.log('Highcharts:', typeof Highcharts !== 'undefined' ? '✅' : '❌');
+                console.log('Platform:', window.platform ? '✅' : '❌');
+                console.log('Vendor DB:', window.ComprehensiveVendorDatabase ? '✅' : '❌');
+                
+                // Check for containers
+                const containers = ['tco-comparison-chart', 'roi-timeline-chart'];
+                containers.forEach(id => {
+                    const el = document.getElementById(id);
+                    console.log(`Container ${id}:`, el ? '✅' : '❌');
+                });
+                
+                // Show init status
+                if (window.checkInit) {
+                    window.checkInit();
+                }
+            }, 2000);
+        });
+    </script>
 </body>
 </html>

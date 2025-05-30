@@ -1,31 +1,212 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Platform Test</title>
+    <title>Platform Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        .pass { color: #0f0; }
+        .fail { color: #f00; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        #test-chart {
+            width: 100%;
+            height: 400px;
+            background: #333;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
 </head>
 <body>
-    <h1>Platform Test</h1>
+    <h1>Platform Test Page</h1>
+    
+    <div class="test-section">
+        <h2>1. Highcharts Test</h2>
+        <p id="highcharts-status">Checking...</p>
+        <button onclick="testHighcharts()">Test Highcharts Render</button>
+        <div id="test-chart"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Platform Components</h2>
+        <div id="components-status"></div>
+        <button onclick="checkComponents()">Refresh Status</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Container Creation Test</h2>
+        <button onclick="createTestContainers()">Create Test Containers</button>
+        <button onclick="checkTestContainers()">Check Containers</button>
+        <div id="container-status"></div>
+        <div id="test-containers" style="margin-top: 20px;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Quick Fixes</h2>
+        <button onclick="loadHighchartsManually()">Force Load Highcharts</button>
+        <button onclick="runQuickFix()">Run Quick Fix</button>
+        <div id="fix-status"></div>
+    </div>
+    
+    <!-- Load Highcharts -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    
     <script>
-        console.log('Testing platform...');
-        
-        // Check if vendor database exists
-        setTimeout(() => {
-            if (window.ComprehensiveVendorDatabase) {
-                console.log('✅ Vendor database loaded');
-                console.log('Vendors:', Object.keys(window.ComprehensiveVendorDatabase));
+        // Test 1: Check Highcharts
+        function checkHighcharts() {
+            const status = document.getElementById('highcharts-status');
+            if (typeof Highcharts !== 'undefined') {
+                status.innerHTML = '<span class="pass">✅ Highcharts is loaded (version ' + Highcharts.version + ')</span>';
+                return true;
             } else {
-                console.error('❌ Vendor database not found');
+                status.innerHTML = '<span class="fail">❌ Highcharts is NOT loaded</span>';
+                return false;
+            }
+        }
+        
+        // Test Highcharts rendering
+        function testHighcharts() {
+            if (!checkHighcharts()) {
+                alert('Highcharts not loaded!');
+                return;
             }
             
-            if (window.platform) {
-                console.log('✅ Platform initialized');
-                console.log('Selected vendors:', window.platform.selectedVendors);
-            } else {
-                console.error('❌ Platform not initialized');
+            try {
+                Highcharts.chart('test-chart', {
+                    chart: { type: 'column', backgroundColor: '#333' },
+                    title: { text: 'Test Chart', style: { color: '#fff' } },
+                    xAxis: { categories: ['A', 'B', 'C'], labels: { style: { color: '#fff' } } },
+                    yAxis: { title: { text: 'Values', style: { color: '#fff' } }, labels: { style: { color: '#fff' } } },
+                    series: [{
+                        name: 'Test Data',
+                        data: [1, 2, 3],
+                        color: '#00D4AA'
+                    }],
+                    credits: { enabled: false }
+                });
+                
+                document.getElementById('highcharts-status').innerHTML += '<br><span class="pass">✅ Chart rendered successfully!</span>';
+            } catch (e) {
+                document.getElementById('highcharts-status').innerHTML += '<br><span class="fail">❌ Chart render failed: ' + e.message + '</span>';
             }
-        }, 1000);
+        }
+        
+        // Test 2: Check components
+        function checkComponents() {
+            const status = document.getElementById('components-status');
+            const components = [
+                { name: 'window.platform', obj: window.platform },
+                { name: 'window.ComprehensiveVendorDatabase', obj: window.ComprehensiveVendorDatabase },
+                { name: 'window.ChartManager', obj: window.ChartManager },
+                { name: 'window.UnifiedChartController', obj: window.UnifiedChartController },
+                { name: 'platform.calculationResults', obj: window.platform?.calculationResults },
+                { name: 'platform.selectedVendors', obj: window.platform?.selectedVendors }
+            ];
+            
+            status.innerHTML = components.map(c => {
+                const exists = !!c.obj;
+                return `<div class="${exists ? 'pass' : 'fail'}">${exists ? '✅' : '❌'} ${c.name}</div>`;
+            }).join('');
+        }
+        
+        // Test 3: Container creation
+        function createTestContainers() {
+            const container = document.getElementById('test-containers');
+            container.innerHTML = `
+                <div id="test-tco-chart" style="width: 100%; height: 300px; background: #444; margin: 10px 0; border-radius: 8px;"></div>
+                <div id="test-roi-chart" style="width: 100%; height: 300px; background: #444; margin: 10px 0; border-radius: 8px;"></div>
+            `;
+            
+            document.getElementById('container-status').innerHTML = '<span class="pass">✅ Test containers created</span>';
+        }
+        
+        function checkTestContainers() {
+            const containers = ['test-tco-chart', 'test-roi-chart', 'tco-comparison-chart', 'roi-timeline-chart'];
+            const status = document.getElementById('container-status');
+            
+            status.innerHTML = containers.map(id => {
+                const el = document.getElementById(id);
+                const exists = !!el;
+                return `<div class="${exists ? 'pass' : 'fail'}">${exists ? '✅' : '❌'} ${id}</div>`;
+            }).join('');
+        }
+        
+        // Test 4: Quick fixes
+        function loadHighchartsManually() {
+            const status = document.getElementById('fix-status');
+            
+            if (typeof Highcharts !== 'undefined') {
+                status.innerHTML = '<span class="pass">✅ Highcharts already loaded</span>';
+                return;
+            }
+            
+            status.innerHTML = '<span>Loading Highcharts...</span>';
+            
+            const script = document.createElement('script');
+            script.src = 'https://code.highcharts.com/highcharts.js';
+            script.onload = () => {
+                status.innerHTML = '<span class="pass">✅ Highcharts loaded manually</span>';
+                checkHighcharts();
+            };
+            script.onerror = () => {
+                status.innerHTML = '<span class="fail">❌ Failed to load Highcharts</span>';
+            };
+            document.head.appendChild(script);
+        }
+        
+        function runQuickFix() {
+            const status = document.getElementById('fix-status');
+            status.innerHTML = '<span>Running quick fix...</span>';
+            
+            // Try to trigger calculation
+            if (window.platform && window.platform.calculate) {
+                window.platform.calculate();
+                status.innerHTML += '<br><span class="pass">✅ Triggered calculation</span>';
+            }
+            
+            // Try to switch to financial tab
+            if (window.platform && window.platform.switchTab) {
+                window.platform.switchTab('financial-overview');
+                status.innerHTML += '<br><span class="pass">✅ Switched to financial tab</span>';
+            }
+            
+            // Force render financial overview
+            if (window.platform && window.platform.renderFinancialOverview) {
+                const content = document.getElementById('analysis-content');
+                if (content) {
+                    window.platform.renderFinancialOverview(content);
+                    status.innerHTML += '<br><span class="pass">✅ Rendered financial overview</span>';
+                } else {
+                    status.innerHTML += '<br><span class="fail">❌ No analysis-content container</span>';
+                }
+            }
+        }
+        
+        // Auto-run checks
+        window.addEventListener('load', () => {
+            checkHighcharts();
+            checkComponents();
+            checkTestContainers();
+        });
     </script>
-    <script src="./js/data/comprehensive-vendor-database.js"></script>
-    <script src="./js/views/ultimate-visual-platform.js"></script>
 </body>
 </html>
