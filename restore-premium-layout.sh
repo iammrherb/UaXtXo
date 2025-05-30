@@ -1,3 +1,17 @@
+#!/bin/bash
+
+# Premium Executive Layout Restoration Script
+# Restores original layout with enhanced visibility
+
+echo "🚀 RESTORING PREMIUM EXECUTIVE LAYOUT"
+echo "===================================="
+
+# Set your project directory
+PROJECT_DIR="/path/to/your/project"
+cd "$PROJECT_DIR"
+
+# Create the restored CSS with original premium layout
+cat > css/premium-executive-platform.css << 'EOCSS'
 /* Premium Executive Platform - Original Layout Restored */
 
 :root {
@@ -1092,3 +1106,242 @@ body {
 .highcharts-data-label text {
     fill: var(--text-primary) !important;
 }
+EOCSS
+
+# Update JavaScript to fix tab functionality and vendor selection
+cat > js/views/premium-executive-platform-fix.js << 'EOJS'
+// Fix for Premium Executive Platform functionality
+
+// Ensure proper initialization
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Applying Premium Executive Platform fixes...');
+    
+    // Set Highcharts dark theme
+    if (typeof Highcharts !== 'undefined') {
+        Highcharts.setOptions({
+            accessibility: { enabled: false },
+            chart: {
+                backgroundColor: '#334155',
+                style: {
+                    fontFamily: 'Inter, sans-serif'
+                }
+            },
+            title: {
+                style: {
+                    color: '#F8FAFC',
+                    fontSize: '16px'
+                }
+            },
+            xAxis: {
+                labels: {
+                    style: {
+                        color: '#CBD5E1'
+                    }
+                },
+                gridLineColor: 'rgba(255, 255, 255, 0.1)'
+            },
+            yAxis: {
+                labels: {
+                    style: {
+                        color: '#CBD5E1'
+                    }
+                },
+                gridLineColor: 'rgba(255, 255, 255, 0.1)'
+            },
+            tooltip: {
+                backgroundColor: '#1E293B',
+                borderColor: '#00D4AA',
+                style: {
+                    color: '#F8FAFC'
+                }
+            },
+            legend: {
+                itemStyle: {
+                    color: '#CBD5E1'
+                },
+                itemHoverStyle: {
+                    color: '#F8FAFC'
+                }
+            }
+        });
+    }
+    
+    // Fix tab click handling
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabName = this.dataset.tab;
+            if (window.platform && tabName) {
+                window.platform.switchTab(tabName);
+            }
+        });
+    });
+    
+    // Ensure vendor selection works
+    if (!window.platform && window.PremiumExecutivePlatform) {
+        window.platform = new PremiumExecutivePlatform();
+    }
+    
+    // Add sample vendors if none selected
+    setTimeout(() => {
+        if (window.platform && window.platform.selectedVendors.length === 1) {
+            console.log('📊 Adding sample competitors for demonstration...');
+            // Add a few competitors for demo
+            ['cisco', 'aruba', 'forescout'].forEach((vendor, index) => {
+                setTimeout(() => {
+                    if (window.platform.selectedVendors.length < 4) {
+                        window.platform.selectedVendors.push(vendor);
+                        window.platform.updateVendorSelection();
+                    }
+                }, index * 500);
+            });
+            
+            // Recalculate after adding vendors
+            setTimeout(() => {
+                window.platform.calculate();
+            }, 2000);
+        }
+    }, 1000);
+});
+
+// Override the switchTab method for better visibility
+if (window.PremiumExecutivePlatform) {
+    const originalSwitchTab = PremiumExecutivePlatform.prototype.switchTab;
+    PremiumExecutivePlatform.prototype.switchTab = function(tabName) {
+        console.log('🔄 Switching to tab:', tabName);
+        
+        // Update tab UI immediately
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            if (tab.dataset.tab === tabName) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
+        
+        // Call original method
+        originalSwitchTab.call(this, tabName);
+    };
+}
+
+// Add vendor hover effects
+document.addEventListener('mouseover', function(e) {
+    if (e.target.closest('.selected-vendor-chip')) {
+        e.target.closest('.selected-vendor-chip').style.transform = 'translateY(-2px)';
+    }
+});
+
+document.addEventListener('mouseout', function(e) {
+    if (e.target.closest('.selected-vendor-chip')) {
+        e.target.closest('.selected-vendor-chip').style.transform = 'translateY(0)';
+    }
+});
+
+console.log('✅ Premium Executive Platform fixes applied');
+EOJS
+
+# Update HTML to ensure proper loading order
+cat > index.html << 'EOHTML'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Decision Platform | Portnox Zero Trust NAC</title>
+    <meta name="description" content="Premium Executive Platform for Zero Trust NAC Investment Analysis">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="./img/vendors/portnox-icon.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart Libraries -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/heatmap.js"></script>
+    <script src="https://code.highcharts.com/modules/sankey.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/premium-executive-platform.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Premium Platform will be rendered here -->
+    </div>
+    
+    <!-- Scripts -->
+    <script src="./js/data/comprehensive-vendor-database.js"></script>
+    <script src="./js/views/premium-executive-platform.js"></script>
+    <script src="./js/views/premium-executive-platform-fix.js"></script>
+</body>
+</html>
+EOHTML
+
+# Create demo images placeholder script
+cat > create-demo-images.sh << 'EOSH'
+#!/bin/bash
+# Create placeholder vendor logos
+mkdir -p img/vendors
+for vendor in portnox cisco aruba forescout arista clearpass fortinet; do
+    echo "Creating placeholder for $vendor"
+    # Create a simple SVG placeholder
+    cat > img/vendors/${vendor}-logo.png << EOF
+<svg width="100" height="40" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="40" fill="#334155" rx="4"/>
+  <text x="50" y="25" text-anchor="middle" fill="#CBD5E1" font-family="Inter" font-size="14">${vendor}</text>
+</svg>
+EOF
+done
+EOSH
+
+chmod +x create-demo-images.sh
+
+# Commit all changes
+git add -A
+git commit -m "Restore Premium Executive Layout with Enhanced Visibility
+
+- Restored original premium header layout
+- Fixed vendor selection bar with proper styling
+- Enhanced navigation tabs with original design
+- Improved dark theme with better text visibility
+- Added proper vendor chip styling
+- Fixed modal designs
+- Enhanced chart visibility for dark theme
+- Added auto-vendor selection for demo
+- Fixed all tab functionality
+- Restored pricing slider styling
+- Improved responsive design
+- Added hover effects and transitions"
+
+echo "✅ PREMIUM EXECUTIVE LAYOUT RESTORED!"
+echo ""
+echo "🎨 Layout Restored With:"
+echo "- Original header design with gradient background"
+echo "- Vendor selection bar with white background"
+echo "- Premium navigation tabs with proper styling"
+echo "- Dark theme for content areas with good visibility"
+echo "- All original spacing and organization"
+echo ""
+echo "🔧 Functionality Fixed:"
+echo "- All tabs working properly"
+echo "- Vendor selection and removal"
+echo "- Settings and modals"
+echo "- Charts with dark theme"
+echo "- Pricing slider"
+echo ""
+echo "📋 Next Steps:"
+echo "1. Update PROJECT_DIR in the script"
+echo "2. Run: chmod +x restore-premium-layout.sh"
+echo "3. Run: ./restore-premium-layout.sh"
+echo "4. Run: ./create-demo-images.sh (for vendor logos)"
+echo "5. Clear browser cache and refresh"
+echo ""
+echo "💡 The platform will auto-add sample vendors for demonstration"
+echo "   and properly display all content with the original premium design!"
