@@ -658,3 +658,146 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Report Download Button */
+.download-report-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #00D4AA;
+    color: #1E293B;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.download-report-btn:hover {
+    background: #10B981;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 212, 170, 0.4);
+}
+
+.download-report-btn i {
+    font-size: 1.125rem;
+}
+
+/* Compliance Score Cards */
+.compliance-score-card {
+    background: linear-gradient(135deg, #334155 0%, #1E293B 100%);
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.compliance-score-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0, 212, 170, 0.1) 0%, transparent 70%);
+    animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.compliance-score-value {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #00D4AA;
+    margin: 10px 0;
+}
+
+.compliance-score-label {
+    color: #94A3B8;
+    font-size: 1rem;
+}
+
+/* Industry Specific Badges */
+.industry-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(59, 130, 246, 0.1);
+    color: #3B82F6;
+    padding: 8px 16px;
+    border-radius: 24px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    margin: 5px;
+}
+
+.industry-badge i {
+    font-size: 1rem;
+}
+
+/* Compliance Checklist */
+.compliance-checklist {
+    background: #334155;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+.checklist-item:last-child {
+    border-bottom: none;
+}
+
+.checklist-item i {
+    color: #00D4AA;
+    font-size: 1.25rem;
+}
+
+.checklist-item.incomplete i {
+    color: #64748B;
+}
+
+.checklist-item .item-text {
+    flex: 1;
+    color: #CBD5E1;
+}
+
+.checklist-item .item-status {
+    color: #00D4AA;
+    font-weight: 500;
+}
+
+.checklist-item.incomplete .item-status {
+    color: #F59E0B;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .download-report-btn {
+        position: static;
+        margin: 20px auto;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .compliance-header {
+        position: relative;
+        padding-bottom: 80px;
+    }
+}
