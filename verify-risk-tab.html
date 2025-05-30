@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Risk Tab Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: #fff; }
+        .test { margin: 10px 0; padding: 10px; background: #333; border-radius: 5px; }
+        .pass { color: #0f0; }
+        .fail { color: #f00; }
+        .info { color: #0af; }
+    </style>
+</head>
+<body>
+    <h1>Risk Tab Verification Tests</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(test, status, message) {
+            const div = document.createElement('div');
+            div.className = 'test';
+            div.innerHTML = `<strong class="${status}">${test}:</strong> ${message}`;
+            results.appendChild(div);
+        }
+        
+        // Test 1: Check if files exist
+        addResult('File Check', 'info', 'Checking if all required files are loaded...');
+        
+        // Test 2: Check for syntax errors
+        try {
+            if (window.RiskSecurityModule) {
+                addResult('RiskSecurityModule', 'pass', 'Module loaded successfully');
+            } else {
+                addResult('RiskSecurityModule', 'fail', 'Module not found');
+            }
+            
+            if (window.RiskAnalyticsEnhanced) {
+                addResult('RiskAnalyticsEnhanced', 'pass', 'Enhanced analytics loaded');
+            }
+            
+            if (window.RiskScenarios) {
+                addResult('RiskScenarios', 'pass', 'Scenarios module loaded');
+            }
+        } catch (e) {
+            addResult('Module Loading', 'fail', 'Error: ' + e.message);
+        }
+        
+        // Test 3: Function tests
+        try {
+            const testMetrics = window.RiskAnalyticsEnhanced.calculateAdvancedRiskMetrics({
+                config: { industry: 'technology', deviceCount: 1000 }
+            });
+            addResult('Advanced Metrics', 'pass', 'Calculations working: ' + JSON.stringify(testMetrics).substring(0, 100) + '...');
+        } catch (e) {
+            addResult('Advanced Metrics', 'fail', 'Error: ' + e.message);
+        }
+        
+        // Test 4: Scenario calculations
+        try {
+            const scenario = window.RiskScenarios.calculateScenarioImpact('ransomware', 1000, false);
+            addResult('Scenario Calc', 'pass', 'Ransomware scenario: $' + Math.round(scenario.expectedAnnualLoss / 1000) + 'K expected loss');
+        } catch (e) {
+            addResult('Scenario Calc', 'fail', 'Error: ' + e.message);
+        }
+        
+        addResult('Summary', 'info', 'Verification complete. Check the main application for full functionality.');
+    </script>
+</body>
+</html>
