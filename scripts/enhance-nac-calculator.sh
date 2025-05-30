@@ -1,1 +1,0 @@
-./premium-update-nowv1.sh
