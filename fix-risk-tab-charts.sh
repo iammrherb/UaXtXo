@@ -1,3 +1,12 @@
+#!/bin/bash
+
+# Fix for Portnox TCO Platform - Risk Tab and Chart Loading Issues
+# This script fixes the syntax error and timing issues
+
+echo "🔧 Fixing Risk Tab syntax error and chart loading issues..."
+
+# Fix 1: Update risk-security-init.js to fix the syntax error
+cat > js/views/risk-security-init.js << 'EOF'
 /**
  * Risk & Security Tab Integration - Fixed
  */
@@ -702,3 +711,127 @@ class RiskSecurityModule {
 }
 
 window.RiskSecurityModule = RiskSecurityModule;
+EOF
+
+# Fix 2: Update premium-executive-platform.js to ensure proper chart container checking
+cat > js/views/chart-timing-fix.js << 'EOF'
+/**
+ * Chart Timing Fix for Premium Executive Platform
+ */
+
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Applying chart timing fixes...');
+    
+    // Override the chart rendering methods to add better error handling
+    if (window.platform) {
+        const originalRenderTCO = window.platform.renderTCOComparison;
+        window.platform.renderTCOComparison = function() {
+            const container = document.getElementById('tco-comparison-chart');
+            if (!container) {
+                console.warn('TCO chart container not found, will retry...');
+                setTimeout(() => {
+                    const retryContainer = document.getElementById('tco-comparison-chart');
+                    if (retryContainer) {
+                        originalRenderTCO.call(this);
+                    }
+                }, 500);
+                return;
+            }
+            originalRenderTCO.call(this);
+        };
+        
+        const originalRenderROI = window.platform.renderROITimeline;
+        window.platform.renderROITimeline = function() {
+            const container = document.getElementById('roi-timeline-chart');
+            if (!container) {
+                console.warn('ROI timeline chart container not found, will retry...');
+                setTimeout(() => {
+                    const retryContainer = document.getElementById('roi-timeline-chart');
+                    if (retryContainer) {
+                        originalRenderROI.call(this);
+                    }
+                }, 500);
+                return;
+            }
+            originalRenderROI.call(this);
+        };
+    }
+});
+EOF
+
+# Fix 3: Update index.html to include the chart timing fix
+sed -i '/<script src="\.\/js\/views\/platform-init\.js"><\/script>/a\    <script src="./js/views/chart-timing-fix.js"></script>' index.html
+
+# Fix 4: Add additional CSS for risk tab styling
+cat >> css/risk-security-module.css << 'EOF'
+
+/* Additional Risk Tab Fixes */
+.risk-security-dashboard {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.chart-wrapper {
+    min-height: 350px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-wrapper > div[id$="-chart"],
+.chart-wrapper > div[id$="-radar"],
+.chart-wrapper > div[id$="-gauge"],
+.chart-wrapper > div[id$="-heatmap"],
+.chart-wrapper > div[id$="-timeline"],
+.chart-wrapper > div[id$="-matrix"],
+.chart-wrapper > div[id$="-projection"] {
+    flex: 1;
+    min-height: 300px;
+}
+
+/* Ensure charts have proper container sizing */
+.highcharts-container {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Risk summary value formatting */
+.impact-metrics .value {
+    font-weight: 600;
+    color: #F8FAFC;
+}
+
+.impact-metrics .value.positive {
+    color: #00D4AA;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+EOF
+
+# Commit the fixes
+git add -A
+git commit -m "Fix Risk Tab syntax error and chart loading issues
+
+- Fixed syntax error in risk-security-init.js renderExecutiveRiskSummary method
+- Added proper error handling for all chart containers
+- Implemented retry logic for chart rendering timing issues
+- Added chart timing fix module
+- Enhanced CSS for better chart container sizing
+- All tabs should now load properly without errors"
+
+echo "✅ Risk Tab and chart loading issues have been fixed!"
+echo ""
+echo "Changes made:"
+echo "1. Fixed syntax error in risk-security-init.js"
+echo "2. Added error handling and retry logic for chart containers"
+echo "3. Created chart-timing-fix.js for better chart rendering"
+echo "4. Enhanced CSS for proper chart sizing"
+echo ""
+echo "The Risk & Security tab should now load without errors and all charts should render properly."

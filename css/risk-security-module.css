@@ -435,3 +435,52 @@
         page-break-inside: avoid;
     }
 }
+
+/* Additional Risk Tab Fixes */
+.risk-security-dashboard {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.chart-wrapper {
+    min-height: 350px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-wrapper > div[id$="-chart"],
+.chart-wrapper > div[id$="-radar"],
+.chart-wrapper > div[id$="-gauge"],
+.chart-wrapper > div[id$="-heatmap"],
+.chart-wrapper > div[id$="-timeline"],
+.chart-wrapper > div[id$="-matrix"],
+.chart-wrapper > div[id$="-projection"] {
+    flex: 1;
+    min-height: 300px;
+}
+
+/* Ensure charts have proper container sizing */
+.highcharts-container {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Risk summary value formatting */
+.impact-metrics .value {
+    font-weight: 600;
+    color: #F8FAFC;
+}
+
+.impact-metrics .value.positive {
+    color: #00D4AA;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
