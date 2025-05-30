@@ -507,3 +507,154 @@
     left: 0;
     color: #00D4AA;
 }
+
+/* Additional Compliance Visualizations */
+.framework-gauges-grid {
+    margin-top: 30px;
+    padding: 20px;
+    background: #1E293B;
+    border-radius: 8px;
+}
+
+.framework-gauges-grid h3 {
+    color: #F8FAFC;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.gauges-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Compliance Timeline Styles */
+.compliance-timeline-section {
+    margin: 30px 0;
+}
+
+/* Matrix Enhancement */
+.framework-matrix-container {
+    background: #1E293B;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+/* Interactive Elements */
+.compliance-interactive {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.compliance-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
+}
+
+/* Compliance Badges */
+.compliance-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 212, 170, 0.1);
+    color: #00D4AA;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid rgba(0, 212, 170, 0.3);
+}
+
+.compliance-badge.critical {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.compliance-badge.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #F59E0B;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* Progress Indicators */
+.compliance-progress {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.progress-ring {
+    position: relative;
+    width: 60px;
+    height: 60px;
+}
+
+.progress-ring svg {
+    transform: rotate(-90deg);
+}
+
+.progress-ring circle {
+    fill: none;
+    stroke-width: 4;
+}
+
+.progress-ring .background {
+    stroke: #334155;
+}
+
+.progress-ring .progress {
+    stroke: #00D4AA;
+    stroke-dasharray: 188.5;
+    stroke-dashoffset: 47.125;
+    transition: stroke-dashoffset 0.5s ease;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1rem;
+    font-weight: 600;
+    color: #F8FAFC;
+}
+
+/* Hover Effects */
+.chart-wrapper:hover {
+    box-shadow: 0 0 20px rgba(0, 212, 170, 0.2);
+    border-color: rgba(0, 212, 170, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .chart-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .gauges-row {
+        justify-content: space-around;
+    }
+}
+
+@media (max-width: 768px) {
+    .compliance-overview-metrics {
+        grid-template-columns: 1fr;
+    }
+    
+    .requirements-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .cost-breakdown-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .roadmap {
+        grid-template-columns: 1fr;
+    }
+}
