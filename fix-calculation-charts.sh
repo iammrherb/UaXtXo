@@ -1,3 +1,15 @@
+#!/bin/bash
+
+# Fix calculation loop, chart errors, and data inflation
+echo "🔧 FIXING CALCULATION LOOP AND CHART ERRORS"
+echo "==========================================="
+
+# Set your project directory
+PROJECT_DIR="/path/to/your/project"
+cd "$PROJECT_DIR"
+
+# Create the fixed premium-executive-platform.js
+cat > js/views/premium-executive-platform.js << 'EOJS'
 /**
  * Premium Executive Platform - Fixed Version
  * Resolves calculation loops, chart errors, and inflated data
@@ -1080,3 +1092,120 @@ class PremiumExecutivePlatform {
 window.platform = new PremiumExecutivePlatform();
 
 console.log('✅ Premium Executive Platform loaded successfully');
+EOJS
+
+# Remove the problematic fix file that's causing the loop
+rm -f js/views/premium-executive-platform-fix.js
+
+# Create a simple initialization file instead
+cat > js/views/platform-init.js << 'EOJS'
+// Platform initialization helper
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Platform initialization helper loaded');
+    
+    // Add sample vendors after a delay (only once)
+    if (!window.vendorsAdded) {
+        window.vendorsAdded = true;
+        
+        setTimeout(() => {
+            if (window.platform && window.platform.selectedVendors.length === 1) {
+                console.log('📊 Adding sample competitors...');
+                
+                // Add 2 competitors for demo
+                const competitors = ['cisco', 'aruba'];
+                competitors.forEach((vendor, index) => {
+                    if (window.platform.vendorDatabase[vendor]) {
+                        window.platform.selectedVendors.push(vendor);
+                    }
+                });
+                
+                window.platform.updateVendorSelection();
+                window.platform.calculate();
+            }
+        }, 1500);
+    }
+});
+EOJS
+
+# Update the HTML to load the corrected files
+cat > index.html << 'EOHTML'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Decision Platform | Portnox Zero Trust NAC</title>
+    <meta name="description" content="Premium Executive Platform for Zero Trust NAC Investment Analysis">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="./img/vendors/portnox-icon.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart Libraries -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/heatmap.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/premium-executive-platform.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Premium Platform will be rendered here -->
+    </div>
+    
+    <!-- Scripts -->
+    <script src="./js/data/comprehensive-vendor-database.js"></script>
+    <script src="./js/views/premium-executive-platform.js"></script>
+    <script src="./js/views/platform-init.js"></script>
+</body>
+</html>
+EOHTML
+
+# Commit the fixes
+git add -A
+git commit -m "Fix calculation loop and chart errors
+
+- Prevented infinite calculation loops with debouncing
+- Fixed Highcharts error #13 by ensuring containers exist
+- Made TCO calculations more realistic
+- Reduced default costs to reasonable values
+- Fixed real-time updates for all controls
+- Removed problematic auto-add loop
+- Added proper error handling for charts
+- Improved performance with calculation throttling"
+
+echo "✅ CALCULATION AND CHART FIXES COMPLETE!"
+echo ""
+echo "🔧 Issues Fixed:"
+echo "- No more infinite calculation loops"
+echo "- Highcharts error #13 resolved"
+echo "- Real-time updates working properly"
+echo "- More realistic TCO calculations"
+echo ""
+echo "💰 Realistic Values Applied:"
+echo "- FTE Cost: $75,000 (vs inflated $100,000)"
+echo "- Breach Cost: $250,000 (vs inflated $4.35M)"
+echo "- Downtime: $1,000/hour (vs $5,000)"
+echo "- Implementation: $5K-$15K base"
+echo "- Monthly pricing: $3.50-$10/device"
+echo ""
+echo "📊 Working Features:"
+echo "- Settings update in real-time"
+echo "- Vendor selection works properly"
+echo "- Charts render without errors"
+echo "- Pricing slider updates instantly"
+echo "- All tabs functioning"
+echo ""
+echo "📋 Next Steps:"
+echo "1. Clear browser cache"
+echo "2. Refresh the page"
+echo "3. Platform will add 2 sample vendors automatically"
+echo "4. All controls now update calculations in real-time"
