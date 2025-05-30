@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chart Diagnostic Tool</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #0f0;
+            padding: 20px;
+            margin: 0;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #0f0;
+            background: #0a0a0a;
+        }
+        .error { color: #f00; }
+        .warning { color: #fa0; }
+        .success { color: #0f0; }
+        .info { color: #0af; }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: monospace;
+            margin: 5px;
+        }
+        button:hover { background: #0d0; }
+        #log {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #000;
+            padding: 10px;
+            border: 1px solid #333;
+        }
+        .log-entry {
+            margin: 2px 0;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chart Diagnostic Tool</h1>
+    
+    <div class="section">
+        <h2>System Status</h2>
+        <div id="status"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Chart Containers</h2>
+        <div id="containers"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Active Charts</h2>
+        <div id="charts"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Actions</h2>
+        <button onclick="runDiagnostic()">Run Full Diagnostic</button>
+        <button onclick="destroyAllCharts()">Destroy All Charts</button>
+        <button onclick="checkContainers()">Check Containers</button>
+        <button onclick="monitorCharts()">Start Monitoring</button>
+        <button onclick="stopMonitoring()">Stop Monitoring</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+    
+    <div class="section">
+        <h2>Live Log</h2>
+        <div id="log"></div>
+    </div>
+    
+    <script>
+        let monitoring = false;
+        let monitorInterval = null;
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function checkStatus() {
+            const status = document.getElementById('status');
+            const checks = [
+                { name: 'Highcharts', exists: typeof Highcharts !== 'undefined' },
+                { name: 'Platform', exists: typeof window.platform !== 'undefined' },
+                { name: 'ChartManager', exists: typeof window.ChartManager !== 'undefined' },
+                { name: 'Calculation Results', exists: window.platform && window.platform.calculationResults },
+                { name: 'Vendors Loaded', exists: window.platform && window.platform.selectedVendors }
+            ];
+            
+            status.innerHTML = checks.map(check => 
+                `<div class="${check.exists ? 'success' : 'error'}">
+                    ${check.exists ? '✓' : '✗'} ${check.name}
+                </div>`
+            ).join('');
+            
+            return checks.every(c => c.exists);
+        }
+        
+        function checkContainers() {
+            const containers = document.getElementById('containers');
+            const chartIds = [
+                'tco-comparison-chart',
+                'roi-timeline-chart',
+                'security-maturity-radar',
+                'zero-trust-gauge',
+                'attack-surface-chart',
+                'breach-cost-projection',
+                'risk-probability-matrix',
+                'compliance-matrix-chart',
+                'operational-timeline-chart'
+            ];
+            
+            const results = chartIds.map(id => {
+                const container = document.getElementById(id);
+                const exists = !!container;
+                const visible = exists && container.offsetParent !== null;
+                const dimensions = exists ? `${container.offsetWidth}x${container.offsetHeight}` : 'N/A';
+                const hasChart = exists && container.querySelector('.highcharts-root');
+                
+                return {
+                    id,
+                    exists,
+                    visible,
+                    dimensions,
+                    hasChart: !!hasChart
+                };
+            });
+            
+            containers.innerHTML = results.map(r => 
+                `<div class="${r.exists ? (r.visible ? 'success' : 'warning') : 'error'}">
+                    ${r.id}: ${r.exists ? 'EXISTS' : 'MISSING'} 
+                    ${r.exists ? `| ${r.visible ? 'VISIBLE' : 'HIDDEN'} | ${r.dimensions} | ${r.hasChart ? 'HAS CHART' : 'NO CHART'}` : ''}
+                </div>`
+            ).join('');
+            
+            results.forEach(r => {
+                if (r.hasChart) {
+                    log(`Chart found in ${r.id} (${r.dimensions})`, 'success');
+                }
+            });
+        }
+        
+        function checkActiveCharts() {
+            const chartsDiv = document.getElementById('charts');
+            
+            if (window.ChartManager && window.ChartManager.charts) {
+                const charts = window.ChartManager.charts;
+                const chartList = Object.keys(charts);
+                
+                if (chartList.length === 0) {
+                    chartsDiv.innerHTML = '<div class="warning">No active charts in ChartManager</div>';
+                } else {
+                    chartsDiv.innerHTML = chartList.map(id => {
+                        const chart = charts[id];
+                        const isValid = chart && typeof chart.destroy === 'function';
+                        return `<div class="${isValid ? 'success' : 'error'}">
+                            ${id}: ${isValid ? 'ACTIVE' : 'INVALID'}
+                        </div>`;
+                    }).join('');
+                }
+            } else {
+                chartsDiv.innerHTML = '<div class="error">ChartManager not available</div>';
+            }
+            
+            // Also check for orphaned Highcharts instances
+            if (typeof Highcharts !== 'undefined' && Highcharts.charts) {
+                const activeCharts = Highcharts.charts.filter(c => c);
+                if (activeCharts.length > 0) {
+                    chartsDiv.innerHTML += `<div class="info">Total Highcharts instances: ${activeCharts.length}</div>`;
+                }
+            }
+        }
+        
+        function destroyAllCharts() {
+            log('Destroying all charts...', 'warning');
+            
+            // Use ChartManager if available
+            if (window.ChartManager && window.ChartManager.destroyAll) {
+                window.ChartManager.destroyAll();
+                log('ChartManager.destroyAll() called', 'success');
+            }
+            
+            // Also destroy any orphaned Highcharts
+            if (typeof Highcharts !== 'undefined' && Highcharts.charts) {
+                let destroyed = 0;
+                Highcharts.charts.forEach((chart, index) => {
+                    if (chart) {
+                        try {
+                            chart.destroy();
+                            destroyed++;
+                        } catch (e) {
+                            log(`Failed to destroy chart ${index}: ${e.message}`, 'error');
+                        }
+                    }
+                });
+                log(`Destroyed ${destroyed} Highcharts instances`, 'success');
+            }
+            
+            // Clear all chart containers
+            const chartIds = [
+                'tco-comparison-chart',
+                'roi-timeline-chart',
+                'security-maturity-radar',
+                'zero-trust-gauge',
+                'attack-surface-chart',
+                'breach-cost-projection',
+                'risk-probability-matrix'
+            ];
+            
+            chartIds.forEach(id => {
+                const container = document.getElementById(id);
+                if (container) {
+                    container.innerHTML = '';
+                    container.style.height = '';
+                    log(`Cleared container: ${id}`, 'info');
+                }
+            });
+            
+            checkActiveCharts();
+        }
+        
+        function runDiagnostic() {
+            log('Running full diagnostic...', 'info');
+            
+            const statusOk = checkStatus();
+            checkContainers();
+            checkActiveCharts();
+            
+            if (!statusOk) {
+                log('System not fully initialized', 'error');
+                return;
+            }
+            
+            // Check for render loops
+            if (window.platform) {
+                log(`Active tab: ${window.platform.activeTab}`, 'info');
+                log(`Selected vendors: ${window.platform.selectedVendors.join(', ')}`, 'info');
+                
+                if (window.platform.calculationResults) {
+                    const vendorCount = Object.keys(window.platform.calculationResults).length;
+                    log(`Calculation results for ${vendorCount} vendors`, 'info');
+                }
+            }
+            
+            // Check for multiple render attempts
+            if (window.ChartManager && window.ChartManager.renderAttempts) {
+                const attempts = window.ChartManager.renderAttempts;
+                Object.keys(attempts).forEach(id => {
+                    if (attempts[id] > 1) {
+                        log(`Multiple render attempts for ${id}: ${attempts[id]}`, 'warning');
+                    }
+                });
+            }
+            
+            log('Diagnostic complete', 'success');
+        }
+        
+        function monitorCharts() {
+            if (monitoring) {
+                log('Already monitoring', 'warning');
+                return;
+            }
+            
+            monitoring = true;
+            log('Started monitoring charts...', 'info');
+            
+            let lastChartCount = 0;
+            let lastContainerSizes = {};
+            
+            monitorInterval = setInterval(() => {
+                // Monitor Highcharts instances
+                if (typeof Highcharts !== 'undefined' && Highcharts.charts) {
+                    const currentCount = Highcharts.charts.filter(c => c).length;
+                    if (currentCount !== lastChartCount) {
+                        log(`Chart count changed: ${lastChartCount} → ${currentCount}`, 
+                            currentCount > lastChartCount ? 'warning' : 'info');
+                        lastChartCount = currentCount;
+                    }
+                }
+                
+                // Monitor container sizes
+                const containers = ['tco-comparison-chart', 'roi-timeline-chart'];
+                containers.forEach(id => {
+                    const container = document.getElementById(id);
+                    if (container) {
+                        const size = `${container.offsetWidth}x${container.offsetHeight}`;
+                        if (lastContainerSizes[id] && lastContainerSizes[id] !== size) {
+                            log(`Container ${id} resized: ${lastContainerSizes[id]} → ${size}`, 'warning');
+                        }
+                        lastContainerSizes[id] = size;
+                    }
+                });
+            }, 500);
+        }
+        
+        function stopMonitoring() {
+            if (monitorInterval) {
+                clearInterval(monitorInterval);
+                monitoring = false;
+                log('Stopped monitoring', 'info');
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        // Auto-run diagnostic on load
+        window.addEventListener('load', () => {
+            setTimeout(runDiagnostic, 1000);
+        });
+        
+        // Log any errors
+        window.addEventListener('error', (e) => {
+            log(`ERROR: ${e.message} at ${e.filename}:${e.lineno}`, 'error');
+        });
+    </script>
+</body>
+</html>
