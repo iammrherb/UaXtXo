@@ -1418,9 +1418,17 @@ class PremiumExecutivePlatform {
                         dataLabels: {
                             enabled: true,
                             formatter: function() {
-                                return ' + Math.round(this.y / 1000) + 'K';
+                                return Math.round(this.y / 1000) + "K";
                             },
-                            style: { fontSize: '10px' }
+                            formatter: function() {
+                                return Math.round(this.y / 1000) + "K";
+                            },
+                            formatter: function() {
+                                return Math.round(this.y / 1000) + "K";
+                            },
+                            formatter: function() {
+                                return Math.round(this.y / 1000) + "K";
+                            },
                         }
                     }
                 },
