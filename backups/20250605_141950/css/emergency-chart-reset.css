@@ -1,0 +1,28 @@
+/* Emergency Chart Reset */
+.highcharts-container {
+    position: relative !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    height: 100% !important;
+    text-align: left !important;
+    line-height: normal !important;
+    z-index: 0 !important;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+    font-family: inherit !important;
+}
+
+/* Force proper sizing */
+.chart-container {
+    min-height: 400px !important;
+    width: 100% !important;
+    position: relative !important;
+}
+
+/* Prevent overlapping */
+.highcharts-series * {
+    pointer-events: none !important;
+}
+
+.highcharts-markers * {
+    pointer-events: auto !important;
+}

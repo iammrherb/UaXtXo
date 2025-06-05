@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Portnox Total Cost Analyzer - Compare NAC solutions">
+    <title>Portnox Total Cost Analyzer</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Main Styles -->
+    <link rel="stylesheet" href="/css/main.css">
+    
+<<<<<<< HEAD
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+=======
+    <!-- Verify Highcharts loaded -->
+    <script>
+        if (typeof Highcharts !== 'undefined') {
+            console.log('✅ Highcharts loaded successfully');
+        } else {
+            console.error('❌ Highcharts failed to load!');
+        }
+    </script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/premium-executive-platform.css">
+    <link rel="stylesheet" href="./css/ultimate-financial-dashboard.css">
+    <link rel="stylesheet" href="./css/risk-security-module.css">
+    <link rel="stylesheet" href="./css/chart-stability.css">
+    <link rel="stylesheet" href="./css/chart-constraints.css">
+    <link rel="stylesheet" href="./css/emergency-chart-reset.css">
+>>>>>>> parent of 32b153537 (Enhanced Compliance Module - All Industries & Frameworks)
+</head>
+<body>
+    <div id="app">
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Loading Portnox Total Cost Analyzer...</p>
+        </div>
+    </div>
+    
+    <!-- Module Loader MUST be first -->
+    <script src="/js/core/module-loader.js"></script>
+    
+    <!-- Load Views before main.js -->
+    <script src="/js/views/dashboard-view.js"></script>
+    <script src="/js/views/vendor-selection-view.js"></script>
+    <script src="/js/views/cost-analysis-view.js"></script>
+    <script src="/js/views/roi-analysis-view.js"></script>
+    <script src="/js/views/compliance-view.js"></script>
+    <script src="/js/views/security-view.js"></script>
+    <script src="/js/views/operations-view.js"></script>
+    <script src="/js/views/reports-view.js"></script>
+    
+<<<<<<< HEAD
+    <!-- Main Application -->
+    <script src="/js/main.js"></script>
+=======
+    <!-- Platform Core -->
+    <script src="./js/views/premium-executive-platform.js"></script>
+    
+    <!-- Fixes and Controllers -->
+    <script src="./js/views/financial-overview-fix.js"></script>
+    <script src="./js/views/unified-chart-controller.js"></script>
+    <script src="./js/views/chart-overrides.js"></script>
+    <script src="./js/views/calculation-debounce.js"></script>
+    <script src="./js/views/platform-init-fixed.js"></script>
+    
+    <!-- Feature Modules -->
+    <script src="./js/views/dashboard-init.js"></script>
+    <script src="./js/views/risk-security-init.js"></script>
+    <script src="./js/views/risk-analytics-enhanced.js"></script>
+    <script src="./js/views/risk-scenarios.js"></script>
+    <script src="./js/views/compliance-init.js"></script>
+    <script src="./js/views/operational-init.js"></script>
+    <script src="./js/views/strategic-init.js"></script>
+    
+    <!-- Final verification -->
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('=== FINAL STATUS CHECK ===');
+                console.log('Highcharts:', typeof Highcharts !== 'undefined' ? '✅' : '❌');
+                console.log('Platform:', window.platform ? '✅' : '❌');
+                console.log('Vendor DB:', window.ComprehensiveVendorDatabase ? '✅' : '❌');
+                
+                // Check for containers
+                const containers = ['tco-comparison-chart', 'roi-timeline-chart'];
+                containers.forEach(id => {
+                    const el = document.getElementById(id);
+                    console.log(`Container ${id}:`, el ? '✅' : '❌');
+                });
+                
+                // Show init status
+                if (window.checkInit) {
+                    window.checkInit();
+                }
+            }, 2000);
+        });
+    </script>
+    <!-- Startup Fixes -->
+    <script src="./js/views/platform-startup-fix.js"></script>
+    <script src="./js/views/dashboard-render-fix.js"></script>
+    <script src="./js/views/startup-sequence.js"></script>
+>>>>>>> parent of 32b153537 (Enhanced Compliance Module - All Industries & Frameworks)
+</body>
+</html>

@@ -1,23 +1,40 @@
-# Dependencies
-node_modules/
-npm-debug.log
-yarn-error.log
-package-lock.json
-yarn.lock
 
-# Build files
-dist/
-build/
-*.min.js
-*.min.css
+# Backup files
+backup_*/
+*.tar.gz
+*.zip
+*.bak
+*.backup
+
+# Large files
+*.log
+*.sql
+*.dump
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# IDE files
-.idea/
+# Editor files
+*.swp
+*.swo
+*~
 .vscode/
+.idea/
 
-# Backup directories
-*_backup_*/
+# Dependency directories
+node_modules/
+vendor/
+
+# Build output
+dist/
+build/
+*.min.js
+*.min.css
+
+# Temporary files
+temp/
+tmp/
+.temp/
+backup_complete_*.tar.gz
+backup_*/

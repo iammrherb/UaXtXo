@@ -1,0 +1,405 @@
+/* Premium Executive Platform Styles */
+.premium-platform {
+    min-height: 100vh;
+    background: #0F172A;
+    color: #F8FAFC;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.premium-header {
+    background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+    padding: 2rem 0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.header-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand-identity {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.portnox-logo {
+    height: 50px;
+    width: auto;
+}
+
+.platform-title h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, #00D4AA 0%, #00A389 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.platform-title p {
+    margin: 0.25rem 0 0;
+    color: #94A3B8;
+    font-size: 1rem;
+}
+
+.header-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.control-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #F8FAFC;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.control-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.vendor-selection-bar {
+    background: #1E293B;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #334155;
+}
+
+.selection-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.selected-vendors {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+}
+
+.selected-vendor-chip {
+    background: #334155;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 2px solid transparent;
+}
+
+.selected-vendor-chip.portnox-chip {
+    border-color: #00D4AA;
+    background: rgba(0, 212, 170, 0.1);
+}
+
+.analysis-container {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+}
+
+.premium-nav {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 1rem;
+}
+
+.nav-tab {
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.nav-tab:hover {
+    color: #CBD5E1;
+}
+
+.nav-tab.active {
+    color: #00D4AA;
+}
+
+.nav-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1rem;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #00D4AA;
+}
+
+.nav-tab i {
+    font-size: 1.5rem;
+}
+
+.tab-subtitle {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+/* Analysis Content Styles */
+.executive-summary-card {
+    background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.summary-item {
+    text-align: center;
+}
+
+.summary-item.highlight {
+    background: rgba(0, 212, 170, 0.1);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(0, 212, 170, 0.3);
+}
+
+.summary-item h3 {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.summary-item .value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #00D4AA;
+    margin-bottom: 0.5rem;
+}
+
+.summary-item p {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+}
+
+/* Chart Sections */
+.chart-section {
+    background: #1E293B;
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.chart-container {
+    background: #334155;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+}
+
+.chart-container h4 {
+    margin: 0 0 1rem;
+    color: #F8FAFC;
+}
+
+/* Recommendations */
+.recommendation-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.recommendation-card {
+    background: #334155;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    border: 1px solid #475569;
+    transition: all 0.2s;
+}
+
+.recommendation-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.recommendation-card i {
+    font-size: 2rem;
+    color: #00D4AA;
+    margin-bottom: 1rem;
+}
+
+.recommendation-card h4 {
+    margin-bottom: 0.5rem;
+    color: #F8FAFC;
+}
+
+.recommendation-card p {
+    color: #CBD5E1;
+    line-height: 1.6;
+}
+
+/* Modal Styles */
+.settings-modal,
+.vendor-selector-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #1E293B;
+    border-radius: 1rem;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    padding: 2rem;
+    border-bottom: 1px solid #334155;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 2rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-footer {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #334155;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+/* Button Styles */
+.btn-primary {
+    background: #00D4AA;
+    color: #0F172A;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background: #00A389;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #475569;
+    color: #F8FAFC;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: #64748B;
+}
+
+/* Portnox Pricing Bar */
+.portnox-pricing-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1E293B;
+    border-top: 1px solid #334155;
+    padding: 1rem 0;
+    z-index: 100;
+}
+
+.pricing-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pricing-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.inline-logo {
+    height: 30px;
+    width: auto;
+}
+
+.pricing-control {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.price-label {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #00D4AA;
+}
+
+#portnox-pricing-slider {
+    width: 200px;
+}
+
+.price-range {
+    display: flex;
+    gap: 2rem;
+    color: #94A3B8;
+    font-size: 0.875rem;
+}

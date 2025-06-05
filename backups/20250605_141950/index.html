@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portnox Executive Decision Platform - Zero Trust NAC Investment Analysis</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="img/favicon.png">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Highcharts -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    
+    <style>
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #1a1f2e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(0, 212, 170, 0.1);
+            border-top-color: #00d4aa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 2rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: #a0aec0;
+            font-size: 1.125rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Initializing Executive Platform...</div>
+        </div>
+    </div>
+    
+    <!-- Main App Container -->
+    <div id="app" style="display: none;"></div>
+    
+    <!-- Core Scripts -->
+    <script src="js/core/module-loader.js"></script>
+    
+    <!-- Vendor Database -->
+    <script src="js/data/vendor-database.js"></script>
+    <script src="js/data/comprehensive-vendor-database.js"></script>
+    <script src="js/data/compliance-framework-mappings.js"></script>
+    
+    <!-- Analysis Modules -->
+    <script src="js/views/risk-security-init.js"></script>
+    <script src="js/views/compliance-analysis.js"></script>
+    <script src="js/views/operational-impact.js"></script>
+    <script src="js/views/strategic-insights.js"></script>
+    
+    <!-- Platform Modules -->
+    <script src="js/modules/executive-platform.js"></script>
+    <script src="js/modules/platform-init.js"></script>
+    
+    <!-- Main Application -->
+    <script src="js/main.js"></script>
+    
+    <!-- Initialization Script -->
+    <script>
+        // Remove loading screen when ready
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loading-screen');
+                const app = document.getElementById('app');
+                
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
+                if (app) {
+                    app.style.display = 'block';
+                }
+                
+                // Verify platform loaded
+                if (window.platform) {
+                    console.log('✅ Platform loaded successfully');
+                } else {
+                    console.warn('⚠️ Platform not yet loaded, waiting...');
+                }
+            }, 2000);
+        });
+        
+        // Ensure Highcharts loads
+        if (typeof Highcharts === 'undefined') {
+            console.error('❌ Highcharts failed to load!');
+        }
+        
+        // Fallback for comprehensive vendor database
+        window.addEventListener('DOMContentLoaded', function() {
+            if (!window.ComprehensiveVendorDatabase && window.VendorDatabase) {
+                window.ComprehensiveVendorDatabase = window.VendorDatabase;
+                console.log('✅ Using VendorDatabase as ComprehensiveVendorDatabase');
+            }
+        });
+    </script>
+</body>
+</html>
