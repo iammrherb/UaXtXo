@@ -848,3 +848,6 @@ body {
 .modal-overlay {
     background: rgba(0,0,0,0.5) !important;
 }
+body { background: #F0F2F5 !important; color: #2C3E50 !important; }
+#app, .app-container { background: transparent !important; }
+* { visibility: visible !important; }

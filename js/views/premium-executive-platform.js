@@ -1408,7 +1408,7 @@ class PremiumExecutivePlatform {
                     },
                     labels: {
                         formatter: function() {
-                            return ' + Math.round(this.value / 1000) + 'K';
+                            return Math.round(this.value / 1000) + 'K';
                         },
                         style: { color: '#71717A' }
                     }
