@@ -1,476 +1,608 @@
 /**
- * Risk & Security Analysis View
- * Comprehensive security posture and risk assessment
+ * Risk & Security View
+ * Comprehensive security posture and risk analysis
  */
-(function() {
-    window.RiskSecurityView = {
-        render() {
-            return `
-                <div class="risk-security-view">
-                    <div class="view-header">
-                        <h1>Risk & Security Analysis</h1>
-                        <p class="view-subtitle">Zero Trust maturity, threat protection, and security ROI</p>
-                    </div>
-                    <div class="loading-container">
-                        <div class="loading-spinner"></div>
-                        <p>Analyzing security posture...</p>
-                    </div>
-                </div>
-            `;
-        },
 
-        renderComplete() {
-            const VendorDataManager = window.ModuleLoader.get('VendorDataManager');
-            const ConfigManager = window.ModuleLoader.get('ConfigManager');
-            
-            if (!VendorDataManager || !ConfigManager) {
-                return this.render();
-            }
-
-            const config = ConfigManager.get('defaults');
-            const selectedVendors = ConfigManager.get('selectedVendors', ['portnox', 'cisco', 'aruba']);
-
-            return `
-                <div class="risk-security-view">
-                    <div class="view-header">
-                        <h1>Risk & Security Analysis</h1>
-                        <p class="view-subtitle">Zero Trust maturity, threat protection, and security ROI</p>
-                    </div>
-
-                    ${this.renderSecurityScores(selectedVendors)}
-                    ${this.renderZeroTrustMaturity(selectedVendors)}
-                    ${this.renderThreatProtection(selectedVendors)}
-                    ${this.renderSecurityROI(selectedVendors, config)}
-                    ${this.renderCyberInsuranceImpact(selectedVendors)}
-                </div>
-            `;
-        },
-
-        renderSecurityScores(vendorIds) {
-            const VendorDataManager = window.ModuleLoader.get('VendorDataManager');
-            
-            return `
-                <div class="security-scores-section">
-                    <h2>Security Effectiveness Score</h2>
-                    <div class="security-cards">
-                        ${vendorIds.map(vendorId => {
-                            const vendor = VendorDataManager.getVendor(vendorId);
-                            const scores = this.calculateSecurityScores(vendor);
+class RiskSecurityView {
+    constructor() {
+        this.charts = {};
+        this.riskData = null;
+    }
+    
+    initialize() {
+        if (window.controller) {
+            window.controller.registerView('risk-security', this);
+        }
+    }
+    
+    render(container) {
+        container.innerHTML = `
+            <div class="risk-security-dashboard animate-fadeIn">
+                <!-- Header -->
+                <section class="view-header">
+                    <h2>Risk & Security Analysis</h2>
+                    <p>Comprehensive security posture assessment and risk mitigation strategies</p>
+                </section>
+                
+                <!-- Risk Score Overview -->
+                <section class="risk-overview">
+                    <div class="risk-score-container">
+                        <div class="overall-risk-score">
+                            <h3>Organization Risk Score</h3>
+                            <div class="risk-gauge" id="risk-gauge-chart"></div>
+                        </div>
+                        
+                        <div class="risk-metrics">
+                            <div class="risk-metric">
+                                <i class="fas fa-shield-virus"></i>
+                                <h4>Current Risk Level</h4>
+                                <div class="value high" id="current-risk">High</div>
+                                <p>Without proper NAC</p>
+                            </div>
                             
-                            return `
-                                <div class="security-card ${vendor.id === 'portnox' ? 'highlight' : ''}">
-                                    <h3>${vendor.name}</h3>
-                                    <div class="overall-score">
-                                        <div class="score-circle score-${this.getScoreClass(scores.overall)}">
-                                            <span class="score-value">${scores.overall}</span>
-                                            <span class="score-label">Overall</span>
-                                        </div>
-                                    </div>
-                                    <div class="score-breakdown">
-                                        <div class="score-item">
-                                            <span>Zero Trust</span>
-                                            <div class="score-bar">
-                                                <div class="score-fill" style="width: ${scores.zeroTrust}%"></div>
-                                            </div>
-                                            <span>${scores.zeroTrust}/100</span>
-                                        </div>
-                                        <div class="score-item">
-                                            <span>Threat Detection</span>
-                                            <div class="score-bar">
-                                                <div class="score-fill" style="width: ${scores.threatDetection}%"></div>
-                                            </div>
-                                            <span>${scores.threatDetection}/100</span>
-                                        </div>
-                                        <div class="score-item">
-                                            <span>Response Time</span>
-                                            <div class="score-bar">
-                                                <div class="score-fill" style="width: ${scores.responseTime}%"></div>
-                                            </div>
-                                            <span>${scores.responseTime}/100</span>
-                                        </div>
-                                        <div class="score-item">
-                                            <span>Automation</span>
-                                            <div class="score-bar">
-                                                <div class="score-fill" style="width: ${scores.automation}%"></div>
-                                            </div>
-                                            <span>${scores.automation}/100</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                </div>
-            `;
-        },
-
-        renderZeroTrustMaturity(vendorIds) {
-            const VendorDataManager = window.ModuleLoader.get('VendorDataManager');
-            
-            const principles = [
-                { id: 'identity', name: 'Identity Verification', icon: 'fa-user-check' },
-                { id: 'device', name: 'Device Trust', icon: 'fa-laptop-medical' },
-                { id: 'network', name: 'Network Segmentation', icon: 'fa-network-wired' },
-                { id: 'application', name: 'Application Access', icon: 'fa-shield-alt' },
-                { id: 'data', name: 'Data Protection', icon: 'fa-database' },
-                { id: 'visibility', name: 'Visibility & Analytics', icon: 'fa-eye' },
-                { id: 'automation', name: 'Automation & Orchestration', icon: 'fa-robot' }
-            ];
-
-            return `
-                <div class="zero-trust-section">
-                    <h2>Zero Trust Maturity Assessment</h2>
-                    <div class="maturity-grid">
-                        ${vendorIds.map(vendorId => {
-                            const vendor = VendorDataManager.getVendor(vendorId);
-                            const maturity = this.assessZeroTrustMaturity(vendor);
+                            <div class="risk-metric">
+                                <i class="fas fa-shield-check"></i>
+                                <h4>With Portnox</h4>
+                                <div class="value low" id="portnox-risk">Low</div>
+                                <p>85% risk reduction</p>
+                            </div>
                             
-                            return `
-                                <div class="maturity-card ${vendor.id === 'portnox' ? 'highlight' : ''}">
-                                    <h3>${vendor.name}</h3>
-                                    <div class="maturity-level">
-                                        <span class="level-badge level-${maturity.level.toLowerCase()}">
-                                            ${maturity.level}
-                                        </span>
-                                        <span class="level-score">${maturity.score}%</span>
+                            <div class="risk-metric">
+                                <i class="fas fa-dollar-sign"></i>
+                                <h4>Annual Risk Cost</h4>
+                                <div class="value" id="risk-cost">$0</div>
+                                <p>Potential breach impact</p>
+                            </div>
+                            
+                            <div class="risk-metric">
+                                <i class="fas fa-percentage"></i>
+                                <h4>Breach Probability</h4>
+                                <div class="value" id="breach-probability">0%</div>
+                                <p>Next 12 months</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Threat Landscape -->
+                <section class="threat-landscape">
+                    <h3>Threat Landscape Analysis</h3>
+                    <div class="threats-grid">
+                        <div class="threat-card critical">
+                            <i class="fas fa-user-secret"></i>
+                            <h4>Insider Threats</h4>
+                            <div class="threat-level">Critical</div>
+                            <p>Unauthorized access by employees or contractors</p>
+                            <div class="mitigation">
+                                <strong>Portnox Mitigation:</strong> Zero Trust verification, continuous monitoring
+                            </div>
+                        </div>
+                        
+                        <div class="threat-card high">
+                            <i class="fas fa-laptop-house"></i>
+                            <h4>BYOD Risks</h4>
+                            <div class="threat-level">High</div>
+                            <p>Unmanaged personal devices accessing corporate resources</p>
+                            <div class="mitigation">
+                                <strong>Portnox Mitigation:</strong> Device profiling, compliance enforcement
+                            </div>
+                        </div>
+                        
+                        <div class="threat-card high">
+                            <i class="fas fa-virus"></i>
+                            <h4>Malware/Ransomware</h4>
+                            <div class="threat-level">High</div>
+                            <p>Malicious software spreading through network</p>
+                            <div class="mitigation">
+                                <strong>Portnox Mitigation:</strong> Automatic quarantine, micro-segmentation
+                            </div>
+                        </div>
+                        
+                        <div class="threat-card medium">
+                            <i class="fas fa-wifi"></i>
+                            <h4>Rogue Devices</h4>
+                            <div class="threat-level">Medium</div>
+                            <p>Unauthorized devices connecting to network</p>
+                            <div class="mitigation">
+                                <strong>Portnox Mitigation:</strong> Real-time detection, auto-blocking
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Security Controls Comparison -->
+                <section class="security-controls">
+                    <h3>Security Controls Effectiveness</h3>
+                    <div class="controls-comparison" id="controls-comparison-chart"></div>
+                </section>
+                
+                <!-- Attack Surface Analysis -->
+                <section class="attack-surface">
+                    <h3>Attack Surface Reduction</h3>
+                    <div class="surface-visualization">
+                        <div class="surface-chart" id="attack-surface-chart"></div>
+                        <div class="surface-details">
+                            <h4>Attack Vector Analysis</h4>
+                            <div class="vector-list">
+                                <div class="vector-item">
+                                    <span class="vector-name">Network Access</span>
+                                    <div class="reduction-bar">
+                                        <div class="reduction-fill" style="width: 90%"></div>
                                     </div>
-                                    <div class="principles-grid">
-                                        ${principles.map(principle => `
-                                            <div class="principle-item">
-                                                <i class="fas ${principle.icon}"></i>
-                                                <span>${principle.name}</span>
-                                                <div class="maturity-indicator maturity-${maturity.principles[principle.id]}">
-                                                    ${this.getMaturityIcon(maturity.principles[principle.id])}
-                                                </div>
-                                            </div>
-                                        `).join('')}
-                                    </div>
+                                    <span class="reduction-value">90% reduced</span>
                                 </div>
-                            `;
-                        }).join('')}
-                    </div>
-                </div>
-            `;
-        },
-
-        renderThreatProtection(vendorIds) {
-            const VendorDataManager = window.ModuleLoader.get('VendorDataManager');
-            
-            return `
-                <div class="threat-protection-section">
-                    <h2>Threat Protection Capabilities</h2>
-                    <div class="threat-comparison">
-                        <table class="threat-table">
-                            <thead>
-                                <tr>
-                                    <th>Threat Vector</th>
-                                    ${vendorIds.map(id => {
-                                        const vendor = VendorDataManager.getVendor(id);
-                                        return `<th>${vendor.name}</th>`;
-                                    }).join('')}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${this.getThreatVectors().map(threat => `
-                                    <tr>
-                                        <td>
-                                            <i class="fas ${threat.icon} text-danger"></i>
-                                            ${threat.name}
-                                        </td>
-                                        ${vendorIds.map(id => {
-                                            const vendor = VendorDataManager.getVendor(id);
-                                            const protection = this.getThreatProtection(vendor, threat.id);
-                                            return `
-                                                <td>
-                                                    <div class="protection-level protection-${protection.level}">
-                                                        ${protection.icon}
-                                                        <span>${protection.description}</span>
-                                                    </div>
-                                                </td>
-                                            `;
-                                        }).join('')}
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-        },
-
-        renderSecurityROI(vendorIds, config) {
-            const VendorDataManager = window.ModuleLoader.get('VendorDataManager');
-            
-            // Calculate security ROI for each vendor
-            const roiData = vendorIds.map(vendorId => {
-                const vendor = VendorDataManager.getVendor(vendorId);
-                return {
-                    vendor,
-                    roi: this.calculateSecurityROI(vendor, config)
-                };
-            });
-
-            return `
-                <div class="security-roi-section">
-                    <h2>Security Investment ROI</h2>
-                    <div class="roi-grid">
-                        ${roiData.map(data => `
-                            <div class="roi-card ${data.vendor.id === 'portnox' ? 'highlight' : ''}">
-                                <h3>${data.vendor.name}</h3>
-                                <div class="roi-metrics">
-                                    <div class="roi-metric">
-                                        <span class="metric-label">Breach Risk Reduction</span>
-                                        <span class="metric-value">${(data.vendor.security?.breachReduction * 100 || 30).toFixed(0)}%</span>
+                                <div class="vector-item">
+                                    <span class="vector-name">Device Vulnerabilities</span>
+                                    <div class="reduction-bar">
+                                        <div class="reduction-fill" style="width: 85%"></div>
                                     </div>
-                                    <div class="roi-metric">
-                                        <span class="metric-label">Annual Risk Mitigation</span>
-                                        <span class="metric-value">${this.formatCurrency(data.roi.riskMitigation)}</span>
+                                    <span class="reduction-value">85% reduced</span>
+                                </div>
+                                <div class="vector-item">
+                                    <span class="vector-name">User Credentials</span>
+                                    <div class="reduction-bar">
+                                        <div class="reduction-fill" style="width: 95%"></div>
                                     </div>
-                                    <div class="roi-metric">
-                                        <span class="metric-label">Incident Response Savings</span>
-                                        <span class="metric-value">${this.formatCurrency(data.roi.incidentSavings)}</span>
+                                    <span class="reduction-value">95% reduced</span>
+                                </div>
+                                <div class="vector-item">
+                                    <span class="vector-name">Lateral Movement</span>
+                                    <div class="reduction-bar">
+                                        <div class="reduction-fill" style="width: 98%"></div>
                                     </div>
-                                    <div class="roi-metric">
-                                        <span class="metric-label">Productivity Gains</span>
-                                        <span class="metric-value">${this.formatCurrency(data.roi.productivityGains)}</span>
-                                    </div>
-                                    <div class="roi-total">
-                                        <span>Total Security ROI</span>
-                                        <span>${this.formatCurrency(data.roi.total)}</span>
-                                    </div>
+                                    <span class="reduction-value">98% reduced</span>
                                 </div>
                             </div>
-                        `).join('')}
+                        </div>
                     </div>
-                </div>
-            `;
-        },
-
-        renderCyberInsuranceImpact(vendorIds) {
-            const VendorDataManager = window.ModuleLoader.get('VendorDataManager');
-            
-            return `
-                <div class="insurance-impact-section">
-                    <h2>Cyber Insurance Impact</h2>
-                    <div class="insurance-comparison">
-                        ${vendorIds.map(vendorId => {
-                            const vendor = VendorDataManager.getVendor(vendorId);
-                            const impact = this.calculateInsuranceImpact(vendor);
-                            
-                            return `
-                                <div class="insurance-card ${vendor.id === 'portnox' ? 'highlight' : ''}">
-                                    <h3>${vendor.name}</h3>
-                                    <div class="insurance-metrics">
-                                        <div class="premium-reduction">
-                                            <i class="fas fa-percentage"></i>
-                                            <div>
-                                                <span class="metric-value">${impact.premiumReduction}%</span>
-                                                <span class="metric-label">Premium Reduction</span>
-                                            </div>
-                                        </div>
-                                        <div class="coverage-improvement">
-                                            <i class="fas fa-shield-alt"></i>
-                                            <div>
-                                                <span class="metric-value">${impact.coverageIncrease}%</span>
-                                                <span class="metric-label">Coverage Increase</span>
-                                            </div>
-                                        </div>
-                                        <div class="annual-savings">
-                                            <i class="fas fa-dollar-sign"></i>
-                                            <div>
-                                                <span class="metric-value">${this.formatCurrency(impact.annualSavings)}</span>
-                                                <span class="metric-label">Annual Savings</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="insurance-factors">
-                                        <h4>Key Factors</h4>
-                                        <ul>
-                                            ${impact.factors.map(factor => `
-                                                <li>
-                                                    <i class="fas fa-check text-success"></i>
-                                                    ${factor}
-                                                </li>
-                                            `).join('')}
-                                        </ul>
-                                    </div>
+                </section>
+                
+                <!-- Incident Response -->
+                <section class="incident-response">
+                    <h3>Incident Response Capabilities</h3>
+                    <div class="response-metrics">
+                        <div class="response-card">
+                            <i class="fas fa-clock"></i>
+                            <h4>Detection Time</h4>
+                            <div class="comparison">
+                                <div class="vendor-metric">
+                                    <span>Without NAC</span>
+                                    <span class="value">197 days</span>
                                 </div>
-                            `;
-                        }).join('')}
+                                <div class="vendor-metric highlight">
+                                    <span>With Portnox</span>
+                                    <span class="value">&lt; 1 minute</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="response-card">
+                            <i class="fas fa-shield-alt"></i>
+                            <h4>Containment Time</h4>
+                            <div class="comparison">
+                                <div class="vendor-metric">
+                                    <span>Manual Process</span>
+                                    <span class="value">4+ hours</span>
+                                </div>
+                                <div class="vendor-metric highlight">
+                                    <span>Portnox Auto</span>
+                                    <span class="value">Instant</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="response-card">
+                            <i class="fas fa-search"></i>
+                            <h4>Investigation</h4>
+                            <div class="comparison">
+                                <div class="vendor-metric">
+                                    <span>Manual Logs</span>
+                                    <span class="value">Days</span>
+                                </div>
+                                <div class="vendor-metric highlight">
+                                    <span>AI Analysis</span>
+                                    <span class="value">Minutes</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            `;
-        },
-
-        calculateSecurityScores(vendor) {
-            const zeroTrust = vendor.security?.zeroTrust?.score || 50;
-            const threatDetection = vendor.security?.threatDetection?.accuracy || 70;
-            const responseTime = vendor.security?.mttr ? 
-                Math.max(0, 100 - (vendor.security.mttr / 240) * 100) : 50;
-            const automation = vendor.operational?.automation || 30;
-            
-            const overall = Math.round((zeroTrust + threatDetection + responseTime + automation) / 4);
-            
-            return {
-                overall,
-                zeroTrust,
-                threatDetection,
-                responseTime,
-                automation
-            };
-        },
-
-        assessZeroTrustMaturity(vendor) {
-            const principles = {
-                identity: vendor.features?.core?.['802.1X Authentication'] ? 'high' : 'low',
-                device: vendor.features?.core?.['Device Profiling'] ? 'high' : 'medium',
-                network: vendor.features?.zeroTrust?.['Microsegmentation'] ? 'high' : 'low',
-                application: vendor.features?.zeroTrust?.['Contextual Access'] ? 'high' : 'low',
-                data: vendor.compliance?.automation > 80 ? 'high' : 'medium',
-                visibility: vendor.features?.zeroTrust?.['Behavioral Analytics'] ? 'high' : 'low',
-                automation: vendor.operational?.automation > 80 ? 'high' : 'low'
-            };
-            
-            const highCount = Object.values(principles).filter(v => v === 'high').length;
-            const score = Math.round((highCount / 7) * 100);
-            
-            let level = 'Initial';
-            if (score >= 90) level = 'Advanced';
-            else if (score >= 70) level = 'Defined';
-            else if (score >= 50) level = 'Developing';
-            
-            return { principles, score, level };
-        },
-
-        getThreatVectors() {
-            return [
-                { id: 'malware', name: 'Malware & Ransomware', icon: 'fa-virus' },
-                { id: 'insider', name: 'Insider Threats', icon: 'fa-user-secret' },
-                { id: 'lateral', name: 'Lateral Movement', icon: 'fa-project-diagram' },
-                { id: 'credential', name: 'Credential Theft', icon: 'fa-key' },
-                { id: 'iot', name: 'IoT/OT Attacks', icon: 'fa-microchip' },
-                { id: 'supply', name: 'Supply Chain', icon: 'fa-link' }
-            ];
-        },
-
-        getThreatProtection(vendor, threatId) {
-            const protectionMap = {
-                portnox: {
-                    malware: { level: 'high', icon: '🛡️', description: 'AI-based detection' },
-                    insider: { level: 'high', icon: '🛡️', description: 'Behavioral analytics' },
-                    lateral: { level: 'high', icon: '🛡️', description: 'Microsegmentation' },
-                    credential: { level: 'high', icon: '🛡️', description: 'Continuous verification' },
-                    iot: { level: 'high', icon: '🛡️', description: 'Agentless profiling' },
-                    supply: { level: 'medium', icon: '⚠️', description: 'Risk assessment' }
-                },
-                cisco: {
-                    malware: { level: 'medium', icon: '⚠️', description: 'Basic detection' },
-                    insider: { level: 'low', icon: '❌', description: 'Limited visibility' },
-                    lateral: { level: 'medium', icon: '⚠️', description: 'TrustSec required' },
-                    credential: { level: 'low', icon: '❌', description: 'Static policies' },
-                    iot: { level: 'medium', icon: '⚠️', description: 'Profile library' },
-                    supply: { level: 'low', icon: '❌', description: 'Manual process' }
-                }
-            };
-            
-            return protectionMap[vendor.id]?.[threatId] || 
-                   { level: 'low', icon: '❌', description: 'Limited' };
-        },
-
-        calculateSecurityROI(vendor, config) {
-            const avgBreachCost = 4500000;
-            const breachProbability = 0.15; // 15% annual probability
-            const breachReduction = vendor.security?.breachReduction || 0.3;
-            
-            // Risk mitigation value
-            const riskMitigation = avgBreachCost * breachProbability * breachReduction;
-            
-            // Incident response savings (faster MTTR)
-            const incidentsPerYear = 12;
-            const avgIncidentCost = 50000;
-            const mttrReduction = vendor.security?.mttr ? 
-                Math.max(0.5, 1 - (vendor.security.mttr / 240)) : 0.3;
-            const incidentSavings = incidentsPerYear * avgIncidentCost * mttrReduction;
-            
-            // Productivity gains from automation
-            const automationLevel = vendor.operational?.automation || 30;
-            const fteSavings = (automationLevel / 100) * 2.5 * 120000;
-            
-            return {
-                riskMitigation,
-                incidentSavings,
-                productivityGains: fteSavings,
-                total: riskMitigation + incidentSavings + fteSavings
-            };
-        },
-
-        calculateInsuranceImpact(vendor) {
-            const baseFactors = [];
-            let premiumReduction = 0;
-            let coverageIncrease = 0;
-            
-            // Zero Trust implementation
-            if (vendor.security?.zeroTrust?.native) {
-                premiumReduction += 15;
-                coverageIncrease += 20;
-                baseFactors.push('Native Zero Trust architecture');
-            }
-            
-            // Compliance certifications
-            if (vendor.compliance?.certifications?.['SOC 2 Type II']) {
-                premiumReduction += 10;
-                coverageIncrease += 10;
-                baseFactors.push('SOC 2 Type II certified');
-            }
-            
-            // Continuous monitoring
-            if (vendor.features?.zeroTrust?.['Continuous Verification']) {
-                premiumReduction += 8;
-                coverageIncrease += 15;
-                baseFactors.push('Continuous verification');
-            }
-            
-            // Incident response capability
-            if (vendor.security?.mttr < 60) {
-                premiumReduction += 12;
-                baseFactors.push('Rapid incident response (<1hr)');
-            }
-            
-            // Calculate annual savings (based on $100k baseline premium)
-            const basePremium = 100000;
-            const annualSavings = basePremium * (premiumReduction / 100);
-            
-            return {
-                premiumReduction,
-                coverageIncrease,
-                annualSavings,
-                factors: baseFactors
-            };
-        },
-
-        getScoreClass(score) {
-            if (score >= 90) return 'excellent';
-            if (score >= 75) return 'good';
-            if (score >= 60) return 'average';
-            return 'poor';
-        },
-
-        getMaturityIcon(level) {
-            const icons = {
-                high: '✅',
-                medium: '⚠️',
-                low: '❌'
-            };
-            return icons[level] || '❌';
-        },
-
-        formatCurrency(amount) {
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(amount);
+                </section>
+                
+                <!-- Security Maturity -->
+                <section class="security-maturity">
+                    <h3>Security Maturity Assessment</h3>
+                    <div class="maturity-radar" id="maturity-radar-chart"></div>
+                </section>
+                
+                <!-- Risk Mitigation ROI -->
+                <section class="risk-roi">
+                    <h3>Risk Mitigation ROI</h3>
+                    <div class="risk-roi-calculator">
+                        <div class="roi-inputs">
+                            <h4>Industry Risk Factors</h4>
+                            <div class="risk-factor">
+                                <span>Average breach cost in your industry</span>
+                                <span class="value" id="industry-breach-cost">$0</span>
+                            </div>
+                            <div class="risk-factor">
+                                <span>Breach probability (annual)</span>
+                                <span class="value" id="breach-prob-annual">0%</span>
+                            </div>
+                            <div class="risk-factor">
+                                <span>Risk reduction with Portnox</span>
+                                <span class="value">85%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="roi-results">
+                            <h4>Risk Mitigation Value</h4>
+                            <div class="roi-metric highlight">
+                                <span>Annual Risk Avoidance</span>
+                                <span class="value" id="annual-risk-avoidance">$0</span>
+                            </div>
+                            <div class="roi-metric">
+                                <span>3-Year Risk Avoidance</span>
+                                <span class="value" id="three-year-avoidance">$0</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        `;
+        
+        this.updateCalculations();
+    }
+    
+    onSettingsUpdate(settings) {
+        this.updateCalculations();
+    }
+    
+    onCalculationsUpdate(settings) {
+        this.updateCalculations();
+    }
+    
+    updateCalculations() {
+        if (!window.controller) return;
+        
+        const risk = window.controller.calculateRisk();
+        const settings = window.controller.organizationSettings;
+        const industry = window.controller.industries[settings.industry];
+        
+        this.riskData = risk;
+        
+        // Update risk metrics
+        this.updateRiskMetrics(risk, industry);
+        
+        // Render charts
+        this.renderRiskGauge(risk);
+        this.renderControlsComparison();
+        this.renderAttackSurfaceChart();
+        this.renderMaturityRadar();
+        
+        // Update ROI calculations
+        this.updateRiskROI(risk, industry);
+    }
+    
+    updateRiskMetrics(risk, industry) {
+        // Current risk level
+        const currentRiskEl = document.getElementById('current-risk');
+        if (currentRiskEl) {
+            const riskLevel = risk.baseRisk > 0.7 ? 'Critical' : 
+                             risk.baseRisk > 0.5 ? 'High' : 
+                             risk.baseRisk > 0.3 ? 'Medium' : 'Low';
+            currentRiskEl.textContent = riskLevel;
+            currentRiskEl.className = `value ${riskLevel.toLowerCase()}`;
         }
-    };
-})();
+        
+        // Risk cost
+        const riskCostEl = document.getElementById('risk-cost');
+        if (riskCostEl) {
+            riskCostEl.textContent = '$' + this.formatNumber(risk.annualRiskCost);
+        }
+        
+        // Breach probability
+        const breachProbEl = document.getElementById('breach-probability');
+        if (breachProbEl) {
+            breachProbEl.textContent = Math.round(risk.baseRisk * 100) + '%';
+        }
+        
+        // Industry breach cost
+        const industryCostEl = document.getElementById('industry-breach-cost');
+        if (industryCostEl) {
+            industryCostEl.textContent = '$' + this.formatNumber(industry.avgBreachCost);
+        }
+        
+        // Annual breach probability
+        const annualProbEl = document.getElementById('breach-prob-annual');
+        if (annualProbEl) {
+            annualProbEl.textContent = Math.round(risk.baseRisk * 100) + '%';
+        }
+    }
+    
+    renderRiskGauge(risk) {
+        const container = document.getElementById('risk-gauge-chart');
+        if (!container || typeof Highcharts === 'undefined') return;
+        
+        const riskScore = Math.round(risk.baseRisk * 100);
+        const portnoxScore = Math.round(risk.withPortnox * 100);
+        
+        this.charts.riskGauge = Highcharts.chart(container, {
+            chart: {
+                type: 'solidgauge',
+                backgroundColor: 'transparent',
+                height: 250
+            },
+            title: null,
+            pane: {
+                center: ['50%', '85%'],
+                size: '140%',
+                startAngle: -90,
+                endAngle: 90,
+                background: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    innerRadius: '60%',
+                    outerRadius: '100%',
+                    shape: 'arc'
+                }
+            },
+            yAxis: {
+                min: 0,
+                max: 100,
+                stops: [
+                    [0.1, '#10b981'], // green
+                    [0.5, '#f59e0b'], // yellow
+                    [0.9, '#ef4444']  // red
+                ],
+                lineWidth: 0,
+                tickWidth: 0,
+                minorTickInterval: null,
+                tickAmount: 2,
+                labels: {
+                    y: 16,
+                    style: { color: '#a6acbb' }
+                }
+            },
+            plotOptions: {
+                solidgauge: {
+                    dataLabels: {
+                        y: -40,
+                        borderWidth: 0,
+                        useHTML: true,
+                        format: '<div style="text-align:center">' +
+                                '<span style="font-size:3rem;color:#ffffff">{y}%</span><br/>' +
+                                '<span style="font-size:1rem;color:#a6acbb">Risk Score</span>' +
+                                '</div>'
+                    }
+                }
+            },
+            series: [{
+                name: 'Risk Score',
+                data: [riskScore],
+                tooltip: {
+                    valueSuffix: '% risk'
+                }
+            }],
+            credits: { enabled: false }
+        });
+    }
+    
+    renderControlsComparison() {
+        const container = document.getElementById('controls-comparison-chart');
+        if (!container || typeof Highcharts === 'undefined') return;
+        
+        const categories = [
+            'Access Control',
+            'Device Trust',
+            'Network Segmentation', 
+            'Threat Detection',
+            'Incident Response',
+            'Compliance Automation',
+            'Visibility',
+            'Policy Enforcement'
+        ];
+        
+        const portnoxScores = [98, 95, 97, 96, 99, 94, 100, 98];
+        const legacyScores = [70, 60, 75, 50, 40, 30, 65, 70];
+        const baselineScores = [20, 15, 25, 10, 10, 5, 30, 20];
+        
+        this.charts.controls = Highcharts.chart(container, {
+            chart: {
+                type: 'bar',
+                backgroundColor: 'transparent',
+                height: 400
+            },
+            title: {
+                text: 'Security Control Effectiveness Comparison',
+                style: { color: '#ffffff' }
+            },
+            xAxis: {
+                categories: categories,
+                labels: { style: { color: '#a6acbb' } }
+            },
+            yAxis: {
+                min: 0,
+                max: 100,
+                title: {
+                    text: 'Effectiveness (%)',
+                    style: { color: '#a6acbb' }
+                },
+                labels: { style: { color: '#a6acbb' } }
+            },
+            plotOptions: {
+                bar: {
+                    dataLabels: {
+                        enabled: true,
+                        style: { color: '#ffffff' },
+                        formatter: function() {
+                            return this.y + '%';
+                        }
+                    }
+                }
+            },
+            series: [{
+                name: 'Portnox',
+                data: portnoxScores,
+                color: '#00e5e6'
+            }, {
+                name: 'Legacy NAC',
+                data: legacyScores,
+                color: '#f59e0b'
+            }, {
+                name: 'No NAC',
+                data: baselineScores,
+                color: '#ef4444'
+            }],
+            legend: {
+                itemStyle: { color: '#a6acbb' }
+            },
+            credits: { enabled: false }
+        });
+    }
+    
+    renderAttackSurfaceChart() {
+        const container = document.getElementById('attack-surface-chart');
+        if (!container || typeof Highcharts === 'undefined') return;
+        
+        this.charts.attackSurface = Highcharts.chart(container, {
+            chart: {
+                type: 'area',
+                backgroundColor: 'transparent',
+                height: 300
+            },
+            title: {
+                text: 'Attack Surface Over Time',
+                style: { color: '#ffffff' }
+            },
+            xAxis: {
+                categories: ['Current', 'Month 1', 'Month 2', 'Month 3', 'Month 6', 'Month 12'],
+                labels: { style: { color: '#a6acbb' } }
+            },
+            yAxis: {
+                title: {
+                    text: 'Attack Surface Index',
+                    style: { color: '#a6acbb' }
+                },
+                labels: { style: { color: '#a6acbb' } }
+            },
+            plotOptions: {
+                area: {
+                    stacking: 'normal',
+                    lineColor: '#666666',
+                    lineWidth: 1,
+                    marker: {
+                        lineWidth: 1,
+                        lineColor: '#666666'
+                    }
+                }
+            },
+            series: [{
+                name: 'Without NAC',
+                data: [100, 105, 110, 115, 125, 140],
+                color: '#ef4444'
+            }, {
+                name: 'With Legacy NAC',
+                data: [100, 85, 75, 70, 68, 65],
+                color: '#f59e0b'
+            }, {
+                name: 'With Portnox',
+                data: [100, 50, 30, 20, 15, 10],
+                color: '#10b981'
+            }],
+            legend: {
+                itemStyle: { color: '#a6acbb' }
+            },
+            credits: { enabled: false }
+        });
+    }
+    
+    renderMaturityRadar() {
+        const container = document.getElementById('maturity-radar-chart');
+        if (!container || typeof Highcharts === 'undefined') return;
+        
+        this.charts.maturity = Highcharts.chart(container, {
+            chart: {
+                polar: true,
+                type: 'area',
+                backgroundColor: 'transparent',
+                height: 400
+            },
+            title: {
+                text: 'Security Maturity Comparison',
+                style: { color: '#ffffff' }
+            },
+            pane: {
+                size: '80%'
+            },
+            xAxis: {
+                categories: [
+                    'Identity Management',
+                    'Access Control',
+                    'Asset Management',
+                    'Threat Detection',
+                    'Incident Response',
+                    'Vulnerability Management',
+                    'Compliance',
+                    'Risk Management'
+                ],
+                tickmarkPlacement: 'on',
+                lineWidth: 0,
+                labels: { style: { color: '#a6acbb' } }
+            },
+            yAxis: {
+                gridLineInterpolation: 'polygon',
+                lineWidth: 0,
+                min: 0,
+                max: 5,
+                labels: { style: { color: '#a6acbb' } }
+            },
+            series: [{
+                name: 'Current State',
+                data: [2, 2, 1, 1, 1, 2, 2, 2],
+                color: '#ef4444',
+                fillOpacity: 0.3
+            }, {
+                name: 'With Legacy NAC',
+                data: [3, 3, 3, 2, 2, 3, 3, 3],
+                color: '#f59e0b',
+                fillOpacity: 0.3
+            }, {
+                name: 'With Portnox',
+                data: [5, 5, 5, 5, 5, 4, 5, 5],
+                color: '#00e5e6',
+                fillOpacity: 0.3
+            }],
+            legend: {
+                itemStyle: { color: '#a6acbb' }
+            },
+            credits: { enabled: false }
+        });
+    }
+    
+    updateRiskROI(risk, industry) {
+        // Annual risk avoidance
+        const annualAvoidance = risk.annualRiskCost * 0.85; // 85% reduction
+        const annualEl = document.getElementById('annual-risk-avoidance');
+        if (annualEl) {
+            annualEl.textContent = '$' + this.formatNumber(annualAvoidance);
+        }
+        
+        // 3-year avoidance
+        const threeYearEl = document.getElementById('three-year-avoidance');
+        if (threeYearEl) {
+            threeYearEl.textContent = '$' + this.formatNumber(annualAvoidance * 3);
+        }
+    }
+    
+    formatNumber(num) {
+        return Math.round(num).toLocaleString();
+    }
+}
+
+// Initialize and register
+const riskSecurityView = new RiskSecurityView();
+riskSecurityView.initialize();
+
+// Export for global access
+window.riskSecurityView = riskSecurityView;
+
+console.log('✅ Risk & Security View loaded');
