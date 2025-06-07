@@ -1094,7 +1094,11 @@
             };
             
             console.log('[VendorDatabase] Loaded vendors:', Object.keys(vendors));
-            return { vendors };
+
+            // Expose for legacy code expecting a global VendorDatabase
+            window.VendorDatabase = { vendors };
+
+            return window.VendorDatabase;
         });
     };
     
