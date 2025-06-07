@@ -17,30 +17,33 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Chart Libraries - FIXED ORDER -->
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/highcharts-more.js"></script>
-    <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
-    <script src="https://code.highcharts.com/modules/heatmap.js"></script>
+    <!-- Chart Libraries -->
+    <script src="https://code.highcharts.com/gantt/highcharts-gantt.js"></script>
     <script src="https://code.highcharts.com/modules/networkgraph.js"></script>
-    <script src="https://code.highcharts.com/modules/sankey.js"></script>
     <script src="https://code.highcharts.com/modules/funnel.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/heatmap.js"></script>
+    <script src="https://code.highcharts.com/modules/sankey.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-    <script src="https://code.highcharts.com/modules/gantt.js"></script>
     
     <!-- Styles -->
     <link rel="stylesheet" href="./css/portnox-brand-colors.css">
-    <link rel="stylesheet" href="./css/portnox-modern-ui.css">
     <link rel="stylesheet" href="./css/premium-executive-platform.css">
     <link rel="stylesheet" href="./css/compliance-view.css">
     <link rel="stylesheet" href="./css/header-enhancement.css">
+    <link rel="stylesheet" href="./css/portnox-modern-ui.css">
     <link rel="stylesheet" href="./css/dark-theme.css">
-<link rel="stylesheet" href="./css/platform-fixes.css">
 </head>
 <body>
     <div id="app-container">
-        <!-- Platform will be rendered here -->
+        <header class="platform-header">
+            <!-- Header will be rendered by JavaScript -->
+        </header>
+        
+        <main id="main-content">
+            <!-- Main content will be rendered here -->
+        </main>
     </div>
     
     <!-- Data Scripts -->
@@ -48,40 +51,35 @@
     <script src="./js/data/compliance-frameworks-complete.js"></script>
     <script src="./js/data/enhanced-settings-data.js"></script>
     
-    <!-- Fix Scripts (Load First) -->
-    <script src="./js/views/platform-fixes.js"></script>
-    <script src="./js/views/fix-vendor-logos.js"></script>
-    
     <!-- View Scripts -->
     <script src="./js/views/compliance-view-enhanced.js"></script>
-    <script src="./js/views/premium-executive-platform-fixed.js"></script>
+    <script src="./js/views/header-cleanup.js"></script>
+    <script src="./js/views/platform-integration.js"></script>
+    <script src="./js/views/premium-executive-platform.js"></script>
     
     <!-- Utility Scripts -->
     <script src="./js/utils/particles-background.js"></script>
     
     <!-- Initialize Platform -->
     <script>
-        // Ensure all dependencies are loaded
-        window.addEventListener('load', function() {
-            console.log('🚀 Starting NAC Executive Platform...');
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initializing NAC Executive Platform...');
             
-            // Verify critical dependencies
-            if (typeof Highcharts === 'undefined') {
-                console.error('❌ Highcharts not loaded');
-                return;
+            // Initialize header
+            if (typeof HeaderCleanup !== 'undefined') {
+                HeaderCleanup.updateHeader();
             }
             
-            if (!window.VendorDatabase) {
-                console.error('❌ Vendor database not loaded');
-                return;
+            // Initialize platform integration
+            if (typeof PlatformIntegration !== 'undefined') {
+                PlatformIntegration.initialize();
             }
             
-            if (!window.ComplianceFrameworks) {
-                console.error('❌ Compliance frameworks not loaded');
-                return;
+            // Show default view
+            if (window.NAC && window.NAC.showView) {
+                window.NAC.showView('compliance');
             }
             
-            // Platform is already initialized by premium-executive-platform-fixed.js
             console.log('✅ Platform initialization complete');
         });
     </script>
