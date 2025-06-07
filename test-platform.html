@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portnox TCO Platform Test</title>
+    
+    <!-- Highcharts -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    
+    <!-- Chart.js as backup -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
+    
+    <!-- Your existing scripts -->
+    <script src="js/vendor-database.js"></script>
+    <script src="js/calculation-engine.js"></script>
+    <script src="js/platform-ui.js"></script>
+    
+    <!-- New scripts -->
+    <script src="js/views/complete-platform-views.js"></script>
+    <script src="js/platform-loader.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/platform-theme.css">
+    <link rel="stylesheet" href="css/enhanced-visuals.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .test-status {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-status">
+        <h1>Portnox TCO Platform Test</h1>
+        <div id="test-results"></div>
+    </div>
+    
+    <div id="app-container">
+        <!-- Platform will render here -->
+    </div>
+    
+    <script>
+        // Test script
+        function runTests() {
+            const results = document.getElementById('test-results');
+            let html = '';
+            
+            // Test 1: Check if TCOAnalyzer exists
+            if (typeof TCOAnalyzer !== 'undefined') {
+                html += '<div class="status-item status-success">✓ TCOAnalyzer class found</div>';
+            } else {
+                html += '<div class="status-item status-error">✗ TCOAnalyzer class not found</div>';
+            }
+            
+            // Test 2: Check view methods
+            const viewMethods = [
+                'renderExecutiveView',
+                'renderFinancialView',
+                'renderRiskView',
+                'renderComplianceView',
+                'renderOperationalView',
+                'renderStrategicView'
+            ];
+            
+            viewMethods.forEach(method => {
+                if (typeof TCOAnalyzer.prototype[method] === 'function') {
+                    html += `<div class="status-item status-success">✓ ${method} is available</div>`;
+                } else {
+                    html += `<div class="status-item status-error">✗ ${method} is missing</div>`;
+                }
+            });
+            
+            // Test 3: Check if platform can initialize
+            try {
+                if (!window.tcoAnalyzer) {
+                    window.tcoAnalyzer = new TCOAnalyzer();
+                }
+                html += '<div class="status-item status-success">✓ Platform initialized successfully</div>';
+            } catch (error) {
+                html += `<div class="status-item status-error">✗ Initialization error: ${error.message}</div>`;
+            }
+            
+            results.innerHTML = html;
+        }
+        
+        // Run tests after page loads
+        setTimeout(runTests, 1000);
+    </script>
+</body>
+</html>
