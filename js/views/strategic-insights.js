@@ -240,7 +240,7 @@ class StrategicInsights {
             {
                 icon: 'fa-shield-alt',
                 title: 'Risk Mitigation',
-                value: ' + Math.round((this.platform.config.breachCost * 0.1 * 0.65) / 1000) + 'K',
+                value: `${Math.round((this.platform.config.breachCost * 0.1 * 0.65) / 1000)}K`,
                 description: 'Annual risk reduction through Zero Trust implementation'
             },
             {
@@ -576,7 +576,7 @@ class StrategicInsights {
                 },
                 labels: {
                     formatter: function() {
-                        return ' + Math.round(this.value / 1000) + 'K';
+                        return `${Math.round(this.value / 1000)}K`;
                     },
                     style: { color: '#CBD5E1' }
                 }
@@ -587,7 +587,7 @@ class StrategicInsights {
                     dataLabels: {
                         enabled: true,
                         formatter: function() {
-                            return ' + Math.round(this.y / 1000) + 'K';
+                            return `${Math.round(this.y / 1000)}K`;
                         },
                         style: { 
                             color: '#FFFFFF',

@@ -29,6 +29,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Load module files in sequence
         const moduleFiles = [
+            '/js/core/config-manager.js',
+            '/js/core/event-system.js',
+            '/js/data/vendor-data-manager.js',
+            '/js/core/ui-manager.js',
             '/js/modules/premium-executive-platform.js',
             '/js/views/risk-security-init.js',
             '/js/views/compliance-analysis.js',
