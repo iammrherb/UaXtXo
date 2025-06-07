@@ -1,3 +1,24 @@
+#!/bin/bash
+
+# ================================================================================
+# PORTNOX TCO PLATFORM - SCRIPT 1: CORE SETUP & VENDOR DATABASE
+# ================================================================================
+
+set -e
+
+echo "╔══════════════════════════════════════════════════════════════════════════════╗"
+echo "║     🚀 PORTNOX TCO PLATFORM - COMPREHENSIVE IMPLEMENTATION v5.0 🚀            ║"
+echo "║            Script 1: Core Setup & Complete Vendor Database                    ║"
+echo "╚══════════════════════════════════════════════════════════════════════════════╝"
+
+# Create directory structure
+mkdir -p js/{core,data,views,utils,components}
+mkdir -p css/{theme,components}
+mkdir -p img/vendors
+mkdir -p assets/{fonts,data}
+
+# Create comprehensive vendor database with ALL vendors and pricing
+cat > js/data/vendor-database-complete.js << 'EOF'
 // Comprehensive Vendor Database - All 13 Vendors with Complete Pricing
 window.VendorDatabase = {
     // PORTNOX CLEAR - Cloud-Native Zero Trust Leader
@@ -1439,3 +1460,6 @@ window.VendorDatabase.calculateROI = function(vendorId, tco, config) {
 // Make globally available
 window.MasterVendorDatabase = window.VendorDatabase;
 console.log('[VendorDatabase] Loaded ' + Object.keys(window.VendorDatabase).filter(k => typeof window.VendorDatabase[k] === 'object').length + ' vendors');
+EOF
+
+echo "✅ Script 1 Complete: Core setup and comprehensive vendor database created"

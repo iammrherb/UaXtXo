@@ -1,17 +1,3 @@
-#!/bin/bash
-
-# ================================================================================
-# PORTNOX TCO PLATFORM - SCRIPT 4: MAIN APPLICATION
-# ================================================================================
-
-set -e
-
-echo "╔══════════════════════════════════════════════════════════════════════════════╗"
-echo "║                Script 4: Main Platform Application                            ║"
-echo "╚══════════════════════════════════════════════════════════════════════════════╝"
-
-# Create main platform application
-cat > js/core/platform-app.js << 'EOF'
 // Main Platform Application with Complete Implementation
 class PortnoxTCOPlatform {
     constructor() {
@@ -1071,6 +1057,3 @@ document.addEventListener('DOMContentLoaded', () => {
     
     checkDependencies();
 });
-EOF
-
-echo "✅ Script 4 Complete: Main platform application created"
