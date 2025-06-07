@@ -1,412 +1,233 @@
-#!/bin/bash
-# NAC Platform Enhancement - Part 3: Comprehensive Compliance Frameworks
-# enhance-platform-part3.sh
-
-echo "📋 NAC Platform Enhancement - Part 3: Compliance Frameworks Data"
-echo "=============================================================="
-
-# Create comprehensive compliance frameworks data
-cat > js/data/compliance-frameworks-complete.js << 'EOF'
-// Comprehensive Compliance Frameworks Database
-// Including all major frameworks, controls, penalties, and NAC mappings
+/**
+ * Comprehensive Compliance Frameworks Database
+ * Complete regulatory and compliance framework mappings
+ */
 
 window.ComplianceFrameworks = {
-    // Financial Services Frameworks
+    // SOX (Sarbanes-Oxley)
     sox: {
         id: "sox",
-        name: "Sarbanes-Oxley Act (SOX)",
+        name: "Sarbanes-Oxley Act",
         category: "Financial",
-        description: "U.S. federal law for financial reporting and corporate governance",
-        regulatoryBody: "SEC (Securities and Exchange Commission)",
-        lastUpdated: "2023-07-30",
+        description: "US federal law for public company financial reporting",
+        enacted: "2002",
+        lastUpdated: "2022",
         
         sections: {
             "302": {
                 title: "Corporate Responsibility for Financial Reports",
                 requirements: [
-                    "CEOs and CFOs must certify financial reports",
-                    "Establish and maintain internal controls",
-                    "Report on effectiveness of internal controls"
+                    "CEO/CFO certification of financial reports",
+                    "Internal controls assessment",
+                    "Disclosure of deficiencies"
                 ],
-                nacControls: {
-                    accessManagement: {
-                        requirement: "Control access to financial systems",
-                        portnoxMapping: "Automated role-based access with continuous verification",
-                        implementation: "Zero-touch deployment identifies all financial systems, enforces policies",
-                        evidence: ["Real-time access logs", "Automated compliance reports", "Audit trails"],
-                        automationLevel: 95
-                    },
-                    auditTrails: {
-                        requirement: "Maintain comprehensive audit trails",
-                        portnoxMapping: "Immutable, tamper-proof logging with blockchain verification",
-                        implementation: "Every access attempt logged with user, device, time, and action",
-                        evidence: ["Cryptographically signed logs", "Chain of custody", "Retention policies"],
-                        automationLevel: 100
-                    },
-                    changeManagement: {
-                        requirement: "Document all changes to financial systems",
-                        portnoxMapping: "Automated change detection and approval workflows",
-                        implementation: "AI-driven change analysis with risk scoring",
-                        evidence: ["Change logs", "Approval records", "Impact assessments"],
-                        automationLevel: 90
-                    }
-                },
-                penalties: {
-                    civil: {
-                        min: 1000000,
-                        max: 5000000,
-                        factors: ["Severity", "Intent", "Repeat offenses"]
-                    },
-                    criminal: {
-                        fines: 5000000,
-                        imprisonment: "Up to 20 years",
-                        conditions: "Willful violations"
-                    }
+                nacMapping: {
+                    requirement: "Ensure only authorized personnel access financial systems",
+                    implementation: "Role-based access control with audit trails",
+                    portnoxFeatures: [
+                        "Automated user provisioning",
+                        "Privileged access management",
+                        "Comprehensive audit logging",
+                        "Real-time access monitoring"
+                    ]
                 }
             },
             "404": {
                 title: "Management Assessment of Internal Controls",
                 requirements: [
-                    "Annual assessment of internal control effectiveness",
-                    "Independent auditor attestation",
-                    "Disclosure of material weaknesses"
+                    "Annual internal control report",
+                    "Auditor attestation",
+                    "Documentation of controls"
                 ],
-                nacControls: {
-                    continuousMonitoring: {
-                        requirement: "Monitor internal control effectiveness",
-                        portnoxMapping: "24/7 automated control testing with AI anomaly detection",
-                        implementation: "Continuous assessment of access patterns and policy violations",
-                        evidence: ["Control dashboards", "Trend analysis", "Exception reports"],
-                        automationLevel: 92
-                    },
-                    riskAssessment: {
-                        requirement: "Identify and assess control risks",
-                        portnoxMapping: "AI-driven risk scoring for every access attempt",
-                        implementation: "Machine learning models predict and prevent control failures",
-                        evidence: ["Risk heat maps", "Predictive analytics", "Mitigation plans"],
-                        automationLevel: 88
-                    }
-                }
-            },
-            "409": {
-                title: "Real-Time Issuer Disclosures",
-                requirements: [
-                    "Rapid disclosure of material changes",
-                    "4-day reporting requirement"
-                ],
-                nacControls: {
-                    incidentDetection: {
-                        requirement: "Detect material security incidents immediately",
-                        portnoxMapping: "Real-time threat detection with automated escalation",
-                        implementation: "AI-powered anomaly detection triggers instant alerts",
-                        evidence: ["Detection logs", "Response times", "Escalation records"],
-                        automationLevel: 95
-                    }
-                }
-            },
-            "802": {
-                title: "Criminal Penalties for Altering Documents",
-                requirements: [
-                    "Preserve audit records",
-                    "Prevent tampering"
-                ],
-                nacControls: {
-                    dataIntegrity: {
-                        requirement: "Ensure audit record integrity",
-                        portnoxMapping: "Cryptographic signing and distributed storage",
-                        implementation: "Blockchain-style verification prevents tampering",
-                        evidence: ["Hash chains", "Integrity checks", "Tamper alerts"],
-                        automationLevel: 100
-                    }
+                nacMapping: {
+                    requirement: "Document and test IT controls",
+                    implementation: "Automated control testing and evidence collection",
+                    portnoxFeatures: [
+                        "Continuous compliance monitoring",
+                        "Automated evidence generation",
+                        "Control effectiveness reporting",
+                        "Exception tracking"
+                    ],
+                    automationLevel: 95
                 }
             }
         },
         
-        businessImpact: {
-            compliance: {
-                costWithoutNAC: 500000,
-                costWithPortnox: 125000,
-                savings: 375000,
-                savingsPercentage: 75
+        itControls: {
+            accessControl: {
+                description: "Logical access to financial systems",
+                nacRequirements: [
+                    "User authentication and authorization",
+                    "Segregation of duties",
+                    "Access reviews and recertification",
+                    "Privileged access management"
+                ],
+                portnoxImplementation: {
+                    features: [
+                        "Multi-factor authentication",
+                        "Dynamic access policies",
+                        "Automated access reviews",
+                        "Just-in-time access"
+                    ],
+                    complianceScore: 98
+                }
             },
-            audit: {
-                daysWithoutNAC: 60,
-                daysWithPortnox: 7,
-                efficiency: 88
-            },
-            penalties: {
-                averageWithoutNAC: 2500000,
-                riskReductionPortnox: 95,
-                insurancePremiumReduction: 30
+            changeManagement: {
+                description: "Control over system changes",
+                nacRequirements: [
+                    "Change authorization",
+                    "Testing and approval",
+                    "Emergency change procedures"
+                ],
+                portnoxImplementation: {
+                    features: [
+                        "Policy version control",
+                        "Change approval workflows",
+                        "Automated rollback"
+                    ]
+                }
             }
         },
         
-        implementationGuide: {
-            phases: [
-                {
-                    phase: 1,
-                    name: "Discovery & Assessment",
-                    duration: "1-2 days",
-                    activities: [
-                        "Automated discovery of all financial systems",
-                        "User and device inventory",
-                        "Current state gap analysis"
-                    ]
-                },
-                {
-                    phase: 2,
-                    name: "Policy Implementation",
-                    duration: "2-3 days",
-                    activities: [
-                        "Configure role-based access policies",
-                        "Set up automated workflows",
-                        "Enable continuous monitoring"
-                    ]
-                },
-                {
-                    phase: 3,
-                    name: "Testing & Validation",
-                    duration: "1-2 days",
-                    activities: [
-                        "Policy testing",
-                        "Audit report generation",
-                        "Stakeholder sign-off"
-                    ]
-                }
-            ]
+        penalties: {
+            criminal: {
+                maxPrison: "20 years",
+                maxFine: 5000000,
+                for: "Willful violations"
+            },
+            civil: {
+                maxFine: 1000000,
+                disqualification: "Officer/Director ban"
+            },
+            corporate: {
+                delistingRisk: true,
+                reputationDamage: "Severe",
+                investorLawsuits: "Likely"
+            }
+        },
+        
+        auditRequirements: {
+            frequency: "Annual",
+            scope: "All material financial systems",
+            evidence: [
+                "Access logs",
+                "User access lists",
+                "Change logs",
+                "Security configurations"
+            ],
+            portnoxSupport: {
+                evidenceGeneration: "Automated",
+                auditReadiness: "Real-time dashboards",
+                timeReduction: "90%"
+            }
         }
     },
     
-    // Healthcare Frameworks
+    // HIPAA Framework
     hipaa: {
         id: "hipaa",
         name: "Health Insurance Portability and Accountability Act",
         category: "Healthcare",
-        description: "U.S. law protecting patient health information privacy and security",
-        regulatoryBody: "HHS Office for Civil Rights",
-        lastUpdated: "2023-11-15",
+        description: "US healthcare data privacy and security provisions",
+        enacted: "1996",
+        lastUpdated: "2024",
         
         rules: {
             privacy: {
-                title: "HIPAA Privacy Rule",
-                cfr: "45 CFR Part 160 and Part 164, Subparts A and E",
+                title: "Privacy Rule",
                 requirements: [
                     "Minimum necessary access",
-                    "Patient access rights",
+                    "Patient rights to access PHI",
                     "Disclosure accounting"
                 ],
-                nacControls: {
-                    minimumNecessary: {
-                        requirement: "Limit PHI access to minimum necessary",
-                        portnoxMapping: "Dynamic access control based on role and context",
-                        implementation: "AI determines minimum access per request",
-                        evidence: ["Access justification logs", "Role definitions", "Context analysis"],
-                        automationLevel: 94
-                    }
+                nacMapping: {
+                    implementation: "Attribute-based access control",
+                    portnoxFeatures: [
+                        "Role-based PHI access",
+                        "Purpose-based restrictions",
+                        "Access audit trails"
+                    ]
                 }
             },
             security: {
-                title: "HIPAA Security Rule",
-                cfr: "45 CFR Part 160 and Part 164, Subparts A and C",
-                
+                title: "Security Rule",
                 safeguards: {
                     administrative: {
-                        "164.308(a)(1)": {
-                            name: "Security Management Process",
-                            required: true,
-                            nacMapping: {
-                                riskAnalysis: {
-                                    requirement: "Conduct accurate and thorough risk analysis",
-                                    portnoxImplementation: "Continuous automated risk assessment for all PHI access",
-                                    features: [
-                                        "Real-time vulnerability scanning",
-                                        "Threat intelligence integration",
-                                        "Risk scoring algorithms"
-                                    ],
-                                    evidence: ["Risk reports", "Vulnerability assessments", "Mitigation tracking"]
-                                },
-                                riskManagement: {
-                                    requirement: "Implement security measures to reduce risks",
-                                    portnoxImplementation: "Automated policy enforcement and remediation",
-                                    features: [
-                                        "Auto-remediation workflows",
-                                        "Policy optimization",
-                                        "Preventive controls"
-                                    ]
-                                },
-                                sanctionPolicy: {
-                                    requirement: "Apply sanctions for security violations",
-                                    portnoxImplementation: "Automated violation detection and response",
-                                    features: [
-                                        "Policy violation alerts",
-                                        "Automated access suspension",
-                                        "Incident workflows"
-                                    ]
-                                }
-                            }
-                        },
-                        "164.308(a)(3)": {
-                            name: "Workforce Security",
-                            required: true,
-                            nacMapping: {
-                                authorization: {
-                                    requirement: "Implement authorization procedures",
-                                    portnoxImplementation: "Zero Trust authorization for every access",
-                                    features: [
-                                        "Continuous verification",
-                                        "Attribute-based access",
-                                        "Just-in-time permissions"
-                                    ]
-                                },
-                                termination: {
-                                    requirement: "Implement termination procedures",
-                                    portnoxImplementation: "Automated de-provisioning on termination",
-                                    features: [
-                                        "HR system integration",
-                                        "Instant access revocation",
-                                        "Audit trail generation"
-                                    ]
-                                }
-                            }
-                        },
-                        "164.308(a)(4)": {
-                            name: "Information Access Management",
-                            required: true,
-                            nacMapping: {
-                                isolation: {
-                                    requirement: "Isolate healthcare clearinghouse functions",
-                                    portnoxImplementation: "Network segmentation and microsegmentation",
-                                    features: [
-                                        "Dynamic VLAN assignment",
-                                        "Application-layer isolation",
-                                        "East-west traffic control"
-                                    ]
-                                }
+                        requirements: [
+                            "Security officer designation",
+                            "Workforce training",
+                            "Access management",
+                            "Security awareness"
+                        ],
+                        nacControls: {
+                            "164.308(a)(3)": {
+                                name: "Workforce Security",
+                                implementation: "Automated access control",
+                                portnoxFeatures: [
+                                    "Background check integration",
+                                    "Automated termination procedures",
+                                    "Access privilege management"
+                                ]
+                            },
+                            "164.308(a)(4)": {
+                                name: "Information Access Management",
+                                implementation: "Zero Trust access",
+                                portnoxFeatures: [
+                                    "Least privilege enforcement",
+                                    "Dynamic authorization",
+                                    "Continuous verification"
+                                ]
                             }
                         }
                     },
                     physical: {
-                        "164.310(a)": {
-                            name: "Facility Access Controls",
-                            required: true,
-                            nacMapping: {
-                                facilityAccess: {
-                                    requirement: "Limit physical access to ePHI systems",
-                                    portnoxImplementation: "Integration with physical security systems",
-                                    features: [
-                                        "Badge reader integration",
-                                        "Location-based policies",
-                                        "Facility access logs"
-                                    ]
-                                }
-                            }
-                        },
-                        "164.310(c)": {
-                            name: "Workstation Security",
-                            required: true,
-                            nacMapping: {
-                                workstationAccess: {
-                                    requirement: "Restrict workstation access to authorized users",
-                                    portnoxImplementation: "Device trust and user verification",
-                                    features: [
-                                        "Device fingerprinting",
-                                        "Continuous authentication",
-                                        "Screen lock enforcement"
-                                    ]
-                                }
+                        requirements: [
+                            "Facility access controls",
+                            "Workstation security",
+                            "Device controls"
+                        ],
+                        nacControls: {
+                            workstationSecurity: {
+                                implementation: "Device trust verification",
+                                portnoxFeatures: [
+                                    "Device compliance checking",
+                                    "Location-based policies",
+                                    "Automatic lockdown"
+                                ]
                             }
                         }
                     },
                     technical: {
-                        "164.312(a)": {
-                            name: "Access Control",
-                            required: true,
-                            nacMapping: {
-                                uniqueIdentification: {
-                                    requirement: "Assign unique user identification",
-                                    portnoxImplementation: "Unified identity with multi-factor authentication",
-                                    features: [
-                                        "Single Sign-On integration",
-                                        "Biometric support",
-                                        "Certificate-based auth"
-                                    ],
-                                    automationLevel: 98
-                                },
-                                automaticLogoff: {
-                                    requirement: "Implement automatic logoff procedures",
-                                    portnoxImplementation: "Policy-based session management",
-                                    features: [
-                                        "Idle timeout enforcement",
-                                        "Risk-based session limits",
-                                        "Remote session termination"
-                                    ],
-                                    automationLevel: 100
-                                },
-                                encryptionDecryption: {
-                                    requirement: "Implement encryption and decryption",
-                                    portnoxImplementation: "Automatic encryption policy enforcement",
-                                    features: [
-                                        "TLS enforcement",
-                                        "VPN automation",
-                                        "Key management"
-                                    ],
-                                    automationLevel: 95
+                        requirements: [
+                            "Access control",
+                            "Audit controls",
+                            "Integrity controls",
+                            "Transmission security"
+                        ],
+                        nacControls: {
+                            "164.312(a)": {
+                                name: "Access Control",
+                                requirements: [
+                                    "Unique user identification",
+                                    "Automatic logoff",
+                                    "Encryption and decryption"
+                                ],
+                                portnoxImplementation: {
+                                    uniqueUserId: "SSO integration with MFA",
+                                    automaticLogoff: "Policy-based session management",
+                                    encryption: "Automatic VPN/encryption enforcement",
+                                    complianceScore: 99
                                 }
-                            }
-                        },
-                        "164.312(b)": {
-                            name: "Audit Controls",
-                            required: true,
-                            nacMapping: {
-                                logging: {
-                                    requirement: "Implement audit logs and review procedures",
-                                    portnoxImplementation: "Comprehensive automated logging and analysis",
-                                    features: [
-                                        "All PHI access logged",
-                                        "AI-powered log analysis",
-                                        "Anomaly detection"
-                                    ],
-                                    automationLevel: 100
-                                }
-                            }
-                        },
-                        "164.312(e)": {
-                            name: "Transmission Security",
-                            required: true,
-                            nacMapping: {
-                                integrityControls: {
-                                    requirement: "Implement security measures for ePHI transmission",
-                                    portnoxImplementation: "Automated transmission security",
-                                    features: [
-                                        "End-to-end encryption",
-                                        "Secure tunnel automation",
-                                        "Data loss prevention"
-                                    ],
-                                    automationLevel: 96
+                            },
+                            "164.312(b)": {
+                                name: "Audit Controls",
+                                portnoxImplementation: {
+                                    logging: "Comprehensive PHI access logs",
+                                    monitoring: "Real-time anomaly detection",
+                                    retention: "Automated 6-year retention"
                                 }
                             }
                         }
-                    }
-                }
-            },
-            breach: {
-                title: "HIPAA Breach Notification Rule",
-                requirements: [
-                    "60-day individual notification",
-                    "Media notification for large breaches",
-                    "HHS notification"
-                ],
-                nacMapping: {
-                    breachDetection: {
-                        requirement: "Detect breaches immediately",
-                        portnoxImplementation: "Real-time breach detection and response",
-                        features: [
-                            "AI anomaly detection",
-                            "Automated containment",
-                            "Instant notification workflows"
-                        ],
-                        timeToDetect: "< 1 hour",
-                        comparedToAverage: "207 days industry average"
                     }
                 }
             }
@@ -444,176 +265,93 @@ window.ComplianceFrameworks = {
                 }
             ],
             criminal: {
-                wrongfulDisclosure: {
-                    fine: 50000,
-                    imprisonment: "1 year"
-                },
-                falsePresenses: {
-                    fine: 100000,
-                    imprisonment: "5 years"
-                },
-                intentToSell: {
-                    fine: 250000,
-                    imprisonment: "10 years"
-                }
+                maxPrison: "10 years",
+                maxFine: 250000,
+                for: "Intent to sell PHI"
             }
         },
         
-        businessImpact: {
-            breachCosts: {
-                averagePerRecord: 429,
-                averageTotal: 10930000,
-                highestRecorded: 100000000
+        breachNotification: {
+            timeline: {
+                individuals: "60 days",
+                hhs: "60 days",
+                media: "60 days (if >500 affected)"
             },
-            compliance: {
-                annualCostWithoutNAC: 850000,
-                annualCostWithPortnox: 125000,
-                savings: 725000,
-                savingsPercentage: 85
-            },
-            operationalImpact: {
-                patientTrustLoss: 65, // percentage
-                reputationRecoveryTime: 24, // months
-                businessLoss: 15 // percentage
+            nacPrevention: {
+                detection: "Real-time with Portnox",
+                response: "Automated containment",
+                forensics: "Complete audit trail"
             }
         },
         
-        useCases: [
-            {
-                title: "Medical Device Security",
-                scenario: "Hospital with 5,000+ connected medical devices",
-                challenge: "Devices running outdated OS, can't install agents",
-                solution: "Portnox agentless discovery and segmentation",
-                implementation: [
-                    "Automatic device profiling",
-                    "Risk-based network isolation",
-                    "Continuous vulnerability monitoring"
-                ],
-                results: {
-                    devicesSecured: "100%",
-                    vulnerabilitiesReduced: "95%",
-                    complianceAchieved: "Full HIPAA compliance",
-                    timeToImplement: "3 days"
-                }
-            },
-            {
-                title: "Remote Healthcare Access",
-                scenario: "Telehealth providers accessing PHI remotely",
-                challenge: "Secure access from personal devices",
-                solution: "Zero Trust remote access with Portnox",
-                implementation: [
-                    "Device trust verification",
-                    "User identity validation",
-                    "Encrypted access tunnels"
-                ],
-                results: {
-                    securityIncidents: "0",
-                    accessTime: "< 10 seconds",
-                    userSatisfaction: "95%"
-                }
-            },
-            {
-                title: "Third-Party Vendor Access",
-                scenario: "Managing 50+ business associates",
-                challenge: "Controlling vendor access to PHI",
-                solution: "Automated vendor access management",
-                implementation: [
-                    "Time-based access windows",
-                    "Least-privilege enforcement",
-                    "Complete audit trails"
-                ],
-                results: {
-                    vendorIncidents: "Eliminated",
-                    auditTime: "Reduced 90%",
-                    baaCompliance: "100%"
-                }
+        businessAssociates: {
+            requirements: [
+                "Written agreements",
+                "Security assurances",
+                "Breach notification"
+            ],
+            nacIntegration: {
+                vendorAccess: "Controlled third-party access",
+                monitoring: "BA activity tracking",
+                compliance: "Automated BA validation"
             }
-        ]
+        }
     },
     
     // PCI-DSS Framework
-    "pci-dss": {
+    pciDss: {
         id: "pci-dss",
         name: "Payment Card Industry Data Security Standard",
         version: "4.0",
-        category: "Payment Security",
-        description: "Security standards for organizations handling payment cards",
-        regulatoryBody: "PCI Security Standards Council",
-        lastUpdated: "2024-03-31",
+        category: "Financial",
+        description: "Security standard for organizations handling credit cards",
+        effectiveDate: "2024-03-31",
         
         requirements: {
             "1": {
                 title: "Install and Maintain Network Security Controls",
-                objective: "Network security controls (NSCs) are network technologies that enforce policies controlling network traffic",
+                objective: "Protect cardholder data with network security controls",
                 
                 subrequirements: {
                     "1.1": {
-                        description: "Processes and mechanisms for installing and maintaining network security controls",
+                        description: "Processes and mechanisms for network security controls",
                         nacMapping: {
-                            implementation: "Automated network policy management",
+                            implementation: "Network segmentation and microsegmentation",
                             portnoxFeatures: [
-                                "Dynamic firewall rule generation",
-                                "Automated VLAN assignment",
-                                "Microsegmentation policies"
-                            ],
-                            evidence: ["Policy documentation", "Change logs", "Network diagrams"]
+                                "Dynamic VLANs",
+                                "Automated firewall rules",
+                                "Zero Trust networking"
+                            ]
                         }
                     },
                     "1.2": {
-                        description: "Network security controls configured to restrict inbound and outbound traffic",
+                        description: "Network security controls configured and maintained",
                         nacMapping: {
-                            implementation: "Zero Trust network access",
+                            implementation: "Policy-based network control",
                             portnoxFeatures: [
-                                "Default deny policies",
-                                "Application-aware controls",
-                                "Least privilege access"
-                            ],
-                            automationLevel: 95
-                        }
-                    },
-                    "1.3": {
-                        description: "Network segmentation to isolate the CDE",
-                        nacMapping: {
-                            implementation: "Dynamic CDE isolation",
-                            portnoxFeatures: [
-                                "Automatic CDE discovery",
-                                "Real-time segmentation",
-                                "East-west traffic control"
-                            ],
-                            benefits: {
-                                scopeReduction: 80,
-                                costSavings: 200000,
-                                auditSimplification: 75
-                            }
+                                "Continuous configuration monitoring",
+                                "Automated remediation",
+                                "Change tracking"
+                            ]
                         }
                     }
                 }
             },
             "2": {
-                title: "Apply Secure Configurations to All System Components",
-                objective: "Malicious individuals often use default passwords and settings to compromise systems",
+                title: "Apply Secure Configurations",
+                objective: "Prevent unauthorized access via default settings",
                 
                 subrequirements: {
                     "2.1": {
-                        description: "Processes and mechanisms for applying secure configurations",
+                        description: "Processes and mechanisms for secure configurations",
                         nacMapping: {
-                            implementation: "Configuration compliance monitoring",
+                            implementation: "Device hardening and compliance",
                             portnoxFeatures: [
-                                "Baseline configuration enforcement",
-                                "Drift detection",
-                                "Automated remediation"
-                            ]
-                        }
-                    },
-                    "2.2": {
-                        description: "System components are configured and managed securely",
-                        nacMapping: {
-                            implementation: "Continuous configuration assessment",
-                            portnoxFeatures: [
-                                "Real-time compliance checking",
-                                "Vulnerability correlation",
-                                "Risk-based prioritization"
-                            ]
+                                "Configuration compliance checking",
+                                "Automated baseline enforcement",
+                                "Non-compliant device quarantine"
+                            ],
+                            automationLevel: 92
                         }
                     }
                 }
@@ -1762,6 +1500,3 @@ window.ComplianceFrameworks = {
 // Export for global use
 window.ComplianceFrameworks = ComplianceFrameworks;
 console.log('✅ Comprehensive Compliance Frameworks loaded');
-EOF
-
-echo "✅ Part 3 complete - Compliance frameworks data created"

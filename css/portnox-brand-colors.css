@@ -1,0 +1,75 @@
+/**
+ * Portnox Brand Colors
+ * Official color scheme for Premium Executive Platform
+ */
+
+:root {
+    /* Portnox branding colors */
+    --portnox-primary: #0046ad;
+    --portnox-accent: #00e5e6;
+    --portnox-secondary: #e6f0ff;
+    --portnox-dark: #003380;
+    --portnox-light: #f0f7ff;
+    
+    /* Semantic color mappings */
+    --color-primary: var(--portnox-primary);
+    --color-accent: var(--portnox-accent);
+    --color-secondary: var(--portnox-secondary);
+    --color-dark: var(--portnox-dark);
+    --color-light: var(--portnox-light);
+    
+    /* Compliance status colors */
+    --compliance-high: #10B981;
+    --compliance-medium: #F59E0B;
+    --compliance-low: #EF4444;
+    
+    /* Dark theme adjustments */
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #1a1a1a;
+    --bg-card: rgba(0, 70, 173, 0.05);
+    --text-primary: #ffffff;
+    --text-secondary: #a6acbb;
+    --border-color: rgba(0, 229, 230, 0.1);
+}
+
+/* Update all primary color references */
+.btn-primary {
+    background: linear-gradient(135deg, var(--portnox-primary) 0%, var(--portnox-dark) 100%);
+    border: 1px solid var(--portnox-accent);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--portnox-dark) 0%, var(--portnox-primary) 100%);
+    box-shadow: 0 0 20px rgba(0, 229, 230, 0.3);
+}
+
+/* Header styling with Portnox colors */
+.platform-header {
+    background: linear-gradient(to right, var(--portnox-dark), var(--portnox-primary));
+    border-bottom: 2px solid var(--portnox-accent);
+}
+
+/* Update accent highlights */
+.highlight, .accent {
+    color: var(--portnox-accent);
+}
+
+/* Card hover effects */
+.card:hover {
+    border-color: var(--portnox-accent);
+    box-shadow: 0 0 30px rgba(0, 229, 230, 0.2);
+}
+
+/* Compliance score colors */
+.compliance-score-high {
+    background: linear-gradient(135deg, var(--compliance-high), #059669);
+}
+
+.compliance-score-medium {
+    background: linear-gradient(135deg, var(--compliance-medium), #D97706);
+}
+
+.compliance-score-low {
+    background: linear-gradient(135deg, var(--compliance-low), #DC2626);
+}

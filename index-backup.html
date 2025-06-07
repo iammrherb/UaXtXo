@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAC Executive Decision Platform - Enterprise Security & Compliance Suite</title>
+    
+    <!-- SEO Meta -->
+    <meta name="description" content="Enterprise NAC Decision Platform - Comprehensive TCO, Risk, and Compliance Analysis">
+    <meta name="keywords" content="NAC, Network Access Control, Zero Trust, Compliance, Security">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Pro -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Core Styles -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layouts.css">
+    
+    <!-- Enhanced View Styles -->
+    <link rel="stylesheet" href="css/executive-view-enhanced.css">
+    <link rel="stylesheet" href="css/financial-view-enhanced.css">
+    <link rel="stylesheet" href="css/compliance-view-enhanced.css">
+    <link rel="stylesheet" href="css/risk-view-enhanced.css">
+    <link rel="stylesheet" href="css/operational-view-enhanced.css">
+    <link rel="stylesheet" href="css/export-templates.css">
+    <link rel="stylesheet" href="css/tooltips-enhanced.css">
+    <link rel="stylesheet" href="css/animations.css">
+    
+    <!-- Chart Libraries -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/highcharts-3d.js"></script>
+    <script src="https://code.highcharts.com/modules/heatmap.js"></script>
+    <script src="https://code.highcharts.com/modules/treemap.js"></script>
+    <script src="https://code.highcharts.com/modules/sankey.js"></script>
+    <script src="https://code.highcharts.com/modules/timeline.js"></script>
+    <script src="https://code.highcharts.com/modules/sunburst.js"></script>
+    <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
+    <script src="https://code.highcharts.com/modules/annotations.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    
+    <!-- D3.js for advanced visualizations -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
+    
+    <!-- Tooltip Library -->
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="img/favicon.png">
+</head>
+<body>
+    <div id="app-container" class="executive-platform-app">
+        <!-- Enhanced Loading Screen -->
+        <div class="loading-screen" id="loading-screen">
+            <div class="loading-container">
+                <div class="loading-logo">
+                    <img src="img/vendors/portnox-logo.png" alt="Portnox" class="portnox-logo">
+                </div>
+                <h2 class="loading-title">Initializing Executive Decision Platform</h2>
+                <div class="loading-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="loading-status">Loading compliance frameworks...</div>
+                </div>
+                <div class="loading-features">
+                    <div class="feature-item">
+                        <i class="fas fa-shield-check"></i>
+                        <span>100+ Compliance Controls</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Real-time TCO Analysis</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-brain"></i>
+                        <span>AI-Powered Insights</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Application -->
+        <div class="app-wrapper" id="app-wrapper" style="display: none;">
+            <!-- Enhanced Header -->
+            <header class="platform-header">
+                <div class="header-container">
+                    <div class="header-brand">
+                        <img src="img/vendors/portnox-logo.png" alt="Portnox" class="brand-logo">
+                        <div class="brand-info">
+                            <h1>NAC Executive Decision Platform</h1>
+                            <p>Enterprise Security & Compliance Intelligence Suite</p>
+                        </div>
+                    </div>
+                    
+                    <nav class="header-nav">
+                        <button class="nav-item" onclick="NAC.showQuickInsights()">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Quick Insights</span>
+                        </button>
+                        <button class="nav-item" onclick="NAC.openConfiguration()">
+                            <i class="fas fa-cog"></i>
+                            <span>Configure</span>
+                        </button>
+                        <button class="nav-item" onclick="NAC.scheduleDemo()">
+                            <i class="fas fa-calendar"></i>
+                            <span>Schedule Demo</span>
+                        </button>
+                    </nav>
+                    
+                    <div class="header-actions">
+                        <button class="action-btn primary" onclick="NAC.exportExecutiveReport()">
+                            <i class="fas fa-download"></i>
+                            Export Report
+                        </button>
+                        <button class="action-btn help-btn" onclick="NAC.toggleHelp()">
+                            <i class="fas fa-question-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Executive Summary Hero Section -->
+            <section class="executive-hero" id="executive-hero">
+                <div class="hero-background">
+                    <div class="hero-particles"></div>
+                    <div class="hero-gradient"></div>
+                </div>
+                
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <i class="fas fa-award"></i>
+                        <span>Executive Analysis Complete</span>
+                    </div>
+                    
+                    <h2 class="hero-title">
+                        <span class="title-prefix">Your Organization's</span>
+                        <span class="title-main">Zero Trust Transformation Journey</span>
+                    </h2>
+                    
+                    <p class="hero-subtitle">
+                        Comprehensive analysis reveals <span class="highlight">$<span id="total-savings">0</span>M</span> 
+                        in potential savings and <span class="highlight"><span id="risk-reduction">0</span>%</span> 
+                        risk reduction opportunity
+                    </p>
+                    
+                    <!-- Critical Decision Metrics -->
+                    <div class="decision-metrics-grid" id="decision-metrics">
+                        <!-- Metrics will be dynamically inserted -->
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="hero-actions">
+                        <button class="hero-btn primary" onclick="NAC.showExecutiveSummary()">
+                            <i class="fas fa-chart-line"></i>
+                            View Full Analysis
+                        </button>
+                        <button class="hero-btn secondary" onclick="NAC.startGuidedTour()">
+                            <i class="fas fa-play-circle"></i>
+                            Take Guided Tour
+                        </button>
+                        <button class="hero-btn outline" onclick="NAC.downloadOnePager()">
+                            <i class="fas fa-file-pdf"></i>
+                            Download One-Pager
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Enhanced Navigation Tabs -->
+            <nav class="platform-tabs" id="platform-tabs">
+                <div class="tabs-container">
+                    <div class="tabs-scroll">
+                        <button class="tab-item active" data-tab="executive" onclick="NAC.showTab('executive')">
+                            <i class="fas fa-chart-pie"></i>
+                            <span class="tab-label">Executive Summary</span>
+                            <span class="tab-badge new">NEW</span>
+                        </button>
+                        
+                        <button class="tab-item" data-tab="financial" onclick="NAC.showTab('financial')">
+                            <i class="fas fa-coins"></i>
+                            <span class="tab-label">Financial Analysis</span>
+                            <span class="tab-badge value">ROI</span>
+                        </button>
+                        
+                        <button class="tab-item" data-tab="compliance" onclick="NAC.showTab('compliance')">
+                            <i class="fas fa-certificate"></i>
+                            <span class="tab-label">Compliance Suite</span>
+                            <span class="tab-badge alert">!</span>
+                        </button>
+                        
+                        <button class="tab-item" data-tab="risk" onclick="NAC.showTab('risk')">
+                            <i class="fas fa-shield-virus"></i>
+                            <span class="tab-label">Risk & Security</span>
+                            <span class="tab-badge critical">CRITICAL</span>
+                        </button>
+                        
+                        <button class="tab-item" data-tab="operational" onclick="NAC.showTab('operational')">
+                            <i class="fas fa-cogs"></i>
+                            <span class="tab-label">Operations</span>
+                        </button>
+                        
+                        <button class="tab-item" data-tab="roadmap" onclick="NAC.showTab('roadmap')">
+                            <i class="fas fa-route"></i>
+                            <span class="tab-label">Implementation</span>
+                        </button>
+                        
+                        <button class="tab-item" data-tab="comparison" onclick="NAC.showTab('comparison')">
+                            <i class="fas fa-balance-scale"></i>
+                            <span class="tab-label">Vendor Matrix</span>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+            
+            <!-- Main Content Area -->
+            <main class="platform-content" id="platform-content">
+                <!-- Content will be dynamically loaded here -->
+            </main>
+            
+            <!-- Enhanced Help System -->
+            <div class="help-system" id="help-system" style="display: none;">
+                <div class="help-container">
+                    <div class="help-header">
+                        <h3>Intelligent Help System</h3>
+                        <button class="help-close" onclick="NAC.toggleHelp()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="help-content">
+                        <div class="help-search">
+                            <input type="text" placeholder="Search for help..." id="help-search">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="help-categories">
+                            <!-- Help content will be dynamically loaded -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Export Modal -->
+            <div class="export-modal" id="export-modal" style="display: none;">
+                <!-- Export options will be loaded here -->
+            </div>
+            
+            <!-- Configuration Modal -->
+            <div class="config-modal" id="config-modal" style="display: none;">
+                <!-- Configuration interface will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Data Layer -->
+    <script src="js/data/vendor-database-complete.js"></script>
+    <script src="js/data/compliance-frameworks-complete.js"></script>
+    <script src="js/data/industry-profiles-complete.js"></script>
+    <script src="js/data/risk-models-enhanced.js"></script>
+    <script src="js/data/cost-models-enhanced.js"></script>
+    
+    <!-- Utilities -->
+    <script src="js/utils/calculations.js"></script>
+    <script src="js/utils/formatters.js"></script>
+    <script src="js/utils/validators.js"></script>
+    <script src="js/utils/export-utils.js"></script>
+    <script src="js/utils/chart-themes.js"></script>
+    
+    <!-- Enhanced Views -->
+    <script src="js/views/executive-view-enhanced.js"></script>
+    <script src="js/views/financial-view-enhanced.js"></script>
+    <script src="js/views/compliance-view-enhanced.js"></script>
+    <script src="js/views/risk-view-enhanced.js"></script>
+    <script src="js/views/operational-view-enhanced.js"></script>
+    <script src="js/views/roadmap-view-enhanced.js"></script>
+    <script src="js/views/comparison-view-enhanced.js"></script>
+    
+    <!-- Export Modules -->
+    <script src="js/exports/pdf-generator.js"></script>
+    <script src="js/exports/excel-generator.js"></script>
+    <script src="js/exports/powerpoint-generator.js"></script>
+    
+    <!-- Main Application -->
+    <script src="js/nac-platform-core.js"></script>
+    
+    <script>
+        // Initialize platform when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            window.NAC = new NACPlatform();
+            NAC.init();
+        });
+    </script>
+</body>
+</html>
