@@ -1,0 +1,19 @@
+/* Report Generation Styles */
+.report-preview {
+    background: white;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: var(--shadow-lg);
+}
+
+@media print {
+    .main-header,
+    .main-nav,
+    .vendor-selection-section {
+        display: none;
+    }
+    
+    .main-content {
+        padding: 0;
+    }
+}

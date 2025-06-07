@@ -3,172 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portnox Total Cost Analyzer | Zero Trust NAC TCO Calculator</title>
-    <meta name="description" content="Compare Zero Trust NAC solutions with comprehensive TCO/ROI analysis. See why Portnox CLEAR delivers superior value.">
+    <title>Portnox Total Cost Analyzer - Executive Decision Platform</title>
     
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="./img/vendors/portnox-logo.png">
+    <!-- Core Styles -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="stylesheet" href="styles/vendors.css">
+    <link rel="stylesheet" href="styles/reports.css">
     
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
-    
-    <!-- Custom Styles -->
-    <link rel="stylesheet" href="./css/theme/modern-platform.css">
-    <link rel="stylesheet" href="./css/components/vendor-selection.css">
-    
-    <style>
-        /* Core styles while main CSS loads */
-        body {
-            margin: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #F8FAFB;
-            color: #0F172A;
-        }
-        
-        #app {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .initial-loading {
-            text-align: center;
-            padding: 2rem;
-        }
-        
-        .loading-logo {
-            width: 200px;
-            margin-bottom: 2rem;
-        }
-        
-        .loading-spinner {
-            width: 48px;
-            height: 48px;
-            border: 3px solid #E2E8F0;
-            border-top-color: #00D4AA;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .loading-text {
-            color: #475569;
-            font-size: 1.125rem;
-        }
-        
-        .loading-progress {
-            margin-top: 1rem;
-            font-size: 0.875rem;
-            color: #94A3B8;
-        }
-    </style>
+    <!-- External Dependencies -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-    <!-- Application Container -->
-    <div id="app">
-        <div class="initial-loading">
-            <img src="./img/vendors/portnox-logo.png" alt="Portnox" class="loading-logo"
-                 onerror="this.style.display='none'">
-            <div class="loading-spinner"></div>
-            <p class="loading-text">Initializing Total Cost Analyzer...</p>
-            <p class="loading-progress" id="loading-progress">Loading vendor database...</p>
+    <div id="app" class="app-container">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="assets/portnox-logo.svg" alt="Portnox" class="logo">
+                    <h1>Executive Decision Platform</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="recalculateBtn" class="btn btn-primary">
+                        <span class="icon">📊</span> Recalculate
+                    </button>
+                    <button id="exportBtn" class="btn btn-secondary">
+                        <span class="icon">📥</span> Export
+                    </button>
+                    <button id="scheduleDemoBtn" class="btn btn-accent">
+                        <span class="icon">📅</span> Schedule Demo
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="main-nav">
+            <div class="nav-tabs" role="tablist">
+                <button class="nav-tab active" data-tab="financial" role="tab">
+                    <span class="icon">📈</span> Financial Overview
+                </button>
+                <button class="nav-tab" data-tab="risk" role="tab">
+                    <span class="icon">🛡️</span> Risk & Security
+                </button>
+                <button class="nav-tab" data-tab="compliance" role="tab">
+                    <span class="icon">✅</span> Compliance
+                </button>
+                <button class="nav-tab" data-tab="efficiency" role="tab">
+                    <span class="icon">⚡</span> Operational Efficiency
+                </button>
+                <button class="nav-tab" data-tab="insights" role="tab">
+                    <span class="icon">💡</span> Strategic Insights
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Vendor Selection -->
+            <section class="vendor-selection-section">
+                <h2>Select Vendors for Comparison</h2>
+                <div id="vendorSelection" class="vendor-selection-container">
+                    <!-- Vendor pills will be dynamically inserted here -->
+                </div>
+            </section>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Financial Overview Tab -->
+                <div id="financial-tab" class="tab-panel active" role="tabpanel">
+                    <div class="dashboard-grid">
+                        <div class="metric-card">
+                            <h3>5-Year TCO Comparison</h3>
+                            <div id="tcoChart" class="chart-container"></div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>ROI Analysis</h3>
+                            <div id="roiChart" class="chart-container"></div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Cost Breakdown</h3>
+                            <div id="costBreakdownChart" class="chart-container"></div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Savings Projections</h3>
+                            <div id="savingsChart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk & Security Tab -->
+                <div id="risk-tab" class="tab-panel" role="tabpanel">
+                    <div class="dashboard-grid">
+                        <div class="metric-card">
+                            <h3>Security Posture Score</h3>
+                            <div id="securityScoreChart" class="chart-container"></div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Threat Coverage Analysis</h3>
+                            <div id="threatCoverageChart" class="chart-container"></div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Incident Response Metrics</h3>
+                            <div id="incidentMetricsChart" class="chart-container"></div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Cyber Insurance Impact</h3>
+                            <div id="insuranceImpactChart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compliance Tab -->
+                <div id="compliance-tab" class="tab-panel" role="tabpanel">
+                    <div class="dashboard-grid">
+                        <div class="metric-card full-width">
+                            <h3>Compliance Framework Coverage</h3>
+                            <div id="complianceMatrixChart" class="chart-container"></div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Regulatory Alignment</h3>
+                            <div id="regulatoryChart" class="chart-container"></div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Audit Readiness Score</h3>
+                            <div id="auditReadinessChart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operational Efficiency Tab -->
+                <div id="efficiency-tab" class="tab-panel" role="tabpanel">
+                    <div class="dashboard-grid">
+                        <div class="metric-card">
+                            <h3>FTE Requirements</h3>
+                            <div id="fteChart" class="chart-container"></div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Deployment Timeline</h3>
+                            <div id="timelineChart" class="chart-container"></div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Administrative Overhead</h3>
+                            <div id="adminOverheadChart" class="chart-container"></div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Automation Benefits</h3>
+                            <div id="automationChart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategic Insights Tab -->
+                <div id="insights-tab" class="tab-panel" role="tabpanel">
+                    <div class="insights-container">
+                        <div class="executive-summary">
+                            <h3>Executive Summary</h3>
+                            <div id="executiveSummary" class="summary-content"></div>
+                        </div>
+                        <div class="recommendations">
+                            <h3>Strategic Recommendations</h3>
+                            <div id="recommendations" class="recommendations-content"></div>
+                        </div>
+                        <div class="next-steps">
+                            <h3>Recommended Next Steps</h3>
+                            <div id="nextSteps" class="next-steps-content"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="loader"></div>
+            <p>Initializing platform...</p>
         </div>
     </div>
-    
-    <!-- Vendor Logo Helper -->
-    <script>
-        window.getVendorLogo = function(vendorId) {
-            const logos = {
-                portnox: './img/vendors/portnox-logo.png',
-                cisco: './img/vendors/cisco-logo.png',
-                aruba: './img/vendors/aruba-logo.png',
-                forescout: './img/vendors/forescout-logo.png',
-                extreme: './img/vendors/extreme-logo.png',
-                arista: './img/vendors/arista-logo.png',
-                juniper: './img/vendors/juniper-logo.png',
-                fortinet: './img/vendors/fortinet-logo.png',
-                microsoft: './img/vendors/microsoft-logo.png',
-                packetfence: './img/vendors/packetfence-logo.png',
-                foxpass: './img/vendors/foxpass-logo.png',
-                securew2: './img/vendors/securew2-logo.png',
-                radiusaas: './img/vendors/radiusaas-logo.png',
-                default: './img/vendors/default-logo.png'
-            };
-            return logos[vendorId] || logos.default;
-        };
-    </script>
-    
-    <!-- Core Scripts -->
-    <script src="./js/core/module-loader.js"></script>
-    <script src="./js/core/module-loader-init.js"></script>
 
-    <!-- Core Data -->
-    <script src="./js/data/vendor-database.js"></script>
-    <script src="./js/data/industry-database.js"></script>
-    <script src="./js/data/compliance-database.js"></script>
-    <script src="./js/data/risk-security-database.js"></script>
-    
-    <!-- Components -->
-    <script src="./js/components/vendor-selection-ui.js"></script>
-    
-    <!-- Main Application -->
-    <script src="./js/core/platform-app.js"></script>
-    
-    <!-- Loading Progress -->
-    <script>
-        // Update loading progress
-        const updateProgress = (message) => {
-            const progress = document.getElementById('loading-progress');
-            if (progress) progress.textContent = message;
-        };
-        
-        // Monitor loading
-        let loadedModules = 0;
-        const requiredModules = 5;
-        
-        const checkModule = (moduleName) => {
-            if (window[moduleName]) {
-                loadedModules++;
-                updateProgress(`Loading modules... (${loadedModules}/${requiredModules})`);
-                
-                if (loadedModules === requiredModules) {
-                    updateProgress('Initializing application...');
-                }
-            }
-        };
-        
-        // Check modules as they load
-        const moduleInterval = setInterval(() => {
-            checkModule('VendorDatabase');
-            checkModule('IndustryDatabase');
-            checkModule('ComplianceDatabase');
-            checkModule('RiskSecurityDatabase');
-            checkModule('VendorSelectionUI');
-            
-            if (loadedModules === requiredModules) {
-                clearInterval(moduleInterval);
-            }
-        }, 100);
-    </script>
-    
-    <!-- Analytics (Optional) -->
-    <script>
-        // Google Analytics or other tracking would go here
-        console.log('🚀 Portnox Total Cost Analyzer v5.0');
-        console.log('📊 Comprehensive TCO/ROI analysis platform');
-    </script>
+    <!-- Core Scripts -->
+    <script src="js/module-loader.js"></script>
+    <script src="js/vendor-database.js"></script>
+    <script src="js/compliance-database.js"></script>
+    <script src="js/risk-security-database.js"></script>
+    <script src="js/industry-database.js"></script>
+    <script src="js/tco-calculator.js"></script>
+    <script src="js/roi-calculator.js"></script>
+    <script src="js/chart-manager.js"></script>
+    <script src="js/vendor-selection-ui.js"></script>
+    <script src="js/report-generator.js"></script>
+    <script src="js/platform-app.js"></script>
+    <script src="js/init.js"></script>
 </body>
 </html>

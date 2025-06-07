@@ -1,0 +1,1 @@
+defineModule('IndustryDatabase', [], function() { return {}; });
