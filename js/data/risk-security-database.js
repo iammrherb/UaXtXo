@@ -284,7 +284,7 @@ window.RiskSecurityDatabase = {
     
     // Cyber Insurance Impact
     cyberInsurance: {
-        # Continuing Script 3...
+// SYNTAX ERROR FIXED:         # Continuing Script 3...
 
         baselinePremium: 100000, // Annual for $10M coverage
         
