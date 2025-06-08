@@ -1,3 +1,4 @@
+/*
 // Enhanced settings with defaults
 (function() {
     setTimeout(() => {
@@ -56,3 +57,4 @@
         }
     }, 1000);
 })();
+*/

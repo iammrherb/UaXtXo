@@ -19,15 +19,14 @@
             `;
         },
 
-        renderComplete() {
-            const VendorDataManager = window.ModuleLoader.get('VendorDataManager');
-            const ConfigManager = window.ModuleLoader.get('ConfigManager');
-            
-            if (!VendorDataManager || !ConfigManager) {
-                return this.render();
+        renderComplete(platformResults, platformConfig) {
+            if (!platformResults || !platformConfig) {
+                console.error("FinancialAnalysisView: platformResults or platformConfig not provided to renderComplete.");
+                return this.render(); // Render basic shell or error
             }
-
-            const config = ConfigManager.get('defaults');
+            this.platformResults = platformResults;
+            this.platformConfig = platformConfig;
+            // const config = platformConfig; // No longer needed to get from ConfigManager here
 
             return `
                 <div class="financial-analysis-view">
@@ -47,8 +46,8 @@
         },
 
         renderFinancialControls() {
-            const ConfigManager = window.ModuleLoader.get('ConfigManager');
-            const config = ConfigManager.get('defaults');
+            // const ConfigManager = window.ModuleLoader.get('ConfigManager'); // Use this.platformConfig
+            const config = this.platformConfig || {};
 
             return `
                 <div class="financial-controls-section">
@@ -130,16 +129,26 @@
         },
 
         renderCostBreakdownComparison() {
-            const VendorDataManager = window.ModuleLoader.get('VendorDataManager');
-            const ConfigManager = window.ModuleLoader.get('ConfigManager');
-            const config = ConfigManager.get('defaults');
+            // const VendorDataManager = window.ModuleLoader.get('VendorDataManager'); // Use this.platformResults
+            // const ConfigManager = window.ModuleLoader.get('ConfigManager'); // Use this.platformConfig
+            const config = this.platformConfig || {};
             
-            const vendors = ['portnox', 'cisco', 'aruba', 'forescout'];
-            const breakdown = vendors.map(vendorId => {
-                const vendor = VendorDataManager.getVendor(vendorId);
+            const vendorIds = this.platformResults ? Object.keys(this.platformResults) : [];
+            if (vendorIds.length === 0) return '<div class="cost-breakdown-section"><p>No vendor data to display.</p></div>';
+
+            const breakdown = vendorIds.map(vendorId => {
+                const vendorResult = this.platformResults[vendorId];
+                const vendorData = vendorResult ? vendorResult.vendor : null;
+                if (!vendorData) {
+                    console.warn(`FinancialAnalysisView: Vendor data missing for ${vendorId} in platformResults for breakdown.`);
+                    return { vendor: {name: vendorId, id: vendorId}, costs: this.calculateDetailedCosts(null, config) }; // Provide default structure
+                }
                 return {
-                    vendor,
-                    costs: this.calculateDetailedCosts(vendor, config)
+                    vendor: vendorData,
+                    // Pass platform TCO if available and calculateDetailedCosts can use it,
+                    // or let calculateDetailedCosts re-calculate based on vendorData and config.
+                    // For now, let calculateDetailedCosts do its thing based on the vendor object.
+                    costs: this.calculateDetailedCosts(vendorData, config)
                 };
             });
 
@@ -152,95 +161,95 @@
                             <thead>
                                 <tr>
                                     <th>Cost Category</th>
-                                    ${breakdown.map(b => `<th>${b.vendor.name}</th>`).join('')}
+                                    ${breakdown.map(b => `<th>${b.vendor?.name || b.vendor?.id || 'Unknown'}</th>`).join('')}
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr class="category-header">
-                                    <td colspan="${vendors.length + 1}">Initial Costs</td>
+                                    <td colspan="${vendorIds.length + 1}">Initial Costs</td>
                                 </tr>
                                 <tr>
                                     <td>Software Licenses</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.initial.licenses)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.initial?.licenses)}</td>`).join('')}
                                 </tr>
                                 <tr>
                                     <td>Hardware/Infrastructure</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.initial.hardware)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.initial?.hardware)}</td>`).join('')}
                                 </tr>
                                 <tr>
                                     <td>Professional Services</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.initial.services)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.initial?.services)}</td>`).join('')}
                                 </tr>
                                 <tr>
                                     <td>Training</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.initial.training)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.initial?.training)}</td>`).join('')}
                                 </tr>
                                 <tr class="subtotal">
                                     <td>Initial Total</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.initial.total)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.initial?.total)}</td>`).join('')}
                                 </tr>
                                 
                                 <tr class="category-header">
-                                    <td colspan="${vendors.length + 1}">Annual Recurring Costs</td>
+                                    <td colspan="${vendorIds.length + 1}">Annual Recurring Costs</td>
                                 </tr>
                                 <tr>
                                     <td>Subscription/Maintenance</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.annual.subscription)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.annual?.subscription)}</td>`).join('')}
                                 </tr>
                                 <tr>
                                     <td>Support Contracts</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.annual.support)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.annual?.support)}</td>`).join('')}
                                 </tr>
                                 <tr>
                                     <td>Infrastructure</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.annual.infrastructure)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.annual?.infrastructure)}</td>`).join('')}
                                 </tr>
                                 <tr>
                                     <td>FTE Operations</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.annual.operations)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.annual?.operations)}</td>`).join('')}
                                 </tr>
                                 <tr>
                                     <td>Compliance/Audit</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.annual.compliance)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.annual?.compliance)}</td>`).join('')}
                                 </tr>
                                 <tr class="subtotal">
                                     <td>Annual Total</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.annual.total)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.annual?.total)}</td>`).join('')}
                                 </tr>
                                 
                                 <tr class="category-header">
-                                    <td colspan="${vendors.length + 1}">Hidden/Indirect Costs</td>
+                                    <td colspan="${vendorIds.length + 1}">Hidden/Indirect Costs</td>
                                 </tr>
                                 <tr>
                                     <td>Downtime Impact</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.hidden.downtime)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.hidden?.downtime)}</td>`).join('')}
                                 </tr>
                                 <tr>
                                     <td>Integration Issues</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.hidden.integration)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.hidden?.integration)}</td>`).join('')}
                                 </tr>
                                 <tr>
                                     <td>Security Incidents</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.hidden.incidents)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.hidden?.incidents)}</td>`).join('')}
                                 </tr>
                                 <tr class="subtotal">
                                     <td>Hidden Total</td>
-                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs.hidden.total)}</td>`).join('')}
+                                    ${breakdown.map(b => `<td>${this.formatCurrency(b.costs?.hidden?.total)}</td>`).join('')}
                                 </tr>
                                 
                                 <tr class="grand-total">
-                                    <td>${config.years}-Year TCO</td>
+                                    <td>${config.years || 3}-Year TCO</td>
                                     ${breakdown.map(b => `
-                                        <td class="${b.vendor.id === 'portnox' ? 'highlight' : ''}">
-                                            ${this.formatCurrency(b.costs.grandTotal)}
+                                        <td class="${b.vendor?.id === 'portnox' ? 'highlight' : ''}">
+                                            ${this.formatCurrency(b.costs?.grandTotal)}
                                         </td>
                                     `).join('')}
                                 </tr>
                                 <tr class="per-device">
                                     <td>Per Device/Month</td>
                                     ${breakdown.map(b => `
-                                        <td class="${b.vendor.id === 'portnox' ? 'highlight' : ''}">
-                                            ${this.formatCurrency(b.costs.perDeviceMonth)}
+                                        <td class="${b.vendor?.id === 'portnox' ? 'highlight' : ''}">
+                                            ${this.formatCurrency(b.costs?.perDeviceMonth)}
                                         </td>
                                     `).join('')}
                                 </tr>
@@ -308,13 +317,19 @@
         },
 
         renderFinancialMetrics() {
-            const VendorDataManager = window.ModuleLoader.get('VendorDataManager');
-            const ConfigManager = window.ModuleLoader.get('ConfigManager');
-            const config = ConfigManager.get('defaults');
+            // const VendorDataManager = window.ModuleLoader.get('VendorDataManager'); // Use this.platformResults
+            // const ConfigManager = window.ModuleLoader.get('ConfigManager'); // Use this.platformConfig
+            const config = this.platformConfig || {};
             
-            const portnox = VendorDataManager.getVendor('portnox');
-            const cisco = VendorDataManager.getVendor('cisco');
-            
+            const portnoxResult = this.platformResults ? this.platformResults['portnox'] : null;
+            const ciscoResult = this.platformResults ? this.platformResults['cisco'] : null;
+            // Fallback if data is not available
+            const portnoxTCO = portnoxResult?.tco?.total || 0;
+            const portnoxPerDevice = portnoxResult?.tco?.perDevicePerMonth || 0;
+            const ciscoTCO = ciscoResult?.tco?.total || 0;
+            const ciscoPerDevice = ciscoResult?.tco?.perDevicePerMonth || 0;
+
+
             return `
                 <div class="financial-metrics-section">
                     <h2>Key Financial Metrics</h2>
@@ -330,27 +345,27 @@
                                 </tr>
                                 <tr>
                                     <td>Initial Investment</td>
-                                    <td>$0</td>
-                                    <td>$451,000</td>
-                                    <td class="savings">-$451,000</td>
+                                    <td>${this.formatCurrency(portnoxResult?.tco?.initial?.total || 0)}</td>
+                                    <td>${this.formatCurrency(ciscoResult?.tco?.initial?.total || 0)}</td>
+                                    <td class="savings">${this.formatCurrency((portnoxResult?.tco?.initial?.total || 0) - (ciscoResult?.tco?.initial?.total || 0))}</td>
                                 </tr>
                                 <tr>
                                     <td>Annual OpEx</td>
-                                    <td>$126,000</td>
-                                    <td>$363,300</td>
-                                    <td class="savings">-$237,300</td>
+                                    <td>${this.formatCurrency(portnoxResult?.tco?.annual?.total || 0)}</td>
+                                    <td>${this.formatCurrency(ciscoResult?.tco?.annual?.total || 0)}</td>
+                                    <td class="savings">${this.formatCurrency((portnoxResult?.tco?.annual?.total || 0) - (ciscoResult?.tco?.annual?.total || 0))}</td>
                                 </tr>
                                 <tr>
-                                    <td>5-Year TCO</td>
-                                    <td>$630,000</td>
-                                    <td>$2,267,500</td>
-                                    <td class="savings">-$1,637,500</td>
+                                    <td>${config.years || 3}-Year TCO</td>
+                                    <td>${this.formatCurrency(portnoxTCO)}</td>
+                                    <td>${this.formatCurrency(ciscoTCO)}</td>
+                                    <td class="savings">${this.formatCurrency(portnoxTCO - ciscoTCO)}</td>
                                 </tr>
                                 <tr>
-                                    <td>Cost per Device</td>
-                                    <td>$42/year</td>
-                                    <td>$302/year</td>
-                                    <td class="savings">-86%</td>
+                                    <td>Cost per Device/Month</td>
+                                    <td>${this.formatCurrency(portnoxPerDevice)}</td>
+                                    <td>${this.formatCurrency(ciscoPerDevice)}</td>
+                                    <td class="savings">${ciscoPerDevice > 0 ? (((portnoxPerDevice - ciscoPerDevice) / ciscoPerDevice) * 100).toFixed(0) : 'N/A'}%</td>
                                 </tr>
                             </table>
                         </div>

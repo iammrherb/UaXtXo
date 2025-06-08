@@ -6,16 +6,14 @@
 class RiskSecurityView {
     constructor() {
         this.charts = {};
-        this.riskData = null;
+        this.platformResults = null; // Data will be passed by the platform
+        this.platformConfig = null;  // Config will be passed by the platform
     }
-    
-    initialize() {
-        if (window.controller) {
-            window.controller.registerView('risk-security', this);
-        }
-    }
-    
-    render(container) {
+
+    render(container, platformResults, platformConfig) {
+        this.platformResults = platformResults;
+        this.platformConfig = platformConfig;
+
         container.innerHTML = `
             <div class="risk-security-dashboard animate-fadeIn">
                 <!-- Header -->
@@ -250,25 +248,45 @@ class RiskSecurityView {
             </div>
         `;
         
-        this.updateCalculations();
+        if (this.platformResults && this.platformConfig) {
+            this.updateViewData(this.platformResults, this.platformConfig);
+        } else {
+            console.warn("RiskSecurityView.render: platformResults or platformConfig not provided during initial render. Calling updateViewData with empty data.");
+            this.updateViewData({}, {});
+        }
     }
     
-    onSettingsUpdate(settings) {
-        this.updateCalculations();
-    }
-    
-    onCalculationsUpdate(settings) {
-        this.updateCalculations();
-    }
-    
-    updateCalculations() {
-        if (!window.controller) return;
+    updateViewData(platformResults, platformConfig) {
+        this.platformResults = platformResults || this.platformResults || {};
+        this.platformConfig = platformConfig || this.platformConfig || {};
+
+        const settings = this.platformConfig;
+        const industryData = window.IndustryDatabase ? window.IndustryDatabase[settings.industry] : null;
+        const industry = {
+            avgBreachCost: industryData?.risks?.breachCost || (settings.avgBreachCost || 4350000),
+            breachProbability: industryData?.risks?.breachProbability || (settings.breachProbability || 0.15)
+        };
         
-        const risk = window.controller.calculateRisk();
-        const settings = window.controller.organizationSettings;
-        const industry = window.controller.industries[settings.industry];
+        let primaryVendorId = 'portnox';
+        if (!this.platformResults[primaryVendorId] && settings.selectedVendors && settings.selectedVendors.length > 0) {
+            primaryVendorId = settings.selectedVendors[0];
+        }
         
-        this.riskData = risk;
+        const vendorResult = this.platformResults[primaryVendorId] || {};
+        const vendorRiskScoreData = vendorResult.riskScore || { score: 75, level: 'High', factors: {} };
+
+        const estimatedReductionFactor = 0.85;
+        const riskWithPortnoxNormalized = (vendorRiskScoreData.score || 75) / 100.0;
+        const baseRiskNormalized = Math.min(1, riskWithPortnoxNormalized / (1 - estimatedReductionFactor));
+        const calculatedAnnualRiskCost = industry.avgBreachCost * baseRiskNormalized * industry.breachProbability;
+
+        const risk = {
+            baseRisk: baseRiskNormalized,
+            withPortnox: riskWithPortnoxNormalized,
+            annualRiskCost: calculatedAnnualRiskCost,
+            factors: vendorRiskScoreData.factors,
+            level: vendorRiskScoreData.level
+        };
         
         // Update risk metrics
         this.updateRiskMetrics(risk, industry);
@@ -284,7 +302,6 @@ class RiskSecurityView {
     }
     
     updateRiskMetrics(risk, industry) {
-        // Current risk level
         const currentRiskEl = document.getElementById('current-risk');
         if (currentRiskEl) {
             const riskLevel = risk.baseRisk > 0.7 ? 'Critical' : 
@@ -294,28 +311,33 @@ class RiskSecurityView {
             currentRiskEl.className = `value ${riskLevel.toLowerCase()}`;
         }
         
-        // Risk cost
+        const portnoxRiskEl = document.getElementById('portnox-risk');
+         if (portnoxRiskEl) {
+            const portnoxRiskLevel = risk.withPortnox <= ( ( (risk.level === 'Low' ? 0.3 : (risk.level === 'Medium' ? 0.5 : 0.7)) * (1-0.85) ) ) ? 'Low' : // Simplified logic based on reduction
+                                  risk.withPortnox <= 0.3 ? 'Low' :
+                                  risk.withPortnox <= 0.5 ? 'Medium' : 'High';
+             portnoxRiskEl.textContent = portnoxRiskLevel;
+             portnoxRiskEl.className = `value ${portnoxRiskLevel.toLowerCase()}`;
+        }
+
         const riskCostEl = document.getElementById('risk-cost');
         if (riskCostEl) {
             riskCostEl.textContent = '$' + this.formatNumber(risk.annualRiskCost);
         }
         
-        // Breach probability
         const breachProbEl = document.getElementById('breach-probability');
         if (breachProbEl) {
-            breachProbEl.textContent = Math.round(risk.baseRisk * 100) + '%';
+            breachProbEl.textContent = Math.round(risk.baseRisk * 100 * (industry.breachProbability / 0.15) ) + '%'; // Adjust to base probability
         }
         
-        // Industry breach cost
         const industryCostEl = document.getElementById('industry-breach-cost');
         if (industryCostEl) {
             industryCostEl.textContent = '$' + this.formatNumber(industry.avgBreachCost);
         }
         
-        // Annual breach probability
         const annualProbEl = document.getElementById('breach-prob-annual');
         if (annualProbEl) {
-            annualProbEl.textContent = Math.round(risk.baseRisk * 100) + '%';
+             annualProbEl.textContent = Math.round(industry.breachProbability * 100) + '%';
         }
     }
     
@@ -323,65 +345,30 @@ class RiskSecurityView {
         const container = document.getElementById('risk-gauge-chart');
         if (!container || typeof Highcharts === 'undefined') return;
         
-        const riskScore = Math.round(risk.baseRisk * 100);
-        const portnoxScore = Math.round(risk.withPortnox * 100);
+        const riskScoreToDisplay = Math.round(risk.withPortnox * 100); // Display risk score with Portnox
         
+        if (this.charts.riskGauge) this.charts.riskGauge.destroy();
         this.charts.riskGauge = Highcharts.chart(container, {
-            chart: {
-                type: 'solidgauge',
-                backgroundColor: 'transparent',
-                height: 250
-            },
+            chart: { type: 'solidgauge', backgroundColor: 'transparent', height: 250 },
             title: null,
             pane: {
-                center: ['50%', '85%'],
-                size: '140%',
-                startAngle: -90,
-                endAngle: 90,
-                background: {
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    innerRadius: '60%',
-                    outerRadius: '100%',
-                    shape: 'arc'
-                }
+                center: ['50%', '85%'], size: '140%', startAngle: -90, endAngle: 90,
+                background: { backgroundColor: 'rgba(255, 255, 255, 0.05)', innerRadius: '60%', outerRadius: '100%', shape: 'arc' }
             },
             yAxis: {
-                min: 0,
-                max: 100,
-                stops: [
-                    [0.1, '#10b981'], // green
-                    [0.5, '#f59e0b'], // yellow
-                    [0.9, '#ef4444']  // red
-                ],
-                lineWidth: 0,
-                tickWidth: 0,
-                minorTickInterval: null,
-                tickAmount: 2,
-                labels: {
-                    y: 16,
-                    style: { color: '#a6acbb' }
-                }
+                min: 0, max: 100,
+                stops: [[0.1, '#10b981'], [0.3, '#f59e0b'], [0.7, '#ef4444']], // Adjusted stops for better coloring
+                lineWidth: 0, tickWidth: 0, minorTickInterval: null, tickAmount: 2, labels: { y: 16, style: { color: '#a6acbb' } }
             },
             plotOptions: {
                 solidgauge: {
                     dataLabels: {
-                        y: -40,
-                        borderWidth: 0,
-                        useHTML: true,
-                        format: '<div style="text-align:center">' +
-                                '<span style="font-size:3rem;color:#ffffff">{y}%</span><br/>' +
-                                '<span style="font-size:1rem;color:#a6acbb">Risk Score</span>' +
-                                '</div>'
+                        y: -40, borderWidth: 0, useHTML: true,
+                        format: '<div style="text-align:center"><span style="font-size:3rem;color:#ffffff">{y}%</span><br/><span style="font-size:1rem;color:#a6acbb">Risk with Portnox</span></div>'
                     }
                 }
             },
-            series: [{
-                name: 'Risk Score',
-                data: [riskScore],
-                tooltip: {
-                    valueSuffix: '% risk'
-                }
-            }],
+            series: [{ name: 'Risk Score', data: [riskScoreToDisplay], tooltip: { valueSuffix: '% risk' } }],
             credits: { enabled: false }
         });
     }
@@ -390,72 +377,37 @@ class RiskSecurityView {
         const container = document.getElementById('controls-comparison-chart');
         if (!container || typeof Highcharts === 'undefined') return;
         
-        const categories = [
-            'Access Control',
-            'Device Trust',
-            'Network Segmentation', 
-            'Threat Detection',
-            'Incident Response',
-            'Compliance Automation',
-            'Visibility',
-            'Policy Enforcement'
-        ];
+        const categories = ['Access Control', 'Device Trust', 'Segmentation', 'Threat Detection', 'Response', 'Compliance', 'Visibility', 'Policy'];
+        const portnoxData = this.platformResults?.portnox;
         
-        const portnoxScores = [98, 95, 97, 96, 99, 94, 100, 98];
+        // Use actual data if available, otherwise use defaults from original view for illustration
+        const portnoxScores = portnoxData ? [
+            (portnoxData.vendor.features.core['Policy Engine'] ? 95 : 20),
+            (portnoxData.vendor.features.core['Device Profiling'] ? 92 : 30),
+            (portnoxData.vendor.features.zeroTrust.microsegmentation ? 97 : 25),
+            (portnoxData.vendor.features.security.aiThreatDetection ? 96 : 10),
+            (portnoxData.vendor.features.security.mttr <= 30 ? 99 : 40), // Lower MTTR is better
+            (portnoxData.vendor.features.compliance.automation || 0),
+            (portnoxData.vendor.features.visibility?.deviceVisibility ? 98: 30),
+            (portnoxData.vendor.features.core['Policy Engine'] ? 98 : 20)
+        ] : [98, 95, 97, 96, 99, 94, 100, 98]; // Fallback defaults
+
         const legacyScores = [70, 60, 75, 50, 40, 30, 65, 70];
         const baselineScores = [20, 15, 25, 10, 10, 5, 30, 20];
         
+        if (this.charts.controls) this.charts.controls.destroy();
         this.charts.controls = Highcharts.chart(container, {
-            chart: {
-                type: 'bar',
-                backgroundColor: 'transparent',
-                height: 400
-            },
-            title: {
-                text: 'Security Control Effectiveness Comparison',
-                style: { color: '#ffffff' }
-            },
-            xAxis: {
-                categories: categories,
-                labels: { style: { color: '#a6acbb' } }
-            },
-            yAxis: {
-                min: 0,
-                max: 100,
-                title: {
-                    text: 'Effectiveness (%)',
-                    style: { color: '#a6acbb' }
-                },
-                labels: { style: { color: '#a6acbb' } }
-            },
-            plotOptions: {
-                bar: {
-                    dataLabels: {
-                        enabled: true,
-                        style: { color: '#ffffff' },
-                        formatter: function() {
-                            return this.y + '%';
-                        }
-                    }
-                }
-            },
-            series: [{
-                name: 'Portnox',
-                data: portnoxScores,
-                color: '#00e5e6'
-            }, {
-                name: 'Legacy NAC',
-                data: legacyScores,
-                color: '#f59e0b'
-            }, {
-                name: 'No NAC',
-                data: baselineScores,
-                color: '#ef4444'
-            }],
-            legend: {
-                itemStyle: { color: '#a6acbb' }
-            },
-            credits: { enabled: false }
+            chart: { type: 'bar', backgroundColor: 'transparent', height: 400 },
+            title: { text: 'Security Control Effectiveness Comparison', style: { color: '#ffffff' } },
+            xAxis: { categories: categories, labels: { style: { color: '#a6acbb' } } },
+            yAxis: { min: 0, max: 100, title: { text: 'Effectiveness (%)', style: { color: '#a6acbb' } }, labels: { style: { color: '#a6acbb' } } },
+            plotOptions: { bar: { dataLabels: { enabled: true, style: { color: '#ffffff' }, formatter: function() { return this.y + '%'; } } } },
+            series: [
+                { name: 'Portnox', data: portnoxScores, color: '#00e5e6' },
+                { name: 'Legacy NAC', data: legacyScores, color: '#f59e0b' },
+                { name: 'No NAC', data: baselineScores, color: '#ef4444' }
+            ],
+            legend: { itemStyle: { color: '#a6acbb' } }, credits: { enabled: false }
         });
     }
     
@@ -463,55 +415,20 @@ class RiskSecurityView {
         const container = document.getElementById('attack-surface-chart');
         if (!container || typeof Highcharts === 'undefined') return;
         
+        // Data can be made dynamic based on platformResults if desired
+        if (this.charts.attackSurface) this.charts.attackSurface.destroy();
         this.charts.attackSurface = Highcharts.chart(container, {
-            chart: {
-                type: 'area',
-                backgroundColor: 'transparent',
-                height: 300
-            },
-            title: {
-                text: 'Attack Surface Over Time',
-                style: { color: '#ffffff' }
-            },
-            xAxis: {
-                categories: ['Current', 'Month 1', 'Month 2', 'Month 3', 'Month 6', 'Month 12'],
-                labels: { style: { color: '#a6acbb' } }
-            },
-            yAxis: {
-                title: {
-                    text: 'Attack Surface Index',
-                    style: { color: '#a6acbb' }
-                },
-                labels: { style: { color: '#a6acbb' } }
-            },
-            plotOptions: {
-                area: {
-                    stacking: 'normal',
-                    lineColor: '#666666',
-                    lineWidth: 1,
-                    marker: {
-                        lineWidth: 1,
-                        lineColor: '#666666'
-                    }
-                }
-            },
-            series: [{
-                name: 'Without NAC',
-                data: [100, 105, 110, 115, 125, 140],
-                color: '#ef4444'
-            }, {
-                name: 'With Legacy NAC',
-                data: [100, 85, 75, 70, 68, 65],
-                color: '#f59e0b'
-            }, {
-                name: 'With Portnox',
-                data: [100, 50, 30, 20, 15, 10],
-                color: '#10b981'
-            }],
-            legend: {
-                itemStyle: { color: '#a6acbb' }
-            },
-            credits: { enabled: false }
+            chart: { type: 'area', backgroundColor: 'transparent', height: 300 },
+            title: { text: 'Attack Surface Over Time', style: { color: '#ffffff' } },
+            xAxis: { categories: ['Current', 'Month 1', 'Month 2', 'Month 3', 'Month 6', 'Month 12'], labels: { style: { color: '#a6acbb' } } },
+            yAxis: { title: { text: 'Attack Surface Index', style: { color: '#a6acbb' } }, labels: { style: { color: '#a6acbb' } } },
+            plotOptions: { area: { stacking: 'normal', lineColor: '#666666', lineWidth: 1, marker: { lineWidth: 1, lineColor: '#666666' } } },
+            series: [
+                { name: 'Without NAC', data: [100, 105, 110, 115, 125, 140], color: '#ef4444' },
+                { name: 'With Legacy NAC', data: [100, 85, 75, 70, 68, 65], color: '#f59e0b' },
+                { name: 'With Portnox', data: [100, 50, 30, 20, 15, 10], color: '#10b981' }
+            ],
+            legend: { itemStyle: { color: '#a6acbb' } }, credits: { enabled: false }
         });
     }
     
@@ -519,90 +436,46 @@ class RiskSecurityView {
         const container = document.getElementById('maturity-radar-chart');
         if (!container || typeof Highcharts === 'undefined') return;
         
+        // Data can be made dynamic based on platformResults if desired
+         if (this.charts.maturity) this.charts.maturity.destroy();
         this.charts.maturity = Highcharts.chart(container, {
-            chart: {
-                polar: true,
-                type: 'area',
-                backgroundColor: 'transparent',
-                height: 400
-            },
-            title: {
-                text: 'Security Maturity Comparison',
-                style: { color: '#ffffff' }
-            },
-            pane: {
-                size: '80%'
-            },
-            xAxis: {
-                categories: [
-                    'Identity Management',
-                    'Access Control',
-                    'Asset Management',
-                    'Threat Detection',
-                    'Incident Response',
-                    'Vulnerability Management',
-                    'Compliance',
-                    'Risk Management'
-                ],
-                tickmarkPlacement: 'on',
-                lineWidth: 0,
-                labels: { style: { color: '#a6acbb' } }
-            },
-            yAxis: {
-                gridLineInterpolation: 'polygon',
-                lineWidth: 0,
-                min: 0,
-                max: 5,
-                labels: { style: { color: '#a6acbb' } }
-            },
-            series: [{
-                name: 'Current State',
-                data: [2, 2, 1, 1, 1, 2, 2, 2],
-                color: '#ef4444',
-                fillOpacity: 0.3
-            }, {
-                name: 'With Legacy NAC',
-                data: [3, 3, 3, 2, 2, 3, 3, 3],
-                color: '#f59e0b',
-                fillOpacity: 0.3
-            }, {
-                name: 'With Portnox',
-                data: [5, 5, 5, 5, 5, 4, 5, 5],
-                color: '#00e5e6',
-                fillOpacity: 0.3
-            }],
-            legend: {
-                itemStyle: { color: '#a6acbb' }
-            },
-            credits: { enabled: false }
+            chart: { polar: true, type: 'area', backgroundColor: 'transparent', height: 400 },
+            title: { text: 'Security Maturity Comparison', style: { color: '#ffffff' } },
+            pane: { size: '80%' },
+            xAxis: { categories: ['Identity Mgt', 'Access Control', 'Asset Mgt', 'Threat Detection', 'Incident Response', 'Vulnerability Mgt', 'Compliance', 'Risk Mgt'], tickmarkPlacement: 'on', lineWidth: 0, labels: { style: { color: '#a6acbb' } } },
+            yAxis: { gridLineInterpolation: 'polygon', lineWidth: 0, min: 0, max: 5, labels: { style: { color: '#a6acbb' } } },
+            series: [
+                { name: 'Current State', data: [2, 2, 1, 1, 1, 2, 2, 2], color: '#ef4444', fillOpacity: 0.3 },
+                { name: 'With Legacy NAC', data: [3, 3, 3, 2, 2, 3, 3, 3], color: '#f59e0b', fillOpacity: 0.3 },
+                { name: 'With Portnox', data: [5, 5, 5, 5, 5, 4, 5, 5], color: '#00e5e6', fillOpacity: 0.3 }
+            ],
+            legend: { itemStyle: { color: '#a6acbb' } }, credits: { enabled: false }
         });
     }
     
     updateRiskROI(risk, industry) {
-        // Annual risk avoidance
-        const annualAvoidance = risk.annualRiskCost * 0.85; // 85% reduction
+        const annualAvoidance = risk.annualRiskCost; // Assuming annualRiskCost is already the "avoided" portion
         const annualEl = document.getElementById('annual-risk-avoidance');
         if (annualEl) {
             annualEl.textContent = '$' + this.formatNumber(annualAvoidance);
         }
         
-        // 3-year avoidance
         const threeYearEl = document.getElementById('three-year-avoidance');
         if (threeYearEl) {
-            threeYearEl.textContent = '$' + this.formatNumber(annualAvoidance * 3);
+            threeYearEl.textContent = '$' + this.formatNumber(annualAvoidance * (this.platformConfig?.years || 3));
         }
     }
     
     formatNumber(num) {
+        if (isNaN(num)) return '0';
         return Math.round(num).toLocaleString();
     }
 }
 
-// Initialize and register
-const riskSecurityView = new RiskSecurityView();
-riskSecurityView.initialize();
+// Remove self-initialization and global export. Instance will be managed by EnhancedPlatformApplication.
+// const riskSecurityView = new RiskSecurityView();
+// riskSecurityView.initialize(); // This was removed
+// window.riskSecurityView = riskSecurityView; // This is removed
 
-// Export for global access
-window.riskSecurityView = riskSecurityView;
-
-console.log('✅ Risk & Security View loaded');
+console.log('✅ Risk & Security View loaded and refactored');
+window.riskSecurityView = new RiskSecurityView(); // Make instance globally available

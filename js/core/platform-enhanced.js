@@ -1,5 +1,294 @@
 // Enhanced Platform Application with Complete Integration
 class EnhancedPlatformApplication {
+
+    getFeatureValue(vendor, featurePath, type = 'text') {
+        const pathParts = featurePath.split('.');
+        let value = vendor;
+        for (const part of pathParts) {
+            if (value && typeof value === 'object' && value.hasOwnProperty(part)) {
+                value = value[part];
+            } else {
+                // If a part of the path is not found, return default for type
+                return type === 'boolean' ? false : type === 'score' ? 0 : 'N/A';
+            }
+        }
+
+        if (type === 'boolean') {
+            // Handle various affirmative string values as true
+            const lowerValue = String(value).toLowerCase();
+            return value === true || lowerValue === 'yes' || lowerValue === 'full' || value === 100 || lowerValue === 'included';
+        }
+        if (type === 'score' || type === 'score_normalized') {
+            const numValue = parseInt(value);
+            return isNaN(numValue) ? 0 : numValue;
+        }
+        // Ensure string conversion for display, even for numbers if not a score/boolean
+        return value !== undefined && value !== null ? String(value) : 'N/A';
+    }
+
+    getFeatureScoreClass(score) {
+        if (typeof score !== 'number' || isNaN(score)) return 'na';
+        if (score >= 90) return 'excellent';
+        if (score >= 75) return 'good';
+        if (score >= 50) return 'average';
+        if (score > 0) return 'poor';
+        return 'na';
+    }
+
+    getFeatureIcon(value) {
+        const lowerValue = String(value).toLowerCase();
+        if (value === true || lowerValue === 'yes' || lowerValue === 'full' || lowerValue === 'included' || lowerValue === 'cloud-native' || (typeof value === 'number' && value >= 75) ) {
+            return '<i class="fas fa-check-circle text-success"></i>';
+        }
+        if (value === false || lowerValue === 'no' || lowerValue === 'on-premise' || (typeof value === 'number' && value < 50 && value !== 0) ) {
+             return '<i class="fas fa-times-circle text-danger"></i>';
+        }
+        if (lowerValue === 'partial' || lowerValue === 'hybrid' || (typeof value === 'number' && value >= 50 && value < 75) ) {
+            return '<i class="fas fa-adjust text-warning"></i>';
+        }
+        if (value === 0 || lowerValue === 'none' || lowerValue === 'n/a') {
+            return '<i class="fas fa-minus-circle text-muted"></i>';
+        }
+        return '';
+    }
+
+    renderComparison(content) {
+        if (!this.selectedVendors || this.selectedVendors.length === 0) {
+            content.innerHTML = '<p class="text-center mt-5">Please select at least one vendor to compare.</p>';
+            return;
+        }
+
+        const featureCategories = [
+            {
+                name: 'Core NAC Features',
+                features: [
+                    { label: '802.1X Authentication', path: 'features.core.802.1X Authentication', type: 'boolean' },
+                    { label: 'Policy Engine', path: 'features.core.Policy Engine', type: 'boolean' },
+                    { label: 'Device Profiling', path: 'features.core.Device Profiling', type: 'boolean' },
+                    { label: 'Guest Access', path: 'features.core.Guest Access', type: 'boolean' },
+                    { label: 'Risk Assessment Score', path: 'features.core.Risk Assessment', type: 'score' },
+                ]
+            },
+            {
+                name: 'Zero Trust Capabilities',
+                features: [
+                    { label: 'Native Zero Trust', path: 'features.zeroTrust.native', type: 'boolean' },
+                    { label: 'Microsegmentation', path: 'features.zeroTrust.microsegmentation', type: 'boolean' },
+                    { label: 'ZT Maturity Score', path: 'features.zeroTrust.score', type: 'score' },
+                    { label: 'Continuous Authentication', path: 'features.zeroTrust.continuousAuth', type: 'boolean' },
+                ]
+            },
+            {
+                name: 'Deployment & Management',
+                features: [
+                    { label: 'Deployment Model', path: 'deployment.model', type: 'text' },
+                    { label: 'Deployment Time (hours)', path: 'deployment.time', type: 'text' },
+                    { label: 'Cloud Managed', path: 'deployment.cloudManaged', type: 'boolean' },
+                    { label: 'Scalability (devices)', path: 'deployment.scalability', type: 'text' },
+                ]
+            },
+            {
+                name: 'Automation & Orchestration',
+                features: [
+                    { label: 'Automation Level (%)', path: 'features.automation', type: 'score' },
+                    { label: 'SOAR Integration', path: 'features.integrations.SOAR', type: 'boolean' },
+                    { label: 'SIEM Integration', path: 'features.integrations.SIEM', type: 'boolean' },
+                ]
+            },
+            {
+                name: 'Security Operations',
+                features: [
+                    { label: 'MTTR (minutes)', path: 'features.security.mttr', type: 'text' },
+                    { label: 'AI Threat Detection', path: 'features.security.aiThreatDetection', type: 'boolean' },
+                    { label: 'Detection Accuracy (%)', path: 'features.security.accuracy', type: 'score' },
+                ]
+            },
+             {
+                name: 'Compliance Features',
+                features: [
+                    { label: 'Audit Reporting', path: 'compliance.auditReporting', type: 'boolean' },
+                    { label: 'Compliance Automation (%)', path: 'features.compliance.automation', type: 'score' },
+                ]
+            }
+        ];
+
+        let tableHTML = `
+            <div class="comparison-view fade-in">
+                <div class="view-header">
+                    <h1>Feature Comparison Matrix</h1>
+                    <p class="view-subtitle">Side-by-side feature comparison of selected NAC vendors.</p>
+                </div>
+                <div class="table-responsive mt-4">
+                    <table class="data-table comparison-table">
+                        <thead>
+                            <tr>
+                                <th class="feature-category-header">Feature Category</th>
+                                <th class="feature-name-header">Feature</th>
+                                ${this.selectedVendors.map(vendorId => {
+                                    const vendor = window.VendorDatabase[vendorId];
+                                    return `<th>
+                                                <img src="${window.getVendorLogo(vendorId)}" alt="${vendor?.name || vendorId}" class="vendor-logo-small-table">
+                                                ${vendor?.name || vendorId}
+                                            </th>`;
+                                }).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        featureCategories.forEach(category => {
+            tableHTML += `<tr><td colspan="${2 + this.selectedVendors.length}" class="category-row">${category.name}</td></tr>`;
+            category.features.forEach(feature => {
+                tableHTML += `
+                    <tr>
+                        <td></td>
+                        <td>${feature.label}</td>
+                        ${this.selectedVendors.map(vendorId => {
+                            const vendorData = window.VendorDatabase[vendorId];
+                            if (!vendorData) return '<td>N/A</td>';
+                            const value = this.getFeatureValue(vendorData, feature.path, feature.type);
+                            const scoreClass = (feature.type === 'score' || feature.type === 'score_normalized') ? this.getFeatureScoreClass(value) : '';
+                            const icon = this.getFeatureIcon(value);
+                            return `<td class="${scoreClass}">${icon} ${value}</td>`;
+                        }).join('')}
+                    </tr>
+                `;
+            });
+        });
+
+        tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="chart-container radar-chart-container mt-5">
+                     <div class="chart-header">
+                        <h3>Overall Feature Radar Chart</h3>
+                    </div>
+                    <canvas id="comparison-radar-chart" height="400"></canvas>
+                </div>
+            </div>
+        `;
+        content.innerHTML = tableHTML;
+    }
+
+    initializeComparisonCharts() {
+        const ctx = document.getElementById('comparison-radar-chart')?.getContext('2d');
+        if (!ctx || !this.selectedVendors || this.selectedVendors.length === 0) {
+            return;
+        }
+
+        const featurePathsForRadar = [
+            { label: '802.1X', path: 'features.core.802.1X Authentication', type: 'boolean'},
+            { label: 'Policy Engine', path: 'features.core.Policy Engine', type: 'boolean'},
+            { label: 'Device Profiling', path: 'features.core.Device Profiling', type: 'boolean'},
+            { label: 'Risk Score', path: 'features.core.Risk Assessment', type: 'score_normalized'},
+            { label: 'ZT Maturity', path: 'features.zeroTrust.score', type: 'score_normalized'},
+            { label: 'Automation', path: 'features.automation', type: 'score_normalized'},
+            { label: 'Cloud Managed', path: 'deployment.cloudManaged', type: 'boolean'},
+            { label: 'AI Detection', path: 'features.security.aiThreatDetection', type: 'boolean'}
+        ];
+
+        const labels = featurePathsForRadar.map(f => f.label);
+        const datasets = this.selectedVendors.map((vendorId, index) => {
+            const vendorData = window.VendorDatabase[vendorId];
+            if (!vendorData) return { label: vendorId, data: labels.map(() => 0), hidden: true };
+
+            const data = featurePathsForRadar.map(feature => {
+                let value = this.getFeatureValue(vendorData, feature.path, feature.type);
+                if (feature.type === 'boolean') return value ? 1 : 0;
+                if (feature.type === 'score_normalized') return (value || 0) / 100.0;
+                return 0;
+            });
+
+            const colorSet = [
+                'rgba(0, 212, 170, 0.4)',
+                'rgba(255, 107, 53, 0.4)',
+                'rgba(59, 130, 246, 0.4)',
+                'rgba(139, 92, 246, 0.4)',
+                'rgba(245, 158, 11, 0.4)'
+            ];
+            const borderColorSet = [
+                'rgba(0, 212, 170, 1)',
+                'rgba(255, 107, 53, 1)',
+                'rgba(59, 130, 246, 1)',
+                'rgba(139, 92, 246, 1)',
+                'rgba(245, 158, 11, 1)'
+            ];
+
+            return {
+                label: vendorData.name,
+                data: data,
+                backgroundColor: colorSet[index % colorSet.length],
+                borderColor: borderColorSet[index % borderColorSet.length],
+                borderWidth: 2,
+                pointBackgroundColor: borderColorSet[index % borderColorSet.length]
+            };
+        }).filter(ds => ds && !ds.hidden);
+
+        if (window.comparisonRadarChart instanceof Chart) {
+            window.comparisonRadarChart.destroy();
+        }
+         if (datasets.length === 0) {
+            console.warn("No data available for comparison radar chart after filtering.");
+            return;
+        }
+
+        window.comparisonRadarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                elements: {
+                    line: {
+                        borderWidth: 3
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: { display: true },
+                        suggestedMin: 0,
+                        suggestedMax: 1,
+                        pointLabels: {
+                            font: {
+                                size: 13
+                            }
+                        },
+                        ticks: {
+                           display: false,
+                           stepSize: 0.25
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                         labels: {
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += Math.round(context.raw * 100) + '%';
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     constructor() {
         this.config = {
             devices: 2500,
@@ -639,26 +928,96 @@ class EnhancedPlatformApplication {
         
         switch(view) {
             case 'dashboard':
-                this.renderDashboard(content);
+                if (window.DashboardView && typeof window.DashboardView.renderComplete === 'function') {
+                    content.innerHTML = window.DashboardView.renderComplete(this.results, this.config);
+                } else if (window.DashboardView && typeof window.DashboardView.render === 'function') {
+                    content.innerHTML = window.DashboardView.render(this.results, this.config); // Also pass data to render if it's the fallback
+                } else {
+                    console.error('DashboardView module not loaded or render/renderComplete method missing.');
+                    content.innerHTML = '<p style="color: red; text-align: center; margin-top: 20px;">Error: Dashboard view module not loaded correctly. Please check console.</p>';
+                }
+                break;
+            case 'executive':
+                if (window.ExecutiveSummaryView && typeof window.ExecutiveSummaryView.renderComplete === 'function') {
+                    content.innerHTML = window.ExecutiveSummaryView.renderComplete(this.results, this.config);
+                } else if (window.ExecutiveSummaryView && typeof window.ExecutiveSummaryView.render === 'function') {
+                    content.innerHTML = window.ExecutiveSummaryView.render(this.results, this.config);
+                } else {
+                    console.error('ExecutiveSummaryView module not loaded or render methods missing.');
+                    content.innerHTML = '<p style="color: red; text-align: center; margin-top: 20px;">Error: Executive Summary view module not loaded correctly.</p>';
+                }
                 break;
             case 'financial':
-                this.renderFinancialAnalysis(content);
+                if (window.FinancialAnalysisView && typeof window.FinancialAnalysisView.renderComplete === 'function') {
+                    content.innerHTML = window.FinancialAnalysisView.renderComplete(this.results, this.config);
+                } else if (window.FinancialAnalysisView && typeof window.FinancialAnalysisView.render === 'function') {
+                    content.innerHTML = window.FinancialAnalysisView.render(this.results, this.config);
+                } else {
+                    console.error('FinancialAnalysisView module not loaded or render methods missing.');
+                    content.innerHTML = '<p style="color: red; text-align: center; margin-top: 20px;">Error: Financial Analysis view module not loaded correctly.</p>';
+                }
                 break;
             case 'risk-security':
-                this.renderRiskSecurity(content);
+                if (window.riskSecurityView && typeof window.riskSecurityView.render === 'function') {
+                    // Pass data directly to render, which should then call updateViewData internally.
+                    window.riskSecurityView.render(content, this.results, this.config);
+                } else {
+                    content.innerHTML = '<p>Error: Risk & Security view module not loaded.</p>';
+                    console.error('RiskSecurityView or its render method not found.');
+                }
                 break;
             case 'compliance':
-                this.renderComplianceMatrix(content);
+                if (window.NAC && window.NAC.compliance && typeof window.NAC.compliance.render === 'function') {
+                    window.NAC.compliance.render(content, this.results);
+                } else {
+                    console.error('ComplianceViewEnhanced module not loaded or NAC.compliance.render method missing.');
+                    content.innerHTML = '<p style="color: red; text-align: center; margin-top: 20px;">Error: Compliance view module not loaded correctly. Please check console.</p>';
+                }
                 break;
             case 'operational':
-                this.renderOperational(content);
+                if (window.OperationalImpact && typeof window.OperationalImpact === 'function') {
+                    const operationalView = new window.OperationalImpact(this);
+                    if (typeof operationalView.render === 'function') {
+                        operationalView.render(content);
+                    } else {
+                        console.error('OperationalImpact module does not have a render method.');
+                        content.innerHTML = '<p style="color: red; text-align: center; margin-top: 20px;">Error: OperationalImpact module does not have a render method.</p>';
+                    }
+                } else {
+                    console.error('OperationalImpact module not loaded or not a constructor.');
+                    content.innerHTML = '<p style="color: red; text-align: center; margin-top: 20px;">Error: OperationalImpact module not loaded correctly.</p>';
+                }
                 break;
             case 'comparison':
-                this.renderComparison(content);
+                if (typeof this.renderComparison === 'function') {
+                    this.renderComparison(content);
+                    if (typeof this.initializeComparisonCharts === 'function') {
+                        this.initializeComparisonCharts();
+                    } else {
+                        console.error('initializeComparisonCharts method not found after porting.');
+                    }
+                } else {
+                    content.innerHTML = '<p>Error: Comparison view render method not found.</p>';
+                    console.error('renderComparison method not found after porting.');
+                }
                 break;
             case 'insights':
-                this.renderStrategicInsights(content);
+                if (window.StrategicInsights && typeof window.StrategicInsights === 'function') {
+                    const insightsView = new window.StrategicInsights(this);
+                    if (typeof insightsView.render === 'function') {
+                        insightsView.render(content);
+                    } else {
+                        console.error('StrategicInsights module does not have a render method.');
+                        content.innerHTML = '<p style="color: red; text-align: center; margin-top: 20px;">Error: StrategicInsights module does not have a render method.</p>';
+                    }
+                } else {
+                    console.error('StrategicInsights module not loaded or not a constructor.');
+                    content.innerHTML = '<p style="color: red; text-align: center; margin-top: 20px;">Error: StrategicInsights module not loaded correctly. Please check console.</p>';
+                }
                 break;
+            default:
+                content.innerHTML = `<p>View '${view}' not implemented yet.</p>`;
+                console.warn(`Attempted to switch to unimplemented view: ${view}`);
         }
     }
     
