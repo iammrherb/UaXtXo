@@ -639,7 +639,19 @@ class EnhancedPlatformApplication {
         
         switch(view) {
             case 'dashboard':
-                this.renderDashboard(content);
+                // content.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>'; // Optional: show loading spinner
+                if (window.DashboardView && typeof window.DashboardView.renderComplete === 'function') {
+                    content.innerHTML = window.DashboardView.renderComplete();
+                    // If DashboardView has a method to initialize charts after rendering, it should be called here or handled by renderComplete.
+                    // e.g., if (typeof window.DashboardView.initializeCharts === 'function') {
+                    //     window.DashboardView.initializeCharts(this.results); // Pass necessary data
+                    // }
+                } else if (window.DashboardView && typeof window.DashboardView.render === 'function') {
+                    content.innerHTML = window.DashboardView.render();
+                } else {
+                    console.error('DashboardView module not loaded or render/renderComplete method missing.');
+                    content.innerHTML = '<p style="color: red; text-align: center; margin-top: 20px;">Error: Dashboard view module not loaded correctly. Please check console.</p>';
+                }
                 break;
             case 'financial':
                 this.renderFinancialAnalysis(content);

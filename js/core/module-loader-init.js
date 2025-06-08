@@ -31,9 +31,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const moduleFiles = [
             '/js/core/config-manager.js',
             '/js/core/event-system.js',
+            // Added data files:
+            'js/data/comprehensive-vendor-database.js',
+            'js/data/vendor-data-fixes.js',
+            'js/data/industry-database.js',
+            'js/data/compliance-database.js',
+            'js/data/compliance-nac-mapping.js',
+            'js/data/risk-security-database.js',
+            // Existing vendor-data-manager, ensured it's after the above:
             '/js/data/vendor-data-manager.js',
             '/js/core/ui-manager.js',
-            '/js/modules/premium-executive-platform.js',
+            'js/core/platform-enhanced.js',
+            'js/views/dashboard-view.js', // Added dashboard view
             '/js/views/risk-security-init.js',
             '/js/views/compliance-analysis.js',
             '/js/views/operational-impact.js',

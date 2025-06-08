@@ -1,144 +1,97 @@
 /**
  * UI Integration Module
- * Bridges the existing UI with the Premium Executive Platform
+ * Bridges the existing UI with the Enhanced Platform Application
  */
 
-ModuleLoader.register('UIIntegration', ['UIManager', 'EventSystem', 'PremiumExecutivePlatform'], function(uiManager, eventSystem, PremiumExecutivePlatform) {
+ModuleLoader.register('UIIntegration', ['UIManager', 'EventSystem', 'EnhancedPlatformApplication'], function(uiManager, eventSystem, EnhancedPlatformApplication) {
     
     class UIIntegration {
         constructor() {
             this.uiManager = uiManager;
             this.eventSystem = eventSystem;
-            this.platform = null;
+            this.platform = null; // Will be EnhancedPlatformApplication instance
         }
         
         init() {
-            console.log('🔗 Initializing UI Integration');
+            console.log('🔗 Initializing UI Integration with EnhancedPlatformApplication');
             
-            // Create premium platform instance
-            this.platform = new PremiumExecutivePlatform();
+            // Create EnhancedPlatformApplication instance
+            this.platform = new EnhancedPlatformApplication();
             
             // Make platform globally accessible
             window.platform = this.platform;
             
-            // Initialize the platform UI
-            this.setupPremiumUI();
+            // EnhancedPlatformApplication has its own render method, setupPremiumUI is no longer needed here.
+            // The main UI setup will be handled by this.platform.render() called within its init() or by EnhancedPlatformApplication itself.
             
-            // Initialize platform
+            // Initialize platform (which should include rendering its own UI)
             this.platform.init();
             
             // Setup event handlers
-            this.setupEventHandlers();
+            this.setupEventHandlers(); // These might need adjustment for the new DOM structure from EnhancedPlatformApplication
         }
         
-        setupPremiumUI() {
-            const app = document.getElementById('app') || document.getElementById('app-container') || document.body;
-            
-            app.innerHTML = `
-                <div class="premium-platform">
-                    <!-- Premium Header -->
-                    <header class="premium-header">
-                        <div class="header-container">
-                            <div class="brand-identity">
-                                <img src="./img/vendors/portnox-logo.png" alt="Portnox" class="portnox-logo">
-                                <div class="platform-title">
-                                    <h1>Executive Decision Platform</h1>
-                                    <p>Zero Trust NAC Investment Analysis & Risk Assessment</p>
-                                </div>
-                            </div>
-                            <div class="header-controls">
-                                <button class="control-btn calculate" id="recalculate-btn">
-                                    <i class="fas fa-calculator"></i>
-                                    <span>Recalculate</span>
-                                </button>
-                                <button class="control-btn export" id="export-btn">
-                                    <i class="fas fa-download"></i>
-                                    <span>Export</span>
-                                </button>
-                                <button class="control-btn demo" id="demo-btn">
-                                    <i class="fas fa-calendar-check"></i>
-                                    <span>Schedule Demo</span>
-                                </button>
-                            </div>
-                        </div>
-                    </header>
-                    
-                    <!-- Analysis Tabs -->
-                    <div class="analysis-container">
-                        <nav class="premium-nav">
-                            <button class="nav-tab active" data-tab="financial-overview">
-                                <i class="fas fa-chart-line"></i>
-                                <span>Financial Overview</span>
-                                <span class="tab-subtitle">TCO & ROI Analysis</span>
-                            </button>
-                            <button class="nav-tab" data-tab="risk-assessment">
-                                <i class="fas fa-shield-virus"></i>
-                                <span>Risk & Security</span>
-                                <span class="tab-subtitle">Breach & Incident Impact</span>
-                            </button>
-                            <button class="nav-tab" data-tab="compliance-analysis">
-                                <i class="fas fa-clipboard-check"></i>
-                                <span>Compliance</span>
-                                <span class="tab-subtitle">Regulatory Alignment</span>
-                            </button>
-                            <button class="nav-tab" data-tab="operational-impact">
-                                <i class="fas fa-cogs"></i>
-                                <span>Operational</span>
-                                <span class="tab-subtitle">Efficiency & Timeline</span>
-                            </button>
-                            <button class="nav-tab" data-tab="strategic-insights">
-                                <i class="fas fa-lightbulb"></i>
-                                <span>Strategic Insights</span>
-                                <span class="tab-subtitle">Recommendations</span>
-                            </button>
-                        </nav>
-                        
-                        <div class="analysis-content" id="analysis-content">
-                            <!-- Dynamic content -->
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+        // setupPremiumUI() is removed as EnhancedPlatformApplication will render its own UI.
         
         setupEventHandlers() {
-            // Tab navigation
+            // Tab navigation - This will likely need to be updated based on EnhancedPlatformApplication's DOM structure
             document.addEventListener('click', (e) => {
-                if (e.target.closest('.nav-tab')) {
-                    const tab = e.target.closest('.nav-tab');
-                    const tabName = tab.dataset.tab;
+                const navTab = e.target.closest('.nav-tab'); // Assuming '.nav-tab' is still used in EnhancedPlatformApplication
+                if (navTab && navTab.dataset.tab) {
+                    const tabName = navTab.dataset.tab;
                     
-                    // Update active state
+                    // Update active state - This logic might need to change
                     document.querySelectorAll('.nav-tab').forEach(t => {
-                        t.classList.toggle('active', t === tab);
+                        t.classList.toggle('active', t === navTab);
                     });
                     
-                    // Switch tab
-                    this.platform.switchTab(tabName);
+                    // Switch tab - This method should exist on EnhancedPlatformApplication
+                    if (this.platform && typeof this.platform.switchTab === 'function') {
+                        this.platform.switchTab(tabName);
+                    } else {
+                        console.warn('platform.switchTab is not available or not a function');
+                    }
                 }
-            });
-            
-            // Control buttons
-            document.getElementById('recalculate-btn')?.addEventListener('click', () => {
-                this.platform.calculate();
-            });
-            
-            document.getElementById('export-btn')?.addEventListener('click', () => {
-                window.open('https://portnox.com/tco-report', '_blank');
-            });
-            
-            document.getElementById('demo-btn')?.addEventListener('click', () => {
-                window.open('https://portnox.com/demo', '_blank');
+
+                // Handling for other controls from EnhancedPlatformApplication might be needed here or within the component itself.
+                // For example, if EnhancedPlatformApplication uses different IDs or classes for these buttons.
+                const recalculateBtn = e.target.closest('#recalculate-btn') || e.target.closest('.recalculate-btn-enhanced');
+                if (recalculateBtn) {
+                     if (this.platform && typeof this.platform.calculate === 'function') {
+                        this.platform.calculate();
+                    } else {
+                        console.warn('platform.calculate is not available or not a function');
+                    }
+                }
+
+                const exportBtn = e.target.closest('#export-btn') || e.target.closest('.export-btn-enhanced');
+                if (exportBtn) {
+                    // Assuming export functionality might also be part of the platform now or handled differently
+                    if (this.platform && typeof this.platform.exportData === 'function') {
+                        this.platform.exportData();
+                    } else {
+                         // Fallback to old behavior if specific export method isn't on new platform
+                        window.open('https://portnox.com/tco-report', '_blank');
+                    }
+                }
+
+                const demoBtn = e.target.closest('#demo-btn') || e.target.closest('.demo-btn-enhanced');
+                if (demoBtn) {
+                    window.open('https://portnox.com/demo', '_blank');
+                }
             });
             
             // Listen for calculation complete
             this.eventSystem.on('calculation:complete', (results) => {
-                console.log('📊 Calculation complete:', results);
+                console.log('📊 Calculation complete (UIIntegration):', results);
             });
+
+            // It might be necessary to listen to other events emitted by EnhancedPlatformApplication
+            // For example: this.eventSystem.on('enhancedPlatform:rendered', () => { /* attach specific handlers */ });
         }
     }
     
     return UIIntegration;
 });
 
-console.log('✅ UI Integration module registered');
+console.log('✅ UI Integration module registered (modified for EnhancedPlatformApplication)');
