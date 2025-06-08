@@ -268,3 +268,31 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* Logo fallback styles */
+.logo {
+    height: 40px;
+    max-width: 200px;
+    object-fit: contain;
+}
+
+.logo[src*="portnox"] {
+    /* Fallback for missing logo */
+    position: relative;
+}
+
+.logo[src*="portnox"]:after {
+    content: "PORTNOX";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
+    color: #00a4e4;
+    font-size: 1.5rem;
+}
+
+/* Hide broken image icon */
+.logo:not([src]), .logo[src=""] {
+    opacity: 0;
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TCO Analyzer - Diagnostic Test</title>
+    <script src="js/module-loader.js"></script>
+    <script src="js/vendor-database.js"></script>
+</head>
+<body>
+    <h1>Platform Diagnostic Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const results = document.getElementById('results');
+            
+            // Wait for modules
+            setTimeout(() => {
+                const VendorDB = ModuleLoader.get('VendorDatabase');
+                
+                if (VendorDB) {
+                    const vendors = VendorDB.getAllVendors();
+                    results.innerHTML = `
+                        <h2>✅ VendorDatabase loaded</h2>
+                        <p>Found ${vendors.length} vendors:</p>
+                        <ul>
+                            ${vendors.map(v => `<li>${v.id}: ${v.name}</li>`).join('')}
+                        </ul>
+                    `;
+                } else {
+                    results.innerHTML = '<h2>❌ VendorDatabase NOT loaded</h2>';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
