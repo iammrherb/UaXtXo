@@ -342,8 +342,22 @@ class RiskSecurityView {
     }
     
     renderRiskGauge(risk) {
-        const container = document.getElementById('risk-gauge-chart');
-        if (!container || typeof Highcharts === 'undefined') return;
+        const containerId = 'risk-gauge-chart';
+        const container = document.getElementById(containerId);
+
+        if (!container) {
+            console.warn(`RiskSecurityView: Container ${containerId} not found for Risk Gauge.`);
+            return;
+        }
+        if (typeof Highcharts === 'undefined') {
+            this._drawPlaceholderText(containerId, 'Risk Gauge Chart (Highcharts not loaded)');
+            return;
+        }
+        if (!risk || typeof risk.withPortnox !== 'number') {
+            this._drawPlaceholderText(containerId, 'Risk Gauge Chart (Data not available)');
+            console.warn("RiskSecurityView.renderRiskGauge: Insufficient risk data.");
+            return;
+        }
         
         const riskScoreToDisplay = Math.round(risk.withPortnox * 100); // Display risk score with Portnox
         
@@ -374,8 +388,25 @@ class RiskSecurityView {
     }
     
     renderControlsComparison() {
-        const container = document.getElementById('controls-comparison-chart');
-        if (!container || typeof Highcharts === 'undefined') return;
+        const containerId = 'controls-comparison-chart';
+        const container = document.getElementById(containerId);
+
+        if (!container) {
+            console.warn(`RiskSecurityView: Container ${containerId} not found for Controls Comparison.`);
+            return;
+        }
+        if (typeof Highcharts === 'undefined') {
+            this._drawPlaceholderText(containerId, 'Controls Comparison Chart (Highcharts not loaded)');
+            return;
+        }
+
+        // Check if platformResults has at least one vendor to make the chart meaningful,
+        // otherwise the static data might be misleading.
+        if (!this.platformResults || Object.keys(this.platformResults).length === 0) {
+             this._drawPlaceholderText(containerId, 'Controls Comparison Chart (Vendor data not available)');
+             console.warn("RiskSecurityView.renderControlsComparison: platformResults is empty.");
+             // return; // Allowing fallback to static illustrative data as per subtask flexibility
+        }
         
         const categories = ['Access Control', 'Device Trust', 'Segmentation', 'Threat Detection', 'Response', 'Compliance', 'Visibility', 'Policy'];
         const portnoxData = this.platformResults?.portnox;
@@ -412,10 +443,20 @@ class RiskSecurityView {
     }
     
     renderAttackSurfaceChart() {
-        const container = document.getElementById('attack-surface-chart');
-        if (!container || typeof Highcharts === 'undefined') return;
+        const containerId = 'attack-surface-chart';
+        const container = document.getElementById(containerId);
+
+        if (!container) {
+            console.warn(`RiskSecurityView: Container ${containerId} not found for Attack Surface Chart.`);
+            return;
+        }
+        if (typeof Highcharts === 'undefined') {
+            this._drawPlaceholderText(containerId, 'Attack Surface Chart (Highcharts not loaded)');
+            return;
+        }
         
-        // Data can be made dynamic based on platformResults if desired
+        // Data is currently static/illustrative, so no specific platformResults check needed to show the placeholder.
+        // If platformResults were meant to drive this, a check would go here.
         if (this.charts.attackSurface) this.charts.attackSurface.destroy();
         this.charts.attackSurface = Highcharts.chart(container, {
             chart: { type: 'area', backgroundColor: 'transparent', height: 300 },
@@ -433,11 +474,20 @@ class RiskSecurityView {
     }
     
     renderMaturityRadar() {
-        const container = document.getElementById('maturity-radar-chart');
-        if (!container || typeof Highcharts === 'undefined') return;
+        const containerId = 'maturity-radar-chart';
+        const container = document.getElementById(containerId);
+
+        if (!container) {
+            console.warn(`RiskSecurityView: Container ${containerId} not found for Maturity Radar Chart.`);
+            return;
+        }
+        if (typeof Highcharts === 'undefined') {
+            this._drawPlaceholderText(containerId, 'Maturity Radar Chart (Highcharts not loaded)');
+            return;
+        }
         
-        // Data can be made dynamic based on platformResults if desired
-         if (this.charts.maturity) this.charts.maturity.destroy();
+        // Data is currently static/illustrative.
+        if (this.charts.maturity) this.charts.maturity.destroy();
         this.charts.maturity = Highcharts.chart(container, {
             chart: { polar: true, type: 'area', backgroundColor: 'transparent', height: 400 },
             title: { text: 'Security Maturity Comparison', style: { color: '#ffffff' } },
@@ -476,6 +526,23 @@ class RiskSecurityView {
 // const riskSecurityView = new RiskSecurityView();
 // riskSecurityView.initialize(); // This was removed
 // window.riskSecurityView = riskSecurityView; // This is removed
+
+    _drawPlaceholderText(canvasId, text) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) {
+            console.warn(`RiskSecurityView: Canvas with id ${canvasId} not found for placeholder text.`);
+            // Attempt to put text in container if canvas itself is missing but container might exist
+            const container = document.getElementById(canvasId); // Assuming canvasId is also container ID
+            if(container) {
+                container.innerHTML = `<div style="text-align: center; padding: 20px; font-size: 16px; color: #a6acbb;">${text}</div>`;
+            }
+            return;
+        }
+        // If it's a Highcharts container, we might not have a 2D context.
+        // So, just set innerHTML of the container.
+        canvas.innerHTML = `<div style="text-align: center; padding: 20px; font-size: 16px; color: #a6acbb;">${text}</div>`;
+    }
+}
 
 console.log('✅ Risk & Security View loaded and refactored');
 window.riskSecurityView = new RiskSecurityView(); // Make instance globally available

@@ -5,7 +5,12 @@
 (function() {
     window.ExecutiveSummaryView = {
         render() {
-            return `
+            this.platformResults = platformResults; // Store for chart methods
+            this.platformConfig = platformConfig; // Store for chart methods
+
+            const analysis = this.performExecutiveAnalysis(platformResults, platformConfig);
+
+            const mainHtmlContent = `
                 <div class="executive-summary-view">
                     <div class="view-header">
                         <h1>Executive Summary</h1>
@@ -39,12 +44,235 @@
                     </div>
 
                     ${this.renderExecutiveBrief(analysis)}
+
+                    <section class="executive-charts-section">
+                        <h3>Key Performance Indicators</h3>
+                        <div class="charts-grid">
+                            <div class="chart-container">
+                                <canvas id="key-metrics-summary-chart" height="300"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="recommendation-strength-chart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </section>
+
                     ${this.renderStrategicRecommendations(analysis)}
                     ${this.renderBusinessImpact(analysis)}
                     ${this.renderDecisionMatrix(analysis)}
                     ${this.renderImplementationRoadmap(analysis)}
                 </div>
             `;
+
+            setTimeout(() => {
+                if (document.getElementById('key-metrics-summary-chart') && document.getElementById('recommendation-strength-chart')) {
+                    this.initializeExecutiveCharts(this.platformResults, this.platformConfig);
+                } else {
+                    console.warn("ExecutiveSummaryView: Chart canvas elements not found. Charts might not initialize.");
+                }
+            }, 250);
+
+            return mainHtmlContent;
+        },
+
+        initializeExecutiveCharts(platformResults, platformConfig) {
+            if (!platformResults || !platformConfig) {
+                console.warn("ExecutiveSummaryView.initializeExecutiveCharts: Missing platformResults or platformConfig");
+                return;
+            }
+            this.renderKeyMetricsSummaryChart(platformResults, platformConfig);
+            this.renderRecommendationStrengthChart(platformResults, platformConfig);
+        },
+
+        renderKeyMetricsSummaryChart(platformResults, platformConfig) {
+            const canvasId = 'key-metrics-summary-chart';
+            const ctx = document.getElementById(canvasId)?.getContext('2d');
+            if (!ctx) {
+                console.warn(`ExecutiveSummaryView: Canvas ${canvasId} not found.`);
+                return;
+            }
+
+            const primaryVendorId = platformConfig?.selectedVendors?.[0] || 'portnox';
+            const vendorData = platformResults[primaryVendorId];
+
+            if (!vendorData) {
+                console.warn(`ExecutiveSummaryView: Data for primary vendor (${primaryVendorId}) not found for Key Metrics Chart.`);
+                ctx.font = "16px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("Key Metrics Data Not Available", ctx.canvas.width / 2, ctx.canvas.height / 2);
+                return;
+            }
+
+            const tco = vendorData.tco?.total || 0;
+            // ROI is a percentage, scale it for display if it's too large or small compared to TCO.
+            // Or, use multiple axes. For simplicity, let's normalize/represent ROI differently or ensure it's on a comparable scale.
+            // For this chart, ROI will be displayed as is (e.g., 350 for 350%).
+            const roi = vendorData.roi?.percentage || 0;
+            // Risk Score is 0-100, where higher is worse. For a "positive" metric bar, we might display (100 - score).
+            const riskScore = vendorData.riskAnalysis?.score !== undefined ? (100 - vendorData.riskAnalysis.score) : 0; // Higher bar is better
+            const complianceScore = vendorData.complianceScore?.overall || 0;
+
+            if (this.keyMetricsChartInstance) {
+                this.keyMetricsChartInstance.destroy();
+            }
+
+            this.keyMetricsChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['TCO Savings (vs next best)', 'ROI (%)', 'Security Score', 'Compliance Score'],
+                    datasets: [{
+                        label: `${vendorData.vendor?.name || primaryVendorId} - Key Metrics`,
+                        data: [
+                            (vendorData.tco?.savingsVsNextBest || tco), // If direct savings not available, show TCO (lower is better, this might be confusing)
+                                                                      // Ideally, TCO should be represented as lower = better, or show savings.
+                                                                      // For now, using 'savingsVsNextBest' if available, else raw TCO.
+                            roi,
+                            riskScore,
+                            complianceScore
+                        ],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.6)', // Blue for TCO/Savings
+                            'rgba(75, 192, 192, 0.6)', // Green for ROI
+                            'rgba(255, 206, 86, 0.6)', // Yellow for Security Score (inverted)
+                            'rgba(153, 102, 255, 0.6)'  // Purple for Compliance
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y', // Horizontal bar chart might be nice for these labels
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            // Consider using a logarithmic scale if values are vastly different,
+                            // or multiple y-axes if Chart.js version supports it easily here.
+                            // For now, linear scale. User might need to interpret TCO value carefully.
+                            title: {
+                                display: true,
+                                text: 'Metric Value / Score'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false // Or true, but dataset label is long
+                        },
+                        title: {
+                            display: true,
+                            text: `Key Metrics: ${vendorData.vendor?.name || primaryVendorId}`,
+                            font: { size: 16 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    let value = context.parsed.x;
+                                    if (context.label === 'TCO Savings (vs next best)') {
+                                        label = (vendorData.tco?.savingsVsNextBest ? 'TCO Savings: ' : 'TCO: ') + '$' + value.toLocaleString();
+                                    } else if (context.label === 'ROI (%)') {
+                                        label = 'ROI: ' + value.toFixed(1) + '%';
+                                    } else if (context.label === 'Security Score') {
+                                        label = 'Security Score (out of 100): ' + value.toFixed(1);
+                                    } else if (context.label === 'Compliance Score') {
+                                        label = 'Compliance Score (out of 100): ' + value.toFixed(1) + '%';
+                                    } else {
+                                        label += value;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            console.log("ExecutiveSummaryView: renderKeyMetricsSummaryChart executed.");
+        },
+
+        renderRecommendationStrengthChart(platformResults, platformConfig) {
+            const canvasId = 'recommendation-strength-chart';
+            const ctx = document.getElementById(canvasId)?.getContext('2d');
+            if (!ctx) {
+                console.warn(`ExecutiveSummaryView: Canvas ${canvasId} not found.`);
+                return;
+            }
+
+            const primaryVendorId = platformConfig?.selectedVendors?.[0] || 'portnox';
+            const vendorData = platformResults[primaryVendorId];
+
+            if (!vendorData || typeof vendorData.overallScore !== 'number') {
+                console.warn(`ExecutiveSummaryView: Overall score for primary vendor (${primaryVendorId}) not found for Recommendation Strength Chart.`);
+                ctx.font = "16px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("Recommendation Score Not Available", ctx.canvas.width / 2, ctx.canvas.height / 2);
+                return;
+            }
+
+            const overallScore = Math.max(0, Math.min(100, vendorData.overallScore)); // Ensure score is 0-100
+
+            // Determine color based on score
+            let scoreColor = 'rgba(255, 99, 132, 0.7)'; // Red (Poor)
+            if (overallScore >= 85) {
+                scoreColor = 'rgba(75, 192, 192, 0.7)'; // Green (Excellent)
+            } else if (overallScore >= 70) {
+                scoreColor = 'rgba(54, 162, 235, 0.7)'; // Blue (Good)
+            } else if (overallScore >= 50) {
+                scoreColor = 'rgba(255, 206, 86, 0.7)'; // Yellow (Average)
+            }
+
+            if (this.recommendationChartInstance) {
+                this.recommendationChartInstance.destroy();
+            }
+
+            this.recommendationChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Recommendation Strength', 'Remaining'],
+                    datasets: [{
+                        data: [overallScore, 100 - overallScore],
+                        backgroundColor: [scoreColor, 'rgba(200, 200, 200, 0.2)'], // Score color and a light grey for the rest
+                        borderColor: [scoreColor, 'rgba(200, 200, 200, 0.4)'],
+                        borderWidth: 1,
+                        circumference: 180, // Half circle
+                        rotation: -90       // Start from the bottom
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    rotation: -90, // Alias for rotation for older Chart.js, but correctly placed here
+                    circumference: 180, // Alias for circumference
+                    cutout: '70%', // Makes it a doughnut
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: `Recommendation Strength: ${overallScore.toFixed(1)}%`,
+                            font: { size: 16 },
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            enabled: false // Or customize to show only the main score
+                        },
+                        // Custom plugin to display text in the middle
+                        // This specific text drawing inside doughnut is often done with plugins or chartjs-plugin-datalabels
+                        // For simplicity, title is used. Advanced text might need a plugin.
+                    }
+                }
+            });
+            console.log("ExecutiveSummaryView: renderRecommendationStrengthChart executed.");
         },
 
         performExecutiveAnalysis(platformResults, platformConfig) {

@@ -24,11 +24,11 @@
                 console.error("FinancialAnalysisView: platformResults or platformConfig not provided to renderComplete.");
                 return this.render(); // Render basic shell or error
             }
+            // Store data for chart functions and other rendering methods
             this.platformResults = platformResults;
             this.platformConfig = platformConfig;
-            // const config = platformConfig; // No longer needed to get from ConfigManager here
 
-            return `
+            const mainHtmlContent = `
                 <div class="financial-analysis-view">
                     <div class="view-header">
                         <h1>Financial Analysis</h1>
@@ -43,6 +43,187 @@
                     ${this.renderSensitivityAnalysis()}
                 </div>
             `;
+
+            setTimeout(() => {
+                // Basic check for DOM readiness, assuming all chart canvases are in the view
+                if (document.getElementById('cashflow-chart') &&
+                    document.getElementById('tco-projection-chart') &&
+                    document.getElementById('sensitivity-chart') &&
+                    document.getElementById('roi-comparison-chart')) {
+                    this.initializeFinancialCharts(this.platformResults, this.platformConfig);
+                } else {
+                    console.warn("FinancialAnalysisView: Some chart canvas elements not found (including ROI). Charts might not initialize correctly.");
+                }
+            }, 250); // Delay to allow DOM to update
+
+            return mainHtmlContent;
+        },
+
+        _drawPlaceholderText(canvasId, text) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) {
+                console.warn(`Canvas with id ${canvasId} not found for placeholder text.`);
+                return;
+            }
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Clear previous content
+                // Background
+                ctx.fillStyle = '#f0f0f0'; // Light gray background
+                ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+                // Text
+                ctx.font = "bold 16px 'Segoe UI', sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillStyle = '#555'; // Darker gray text
+                ctx.fillText(text, ctx.canvas.width / 2, ctx.canvas.height / 2);
+
+                // Border
+                ctx.strokeStyle = '#ccc'; // Light gray border
+                ctx.lineWidth = 1;
+                ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+            } else {
+                console.warn(`Could not get 2D context for canvas ${canvasId}.`);
+            }
+        },
+
+        initializeFinancialCharts(platformResults, platformConfig) {
+            if (!platformResults || !platformConfig) {
+                console.warn("FinancialAnalysisView.initializeFinancialCharts: Missing platformResults or platformConfig");
+                return;
+            }
+            this.renderROIBarsChart(platformResults, platformConfig); // Added ROI chart
+            this.renderCashflowChart(platformResults, platformConfig);
+            this.renderTCOProjectionChart(platformResults, platformConfig);
+            this.renderSensitivityChart(platformResults, platformConfig);
+        },
+
+        renderROIBarsChart(platformResults, platformConfig) {
+            const canvasId = 'roi-comparison-chart';
+            const ctx = document.getElementById(canvasId)?.getContext('2d');
+            if (!ctx) {
+                console.warn(`Canvas with id ${canvasId} not found for ROI chart.`);
+                return;
+            }
+
+            if (!platformResults || Object.keys(platformResults).length === 0) {
+                this._drawPlaceholderText(canvasId, 'No data for ROI Comparison Chart');
+                console.warn("FinancialAnalysisView.renderROIBarsChart: platformResults is empty or undefined.");
+                return;
+            }
+
+            const vendorIds = Object.keys(platformResults);
+            const labels = [];
+            const dataPoints = [];
+            const backgroundColors = [];
+            const borderColors = [];
+
+            vendorIds.forEach(vendorId => {
+                const result = platformResults[vendorId];
+                const vendorName = result.vendor?.name || vendorId;
+                labels.push(vendorName);
+
+                // Assuming ROI data is structured as result.roi.percentage
+                // The old platform-app.js used result.roi.total_roi_percentage
+                // Let's assume result.roi.percentage is the correct field from platformResults structure
+                const roiPercentage = result.roi?.percentage || result.roi?.total_roi_percentage || 0;
+                dataPoints.push(roiPercentage);
+
+                if (vendorId === 'portnox') {
+                    backgroundColors.push('rgba(0, 123, 255, 0.7)'); // Portnox blue
+                    borderColors.push('rgba(0, 123, 255, 1)');
+                } else {
+                    backgroundColors.push('rgba(108, 117, 125, 0.5)'); // Standard gray
+                    borderColors.push('rgba(108, 117, 125, 1)');
+                }
+            });
+
+            // Destroy existing chart instance if it exists
+            if (this.roiChartInstance) {
+                this.roiChartInstance.destroy();
+            }
+
+            this.roiChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'ROI (%)',
+                        data: dataPoints,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Return on Investment (%)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Vendors'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false // Or true if multiple datasets, but here it's simple
+                        },
+                        title: {
+                            display: true,
+                            text: 'ROI Comparison by Vendor',
+                            font: {
+                                size: 18
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(2) + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            console.log("FinancialAnalysisView: renderROIBarsChart successfully rendered.");
+        },
+
+        // Placeholder implementations for charts
+        renderCashflowChart(platformResults, platformConfig) {
+            this._drawPlaceholderText('cashflow-chart', 'Cashflow Chart Placeholder');
+            console.log("FinancialAnalysisView: Placeholder for Cashflow Chart");
+        },
+
+        renderTCOProjectionChart(platformResults, platformConfig) {
+            this._drawPlaceholderText('tco-projection-chart', 'TCO Projection Chart Placeholder');
+            console.log("FinancialAnalysisView: Placeholder for TCO Projection Chart");
+        },
+
+        renderSensitivityChart(platformResults, platformConfig) {
+            this._drawPlaceholderText('sensitivity-chart', 'Sensitivity Analysis Chart Placeholder');
+            console.log("FinancialAnalysisView: Placeholder for Sensitivity Analysis Chart");
         },
 
         renderFinancialControls() {
@@ -333,6 +514,9 @@
             return `
                 <div class="financial-metrics-section">
                     <h2>Key Financial Metrics</h2>
+                    <div class="chart-container" style="padding: 15px 0; border-bottom: 1px solid #eee; margin-bottom: 20px;">
+                        <canvas id="roi-comparison-chart" height="300"></canvas>
+                    </div>
                     <div class="metrics-comparison">
                         <div class="metric-category">
                             <h3>Investment Metrics</h3>
@@ -571,7 +755,12 @@
 
         updateSensitivity() {
             // Update sensitivity analysis
-            this.renderSensitivityChart();
+            // this.renderSensitivityChart(); // Now called via initializeFinancialCharts if view re-renders
+            if (this.platformResults && this.platformConfig) {
+                 this.renderSensitivityChart(this.platformResults, this.platformConfig);
+            } else {
+                console.warn("FinancialAnalysisView: updateSensitivity called but platformResults/Config not available for chart redraw.")
+            }
         },
 
         refresh() {

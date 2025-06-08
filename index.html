@@ -3,202 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portnox Total Cost Analyzer - Executive Decision Platform</title>
-    
-    <!-- Core Styles -->
-    <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/dashboard.css">
-    <link rel="stylesheet" href="styles/vendors.css">
-    <link rel="stylesheet" href="styles/reports.css">
-    
-    <!-- External Dependencies -->
+    <title>Portnox Ultimate TCO Analyzer</title>
+    <!-- Load Font Awesome (ensure this matches the version used in CSS) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!-- Load Google Fonts (Roboto) -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Load Highcharts (if needed by any view) -->
     <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
-    <script src="https://code.highcharts.com/modules/export-data.js"></script>
-    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
+    <!-- Load Chart.js (if needed by any view) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Load the new Ultimate Theme -->
+    <link rel="stylesheet" href="css/theme/portnox-ultimate-theme.css">
+    
+    <!-- Core Application Styles (Original - might be deprecated or integrated) -->
+    <!-- <link rel="stylesheet" href="css/style.css"> -->
+    <!-- <link rel="stylesheet" href="css/theme/portnox-theme.css"> -->
+
+    <!-- Favicon -->
+    <link rel="icon" href="img/favicon.ico" type="image/x-icon">
 </head>
 <body>
-    <div id="app" class="app-container">
-        <!-- Header -->
-        <header class="main-header">
-            <div class="header-content">
-                <div class="logo-section">
-                    <img src="assets/portnox-logo.svg" alt="Portnox" class="logo">
-                    <h1>Executive Decision Platform</h1>
-                </div>
-                <div class="header-actions">
-                    <button id="recalculateBtn" class="btn btn-primary">
-                        <span class="icon">📊</span> Recalculate
-                    </button>
-                    <button id="exportBtn" class="btn btn-secondary">
-                        <span class="icon">📥</span> Export
-                    </button>
-                    <button id="scheduleDemoBtn" class="btn btn-accent">
-                        <span class="icon">📅</span> Schedule Demo
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- Navigation Tabs -->
-        <nav class="main-nav">
-            <div class="nav-tabs" role="tablist">
-                <button class="nav-tab active" data-tab="financial" role="tab">
-                    <span class="icon">📈</span> Financial Overview
-                </button>
-                <button class="nav-tab" data-tab="risk" role="tab">
-                    <span class="icon">🛡️</span> Risk & Security
-                </button>
-                <button class="nav-tab" data-tab="compliance" role="tab">
-                    <span class="icon">✅</span> Compliance
-                </button>
-                <button class="nav-tab" data-tab="efficiency" role="tab">
-                    <span class="icon">⚡</span> Operational Efficiency
-                </button>
-                <button class="nav-tab" data-tab="insights" role="tab">
-                    <span class="icon">💡</span> Strategic Insights
-                </button>
-            </div>
-        </nav>
-
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <!-- Vendor Selection -->
-            <section class="vendor-selection-section">
-                <h2>Select Vendors for Comparison</h2>
-                <div id="vendorSelection" class="vendor-selection-container">
-                    <!-- Vendor pills will be dynamically inserted here -->
-                </div>
-            </section>
-
-            <!-- Tab Content -->
-            <div class="tab-content">
-                <!-- Financial Overview Tab -->
-                <div id="financial-tab" class="tab-panel active" role="tabpanel">
-                    <div class="dashboard-grid">
-                        <div class="metric-card">
-                            <h3>5-Year TCO Comparison</h3>
-                            <div id="tcoChart" class="chart-container"></div>
-                        </div>
-                        <div class="metric-card">
-                            <h3>ROI Analysis</h3>
-                            <div id="roiChart" class="chart-container"></div>
-                        </div>
-                        <div class="metric-card">
-                            <h3>Cost Breakdown</h3>
-                            <div id="costBreakdownChart" class="chart-container"></div>
-                        </div>
-                        <div class="metric-card">
-                            <h3>Savings Projections</h3>
-                            <div id="savingsChart" class="chart-container"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Risk & Security Tab -->
-                <div id="risk-tab" class="tab-panel" role="tabpanel">
-                    <div class="dashboard-grid">
-                        <div class="metric-card">
-                            <h3>Security Posture Score</h3>
-                            <div id="securityScoreChart" class="chart-container"></div>
-                        </div>
-                        <div class="metric-card">
-                            <h3>Threat Coverage Analysis</h3>
-                            <div id="threatCoverageChart" class="chart-container"></div>
-                        </div>
-                        <div class="metric-card">
-                            <h3>Incident Response Metrics</h3>
-                            <div id="incidentMetricsChart" class="chart-container"></div>
-                        </div>
-                        <div class="metric-card">
-                            <h3>Cyber Insurance Impact</h3>
-                            <div id="insuranceImpactChart" class="chart-container"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Compliance Tab -->
-                <div id="compliance-tab" class="tab-panel" role="tabpanel">
-                    <div class="dashboard-grid">
-                        <div class="metric-card full-width">
-                            <h3>Compliance Framework Coverage</h3>
-                            <div id="complianceMatrixChart" class="chart-container"></div>
-                        </div>
-                        <div class="metric-card">
-                            <h3>Regulatory Alignment</h3>
-                            <div id="regulatoryChart" class="chart-container"></div>
-                        </div>
-                        <div class="metric-card">
-                            <h3>Audit Readiness Score</h3>
-                            <div id="auditReadinessChart" class="chart-container"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Operational Efficiency Tab -->
-                <div id="efficiency-tab" class="tab-panel" role="tabpanel">
-                    <div class="dashboard-grid">
-                        <div class="metric-card">
-                            <h3>FTE Requirements</h3>
-                            <div id="fteChart" class="chart-container"></div>
-                        </div>
-                        <div class="metric-card">
-                            <h3>Deployment Timeline</h3>
-                            <div id="timelineChart" class="chart-container"></div>
-                        </div>
-                        <div class="metric-card">
-                            <h3>Administrative Overhead</h3>
-                            <div id="adminOverheadChart" class="chart-container"></div>
-                        </div>
-                        <div class="metric-card">
-                            <h3>Automation Benefits</h3>
-                            <div id="automationChart" class="chart-container"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Strategic Insights Tab -->
-                <div id="insights-tab" class="tab-panel" role="tabpanel">
-                    <div class="insights-container">
-                        <div class="executive-summary">
-                            <h3>Executive Summary</h3>
-                            <div id="executiveSummary" class="summary-content"></div>
-                        </div>
-                        <div class="recommendations">
-                            <h3>Strategic Recommendations</h3>
-                            <div id="recommendations" class="recommendations-content"></div>
-                        </div>
-                        <div class="next-steps">
-                            <h3>Recommended Next Steps</h3>
-                            <div id="nextSteps" class="next-steps-content"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Loading Overlay -->
-        <div id="loadingOverlay" class="loading-overlay">
-            <div class="loader"></div>
-            <p>Initializing platform...</p>
+    <div id="app-ultimate">
+        <!-- UltimatePlatform will render its layout here -->
+        <div style="padding:40px; text-align:center;">
+            <h2>Loading Portnox Ultimate TCO Analyzer...</h2>
+            <p>If this message persists, please ensure JavaScript is enabled and all files are loaded correctly.</p>
+            <!-- Basic spinner -->
+            <style>.init-spinner { border: 5px solid #f3f3f3; border-top: 5px solid #0072CE; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+            <div class="init-spinner"></div>
         </div>
     </div>
 
-    <!-- Core Scripts -->
-    <script src="js/module-loader.js"></script>
-    <script src="js/vendor-database.js"></script>
-    <script src="js/compliance-database.js"></script>
-    <script src="js/risk-security-database.js"></script>
-    <script src="js/industry-database.js"></script>
-    <script src="js/tco-calculator.js"></script>
-    <script src="js/roi-calculator.js"></script>
-    <script src="js/chart-manager.js"></script>
-    <script src="js/vendor-selection-ui.js"></script>
-    <script src="js/report-generator.js"></script>
-    <script src="js/platform-app.js"></script>
-    <script src="js/init.js"></script>
-<script src="js/vendor-init-fix.js"></script>
+    <!-- Module Loader - Must be first -->
+    <script src="js/core/module-loader.js"></script>
+
+    <!-- Core Services - Registered with ModuleLoader -->
+    <script src="js/core/event-system.js"></script>
+    <script src="js/core/config-manager.js"></script>
+
+    <!-- Data Files -->
+    <script src="js/data/master-vendor-database.js"></script>
+    <script src="js/data/industry-database.js"></script> <!-- Assumed still needed -->
+    <script src="js/data/compliance-database.js"></script> <!-- Assumed still needed -->
+    <script src="js/data/compliance-nac-mapping.js"></script>  <!-- Assumed still needed -->
+
+    <!-- View Modules (Global classes for UltimatePlatform.registerViews) -->
+    <script src="js/views/dashboard-view.js"></script>
+    <script src="js/views/executive-summary-view.js"></script>
+    <script src="js/views/financial-analysis-view.js"></script>
+    <script src="js/views/risk-security-view.js"></script>
+    <script src="js/views/compliance-view-enhanced.js"></script>
+    <script src="js/views/operational-impact.js"></script>
+    <script src="js/views/strategic-insights.js"></script>
+    <script src="js/views/vendor-selection-view.js"></script>
+
+    <!-- Ultimate Platform Core (Defines UltimatePlatform and UltimateUIManager classes, and includes DOMContentLoaded listener for init) -->
+    <script src="js/core/platform-ultimate.js"></script>
+
+    <!--
+        The DOMContentLoaded listener within platform-ultimate.js will handle initialization.
+        No separate initialization script block is needed here in index.html anymore.
+    -->
 </body>
 </html>
