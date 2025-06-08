@@ -19,16 +19,17 @@
             `;
         },
 
-        renderComplete() {
-            const VendorDataManager = window.ModuleLoader.get('VendorDataManager');
-            const ConfigManager = window.ModuleLoader.get('ConfigManager');
-            
-            if (!VendorDataManager || !ConfigManager) {
-                return this.render();
+        renderComplete(platformResults, platformConfig) {
+            if (!platformResults || !platformConfig) {
+                console.error("ExecutiveSummaryView: platformResults or platformConfig not provided to renderComplete.");
+                return this.render(); // Render basic shell or error
             }
 
-            const config = ConfigManager.get('defaults');
-            const analysis = this.performExecutiveAnalysis(config);
+            // Store for potential use by other helpers if needed, though direct passing is preferred
+            this.platformResults = platformResults;
+            this.platformConfig = platformConfig;
+
+            const analysis = this.performExecutiveAnalysis(platformResults, platformConfig);
 
             return `
                 <div class="executive-summary-view">
@@ -46,27 +47,35 @@
             `;
         },
 
-        performExecutiveAnalysis(config) {
-            const VendorDataManager = window.ModuleLoader.get('VendorDataManager');
+        performExecutiveAnalysis(platformResults, platformConfig) {
+            // No longer uses VendorDataManager or ConfigManager directly for main data
             
-            // Analyze all major vendors
-            const vendors = ['portnox', 'cisco', 'aruba', 'forescout'];
-            const results = {};
+            const results = {}; // This will store processed data for the view's specific needs
+            const selectedVendorIds = Object.keys(platformResults);
+
+            if (selectedVendorIds.length === 0) {
+                return { results: {}, portnox: null, bestCompetitor: null, worstCompetitor: null, savings: 0, savingsPercent: 0, config: platformConfig };
+            }
             
-            vendors.forEach(vendorId => {
-                const vendor = VendorDataManager.getVendor(vendorId);
-                const tco = VendorDataManager.calculateTCO(vendorId, config);
-                const roi = VendorDataManager.calculateROI(vendorId, config);
+            selectedVendorIds.forEach(vendorId => {
+                const platformVendorResult = platformResults[vendorId];
+                if (!platformVendorResult || !platformVendorResult.vendor) {
+                    console.warn(`ExecutiveSummaryView: Vendor data missing for ${vendorId} in platformResults.`);
+                    return;
+                }
                 
+                // Use data directly from platformResults
                 results[vendorId] = {
-                    vendor,
-                    tco,
-                    roi,
-                    scores: this.calculateExecutiveScores(vendor, tco, roi)
+                    vendor: platformVendorResult.vendor,
+                    tco: platformVendorResult.tco,
+                    roi: platformVendorResult.roi,
+                    // Pass the platform-calculated scores/data if available, or recalculate if necessary based on new structure
+                    // calculateExecutiveScores might need to be adapted or its logic integrated here
+                    scores: this.calculateExecutiveScores(platformVendorResult.vendor, platformVendorResult.tco, platformVendorResult.roi, platformVendorResult)
                 };
             });
             
-            // Find best options
+            // Find best options - ensure 'portnox' and other vendors exist in 'results' before accessing
             const portnox = results.portnox;
             const competitors = Object.values(results).filter(r => r.vendor.id !== 'portnox');
             const bestCompetitor = competitors.sort((a, b) => a.tco.total - b.tco.total)[0];
@@ -83,7 +92,16 @@
         },
 
         renderExecutiveBrief(analysis) {
-            const config = ConfigManager.get('defaults');
+            // Use analysis.config which should be platformConfig
+            const config = analysis.config || this.platformConfig || {};
+
+            if (!analysis.portnox || !analysis.bestCompetitor) {
+                return `
+                <div class="executive-brief-section">
+                    <div class="brief-header"><h2>Executive Brief</h2></div>
+                    <p>Not enough data for analysis. Please select vendors including Portnox.</p>
+                </div>`;
+            }
             
             return `
                 <div class="executive-brief-section">
@@ -530,24 +548,50 @@
             `;
         },
 
-        calculateExecutiveScores(vendor, tco, roi) {
+        calculateExecutiveScores(vendor, tco, roi, platformVendorResult) {
+            // platformVendorResult contains { vendor, tco, roi, complianceScore, riskScore, industryFit }
+            // This method should be adapted to use these richer structures.
+            // For now, retain some original logic but acknowledge it needs more mapping.
+
+            const financialScore = platformVendorResult?.roi?.percentage ?
+                                   Math.min(10, Math.max(0, (platformVendorResult.roi.percentage / 50))) : // Example: 500% ROI = 10
+                                   this.calculateFinancialScore(vendor, tco); // Fallback
+
+            const strategicScore = platformVendorResult?.industryFit?.score ?
+                                   (platformVendorResult.industryFit.score / 10) : // Example: 100% fit = 10
+                                   this.calculateStrategicScore(vendor); // Fallback
+
+            const operationalScore = platformVendorResult?.vendor?.features?.automation ?
+                                     (platformVendorResult.vendor.features.automation / 10) :
+                                     this.calculateOperationalScore(vendor); // Fallback
+
+            const riskReductionScore = platformVendorResult?.riskScore?.score ?
+                                       (100 - platformVendorResult.riskScore.score) / 10 : // Higher platform riskScore is bad, so invert
+                                       this.calculateRiskScore(vendor); // Fallback
+
             return {
-                financial: this.calculateFinancialScore(vendor, tco),
-                strategic: this.calculateStrategicScore(vendor),
-                operational: this.calculateOperationalScore(vendor),
-                risk: this.calculateRiskScore(vendor)
+                financial: financialScore,
+                strategic: strategicScore,
+                operational: operationalScore,
+                risk: riskReductionScore
             };
         },
 
         calculateCriteriaScore(result, criteriaId) {
+            // result here is results[vendorId] from performExecutiveAnalysis
+            // which contains { vendor, tco, roi, scores (from calculateExecutiveScores), ... platform data ... }
+            const vendor = result.vendor; // original vendor data from comprehensive DB
+            const platformCalculatedRiskScore = result.riskScore?.score; // from EnhancedPlatformApplication
+            const platformCalculatedComplianceOverall = result.complianceScore?.overall; // from EnhancedPlatformApplication
+
             const scores = {
-                tco: 10 - (result.tco.total / 1000000) * 2, // Lower is better
-                deployment: 10 - (result.vendor.deployment.time / 240), // Faster is better  
-                security: result.vendor.security?.zeroTrust?.score / 10 || 5,
-                automation: result.vendor.operational?.automation / 10 || 3,
-                compliance: result.vendor.compliance?.automation / 10 || 3,
-                scalability: result.vendor.category === 'cloud-native' ? 10 : 5,
-                innovation: result.vendor.features?.advanced?.['AI/ML Threat Detection'] ? 9 : 4
+                tco: 10 - (result.tco.total / 1000000) * 2,
+                deployment: 10 - (vendor.deployment.time / 240),
+                security: platformCalculatedRiskScore ? (100 - platformCalculatedRiskScore) / 10 : (vendor.features?.zeroTrust?.score / 10 || 5),
+                automation: vendor.features?.automation / 10 || 3,
+                compliance: platformCalculatedComplianceOverall ? platformCalculatedComplianceOverall / 10 : (vendor.features?.compliance?.automation / 10 || 3),
+                scalability: vendor.deployment?.model?.toLowerCase().includes('cloud') ? 10 : 5,
+                innovation: vendor.features?.security?.aiThreatDetection ? 9 : 4
             };
             
             return Math.round(Math.max(1, Math.min(10, scores[criteriaId] || 5)));
@@ -577,26 +621,32 @@
             return total;
         },
 
+        // Fallback calculation methods - these should ideally be phased out or simplified
+        // if all necessary data comes directly from platformResults.
         calculateFinancialScore(vendor, tco) {
-            // Score based on TCO efficiency
-            const baseline = 1000000; // $1M baseline
-            return Math.max(0, 10 - (tco.total / baseline) * 5);
+            const baseline = 1000000;
+            return Math.max(0, 10 - ((tco?.total || baseline * 2) / baseline) * 5);
         },
 
         calculateStrategicScore(vendor) {
             let score = 5;
-            if (vendor.category === 'cloud-native') score += 3;
-            if (vendor.security?.zeroTrust?.native) score += 2;
+            if (vendor?.deployment?.model?.toLowerCase().includes('cloud')) score += 3;
+            if (vendor?.features?.zeroTrust?.native) score += 2;
             return Math.min(10, score);
         },
 
         calculateOperationalScore(vendor) {
-            return (vendor.operational?.automation || 30) / 10;
+            return (vendor?.features?.automation || 30) / 10;
         },
 
-        calculateRiskScore(vendor) {
-            const breachReduction = vendor.security?.breachReduction || 0.3;
-            return breachReduction * 10;
+        calculateRiskScore(vendor) { // This calculates a "goodness" score from risk perspective
+            // The platform's riskScore is "badness", so this needs to be different.
+            // This is a simplified version.
+            let score = 5;
+            if(vendor?.features?.zeroTrust?.score > 75) score +=2;
+            if(vendor?.features?.security?.aiThreatDetection) score +=2;
+            if(vendor?.features?.security?.mttr < 60) score +=1;
+            return Math.min(10,score);
         },
 
         getScoreClass(score) {

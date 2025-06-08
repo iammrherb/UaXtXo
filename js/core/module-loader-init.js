@@ -43,8 +43,12 @@ document.addEventListener('DOMContentLoaded', function() {
             '/js/core/ui-manager.js',
             'js/core/platform-enhanced.js',
             'js/views/dashboard-view.js', // Added dashboard view
-            '/js/views/risk-security-init.js',
-            '/js/views/compliance-analysis.js',
+            'js/views/vendor-selection-view.js', // Added vendor selection view
+            'js/views/executive-summary-view.js', // Added executive summary view
+            'js/views/financial-analysis-view.js', // Added financial analysis view
+            'js/views/risk-security-view.js', // Added new risk and security view
+            // '/js/views/risk-security-init.js', // Removed as RiskSecurityView from risk-security-view.js is used directly
+            'js/views/compliance-view-enhanced.js', // Added new compliance view
             '/js/views/operational-impact.js',
             '/js/views/strategic-insights.js',
             '/js/modules/ui-integration.js'
@@ -53,16 +57,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Convert standalone modules to ModuleLoader format
         window.addEventListener('load', function() {
             // Register analysis modules
-            if (window.RiskSecurityAnalysis) {
-                ModuleLoader.register('RiskSecurityAnalysis', [], function() {
-                    return window.RiskSecurityAnalysis;
-                });
-            }
-            if (window.ComplianceAnalysis) {
-                ModuleLoader.register('ComplianceAnalysis', [], function() {
-                    return window.ComplianceAnalysis;
-                });
-            }
+            // RiskSecurityAnalysis module (from deleted js/views/risk-security-init.js) registration removed.
+            // if (window.RiskSecurityAnalysis) {
+            //     ModuleLoader.register('RiskSecurityAnalysis', [], function() {
+            //         return window.RiskSecurityAnalysis;
+            //     });
+            // }
+            // ComplianceAnalysis module (from deleted js/views/compliance-analysis.js) registration removed.
             if (window.OperationalImpact) {
                 ModuleLoader.register('OperationalImpact', [], function() {
                     return window.OperationalImpact;
