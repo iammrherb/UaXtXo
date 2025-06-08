@@ -516,46 +516,161 @@
 
         initializeDashboardCharts(platformResults, platformConfig) {
             // Ensure DOM is ready for charts
-            if (document.getElementById('tco-comparison-chart') && document.getElementById('cost-category-chart')) {
-                this.renderTCOComparisonChart(platformResults, platformConfig);
-                this.renderCostCategoryChart(platformResults, platformConfig);
-            } else {
-                // If called too early, try again after a short delay
-                // This is a fallback, ideally renderComplete ensures DOM elements are available before calling this
-                console.warn("DashboardView: Chart canvas elements not found, retrying chart initialization shortly.");
-                setTimeout(() => {
-                    this.renderTCOComparisonChart(platformResults, platformConfig);
-                    this.renderCostCategoryChart(platformResults, platformConfig);
-                }, 200);
+            // Using a try/catch for safety, though ideally DOM elements are always there when this is called
+            try {
+                if (document.getElementById('tco-comparison-chart') && document.getElementById('cost-category-chart')) {
+                    this.renderDashboardTCOChart(platformResults, platformConfig);
+                    this.renderDashboardBreakdownChart(platformResults, platformConfig);
+                } else {
+                    console.warn("DashboardView: Chart canvas elements not found immediately. May retry if renderComplete timeout works.");
+                }
+            } catch (e) {
+                console.error("Error initializing dashboard charts:", e);
             }
         },
 
-        renderTCOComparisonChart(results, config) {
+        renderDashboardTCOChart(platformResults, platformConfig) {
             const chartId = 'tco-comparison-chart';
             const ctx = document.getElementById(chartId)?.getContext('2d');
             if (!ctx) {
                 console.error(`Chart canvas with id ${chartId} not found.`);
                 return;
             }
-            // Placeholder: Actual Chart.js or Highcharts logic to render TCO comparison
-            console.log(`DashboardView: Placeholder for TCO Comparison Chart. Data received:`, results, config);
-            ctx.font = "16px Arial";
-            ctx.textAlign = "center";
-            ctx.fillText("TCO Comparison Chart Placeholder", ctx.canvas.width / 2, ctx.canvas.height / 2);
+
+            const selectedVendorIds = platformConfig.selectedVendors || Object.keys(platformResults);
+            const chartData = selectedVendorIds.map(vendorId => {
+                const result = platformResults[vendorId];
+                return {
+                    label: result?.vendor?.name || vendorId,
+                    value: result?.tco?.total || 0,
+                    id: vendorId
+                };
+            });
+
+            if (window.dashboardTCOChart instanceof Chart) {
+                window.dashboardTCOChart.destroy();
+            }
+
+            window.dashboardTCOChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.map(d => d.label),
+                    datasets: [{
+                        label: `${platformConfig.years || 3}-Year TCO`,
+                        data: chartData.map(d => d.value),
+                        backgroundColor: chartData.map(d =>
+                            d.id === 'portnox' ? 'rgba(0, 212, 170, 0.7)' : 'rgba(59, 130, 246, 0.7)'
+                        ),
+                        borderColor: chartData.map(d =>
+                            d.id === 'portnox' ? 'rgba(0, 212, 170, 1)' : 'rgba(59, 130, 246, 1)'
+                        ),
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: context => `TCO: ${this.formatCurrency(context.parsed.y)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: value => this.formatCurrency(value, 0) }
+                        }
+                    }
+                }
+            });
         },
 
-        renderCostCategoryChart(results, config) {
+        renderDashboardBreakdownChart(platformResults, platformConfig) {
             const chartId = 'cost-category-chart';
             const ctx = document.getElementById(chartId)?.getContext('2d');
             if (!ctx) {
                 console.error(`Chart canvas with id ${chartId} not found.`);
                 return;
             }
-            // Placeholder: Actual Chart.js or Highcharts logic to render cost category breakdown
-            console.log(`DashboardView: Placeholder for Cost Category Chart. Data received:`, results, config);
-            ctx.font = "16px Arial";
-            ctx.textAlign = "center";
-            ctx.fillText("Cost Category Chart Placeholder", ctx.canvas.width / 2, ctx.canvas.height / 2);
+
+            const selectedVendorIds = platformConfig.selectedVendors || Object.keys(platformResults);
+            const categories = ['Hardware', 'Software', 'Implementation', 'Training', 'Support', 'Operations', 'Hidden'];
+
+            const datasets = selectedVendorIds.map((vendorId, index) => {
+                const result = platformResults[vendorId];
+                const tcoBreakdown = result?.tco; // Assuming this structure exists from platformResults
+                const vendor = result?.vendor;
+
+                const colorSet = [
+                    'rgba(0, 212, 170, 0.7)',
+                    'rgba(59, 130, 246, 0.7)',
+                    'rgba(255, 107, 53, 0.7)',
+                    'rgba(139, 92, 246, 0.7)',
+                    'rgba(245, 158, 11, 0.7)'
+                ];
+                const borderColorSet = [
+                    'rgba(0, 212, 170, 1)',
+                    'rgba(59, 130, 246, 1)',
+                    'rgba(255, 107, 53, 1)',
+                    'rgba(139, 92, 246, 1)',
+                    'rgba(245, 158, 11, 1)'
+                ];
+
+                return {
+                    label: vendor?.name || vendorId,
+                    data: [
+                        tcoBreakdown?.hardware || 0,
+                        tcoBreakdown?.software || 0,
+                        tcoBreakdown?.implementation || 0,
+                        tcoBreakdown?.training || 0,
+                        tcoBreakdown?.support || 0,
+                        tcoBreakdown?.operations || 0,
+                        tcoBreakdown?.hidden || 0
+                    ],
+                    backgroundColor: vendorId === 'portnox' ? colorSet[0] : colorSet[(index + 1) % colorSet.length],
+                    borderColor: vendorId === 'portnox' ? borderColorSet[0] : borderColorSet[(index + 1) % borderColorSet.length],
+                    borderWidth: 1,
+                    borderRadius: 5
+                };
+            });
+
+            if (window.dashboardBreakdownChart instanceof Chart) {
+                window.dashboardBreakdownChart.destroy();
+            }
+
+            window.dashboardBreakdownChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: categories,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y', // For horizontal bar chart if preferred
+                    scales: {
+                        x: {
+                            stacked: false, // Set true for stacked bar
+                            ticks: { callback: value => this.formatCurrency(value,0) }
+                        },
+                        y: { stacked: false } // Set true for stacked bar
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: context => `${context.dataset.label}: ${this.formatCurrency(context.parsed.x)}` // Adjust if not horizontal
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
         }
     };
 })();

@@ -17,9 +17,36 @@ class ComplianceViewEnhanced {
         
         // Tooltip system
         this.tooltipInstance = null;
+
+        // Properties to store platform data
+        this.platformResults = null;
+        this.platformConfig = null;
     }
     
-    render(container) {
+    render(container, platformResults, platformConfig) { // Added platformResults and platformConfig
+        this.platformResults = platformResults || {}; // Store platform results
+        this.platformConfig = platformConfig || {};   // Store platform config
+
+        // Update selectedVendors based on platformResults if in comparison mode, or from platformConfig
+        if (this.comparisonMode && this.platformResults && Object.keys(this.platformResults).length > 0) {
+            this.selectedVendors = Object.keys(this.platformResults);
+        } else if (this.platformConfig && this.platformConfig.selectedVendors && this.platformConfig.selectedVendors.length > 0) {
+            // Default to platform's selected vendors if not in comparison mode or if platformResults is for a single vendor
+            this.selectedVendors = [...this.platformConfig.selectedVendors];
+        } else if (this.platformResults && Object.keys(this.platformResults).length > 0) {
+            // Fallback if platformConfig.selectedVendors is not set, but we have results
+            this.selectedVendors = Object.keys(this.platformResults);
+        } else {
+            this.selectedVendors = ['portnox']; // Default if no other info
+        }
+        // Ensure 'portnox' is primary if only one is implicitly selected by platformResults structure for a single-view
+        if (!this.comparisonMode && this.selectedVendors.length === 1 && this.selectedVendors[0] !== 'portnox' && this.platformResults['portnox']) {
+            // If showing a single vendor view that isn't portnox, but portnox data is available,
+            // this logic might need refinement based on desired behavior for "primary" display.
+            // For now, if selectedVendors has one entry from platformResults, use that.
+        }
+
+
         container.innerHTML = `
             <div class="compliance-dashboard animate-fadeIn">
                 <!-- Compliance Overview Hero -->
@@ -334,9 +361,14 @@ class ComplianceViewEnhanced {
     renderFrameworks() {
         const grid = document.getElementById('frameworks-grid');
         if (!grid) return;
+
+        // Determine the primary vendor to display scores for on the cards
+        // If in comparison mode, this could be more complex (e.g. show average, or first selected)
+        // For now, let's assume it shows for the first vendor in this.selectedVendors (which is updated from platformConfig/platformResults)
+        const primaryVendorId = this.selectedVendors[0] || 'portnox';
         
         const frameworksHtml = Object.entries(this.frameworks).map(([id, framework]) => {
-            const vendorScore = this.getVendorComplianceScore('portnox', id);
+            const vendorScore = this.getVendorComplianceScore(primaryVendorId, id);
             const statusClass = vendorScore >= 90 ? 'compliant' : vendorScore >= 70 ? 'partial' : 'non-compliant';
             
             return `
@@ -406,16 +438,25 @@ class ComplianceViewEnhanced {
         
         // Create heatmap visualization
         const frameworks = Object.keys(this.frameworks);
-        const vendors = this.comparisonMode ? this.selectedVendors : ['portnox'];
+        // this.selectedVendors is now updated at the start of render() based on platformResults and comparisonMode
+        const vendorsToDisplayInMatrix = this.comparisonMode ? this.selectedVendors : [this.selectedVendors[0] || 'portnox'];
         
         const data = [];
-        vendors.forEach((vendorId, vIndex) => {
+        vendorsToDisplayInMatrix.forEach((vendorId, vIndex) => {
             frameworks.forEach((frameworkId, fIndex) => {
                 const score = this.getVendorComplianceScore(vendorId, frameworkId);
                 data.push([fIndex, vIndex, score]);
             });
         });
         
+        // Get vendor names for yAxis categories
+        const vendorNames = vendorsToDisplayInMatrix.map(id => {
+            if (this.platformResults && this.platformResults[id] && this.platformResults[id].vendor) {
+                return this.platformResults[id].vendor.name || id;
+            }
+            return this.vendors[id]?.name || id; // Fallback to global
+        });
+
         this.charts.complianceMatrix = Highcharts.chart(container, {
             chart: {
                 type: 'heatmap',
@@ -434,7 +475,7 @@ class ComplianceViewEnhanced {
                 }
             },
             yAxis: {
-                categories: vendors.map(id => this.vendors[id]?.name || id),
+                categories: vendorNames,
                 title: null,
                 labels: {
                     style: { color: '#A6ACBB' }
@@ -462,10 +503,11 @@ class ComplianceViewEnhanced {
                 backgroundColor: 'rgba(0,0,0,0.9)',
                 style: { color: '#FFFFFF' },
                 formatter: function() {
-                    const vendor = vendors[this.point.y];
-                    const framework = frameworks[this.point.x];
-                    return `<b>${vendor}</b><br/>
-                            ${framework}: <b>${this.point.value}%</b><br/>
+                    // Use the vendorNames array which is in scope for the chart options
+                    const vendorName = vendorNames[this.point.y];
+                    const frameworkName = frameworks.map(id => NAC.compliance.frameworks[id].name)[this.point.x];
+                    return `<b>${vendorName}</b><br/>
+                            ${frameworkName}: <b>${this.point.value}%</b><br/>
                             Click for details`;
                 }
             },
@@ -482,9 +524,10 @@ class ComplianceViewEnhanced {
                 },
                 events: {
                     click: (e) => {
-                        const framework = frameworks[e.point.x];
-                        const vendor = vendors[e.point.y];
-                        this.showComplianceDetails(vendor, framework);
+                        const frameworkId = frameworks[e.point.x];
+                        const vendorId = vendorsToDisplayInMatrix[e.point.y];
+                        // showComplianceDetails might need vendorId instead of name if it does lookups
+                        this.showComplianceDetails(vendorId, frameworkId);
                     }
                 }
             }],
@@ -628,18 +671,28 @@ class ComplianceViewEnhanced {
     
     // Helper methods
     calculateOverallScore() {
+        // Use the primary selected vendor from platformConfig or the first from selectedVendors
+        const primaryVendorId = this.platformConfig?.selectedVendors?.[0] || this.selectedVendors[0] || 'portnox';
+
+        if (this.platformResults && this.platformResults[primaryVendorId] && this.platformResults[primaryVendorId].complianceScore) {
+            // Prefer overall score if calculated by platform
+            return this.platformResults[primaryVendorId].complianceScore.overall || 0;
+        }
+
+        // Fallback: Average of framework scores for the primary vendor
         const scores = Object.keys(this.frameworks).map(id => 
-            this.getVendorComplianceScore('portnox', id)
+            this.getVendorComplianceScore(primaryVendorId, id)
         );
+        if (scores.length === 0) return 0;
         return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
     }
     
     calculateOverallCompliance() {
-        const score = this.calculateOverallScore();
+        const score = this.calculateOverallScore(); // This will now use the primary vendor from platformResults/Config
         const scoreElement = document.getElementById('compliance-score-value');
         if (scoreElement) scoreElement.textContent = score + '%';
         
-        // Calculate other metrics
+        // Calculate other metrics (these might also need to use platformConfig for revenue etc.)
         const penaltyRisk = this.calculateTotalPenaltyRisk();
         const penaltyElement = document.getElementById('penalty-risk-value');
         if (penaltyElement) penaltyElement.textContent = this.formatCurrency(penaltyRisk);
@@ -662,31 +715,38 @@ class ComplianceViewEnhanced {
     }
     
     getVendorComplianceScore(vendorId, frameworkId) {
-        const vendor = this.vendors[vendorId];
-        if (!vendor) return 0;
+        // Prioritize data from platformResults
+        if (this.platformResults && this.platformResults[vendorId] && this.platformResults[vendorId].complianceScore) {
+            const frameworkScores = this.platformResults[vendorId].complianceScore.frameworks;
+            if (frameworkScores && typeof frameworkScores[frameworkId] === 'number') {
+                return frameworkScores[frameworkId];
+            }
+            // If specific framework score is not available, but overall is, use overall as a fallback for this framework
+            // This might not be accurate but is better than a random score if the platform calculated an overall.
+            // However, for card display, specific framework score is better.
+            // For now, only return if specific frameworkId score is present.
+        }
+
+        // Fallback to original logic if data not in platformResults (or for vendors not in platformResults)
+        // This part should ideally be minimized if platformResults is comprehensive.
+        const vendorDataFromGlobal = this.vendors[vendorId]; // from window.VendorDatabase
+        if (!vendorDataFromGlobal) return 0;
         
-        // Portnox has high scores across all frameworks
+        // Original Portnox hardcoded scores (as a fallback if platformResults doesn't have it, e.g. for a vendor not selected in main platform)
         if (vendorId === 'portnox') {
             const scores = {
-                'sox': 98,
-                'hipaa': 97,
-                'pci-dss': 96,
-                'gdpr': 99,
-                'iso27001': 95,
-                'nist-csf': 98,
-                'ferpa': 94,
-                'glba': 95,
-                'ccpa': 97,
-                'lgpd': 96,
-                'pipeda': 95,
-                'nerc_cip': 93,
-                'swift_cscf': 94
+                'sox': 98, 'hipaa': 97, 'pci-dss': 96, 'gdpr': 99, 'iso27001': 95,
+                'nist-csf': 98, 'ferpa': 94, 'glba': 95, 'ccpa': 97, 'lgpd': 96,
+                'pipeda': 95, 'nerc_cip': 93, 'swift_cscf': 94
             };
-            return scores[frameworkId] || 92;
+            return scores[frameworkId] || 92; // Default for Portnox if framework not listed
         }
         
-        // Other vendors have lower scores
-        return Math.floor(Math.random() * 30) + 50; // 50-80%
+        // Fallback for other vendors if not in platformResults (less ideal)
+        // This indicates that the vendor's compliance data wasn't processed by the main platform.
+        // For now, keep the random score but log a warning.
+        console.warn(`ComplianceViewEnhanced: Using fallback random score for ${vendorId} - ${frameworkId}. Platform results preferred.`);
+        return Math.floor(Math.random() * 30) + 50; // 50-80% - placeholder
     }
     
     formatPenalty(penalties) {

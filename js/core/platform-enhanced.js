@@ -968,7 +968,7 @@ class EnhancedPlatformApplication {
                 break;
             case 'compliance':
                 if (window.NAC && window.NAC.compliance && typeof window.NAC.compliance.render === 'function') {
-                    window.NAC.compliance.render(content, this.results);
+                    window.NAC.compliance.render(content, this.results, this.config);
                 } else {
                     console.error('ComplianceViewEnhanced module not loaded or NAC.compliance.render method missing.');
                     content.innerHTML = '<p style="color: red; text-align: center; margin-top: 20px;">Error: Compliance view module not loaded correctly. Please check console.</p>';

@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const moduleFiles = [
             '/js/core/config-manager.js',
             '/js/core/event-system.js',
+            '/js/core/error-handler.js', // Added error handler
             // Added data files:
             'js/data/comprehensive-vendor-database.js',
             'js/data/vendor-data-fixes.js',
