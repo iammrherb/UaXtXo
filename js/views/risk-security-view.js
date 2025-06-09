@@ -349,8 +349,9 @@ class RiskSecurityView {
             console.warn(`RiskSecurityView: Container ${containerId} not found for Risk Gauge.`);
             return;
         }
-        if (typeof Highcharts === 'undefined') {
-            this._drawPlaceholderText(containerId, 'Risk Gauge Chart (Highcharts not loaded)');
+        if (typeof Highcharts === 'undefined' || !Highcharts.seriesTypes || !Highcharts.seriesTypes.solidgauge) {
+            this._drawPlaceholderText(containerId, 'Risk Gauge Chart (Highcharts solidgauge module not loaded)');
+            console.error("RiskSecurityView.renderRiskGauge: Highcharts or solidgauge module not ready.");
             return;
         }
         if (!risk || typeof risk.withPortnox !== 'number') {
