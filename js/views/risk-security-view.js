@@ -520,12 +520,6 @@ class RiskSecurityView {
         if (isNaN(num)) return '0';
         return Math.round(num).toLocaleString();
     }
-}
-
-// Remove self-initialization and global export. Instance will be managed by EnhancedPlatformApplication.
-// const riskSecurityView = new RiskSecurityView();
-// riskSecurityView.initialize(); // This was removed
-// window.riskSecurityView = riskSecurityView; // This is removed
 
     _drawPlaceholderText(canvasId, text) {
         const canvas = document.getElementById(canvasId);
@@ -543,6 +537,11 @@ class RiskSecurityView {
         canvas.innerHTML = `<div style="text-align: center; padding: 20px; font-size: 16px; color: #a6acbb;">${text}</div>`;
     }
 }
+
+// Remove self-initialization and global export. Instance will be managed by EnhancedPlatformApplication.
+// const riskSecurityView = new RiskSecurityView();
+// riskSecurityView.initialize(); // This was removed
+// window.riskSecurityView = riskSecurityView; // This is removed
 
 console.log('✅ Risk & Security View loaded and refactored');
 window.riskSecurityView = new RiskSecurityView(); // Make instance globally available
