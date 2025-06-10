@@ -1,0 +1,61 @@
+
+<!-- Enhanced Module Loader System -->
+<script src="module-loader.js"></script>
+<script src="module-registration-helper.js"></script>
+
+<!-- Wait for core modules to load -->
+<script>
+    // Ensure module loader is ready
+    if (!window.ModuleLoader) {
+        console.error('ModuleLoader not found!');
+    }
+</script>
+
+<!-- Core Modules -->
+<script src="event-system.js"></script>
+<script src="config-manager.js"></script>
+
+<!-- Database Modules -->
+<script src="master-vendor-database.js"></script>
+<script src="industry-database.js"></script>
+<script src="compliance-database.js"></script>
+
+<!-- View Modules -->
+<script src="risk-security-view.js"></script>
+<script src="compliance-view-enhanced.js"></script>
+<script src="operational-impact.js"></script>
+<script src="strategic-insights.js"></script>
+
+<!-- Integration and Platform -->
+<script src="integrate-modules.js"></script>
+<script src="platform-ultimate-fixed.js"></script>
+
+<!-- Debug Tools -->
+<script src="debug-dashboard.js"></script>
+
+<!-- Final initialization -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== Portnox Total Cost Analyzer Starting ===');
+    
+    // Give a moment for all scripts to register
+    setTimeout(function() {
+        // Show debug status
+        if (window.DebugDashboard) {
+            DebugDashboard.showStatus();
+        }
+        
+        // Auto-fix if needed
+        const eventSystem = window.ModuleLoader && ModuleLoader.get('EventSystem');
+        const configManager = window.ModuleLoader && ModuleLoader.get('ConfigManager');
+        
+        if (!eventSystem || !configManager) {
+            console.warn('Core services not loaded, running auto-fix...');
+            if (window.DebugDashboard) {
+                DebugDashboard.autoFix();
+            }
+        }
+    }, 500);
+});
+</script>
+
