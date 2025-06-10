@@ -1,117 +1,166 @@
-// Module Loader System for Portnox TCO Analyzer
-(function(global) {
-    'use strict';
-
-    class ModuleLoader {
-        constructor() {
-            this.modules = new Map();
-            this.loadingModules = new Map();
-            this.moduleCallbacks = new Map();
-            this.initialized = false;
+// Enhanced Module Loader System
+class ModuleLoader {
+    constructor() {
+        this.modules = new Map();
+        this.instances = new Map();
+        this.loadOrder = [];
+        this.debug = true;
+        this.initialized = false;
+        
+        console.log('[ModuleLoader] Enhanced ModuleLoader initialized and ready');
+    }
+    
+    register(name, moduleDefinition, dependencies = []) {
+        if (this.debug) {
+            console.log(`[ModuleLoader] Registering module: ${name}`);
         }
-
-        register(name, dependencies, factory) {
-            if (this.modules.has(name)) {
-                console.warn(`Module ${name} already registered`);
-                return;
-            }
-
-            const module = {
-                name,
-                dependencies,
-                factory,
-                exports: null,
-                loaded: false
-            };
-
-            this.modules.set(name, module);
-            this.tryLoadModule(name);
+        
+        this.modules.set(name, {
+            definition: moduleDefinition,
+            dependencies,
+            loaded: false
+        });
+        
+        if (this.debug) {
+            console.log(`[ModuleLoader] ✓ Module registered: ${name} with dependencies:`, dependencies);
         }
-
-        tryLoadModule(name) {
-            const module = this.modules.get(name);
-            if (!module || module.loaded || this.loadingModules.has(name)) {
-                return;
-            }
-
-            // Check if all dependencies are loaded
-            const depsLoaded = module.dependencies.every(dep => {
-                const depModule = this.modules.get(dep);
-                return depModule && depModule.loaded;
-            });
-
-            if (!depsLoaded) {
-                // Set up dependency tracking
-                module.dependencies.forEach(dep => {
-                    if (!this.moduleCallbacks.has(dep)) {
-                        this.moduleCallbacks.set(dep, []);
-                    }
-                    this.moduleCallbacks.get(dep).push(name);
-                });
-                return;
-            }
-
-            // Load the module
-            this.loadingModules.set(name, true);
+        
+        // Try to initialize immediately if possible
+        this.tryInitialize(name);
+    }
+    
+    tryInitialize(name) {
+        const module = this.modules.get(name);
+        if (!module || module.loaded) return;
+        
+        // Check if all dependencies are loaded
+        const depsLoaded = module.dependencies.every(dep => 
+            this.modules.has(dep) && this.modules.get(dep).loaded
+        );
+        
+        if (depsLoaded) {
+            this.initializeModule(name);
             
-            try {
-                const deps = module.dependencies.map(dep => this.modules.get(dep).exports);
-                module.exports = module.factory(...deps);
-                module.loaded = true;
-                
-                console.log(`✓ Module loaded: ${name}`);
-                
-                // Trigger dependent modules
-                const callbacks = this.moduleCallbacks.get(name) || [];
-                callbacks.forEach(depName => this.tryLoadModule(depName));
-                
-                // Clean up
-                this.moduleCallbacks.delete(name);
-                this.loadingModules.delete(name);
-                
-                // Dispatch loaded event
-                window.dispatchEvent(new CustomEvent('moduleLoaded', { detail: { name, exports: module.exports } }));
-                
-            } catch (error) {
-                console.error(`Failed to load module ${name}:`, error);
-                this.loadingModules.delete(name);
-            }
-        }
-
-        get(name) {
-            const module = this.modules.get(name);
-            return module && module.loaded ? module.exports : null;
-        }
-
-        isLoaded(name) {
-            const module = this.modules.get(name);
-            return module && module.loaded;
-        }
-
-        whenReady(modules, callback) {
-            const checkReady = () => {
-                const allLoaded = modules.every(name => this.isLoaded(name));
-                if (allLoaded) {
-                    const exports = modules.map(name => this.get(name));
-                    callback(...exports);
-                } else {
-                    setTimeout(checkReady, 50);
+            // Check if any other modules can now be initialized
+            this.modules.forEach((mod, modName) => {
+                if (!mod.loaded) {
+                    this.tryInitialize(modName);
                 }
-            };
-            checkReady();
+            });
         }
     }
-
-    // Create global instance
-    global.ModuleLoader = new ModuleLoader();
     
-    // Helper function for defining modules
-    global.defineModule = function(name, dependencies, factory) {
-        if (typeof dependencies === 'function') {
-            factory = dependencies;
-            dependencies = [];
+    initializeModule(name) {
+        const module = this.modules.get(name);
+        if (!module || module.loaded) return;
+        
+        try {
+            // Get dependency instances
+            const deps = {};
+            module.dependencies.forEach(dep => {
+                deps[dep] = this.instances.get(dep);
+            });
+            
+            // Create instance
+            let instance;
+            if (typeof module.definition === 'function') {
+                // Check if it's a class (has prototype) or regular function
+                if (module.definition.prototype && module.definition.prototype.constructor === module.definition) {
+                    instance = new module.definition(deps);
+                } else {
+                    instance = module.definition(deps);
+                }
+            } else {
+                instance = module.definition;
+            }
+            
+            this.instances.set(name, instance);
+            module.loaded = true;
+            this.loadOrder.push(name);
+            
+            if (this.debug) {
+                console.log(`[ModuleLoader] ✓ Module initialized: ${name}`);
+            }
+            
+            // Emit module loaded event
+            if (window.eventBus) {
+                window.eventBus.emit('module:loaded', { name, instance });
+            }
+        } catch (error) {
+            console.error(`[ModuleLoader] ❌ Failed to initialize module ${name}:`, error);
         }
-        global.ModuleLoader.register(name, dependencies, factory);
-    };
+    }
+    
+    get(name) {
+        if (!this.instances.has(name)) {
+            this.tryInitialize(name);
+        }
+        return this.instances.get(name);
+    }
+    
+    initializeAll() {
+        // Keep trying to initialize modules until no more can be initialized
+        let initialized;
+        do {
+            initialized = false;
+            this.modules.forEach((module, name) => {
+                if (!module.loaded) {
+                    const before = module.loaded;
+                    this.tryInitialize(name);
+                    if (!before && module.loaded) {
+                        initialized = true;
+                    }
+                }
+            });
+        } while (initialized);
+        
+        this.initialized = true;
+        
+        if (this.debug) {
+            console.log('[ModuleLoader] All possible modules initialized:', this.loadOrder);
+            
+            // Report any uninitialized modules
+            const uninitialized = [];
+            this.modules.forEach((module, name) => {
+                if (!module.loaded) {
+                    uninitialized.push(name);
+                }
+            });
+            
+            if (uninitialized.length > 0) {
+                console.warn('[ModuleLoader] Failed to initialize modules:', uninitialized);
+            }
+        }
+    }
+    
+    isReady() {
+        return this.initialized;
+    }
+    
+    getLoadOrder() {
+        return [...this.loadOrder];
+    }
+    
+    getAllInstances() {
+        return Object.fromEntries(this.instances);
+    }
+}
 
-})(window);
+// Create global instance
+window.ModuleLoader = new ModuleLoader();
+
+// Also create a simple event bus for early events
+window.eventBus = {
+    events: new Map(),
+    on(event, handler) {
+        if (!this.events.has(event)) {
+            this.events.set(event, []);
+        }
+        this.events.get(event).push(handler);
+    },
+    emit(event, data) {
+        if (this.events.has(event)) {
+            this.events.get(event).forEach(handler => handler(data));
+        }
+    }
+};
