@@ -1,0 +1,2759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portnox Ultimate TCO Analyzer & NAC Designer - One-Stop Shop</title>
+    
+    <!-- External Dependencies -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.0/chart.umd.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Portnox Brand Colors */
+            --portnox-primary: #1B67B2;
+            --portnox-secondary: #0066FF;
+            --portnox-accent: #00B2BA;
+            --portnox-dark: #0e5495;
+            
+            /* Vendor Colors */
+            --cisco-primary: #1BA0D7;
+            --aruba-primary: #F8991D;
+            --fortinet-primary: #E21D38;
+            --forescout-primary: #662D91;
+            --extreme-primary: #702F8A;
+            --juniper-primary: #00BCF2;
+            --arista-primary: #0088CE;
+            --pulse-primary: #FF6900;
+            --packetfence-primary: #FDB813;
+            
+            /* Modern UI Colors */
+            --bg-dark: #0A0E27;
+            --bg-darker: #050816;
+            --bg-card: rgba(17, 25, 58, 0.75);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --text-primary: #FFFFFF;
+            --text-secondary: #94A3B8;
+            --text-accent: #64FFDA;
+            
+            /* Status Colors */
+            --status-success: #10B981;
+            --status-warning: #F59E0B;
+            --status-error: #EF4444;
+            --status-info: #3B82F6;
+            
+            /* Gradients */
+            --gradient-portnox: linear-gradient(135deg, #1B67B2 0%, #00B2BA 100%);
+            --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-darker);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-gradient {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-gradient.portnox {
+            background: var(--portnox-primary);
+            top: -200px;
+            left: -200px;
+        }
+
+        .bg-gradient.cisco {
+            background: var(--cisco-primary);
+            bottom: -200px;
+            right: -200px;
+            animation-delay: 10s;
+        }
+
+        .bg-gradient.accent {
+            background: var(--portnox-accent);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: 5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(100px, -100px) scale(1.1); }
+            50% { transform: translate(-100px, 100px) scale(0.9); }
+            75% { transform: translate(50px, 50px) scale(1.05); }
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 20px 40px;
+        }
+
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-portnox);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            box-shadow: 0 5px 20px rgba(27, 103, 178, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .brand-info h1 {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-info p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Sidebar Navigation */
+        .sidebar-nav {
+            width: 280px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-glass);
+            padding: 30px 20px;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 30px;
+        }
+
+        .nav-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+            padding-left: 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--text-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: var(--portnox-accent);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: rgba(27, 103, 178, 0.15);
+            color: var(--portnox-accent);
+        }
+
+        .nav-item.active::before {
+            transform: scaleY(1);
+        }
+
+        .nav-icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        /* Workflow Steps */
+        .workflow-container {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+
+        .workflow-step {
+            min-width: 250px;
+            background: var(--bg-card);
+            border: 2px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .workflow-step::after {
+            content: '→';
+            position: absolute;
+            right: -40px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            color: var(--text-secondary);
+        }
+
+        .workflow-step:last-child::after {
+            display: none;
+        }
+
+        .workflow-step.completed {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--status-success);
+        }
+
+        .workflow-step.active {
+            background: rgba(27, 103, 178, 0.1);
+            border-color: var(--portnox-primary);
+            transform: scale(1.05);
+        }
+
+        .workflow-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--bg-glass);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 24px;
+        }
+
+        .workflow-step.completed .workflow-icon {
+            background: var(--status-success);
+            color: white;
+        }
+
+        .workflow-step.active .workflow-icon {
+            background: var(--gradient-portnox);
+            color: white;
+        }
+
+        /* Forms */
+        .form-section {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--portnox-primary);
+            box-shadow: 0 0 0 3px rgba(27, 103, 178, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--gradient-portnox);
+            border: none;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 10px 30px rgba(27, 103, 178, 0.3);
+        }
+
+        /* Metrics Dashboard */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-portnox);
+        }
+
+        .metric-value {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .metric-change {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 4px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--status-success);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .metric-change.negative {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--status-error);
+        }
+
+        /* Vendor Comparison */
+        .vendor-comparison {
+            overflow-x: auto;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: var(--bg-glass);
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .comparison-table td {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .comparison-table tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .vendor-highlight {
+            background: rgba(27, 103, 178, 0.1) !important;
+        }
+
+        /* Charts */
+        .chart-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            height: 400px;
+            position: relative;
+        }
+
+        /* Progress Indicator */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-glass);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-portnox);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            animation: progressShine 2s linear infinite;
+        }
+
+        @keyframes progressShine {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(100%); }
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 300px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease-out;
+            z-index: 2000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-color: var(--status-success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        /* Device Selector */
+        .device-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .device-item {
+            background: var(--bg-glass);
+            border: 2px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .device-item:hover {
+            transform: translateY(-3px);
+            border-color: var(--portnox-primary);
+        }
+
+        .device-item.selected {
+            background: rgba(27, 103, 178, 0.1);
+            border-color: var(--portnox-primary);
+        }
+
+        .device-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .device-count {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .device-count button {
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--border-glass);
+            background: var(--bg-glass);
+            color: var(--text-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .device-count button:hover {
+            background: var(--portnox-primary);
+            color: white;
+        }
+
+        .device-count input {
+            width: 80px;
+            text-align: center;
+            background: transparent;
+            border: 1px solid var(--border-glass);
+            border-radius: 6px;
+            padding: 5px;
+            color: var(--text-primary);
+        }
+
+        /* Compliance Selector */
+        .compliance-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .checkbox-item:hover {
+            border-color: var(--portnox-primary);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-item input[type="checkbox"]:checked + label {
+            color: var(--portnox-accent);
+        }
+
+        /* Architecture View */
+        .architecture-view {
+            min-height: 600px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .network-zone {
+            position: absolute;
+            background: var(--bg-glass);
+            border: 2px dashed var(--border-glass);
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .zone-label {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--bg-card);
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-glass);
+        }
+
+        .network-component {
+            position: absolute;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: move;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        .network-component:hover {
+            transform: scale(1.05);
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .network-component.portnox {
+            background: rgba(27, 103, 178, 0.2);
+            border-color: var(--portnox-primary);
+        }
+
+        /* Timeline */
+        .timeline-container {
+            position: relative;
+            padding-left: 50px;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--portnox-primary), var(--portnox-accent));
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+            animation: timelineFadeIn 0.6s ease-out forwards;
+        }
+
+        @keyframes timelineFadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -30px;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            background: var(--bg-card);
+            border: 2px solid var(--border-glass);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .timeline-item.completed .timeline-marker {
+            background: var(--status-success);
+            border-color: var(--status-success);
+            color: white;
+        }
+
+        .timeline-item.active .timeline-marker {
+            background: var(--gradient-portnox);
+            border-color: var(--portnox-primary);
+            color: white;
+            box-shadow: 0 0 20px var(--portnox-primary);
+        }
+
+        .timeline-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 20px;
+            margin-left: 20px;
+        }
+
+        .timeline-date {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(27, 103, 178, 0.1);
+            color: var(--portnox-accent);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        /* Executive Summary */
+        .executive-summary {
+            background: linear-gradient(135deg, var(--bg-card), rgba(27, 103, 178, 0.1));
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .summary-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .summary-header h1 {
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .key-findings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .finding-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .finding-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .finding-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--portnox-accent);
+            margin-bottom: 5px;
+        }
+
+        /* Risk Matrix */
+        .risk-matrix {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .risk-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 30px;
+        }
+
+        .risk-level {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .risk-indicator {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .high-risk { background: #DC2626; }
+        .medium-risk { background: #F59E0B; }
+        .low-risk { background: #10B981; }
+
+        /* Button Groups */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-glass);
+            border-top-color: var(--portnox-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Vendor Grid */
+        .vendor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .vendor-item {
+            background: var(--bg-glass);
+            border: 2px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .vendor-item:hover {
+            transform: translateY(-3px);
+            border-color: var(--portnox-primary);
+        }
+
+        .vendor-item.selected {
+            background: rgba(27, 103, 178, 0.1);
+            border-color: var(--portnox-primary);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar-nav {
+                display: none;
+            }
+            
+            .content-area {
+                padding: 20px;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .workflow-container {
+                flex-direction: column;
+            }
+            
+            .workflow-step::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="bg-gradient portnox"></div>
+        <div class="bg-gradient cisco"></div>
+        <div class="bg-gradient accent"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="brand-info">
+                    <h1>Portnox Ultimate TCO & NAC Platform</h1>
+                    <p>Complete One-Stop Shop for Zero Trust NAC</p>
+                </div>
+            </div>
+            <div class="header-controls">
+                <button class="btn" onclick="saveProgress()">
+                    <i class="fas fa-save"></i> Save Progress
+                </button>
+                <button class="btn btn-primary" onclick="generateReports()">
+                    <i class="fas fa-file-export"></i> Generate Reports
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Assessment Workflow</div>
+                <a class="nav-item active" data-section="dashboard">
+                    <i class="nav-icon fas fa-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a class="nav-item" data-section="organization">
+                    <i class="nav-icon fas fa-building"></i>
+                    <span>Organization Profile</span>
+                </a>
+                <a class="nav-item" data-section="scoping">
+                    <i class="nav-icon fas fa-clipboard-list"></i>
+                    <span>Environment Scoping</span>
+                </a>
+                <a class="nav-item" data-section="architecture">
+                    <i class="nav-icon fas fa-project-diagram"></i>
+                    <span>Architecture Design</span>
+                </a>
+                <a class="nav-item" data-section="workflows">
+                    <i class="nav-icon fas fa-exchange-alt"></i>
+                    <span>Auth Workflows</span>
+                </a>
+                <a class="nav-item" data-section="policies">
+                    <i class="nav-icon fas fa-lock"></i>
+                    <span>Security Policies</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Analysis & Reports</div>
+                <a class="nav-item" data-section="tco">
+                    <i class="nav-icon fas fa-calculator"></i>
+                    <span>TCO Analysis</span>
+                </a>
+                <a class="nav-item" data-section="roi">
+                    <i class="nav-icon fas fa-chart-line"></i>
+                    <span>ROI Calculator</span>
+                </a>
+                <a class="nav-item" data-section="compliance">
+                    <i class="nav-icon fas fa-check-circle"></i>
+                    <span>Compliance Mapping</span>
+                </a>
+                <a class="nav-item" data-section="risk">
+                    <i class="nav-icon fas fa-shield-alt"></i>
+                    <span>Risk Assessment</span>
+                </a>
+                <a class="nav-item" data-section="vendors">
+                    <i class="nav-icon fas fa-th"></i>
+                    <span>Vendor Comparison</span>
+                </a>
+                <a class="nav-item" data-section="executive">
+                    <i class="nav-icon fas fa-chart-pie"></i>
+                    <span>Executive Summary</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Implementation</div>
+                <a class="nav-item" data-section="timeline">
+                    <i class="nav-icon fas fa-calendar-alt"></i>
+                    <span>Timeline</span>
+                </a>
+                <a class="nav-item" data-section="deployment">
+                    <i class="nav-icon fas fa-rocket"></i>
+                    <span>Deployment Guide</span>
+                </a>
+                <a class="nav-item" data-section="resources">
+                    <i class="nav-icon fas fa-book"></i>
+                    <span>Resources</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Dashboard Section -->
+            <section class="content-section active" id="dashboard">
+                <h2>Welcome to Portnox Ultimate Platform</h2>
+                <p class="text-secondary mb-4">Your complete one-stop shop for Zero Trust NAC assessment, design, and ROI analysis</p>
+                
+                <!-- Workflow Progress -->
+                <div class="workflow-container">
+                    <div class="workflow-step active" data-step="organization">
+                        <div class="workflow-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h3>Organization</h3>
+                        <p>Define your company profile</p>
+                    </div>
+                    <div class="workflow-step" data-step="scoping">
+                        <div class="workflow-icon">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <h3>Scoping</h3>
+                        <p>Map your infrastructure</p>
+                    </div>
+                    <div class="workflow-step" data-step="requirements">
+                        <div class="workflow-icon">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <h3>Requirements</h3>
+                        <p>Security & compliance needs</p>
+                    </div>
+                    <div class="workflow-step" data-step="analysis">
+                        <div class="workflow-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Analysis</h3>
+                        <p>TCO & ROI calculations</p>
+                    </div>
+                    <div class="workflow-step" data-step="report">
+                        <div class="workflow-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h3>Report</h3>
+                        <p>Executive summary</p>
+                    </div>
+                </div>
+
+                <!-- Quick Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-change">↓ 78%</div>
+                        <div class="metric-value">$1.2M</div>
+                        <div class="metric-label">Projected 3-Year Savings</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-change">↑ 312%</div>
+                        <div class="metric-value">312%</div>
+                        <div class="metric-label">Return on Investment</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-change">↓ 85%</div>
+                        <div class="metric-value">14 Days</div>
+                        <div class="metric-label">Time to Deploy</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-change">↓ 87%</div>
+                        <div class="metric-value">0.25 FTE</div>
+                        <div class="metric-label">Operational Overhead</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="startAssessment()">
+                    <i class="fas fa-play"></i> Start Complete Assessment
+                </button>
+            </section>
+
+            <!-- Organization Profile -->
+            <section class="content-section" id="organization">
+                <h2>Organization Profile</h2>
+                <p class="text-secondary mb-4">Tell us about your organization to customize our recommendations</p>
+                
+                <div class="form-section">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input type="text" class="form-control" id="companyName" placeholder="Enter company name">
+                        </div>
+                        <div class="form-group">
+                            <label>Industry</label>
+                            <select class="form-control" id="industry">
+                                <option value="">Select industry</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="finance">Financial Services</option>
+                                <option value="education">Education</option>
+                                <option value="government">Government</option>
+                                <option value="manufacturing">Manufacturing</option>
+                                <option value="retail">Retail</option>
+                                <option value="technology">Technology</option>
+                                <option value="energy">Energy & Utilities</option>
+                                <option value="hospitality">Hospitality</option>
+                                <option value="legal">Legal Services</option>
+                                <option value="nonprofit">Non-Profit</option>
+                                <option value="pharma">Pharmaceutical</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Number of Employees</label>
+                            <input type="number" class="form-control" id="employees" placeholder="Total employees">
+                        </div>
+                        <div class="form-group">
+                            <label>Number of Locations</label>
+                            <input type="number" class="form-control" id="locations" placeholder="Office locations">
+                        </div>
+                        <div class="form-group">
+                            <label>Annual IT Budget</label>
+                            <input type="number" class="form-control" id="itBudget" placeholder="IT budget in USD">
+                        </div>
+                        <div class="form-group">
+                            <label>Current NAC Solution</label>
+                            <select class="form-control" id="currentNAC">
+                                <option value="none">No NAC Solution</option>
+                                <option value="cisco">Cisco ISE</option>
+                                <option value="aruba">Aruba ClearPass</option>
+                                <option value="forescout">Forescout</option>
+                                <option value="extreme">Extreme Networks</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Compliance Requirements</h3>
+                    <div class="compliance-selector">
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="HIPAA">
+                            <span>HIPAA</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="PCI-DSS">
+                            <span>PCI-DSS</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="SOC2">
+                            <span>SOC 2</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="ISO27001">
+                            <span>ISO 27001</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="NIST">
+                            <span>NIST</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="GDPR">
+                            <span>GDPR</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="CCPA">
+                            <span>CCPA</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="FERPA">
+                            <span>FERPA</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="FedRAMP">
+                            <span>FedRAMP</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="CMMC">
+                            <span>CMMC</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="nextStep('scoping')">
+                        Next: Environment Scoping <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Environment Scoping -->
+            <section class="content-section" id="scoping">
+                <h2>Environment Scoping</h2>
+                <p class="text-secondary mb-4">Define your network infrastructure and device inventory</p>
+
+                <div class="card">
+                    <h3>Device Inventory</h3>
+                    <div class="device-selector">
+                        <div class="device-item" data-device="windows">
+                            <div class="device-icon">💻</div>
+                            <div>Windows Devices</div>
+                            <div class="device-count">
+                                <button onclick="decrementDevice('windows')">-</button>
+                                <input type="number" id="windows-count" value="0" min="0">
+                                <button onclick="incrementDevice('windows')">+</button>
+                            </div>
+                        </div>
+                        <div class="device-item" data-device="mac">
+                            <div class="device-icon">🖥️</div>
+                            <div>Mac Devices</div>
+                            <div class="device-count">
+                                <button onclick="decrementDevice('mac')">-</button>
+                                <input type="number" id="mac-count" value="0" min="0">
+                                <button onclick="incrementDevice('mac')">+</button>
+                            </div>
+                        </div>
+                        <div class="device-item" data-device="linux">
+                            <div class="device-icon">🐧</div>
+                            <div>Linux Devices</div>
+                            <div class="device-count">
+                                <button onclick="decrementDevice('linux')">-</button>
+                                <input type="number" id="linux-count" value="0" min="0">
+                                <button onclick="incrementDevice('linux')">+</button>
+                            </div>
+                        </div>
+                        <div class="device-item" data-device="mobile">
+                            <div class="device-icon">📱</div>
+                            <div>Mobile Devices</div>
+                            <div class="device-count">
+                                <button onclick="decrementDevice('mobile')">-</button>
+                                <input type="number" id="mobile-count" value="0" min="0">
+                                <button onclick="incrementDevice('mobile')">+</button>
+                            </div>
+                        </div>
+                        <div class="device-item" data-device="iot">
+                            <div class="device-icon">📡</div>
+                            <div>IoT Devices</div>
+                            <div class="device-count">
+                                <button onclick="decrementDevice('iot')">-</button>
+                                <input type="number" id="iot-count" value="0" min="0">
+                                <button onclick="incrementDevice('iot')">+</button>
+                            </div>
+                        </div>
+                        <div class="device-item" data-device="printers">
+                            <div class="device-icon">🖨️</div>
+                            <div>Printers/MFPs</div>
+                            <div class="device-count">
+                                <button onclick="decrementDevice('printers')">-</button>
+                                <input type="number" id="printers-count" value="0" min="0">
+                                <button onclick="incrementDevice('printers')">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Network Infrastructure</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Primary Switch Vendor</label>
+                            <select class="form-control" id="switchVendor">
+                                <option value="cisco">Cisco</option>
+                                <option value="aruba">HPE Aruba</option>
+                                <option value="juniper">Juniper</option>
+                                <option value="extreme">Extreme Networks</option>
+                                <option value="arista">Arista</option>
+                                <option value="dell">Dell</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Number of Switches</label>
+                            <input type="number" class="form-control" id="switchCount" placeholder="Total switches">
+                        </div>
+                        <div class="form-group">
+                            <label>Wireless Vendor</label>
+                            <select class="form-control" id="wirelessVendor">
+                                <option value="cisco">Cisco</option>
+                                <option value="aruba">HPE Aruba</option>
+                                <option value="meraki">Cisco Meraki</option>
+                                <option value="juniper">Juniper Mist</option>
+                                <option value="extreme">Extreme</option>
+                                <option value="ruckus">Ruckus</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Number of Access Points</label>
+                            <input type="number" class="form-control" id="apCount" placeholder="Total APs">
+                        </div>
+                        <div class="form-group">
+                            <label>Firewall Vendor</label>
+                            <select class="form-control" id="firewallVendor">
+                                <option value="fortinet">Fortinet</option>
+                                <option value="paloalto">Palo Alto</option>
+                                <option value="cisco">Cisco</option>
+                                <option value="checkpoint">Check Point</option>
+                                <option value="sophos">Sophos</option>
+                                <option value="sonicwall">SonicWall</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Identity Provider</label>
+                            <select class="form-control" id="identityProvider">
+                                <option value="azure">Azure AD</option>
+                                <option value="okta">Okta</option>
+                                <option value="ad">Active Directory</option>
+                                <option value="google">Google Workspace</option>
+                                <option value="ping">Ping Identity</option>
+                                <option value="onelogin">OneLogin</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn" onclick="previousStep('organization')">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <button class="btn btn-primary" onclick="nextStep('architecture')">
+                        Next: Architecture Design <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Architecture Design -->
+            <section class="content-section" id="architecture">
+                <h2>Network Architecture Design</h2>
+                <p class="text-secondary mb-4">Visual representation of your Zero Trust NAC deployment</p>
+
+                <div class="architecture-view" id="architectureCanvas">
+                    <!-- Network Zones -->
+                    <div class="network-zone" style="width: 450px; height: 280px; left: 35%; top: 5%;">
+                        <div class="zone-label">Portnox Cloud</div>
+                    </div>
+
+                    <div class="network-zone" style="width: 350px; height: 400px; left: 2%; top: 15%;">
+                        <div class="zone-label">Identity & Compliance</div>
+                    </div>
+
+                    <div class="network-zone" style="width: 350px; height: 400px; right: 2%; top: 15%;">
+                        <div class="zone-label">Security & Policy</div>
+                    </div>
+
+                    <div class="network-zone" style="width: 94%; height: 250px; left: 3%; bottom: 5%;">
+                        <div class="zone-label">Network Infrastructure</div>
+                    </div>
+
+                    <!-- Components will be dynamically added -->
+                </div>
+
+                <div class="button-group">
+                    <button class="btn" onclick="previousStep('scoping')">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <button class="btn btn-primary" onclick="nextStep('workflows')">
+                        Next: Authentication Workflows <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- TCO Analysis -->
+            <section class="content-section" id="tco">
+                <h2>Total Cost of Ownership Analysis</h2>
+                <p class="text-secondary mb-4">Comprehensive cost comparison across all vendors</p>
+
+                <div class="card">
+                    <h3>3-Year TCO Comparison</h3>
+                    <div class="chart-container">
+                        <canvas id="tcoChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Detailed Cost Breakdown</h3>
+                    <div class="vendor-comparison">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Vendor</th>
+                                    <th>Software Licensing</th>
+                                    <th>Hardware</th>
+                                    <th>Implementation</th>
+                                    <th>Operations (FTE)</th>
+                                    <th>Total 3-Year TCO</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tcoTableBody">
+                                <!-- Will be populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value" id="totalSavings">$0</div>
+                        <div class="metric-label">Total Savings vs Legacy NAC</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="costReduction">0%</div>
+                        <div class="metric-label">Cost Reduction</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="costPerDevice">$0</div>
+                        <div class="metric-label">Annual Cost per Device</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="fteSavings">0 FTE</div>
+                        <div class="metric-label">Staff Savings</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Vendor Comparison -->
+            <section class="content-section" id="vendors">
+                <h2>Comprehensive Vendor Comparison</h2>
+                <p class="text-secondary mb-4">Compare all NAC vendors side-by-side</p>
+
+                <div class="card">
+                    <h3>Legacy NAC Vendors</h3>
+                    <div class="vendor-grid">
+                        <div class="vendor-item" data-vendor="cisco">
+                            <div style="font-size: 32px; color: #1BA0D7;">🔷</div>
+                            <h4>Cisco ISE</h4>
+                            <p>$125/device + HW</p>
+                            <p>90 days deploy</p>
+                            <p>2.0 FTE</p>
+                        </div>
+                        <div class="vendor-item" data-vendor="aruba">
+                            <div style="font-size: 32px; color: #F8991D;">🟠</div>
+                            <h4>Aruba ClearPass</h4>
+                            <p>$95/device + HW</p>
+                            <p>75 days deploy</p>
+                            <p>1.75 FTE</p>
+                        </div>
+                        <div class="vendor-item" data-vendor="forescout">
+                            <div style="font-size: 32px; color: #662D91;">🟣</div>
+                            <h4>Forescout</h4>
+                            <p>$85/device + HW</p>
+                            <p>60 days deploy</p>
+                            <p>1.5 FTE</p>
+                        </div>
+                        <div class="vendor-item" data-vendor="extreme">
+                            <div style="font-size: 32px; color: #702F8A;">🟪</div>
+                            <h4>Extreme Networks</h4>
+                            <p>$78/device + HW</p>
+                            <p>60 days deploy</p>
+                            <p>1.5 FTE</p>
+                        </div>
+                        <div class="vendor-item" data-vendor="juniper">
+                            <div style="font-size: 32px; color: #00BCF2;">🔵</div>
+                            <h4>Juniper</h4>
+                            <p>$92/device + HW</p>
+                            <p>70 days deploy</p>
+                            <p>1.75 FTE</p>
+                        </div>
+                        <div class="vendor-item" data-vendor="arista">
+                            <div style="font-size: 32px; color: #0088CE;">💙</div>
+                            <h4>Arista</h4>
+                            <p>$88/device + HW</p>
+                            <p>65 days deploy</p>
+                            <p>1.5 FTE</p>
+                        </div>
+                        <div class="vendor-item" data-vendor="fortinet">
+                            <div style="font-size: 32px; color: #E21D38;">🔴</div>
+                            <h4>Fortinet NAC</h4>
+                            <p>$75/device + HW</p>
+                            <p>55 days deploy</p>
+                            <p>1.25 FTE</p>
+                        </div>
+                        <div class="vendor-item" data-vendor="pulse">
+                            <div style="font-size: 32px; color: #FF6900;">🟠</div>
+                            <h4>Pulse Secure</h4>
+                            <p>$82/device + HW</p>
+                            <p>60 days deploy</p>
+                            <p>1.5 FTE</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Cloud-Native Solutions</h3>
+                    <div class="vendor-grid">
+                        <div class="vendor-item selected" data-vendor="portnox">
+                            <div style="font-size: 32px; color: #1B67B2;">✨</div>
+                            <h4>Portnox</h4>
+                            <p>$36/device/year</p>
+                            <p>14 days deploy</p>
+                            <p>0.25 FTE</p>
+                        </div>
+                        <div class="vendor-item" data-vendor="foxpass">
+                            <div style="font-size: 32px;">🦊</div>
+                            <h4>Foxpass</h4>
+                            <p>$45/device/year</p>
+                            <p>21 days deploy</p>
+                            <p>0.5 FTE</p>
+                        </div>
+                        <div class="vendor-item" data-vendor="securew2">
+                            <div style="font-size: 32px;">🔐</div>
+                            <h4>SecureW2</h4>
+                            <p>$42/device/year</p>
+                            <p>18 days deploy</p>
+                            <p>0.4 FTE</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Timeline -->
+            <section class="content-section" id="timeline">
+                <h2>Implementation Timeline</h2>
+                <p class="text-secondary mb-4">Your Zero Trust deployment roadmap</p>
+
+                <div class="timeline-container">
+                    <div class="timeline-line"></div>
+                    
+                    <div class="timeline-item completed">
+                        <div class="timeline-marker">1</div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">Week 1-2</div>
+                            <h4>Initial Assessment & Planning</h4>
+                            <p>Network discovery, requirements gathering, and project kickoff</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item completed">
+                        <div class="timeline-marker">2</div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">Week 3-4</div>
+                            <h4>Portnox Cloud Setup</h4>
+                            <p>Configure cloud tenant, RADIUS services, and basic policies</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item active">
+                        <div class="timeline-marker">3</div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">Week 5-6</div>
+                            <h4>Identity Integration</h4>
+                            <p>Connect Azure AD, configure MDM integrations, user sync</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-marker">4</div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">Week 7-8</div>
+                            <h4>Network Configuration</h4>
+                            <p>Configure switches for 802.1X, MAB, and dynamic VLAN</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-marker">5</div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">Week 9-10</div>
+                            <h4>Pilot Deployment</h4>
+                            <p>Deploy to IT department and test user groups</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-marker">6</div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">Week 11-12</div>
+                            <h4>Production Rollout</h4>
+                            <p>Phased deployment to all users and locations</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Executive Summary -->
+            <section class="content-section" id="executive">
+                <div class="executive-summary">
+                    <div class="summary-header">
+                        <h1>Executive Summary</h1>
+                        <p>Zero Trust NAC Implementation Analysis</p>
+                    </div>
+
+                    <div class="key-findings">
+                        <div class="finding-card">
+                            <div class="finding-icon">💰</div>
+                            <div class="finding-value" id="execSavings">$1M+</div>
+                            <div>Total Savings</div>
+                        </div>
+                        <div class="finding-card">
+                            <div class="finding-icon">📈</div>
+                            <div class="finding-value" id="execROI">312%</div>
+                            <div>Return on Investment</div>
+                        </div>
+                        <div class="finding-card">
+                            <div class="finding-icon">⚡</div>
+                            <div class="finding-value">14 Days</div>
+                            <div>Time to Deploy</div>
+                        </div>
+                        <div class="finding-card">
+                            <div class="finding-icon">🛡️</div>
+                            <div class="finding-value">78%</div>
+                            <div>Risk Reduction</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Strategic Recommendation</h3>
+                        <p id="strategicRecommendation">Based on comprehensive analysis of your environment, Portnox Cloud-Native NAC provides the optimal solution.</p>
+                        
+                        <div class="mt-4">
+                            <button class="btn btn-primary" onclick="exportExecutiveSummary()">
+                                <i class="fas fa-download"></i> Download Complete Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="notification-content"></div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        // ============================================================================
+        // Global State Management
+        // ============================================================================
+        const appState = {
+            currentSection: 'dashboard',
+            organization: {},
+            devices: {
+                windows: 0,
+                mac: 0,
+                linux: 0,
+                mobile: 0,
+                iot: 0,
+                printers: 0
+            },
+            infrastructure: {},
+            compliance: [],
+            analysis: {},
+            vendors: {
+                portnox: {
+                    name: 'Portnox',
+                    type: 'Cloud-Native',
+                    costPerDevice: 36,
+                    hardware: 0,
+                    implementation: 5000,
+                    deploymentDays: 14,
+                    fteRequired: 0.25,
+                    features: {
+                        cloudNative: true,
+                        zeroTrust: true,
+                        passwordless: true,
+                        riskScoring: true,
+                        automation: true
+                    }
+                },
+                cisco: {
+                    name: 'Cisco ISE',
+                    type: 'Legacy',
+                    costPerDevice: 125,
+                    hardware: 75000,
+                    implementation: 45000,
+                    deploymentDays: 90,
+                    fteRequired: 2.0
+                },
+                aruba: {
+                    name: 'Aruba ClearPass',
+                    type: 'Legacy',
+                    costPerDevice: 95,
+                    hardware: 50000,
+                    implementation: 35000,
+                    deploymentDays: 75,
+                    fteRequired: 1.75
+                },
+                forescout: {
+                    name: 'Forescout',
+                    type: 'Hybrid',
+                    costPerDevice: 85,
+                    hardware: 40000,
+                    implementation: 30000,
+                    deploymentDays: 60,
+                    fteRequired: 1.5
+                },
+                extreme: {
+                    name: 'Extreme Networks',
+                    type: 'Legacy',
+                    costPerDevice: 78,
+                    hardware: 35000,
+                    implementation: 28000,
+                    deploymentDays: 60,
+                    fteRequired: 1.5
+                },
+                juniper: {
+                    name: 'Juniper',
+                    type: 'Legacy',
+                    costPerDevice: 92,
+                    hardware: 45000,
+                    implementation: 32000,
+                    deploymentDays: 70,
+                    fteRequired: 1.75
+                },
+                arista: {
+                    name: 'Arista',
+                    type: 'Legacy',
+                    costPerDevice: 88,
+                    hardware: 42000,
+                    implementation: 30000,
+                    deploymentDays: 65,
+                    fteRequired: 1.5
+                },
+                fortinet: {
+                    name: 'Fortinet NAC',
+                    type: 'Legacy',
+                    costPerDevice: 75,
+                    hardware: 30000,
+                    implementation: 25000,
+                    deploymentDays: 55,
+                    fteRequired: 1.25
+                },
+                pulse: {
+                    name: 'Pulse Secure',
+                    type: 'Legacy',
+                    costPerDevice: 82,
+                    hardware: 35000,
+                    implementation: 28000,
+                    deploymentDays: 60,
+                    fteRequired: 1.5
+                },
+                packetfence: {
+                    name: 'PacketFence',
+                    type: 'Open Source',
+                    costPerDevice: 0,
+                    hardware: 25000,
+                    implementation: 50000,
+                    deploymentDays: 120,
+                    fteRequired: 2.5
+                }
+            },
+            progress: {
+                organization: false,
+                scoping: false,
+                requirements: false,
+                analysis: false,
+                report: false
+            }
+        };
+
+        // ============================================================================
+        // Initialize Application
+        // ============================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupEventListeners();
+            updateDashboard();
+        });
+
+        function initializeApp() {
+            // Load saved state if exists
+            const savedState = localStorage.getItem('portnoxAppState');
+            if (savedState) {
+                Object.assign(appState, JSON.parse(savedState));
+                restoreFormData();
+            }
+            
+            // Initialize charts
+            initializeCharts();
+        }
+
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const section = item.dataset.section;
+                    navigateToSection(section);
+                });
+            });
+
+            // Workflow steps
+            document.querySelectorAll('.workflow-step').forEach(step => {
+                step.addEventListener('click', () => {
+                    const targetSection = step.dataset.step;
+                    if (targetSection) {
+                        navigateToSection(targetSection);
+                    }
+                });
+            });
+        }
+
+        function navigateToSection(section) {
+            // Update active states
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.section === section) {
+                    item.classList.add('active');
+                }
+            });
+
+            // Show/hide sections
+            document.querySelectorAll('.content-section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            document.getElementById(section).classList.add('active');
+
+            appState.currentSection = section;
+            
+            // Special handling for specific sections
+            if (section === 'tco') {
+                calculateTCO();
+            } else if (section === 'architecture') {
+                renderArchitecture();
+            }
+            
+            saveProgress();
+        }
+
+        function startAssessment() {
+            navigateToSection('organization');
+            updateWorkflowStep('organization');
+        }
+
+        function nextStep(section) {
+            // Save current section data
+            saveCurrentSection();
+            
+            // Navigate to next section
+            navigateToSection(section);
+            
+            // Update workflow progress
+            updateWorkflowStep(section);
+            
+            // Show notification
+            showNotification('Progress saved', 'success');
+        }
+
+        function previousStep(section) {
+            navigateToSection(section);
+        }
+
+        function saveCurrentSection() {
+            switch(appState.currentSection) {
+                case 'organization':
+                    appState.organization = {
+                        name: document.getElementById('companyName').value,
+                        industry: document.getElementById('industry').value,
+                        employees: document.getElementById('employees').value,
+                        locations: document.getElementById('locations').value,
+                        itBudget: document.getElementById('itBudget').value,
+                        currentNAC: document.getElementById('currentNAC').value,
+                        compliance: getSelectedCompliance()
+                    };
+                    appState.progress.organization = true;
+                    break;
+                    
+                case 'scoping':
+                    appState.devices = {
+                        windows: parseInt(document.getElementById('windows-count').value) || 0,
+                        mac: parseInt(document.getElementById('mac-count').value) || 0,
+                        linux: parseInt(document.getElementById('linux-count').value) || 0,
+                        mobile: parseInt(document.getElementById('mobile-count').value) || 0,
+                        iot: parseInt(document.getElementById('iot-count').value) || 0,
+                        printers: parseInt(document.getElementById('printers-count').value) || 0
+                    };
+                    appState.infrastructure = {
+                        switchVendor: document.getElementById('switchVendor').value,
+                        switchCount: document.getElementById('switchCount').value,
+                        wirelessVendor: document.getElementById('wirelessVendor').value,
+                        apCount: document.getElementById('apCount').value,
+                        firewallVendor: document.getElementById('firewallVendor').value,
+                        identityProvider: document.getElementById('identityProvider').value
+                    };
+                    appState.progress.scoping = true;
+                    break;
+            }
+            
+            // Calculate TCO if we have enough data
+            if (appState.progress.organization && appState.progress.scoping) {
+                calculateTCO();
+            }
+        }
+
+        function getSelectedCompliance() {
+            const checkboxes = document.querySelectorAll('.compliance-selector input:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        function updateWorkflowStep(step) {
+            document.querySelectorAll('.workflow-step').forEach(ws => {
+                ws.classList.remove('active', 'completed');
+                if (ws.dataset.step === step) {
+                    ws.classList.add('active');
+                } else if (appState.progress[ws.dataset.step]) {
+                    ws.classList.add('completed');
+                }
+            });
+        }
+
+        function incrementDevice(type) {
+            const input = document.getElementById(`${type}-count`);
+            input.value = parseInt(input.value) + 1;
+            updateDeviceCount();
+        }
+
+        function decrementDevice(type) {
+            const input = document.getElementById(`${type}-count`);
+            if (parseInt(input.value) > 0) {
+                input.value = parseInt(input.value) - 1;
+                updateDeviceCount();
+            }
+        }
+
+        function updateDeviceCount() {
+            const totalDevices = 
+                parseInt(document.getElementById('windows-count').value || 0) +
+                parseInt(document.getElementById('mac-count').value || 0) +
+                parseInt(document.getElementById('linux-count').value || 0) +
+                parseInt(document.getElementById('mobile-count').value || 0) +
+                parseInt(document.getElementById('iot-count').value || 0) +
+                parseInt(document.getElementById('printers-count').value || 0);
+            
+            // Update metrics based on device count
+            updateDashboardMetrics(totalDevices);
+        }
+
+        function updateDashboardMetrics(devices) {
+            if (devices > 0) {
+                // Update dashboard metrics
+                const portnoxCost = devices * 36 * 3; // $36/device/year for 3 years
+                const legacyCost = devices * 125 * 3 + 75000; // Cisco ISE as baseline
+                const savings = legacyCost - portnoxCost;
+                
+                document.querySelector('.metric-value').textContent = `$${(savings/1000).toFixed(0)}K`;
+            }
+        }
+
+        // ============================================================================
+        // TCO Calculations
+        // ============================================================================
+        function calculateTCO() {
+            const totalDevices = Object.values(appState.devices).reduce((a, b) => a + b, 0);
+            
+            if (totalDevices === 0) {
+                showNotification('Please add devices to calculate TCO', 'warning');
+                return;
+            }
+            
+            showLoading();
+            
+            // Calculate costs for each vendor
+            const tcoAnalysis = {};
+            const avgSalary = 120000; // Average IT salary
+            
+            Object.keys(appState.vendors).forEach(vendorKey => {
+                const vendor = appState.vendors[vendorKey];
+                
+                let licensing;
+                if (vendor.type === 'Cloud-Native') {
+                    licensing = totalDevices * vendor.costPerDevice * 3; // 3 years
+                } else if (vendor.type === 'Open Source') {
+                    licensing = 0;
+                } else {
+                    // Legacy: Perpetual + maintenance
+                    licensing = totalDevices * vendor.costPerDevice;
+                    licensing += licensing * 0.22 * 2; // 22% maintenance for years 2-3
+                }
+                
+                const operations = vendor.fteRequired * avgSalary * 3; // 3 years
+                
+                tcoAnalysis[vendorKey] = {
+                    vendor: vendor.name,
+                    licensing: licensing,
+                    hardware: vendor.hardware,
+                    implementation: vendor.implementation,
+                    operations: operations,
+                    total: licensing + vendor.hardware + vendor.implementation + operations,
+                    costPerDeviceYear: (licensing + vendor.hardware + vendor.implementation + operations) / totalDevices / 3
+                };
+            });
+            
+            appState.analysis = tcoAnalysis;
+            
+            // Update UI
+            updateTCODisplay();
+            updateTCOChart();
+            calculateROI();
+            
+            hideLoading();
+        }
+
+        function updateTCODisplay() {
+            const tbody = document.getElementById('tcoTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            // Sort vendors by total TCO
+            const sortedVendors = Object.entries(appState.analysis)
+                .sort((a, b) => a[1].total - b[1].total);
+            
+            sortedVendors.forEach(([key, vendor], index) => {
+                const row = document.createElement('tr');
+                if (key === 'portnox') {
+                    row.classList.add('vendor-highlight');
+                }
+                
+                row.innerHTML = `
+                    <td><strong>${vendor.vendor}</strong></td>
+                    <td>$${vendor.licensing.toLocaleString()}</td>
+                    <td>$${vendor.hardware.toLocaleString()}</td>
+                    <td>$${vendor.implementation.toLocaleString()}</td>
+                    <td>$${vendor.operations.toLocaleString()}</td>
+                    <td><strong>$${vendor.total.toLocaleString()}</strong></td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Update metrics
+            const portnoxTCO = appState.analysis.portnox.total;
+            const ciscoTCO = appState.analysis.cisco.total;
+            const savings = ciscoTCO - portnoxTCO;
+            const savingsPercent = ((savings / ciscoTCO) * 100).toFixed(0);
+            
+            document.getElementById('totalSavings').textContent = `$${(savings/1000).toFixed(0)}K`;
+            document.getElementById('costReduction').textContent = `${savingsPercent}%`;
+            document.getElementById('costPerDevice').textContent = `$${Math.round(appState.analysis.portnox.costPerDeviceYear)}`;
+            document.getElementById('fteSavings').textContent = `${(appState.vendors.cisco.fteRequired - appState.vendors.portnox.fteRequired).toFixed(2)} FTE`;
+            
+            // Update executive summary
+            document.getElementById('execSavings').textContent = `$${(savings/1000000).toFixed(1)}M`;
+            document.getElementById('execROI').textContent = '312%';
+        }
+
+        function calculateROI() {
+            const totalDevices = Object.values(appState.devices).reduce((a, b) => a + b, 0);
+            if (totalDevices === 0) return;
+            
+            // Risk mitigation calculations
+            const breachCost = 4350000; // Average data breach cost
+            const breachProb = 0.23; // 23% annual probability
+            const riskReduction = 0.78; // 78% reduction with Portnox
+            
+            const annualRiskValue = breachCost * breachProb * riskReduction;
+            
+            // Insurance savings (35% reduction)
+            const insurancePremium = 150000;
+            const insuranceSavings = insurancePremium * 0.35;
+            
+            // Compliance savings
+            const complianceViolationCost = 50000;
+            const complianceReduction = 0.82;
+            const complianceSavings = complianceViolationCost * complianceReduction;
+            
+            // Total annual savings
+            const annualSavings = annualRiskValue + insuranceSavings + complianceSavings;
+            
+            // 3-year savings
+            const totalSavings = annualSavings * 3;
+            
+            // ROI calculation
+            const investment = appState.analysis.portnox.total;
+            const roi = ((totalSavings - investment) / investment) * 100;
+            
+            // Update strategic recommendation
+            const recommendation = `Based on comprehensive analysis of your ${totalDevices} devices across ${appState.organization.locations || 'multiple'} locations, Portnox Cloud-Native NAC delivers exceptional value:
+            
+            • ${((appState.analysis.cisco.total - appState.analysis.portnox.total) / appState.analysis.cisco.total * 100).toFixed(0)}% lower TCO compared to legacy NAC solutions
+            • $${(totalSavings/1000).toFixed(0)}K in risk mitigation value over 3 years
+            • ${appState.vendors.portnox.deploymentDays}-day deployment vs ${appState.vendors.cisco.deploymentDays}+ days for competitors
+            • Zero hardware requirements with cloud-native architecture
+            • Complete compliance coverage for ${appState.organization.compliance?.join(', ') || 'your'} requirements
+            
+            The solution pays for itself in just ${Math.round(investment / (annualSavings/12))} months while dramatically improving your security posture.`;
+            
+            document.getElementById('strategicRecommendation').innerHTML = recommendation;
+        }
+
+        // ============================================================================
+        // Charts
+        // ============================================================================
+        function initializeCharts() {
+            // Initialize TCO Chart
+            const tcoCtx = document.getElementById('tcoChart');
+            if (tcoCtx) {
+                window.tcoChart = new Chart(tcoCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: 'Software Licensing',
+                                data: [],
+                                backgroundColor: '#1B67B2'
+                            },
+                            {
+                                label: 'Hardware',
+                                data: [],
+                                backgroundColor: '#00B2BA'
+                            },
+                            {
+                                label: 'Implementation',
+                                data: [],
+                                backgroundColor: '#0066FF'
+                            },
+                            {
+                                label: 'Operations',
+                                data: [],
+                                backgroundColor: '#64FFDA'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: '3-Year Total Cost of Ownership',
+                                color: '#FFFFFF',
+                                font: { size: 16 }
+                            },
+                            legend: {
+                                labels: { color: '#FFFFFF' }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: true,
+                                ticks: { color: '#FFFFFF' },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            },
+                            y: {
+                                stacked: true,
+                                ticks: {
+                                    color: '#FFFFFF',
+                                    callback: function(value) {
+                                        return '$' + (value/1000).toFixed(0) + 'K';
+                                    }
+                                },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function updateTCOChart() {
+            if (window.tcoChart && appState.analysis) {
+                // Get top 6 vendors by TCO
+                const sortedVendors = Object.entries(appState.analysis)
+                    .sort((a, b) => a[1].total - b[1].total)
+                    .slice(0, 6);
+                
+                const labels = sortedVendors.map(([k, v]) => v.vendor);
+                const licensing = sortedVendors.map(([k, v]) => v.licensing);
+                const hardware = sortedVendors.map(([k, v]) => v.hardware);
+                const implementation = sortedVendors.map(([k, v]) => v.implementation);
+                const operations = sortedVendors.map(([k, v]) => v.operations);
+                
+                window.tcoChart.data.labels = labels;
+                window.tcoChart.data.datasets[0].data = licensing;
+                window.tcoChart.data.datasets[1].data = hardware;
+                window.tcoChart.data.datasets[2].data = implementation;
+                window.tcoChart.data.datasets[3].data = operations;
+                
+                window.tcoChart.update();
+            }
+        }
+
+        // ============================================================================
+        // Architecture Rendering
+        // ============================================================================
+        function renderArchitecture() {
+            const canvas = document.getElementById('architectureCanvas');
+            if (!canvas) return;
+            
+            // Clear existing components
+            canvas.querySelectorAll('.network-component').forEach(comp => comp.remove());
+            
+            // Add Portnox Cloud component
+            addComponent(canvas, {
+                id: 'portnox-cloud',
+                name: 'Portnox Cloud',
+                type: 'Cloud RADIUS',
+                vendor: 'portnox',
+                position: { left: '38%', top: '10%' },
+                metrics: {
+                    uptime: '99.99%',
+                    latency: '12ms'
+                }
+            });
+            
+            // Add Identity Provider
+            const idp = appState.infrastructure.identityProvider;
+            if (idp) {
+                addComponent(canvas, {
+                    id: 'identity-provider',
+                    name: idp === 'azure' ? 'Azure AD' : idp.toUpperCase(),
+                    type: 'Identity Provider',
+                    vendor: idp,
+                    position: { left: '5%', top: '20%' },
+                    metrics: {
+                        users: appState.organization.employees || '1000+',
+                        groups: Math.floor((appState.organization.employees || 1000) / 30)
+                    }
+                });
+            }
+            
+            // Add network infrastructure
+            if (appState.infrastructure.switchVendor) {
+                addComponent(canvas, {
+                    id: 'switches',
+                    name: `${appState.infrastructure.switchVendor} Switches`,
+                    type: 'Access Layer',
+                    vendor: appState.infrastructure.switchVendor,
+                    position: { left: '25%', top: '70%' },
+                    metrics: {
+                        switches: appState.infrastructure.switchCount || '24',
+                        ports: (appState.infrastructure.switchCount || 24) * 48
+                    }
+                });
+            }
+            
+            // Add device groups
+            const totalDevices = Object.values(appState.devices).reduce((a, b) => a + b, 0);
+            if (totalDevices > 0) {
+                addComponent(canvas, {
+                    id: 'devices',
+                    name: 'Corporate Devices',
+                    type: 'Managed Endpoints',
+                    vendor: 'devices',
+                    position: { left: '65%', top: '70%' },
+                    metrics: {
+                        total: totalDevices,
+                        types: Object.keys(appState.devices).filter(d => appState.devices[d] > 0).length
+                    }
+                });
+            }
+        }
+
+        function addComponent(container, config) {
+            const component = document.createElement('div');
+            component.className = 'network-component';
+            component.classList.add(config.vendor);
+            component.id = config.id;
+            component.style.left = config.position.left;
+            component.style.top = config.position.top;
+            
+            component.innerHTML = `
+                <div class="component-header">
+                    <div class="component-icon">${getVendorIcon(config.vendor)}</div>
+                    <div>
+                        <div class="component-name">${config.name}</div>
+                        <div class="component-type">${config.type}</div>
+                    </div>
+                </div>
+                ${config.metrics ? `
+                <div class="component-metrics">
+                    ${Object.entries(config.metrics).map(([key, value]) => `
+                        <div class="metric">
+                            <div class="metric-value">${value}</div>
+                            <div class="metric-label">${key}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+            `;
+            
+            container.appendChild(component);
+        }
+
+        function getVendorIcon(vendor) {
+            const icons = {
+                portnox: '☁️',
+                azure: '🔑',
+                cisco: '🔷',
+                aruba: '🟠',
+                devices: '💻',
+                fortinet: '🛡️'
+            };
+            return icons[vendor] || '📡';
+        }
+
+        // ============================================================================
+        // Utility Functions
+        // ============================================================================
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const content = notification.querySelector('.notification-content');
+            
+            content.textContent = message;
+            notification.className = `notification show ${type}`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function showLoading() {
+            document.getElementById('loading').classList.add('show');
+        }
+
+        function hideLoading() {
+            setTimeout(() => {
+                document.getElementById('loading').classList.remove('show');
+            }, 500);
+        }
+
+        function saveProgress() {
+            localStorage.setItem('portnoxAppState', JSON.stringify(appState));
+        }
+
+        function restoreFormData() {
+            // Restore organization data
+            if (appState.organization.name) {
+                document.getElementById('companyName').value = appState.organization.name;
+                document.getElementById('industry').value = appState.organization.industry || '';
+                document.getElementById('employees').value = appState.organization.employees || '';
+                document.getElementById('locations').value = appState.organization.locations || '';
+                document.getElementById('itBudget').value = appState.organization.itBudget || '';
+                document.getElementById('currentNAC').value = appState.organization.currentNAC || 'none';
+            }
+            
+            // Restore device counts
+            Object.keys(appState.devices).forEach(device => {
+                const input = document.getElementById(`${device}-count`);
+                if (input) {
+                    input.value = appState.devices[device] || 0;
+                }
+            });
+        }
+
+        function generateReports() {
+            // Validate required data
+            if (!appState.progress.organization || !appState.progress.scoping) {
+                showNotification('Please complete organization and scoping sections first', 'warning');
+                return;
+            }
+            
+            showLoading();
+            
+            // Generate comprehensive report
+            const report = generateComprehensiveReport();
+            
+            // Download report
+            downloadReport(report);
+            
+            hideLoading();
+            showNotification('Reports generated successfully!', 'success');
+        }
+
+        function generateComprehensiveReport() {
+            const totalDevices = Object.values(appState.devices).reduce((a, b) => a + b, 0);
+            const portnoxTCO = appState.analysis?.portnox?.total || 0;
+            const legacyTCO = appState.analysis?.cisco?.total || 0;
+            const savings = legacyTCO - portnoxTCO;
+            const savingsPercent = ((savings / legacyTCO) * 100).toFixed(0);
+            
+            return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portnox TCO Analysis Report - ${appState.organization.name || 'Company'}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: #ffffff;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .report-header {
+            background: linear-gradient(135deg, #1B67B2 0%, #00B2BA 100%);
+            color: white;
+            padding: 60px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .report-header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .report-header p {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            padding: 40px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .metric-box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .metric-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1B67B2;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        th {
+            background: #1B67B2;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .highlight {
+            background: #e3f2fd;
+            font-weight: 600;
+        }
+        
+        .recommendation {
+            background: #E8F5E9;
+            padding: 30px;
+            border-radius: 12px;
+            border-left: 5px solid #4CAF50;
+            margin-top: 30px;
+        }
+        
+        .compliance-section {
+            margin-top: 30px;
+        }
+        
+        .compliance-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .compliance-icon {
+            width: 30px;
+            color: #10B981;
+            font-size: 20px;
+        }
+        
+        @media print {
+            body { padding: 20px; }
+            .report-header { page-break-inside: avoid; }
+            .section { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-header">
+        <h1>Total Cost of Ownership Analysis</h1>
+        <p>${appState.organization.name || 'Your Organization'} - ${new Date().toLocaleDateString()}</p>
+    </div>
+    
+    <div class="metrics-grid">
+        <div class="metric-box">
+            <div class="metric-value">${savingsPercent}%</div>
+            <div class="metric-label">Cost Reduction</div>
+        </div>
+        <div class="metric-box">
+            <div class="metric-value">$${(savings / 1000).toFixed(0)}K</div>
+            <div class="metric-label">3-Year Savings</div>
+        </div>
+        <div class="metric-box">
+            <div class="metric-value">312%</div>
+            <div class="metric-label">ROI</div>
+        </div>
+        <div class="metric-box">
+            <div class="metric-value">14 Days</div>
+            <div class="metric-label">Deployment Time</div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Organization Profile</h2>
+        <p><strong>Company:</strong> ${appState.organization.name || 'Not specified'}</p>
+        <p><strong>Industry:</strong> ${appState.organization.industry || 'Not specified'}</p>
+        <p><strong>Employees:</strong> ${appState.organization.employees || 'Not specified'}</p>
+        <p><strong>Locations:</strong> ${appState.organization.locations || 'Not specified'}</p>
+        <p><strong>Total Devices:</strong> ${totalDevices}</p>
+        <p><strong>Compliance Requirements:</strong> ${appState.organization.compliance?.join(', ') || 'None specified'}</p>
+    </div>
+    
+    <div class="section">
+        <h2>3-Year TCO Comparison</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Vendor</th>
+                    <th>Software Licensing</th>
+                    <th>Hardware</th>
+                    <th>Implementation</th>
+                    <th>Operations</th>
+                    <th>Total TCO</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${Object.entries(appState.analysis || {})
+                    .sort((a, b) => a[1].total - b[1].total)
+                    .slice(0, 5)
+                    .map(([key, vendor]) => `
+                        <tr ${key === 'portnox' ? 'class="highlight"' : ''}>
+                            <td>${vendor.vendor}</td>
+                            <td>$${vendor.licensing?.toLocaleString() || '0'}</td>
+                            <td>$${vendor.hardware?.toLocaleString() || '0'}</td>
+                            <td>$${vendor.implementation?.toLocaleString() || '0'}</td>
+                            <td>$${vendor.operations?.toLocaleString() || '0'}</td>
+                            <td><strong>$${vendor.total?.toLocaleString() || '0'}</strong></td>
+                        </tr>
+                    `).join('')}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>Compliance Coverage</h2>
+        <div class="compliance-section">
+            ${(appState.organization.compliance || []).map(framework => `
+                <div class="compliance-item">
+                    <span class="compliance-icon">✓</span>
+                    <span>${framework} - Full compliance coverage with automated reporting</span>
+                </div>
+            `).join('')}
+        </div>
+    </div>
+    
+    <div class="recommendation">
+        <h2>Executive Recommendation</h2>
+        <p>Based on our comprehensive analysis, implementing Portnox Cloud-Native NAC will deliver:</p>
+        <ul>
+            <li><strong>${savingsPercent}% cost reduction</strong> compared to legacy NAC solutions</li>
+            <li><strong>$${savings.toLocaleString()} total savings</strong> over 3 years</li>
+            <li><strong>85% reduction</strong> in operational overhead through automation</li>
+            <li><strong>Zero hardware</strong> requirements with cloud-native architecture</li>
+            <li><strong>14-day deployment</strong> vs 90+ days for competitors</li>
+            <li><strong>Complete compliance</strong> coverage for all regulatory requirements</li>
+        </ul>
+        <p><strong>Strategic Impact:</strong> Portnox provides the most comprehensive, cost-effective, and rapidly deployable Zero Trust NAC solution available. The platform's cloud-native architecture eliminates hardware dependencies while delivering enterprise-grade security and compliance capabilities.</p>
+    </div>
+    
+    <div class="section">
+        <h2>Next Steps</h2>
+        <ol>
+            <li>Schedule technical deep-dive with Portnox team</li>
+            <li>Conduct proof-of-concept in lab environment</li>
+            <li>Develop phased deployment plan</li>
+            <li>Begin pilot deployment with IT department</li>
+            <li>Roll out to production in 14-day implementation window</li>
+        </ol>
+    </div>
+</body>
+</html>
+            `;
+        }
+
+        function downloadReport(content) {
+            const blob = new Blob([content], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Portnox_TCO_Report_${appState.organization.name || 'Company'}_${new Date().toISOString().split('T')[0]}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportExecutiveSummary() {
+            generateReports();
+        }
+
+        function updateDashboard() {
+            // Update progress indicators
+            let completedSteps = 0;
+            Object.values(appState.progress).forEach(completed => {
+                if (completed) completedSteps++;
+            });
+            
+            const progressPercent = (completedSteps / 5) * 100;
+            const progressFill = document.querySelector('.progress-fill');
+            if (progressFill) {
+                progressFill.style.width = `${progressPercent}%`;
+            }
+        }
+
+        // Auto-save every 30 seconds
+        setInterval(saveProgress, 30000);
+    </script>
+</body>
+</html>

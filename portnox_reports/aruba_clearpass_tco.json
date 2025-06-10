@@ -1,0 +1,23 @@
+{
+  "vendor": "Aruba ClearPass",
+  "analysis_period": "3 years",
+  "total_devices": 456,
+  "costs": {
+    "licensing": 110648.0,
+    "implementation": 35000,
+    "operational": 630000.0,
+    "total_tco": 775648.0,
+    "cost_per_device_per_year": 566.9941520467836
+  },
+  "savings": {
+    "risk_reduction": 652500.0,
+    "automation_savings": 220500.0,
+    "total_savings": 652500.0
+  },
+  "roi": {
+    "percentage": -15.87678947151285,
+    "payback_months": 42.794372413793106
+  },
+  "risk_metrics": {},
+  "compliance": {}
+}

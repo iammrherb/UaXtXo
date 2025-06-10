@@ -1,0 +1,32 @@
+{
+  "vendor": "Cisco ISE",
+  "analysis_period": "3 years",
+  "total_devices": 456,
+  "costs": {
+    "licensing": 157080.0,
+    "implementation": 45000,
+    "operational": 720000.0,
+    "total_tco": 922080.0,
+    "cost_per_device_per_year": 674.0350877192983
+  },
+  "savings": {
+    "risk_reduction": 717750.0,
+    "automation_savings": 216000.0,
+    "total_savings": 717750.0
+  },
+  "roi": {
+    "percentage": -22.159682457053616,
+    "payback_months": 46.248526645768024
+  },
+  "risk_metrics": {
+    "breach_prevention": 0.55,
+    "incident_reduction": 0.4,
+    "compliance_improvement": 0.6
+  },
+  "compliance": {
+    "certifications": [
+      "Common Criteria"
+    ],
+    "controls_met": 89
+  }
+}
