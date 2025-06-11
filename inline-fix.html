@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Module Loader Inline Fix</title>
+</head>
+<body>
+    <h1>Inline Module Loader Fix</h1>
+    <p>Add this script block to your HTML after module-loader.js:</p>
+    
+    <pre><code>&lt;script&gt;
+// Inline Module Loader Fix
+(function() {
+    console.log('[InlineFix] Applying module loader fixes...');
+    
+    function fixModuleLoader() {
+        if (!window.ModuleLoader) return;
+        
+        // Add instances Map
+        if (!window.ModuleLoader.instances) {
+            window.ModuleLoader.instances = new Map();
+        }
+        
+        // Fix get method
+        window.ModuleLoader.get = function(name) {
+            if (this.instances.has(name)) return this.instances.get(name);
+            
+            const config = this.modules.get(name);
+            if (config && config.factory) {
+                const deps = {};
+                (config.dependencies || []).forEach(d => deps[d] = this.get(d));
+                const instance = config.factory(deps);
+                if (instance) {
+                    this.instances.set(name, instance);
+                    this.loadedModules.add(name);
+                }
+                return instance;
+            }
+            return null;
+        };
+        
+        // Init core modules
+        ['EventSystem', 'ConfigManager'].forEach(name => {
+            window.ModuleLoader.get(name);
+        });
+    }
+    
+    // Apply fix when ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fixModuleLoader);
+    } else {
+        fixModuleLoader();
+    }
+})();
+&lt;/script&gt;</code></pre>
+</body>
+</html>

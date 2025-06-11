@@ -1,99 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>Module Loader Test</title>
-    <style>
-        body { font-family: monospace; padding: 20px; }
-        #output { background: #f0f0f0; padding: 20px; white-space: pre; }
-        .success { color: green; }
-        .error { color: red; }
-        .info { color: blue; }
-    </style>
 </head>
 <body>
-    <h1>Module Loader Test Page</h1>
-    <div id="output"></div>
+    <h1>Module Loader Test</h1>
+    <button onclick="testModules()">Test Modules</button>
+    <button onclick="showStatus()">Show Status</button>
+    <pre id="output"></pre>
     
-    <script src="/js/core/module-loader.js"></script>
     <script>
-        const output = document.getElementById('output');
-        const log = (msg, type = 'info') => {
-            const line = document.createElement('div');
-            line.className = type;
-            line.textContent = msg;
-            output.appendChild(line);
-            console.log(msg);
-        };
+    function log(msg) {
+        document.getElementById('output').textContent += msg + '\n';
+    }
+    
+    function testModules() {
+        log('\n=== Testing Modules ===');
         
-        // Test ModuleLoader
-        log('Testing ModuleLoader...', 'info');
-        log('ModuleLoader available: ' + (typeof window.ModuleLoader !== 'undefined'), 
-            window.ModuleLoader ? 'success' : 'error');
-        
-        if (window.ModuleLoader) {
-            log('\nModuleLoader methods:', 'info');
-            log('- register: ' + (typeof window.ModuleLoader.register), 'info');
-            log('- load: ' + (typeof window.ModuleLoader.load), 'info');
-            log('- loadAll: ' + (typeof window.ModuleLoader.loadAll), 'info');
-            log('- get: ' + (typeof window.ModuleLoader.get), 'info');
-            log('- listModules: ' + (typeof window.ModuleLoader.listModules), 'info');
-            
-            // Test registering a module
-            try {
-                window.ModuleLoader.register('TestModule', [], function() {
-                    return { name: 'Test Module', version: '1.0' };
-                });
-                log('\n✓ Successfully registered TestModule', 'success');
-                
-                // Test loading the module
-                window.ModuleLoader.load('TestModule').then(module => {
-                    log('✓ Successfully loaded TestModule: ' + JSON.stringify(module), 'success');
-                    
-                    // Now test loading all your modules
-                    log('\n\nTesting actual application modules...', 'info');
-                    
-                    const loadAppModules = async () => {
-                        const modules = [
-                            '/js/core/config-manager.js',
-                            '/js/core/event-system.js',
-                            '/js/core/error-handler.js',
-                            '/js/data/vendor-database.js',
-                            '/js/data/vendor-data-manager.js'
-                        ];
-                        
-                        for (const module of modules) {
-                            try {
-                                const script = document.createElement('script');
-                                script.src = module;
-                                await new Promise((resolve, reject) => {
-                                    script.onload = resolve;
-                                    script.onerror = reject;
-                                    document.head.appendChild(script);
-                                });
-                                log(`✓ Loaded ${module}`, 'success');
-                            } catch (err) {
-                                log(`❌ Failed to load ${module}: ${err.message}`, 'error');
-                            }
-                        }
-                        
-                        // Check registered modules
-                        setTimeout(() => {
-                            log('\n\nRegistered modules: ' + window.ModuleLoader.listModules().join(', '), 'info');
-                        }, 1000);
-                    };
-                    
-                    loadAppModules();
-                    
-                }).catch(err => {
-                    log('❌ Failed to load TestModule: ' + err.message, 'error');
-                });
-            } catch (err) {
-                log('❌ Failed to register TestModule: ' + err.message, 'error');
-            }
-        } else {
-            log('❌ ModuleLoader not found!', 'error');
+        if (!window.ModuleLoader) {
+            log('❌ ModuleLoader not found');
+            return;
         }
+        
+        // Test EventSystem
+        const es = ModuleLoader.get('EventSystem');
+        if (es && es.on && es.emit) {
+            let worked = false;
+            es.on('test', () => { worked = true; });
+            es.emit('test');
+            log('EventSystem: ' + (worked ? '✅ Working' : '❌ Failed'));
+        } else {
+            log('EventSystem: ❌ Not available');
+        }
+        
+        // Test ConfigManager
+        const cm = ModuleLoader.get('ConfigManager');
+        if (cm && cm.get && cm.set) {
+            cm.set('test', 'value');
+            const val = cm.get('test');
+            log('ConfigManager: ' + (val === 'value' ? '✅ Working' : '❌ Failed'));
+        } else {
+            log('ConfigManager: ❌ Not available');
+        }
+    }
+    
+    function showStatus() {
+        log('\n=== Module Status ===');
+        
+        if (!window.ModuleLoader) {
+            log('❌ ModuleLoader not found');
+            return;
+        }
+        
+        log('ModuleLoader exists: ✅');
+        log('Has modules Map: ' + (ModuleLoader.modules ? '✅' : '❌'));
+        log('Has instances Map: ' + (ModuleLoader.instances ? '✅' : '❌'));
+        log('Has get method: ' + (ModuleLoader.get ? '✅' : '❌'));
+        
+        if (ModuleLoader.modules) {
+            log('\nRegistered modules:');
+            ModuleLoader.modules.forEach((config, name) => {
+                const instance = ModuleLoader.instances && ModuleLoader.instances.get(name);
+                log(`  ${name}: ${instance ? '✅ Loaded' : '❌ Not loaded'}`);
+            });
+        }
+    }
     </script>
 </body>
 </html>
