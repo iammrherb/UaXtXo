@@ -1,0 +1,224 @@
+{
+  "vendors": {
+    "portnox": {
+      "name": "Portnox",
+      "type": "Cloud NAC",
+      "logo": "img/vendors/portnox-logo.png",
+      "color": "#0046AD",
+      "colorSecondary": "#0066FF",
+      "colorAccent": "#4D94FF",
+      "gradients": {
+        "primary": "linear-gradient(135deg, #0046AD 0%, #0066FF 50%, #4D94FF 100%)",
+        "vibrant": "linear-gradient(135deg, #0046AD 0%, #0066FF 33%, #4D94FF 66%, #80B3FF 100%)",
+        "radial": "radial-gradient(circle at 30% 30%, #4D94FF 0%, #0066FF 40%, #0046AD 100%)"
+      },
+      "description": "Cloud-native Zero Trust NAC platform with AI-driven security",
+      "per_device_pricing": {
+        "tiers": [
+          { "min": 1, "max": 100, "price_per_device": 40 },
+          { "min": 101, "max": 500, "price_per_device": 30 },
+          { "min": 501, "max": 1000, "price_per_device": 25 },
+          { "min": 1001, "max": 5000, "price_per_device": 20 },
+          { "min": 5001, "max": 10000, "price_per_device": 15 },
+          { "min": 10001, "max": null, "price_per_device": 12 }
+        ],
+        "volume_discounts": {
+          "1000": 0.05,
+          "5000": 0.10,
+          "10000": 0.15,
+          "25000": 0.20
+        }
+      },
+      "risk_profile": {
+        "security_effectiveness": 95,
+        "incident_reduction": 85,
+        "breach_prevention": 92,
+        "compliance_automation": 98,
+        "threat_detection": 94,
+        "response_time": "< 1 second",
+        "false_positive_rate": 0.1
+      },
+      "compliance_coverage": {
+        "frameworks": {
+          "NIST": { "coverage": 98, "automated": 95, "reporting": "real-time" },
+          "ISO27001": { "coverage": 96, "automated": 93, "reporting": "real-time" },
+          "PCI_DSS": { "coverage": 99, "automated": 97, "reporting": "real-time" },
+          "HIPAA": { "coverage": 97, "automated": 94, "reporting": "real-time" },
+          "SOX": { "coverage": 95, "automated": 92, "reporting": "real-time" },
+          "GDPR": { "coverage": 98, "automated": 96, "reporting": "real-time" },
+          "NERC_CIP": { "coverage": 94, "automated": 90, "reporting": "real-time" },
+          "CMMC": { "coverage": 96, "automated": 93, "reporting": "real-time" }
+        },
+        "violation_impact": {
+          "average_fine_prevented": 2500000,
+          "compliance_cost_reduction": 75,
+          "audit_time_reduction": 90,
+          "continuous_compliance": true
+        }
+      },
+      "advanced_features": {
+        "zero_trust_network_access": true,
+        "cloud_native": true,
+        "ai_powered_threat_detection": true,
+        "automated_response": true,
+        "risk_based_policies": true,
+        "continuous_compliance_monitoring": true,
+        "predictive_analytics": true,
+        "behavioral_analysis": true
+      },
+      "organizations_supported": [
+        "Azure AD", "Google Workspace", "Okta", "Ping Identity",
+        "AWS SSO", "OneLogin", "JumpCloud", "Duo Security",
+        "CyberArk", "SailPoint", "Auth0", "ForgeRock"
+      ],
+      "projections": {
+        "1_year": {
+          "total_cost": 20000,
+          "incidents_prevented": 45,
+          "downtime_hours_saved": 120,
+          "compliance_violations_prevented": 8,
+          "roi_percentage": 187
+        },
+        "3_year": {
+          "total_cost": 65000,
+          "incidents_prevented": 156,
+          "downtime_hours_saved": 420,
+          "compliance_violations_prevented": 28,
+          "roi_percentage": 342
+        },
+        "5_year": {
+          "total_cost": 105000,
+          "incidents_prevented": 285,
+          "downtime_hours_saved": 780,
+          "compliance_violations_prevented": 52,
+          "roi_percentage": 485
+        }
+      },
+      "baseline_500_devices": {
+        "licensing": {
+          "annual": 15000,
+          "per_device": 30,
+          "model": "subscription"
+        },
+        "implementation": {
+          "professional_services": 5000,
+          "duration_days": 5,
+          "remote_deployment": true
+        },
+        "fte_requirements": {
+          "initial_deployment": 0.1,
+          "ongoing_management": 0.05,
+          "annual_cost": 5000
+        },
+        "infrastructure": {
+          "servers_required": 0,
+          "cloud_hosted": true,
+          "redundancy_included": true,
+          "annual_cost": 0
+        },
+        "support": {
+          "included": true,
+          "24x7": true,
+          "sla": "99.99%",
+          "response_time": "15 minutes",
+          "annual_cost": 0
+        },
+        "total_tco_annual": 20000,
+        "total_tco_3year": 65000,
+        "total_tco_5year": 105000
+      }
+    },
+    "cisco_ise": {
+      "name": "Cisco ISE",
+      "type": "On-Premise NAC",
+      "logo": "img/vendors/cisco-logo.png",
+      "color": "#049FD9",
+      "colorSecondary": "#0080C7",
+      "description": "Enterprise on-premise NAC solution",
+      "risk_profile": {
+        "security_effectiveness": 85,
+        "incident_reduction": 70,
+        "breach_prevention": 82,
+        "compliance_automation": 65,
+        "threat_detection": 80,
+        "response_time": "5-10 seconds",
+        "false_positive_rate": 2.5
+      },
+      "compliance_coverage": {
+        "frameworks": {
+          "NIST": { "coverage": 88, "automated": 60, "reporting": "scheduled" },
+          "ISO27001": { "coverage": 85, "automated": 55, "reporting": "scheduled" },
+          "PCI_DSS": { "coverage": 90, "automated": 65, "reporting": "scheduled" },
+          "HIPAA": { "coverage": 86, "automated": 58, "reporting": "scheduled" }
+        },
+        "violation_impact": {
+          "average_fine_prevented": 1500000,
+          "compliance_cost_reduction": 45,
+          "audit_time_reduction": 60,
+          "continuous_compliance": false
+        }
+      },
+      "projections": {
+        "1_year": {
+          "total_cost": 117500,
+          "incidents_prevented": 30,
+          "downtime_hours_saved": 80,
+          "compliance_violations_prevented": 5,
+          "roi_percentage": 45
+        },
+        "3_year": {
+          "total_cost": 352500,
+          "incidents_prevented": 95,
+          "downtime_hours_saved": 250,
+          "compliance_violations_prevented": 16,
+          "roi_percentage": 78
+        },
+        "5_year": {
+          "total_cost": 587500,
+          "incidents_prevented": 165,
+          "downtime_hours_saved": 430,
+          "compliance_violations_prevented": 28,
+          "roi_percentage": 95
+        }
+      },
+      "baseline_500_devices": {
+        "licensing": {
+          "base_license": 25000,
+          "plus_license": 15000,
+          "apex_license": 10000,
+          "device_licenses": 35000,
+          "annual_maintenance": 17000,
+          "model": "perpetual"
+        },
+        "implementation": {
+          "professional_services": 40000,
+          "duration_days": 30,
+          "on_site_required": true
+        },
+        "fte_requirements": {
+          "initial_deployment": 0.5,
+          "ongoing_management": 0.3,
+          "annual_cost": 30000
+        },
+        "infrastructure": {
+          "primary_servers": 2,
+          "psn_nodes": 2,
+          "monitoring_nodes": 1,
+          "hardware_cost": 75000,
+          "annual_maintenance": 7500,
+          "redundancy_hardware": 37500
+        },
+        "support": {
+          "smartnet": 12000,
+          "tac_support": true,
+          "sla": "99.9%",
+          "response_time": "4 hours",
+          "annual_cost": 12000
+        },
+        "total_tco_annual": 66500,
+        "total_tco_3year": 352500,
+        "total_tco_5year": 587500
+      }
+    }
+  }
+}

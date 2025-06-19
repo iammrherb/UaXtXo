@@ -1,0 +1,323 @@
+/* Enhanced TCO Analyzer Styles */
+
+/* Vendor Selection */
+.vendor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.vendor-card {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.vendor-card:hover {
+    border-color: #00B4D8;
+    box-shadow: 0 4px 12px rgba(0, 180, 216, 0.2);
+    transform: translateY(-2px);
+}
+
+.vendor-card input[type="checkbox"] {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+}
+
+.vendor-card img {
+    width: 100px;
+    height: 60px;
+    object-fit: contain;
+    margin-bottom: 10px;
+}
+
+.vendor-card h4 {
+    margin: 10px 0;
+    color: #333;
+}
+
+.vendor-card p {
+    font-size: 14px;
+    color: #666;
+    margin: 10px 0;
+}
+
+.vendor-type {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.vendor-type.cloud-native {
+    background-color: #E3F2FD;
+    color: #1976D2;
+}
+
+.vendor-type.legacy {
+    background-color: #FFEBEE;
+    color: #C62828;
+}
+
+.vendor-type.cloud-radius {
+    background-color: #F3E5F5;
+    color: #7B1FA2;
+}
+
+/* Controls Section */
+.controls-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.control-group {
+    display: inline-block;
+    margin-right: 20px;
+    margin-bottom: 15px;
+}
+
+.control-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-control {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 200px;
+}
+
+.btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #00B4D8;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0090BB;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 180, 216, 0.3);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    margin-right: 10px;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Results Section */
+.result-section {
+    background: white;
+    padding: 30px;
+    margin: 20px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.result-section h2 {
+    color: #333;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #00B4D8;
+    padding-bottom: 10px;
+}
+
+/* Executive Metrics */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.metric-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    font-weight: normal;
+    opacity: 0.9;
+}
+
+.metric-value {
+    font-size: 32px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.metric-subtitle {
+    font-size: 14px;
+    opacity: 0.8;
+    margin: 5px 0;
+}
+
+/* Cost Breakdown Table */
+.cost-breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.cost-breakdown-table th,
+.cost-breakdown-table td {
+    padding: 12px;
+    text-align: right;
+    border-bottom: 1px solid #ddd;
+}
+
+.cost-breakdown-table th:first-child,
+.cost-breakdown-table td:first-child {
+    text-align: left;
+}
+
+.cost-breakdown-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #555;
+}
+
+.cost-breakdown-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.cost-breakdown-table .highlight-row {
+    background-color: #E3F2FD;
+    font-weight: bold;
+}
+
+/* Export Section */
+.export-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.export-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+/* Architecture Diagrams */
+.architecture-diagram {
+    margin: 20px 0;
+}
+
+.architecture-diagram h4 {
+    background: #e3f2fd;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .vendor-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .control-group {
+        display: block;
+        margin-bottom: 15px;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .export-buttons {
+        flex-direction: column;
+    }
+}
+
+/* Charts Container */
+canvas {
+    max-width: 100%;
+    height: auto !important;
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: "Calculating...";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.result-section {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Print Styles */
+@media print {
+    .controls-section,
+    .export-section {
+        display: none;
+    }
+    
+    .result-section {
+        page-break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}

@@ -1,0 +1,188 @@
+/* NAC Platform - Export Template Styles */
+
+/* PDF Export Styles */
+.pdf-export {
+    font-family: Arial, sans-serif;
+    color: #333;
+    line-height: 1.6;
+}
+
+.pdf-header {
+    background: #00D4AA;
+    color: white;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.pdf-section {
+    margin-bottom: 30px;
+    page-break-inside: avoid;
+}
+
+.pdf-section-title {
+    color: #00D4AA;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #00D4AA;
+    padding-bottom: 10px;
+}
+
+.pdf-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.pdf-table th {
+    background: #00D4AA;
+    color: white;
+    padding: 10px;
+    text-align: left;
+}
+
+.pdf-table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.pdf-table tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+/* Excel Export Styles */
+.excel-header {
+    font-weight: bold;
+    background-color: #00D4AA;
+    color: white;
+}
+
+.excel-subheader {
+    font-weight: bold;
+    background-color: #E8F5F2;
+}
+
+.excel-highlight {
+    background-color: #FFE5B4;
+}
+
+.excel-total {
+    font-weight: bold;
+    border-top: 2px solid #333;
+}
+
+/* PowerPoint Export Styles */
+.ppt-slide {
+    width: 960px;
+    height: 540px;
+    background: white;
+    position: relative;
+}
+
+.ppt-title-slide {
+    background: linear-gradient(135deg, #00D4AA 0%, #00A884 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.ppt-content-slide {
+    padding: 60px;
+}
+
+.ppt-slide-title {
+    font-size: 36px;
+    font-weight: bold;
+    color: #00D4AA;
+    margin-bottom: 30px;
+}
+
+.ppt-bullet-list {
+    font-size: 24px;
+    line-height: 1.8;
+}
+
+.ppt-chart-container {
+    width: 800px;
+    height: 400px;
+    margin: 20px auto;
+}
+
+/* Export Modal Styles */
+.export-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.export-modal {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
+    max-width: 600px;
+    width: 90%;
+}
+
+.export-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.export-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.export-options {
+    display: grid;
+    gap: var(--spacing-lg);
+}
+
+.export-option {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.export-option:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--portnox-primary);
+}
+
+.export-option-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+}
+
+.export-option-icon {
+    font-size: 2rem;
+    color: var(--portnox-primary);
+}
+
+.export-option-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.export-option-description {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}

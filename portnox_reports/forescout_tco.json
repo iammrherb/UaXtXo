@@ -1,0 +1,23 @@
+{
+  "vendor": "Forescout",
+  "analysis_period": "3 years",
+  "total_devices": 456,
+  "costs": {
+    "licensing": 156280,
+    "implementation": 30000,
+    "operational": 540000.0,
+    "total_tco": 726280.0,
+    "cost_per_device_per_year": 530.906432748538
+  },
+  "savings": {
+    "risk_reduction": 652500.0,
+    "automation_savings": 216000.0,
+    "total_savings": 652500.0
+  },
+  "roi": {
+    "percentage": -10.15861651153825,
+    "payback_months": 40.07062068965517
+  },
+  "risk_metrics": {},
+  "compliance": {}
+}

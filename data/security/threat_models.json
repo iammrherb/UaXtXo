@@ -1,0 +1,146 @@
+{
+  "threat_landscape": {
+    "insider_threats": {
+      "name": "Insider Threats",
+      "frequency": "High",
+      "impact": "Critical",
+      "average_cost": 11450000,
+      "detection_time": "77 days",
+      "nac_mitigation": {
+        "portnox": {
+          "effectiveness": 92,
+          "detection_improvement": "Real-time",
+          "cost_reduction": 85,
+          "features": ["Behavioral analysis", "Anomaly detection", "Risk scoring"]
+        },
+        "traditional": {
+          "effectiveness": 65,
+          "detection_improvement": "Days",
+          "cost_reduction": 40,
+          "features": ["Basic logging", "Manual review"]
+        }
+      }
+    },
+    "ransomware": {
+      "name": "Ransomware Attacks",
+      "frequency": "Very High",
+      "impact": "Critical",
+      "average_cost": 4620000,
+      "recovery_time": "22 days",
+      "nac_mitigation": {
+        "portnox": {
+          "effectiveness": 95,
+          "prevention_rate": 88,
+          "containment_time": "< 1 minute",
+          "features": ["Zero Trust", "Microsegmentation", "Automated isolation"]
+        },
+        "traditional": {
+          "effectiveness": 70,
+          "prevention_rate": 55,
+          "containment_time": "Hours",
+          "features": ["Network segmentation", "Manual response"]
+        }
+      }
+    },
+    "iot_vulnerabilities": {
+      "name": "IoT Device Vulnerabilities",
+      "frequency": "High",
+      "impact": "High",
+      "average_cost": 2800000,
+      "devices_at_risk": "57%",
+      "nac_mitigation": {
+        "portnox": {
+          "effectiveness": 94,
+          "device_profiling": "Automatic",
+          "policy_enforcement": "Dynamic",
+          "features": ["AI-powered profiling", "Automated policies", "Risk-based access"]
+        },
+        "traditional": {
+          "effectiveness": 60,
+          "device_profiling": "Manual",
+          "policy_enforcement": "Static",
+          "features": ["MAC filtering", "VLAN assignment"]
+        }
+      }
+    },
+    "supply_chain": {
+      "name": "Supply Chain Attacks",
+      "frequency": "Medium",
+      "impact": "Critical",
+      "average_cost": 4400000,
+      "detection_difficulty": "Very High",
+      "nac_mitigation": {
+        "portnox": {
+          "effectiveness": 89,
+          "vendor_risk_scoring": true,
+          "continuous_assessment": true,
+          "features": ["Vendor device isolation", "Trust scoring", "Continuous verification"]
+        },
+        "traditional": {
+          "effectiveness": 50,
+          "vendor_risk_scoring": false,
+          "continuous_assessment": false,
+          "features": ["Basic network isolation"]
+        }
+      }
+    }
+  },
+  "incident_costs": {
+    "data_breach": {
+      "average_total_cost": 4450000,
+      "cost_per_record": 165,
+      "detection_time": "207 days",
+      "containment_time": "73 days",
+      "with_portnox": {
+        "cost_reduction": 72,
+        "detection_time": "Real-time",
+        "containment_time": "< 1 hour",
+        "records_protected": 95
+      }
+    },
+    "downtime": {
+      "cost_per_minute": 5600,
+      "average_duration": "86 minutes",
+      "frequency_per_year": 12,
+      "total_annual_cost": 5770000,
+      "with_portnox": {
+        "downtime_reduction": 87,
+        "automated_remediation": true,
+        "mttr_improvement": 91
+      }
+    },
+    "compliance_violation": {
+      "average_fine": 2870000,
+      "legal_costs": 1200000,
+      "reputation_damage": 3900000,
+      "total_impact": 7970000,
+      "with_portnox": {
+        "violation_prevention": 94,
+        "automated_compliance": true,
+        "audit_cost_reduction": 78
+      }
+    }
+  },
+  "security_metrics": {
+    "mean_time_to_detect": {
+      "industry_average": "207 days",
+      "with_legacy_nac": "45 days",
+      "with_portnox": "< 1 second"
+    },
+    "mean_time_to_respond": {
+      "industry_average": "73 days",
+      "with_legacy_nac": "7 days",
+      "with_portnox": "< 1 minute"
+    },
+    "false_positive_rate": {
+      "industry_average": "15%",
+      "with_legacy_nac": "8%",
+      "with_portnox": "0.1%"
+    },
+    "automation_level": {
+      "industry_average": "22%",
+      "with_legacy_nac": "35%",
+      "with_portnox": "95%"
+    }
+  }
+}

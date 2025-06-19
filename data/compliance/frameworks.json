@@ -1,0 +1,105 @@
+{
+  "frameworks": {
+    "nist": {
+      "name": "NIST Cybersecurity Framework",
+      "version": "2.0",
+      "nac_controls": [
+        {
+          "id": "PR.AC-1",
+          "title": "Identities and credentials are issued, managed, verified, revoked, and audited",
+          "portnox_capability": "Complete automated lifecycle management"
+        },
+        {
+          "id": "PR.AC-3",
+          "title": "Remote access is managed",
+          "portnox_capability": "Cloud-native secure remote access"
+        },
+        {
+          "id": "PR.AC-4",
+          "title": "Access permissions and authorizations are managed",
+          "portnox_capability": "Dynamic policy-based access control"
+        },
+        {
+          "id": "DE.CM-7",
+          "title": "Monitoring for unauthorized personnel, connections, devices",
+          "portnox_capability": "Real-time continuous monitoring"
+        }
+      ]
+    },
+    "iso27001": {
+      "name": "ISO 27001:2022",
+      "nac_controls": [
+        {
+          "id": "A.8.1.3",
+          "title": "Acceptable use of assets",
+          "portnox_capability": "Device compliance enforcement"
+        },
+        {
+          "id": "A.8.3",
+          "title": "Information access restriction",
+          "portnox_capability": "Granular access policies"
+        },
+        {
+          "id": "A.9.1.2",
+          "title": "Access to networks and network services",
+          "portnox_capability": "Zero Trust network access"
+        }
+      ]
+    },
+    "soc2": {
+      "name": "SOC 2 Type II",
+      "trust_principles": [
+        {
+          "principle": "Security",
+          "nac_requirement": "Network access control and monitoring",
+          "portnox_capability": "Continuous security assessment"
+        },
+        {
+          "principle": "Availability",
+          "nac_requirement": "High availability access control",
+          "portnox_capability": "99.99% uptime SLA"
+        }
+      ]
+    },
+    "hipaa": {
+      "name": "HIPAA Security Rule",
+      "safeguards": [
+        {
+          "type": "Technical",
+          "control": "Access Control (164.312(a))",
+          "portnox_capability": "Role-based access with audit trails"
+        },
+        {
+          "type": "Technical",
+          "control": "Audit Controls (164.312(b))",
+          "portnox_capability": "Comprehensive logging and reporting"
+        }
+      ]
+    },
+    "pci_dss": {
+      "name": "PCI DSS 4.0",
+      "requirements": [
+        {
+          "id": "1.2",
+          "title": "Network segmentation",
+          "portnox_capability": "Dynamic VLAN assignment"
+        },
+        {
+          "id": "8.2",
+          "title": "User authentication",
+          "portnox_capability": "Multi-factor authentication"
+        }
+      ]
+    },
+    "gdpr": {
+      "name": "GDPR",
+      "articles": [
+        {
+          "article": "32",
+          "title": "Security of processing",
+          "portnox_capability": "Encryption and access controls"
+        }
+      ]
+    }
+  }
+}

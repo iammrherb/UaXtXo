@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Module Loader Test</title>
+</head>
+<body>
+    <h1>Module Loader Test</h1>
+    <button onclick="testModules()">Test Modules</button>
+    <button onclick="showStatus()">Show Status</button>
+    <pre id="output"></pre>
+    
+    <script>
+    function log(msg) {
+        document.getElementById('output').textContent += msg + '\n';
+    }
+    
+    function testModules() {
+        log('\n=== Testing Modules ===');
+        
+        if (!window.ModuleLoader) {
+            log('❌ ModuleLoader not found');
+            return;
+        }
+        
+        // Test EventSystem
+        const es = ModuleLoader.get('EventSystem');
+        if (es && es.on && es.emit) {
+            let worked = false;
+            es.on('test', () => { worked = true; });
+            es.emit('test');
+            log('EventSystem: ' + (worked ? '✅ Working' : '❌ Failed'));
+        } else {
+            log('EventSystem: ❌ Not available');
+        }
+        
+        // Test ConfigManager
+        const cm = ModuleLoader.get('ConfigManager');
+        if (cm && cm.get && cm.set) {
+            cm.set('test', 'value');
+            const val = cm.get('test');
+            log('ConfigManager: ' + (val === 'value' ? '✅ Working' : '❌ Failed'));
+        } else {
+            log('ConfigManager: ❌ Not available');
+        }
+    }
+    
+    function showStatus() {
+        log('\n=== Module Status ===');
+        
+        if (!window.ModuleLoader) {
+            log('❌ ModuleLoader not found');
+            return;
+        }
+        
+        log('ModuleLoader exists: ✅');
+        log('Has modules Map: ' + (ModuleLoader.modules ? '✅' : '❌'));
+        log('Has instances Map: ' + (ModuleLoader.instances ? '✅' : '❌'));
+        log('Has get method: ' + (ModuleLoader.get ? '✅' : '❌'));
+        
+        if (ModuleLoader.modules) {
+            log('\nRegistered modules:');
+            ModuleLoader.modules.forEach((config, name) => {
+                const instance = ModuleLoader.instances && ModuleLoader.instances.get(name);
+                log(`  ${name}: ${instance ? '✅ Loaded' : '❌ Not loaded'}`);
+            });
+        }
+    }
+    </script>
+</body>
+</html>

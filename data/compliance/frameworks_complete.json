@@ -1,0 +1,128 @@
+{
+  "frameworks": {
+    "nist": {
+      "name": "NIST Cybersecurity Framework",
+      "version": "2.0",
+      "categories": ["Identify", "Protect", "Detect", "Respond", "Recover"],
+      "nac_controls": {
+        "PR.AC-1": "Identity management and authentication",
+        "PR.AC-3": "Remote access management",
+        "PR.AC-4": "Access permissions and authorization",
+        "PR.AC-5": "Network integrity protection",
+        "PR.PT-3": "Principle of least functionality",
+        "DE.CM-1": "Network monitoring for unauthorized devices",
+        "DE.CM-7": "Monitoring for unauthorized personnel/connections"
+      }
+    },
+    "iso27001": {
+      "name": "ISO/IEC 27001:2022",
+      "categories": ["Information Security Controls"],
+      "nac_controls": {
+        "A.5.15": "Access control",
+        "A.5.16": "Identity management",
+        "A.8.1": "User endpoint devices",
+        "A.8.3": "Information access restriction",
+        "A.8.20": "Networks security",
+        "A.8.22": "Segregation of networks",
+        "A.8.23": "Web filtering"
+      }
+    },
+    "pci_dss": {
+      "name": "PCI DSS v4.0",
+      "categories": ["Payment Card Security"],
+      "nac_controls": {
+        "1.2": "Network segmentation controls",
+        "1.3": "Prohibit direct public access",
+        "2.3": "Encrypt administrative access",
+        "7.1": "Limit access to system components",
+        "8.2": "User authentication management",
+        "8.3": "Strong authentication methods",
+        "10.1": "Audit trails for network access"
+      }
+    },
+    "hipaa": {
+      "name": "HIPAA Security Rule",
+      "categories": ["Healthcare Data Protection"],
+      "nac_controls": {
+        "164.308(a)(3)": "Workforce security procedures",
+        "164.308(a)(4)": "Access management",
+        "164.310(a)(1)": "Facility access controls",
+        "164.310(b)": "Workstation use controls",
+        "164.312(a)(1)": "Access control systems",
+        "164.312(d)": "Device and media controls",
+        "164.312(e)(1)": "Network transmission security"
+      }
+    },
+    "sox": {
+      "name": "Sarbanes-Oxley Act",
+      "categories": ["Financial Reporting Controls"],
+      "nac_controls": {
+        "Section 302": "Internal control certification",
+        "Section 404": "Management assessment of controls",
+        "COBIT-5": "IT governance alignment",
+        "Access Reviews": "Periodic access certification",
+        "Segregation": "Duty segregation enforcement"
+      }
+    },
+    "gdpr": {
+      "name": "General Data Protection Regulation",
+      "categories": ["Data Privacy"],
+      "nac_controls": {
+        "Article 5": "Data processing principles",
+        "Article 25": "Data protection by design",
+        "Article 32": "Security of processing",
+        "Access Control": "Purpose limitation enforcement",
+        "Audit Logs": "Accountability and traceability"
+      }
+    },
+    "nerc_cip": {
+      "name": "NERC CIP Standards",
+      "categories": ["Critical Infrastructure"],
+      "nac_controls": {
+        "CIP-004": "Personnel and training",
+        "CIP-005": "Electronic security perimeters",
+        "CIP-006": "Physical security of cyber assets",
+        "CIP-007": "System security management",
+        "CIP-010": "Configuration monitoring"
+      }
+    },
+    "cmmc": {
+      "name": "Cybersecurity Maturity Model Certification",
+      "version": "2.0",
+      "categories": ["Defense Industrial Base"],
+      "nac_controls": {
+        "AC.L1-3.1.1": "Authorized access control",
+        "AC.L1-3.1.2": "Transaction & function control",
+        "AC.L2-3.1.3": "Control flow of CUI",
+        "AC.L2-3.1.12": "Remote access control",
+        "IA.L1-3.5.1": "User identification",
+        "IA.L2-3.5.3": "Multifactor authentication"
+      }
+    },
+    "fedramp": {
+      "name": "Federal Risk and Authorization Management Program",
+      "categories": ["Cloud Security"],
+      "nac_controls": {
+        "AC-2": "Account management",
+        "AC-3": "Access enforcement",
+        "AC-17": "Remote access",
+        "IA-2": "Authentication",
+        "IA-3": "Device identification",
+        "SC-7": "Boundary protection"
+      }
+    },
+    "cis": {
+      "name": "CIS Critical Security Controls",
+      "version": "8",
+      "categories": ["Security Best Practices"],
+      "nac_controls": {
+        "Control 1": "Inventory of enterprise assets",
+        "Control 2": "Inventory of software assets",
+        "Control 4": "Secure configuration",
+        "Control 5": "Account management",
+        "Control 6": "Access control management",
+        "Control 12": "Network infrastructure management"
+      }
+    }
+  }
+}

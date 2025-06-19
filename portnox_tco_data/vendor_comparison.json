@@ -1,0 +1,138 @@
+{
+  "vendors": {
+    "portnox": {
+      "name": "Portnox",
+      "type": "Cloud-Native NAC",
+      "licensing": {
+        "model": "Per-Device Annual",
+        "base_cost_per_device": 36,
+        "volume_discounts": {
+          "1000": 0.10,
+          "5000": 0.15,
+          "10000": 0.20,
+          "25000": 0.25
+        }
+      },
+      "implementation": {
+        "deployment_days": 14,
+        "training_days": 3,
+        "professional_services": 5000
+      },
+      "maintenance": {
+        "included": true,
+        "fte_required": 0.25,
+        "automation_factor": 0.85
+      },
+      "features": {
+        "cloud_native": true,
+        "zero_trust": true,
+        "passwordless": true,
+        "risk_scoring": true,
+        "automation": true,
+        "api_integration": true,
+        "multi_vendor": true,
+        "certificate_management": true
+      },
+      "compliance": {
+        "certifications": ["SOC2", "ISO27001", "HIPAA"],
+        "controls_met": 127
+      },
+      "risk_reduction": {
+        "breach_prevention": 0.78,
+        "incident_reduction": 0.65,
+        "compliance_improvement": 0.82
+      }
+    },
+    "cisco_ise": {
+      "name": "Cisco ISE",
+      "type": "Legacy On-Premise",
+      "licensing": {
+        "model": "Perpetual + Maintenance",
+        "base_cost_per_device": 125,
+        "annual_maintenance": 0.22,
+        "hardware_required": true,
+        "hardware_cost": 75000
+      },
+      "implementation": {
+        "deployment_days": 90,
+        "training_days": 10,
+        "professional_services": 45000
+      },
+      "maintenance": {
+        "included": false,
+        "fte_required": 2.0,
+        "automation_factor": 0.30
+      },
+      "features": {
+        "cloud_native": false,
+        "zero_trust": false,
+        "passwordless": false,
+        "risk_scoring": false,
+        "automation": false,
+        "api_integration": true,
+        "multi_vendor": false,
+        "certificate_management": true
+      },
+      "compliance": {
+        "certifications": ["Common Criteria"],
+        "controls_met": 89
+      },
+      "risk_reduction": {
+        "breach_prevention": 0.55,
+        "incident_reduction": 0.40,
+        "compliance_improvement": 0.60
+      }
+    },
+    "aruba_clearpass": {
+      "name": "Aruba ClearPass",
+      "type": "Legacy On-Premise",
+      "licensing": {
+        "model": "Perpetual + Maintenance",
+        "base_cost_per_device": 95,
+        "annual_maintenance": 0.20,
+        "hardware_required": true,
+        "hardware_cost": 50000
+      },
+      "implementation": {
+        "deployment_days": 75,
+        "training_days": 8,
+        "professional_services": 35000
+      },
+      "maintenance": {
+        "included": false,
+        "fte_required": 1.75,
+        "automation_factor": 0.35
+      },
+      "features": {
+        "cloud_native": false,
+        "zero_trust": false,
+        "passwordless": false,
+        "risk_scoring": false,
+        "automation": false,
+        "api_integration": true,
+        "multi_vendor": false,
+        "certificate_management": true
+      }
+    },
+    "forescout": {
+      "name": "Forescout",
+      "type": "Hybrid",
+      "licensing": {
+        "model": "Annual Subscription",
+        "base_cost_per_device": 85,
+        "hardware_required": true,
+        "hardware_cost": 40000
+      },
+      "implementation": {
+        "deployment_days": 60,
+        "training_days": 7,
+        "professional_services": 30000
+      },
+      "maintenance": {
+        "included": false,
+        "fte_required": 1.5,
+        "automation_factor": 0.40
+      }
+    }
+  }
+}

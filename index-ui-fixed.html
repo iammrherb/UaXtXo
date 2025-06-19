@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Decision Platform | Portnox</title>
+    <meta name="description" content="Zero Trust NAC Investment Analysis & Risk Assessment">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="./img/vendors/portnox-icon.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart Libraries -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
+    <script src="https://code.highcharts.com/modules/heatmap.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/platform-layout.css">
+    <link rel="stylesheet" href="./css/platform-ui.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Header -->
+        <header class="platform-header">
+            <div class="header-container">
+                <div class="header-left">
+                    <img src="./img/vendors/portnox-logo.svg" alt="Portnox" class="header-logo">
+                    <div class="header-content">
+                        <h1>Executive Decision Platform</h1>
+                        <p>Zero Trust NAC Investment Analysis & Risk Assessment</p>
+                    </div>
+                </div>
+                
+                <div class="header-controls">
+                    <div class="device-dropdown">
+                        <select id="org-size-select" onchange="platformUI.updateOrgSize(this.value)">
+                            <option value="small">Small (500 devices)</option>
+                            <option value="medium" selected>Medium (2,500 devices)</option>
+                            <option value="large">Large (10,000 devices)</option>
+                            <option value="enterprise">Enterprise (50,000+ devices)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="header-actions">
+                        <button class="btn-header btn-settings" onclick="platformUI.openSettings()">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </button>
+                        
+                        <button class="btn-header btn-recalculate" onclick="platformUI.recalculate()">
+                            <i class="fas fa-calculator"></i>
+                            <span>Recalculate</span>
+                        </button>
+                        
+                        <div class="export-dropdown">
+                            <button class="btn-header btn-export">
+                                <i class="fas fa-download"></i>
+                                <span>Export</span>
+                            </button>
+                            <div class="export-menu">
+                                <button class="export-option" onclick="platformUI.exportToPDF()">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span>Export to PDF</span>
+                                </button>
+                                <button class="export-option" onclick="platformUI.exportToExcel()">
+                                    <i class="fas fa-file-excel"></i>
+                                    <span>Export to Excel</span>
+                                </button>
+                                <button class="export-option" onclick="platformUI.exportToPowerPoint()">
+                                    <i class="fas fa-file-powerpoint"></i>
+                                    <span>Export to PowerPoint</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Timeline -->
+            <div class="timeline-container animate-fadeIn">
+                <div class="timeline-header">
+                    <h2 class="timeline-title">36-Month Implementation Timeline</h2>
+                    <span class="timeline-status">Month <span id="current-month">6</span> of 36</span>
+                </div>
+                <div class="timeline-scale">
+                    <div class="timeline-progress" style="width: 16.67%"></div>
+                </div>
+                <div class="timeline-markers">
+                    <span class="timeline-marker">1</span>
+                    <span class="timeline-marker">6</span>
+                    <span class="timeline-marker">12</span>
+                    <span class="timeline-marker">18</span>
+                    <span class="timeline-marker">24</span>
+                    <span class="timeline-marker">30</span>
+                    <span class="timeline-marker">36</span>
+                </div>
+            </div>
+            
+            <!-- Navigation Cards -->
+            <div class="nav-cards-container animate-fadeIn">
+                <div class="nav-card" onclick="platformUI.navigateTo('executive')">
+                    <i class="fas fa-crown nav-card-icon"></i>
+                    <h3>Executive Dashboard</h3>
+                    <p>Complete Analysis</p>
+                </div>
+                
+                <div class="nav-card active" onclick="platformUI.navigateTo('financial')">
+                    <i class="fas fa-chart-line nav-card-icon"></i>
+                    <h3>Financial Overview</h3>
+                    <p>TCO & ROI Analysis</p>
+                </div>
+                
+                <div class="nav-card" onclick="platformUI.navigateTo('risk')">
+                    <i class="fas fa-shield-alt nav-card-icon"></i>
+                    <h3>Risk & Security</h3>
+                    <p>Breach & Incident Impact</p>
+                </div>
+                
+                <div class="nav-card" onclick="platformUI.navigateTo('compliance')">
+                    <i class="fas fa-check-circle nav-card-icon"></i>
+                    <h3>Compliance</h3>
+                    <p>Regulatory Alignment</p>
+                </div>
+                
+                <div class="nav-card" onclick="platformUI.navigateTo('operational')">
+                    <i class="fas fa-cogs nav-card-icon"></i>
+                    <h3>Operational</h3>
+                    <p>Efficiency & Timeline</p>
+                </div>
+                
+                <div class="nav-card" onclick="platformUI.navigateTo('strategic')">
+                    <i class="fas fa-lightbulb nav-card-icon"></i>
+                    <h3>Strategic Insights</h3>
+                    <p>Recommendations</p>
+                </div>
+            </div>
+            
+            <!-- Dynamic View Content -->
+            <div id="view-content" class="view-content animate-fadeIn">
+                <!-- Content will be loaded here based on selected view -->
+            </div>
+        </main>
+        
+        <!-- Pricing Slider -->
+        <div class="pricing-container">
+            <div class="pricing-label">
+                <img src="./img/vendors/portnox-logo.svg" alt="Portnox" style="height: 24px;">
+                <span>Pricing Adjustment</span>
+            </div>
+            
+            <div class="pricing-slider-container">
+                <div class="pricing-value">
+                    $<span id="price-value">7.00</span>/device/month
+                </div>
+                
+                <div class="pricing-slider" id="pricing-slider">
+                    <div class="pricing-slider-track"></div>
+                    <div class="pricing-slider-handle"></div>
+                </div>
+                
+                <div class="pricing-range">
+                    <span>$1.00</span>
+                    <span>$8.00</span>
+                </div>
+            </div>
+            
+            <div class="pricing-total">
+                Portnox Price/Device: <strong>$<span id="annual-price">84</span>/year</strong>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="./js/platform-ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Loader Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #0f0;
+            padding: 20px;
+            white-space: pre-wrap;
+        }
+        .error { color: #f00; }
+        .success { color: #0f0; }
+        .info { color: #00f; }
+        .warning { color: #ff0; }
+    </style>
+</head>
+<body>
+    <h1>Module Loader Test Page</h1>
+    <div id="output"></div>
+    
+    <!-- Load ONLY the module loader first -->
+    <script src="js/module-loader.js"></script>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(message, type = 'info') {
+            const line = document.createElement('div');
+            line.className = type;
+            line.textContent = `[${new Date().toTimeString().split(' ')[0]}] ${message}`;
+            output.appendChild(line);
+        }
+        
+        // Wait a moment for module loader to initialize
+        setTimeout(function() {
+            log('Starting Module Loader Tests...', 'info');
+            
+            // Test 1: Check ModuleLoader exists
+            if (window.ModuleLoader) {
+                log('✓ ModuleLoader exists on window', 'success');
+            } else {
+                log('✗ ModuleLoader NOT found on window', 'error');
+                return;
+            }
+            
+            // Test 2: Check methods
+            const methods = ['register', 'initializeAll', 'getModule', 'isInitialized', 'getRegisteredModules'];
+            let allMethodsExist = true;
+            
+            methods.forEach(method => {
+                if (typeof window.ModuleLoader[method] === 'function') {
+                    log(`✓ ModuleLoader.${method} is a function`, 'success');
+                } else {
+                    log(`✗ ModuleLoader.${method} is NOT a function`, 'error');
+                    allMethodsExist = false;
+                }
+            });
+            
+            if (!allMethodsExist) {
+                log('Some methods are missing!', 'error');
+                return;
+            }
+            
+            // Test 3: Register a test module
+            log('\nTesting module registration...', 'info');
+            
+            const testModule = {
+                name: 'TestModule',
+                data: { value: 42 },
+                initialize: function() {
+                    log('  TestModule.initialize() called', 'info');
+                    return Promise.resolve();
+                }
+            };
+            
+            try {
+                const result = window.ModuleLoader.register('TestModule', testModule);
+                if (result) {
+                    log('✓ Successfully registered TestModule', 'success');
+                } else {
+                    log('✗ Failed to register TestModule', 'error');
+                }
+            } catch (error) {
+                log(`✗ Error registering module: ${error.message}`, 'error');
+            }
+            
+            // Test 4: Get registered modules
+            const registered = window.ModuleLoader.getRegisteredModules();
+            log(`\nRegistered modules: [${registered.join(', ')}]`, 'info');
+            
+            // Test 5: Initialize modules
+            log('\nTesting module initialization...', 'info');
+            
+            window.ModuleLoader.initializeAll().then(result => {
+                if (result) {
+                    log('✓ All modules initialized successfully', 'success');
+                } else {
+                    log('✗ Module initialization failed', 'error');
+                }
+                
+                // Test 6: Get the module
+                const retrievedModule = window.ModuleLoader.getModule('TestModule');
+                if (retrievedModule && retrievedModule.data.value === 42) {
+                    log('✓ Successfully retrieved TestModule with correct data', 'success');
+                } else {
+                    log('✗ Failed to retrieve TestModule', 'error');
+                }
+                
+                log('\n=== All tests complete ===', 'info');
+            }).catch(error => {
+                log(`✗ Error during initialization: ${error.message}`, 'error');
+            });
+            
+        }, 100);
+    </script>
+    
+    <!-- Now load other modules -->
+    <script src="js/test-module-loader.js"></script>
+</body>
+</html>

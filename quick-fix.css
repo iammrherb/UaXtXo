@@ -1,0 +1,20 @@
+/* Emergency CSS fix for black screen */
+body {
+    background: #F0F2F5 !important;
+    color: #2C3E50 !important;
+}
+
+.app-container, #app, .main-container {
+    background: transparent !important;
+}
+
+/* Ensure content is visible */
+* {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Fix modal overlay issues */
+.modal-overlay {
+    background: rgba(0,0,0,0.5) !important;
+}

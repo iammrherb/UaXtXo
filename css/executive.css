@@ -1,0 +1,1205 @@
+/* Executive Dashboard Specific Styles */
+
+.executive-dashboard {
+    padding: 2rem 0;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, var(--portnox-primary) 0%, var(--portnox-secondary) 100%);
+    border-radius: 1rem;
+    padding: 3rem;
+    margin-bottom: 3rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.hero-subtitle {
+    font-size: 1.125rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+}
+
+/* Winner Card */
+.winner-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 2.5rem;
+    box-shadow: var(--shadow-xl);
+    position: relative;
+    overflow: hidden;
+}
+
+.winner-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: gold;
+    color: var(--text-primary);
+    padding: 0.5rem 2rem;
+    border-radius: 0 1rem 0 2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.winner-logo {
+    height: 60px;
+    margin: 1rem 0;
+}
+
+.winner-card h2 {
+    color: var(--text-primary);
+    font-size: 1.875rem;
+    margin-bottom: 1.5rem;
+}
+
+.winner-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.winner-stats .stat {
+    text-align: center;
+}
+
+.winner-stats .value {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--portnox-primary);
+}
+
+.winner-stats .label {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+/* Insights Grid */
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.insight-card {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    position: relative;
+}
+
+.insight-card.financial {
+    border-top: 4px solid var(--success);
+}
+
+.insight-card.risk {
+    border-top: 4px solid var(--error);
+}
+
+.insight-card.compliance {
+    border-top: 4px solid var(--info);
+}
+
+.insight-card.operational {
+    border-top: 4px solid var(--warning);
+}
+
+.insight-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--portnox-light);
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: var(--portnox-primary);
+}
+
+.insight-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.insight-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.insight-metrics .metric {
+    text-align: center;
+    padding: 0.75rem;
+    background: var(--background);
+    border-radius: 0.5rem;
+}
+
+.insight-metrics .value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--portnox-primary);
+}
+
+.insight-metrics .label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.insight-detail {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.insight-list {
+    list-style: none;
+    font-size: 0.875rem;
+}
+
+.insight-list li {
+    padding: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.insight-list li::before {
+    content: '✓';
+    color: var(--success);
+    font-weight: bold;
+}
+
+/* Analysis Section */
+.analysis-section {
+    margin: 3rem 0;
+}
+
+.analysis-section h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.chart-container.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Decision Matrix */
+.decision-matrix {
+    width: 100%;
+    background: white;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.decision-matrix th {
+    background: var(--portnox-dark);
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    padding: 1rem;
+}
+
+.decision-matrix td {
+    text-align: center;
+    padding: 1rem;
+}
+
+.decision-matrix .vendor-cell {
+    text-align: left;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.vendor-logo-small {
+    height: 24px;
+}
+
+.decision-matrix .winner-row {
+    background: var(--portnox-light);
+}
+
+.decision-matrix .winner-row td {
+    font-weight: 600;
+}
+
+.decision-matrix .score {
+    font-weight: 700;
+}
+
+.decision-matrix .overall {
+    font-size: 1.125rem;
+    color: var(--portnox-primary);
+}
+
+/* Business Case */
+.business-case {
+    background: white;
+    border-radius: 1rem;
+    padding: 3rem;
+    margin: 3rem 0;
+    box-shadow: var(--shadow-md);
+}
+
+.business-case h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.business-case-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.business-case-item {
+    padding: 1.5rem;
+    background: var(--background);
+    border-radius: 0.5rem;
+}
+
+.business-case-item h4 {
+    color: var(--portnox-primary);
+    margin-bottom: 1rem;
+}
+
+.business-case-item ul {
+    list-style: none;
+    font-size: 0.875rem;
+}
+
+.business-case-item li {
+    padding: 0.5rem 0;
+}
+
+.business-case-item li::before {
+    content: '→';
+    color: var(--portnox-primary);
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
+/* Implementation Roadmap */
+.roadmap-section {
+    margin: 3rem 0;
+}
+
+.roadmap-timeline {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    padding: 2rem 0;
+}
+
+.roadmap-timeline::before {
+    content: '';
+    position: absolute;
+    top: 3rem;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--border);
+}
+
+.roadmap-phase {
+    flex: 1;
+    text-align: center;
+    position: relative;
+}
+
+.phase-marker {
+    width: 48px;
+    height: 48px;
+    background: var(--portnox-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin: 0 auto 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.phase-content h4 {
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.phase-content ul {
+    list-style: none;
+    font-size: 0.875rem;
+    text-align: left;
+    max-width: 200px;
+    margin: 0 auto;
+}
+
+/* CTA Section */
+.cta-section {
+    background: linear-gradient(135deg, var(--portnox-dark) 0%, var(--portnox-primary) 100%);
+    border-radius: 1rem;
+    padding: 3rem;
+    margin: 3rem 0;
+    text-align: center;
+    color: white;
+}
+
+.cta-section h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+
+.cta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.cta-button {
+    background: white;
+    color: var(--text-primary);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.cta-button:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+.cta-button.primary {
+    background: var(--warning);
+    color: white;
+}
+
+.cta-button i {
+    font-size: 2rem;
+}
+
+.cta-button span {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.cta-button small {
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
+/* Currency Formatting */
+.currency {
+    font-family: 'Monaco', 'Consolas', monospace;
+}
+
+.currency.positive {
+    color: var(--success);
+    font-weight: 600;
+}
+
+.currency.negative {
+    color: var(--error);
+}
+
+.currency.zero {
+    color: var(--text-secondary);
+}
+
+/* Score Indicators */
+.score-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: conic-gradient(
+        var(--portnox-primary) 0deg,
+        var(--portnox-primary) calc(var(--score) * 3.6deg),
+        var(--border) calc(var(--score) * 3.6deg),
+        var(--border) 360deg
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.score-circle::before {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: white;
+    border-radius: 50%;
+}
+
+.score-circle span {
+    position: relative;
+    z-index: 1;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Animated Elements */
+.animated-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 0 10px var(--portnox-primary), var(--shadow-xl);
+    }
+    to {
+        box-shadow: 0 0 20px var(--portnox-primary), 0 0 30px var(--portnox-light), var(--shadow-xl);
+    }
+}
+EOCSS
+
+# Animations CSS
+cat > css/animations.css << 'EOANIM'
+/* Animations and Transitions */
+
+/* Fade In Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Slide In Animations */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.6s ease-out;
+}
+
+.slide-in-right {
+    animation: slideInRight 0.6s ease-out;
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Progress Bar Animation */
+@keyframes progressBar {
+    from {
+        width: 0;
+    }
+    to {
+        width: var(--progress);
+    }
+}
+
+.progress-bar {
+    animation: progressBar 1s ease-out forwards;
+}
+
+/* Hover Effects */
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Loading Skeleton */
+@keyframes skeleton {
+    from {
+        background-position: -200% 0;
+    }
+    to {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--border) 0%,
+        #f0f0f0 50%,
+        var(--border) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton 1.5s ease-in-out infinite;
+}
+
+/* Chart Entry Animations */
+.chart-enter {
+    animation: chartEnter 0.8s ease-out;
+}
+
+@keyframes chartEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Value Counter Animation */
+@keyframes countUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.count-up {
+    animation: countUp 0.6s ease-out;
+}
+
+/* Success Check Animation */
+@keyframes successCheck {
+    0% {
+        transform: scale(0) rotate(45deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2) rotate(45deg);
+    }
+    100% {
+        transform: scale(1) rotate(45deg);
+        opacity: 1;
+    }
+}
+
+.success-check {
+    animation: successCheck 0.6s ease-out;
+}
+
+/* Page Transitions */
+.page-enter {
+    animation: pageEnter 0.4s ease-out;
+}
+
+@keyframes pageEnter {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Smooth Transitions */
+* {
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Feature Matrix Animations */
+.feature-row {
+    opacity: 0;
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+.feature-row:nth-child(1) { animation-delay: 0.1s; }
+.feature-row:nth-child(2) { animation-delay: 0.15s; }
+.feature-row:nth-child(3) { animation-delay: 0.2s; }
+.feature-row:nth-child(4) { animation-delay: 0.25s; }
+.feature-row:nth-child(5) { animation-delay: 0.3s; }
+.feature-row:nth-child(6) { animation-delay: 0.35s; }
+.feature-row:nth-child(7) { animation-delay: 0.4s; }
+.feature-row:nth-child(8) { animation-delay: 0.45s; }
+
+/* Score Animation */
+@keyframes scoreReveal {
+    from {
+        transform: scale(0) rotate(180deg);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.score-reveal {
+    animation: scoreReveal 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Notification Animation */
+@keyframes notificationSlide {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.notification {
+    animation: notificationSlide 0.4s ease-out;
+}
+
+/* Ripple Effect */
+@keyframes ripple {
+    from {
+        transform: scale(0);
+        opacity: 1;
+    }
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple::after {
+    content: '';
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    transform: scale(0);
+    opacity: 0;
+}
+
+.ripple:active::after {
+    animation: ripple 0.6s ease-out;
+}
+
+/* Smooth Scroll */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Disable animations for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+EOANIM
+
+# ================================================================================
+# STEP 13: CREATE EXAMPLE DATA FILE
+# ================================================================================
+
+show_progress "Creating example data file..."
+
+cat > data/example-config.json << 'EODATA'
+{
+    "configurations": {
+        "small_business": {
+            "name": "Small Business",
+            "devices": 500,
+            "years": 3,
+            "industry": "technology",
+            "complianceFrameworks": ["SOC 2"],
+            "description": "Typical small technology company"
+        },
+        "healthcare_medium": {
+            "name": "Healthcare Provider",
+            "devices": 2500,
+            "years": 3,
+            "industry": "healthcare",
+            "complianceFrameworks": ["HIPAA", "SOC 2"],
+            "description": "Medium-sized healthcare organization"
+        },
+        "financial_enterprise": {
+            "name": "Financial Services Enterprise",
+            "devices": 25000,
+            "years": 5,
+            "industry": "finance",
+            "complianceFrameworks": ["SOC 2", "PCI DSS", "ISO 27001"],
+            "description": "Large financial institution"
+        },
+        "education_large": {
+            "name": "University System",
+            "devices": 50000,
+            "years": 3,
+            "industry": "education",
+            "complianceFrameworks": ["FERPA", "GDPR"],
+            "description": "Large university with multiple campuses"
+        },
+        "government_agency": {
+            "name": "Government Agency",
+            "devices": 10000,
+            "years": 3,
+            "industry": "government",
+            "complianceFrameworks": ["NIST CSF", "FISMA"],
+            "description": "Federal government agency"
+        }
+    },
+    "scenarios": {
+        "rapid_growth": {
+            "name": "Rapid Growth Scenario",
+            "deviceGrowthRate": 30,
+            "description": "30% annual device growth"
+        },
+        "high_risk": {
+            "name": "High Risk Environment",
+            "breachProbabilityMultiplier": 1.5,
+            "description": "50% higher breach risk than industry average"
+        },
+        "budget_constrained": {
+            "name": "Budget Constrained",
+            "maxBudgetPerDevice": 10,
+            "description": "Maximum $10/device/month budget"
+        }
+    }
+}
+EODATA
+
+# ================================================================================
+# STEP 14: CREATE README FILE
+# ================================================================================
+
+show_progress "Creating README documentation..."
+
+cat > README.md << 'EOREADME'
+# Portnox Total Cost Analyzer - Executive Excellence Edition
+
+The most comprehensive NAC decision platform ever built, designed to help executives and decision-makers understand the true value of modern Zero Trust Network Access Control.
+
+## 🚀 Features
+
+### Executive Dashboard
+- **Winner Analysis**: Clear visualization of why Portnox delivers maximum value
+- **Multi-Dimensional Comparison**: TCO, ROI, Risk, Compliance, and Operations
+- **Industry-Specific Insights**: Tailored analysis for Healthcare, Finance, Government, etc.
+- **Real Vendor Data**: Comprehensive database of 13+ NAC vendors
+
+### Financial Analysis
+- **True TCO Calculation**: Including all hidden costs and operational expenses
+- **ROI Timeline**: Month-by-month payback visualization
+- **Sensitivity Analysis**: What-if scenarios for different growth rates
+- **Business Value Quantification**: Beyond just cost savings
+
+### Risk & Compliance
+- **Industry Risk Profiles**: Based on real breach data and statistics
+- **Cyber Insurance Impact**: Premium reduction calculations
+- **Compliance Automation**: Coverage for SOC 2, ISO 27001, HIPAA, GDPR, etc.
+- **Security Effectiveness**: Zero Trust implementation comparison
+
+### Feature Comparison
+- **Comprehensive Feature Matrix**: 50+ features across 6 categories
+- **Unique Capabilities**: Exclusive Portnox advantages
+- **Visual Scoring**: Easy-to-understand capability ratings
+
+## 📊 Vendor Database
+
+### Legacy NAC Solutions
+- Cisco Identity Services Engine (ISE)
+- Aruba ClearPass
+- Forescout Platform
+- Fortinet FortiNAC
+- Extreme Networks ExtremeControl
+- Juniper Mist Access Assurance
+- Arista CloudVision
+
+### Cloud/Modern Solutions
+- Portnox CLEAR (Winner)
+- Foxpass
+- SecureW2
+- RADIUS-as-a-Service providers
+
+## 🔧 Configuration Options
+
+### Organization Size
+- Small: 500 devices
+- Medium: 2,500 devices
+- Large: 10,000 devices
+- Enterprise: 50,000+ devices
+
+### Industries
+- Healthcare & Life Sciences
+- Financial Services
+- Government & Public Sector
+- Technology
+- Education
+- Manufacturing
+- Retail
+
+### Analysis Period
+- 1 Year (Quick ROI)
+- 3 Years (Standard)
+- 5 Years (Long-term TCO)
+
+## 💡 Key Insights
+
+### Why Portnox Wins
+
+1. **100% Cloud-Native**: No infrastructure, deploy in 4 hours
+2. **All-Inclusive Pricing**: Every feature included, no modules or add-ons
+3. **95% Automation**: Reduce IT workload by 90%
+4. **Native Zero Trust**: Built from the ground up, not bolted on
+5. **Risk Reduction**: 85-94% breach probability reduction
+
+### Executive Takeaways
+
+- **Lower TCO**: 40-70% cost reduction vs legacy solutions
+- **Faster ROI**: 3-6 month payback period
+- **Risk Mitigation**: $1M+ in avoided breach costs
+- **Compliance**: 95% automated compliance reporting
+- **Future-Proof**: Continuous innovation, no forklift upgrades
+
+## 🛠️ Technical Implementation
+
+### Technologies Used
+- Pure JavaScript (no frameworks for maximum compatibility)
+- Chart.js for data visualization
+- Responsive CSS Grid/Flexbox
+- Print-optimized stylesheets
+- Export capabilities (JSON, PDF-ready)
+
+### Browser Support
+- Chrome/Edge (Recommended)
+- Firefox
+- Safari
+- Mobile responsive
+
+## 📈 Data Sources
+
+- IBM Cost of a Data Breach Report 2024
+- Gartner NAC Market Analysis
+- Industry-specific compliance requirements
+- Real cyber insurance premium data
+- Vendor public pricing and documentation
+
+## 🚦 Getting Started
+
+1. Open `index.html` in a modern web browser
+2. Select your organization size and industry
+3. Choose vendors to compare (Portnox + up to 6 others)
+4. Review the executive dashboard for immediate insights
+5. Dive deeper into financial, risk, and feature analysis
+6. Export or print reports for stakeholders
+
+## 📞 Next Steps
+
+After reviewing the analysis:
+1. **Schedule Executive Demo**: See Portnox in action
+2. **Request Custom Proposal**: Get specific pricing for your organization
+3. **Download Full Report**: Share with all stakeholders
+4. **Start Pilot Program**: Risk-free 30-day trial
+
+## 📄 License
+
+This tool is provided by Portnox for educational and evaluation purposes. 
+All calculations are estimates based on industry averages and typical deployments.
+
+---
+
+**Built with ❤️ by Portnox** | Making Zero Trust Simple Since 2007
+EOREADME
+
+# ================================================================================
+# STEP 15: CREATE GIT UPDATE SCRIPT
+# ================================================================================
+
+show_progress "Creating Git update script..."
+
+cat > update.sh << 'EOUPDATE'
+#!/bin/bash
+
+# Git Update Script for Portnox Total Cost Analyzer
+
+echo "🔄 Updating Portnox Total Cost Analyzer..."
+echo ""
+
+# Check if git is installed
+if ! command -v git &> /dev/null; then
+    echo "❌ Git is not installed. Please install git first."
+    exit 1
+fi
+
+# Check if we're in a git repository
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "📦 Initializing Git repository..."
+    git init
+    git add .
+    git commit -m "Initial commit: Portnox Total Cost Analyzer v5.0"
+    echo "✅ Git repository initialized"
+else
+    echo "📊 Current Git status:"
+    git status --short
+fi
+
+echo ""
+echo "📝 Enter commit message (or press Enter for auto-generated):"
+read -r commit_message
+
+if [ -z "$commit_message" ]; then
+    # Auto-generate commit message based on changes
+    timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+    changes=$(git diff --name-only | wc -l)
+    commit_message="Update: $changes files modified - $timestamp"
+fi
+
+# Stage all changes
+echo ""
+echo "📂 Staging changes..."
+git add -A
+
+# Show what will be committed
+echo ""
+echo "📋 Changes to be committed:"
+git diff --cached --stat
+
+echo ""
+echo "❓ Proceed with commit? (y/n)"
+read -r confirm
+
+if [[ $confirm =~ ^[Yy]$ ]]; then
+    git commit -m "$commit_message"
+    echo ""
+    echo "✅ Changes committed successfully!"
+    
+    # Check if remote is configured
+    if git remote get-url origin &> /dev/null; then
+        echo ""
+        echo "🚀 Push to remote repository? (y/n)"
+        read -r push_confirm
+        
+        if [[ $push_confirm =~ ^[Yy]$ ]]; then
+            git push origin main || git push origin master
+            echo "✅ Changes pushed to remote repository!"
+        fi
+    else
+        echo ""
+        echo "ℹ️  No remote repository configured."
+        echo "To add a remote repository, run:"
+        echo "  git remote add origin <repository-url>"
+    fi
+else
+    echo "❌ Commit cancelled"
+fi
+
+echo ""
+echo "📊 Repository statistics:"
+echo "  Total commits: $(git rev-list --count HEAD 2>/dev/null || echo '1')"
+echo "  Files tracked: $(git ls-files | wc -l)"
+echo "  Repository size: $(du -sh .git | cut -f1)"
+
+echo ""
+echo "✨ Update script completed!"
+EOUPDATE
+
+chmod +x update.sh
+
+# ================================================================================
+# STEP 16: CREATE .GITIGNORE
+# ================================================================================
+
+show_progress "Creating .gitignore file..."
+
+cat > .gitignore << 'EOGITIGNORE'
+# Dependencies
+node_modules/
+bower_components/
+
+# Build outputs
+dist/
+build/
+*.min.js
+*.min.css
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Backup files
+*.bak
+*.backup
+
+# User-specific data
+data/user-configs/
+data/exports/
+data/reports/*.pdf
+
+# Analytics
+analytics/
+tracking/
+
+# Keep these
+!data/example-config.json
+!img/vendors/*
+EOGITIGNORE
+
+# ================================================================================
+# FINAL STEPS: SUMMARY AND LAUNCH
+# ================================================================================
+
+echo ""
+echo "═══════════════════════════════════════════════════════════════════════════════"
+echo "✅ PORTNOX TOTAL COST ANALYZER BUILD COMPLETE!"
+echo "═══════════════════════════════════════════════════════════════════════════════"
+echo ""
+echo "📊 Platform Statistics:"
+echo "   - Total files created: $(find . -type f | wc -l)"
+echo "   - JavaScript modules: $(find js -name "*.js" | wc -l)"
+echo "   - Vendor database entries: 13+"
+echo "   - Compliance frameworks: 10+"
+echo "   - Industry profiles: 7"
+echo ""
+echo "🚀 Launch Instructions:"
+echo "   1. Open index.html in your web browser"
+echo "   2. Or run: python3 -m http.server 8000"
+echo "   3. Then visit: http://localhost:8000"
+echo ""
+echo "📝 Git Commands:"
+echo "   - Stage changes: git add ."
+echo "   - Commit: git commit -m 'Your message'"
+echo "   - Update: ./update.sh"
+echo ""
+echo "🎯 Key Features:"
+echo "   ✓ Executive Dashboard with winner analysis"
+echo "   ✓ Comprehensive financial TCO/ROI analysis"
+echo "   ✓ Industry-specific risk assessment"
+echo "   ✓ Real vendor data and pricing"
+echo "   ✓ Compliance automation scoring"
+echo "   ✓ 50+ feature comparison matrix"
+echo "   ✓ Cyber insurance impact calculator"
+echo "   ✓ Export and reporting capabilities"
+echo ""
+echo "💡 Remember: This platform demonstrates why Portnox is the clear winner"
+echo "   in modern NAC solutions with the lowest TCO and highest value!"
+echo ""
+echo "═══════════════════════════════════════════════════════════════════════════════"

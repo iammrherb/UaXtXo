@@ -1,0 +1,164 @@
+{
+  "industries": {
+    "healthcare": {
+      "name": "Healthcare",
+      "regulations": ["HIPAA", "HITECH", "FDA 21 CFR Part 11"],
+      "specific_requirements": {
+        "medical_device_isolation": true,
+        "phi_encryption": true,
+        "biomedical_device_profiling": true,
+        "emergency_override_access": true,
+        "clinical_workflow_preservation": true
+      },
+      "risk_factors": {
+        "patient_safety": "critical",
+        "data_breach_cost": "$10.93M average",
+        "compliance_penalty": "Up to $2M per violation"
+      }
+    },
+    "financial": {
+      "name": "Financial Services",
+      "regulations": ["SOX", "PCI DSS", "GLBA", "FFIEC"],
+      "specific_requirements": {
+        "transaction_system_isolation": true,
+        "pci_scope_reduction": true,
+        "insider_threat_detection": true,
+        "privileged_access_management": true,
+        "audit_trail_retention": "7 years"
+      },
+      "risk_factors": {
+        "regulatory_fines": "Up to 4% annual revenue",
+        "data_breach_cost": "$5.85M average",
+        "reputation_impact": "severe"
+      }
+    },
+    "retail": {
+      "name": "Retail",
+      "regulations": ["PCI DSS", "CCPA", "State Privacy Laws"],
+      "specific_requirements": {
+        "pos_system_security": true,
+        "guest_wifi_isolation": true,
+        "iot_device_management": true,
+        "store_network_segmentation": true,
+        "seasonal_scaling": true
+      },
+      "risk_factors": {
+        "transaction_volume": "high",
+        "customer_data_exposure": "high",
+        "operational_disruption": "severe"
+      }
+    },
+    "manufacturing": {
+      "name": "Manufacturing",
+      "regulations": ["NIST", "ISO 27001", "Industry 4.0"],
+      "specific_requirements": {
+        "ot_it_convergence": true,
+        "scada_protection": true,
+        "supply_chain_security": true,
+        "industrial_iot_management": true,
+        "air_gap_preservation": true
+      },
+      "risk_factors": {
+        "production_downtime": "$50K-$1M per hour",
+        "ip_theft": "critical",
+        "safety_incidents": "severe"
+      }
+    },
+    "education": {
+      "name": "Education",
+      "regulations": ["FERPA", "COPPA", "CIPA", "State Laws"],
+      "specific_requirements": {
+        "byod_support": true,
+        "student_data_protection": true,
+        "classroom_technology": true,
+        "research_network_isolation": true,
+        "scalable_guest_access": true
+      },
+      "risk_factors": {
+        "student_privacy": "critical",
+        "research_data": "high value",
+        "budget_constraints": "severe"
+      }
+    },
+    "government": {
+      "name": "Government",
+      "regulations": ["FISMA", "FedRAMP", "CMMC", "StateRAMP"],
+      "specific_requirements": {
+        "clearance_based_access": true,
+        "classified_network_separation": true,
+        "cac_piv_authentication": true,
+        "continuous_monitoring": true,
+        "supply_chain_verification": true
+      },
+      "risk_factors": {
+        "national_security": "critical",
+        "citizen_data": "highly sensitive",
+        "public_trust": "essential"
+      }
+    },
+    "energy": {
+      "name": "Energy & Utilities",
+      "regulations": ["NERC CIP", "TSA Pipeline", "DOE"],
+      "specific_requirements": {
+        "critical_infrastructure_protection": true,
+        "scada_security": true,
+        "remote_site_management": true,
+        "vendor_access_control": true,
+        "incident_response_plans": true
+      },
+      "risk_factors": {
+        "grid_reliability": "critical",
+        "cyber_physical_attacks": "severe",
+        "regulatory_penalties": "Up to $1M per day"
+      }
+    },
+    "technology": {
+      "name": "Technology",
+      "regulations": ["SOC 2", "ISO 27001", "Privacy Shield"],
+      "specific_requirements": {
+        "development_environment_isolation": true,
+        "api_security": true,
+        "cloud_workload_protection": true,
+        "devops_integration": true,
+        "zero_trust_architecture": true
+      },
+      "risk_factors": {
+        "intellectual_property": "critical",
+        "service_availability": "99.99% SLA",
+        "customer_trust": "essential"
+      }
+    },
+    "hospitality": {
+      "name": "Hospitality",
+      "regulations": ["PCI DSS", "GDPR", "CCPA"],
+      "specific_requirements": {
+        "guest_wifi_management": true,
+        "iot_room_controls": true,
+        "pos_security": true,
+        "property_management_integration": true,
+        "franchise_compliance": true
+      },
+      "risk_factors": {
+        "guest_experience": "critical",
+        "payment_security": "high",
+        "brand_reputation": "severe impact"
+      }
+    },
+    "transportation": {
+      "name": "Transportation & Logistics",
+      "regulations": ["TSA", "DOT", "Maritime Security"],
+      "specific_requirements": {
+        "fleet_management": true,
+        "warehouse_security": true,
+        "supply_chain_visibility": true,
+        "driver_device_management": true,
+        "cargo_tracking_security": true
+      },
+      "risk_factors": {
+        "supply_chain_disruption": "severe",
+        "cargo_theft": "$15-30B annually",
+        "regulatory_compliance": "critical"
+      }
+    }
+  }
+}

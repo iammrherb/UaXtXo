@@ -1,0 +1,1 @@
+defineModule('TCOCalculator', [], function() { return {}; });

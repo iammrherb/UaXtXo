@@ -1,0 +1,145 @@
+{
+  "frameworks": {
+    "nist": {
+      "name": "NIST Cybersecurity Framework",
+      "version": "2.0",
+      "categories": ["Identify", "Protect", "Detect", "Respond", "Recover"],
+      "nac_requirements": {
+        "PR.AC-1": {
+          "control": "Identity management and authentication",
+          "requirement": "Implement strong authentication mechanisms",
+          "nac_capability": "Multi-factor authentication, certificate-based auth",
+          "violation_risk": "High",
+          "average_fine": 250000,
+          "business_impact": "Unauthorized access to critical systems"
+        },
+        "PR.AC-3": {
+          "control": "Remote access management",
+          "requirement": "Secure and monitor all remote connections",
+          "nac_capability": "VPN integration, continuous monitoring",
+          "violation_risk": "Critical",
+          "average_fine": 500000,
+          "business_impact": "Data exfiltration risk"
+        },
+        "PR.AC-4": {
+          "control": "Access permissions and authorization",
+          "requirement": "Enforce least privilege principle",
+          "nac_capability": "Role-based access control, dynamic policies",
+          "violation_risk": "High",
+          "average_fine": 300000,
+          "business_impact": "Privilege escalation attacks"
+        },
+        "DE.CM-1": {
+          "control": "Network monitoring for unauthorized devices",
+          "requirement": "Continuous device discovery and profiling",
+          "nac_capability": "Real-time device visibility, rogue detection",
+          "violation_risk": "Medium",
+          "average_fine": 150000,
+          "business_impact": "Shadow IT risks"
+        }
+      },
+      "total_controls": 108,
+      "nac_applicable": 23,
+      "automation_potential": 87
+    },
+    "pci_dss": {
+      "name": "PCI DSS v4.0",
+      "categories": ["Payment Card Security"],
+      "nac_requirements": {
+        "1.2": {
+          "control": "Network segmentation controls",
+          "requirement": "Isolate cardholder data environment",
+          "nac_capability": "Dynamic VLAN assignment, microsegmentation",
+          "violation_risk": "Critical",
+          "average_fine": 1000000,
+          "business_impact": "Loss of payment processing ability"
+        },
+        "8.2": {
+          "control": "User authentication management",
+          "requirement": "Unique ID and strong authentication",
+          "nac_capability": "802.1X, RADIUS, certificate management",
+          "violation_risk": "Critical",
+          "average_fine": 500000,
+          "business_impact": "Card data breach risk"
+        },
+        "10.1": {
+          "control": "Audit trails for network access",
+          "requirement": "Log all access to network resources",
+          "nac_capability": "Comprehensive logging, SIEM integration",
+          "violation_risk": "High",
+          "average_fine": 250000,
+          "business_impact": "Inability to investigate incidents"
+        }
+      },
+      "total_controls": 387,
+      "nac_applicable": 42,
+      "automation_potential": 78,
+      "non_compliance_penalties": {
+        "level_1": { "monthly_fine": 5000, "max_fine": 100000 },
+        "level_2": { "monthly_fine": 25000, "max_fine": 300000 },
+        "level_3": { "monthly_fine": 50000, "max_fine": 500000 },
+        "level_4": { "monthly_fine": 100000, "max_fine": 1000000 }
+      }
+    },
+    "hipaa": {
+      "name": "HIPAA Security Rule",
+      "categories": ["Healthcare Data Protection"],
+      "nac_requirements": {
+        "164.308(a)(3)": {
+          "control": "Workforce security procedures",
+          "requirement": "Ensure workforce members have appropriate access",
+          "nac_capability": "Role-based access, automated provisioning",
+          "violation_risk": "Critical",
+          "average_fine": 1500000,
+          "business_impact": "PHI exposure, patient harm"
+        },
+        "164.312(a)(1)": {
+          "control": "Access control systems",
+          "requirement": "Unique user identification and automatic logoff",
+          "nac_capability": "Session management, idle timeout policies",
+          "violation_risk": "High",
+          "average_fine": 750000,
+          "business_impact": "Unauthorized PHI access"
+        }
+      },
+      "total_controls": 54,
+      "nac_applicable": 18,
+      "automation_potential": 83,
+      "violation_tiers": {
+        "unknowing": { "min": 100, "max": 50000, "per_violation": true },
+        "reasonable_cause": { "min": 1000, "max": 100000, "per_violation": true },
+        "willful_neglect_corrected": { "min": 10000, "max": 250000, "per_violation": true },
+        "willful_neglect_uncorrected": { "min": 50000, "max": 1500000, "per_violation": true }
+      }
+    },
+    "gdpr": {
+      "name": "General Data Protection Regulation",
+      "categories": ["Data Privacy"],
+      "nac_requirements": {
+        "Article 25": {
+          "control": "Data protection by design",
+          "requirement": "Implement appropriate technical measures",
+          "nac_capability": "Privacy-preserving authentication, encryption",
+          "violation_risk": "Critical",
+          "average_fine": 20000000,
+          "business_impact": "4% of global annual revenue"
+        },
+        "Article 32": {
+          "control": "Security of processing",
+          "requirement": "Ensure appropriate security measures",
+          "nac_capability": "Access control, network segmentation",
+          "violation_risk": "Critical",
+          "average_fine": 10000000,
+          "business_impact": "2% of global annual revenue"
+        }
+      },
+      "total_controls": 99,
+      "nac_applicable": 27,
+      "automation_potential": 75,
+      "fine_structure": {
+        "max_administrative_fine": "20M EUR or 4% of annual revenue",
+        "factors": ["nature", "gravity", "duration", "intentional", "mitigation"]
+      }
+    }
+  }
+}

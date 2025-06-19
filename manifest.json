@@ -1,0 +1,21 @@
+{
+    "name": "Portnox Total Cost Analyzer",
+    "short_name": "TCO Analyzer",
+    "description": "Executive Decision Platform for Zero Trust NAC",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#1B2951",
+    "theme_color": "#00D4AA",
+    "icons": [
+        {
+            "src": "img/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "img/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

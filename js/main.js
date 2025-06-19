@@ -1,311 +1,252 @@
 /**
- * Main application script
- * Initializes all components and handles global events
+ * Main Application Entry Point
  */
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize controllers
-  initializeControllers();
-
-  // Set up global event listeners
-  setupEventListeners();
-
-  // Initialize particles background
-  initializeParticles();
-
-  // Initialize dark mode toggle
-  initializeDarkMode();
-
-  // Show initial notification
-  showWelcomeNotification();
-});
-
-function initializeControllers() {
-  // These controllers will initialize themselves when imported
-  // But we need to ensure they're instantiated in the correct order
-
-  // Configuration controller (loads configuration state)
-  if (!window.configController && typeof ConfigController !== 'undefined') {
-    window.configController = new ConfigController();
-  }
-
-  // Vendor controller (manages vendor selection)
-  if (!window.vendorController && typeof VendorController !== 'undefined') {
-    window.vendorController = new VendorController();
-  }
-
-  // View controller (manages view navigation)
-  if (!window.viewController && typeof ViewController !== 'undefined') {
-    window.viewController = new ViewController();
-  }
-
-  // Sidebar controller (manages sidebar interaction)
-  if (!window.sidebarController && typeof SidebarController !== 'undefined') {
-    window.sidebarController = new SidebarController();
-  }
-
-  // Chart controller (initializes and updates charts)
-  if (!window.chartController && typeof ChartController !== 'undefined') {
-    window.chartController = new ChartController();
-    window.chartController.initializeCharts();
-  }
-}
-
-function setupEventListeners() {
-  // Export PDF button
-  const exportPdfBtn = document.getElementById('export-pdf');
-  if (exportPdfBtn) {
-    exportPdfBtn.addEventListener('click', exportPdf);
-  }
-
-  // Help button
-  const helpBtn = document.getElementById('help-btn');
-  const helpModal = document.getElementById('help-modal');
-  if (helpBtn && helpModal) {
-    helpBtn.addEventListener('click', () => {
-      helpModal.style.display = 'block';
-    });
-
-    // Close modal on X click
-    const closeBtn = helpModal.querySelector('.modal-close');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        helpModal.style.display = 'none';
-      });
-    }
-
-    // Close modal on outside click
-    window.addEventListener('click', (e) => {
-      if (e.target === helpModal) {
-        helpModal.style.display = 'none';
-      }
-    });
-  }
-}
-
-function initializeParticles() {
-  // Initialize particles.js if available
-  if (window.particlesJS) {
-    particlesJS('particles-js', {
-      particles: {
-        number: {
-          value: 80,
-          density: {
-            enable: true,
-            value_area: 800
-          }
-        },
-        color: {
-          value: '#4e73df'
-        },
-        shape: {
-          type: 'circle',
-          stroke: {
-            width: 0,
-            color: '#000000'
-          }
-        },
-        opacity: {
-          value: 0.1,
-          random: false,
-          anim: {
-            enable: false
-          }
-        },
-        size: {
-          value: 3,
-          random: true,
-          anim: {
-            enable: false
-          }
-        },
-        line_linked: {
-          enable: true,
-          distance: 150,
-          color: '#4e73df',
-          opacity: 0.2,
-          width: 1
-        },
-        move: {
-          enable: true,
-          speed: 2,
-          direction: 'none',
-          random: false,
-          straight: false,
-          out_mode: 'out',
-          bounce: false,
-          attract: {
-            enable: false
-          }
-        }
-      },
-      interactivity: {
-        detect_on: 'canvas',
-        events: {
-          onhover: {
-            enable: true,
-            mode: 'grab'
-          },
-          onclick: {
-            enable: true,
-            mode: 'push'
-          },
-          resize: true
-        },
-        modes: {
-          grab: {
-            distance: 140,
-            line_linked: {
-              opacity: 1
+(async function() {
+    console.log('🚀 Starting Portnox Total Cost Analyzer...');
+    console.log('Current time:', new Date().toISOString());
+    
+    // Module loading sequence with proper error handling
+    const loadModules = async () => {
+        // Core module definitions (not files)
+        const moduleDefinitions = [
+            { path: '/js/core/config-manager.js', name: 'ConfigManager' },
+            { path: '/js/core/event-system.js', name: 'EventSystem' },
+            { path: '/js/core/error-handler.js', name: 'ErrorHandler' },
+            { path: '/js/data/vendor-database.js', name: 'VendorDatabase' },
+            { path: '/js/data/vendor-data-manager.js', name: 'VendorDataManager' },
+            { path: '/js/core/ui-manager.js', name: 'UIManager' }
+        ];
+        
+        try {
+            // Ensure ModuleLoader is ready
+            if (!window.ModuleLoader) {
+                throw new Error('ModuleLoader not found');
             }
-          },
-          push: {
-            particles_nb: 4
-          }
+            
+            console.log('✅ ModuleLoader ready');
+            console.log('ModuleLoader methods:', {
+                register: typeof window.ModuleLoader.register,
+                load: typeof window.ModuleLoader.load,
+                loadAll: typeof window.ModuleLoader.loadAll
+            });
+            
+            // Load module definition files
+            console.log('\n📦 Loading module files...');
+            for (const { path, name } of moduleDefinitions) {
+                console.log(`\nLoading ${path}...`);
+                try {
+                    await loadScript(path);
+                    console.log(`✓ Script loaded: ${path}`);
+                    
+                    // Small delay to ensure script execution
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    
+                    // Check if module was registered
+                    const modules = window.ModuleLoader.listModules();
+                    if (modules.includes(name)) {
+                        console.log(`✓ ${name} registered successfully`);
+                    } else {
+                        console.warn(`⚠️ ${name} not found in registered modules`);
+                        console.log('Currently registered modules:', modules);
+                    }
+                } catch (error) {
+                    console.error(`❌ Failed to load ${path}:`, error);
+                }
+            }
+            
+            // List all registered modules
+            console.log('\n📋 All registered modules:', window.ModuleLoader.listModules());
+            
+            // Now initialize modules in correct order
+            console.log('\n🚀 Initializing modules...');
+            
+            // Load in dependency order
+            const coreModules = ['ConfigManager', 'EventSystem', 'ErrorHandler'];
+            console.log('\nLoading core modules:', coreModules);
+            await window.ModuleLoader.loadAll(coreModules);
+            console.log('✓ Core modules loaded');
+            
+            // Load data modules
+            console.log('\nLoading VendorDatabase...');
+            const vendorDb = await window.ModuleLoader.load('VendorDatabase');
+            console.log('✓ VendorDatabase loaded:', vendorDb);
+            
+            console.log('\nLoading VendorDataManager...');
+            const vendorDataManager = await window.ModuleLoader.load('VendorDataManager');
+            console.log('✓ VendorDataManager loaded');
+            
+            // Initialize vendor data
+            if (vendorDataManager && vendorDataManager.initialize) {
+                console.log('\nInitializing VendorDataManager...');
+                await vendorDataManager.initialize();
+                console.log('✓ VendorDataManager initialized');
+                console.log('Available vendors:', vendorDataManager.getAllVendors().map(v => v.id));
+            }
+            
+            // Load UI
+            console.log('\nLoading UIManager...');
+            const uiManager = await window.ModuleLoader.load('UIManager');
+            console.log('✓ UIManager loaded');
+            
+            if (uiManager && uiManager.initialize) {
+                console.log('\nInitializing UIManager...');
+                await uiManager.initialize();
+                console.log('✓ UIManager initialized');
+            }
+            
+            // Setup router
+            setupRouter();
+            
+            // Render initial view
+            if (uiManager && uiManager.render) {
+                console.log('\nRendering initial view...');
+                uiManager.render();
+                console.log('✓ Initial view rendered');
+            }
+            
+            // Handle initial route
+            handleRoute();
+            
+            console.log('\n✅ Application initialized successfully!');
+            console.log('=====================================\n');
+            
+        } catch (error) {
+            console.error('\n❌ Failed to initialize application:', error);
+            console.error('Stack trace:', error.stack);
+            showErrorPage(error);
         }
-      },
-      retina_detect: true
-    });
-  }
-}
-
-function initializeDarkMode() {
-  // Dark mode toggle
-  const darkModeToggle = document.getElementById('dark-mode-toggle');
-  if (darkModeToggle) {
-    // Check for stored preference
-    const darkModeEnabled = localStorage.getItem('darkMode') === 'enabled';
-
-    // Set initial state
-    if (darkModeEnabled) {
-      document.body.classList.add('dark-mode');
-      darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-    }
-
-    // Toggle dark mode
-    darkModeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
-
-      if (document.body.classList.contains('dark-mode')) {
-        localStorage.setItem('darkMode', 'enabled');
-        darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-      } else {
-        localStorage.setItem('darkMode', 'disabled');
-        darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-      }
-
-      // Update charts
-      if (window.chartController) {
-        Object.values(window.chartController.charts).forEach(chart => {
-          if (chart) chart.update();
+    };
+    
+    // Helper function to load scripts dynamically
+    function loadScript(src) {
+        return new Promise((resolve, reject) => {
+            // Check if script already loaded
+            const existing = document.querySelector(`script[src="${src}"]`);
+            if (existing) {
+                console.log(`Script already in DOM: ${src}`);
+                resolve();
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = false; // Ensure sequential loading
+            
+            script.onload = () => {
+                console.log(`Script element loaded: ${src}`);
+                resolve();
+            };
+            
+            script.onerror = () => {
+                const error = new Error(`Failed to load script: ${src}`);
+                console.error(error);
+                reject(error);
+            };
+            
+            document.head.appendChild(script);
         });
-      }
-    });
-  }
-}
-
-function showWelcomeNotification() {
-  // Show welcome notification
-  if (window.NotificationManager) {
-    window.NotificationManager.show(
-      'Welcome to the Portnox Total Cost Analyzer. Select your current NAC vendor and configuration to begin.',
-      'info'
-    );
-  }
-}
-
-function exportPdf() {
-  // Export results as PDF
-  if (window.jspdf && window.jspdf.jsPDF) {
-    try {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      // Add logo
-      // doc.addImage('img/portnox-logo.png', 'PNG', 10, 10, 50, 20);
-
-      // Add title
-      doc.setFontSize(20);
-      doc.text('Portnox Zero Trust Total Cost Analysis', 105, 20, { align: 'center' });
-
-      // Add date
-      doc.setFontSize(10);
-      const today = new Date();
-      doc.text(`Generated on ${today.toLocaleDateString()}`, 105, 30, { align: 'center' });
-
-      // Get selected vendors
-      const selectedVendors = window.vendorController ?
-        window.vendorController.getSelectedVendors() :
-        ['portnox', 'cisco'];
-
-      // Add TCO summary
-      doc.setFontSize(16);
-      doc.text('TCO Summary', 20, 40);
-
-      doc.setFontSize(12);
-      let yPos = 50;
-
-      selectedVendors.forEach(vendor => {
-        if (window.VendorData) {
-          const vendorName = window.VendorData.vendorNames[vendor];
-          const configState = window.configController ? window.configController.getState() : null;
-
-          if (configState) {
-            const tco = window.VendorData.calculateTCO(vendor, configState);
-            doc.text(`${vendorName}: $${Math.round(tco.total).toLocaleString()}`, 20, yPos);
-            yPos += 10;
-          }
-        }
-      });
-
-      // Add canvas charts
-      if (window.chartController) {
-        // Add TCO comparison chart
-        const tcoCanvas = document.getElementById('tco-comparison-chart');
-        if (tcoCanvas) {
-          const tcoImgData = tcoCanvas.toDataURL('image/png');
-          doc.text('TCO Comparison Chart', 20, yPos + 10);
-          doc.addImage(tcoImgData, 'PNG', 20, yPos + 15, 120, 60);
-          yPos += 80;
-        }
-
-        // Add feature radar chart
-        const featureCanvas = document.getElementById('feature-radar-chart');
-        if (featureCanvas) {
-          const featureImgData = featureCanvas.toDataURL('image/png');
-          doc.text('Feature Comparison', 150, 50);
-          doc.addImage(featureImgData, 'PNG', 150, 55, 120, 60);
-        }
-
-        // Add more charts as needed
-      }
-
-      // Add notes
-      doc.setFontSize(10);
-      doc.text('This analysis was generated using the Portnox Total Cost Analyzer. For more information, visit portnox.com', 20, 200);
-
-      // Save the PDF
-      doc.save('portnox-tco-analysis.pdf');
-
-      // Show success notification
-      if (window.NotificationManager) {
-        window.NotificationManager.show('PDF exported successfully', 'success');
-      }
-    } catch (error) {
-      console.error('Error exporting PDF:', error);
-
-      // Show error notification
-      if (window.NotificationManager) {
-        window.NotificationManager.show('Error exporting PDF. Please try again.', 'error');
-      }
     }
-  } else {
-    // Show error notification
-    if (window.NotificationManager) {
-      window.NotificationManager.show('PDF export library not loaded. Please try again later.', 'error');
+    
+    // Setup client-side routing
+    function setupRouter() {
+        window.addEventListener('popstate', handleRoute);
+        
+        // Handle initial load
+        if (!window.location.hash) {
+            window.location.hash = '#dashboard';
+        }
     }
-  }
-}
+    
+    function handleRoute() {
+        const hash = window.location.hash.slice(1) || 'dashboard';
+        const UIManager = window.ModuleLoader.get('UIManager');
+        
+        if (UIManager && UIManager.switchView) {
+            UIManager.switchView(hash);
+        }
+    }
+    
+    function showErrorPage(error) {
+        document.getElementById('app').innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: Arial, sans-serif;">
+                <div style="text-align: center; padding: 2rem; max-width: 600px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+                    <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">Failed to Load Application</h1>
+                    <p style="color: #666; margin-bottom: 1rem;">${error.message}</p>
+                    <pre style="text-align: left; background: #f3f4f6; padding: 1rem; border-radius: 0.5rem; overflow: auto; margin-bottom: 1.5rem; font-size: 0.875rem;">
+${error.stack || 'No stack trace available'}
+                    </pre>
+                    <button onclick="location.reload()" style="background: #00D4AA; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer;">
+                        Reload Page
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Global helper functions
+    window.TCOAnalyzer = {
+        exportToPDF: async function() {
+            const UIManager = window.ModuleLoader.get('UIManager');
+            if (UIManager && UIManager.showNotification) {
+                UIManager.showNotification('PDF export coming soon', 'info');
+            }
+        },
+        
+        exportToExcel: async function() {
+            const UIManager = window.ModuleLoader.get('UIManager');
+            if (UIManager && UIManager.showNotification) {
+                UIManager.showNotification('Excel export coming soon', 'info');
+            }
+        },
+        
+        navigateTo: function(view) {
+            window.location.hash = '#' + view;
+        },
+        
+        scheduleDemo: function() {
+            window.open('https://www.portnox.com/demo/', '_blank');
+        },
+        
+        startTrial: function() {
+            window.open('https://www.portnox.com/free-trial/', '_blank');
+        },
+        
+        contactSales: function() {
+            window.open('https://www.portnox.com/contact/', '_blank');
+        }
+    };
+    
+    // Make some functions globally accessible for UI
+    window.UI = {
+        scheduleDemo: () => TCOAnalyzer.scheduleDemo(),
+        startTrial: () => TCOAnalyzer.startTrial(),
+        contactSales: () => TCOAnalyzer.contactSales(),
+        exportReport: () => TCOAnalyzer.exportToPDF(),
+        formatCurrency: (amount, decimals = 0) => {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(amount);
+        },
+        formatNumber: (number, decimals = 0) => {
+            return new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(number);
+        },
+        formatPercent: (value, decimals = 0) => {
+            return new Intl.NumberFormat('en-US', {
+                style: 'percent',
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(value / 100);
+        }
+    };
+    
+    // Start the application
+    console.log('\n🎯 Starting module loading process...\n');
+    loadModules();
+})();
