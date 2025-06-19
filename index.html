@@ -3,30 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portnox Total Cost Analyzer - Executive Decision Platform</title>
+    <title>Portnox Total Cost Analyzer - Complete Edition</title>
+    <link rel="stylesheet" href="css/complete-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="app-container">
+        <!-- Application will be rendered here -->
+        <div class="loading-screen">
+            <h1>Loading Portnox TCO Analyzer...</h1>
+            <div class="spinner"></div>
+        </div>
+    </div>
     
-    <!-- Premium Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-    <script src="js/chart-manager.js"></script>
-    <script src="js/vendor-data-complete.js"></script>
-    <script src="js/compliance-database.js"></script>
-    <script src="js/risk-insurance-database.js"></script>
-    <script src="js/complete-industry-compliance-fixed.js"></script>
-    <script src="js/views/executive-dashboard.js"></script>
-    <script src="js/views/financial-analysis.js"></script>
-    <script src="js/views/feature-matrix.js"></script>
-    <script src="js/views/risk-compliance.js"></script>
-    <script src="js/advanced-controls.js"></script>
-    <script src="js/advanced-charts-fixed.js"></script>
-    <script src="js/platform.js"></script>
-    <script src="js/platform-init-fixed.js"></script>
+    <!-- Load all modules in order -->
+    <script src="js/modules/all-vendor-data.js"></script>
+    <script src="js/modules/all-compliance-data.js"></script>
+    <script src="js/calculations/complete-tco-calculations.js"></script>
+    <script src="js/tco-analyzer-app.js"></script>
 </body>
 </html>
