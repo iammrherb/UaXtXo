@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portnox TCO Analyzer - Test</title>
+    <link rel="stylesheet" href="css/platform-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Portnox Total Cost Analyzer</h1>
+        
+        <!-- Vendor Selection -->
+        <div id="vendor-selection"></div>
+        
+        <!-- Controls -->
+        <div class="controls-section">
+            <div class="control-group">
+                <label for="org-size">Organization Size:</label>
+                <select id="org-size" class="form-control">
+                    <option value="small">Small (< 500 devices)</option>
+                    <option value="medium" selected>Medium (500-5000 devices)</option>
+                    <option value="large">Large (5000-20000 devices)</option>
+                    <option value="enterprise">Enterprise (20000+ devices)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="industry">Industry:</label>
+                <select id="industry" class="form-control">
+                    <option value="healthcare">Healthcare</option>
+                    <option value="finance">Financial Services</option>
+                    <option value="retail">Retail</option>
+                    <option value="manufacturing">Manufacturing</option>
+                    <option value="education">Education</option>
+                    <option value="technology" selected>Technology</option>
+                    <option value="government">Government</option>
+                </select>
+            </div>
+            
+            <button id="calculate-btn" class="btn btn-primary">Calculate TCO</button>
+        </div>
+        
+        <!-- Advanced Controls -->
+        <div id="advanced-filters"></div>
+        <div id="scenario-modeling"></div>
+        <div id="sensitivity-controls"></div>
+        
+        <!-- Results -->
+        <div id="results-container">
+            <div id="executive-summary" class="result-section"></div>
+            <div id="cost-comparison" class="result-section"></div>
+            <div id="roi-analysis" class="result-section"></div>
+            <div id="risk-assessment" class="result-section"></div>
+            <div id="compliance-coverage" class="result-section"></div>
+            <div id="feature-comparison" class="result-section"></div>
+        </div>
+    </div>
+    
+    <!-- Load scripts in order -->
+    <script src="js/master-loader.js"></script>
+</body>
+</html>

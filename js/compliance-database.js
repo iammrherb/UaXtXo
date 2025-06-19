@@ -1,3 +1,11 @@
+// Wait for ModuleLoader
+(function() {
+    function initComplianceDatabase() {
+        if (!window.ModuleLoader) {
+            setTimeout(initComplianceDatabase, 100);
+            return;
+        }
+
 // Comprehensive Compliance Database
 class ComplianceDatabase {
     constructor() {
@@ -506,3 +514,13 @@ class ComplianceDatabase {
 
 // Register with ModuleLoader
 ModuleLoader.register('ComplianceDatabase', ComplianceDatabase);
+
+// Close the initialization wrapper
+    }
+    initComplianceDatabase();
+})();
+
+// Register with ModuleLoader
+if (window.ModuleLoader && window.ComplianceDatabase) {
+    window.ModuleLoader.register('ComplianceDatabase', window.ComplianceDatabase);
+}

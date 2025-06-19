@@ -1,122 +1,86 @@
-// Platform Initialization with Proper Error Handling
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Initializing Portnox TCO Analyzer Platform...');
-    
-    // Initialize global platform object
-    window.platform = window.platform || {};
-    
-    // Ensure all dependencies are loaded
+// Platform Initialization - Fixed Version
+console.log('🚀 Starting platform initialization...');
+
+// Create initialization queue
+window.initQueue = [];
+window.modulesReady = false;
+
+// Module check function
+function checkModulesAndInit() {
     const requiredModules = [
+        'ModuleLoader',
         'VendorDataComplete',
         'ComplianceDatabase',
-        'RiskInsuranceDatabase',
-        'ExecutiveDashboard',
-        'FinancialAnalysis',
-        'FeatureMatrix',
-        'ChartManager'
+        'CompleteIndustryCompliance',
+        'AdvancedControls',
+        'AdvancedCharts'
     ];
     
-    let allModulesLoaded = true;
-    requiredModules.forEach(module => {
-        if (!window[module]) {
-            console.error(`❌ Required module ${module} not loaded`);
-            allModulesLoaded = false;
+    // Check if all modules are available
+    const missingModules = requiredModules.filter(module => {
+        const isLoaded = window[module] || 
+                        (window.ModuleLoader && window.ModuleLoader.isLoaded(module));
+        if (!isLoaded) {
+            console.log(`⏳ Waiting for module: ${module}`);
         }
+        return !isLoaded;
     });
     
-    if (!allModulesLoaded) {
-        console.error('❌ Some modules failed to load. Please check console for errors.');
-        return;
-    }
-    
-    // Initialize platform with error handling
-    try {
-        // Destroy any existing charts
-        if (window.ChartManager) {
-            window.ChartManager.destroyAllCharts();
+    if (missingModules.length === 0) {
+        console.log('✅ All modules loaded successfully!');
+        window.modulesReady = true;
+        
+        // Process initialization queue
+        while (window.initQueue.length > 0) {
+            const fn = window.initQueue.shift();
+            try {
+                fn();
+            } catch (error) {
+                console.error('Error in queued initialization:', error);
+            }
         }
         
-        // Initialize main platform controller
-        if (window.PlatformController) {
-            window.platform = new PlatformController();
+        // Initialize platform if not already done
+        if (!window.platformInitialized) {
+            initializePlatform();
+        }
+    } else {
+        // Check again in 100ms
+        setTimeout(checkModulesAndInit, 100);
+    }
+}
+
+// Platform initialization
+function initializePlatform() {
+    console.log('🎯 Initializing platform components...');
+    
+    try {
+        // Initialize platform if available
+        if (window.platform && typeof window.platform.init === 'function') {
+            window.platform.init();
+        } else {
+            console.log('Creating new platform instance...');
+            window.platform = new window.PortnoxAnalyzerPlatform();
             window.platform.init();
         }
         
-        // Initialize tabs
-        initializeTabs();
-        
-        // Initialize vendor selection
-        initializeVendorSelection();
-        
-        // Calculate initial results
-        if (window.platform && window.platform.calculate) {
-            window.platform.calculate();
-        }
-        
-        console.log('✅ Platform initialized successfully');
+        window.platformInitialized = true;
+        console.log('✅ Platform initialization complete!');
     } catch (error) {
-        console.error('❌ Error initializing platform:', error);
+        console.error('❌ Platform initialization error:', error);
     }
-});
-
-function initializeTabs() {
-    const tabs = document.querySelectorAll('.tab-button');
-    const contents = document.querySelectorAll('.tab-content');
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const target = tab.dataset.tab;
-            
-            // Update active states
-            tabs.forEach(t => t.classList.remove('active'));
-            contents.forEach(c => c.classList.remove('active'));
-            
-            tab.classList.add('active');
-            const targetContent = document.getElementById(target);
-            if (targetContent) {
-                targetContent.classList.add('active');
-            }
-            
-            // Destroy existing charts when switching tabs
-            if (window.ChartManager) {
-                window.ChartManager.destroyAllCharts();
-            }
-            
-            // Render content for active tab
-            switch(target) {
-                case 'executive':
-                    if (window.executiveDashboard) {
-                        window.executiveDashboard.render();
-                    }
-                    break;
-                case 'financial':
-                    if (window.financialAnalysis) {
-                        window.financialAnalysis.render();
-                    }
-                    break;
-                case 'features':
-                    if (window.featureMatrix) {
-                        window.featureMatrix.render();
-                    }
-                    break;
-                case 'compliance':
-                    if (window.riskCompliance) {
-                        window.riskCompliance.render();
-                    }
-                    break;
-            }
-        });
-    });
 }
 
-function initializeVendorSelection() {
-    const vendorCheckboxes = document.querySelectorAll('.vendor-checkbox');
-    
-    vendorCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', () => {
-            if (window.platform && window.platform.calculate) {
-                window.platform.calculate();
-            }
-        });
-    });
-}
+// Start checking for modules
+checkModulesAndInit();
+
+// Helper function to queue initialization tasks
+window.queueInit = function(fn) {
+    if (window.modulesReady) {
+        fn();
+    } else {
+        window.initQueue.push(fn);
+    }
+};
+
+console.log('✅ Platform initialization script loaded');

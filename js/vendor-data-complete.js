@@ -736,3 +736,11 @@ window.riskData = {
 };
 
 console.log('✅ Comprehensive vendor data loaded successfully');
+
+// Register with ModuleLoader
+if (window.ModuleLoader) {
+    window.ModuleLoader.register('VendorDataComplete', window.vendorData);
+}
+
+// Make vendor data globally accessible
+window.VendorDataComplete = window.vendorData;
