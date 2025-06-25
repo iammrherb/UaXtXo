@@ -1,6 +1,9 @@
-"use client"
-import TcoAnalyzerUltimateV3 from "@/components/tco-analyzer"
+import TcoAnalyzerUltimate from "@/components/tco-analyzer" // Updated import
 
 export default function HomePage() {
-  return <TcoAnalyzerUltimateV3 />
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <TcoAnalyzerUltimate />
+    </div>
+  )
 }
