@@ -1,1 +1,0 @@
-defineModule('ROICalculator', [], function() { return {}; });

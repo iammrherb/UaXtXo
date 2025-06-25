@@ -1,2 +1,0 @@
-PORTNOX
-Cloud NAC Platform
