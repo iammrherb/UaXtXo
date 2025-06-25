@@ -1585,6 +1585,8 @@ const FinancialDeepDive: React.FC<{ data: any[]; config: any }> = ({ data, confi
     roiTimelineData.push(monthData)
   }
 
+  const streamKeys = (data || []).slice(0, 5).map((v) => v.shortName)
+
   const costBreakdownData = {
     name: "Total Costs",
     children: (data || [])
@@ -1709,58 +1711,64 @@ const FinancialDeepDive: React.FC<{ data: any[]; config: any }> = ({ data, confi
 
       <ChartContainer title="Cumulative ROI Timeline" description="Net benefit progression over 36 months">
         <div style={{ height: 400 }}>
-          <ResponsiveStream
-            data={roiTimelineData || []}
-            keys={(data || []).slice(0, 5).map((v) => v.shortName)}
-            indexBy="month"
-            margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-            axisTop={null}
-            axisRight={null}
-            axisBottom={{
-              orient: "bottom",
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: -45,
-              legend: "Timeline",
-              legendOffset: 45,
-            }}
-            axisLeft={{
-              orient: "left",
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-              legend: "Cumulative Value (USD)",
-              legendOffset: -50,
-              format: (v: any) => `$${safeNum(v) / 1000}K`,
-            }}
-            offsetType="diverging"
-            colors={(d: any) => (data || []).find((v) => v.shortName === d.id)?.color || "#666"}
-            fillOpacity={0.85}
-            borderColor={{ theme: "background" }}
-            theme={NIVO_THEME}
-            animate={true}
-            motionConfig="gentle"
-            legends={[
-              {
-                anchor: "bottom-right",
-                direction: "column",
-                translateX: 100,
-                itemWidth: 80,
-                itemHeight: 20,
-                itemTextColor: "#999",
-                symbolSize: 12,
-                symbolShape: "circle",
-                effects: [
-                  {
-                    on: "hover",
-                    style: {
-                      itemTextColor: "#fff",
+          {streamKeys.length > 0 ? (
+            <ResponsiveStream
+              data={roiTimelineData || []}
+              keys={streamKeys}
+              indexBy="month"
+              margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+              axisTop={null}
+              axisRight={null}
+              axisBottom={{
+                orient: "bottom",
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: -45,
+                legend: "Timeline",
+                legendOffset: 45,
+              }}
+              axisLeft={{
+                orient: "left",
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: 0,
+                legend: "Cumulative Value (USD)",
+                legendOffset: -50,
+                format: (v: any) => `$${safeNum(v) / 1000}K`,
+              }}
+              offsetType="diverging"
+              colors={(d: any) => (data || []).find((v) => v.shortName === d.id)?.color || "#666"}
+              fillOpacity={0.85}
+              borderColor={{ theme: "background" }}
+              theme={NIVO_THEME}
+              animate={true}
+              motionConfig="gentle"
+              legends={[
+                {
+                  anchor: "bottom-right",
+                  direction: "column",
+                  translateX: 100,
+                  itemWidth: 80,
+                  itemHeight: 20,
+                  itemTextColor: "#999",
+                  symbolSize: 12,
+                  symbolShape: "circle",
+                  effects: [
+                    {
+                      on: "hover",
+                      style: {
+                        itemTextColor: "#fff",
+                      },
                     },
-                  },
-                ],
-              },
-            ]}
-          />
+                  ],
+                },
+              ]}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              Not enough data to display timeline.
+            </div>
+          )}
         </div>
       </ChartContainer>
 
