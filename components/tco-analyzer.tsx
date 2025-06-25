@@ -1,8 +1,10 @@
 "use client"
 
+import React from "react"
+
 import { useState, useMemo, useEffect, useCallback } from "react"
 import Image from "next/image"
-import { AllVendorData, getVendorLogoPath } from "@/lib/vendor-data"
+import { AllVendorData, getVendorLogoPath } from "@/lib/vendor-data" // Added VendorData type
 import { compareVendors, type calculateVendorTCO } from "@/lib/tco-calculator"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -13,17 +15,24 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Badge } from "@/components/ui/badge" // Added Badge import
 import {
-  BarChart as ReBarChart,
+  BarChart as ReBarChart, // Renamed to avoid conflict if another BarChart is imported
   Bar,
   XAxis,
   YAxis,
-  Tooltip as ReTooltip,
-  Legend as ReLegend,
+  CartesianGrid, // Added CartesianGrid
+  Tooltip as ReTooltip, // Renamed
+  Legend as ReLegend, // Renamed
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
+  RadarChart, // Added RadarChart
+  PolarGrid, // Added PolarGrid
+  PolarAngleAxis, // Added PolarAngleAxis
+  PolarRadiusAxis, // Added PolarRadiusAxis
+  Radar, // Added Radar
 } from "recharts"
 import {
   Download,
@@ -32,7 +41,6 @@ import {
   DollarSign,
   LayoutGrid,
   ShieldCheck,
-  Settings2,
   Info,
   Filter,
   XCircle,
@@ -51,6 +59,15 @@ import {
   LifeBuoy,
   SlashIcon as EyeSlash,
   Calculator,
+  FileCheck,
+  Cpu,
+  Check,
+  Activity,
+  SlidersHorizontal,
+  Clock,
+  Shield,
+  Zap,
+  TrendingUp,
 } from "lucide-react"
 import type { JSX } from "react/jsx-runtime"
 
@@ -84,9 +101,9 @@ const TABS_CONFIG = [
   { value: "dashboard", label: "Executive Dashboard", icon: <BarChartHorizontal /> },
   { value: "cost-breakdown", label: "Detailed Costs", icon: <FilePieChart /> },
   { value: "roi-analysis", label: "ROI & Business Value", icon: <BarChart3 /> },
-  { value: "vendor-comparison", label: "Feature Matrix", icon: <LayoutGrid /> },
   { value: "compliance", label: "Compliance & Risk", icon: <ShieldCheck /> },
-  { value: "operations", label: "Operations Impact", icon: <Settings2 /> },
+  { value: "operations", label: "Operations Impact", icon: <SlidersHorizontal /> },
+  { value: "vendor-comparison", label: "Feature Matrix", icon: <LayoutGrid /> },
   { value: "roadmap", label: "Implementation Roadmap", icon: <Road /> },
   { value: "reports", label: "Reports", icon: <FileText /> },
 ]
@@ -209,14 +226,18 @@ export default function TcoAnalyzerUltimateV3() {
           {calculationError}
         </Card>
       )
-    if (!results && activeView !== "dashboard")
+    if (!results && !["dashboard", "reports"].includes(activeView))
+      // Allow reports view even without results
       return (
         <Card className="p-6 text-center text-muted-foreground animate-fade-in">
           <Info className="mx-auto h-8 w-8 mb-2 text-portnox-primary" />
           Please select vendors and calculate TCO to see this view.
         </Card>
       )
-    if (!isClient && (activeView === "dashboard" || activeView === "cost-breakdown"))
+    if (
+      !isClient &&
+      ["dashboard", "cost-breakdown", "compliance", "operations", "vendor-comparison", "roadmap"].includes(activeView)
+    )
       return <Card className="p-6 text-center text-muted-foreground animate-fade-in">Loading charts...</Card>
 
     switch (activeView) {
@@ -233,6 +254,47 @@ export default function TcoAnalyzerUltimateV3() {
         )
       case "cost-breakdown":
         return <DetailedCostsView results={results} years={projectionYears} />
+      case "compliance":
+        return <ComplianceRiskView results={results} industry={industry} selectedVendors={selectedVendors} />
+      case "operations":
+        return (
+          <OperationsImpactView
+            results={results}
+            currentDeviceCount={currentDeviceCount}
+            currentUsersCount={currentUsersCount}
+            region={region}
+          />
+        )
+      case "vendor-comparison": // Assuming this maps to FeatureComparison
+        const safeResults = results || []
+        const featureData = safeResults.map((r) => ({
+          id: r.vendor,
+          name: r.vendorName,
+          features: AllVendorData[r.vendor]?.features?.core || {}, // Adjust if features are nested differently
+          logo: AllVendorData[r.vendor]?.logo,
+        }))
+        return <FeatureComparison data={featureData} />
+      case "roadmap":
+        return (
+          <ImplementationRoadmapView
+            selectedVendor={selectedVendors[0] || "portnox"}
+            deviceCount={currentDeviceCount}
+            userCount={currentUsersCount}
+          />
+        )
+      case "reports":
+        const reportConfig = {
+          orgSize: orgSizeKey,
+          devices: currentDeviceCount,
+          users: currentUsersCount,
+          industry: industry,
+          years: projectionYears,
+          region: region,
+          selectedVendors: selectedVendors,
+          portnoxBasePrice: portnoxBasePrice,
+          portnoxAddons: portnoxAddons,
+        }
+        return <ReportsView results={results} config={reportConfig} />
       default:
         return (
           <Card className="p-6 text-center text-muted-foreground animate-fade-in">
@@ -406,9 +468,9 @@ export default function TcoAnalyzerUltimateV3() {
                         variant={isSelected ? "default" : "outline"}
                         onClick={() => handleVendorSelection(vendorId)}
                         className={`h-auto py-2 px-3 flex flex-col items-center justify-center transition-all duration-200 transform hover:scale-105
-                        ${isSelected ? (isPortnox ? "bg-portnox-primary hover:bg-portnox-primary-dark text-primary-foreground shadow-lg ring-2 ring-portnox-primary-light" : "bg-portnox-secondary hover:bg-portnox-secondary-light text-secondary-foreground") : "bg-card hover:border-portnox-primary"}
-                        ${isPortnox && !isSelected ? "border-portnox-primary/50 text-portnox-primary" : ""}
-                      `}
+                      ${isSelected ? (isPortnox ? "bg-portnox-primary hover:bg-portnox-primary-dark text-primary-foreground shadow-lg ring-2 ring-portnox-primary-light" : "bg-portnox-secondary hover:bg-portnox-secondary-light text-secondary-foreground") : "bg-card hover:border-portnox-primary"}
+                      ${isPortnox && !isSelected ? "border-portnox-primary/50 text-portnox-primary" : ""}
+                    `}
                       >
                         <Image
                           src={getVendorLogoPath(vendorId) || "/placeholder.svg"}
@@ -799,3 +861,825 @@ const DetailedCostsView = ({ results, years }: { results: CalculationResult[] | 
     </div>
   )
 }
+
+// --- NEW VIEWS START ---
+const ComplianceRiskView = ({
+  results,
+  industry,
+  selectedVendors,
+}: {
+  results: CalculationResult[] | null
+  industry: string
+  selectedVendors: string[]
+}) => {
+  const frameworks = [
+    { id: "soc2", name: "SOC 2", critical: ["technology", "saas"] },
+    { id: "iso27001", name: "ISO 27001", critical: ["all"] },
+    { id: "hipaa", name: "HIPAA", critical: ["healthcare"] },
+    { id: "pci-dss", name: "PCI DSS", critical: ["retail", "finance"] },
+    { id: "gdpr", name: "GDPR", critical: ["all"] },
+    { id: "nist", name: "NIST CSF", critical: ["government", "critical-infrastructure"] },
+    { id: "fedramp", name: "FedRAMP", critical: ["government"] },
+    { id: "cmmc", name: "CMMC", critical: ["defense", "government"] },
+  ]
+
+  // This data should ideally come from AllVendorData or be calculated
+  const vendorCompliance: Record<string, Record<string, { status: string; automation: number }>> = {
+    portnox: {
+      soc2: { status: "certified", automation: 95 },
+      iso27001: { status: "certified", automation: 90 },
+      hipaa: { status: "compliant", automation: 85 },
+      "pci-dss": { status: "compliant", automation: 80 },
+      gdpr: { status: "compliant", automation: 90 },
+      nist: { status: "aligned", automation: 85 },
+      fedramp: { status: "in-process", automation: 70 },
+      cmmc: { status: "aligned", automation: 75 },
+    },
+    cisco: {
+      soc2: { status: "certified", automation: 60 },
+      iso27001: { status: "certified", automation: 65 },
+      hipaa: { status: "compliant", automation: 55 },
+      "pci-dss": { status: "compliant", automation: 50 },
+      gdpr: { status: "compliant", automation: 60 },
+      nist: { status: "aligned", automation: 65 },
+      fedramp: { status: "certified", automation: 70 },
+      cmmc: { status: "aligned", automation: 60 },
+    },
+    aruba: {
+      soc2: { status: "partial", automation: 40 },
+      iso27001: { status: "certified", automation: 45 },
+      hipaa: { status: "partial", automation: 35 },
+      "pci-dss": { status: "partial", automation: 30 },
+      gdpr: { status: "partial", automation: 40 },
+      nist: { status: "partial", automation: 45 },
+      fedramp: { status: "none", automation: 0 },
+      cmmc: { status: "none", automation: 0 },
+    },
+    // Add other vendors as needed or fetch dynamically
+  }
+
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, { color: string; text: string }> = {
+      certified: { color: "default", text: "Certified" },
+      compliant: { color: "default", text: "Compliant" },
+      aligned: { color: "secondary", text: "Aligned" },
+      "in-process": { color: "outline", text: "In Process" },
+      partial: { color: "outline", text: "Partial" },
+      none: { color: "destructive", text: "Not Supported" },
+    }
+    const variant = variants[status] || variants.none
+    return <Badge variant={variant.color as any}>{variant.text}</Badge>
+  }
+
+  const displayVendors = selectedVendors.slice(0, 3)
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="grid gap-4 md:grid-cols-3">
+        {displayVendors.map((vendorId) => {
+          const vendor = AllVendorData[vendorId]
+          const complianceData = vendorCompliance[vendorId] || {}
+          const scores = Object.values(complianceData).map((c: any) => c.automation || 0)
+          const avgAutomation = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0
+
+          return (
+            <Card key={vendorId}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{vendor?.name}</CardTitle>
+                <FileCheck className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{avgAutomation}%</div>
+                <p className="text-xs text-muted-foreground">Avg. Compliance Automation</p>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Framework Compliance Matrix</CardTitle>
+          <CardDescription>
+            Certification status and automation capabilities by framework for top 3 selected vendors.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-3 px-4">Framework</th>
+                  <th className="text-center py-3 px-4">Industry Relevance</th>
+                  {displayVendors.map((vendorId) => (
+                    <th key={vendorId} className="text-center py-3 px-4" colSpan={2}>
+                      {AllVendorData[vendorId]?.name}
+                    </th>
+                  ))}
+                </tr>
+                <tr className="border-b text-sm text-muted-foreground">
+                  <th></th>
+                  <th></th>
+                  {displayVendors.map((vendorId) => (
+                    <React.Fragment key={`${vendorId}-header`}>
+                      <th className="text-center py-2 px-2 font-normal">Status</th>
+                      <th className="text-center py-2 px-2 font-normal">Auto %</th>
+                    </React.Fragment>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {frameworks.map((framework) => {
+                  const isRelevant = framework.critical.includes("all") || framework.critical.includes(industry)
+
+                  return (
+                    <tr key={framework.id} className={`border-b ${isRelevant ? "bg-primary/5" : ""}`}>
+                      <td className="py-3 px-4 font-medium">{framework.name}</td>
+                      <td className="py-3 px-4 text-center">
+                        {isRelevant && <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 mx-auto" />}
+                      </td>
+                      {displayVendors.map((vendorId) => {
+                        const compliance = vendorCompliance[vendorId]?.[framework.id] || {
+                          status: "none",
+                          automation: 0,
+                        }
+                        return (
+                          <React.Fragment key={`${vendorId}-${framework.id}`}>
+                            <td className="py-3 px-2 text-center">{getStatusBadge(compliance.status)}</td>
+                            <td className="py-3 px-2 text-center">
+                              <span className={compliance.automation >= 70 ? "text-green-600 font-medium" : ""}>
+                                {compliance.automation}%
+                              </span>
+                            </td>
+                          </React.Fragment>
+                        )
+                      })}
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Security Risk Assessment</CardTitle>
+          <CardDescription>Comparative risk reduction capabilities for top 3 selected vendors.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <ReBarChart
+              data={results
+                ?.filter((r) => displayVendors.includes(r.vendor))
+                .map((r) => ({
+                  vendor: r.vendorName,
+                  "Breach Risk Reduction": r.roi?.breachReduction || 0,
+                  "Compliance Automation": vendorCompliance[r.vendor]?.soc2?.automation || 0, // Example, adjust as needed
+                  "Incident Response":
+                    r.vendor === "portnox" ? 95 : AllVendorData[r.vendor]?.type === "cloud-native" ? 70 : 50, // Example
+                }))}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="vendor" />
+              <YAxis tickFormatter={(value) => `${value}%`} />
+              <ReTooltip formatter={(value: number) => `${value.toFixed(0)}%`} />
+              <ReLegend />
+              <Bar dataKey="Breach Risk Reduction" fill="#00D4AA" />
+              <Bar dataKey="Compliance Automation" fill="#3B82F6" />
+              <Bar dataKey="Incident Response" fill="#F59E0B" />
+            </ReBarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+const OperationsImpactView = ({
+  results,
+  currentDeviceCount,
+  currentUsersCount,
+  region,
+}: {
+  results: CalculationResult[] | null
+  currentDeviceCount: number
+  currentUsersCount: number
+  region: string
+}) => {
+  if (!results)
+    return (
+      <Card className="p-6 text-center text-muted-foreground animate-fade-in">
+        <Info className="mx-auto h-8 w-8 mb-2 text-portnox-primary" />
+        Calculate TCO to see Operations Impact.
+      </Card>
+    )
+
+  const operationalMetrics = results.map((result) => {
+    const vendor = AllVendorData[result.vendor]
+    const deploymentHours =
+      vendor?.implementation?.deploymentTime?.fullDeployment || (vendor?.type === "on-premise" ? 720 : 48) // Default to 720h (30d) for on-prem, 48h (2d) for others
+    const requiredFTE = vendor?.implementation?.requiredResources?.internal || (vendor?.type === "on-premise" ? 2 : 0.5)
+
+    return {
+      vendor: result.vendorName,
+      vendorId: result.vendor,
+      deploymentDays: Math.ceil(deploymentHours / 24),
+      requiredFTE, // Initial setup FTE
+      maintenanceFTE:
+        result.vendor === "portnox"
+          ? 0.1
+          : vendor?.type === "cloud-native"
+            ? 0.5
+            : vendor?.type === "on-premise"
+              ? 2.0
+              : 1.0,
+      mttr:
+        result.vendor === "portnox"
+          ? 15
+          : vendor?.type === "cloud-native"
+            ? 60
+            : vendor?.type === "on-premise"
+              ? 240
+              : 120, // minutes
+      automation:
+        result.vendor === "portnox"
+          ? 95
+          : vendor?.type === "cloud-native"
+            ? 75
+            : vendor?.type === "on-premise"
+              ? 40
+              : 60, // percentage
+      uptime:
+        result.vendor === "portnox"
+          ? 99.99
+          : vendor?.type === "cloud-native"
+            ? 99.9
+            : vendor?.type === "on-premise"
+              ? 99.5
+              : 99.7, // percentage
+    }
+  })
+  const displayMetrics = operationalMetrics.slice(0, 3)
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Deployment Time</CardTitle>
+            <Rocket className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-portnox-primary">
+              {operationalMetrics.find((m) => m.vendorId === "portnox")?.deploymentDays || 0} days
+            </div>
+            <p className="text-xs text-muted-foreground">Portnox deployment</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">FTE Required</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {operationalMetrics.find((m) => m.vendorId === "portnox")?.maintenanceFTE || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">Portnox ongoing maintenance</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">MTTR</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {operationalMetrics.find((m) => m.vendorId === "portnox")?.mttr || 0} min
+            </div>
+            <p className="text-xs text-muted-foreground">Portnox mean time to resolve</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Automation</CardTitle>
+            <Zap className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {operationalMetrics.find((m) => m.vendorId === "portnox")?.automation || 0}%
+            </div>
+            <p className="text-xs text-muted-foreground">Portnox task automation rate</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Deployment & Maintenance Comparison</CardTitle>
+            <CardDescription>Initial setup (days) and ongoing FTE requirements for top 3 vendors.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <ReBarChart data={displayMetrics}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="vendor" />
+                <YAxis />
+                <ReTooltip />
+                <ReLegend />
+                <Bar dataKey="deploymentDays" name="Deployment (days)" fill="#00D4AA" />
+                <Bar dataKey="maintenanceFTE" name="Maintenance FTE" fill="#3B82F6" />
+              </ReBarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Operational Excellence Metrics</CardTitle>
+            <CardDescription>Automation and Uptime percentages for top 3 vendors.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <RadarChart data={displayMetrics.map((m) => ({ ...m, uptimeDisplay: m.uptime - 90 }))}>
+                {" "}
+                {/* Adjusting uptime for better radar display */}
+                <PolarGrid />
+                <PolarAngleAxis dataKey="vendor" />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                <Radar name="Automation %" dataKey="automation" stroke="#00D4AA" fill="#00D4AA" fillOpacity={0.3} />
+                <Radar
+                  name="Uptime % (Adjusted)"
+                  dataKey="uptimeDisplay"
+                  stroke="#3B82F6"
+                  fill="#3B82F6"
+                  fillOpacity={0.3}
+                />
+                <ReTooltip
+                  formatter={(value, name) =>
+                    name === "Uptime % (Adjusted)" ? `${(value + 90).toFixed(2)}%` : `${value}%`
+                  }
+                />
+                <ReLegend />
+              </RadarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+const ImplementationRoadmapView = ({
+  selectedVendor,
+  deviceCount,
+  userCount,
+}: {
+  selectedVendor: string
+  deviceCount: number
+  userCount: number
+}) => {
+  const vendor = AllVendorData[selectedVendor] || AllVendorData["portnox"]
+
+  const phases = [
+    {
+      name: "Planning & Assessment",
+      duration: vendor.id === "portnox" ? 5 : vendor.type === "on-premise" ? 15 : 10,
+      tasks: [
+        "Current state network & security assessment",
+        "Define Zero Trust NAC objectives & scope",
+        "Identify key stakeholders & resources",
+        "Develop high-level architecture design",
+        "Vendor solution deep-dive & PoC planning",
+      ],
+    },
+    {
+      name: "Pilot / Proof of Concept (PoC)",
+      duration: vendor.id === "portnox" ? 5 : vendor.type === "on-premise" ? 20 : 15,
+      tasks: [
+        "Setup isolated PoC environment",
+        "Test core NAC functionalities (visibility, control)",
+        "Validate critical integrations (IAM, SIEM)",
+        "User acceptance testing (UAT) with pilot group",
+        "Refine policies & configurations based on PoC",
+      ],
+    },
+    {
+      name: "Phased Deployment",
+      duration: vendor.id === "portnox" ? 20 : vendor.type === "on-premise" ? 60 : 40,
+      tasks: [
+        "Production environment preparation & hardening",
+        "Initial rollout to non-critical segments/user groups",
+        "Iterative policy deployment & refinement",
+        "User communication & training sessions",
+        "Monitor performance & address issues",
+      ],
+    },
+    {
+      name: "Full Production & Go-Live",
+      duration: vendor.id === "portnox" ? 10 : vendor.type === "on-premise" ? 30 : 20,
+      tasks: [
+        "Complete rollout to all devices & users",
+        "Decommission legacy NAC (if applicable)",
+        "Finalize operational runbooks & documentation",
+        "Conduct post-implementation review",
+        "Transition to ongoing operations & support",
+      ],
+    },
+    {
+      name: "Optimization & Maturity",
+      duration: 30, // Ongoing
+      tasks: [
+        "Enable advanced security features (e.g., microsegmentation)",
+        "Integrate with SOAR & other security tools",
+        "Automate compliance reporting & evidence collection",
+        "Regularly review & update NAC policies",
+        "Measure ROI & business value achieved",
+      ],
+    },
+  ]
+
+  const totalDays = phases.slice(0, 4).reduce((sum, phase) => sum + phase.duration, 0) // Exclude ongoing optimization
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Duration</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalDays} days</div>
+            <p className="text-xs text-muted-foreground">To full production for {vendor.name}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Time to Value (PoC)</CardTitle>
+            <Rocket className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{phases[0].duration + phases[1].duration} days</div>
+            <p className="text-xs text-muted-foreground">To PoC completion</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Devices/Day (Rollout)</CardTitle>
+            <Cpu className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {Math.round(deviceCount / (phases[2].duration + phases[3].duration)) || "N/A"}
+            </div>
+            <p className="text-xs text-muted-foreground">Avg. migration velocity</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Risk Level</CardTitle>
+            <Shield className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-2xl font-bold ${vendor.id === "portnox" ? "text-green-600" : vendor.type === "cloud-native" ? "text-yellow-500" : "text-orange-500"}`}
+            >
+              {vendor.id === "portnox" ? "Low" : vendor.type === "cloud-native" ? "Medium-Low" : "Medium"}
+            </div>
+            <p className="text-xs text-muted-foreground">Implementation complexity</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{vendor.name} Implementation Timeline</CardTitle>
+          <CardDescription>
+            Phase-by-phase breakdown for {deviceCount.toLocaleString()} devices and {userCount.toLocaleString()} users.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {phases.map((phase, index) => {
+              const startDay = phases.slice(0, index).reduce((sum, p) => sum + p.duration, 0)
+              const endDay = startDay + phase.duration
+              const progress = (phase.duration / totalDays) * 100
+
+              return (
+                <div key={phase.name} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold">
+                        {index + 1}. {phase.name}
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        {phase.name !== "Optimization & Maturity"
+                          ? `Days ${startDay + 1} - ${endDay} (${phase.duration} days)`
+                          : `Ongoing (${phase.duration} days initial focus)`}
+                      </p>
+                    </div>
+                    <Badge variant={index < 2 ? "default" : index < 4 ? "secondary" : "outline"}>
+                      {index === 0
+                        ? "Planning"
+                        : index === 1
+                          ? "Testing/PoC"
+                          : index < 4
+                            ? "Deployment"
+                            : "Optimization"}
+                    </Badge>
+                  </div>
+                  {phase.name !== "Optimization & Maturity" && (
+                    <div className="w-full bg-secondary rounded-full h-2.5">
+                      <div
+                        className="bg-portnox-primary h-2.5 rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  )}
+                  <div className="pl-4 pt-2">
+                    <ul className="text-sm text-muted-foreground space-y-1.5">
+                      {phase.tasks.map((task) => (
+                        <li key={task} className="flex items-start gap-2">
+                          <Check className="h-4 w-4 mt-0.5 text-green-500 shrink-0" />
+                          {task}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+const ReportsView = ({
+  results,
+  config,
+}: {
+  results: CalculationResult[] | null
+  config: any // This will be the specific config object passed from TcoAnalyzerUltimateV3
+}) => {
+  const reportTemplates = [
+    {
+      id: "executive-summary",
+      name: "Executive Summary Report",
+      description: "High-level overview of TCO, ROI, and key recommendations for leadership.",
+      pages: 1,
+      icon: <BarChart3 className="h-5 w-5 text-portnox-primary" />,
+    },
+    {
+      id: "detailed-tco-analysis",
+      name: "Detailed TCO Analysis",
+      description: "Comprehensive cost breakdown, vendor comparison, and financial projections.",
+      pages: 8,
+      icon: <DollarSign className="h-5 w-5 text-portnox-primary" />,
+    },
+    {
+      id: "roi-business-case",
+      name: "ROI & Business Case Justification",
+      description: "In-depth analysis of return on investment, payback period, and strategic benefits.",
+      pages: 5,
+      icon: <TrendingUp className="h-5 w-5 text-portnox-primary" />,
+    },
+    {
+      id: "compliance-risk-assessment",
+      name: "Compliance & Risk Assessment",
+      description: "Framework alignment, risk exposure, and mitigation strategies.",
+      pages: 12,
+      icon: <Shield className="h-5 w-5 text-portnox-primary" />,
+    },
+    {
+      id: "implementation-strategy",
+      name: "Implementation Strategy & Roadmap",
+      description: "Phased plan, timelines, resource allocation, and key milestones.",
+      pages: 6,
+      icon: <Road className="h-5 w-5 text-portnox-primary" />,
+    },
+  ]
+
+  const handleExport = (format: string, reportId: string) => {
+    alert(`Exporting ${reportId} as ${format.toUpperCase()}... (Feature not yet implemented)`)
+    // In a real app, you'd trigger a download or API call here.
+    // Example: window.open(`/api/reports?format=${format}&reportId=${reportId}&config=${JSON.stringify(config)}`, '_blank');
+  }
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <Card>
+        <CardHeader>
+          <CardTitle>Generate & Export Reports</CardTitle>
+          <CardDescription>
+            Create tailored reports based on your current analysis for stakeholders and decision-makers.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {reportTemplates.map((template) => (
+              <Card key={template.id} className="flex flex-col">
+                <CardHeader className="pb-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-3 bg-primary/10 rounded-lg mt-1">{template.icon}</div>
+                    <div>
+                      <CardTitle className="text-base">{template.name}</CardTitle>
+                      <CardDescription className="text-xs mt-1">{template.description}</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Est. {template.pages} pages. Includes data for {config.selectedVendors.length} selected vendor(s).
+                  </p>
+                </CardContent>
+                <div className="p-4 border-t flex gap-2 justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleExport("pdf", template.id)}
+                    className="text-xs"
+                  >
+                    <Download className="h-3.5 w-3.5 mr-1.5" />
+                    PDF
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleExport("pptx", template.id)}
+                    className="text-xs"
+                  >
+                    <Download className="h-3.5 w-3.5 mr-1.5" />
+                    PPTX
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Current Report Configuration</CardTitle>
+          <CardDescription>These parameters will be used for generating reports.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-x-8 gap-y-4 md:grid-cols-2 text-sm">
+            <div>
+              <h4 className="font-semibold mb-2 text-primary">Organization Profile</h4>
+              <div className="space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Size Category:</span>{" "}
+                  <span className="font-medium">{config.orgSize}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Device Count:</span>{" "}
+                  <span className="font-medium">{config.devices?.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">User Count:</span>{" "}
+                  <span className="font-medium">{config.users?.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Industry:</span>{" "}
+                  <span className="font-medium capitalize">{config.industry}</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2 text-primary">Analysis Scope</h4>
+              <div className="space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Analysis Period:</span>{" "}
+                  <span className="font-medium">{config.years} Year(s)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Region:</span>{" "}
+                  <span className="font-medium capitalize">{config.region?.replace("-", " ")}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Vendors Compared:</span>{" "}
+                  <span className="font-medium">{config.selectedVendors?.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Portnox Base Price:</span>{" "}
+                  <span className="font-medium">${config.portnoxBasePrice?.toFixed(2)}/device/mo</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Portnox Add-ons:</span>
+                  <span className="font-medium">
+                    {config.portnoxAddons?.atp ? "ATP " : ""}
+                    {config.portnoxAddons?.compliance ? "Compliance" : ""}
+                    {!config.portnoxAddons?.atp && !config.portnoxAddons?.compliance ? "None" : ""}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-6 text-center">
+            Report generated on: {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// Feature Comparison View (Placeholder - assuming it might be different from vendor-comparison)
+const FeatureComparison = ({
+  data,
+}: { data: { id: string; name: string; features: Record<string, any>; logo?: string }[] }) => {
+  if (!data || data.length === 0) {
+    return (
+      <Card className="p-6 text-center text-muted-foreground animate-fade-in">
+        <Info className="mx-auto h-8 w-8 mb-2 text-portnox-primary" />
+        Select vendors to compare features.
+      </Card>
+    )
+  }
+
+  // Consolidate all unique feature keys from the 'core' features of selected vendors
+  const allFeatureKeys = Array.from(new Set(data.flatMap((vendor) => Object.keys(vendor.features || {})))).sort()
+
+  return (
+    <Card className="animate-fade-in">
+      <CardHeader>
+        <CardTitle>Feature Comparison Matrix</CardTitle>
+        <CardDescription>Side-by-side comparison of core features for selected vendors.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1000px] text-sm">
+            <thead>
+              <tr className="border-b">
+                <th className="py-3 px-4 text-left font-semibold text-muted-foreground sticky left-0 bg-card z-10">
+                  Feature
+                </th>
+                {data.map((vendor) => (
+                  <th key={vendor.id} className="py-3 px-4 text-center font-semibold text-muted-foreground">
+                    <div className="flex flex-col items-center gap-1">
+                      {vendor.logo && (
+                        <Image
+                          src={vendor.logo || "/placeholder.svg"}
+                          alt={vendor.name}
+                          width={80}
+                          height={20}
+                          className="h-5 w-auto object-contain mb-1"
+                        />
+                      )}
+                      {vendor.name}
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {allFeatureKeys.map((featureKey) => (
+                <tr key={featureKey} className="border-b last:border-b-0 hover:bg-muted/50">
+                  <td className="py-3 px-4 text-muted-foreground font-medium sticky left-0 bg-card z-10 capitalize">
+                    {featureKey.replace(/([A-Z])/g, " $1").trim()}
+                  </td>
+                  {data.map((vendor) => {
+                    const featureValue = vendor.features?.[featureKey]
+                    let displayValue: React.ReactNode = "-"
+                    if (typeof featureValue === "boolean") {
+                      displayValue = featureValue ? (
+                        <Check className="h-5 w-5 text-green-500 mx-auto" />
+                      ) : (
+                        <XCircle className="h-5 w-5 text-red-500 mx-auto" />
+                      )
+                    } else if (typeof featureValue === "number" || typeof featureValue === "string") {
+                      displayValue = String(featureValue)
+                    } else if (typeof featureValue === "object" && featureValue !== null && "score" in featureValue) {
+                      displayValue = `${(featureValue as any).score}%` // Assuming VendorFeature with score
+                    }
+
+                    return (
+                      <td key={`${vendor.id}-${featureKey}`} className="py-3 px-4 text-center">
+                        {displayValue}
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// --- NEW VIEWS END ---
