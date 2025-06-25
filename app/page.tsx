@@ -1261,6 +1261,9 @@ const AppSidebar = () => {
 
 // --- ENHANCED PAGE COMPONENTS ---
 const ExecutiveDashboard: React.FC<{ data: any[]; config: any }> = ({ data, config }) => {
+  if (!data || data.length === 0) {
+    return <div className="text-center p-10 text-xl text-gray-400">No data available for the selected filters.</div>
+  }
   const safeNum = (val: any, defaultVal = 0) => (Number.isFinite(Number(val)) ? Number(val) : defaultVal)
 
   const portnox = (data || []).find((v) => v.id === "portnox")
@@ -1557,6 +1560,9 @@ const ExecutiveDashboard: React.FC<{ data: any[]; config: any }> = ({ data, conf
 }
 
 const FinancialDeepDive: React.FC<{ data: any[]; config: any }> = ({ data, config }) => {
+  if (!data || data.length === 0) {
+    return <div className="text-center p-10 text-xl text-gray-400">No data available for the selected filters.</div>
+  }
   const safeNum = (val: any, defaultVal = 0) => (Number.isFinite(Number(val)) ? Number(val) : defaultVal)
 
   const portnox = (data || []).find((v) => v.id === "portnox")
@@ -1799,6 +1805,9 @@ const FinancialDeepDive: React.FC<{ data: any[]; config: any }> = ({ data, confi
 }
 
 const ComplianceMatrix: React.FC<{ data: any[]; config: any }> = ({ data, config }) => {
+  if (!data || data.length === 0) {
+    return <div className="text-center p-10 text-xl text-gray-400">No data available for the selected filters.</div>
+  }
   const safeNum = (val: any, defaultVal = 0) => (Number.isFinite(Number(val)) ? Number(val) : defaultVal)
 
   const portnox = (data || []).find((v) => v.id === "portnox")
