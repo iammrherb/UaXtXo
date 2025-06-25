@@ -4,58 +4,54 @@
 
 @layer base {
   :root {
-    /* Portnox Ultimate Theme - Light Theme Adaptation */
     --portnox-primary-rgb: 0, 212, 170;
     --portnox-primary: #00d4aa;
     --portnox-primary-dark: #00a085;
     --portnox-primary-light: #4de5c9;
     --portnox-secondary-rgb: 27, 41, 81;
-    --portnox-secondary: #1b2951; /* Dark Blue for accents/text on light bg */
+    --portnox-secondary: #1b2951;
     --portnox-secondary-light: #2a3f6e;
     --portnox-accent: #ff6b35;
 
-    --background: 220 20% 97%; /* --bg-secondary from script: #F8FAFB */
-    --foreground: 224 71% 4%; /* --text-primary from script (dark text): #0F172A */
+    --background: 220 20% 97%;
+    --foreground: 224 71% 4%;
 
-    --card: 0 0% 100%; /* --bg-card from script: #FFFFFF */
+    --card: 0 0% 100%;
     --card-foreground: 224 71% 4%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 224 71% 4%;
 
-    --primary: 168 100% 42%; /* --portnox-primary */
-    --primary-foreground: 0 0% 100%; /* White text on primary buttons */
+    --primary: 168 100% 42%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary for elements like control panel header, or secondary buttons */
-    --secondary: 220 13% 91%; /* --bg-tertiary from script: #F1F5F9 */
+    --secondary: 220 13% 91%;
     --secondary-foreground: 224 71% 4%;
 
-    --muted: 220 9% 85%; /* --bg-quaternary or --border-color: #E2E8F0 */
-    --muted-foreground: 220 9% 45%; /* --text-secondary from script: #475569 */
+    --muted: 220 9% 85%;
+    --muted-foreground: 220 9% 45%;
 
-    --accent: 168 100% 42%; /* Portnox primary for accents */
+    --accent: 168 100% 42%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 88%; /* --border-color: #E2E8F0 */
+    --border: 220 13% 88%;
     --input: 220 13% 88%;
-    --ring: 168 100% 42%; /* Portnox primary for focus rings */
+    --ring: 168 100% 42%;
 
-    --radius: 0.75rem; /* --border-radius-lg from script */
+    --radius: 0.75rem;
 
-    /* Additional colors from script */
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
     --info: #3b82f6;
-    --text-tertiary-script: #64748b; /* --text-tertiary from script */
+    --text-tertiary-script: #64748b;
     --bg-accent-script: linear-gradient(135deg, #e5f9f5 0%, #d1f4ed 100%);
   }
 
   .dark {
-    /* Dark mode can be defined here if needed, but script focuses on light */
     --background: 224 71% 4%;
     --foreground: 210 40% 98%;
     --card: 222 47% 11%;
@@ -100,7 +96,6 @@
   }
 }
 
-/* Custom scrollbar for webkit browsers */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -116,13 +111,12 @@
   background: hsl(var(--muted-foreground) / 0.7);
 }
 
-/* Recharts specific styles to match the new theme */
 .recharts-default-tooltip {
   background-color: hsl(var(--card)) !important;
   border-color: hsl(var(--border)) !important;
   color: hsl(var(--card-foreground)) !important;
   border-radius: var(--radius) !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 .recharts-tooltip-label {
   color: hsl(var(--card-foreground)) !important;

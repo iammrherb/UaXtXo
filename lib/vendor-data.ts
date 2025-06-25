@@ -66,20 +66,19 @@ export const AllVendorData: Record<string, VendorData> = {
     name: "Portnox CLEAR",
     type: "cloud-native",
     category: "Next-Gen Cloud NAC",
-    logo: "/portnox-logo.png", // Updated to SVG
+    logo: "/portnox-logo.png",
     description: "Cloud-native, agentless zero-trust NAC with AI-powered security",
     pricing: {
       model: "SaaS Subscription",
       perDevice: { monthly: 4.0 }, // Base price, will be adjusted by slider
-      // Tiers can be used for volume discount representation if not using volumeDiscounts map
       tiers: [
         { name: "Essentials", minDevices: 1, maxDevices: 250, pricePerDevice: 5.0 },
         { name: "Professional", minDevices: 251, maxDevices: 1000, pricePerDevice: 4.0 },
         { name: "Enterprise", minDevices: 1001, maxDevices: 5000, pricePerDevice: 3.0 },
         { name: "Enterprise Plus", minDevices: 5001, pricePerDevice: 2.5 },
       ],
-      volumeDiscounts: { 500: 5, 1000: 10, 2500: 15, 5000: 20, 10000: 25 }, // device_threshold: discount_percentage
-      additionalCosts: { implementation: 0, training: 0, support: 0 }, // Typically included
+      volumeDiscounts: { 500: 5, 1000: 10, 2500: 15, 5000: 20, 10000: 25 },
+      additionalCosts: { implementation: 0, training: 0, support: 0 },
       hiddenCosts: { total: 0 },
       addOns: {
         "Advanced Threat Protection": { perDevice: 1.5, features: "Enhanced threat detection, SOAR integration" },
@@ -87,8 +86,8 @@ export const AllVendorData: Record<string, VendorData> = {
       },
     },
     implementation: {
-      deploymentTime: { poc: 0.16, fullDeployment: 0.16 }, // 4 hours = 0.16 days
-      requiredResources: { internal: 0.1, vendor: 0, training: 4 }, // Minimal internal, 4 hours training
+      deploymentTime: { poc: 0.16, fullDeployment: 0.16 },
+      requiredResources: { internal: 0.1, vendor: 0, training: 4 },
     },
     features: {
       core: {
@@ -108,11 +107,11 @@ export const AllVendorData: Record<string, VendorData> = {
       security: {
         zeroTrust: { score: 98, microsegmentation: true },
         aiThreatDetection: { mlPowered: true, realTime: true },
-        incidentResponse: { mttr: 5 }, // minutes
+        incidentResponse: { mttr: 5 },
         threatIntelligence: true,
       },
       compliance: {
-        frameworks: ["SOC 2", "ISO 27001", "HIPAA", "PCI DSS", "GDPR", "NIST"], // Supports all major
+        frameworks: ["SOC 2", "ISO 27001", "HIPAA", "PCI DSS", "GDPR", "NIST"],
         automation: 95,
         reporting: "Real-time",
         evidenceCollection: "Automated",
@@ -152,15 +151,15 @@ export const AllVendorData: Record<string, VendorData> = {
     description: "Industry-leading on-premise NAC with extensive enterprise features",
     pricing: {
       model: "Perpetual + Subscription",
-      licenses: { base: 125000, device: 150, subscription: 45 }, // Per device annual subscription
+      licenses: { base: 125000, device: 150, subscription: 45 },
       hardware: { small: { cost: 45000 }, medium: { cost: 95000 }, large: { cost: 175000 } },
-      maintenance: 0.22, // % of license + hardware
+      maintenance: 0.22,
       professionalServices: { implementation: 85000, training: 15000 },
       hiddenCosts: { complexity: 50000, integration: 30000, total: 80000 },
     },
     implementation: {
-      deploymentTime: { fullDeployment: 180 }, // days
-      requiredResources: { internal: 3.5, vendor: 2, training: 80 }, // FTEs, hours
+      deploymentTime: { fullDeployment: 180 },
+      requiredResources: { internal: 3.5, vendor: 2, training: 80 },
     },
     features: {
       core: {
@@ -229,11 +228,11 @@ export const AllVendorData: Record<string, VendorData> = {
     pricing: {
       model: "Subscription",
       tiers: [
-        { name: "eyeSight", pricePerDevice: 13 }, // Assuming monthly, adjust if annual
+        { name: "eyeSight", pricePerDevice: 13 },
         { name: "eyeControl", pricePerDevice: 25 },
         { name: "eyeExtend", pricePerDevice: 37 },
       ],
-      hardware: { physical_small: { cost: 25000 }, physical_medium: { cost: 55000 } }, // Renamed for clarity
+      hardware: { physical_small: { cost: 25000 }, physical_medium: { cost: 55000 } },
       professionalServices: { standard: 80000 },
       hiddenCosts: { complexity: 30000, total: 30000 },
     },
@@ -255,7 +254,6 @@ export const AllVendorData: Record<string, VendorData> = {
     roi: { paybackPeriod: 15, laborSavings: -1.5, incidentReduction: 0.6, breachRiskReduction: 0.5 },
     marketShare: "Medium",
   },
-  // Adding new vendors from the script
   extreme: {
     id: "extreme",
     name: "ExtremeControl",
@@ -339,7 +337,7 @@ export const AllVendorData: Record<string, VendorData> = {
       model: "Subscription (Part of M365)",
       perUser: { monthly: 5 },
       professionalServices: { implementation: 25000 },
-    }, // Assuming E3/E5 component
+    },
     implementation: { deploymentTime: { fullDeployment: 45 }, requiredResources: { internal: 1.5, training: 20 } },
     features: { core: { deploymentModel: "Hybrid", deploymentTime: 45 * 24, scalability: "High (with Azure)" } },
     roi: { paybackPeriod: 18, breachRiskReduction: 0.5 },
@@ -350,14 +348,14 @@ export const AllVendorData: Record<string, VendorData> = {
     name: "PacketFence",
     type: "open-source",
     category: "Open Source NAC",
-    logo: "/packetfence-logo.png", // Assuming this exists from previous
+    logo: "/packetfence-logo.png",
     description: "Open source NAC solution requiring extensive customization",
     pricing: {
       model: "Open Source + Support",
       licenses: { base: 0 },
       professionalServices: { implementation: 95000 },
       additionalCosts: { support: 25000 },
-    }, // Support cost
+    },
     implementation: { deploymentTime: { fullDeployment: 120 }, requiredResources: { internal: 4.0 } },
     features: {
       core: {
@@ -377,7 +375,7 @@ export const AllVendorData: Record<string, VendorData> = {
     name: "Foxpass",
     type: "cloud-radius",
     category: "Cloud RADIUS",
-    logo: "/foxpass-logo.png", // Assuming this exists
+    logo: "/foxpass-logo.png",
     description: "Simple cloud-hosted RADIUS for basic authentication",
     pricing: { model: "SaaS Subscription", perUser: { monthly: 1.5 } },
     implementation: { deploymentTime: { fullDeployment: 3 }, requiredResources: { internal: 0.25 } },
@@ -436,8 +434,6 @@ export const AllVendorData: Record<string, VendorData> = {
   },
 }
 
-// Function to get vendor logo path (as used in the script)
-// This can be simplified in Next.js by directly using the logo path from AllVendorData
 export const getVendorLogoPath = (vendorId: string): string => {
-  return AllVendorData[vendorId]?.logo || "/default-logo.png"
+  return AllVendorData[vendorId]?.logo || "/placeholder-p42b6.png"
 }

@@ -1,16 +1,14 @@
 import { AllVendorData, type VendorData, type VendorFeature } from "./vendor-data"
 
-// More comprehensive org size definitions
 const orgSizeDetails: Record<string, { devices: number; users: number; itStaff?: number }> = {
   startup: { devices: 100, users: 50, itStaff: 2 },
   smb: { devices: 500, users: 250, itStaff: 5 },
   medium: { devices: 2500, users: 1500, itStaff: 15 },
   enterprise: { devices: 10000, users: 7500, itStaff: 50 },
   xlarge: { devices: 50000, users: 35000, itStaff: 200 },
-  custom: { devices: 2500, users: 1500, itStaff: 15 }, // Default for custom, will be overridden
+  custom: { devices: 2500, users: 1500, itStaff: 15 },
 }
 
-// More detailed staff costs by region
 const staffCostsByRegion: Record<string, { itAdmin: number; securityAnalyst: number; networkEngineer: number }> = {
   "north-america": { itAdmin: 125000, securityAnalyst: 145000, networkEngineer: 135000 },
   europe: { itAdmin: 95000, securityAnalyst: 115000, networkEngineer: 105000 },
@@ -19,13 +17,11 @@ const staffCostsByRegion: Record<string, { itAdmin: number; securityAnalyst: num
   "middle-east": { itAdmin: 80000, securityAnalyst: 100000, networkEngineer: 90000 },
 }
 
-// Industry-specific risk factors or multipliers
 const industryFactors: Record<string, { breachCostMultiplier?: number; complianceComplexity?: number }> = {
   healthcare: { breachCostMultiplier: 1.5, complianceComplexity: 1.3 },
   finance: { breachCostMultiplier: 1.3, complianceComplexity: 1.4 },
   government: { breachCostMultiplier: 1.1, complianceComplexity: 1.2 },
   technology: { breachCostMultiplier: 1.0, complianceComplexity: 1.0 },
-  // Add other industries
 }
 
 function calculateLicensingCost(
@@ -41,7 +37,6 @@ function calculateLicensingCost(
 
   if (vendor.id === "portnox") {
     let effectivePricePerDevice = portnoxBasePrice
-    // Apply volume discount (simplified example, real logic might be more complex)
     if (p.volumeDiscounts) {
       const sortedThresholds = Object.keys(p.volumeDiscounts)
         .map(Number)
@@ -53,12 +48,9 @@ function calculateLicensingCost(
         }
       }
     }
-    // Apply term discount (simplified)
-    if (years >= 5)
-      effectivePricePerDevice *= 0.6 // 40% discount
-    else if (years >= 3)
-      effectivePricePerDevice *= 0.7 // 30% discount
-    else if (years >= 1) effectivePricePerDevice *= 0.85 // 15% discount
+    if (years >= 5) effectivePricePerDevice *= 0.6
+    else if (years >= 3) effectivePricePerDevice *= 0.7
+    else if (years >= 1) effectivePricePerDevice *= 0.85
 
     totalLicensing = effectivePricePerDevice * numDevices * 12 * years
     if (portnoxAddons.atp && p.addOns?.["Advanced Threat Protection"])
@@ -69,7 +61,7 @@ function calculateLicensingCost(
     const tier =
       p.tiers.find((t) => numDevices >= (t.minDevices || 0) && (t.maxDevices === null || numDevices <= t.maxDevices)) ||
       p.tiers[p.tiers.length - 1]
-    totalLicensing = (tier.pricePerDevice || 0) * numDevices * 12 * years // Assuming monthly pricePerDevice
+    totalLicensing = (tier.pricePerDevice || 0) * numDevices * 12 * years
   } else if (p.perDevice) {
     totalLicensing = (p.perDevice.monthly || 0) * numDevices * 12 * years
   } else if (p.perUser) {
@@ -77,7 +69,7 @@ function calculateLicensingCost(
   } else if (p.licenses) {
     totalLicensing = (p.licenses.base || 0) + (p.licenses.device || 0) * numDevices
     if (p.licenses.subscription) {
-      totalLicensing += p.licenses.subscription * numDevices * years // Assuming annual subscription
+      totalLicensing += p.licenses.subscription * numDevices * years
     }
   }
   return totalLicensing
@@ -87,15 +79,12 @@ function calculateHardwareCost(vendor: VendorData, numDevices: number, years: nu
   let hardwareCost = 0
   const p = vendor.pricing
   if (p.hardware) {
-    // Simplified: take the cost of the first hardware item or an average
     const firstHardwareKey = Object.keys(p.hardware)[0]
     if (firstHardwareKey) {
       hardwareCost = p.hardware[firstHardwareKey].cost
-      // Assume hardware refresh cycle, e.g., every 5 years. For simplicity, just initial cost.
     }
   }
   if (p.maintenance && vendor.type === "on-premise") {
-    // Maintenance for on-prem
     const baseForMaintenance = hardwareCost + (p.licenses?.base || 0) + (p.licenses?.device || 0) * numDevices
     hardwareCost += baseForMaintenance * p.maintenance * years
   }
@@ -113,31 +102,23 @@ function calculateImplementationCost(vendor: VendorData): number {
 function calculateOperationalCost(vendor: VendorData, region: string, years: number, orgItStaff: number): number {
   const staffCostRegion = staffCostsByRegion[region] || staffCostsByRegion["north-america"]
   const avgSalary = (staffCostRegion.itAdmin + staffCostRegion.securityAnalyst + staffCostRegion.networkEngineer) / 3
-
-  // FTE required for this specific solution
   const fteRequiredForSolution = vendor.implementation.requiredResources?.internal || 0
-
-  // If vendor specifies FTE, use that. Otherwise, estimate based on complexity vs. Portnox.
-  // This is a very simplified estimation.
   let solutionFTE = fteRequiredForSolution
   if (solutionFTE === 0 && vendor.id !== "portnox") {
-    // Estimate if not provided
     solutionFTE = vendor.type === "on-premise" ? 2.0 : vendor.type === "hybrid" ? 1.0 : 0.5
   } else if (vendor.id === "portnox") {
-    solutionFTE = 0.1 // Portnox claims very low FTE
+    solutionFTE = 0.1
   }
-
   return solutionFTE * avgSalary * years
 }
 
 function calculateHiddenCosts(vendor: VendorData, numDevices: number, years: number): number {
-  // Simplified: use pre-defined total or estimate
   return vendor.pricing.hiddenCosts?.total || (vendor.type === "on-premise" ? numDevices * 10 * years : 0)
 }
 
 export function calculateVendorTCO(
   vendorId: string,
-  orgSizeKey: string, // e.g., "medium"
+  orgSizeKey: string,
   customDevices: number,
   customUsers: number,
   industry: string,
@@ -156,25 +137,23 @@ export function calculateVendorTCO(
 
   const numDevices = orgDetails.devices
   const numUsers = orgDetails.users
-  const orgItStaff = orgDetails.itStaff || 5 // Default IT staff if not defined
+  const orgItStaff = orgDetails.itStaff || 5
 
   const costs: Record<string, number> = {
     software: 0,
     hardware: 0,
     implementation: 0,
-    training: 0, // Often bundled in implementation or operational
-    support: 0, // Often bundled in software/maintenance
+    training: 0,
+    support: 0,
     operations: 0,
     hidden: 0,
   }
 
   costs.software = calculateLicensingCost(vendor, numDevices, numUsers, years, portnoxBasePrice, portnoxAddons)
-  costs.hardware = calculateHardwareCost(vendor, numDevices, years) // Includes on-prem maintenance
+  costs.hardware = calculateHardwareCost(vendor, numDevices, years)
   costs.implementation = calculateImplementationCost(vendor)
   costs.operations = calculateOperationalCost(vendor, region, years, orgItStaff)
   costs.hidden = calculateHiddenCosts(vendor, numDevices, years)
-
-  // Training and Support might be part of other costs or specified in vendor.pricing.additionalCosts
   costs.training += vendor.pricing.additionalCosts?.training || 0
   costs.support += vendor.pricing.additionalCosts?.support || 0
 
@@ -182,10 +161,9 @@ export function calculateVendorTCO(
   const perDevicePerMonth = total / (numDevices * years * 12) || 0
   const perUserPerMonth = total / (numUsers * years * 12) || 0
 
-  // ROI Calculation (Simplified)
-  const avgBreachCostIndustry = (industryFactors[industry]?.breachCostMultiplier || 1) * 4500000 // Base avg breach cost
+  const avgBreachCostIndustry = (industryFactors[industry]?.breachCostMultiplier || 1) * 4500000
   const potentialAnnualSavingsFromBreachReduction = avgBreachCostIndustry * (vendor.roi.breachRiskReduction || 0)
-  const annualLaborSavings = (vendor.roi.laborSavings || 0) * (staffCostsByRegion[region]?.itAdmin || 100000) // FTE savings * salary
+  const annualLaborSavings = (vendor.roi.laborSavings || 0) * (staffCostsByRegion[region]?.itAdmin || 100000)
   const totalAnnualBenefits =
     potentialAnnualSavingsFromBreachReduction + annualLaborSavings + (vendor.roi.complianceSavings || 0)
   const annualCostOfSolution = total / years
@@ -193,7 +171,6 @@ export function calculateVendorTCO(
   const roiPercentage = annualCostOfSolution > 0 ? ((netAnnualBenefit * years) / total) * 100 : 0
   const paybackMonths = netAnnualBenefit > 0 ? (total / netAnnualBenefit) * 12 : Number.POSITIVE_INFINITY
 
-  // Projections for multiple years (simplified: linear scaling for demo)
   const projections: Record<string, { total: number; perDevicePerMonth: number }> = {}
   for (let y = 1; y <= 5; y++) {
     const yearFactor = y / years
@@ -211,7 +188,6 @@ export function calculateVendorTCO(
     perDevicePerMonth,
     perUserPerMonth,
     breakdown: [
-      // Ensure keys match cost categories used in charts
       { name: "Software", value: costs.software },
       { name: "Hardware", value: costs.hardware },
       { name: "Implementation", value: costs.implementation },
@@ -226,12 +202,11 @@ export function calculateVendorTCO(
       breachReduction: (vendor.roi.breachRiskReduction || 0) * 100,
       annualSavings: totalAnnualBenefits,
     },
-    projections, // For multi-year trend charts
+    projections,
     scores: {
-      // Mock scores, real logic would be more complex
-      compliance: vendor.features.compliance?.automation || Math.random() * 50 + 50,
+      compliance: (vendor.features.compliance as VendorFeature)?.automation || Math.random() * 50 + 50,
       security: (vendor.features.security?.zeroTrust as VendorFeature)?.score || Math.random() * 50 + 50,
-      operational: vendor.features.operational?.automation || Math.random() * 50 + 50,
+      operational: (vendor.features.operational as VendorFeature)?.automation || Math.random() * 50 + 50,
     },
   }
 }
@@ -261,8 +236,8 @@ export function compareVendors(
         portnoxAddons,
       ),
     )
-    .filter((r) => r !== null)
+    .filter((r): r is NonNullable<typeof r> => r !== null)
 
-  results.sort((a, b) => (a?.total ?? Number.POSITIVE_INFINITY) - (b?.total ?? Number.POSITIVE_INFINITY))
+  results.sort((a, b) => (a.total ?? Number.POSITIVE_INFINITY) - (b.total ?? Number.POSITIVE_INFINITY))
   return results
 }

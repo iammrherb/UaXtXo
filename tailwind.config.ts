@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss"
 
 const config = {
-  darkMode: ["class"], // Keep dark mode toggle if desired, but default to light
+  darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
@@ -15,7 +15,7 @@ const config = {
       center: true,
       padding: "2rem",
       screens: {
-        "2xl": "1600px", // Match --max-width from script
+        "2xl": "1600px",
       },
     },
     extend: {
@@ -53,13 +53,12 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Custom Portnox colors from script
         "portnox-primary": "hsl(var(--primary))",
         "portnox-primary-dark": "#00A085",
         "portnox-primary-light": "#4DE5C9",
-        "portnox-secondary": "#1B2951", // Dark blue for text/accents
+        "portnox-secondary": "#1B2951",
         "portnox-secondary-light": "#2A3F6E",
-        "portnox-accent-color": "#FF6B35", // Renamed to avoid conflict with shadcn accent
+        "portnox-accent-color": "#FF6B35",
         "portnox-success": "hsl(var(--success))",
         "portnox-warning": "hsl(var(--warning))",
         "portnox-danger": "hsl(var(--danger))",
@@ -67,11 +66,11 @@ const config = {
         "text-tertiary-script": "hsl(var(--text-tertiary-script))",
       },
       borderRadius: {
-        xl: "calc(var(--radius) + 4px)", // --border-radius-xl
-        lg: "var(--radius)", // --border-radius-lg
-        md: "calc(var(--radius) - 2px)", // --border-radius
-        sm: "calc(var(--radius) - 4px)", // --border-radius-sm
-        "2xl": "calc(var(--radius) + 8px)", // --border-radius-2xl
+        xl: "calc(var(--radius) + 4px)",
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+        "2xl": "calc(var(--radius) + 8px)",
         full: "9999px",
       },
       fontFamily: {
@@ -79,7 +78,6 @@ const config = {
         display: ["Plus Jakarta Sans", "Inter", "sans-serif"],
       },
       boxShadow: {
-        // Match shadows from script
         xs: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
         sm: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
         md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
@@ -116,7 +114,7 @@ const config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards", // ease-out-expo
+        "fade-in": "fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards",
         "slide-in": "slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards",
         "scale-in": "scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards",
       },

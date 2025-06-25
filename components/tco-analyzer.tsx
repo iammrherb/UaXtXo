@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react"
 import Image from "next/image"
 import { AllVendorData, getVendorLogoPath } from "@/lib/vendor-data"
-import { compareVendors, type calculateVendorTCO } from "@/lib/tco-calculator" // Assuming calculateVendorTCO is also exported for single vendor recalc
+import { compareVendors, type calculateVendorTCO } from "@/lib/tco-calculator"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -50,12 +50,11 @@ import {
   GraduationCap,
   LifeBuoy,
   SlashIcon as EyeSlash,
+  Calculator,
 } from "lucide-react"
-import type { JSX } from "react/jsx-runtime" // Import JSX to fix the undeclared variable error
-import { Calculator } from "lucide-react" // Declare the Calculator variable
+import type { JSX } from "react/jsx-runtime"
 
-// Types
-type CalculationResult = ReturnType<typeof calculateVendorTCO> & { id?: string } // Ensure id is part of the result if needed
+type CalculationResult = NonNullable<ReturnType<typeof calculateVendorTCO>> & { id?: string }
 
 const VENDOR_IDS = Object.keys(AllVendorData)
 const COMPLIANCE_FRAMEWORKS = ["SOC 2", "ISO 27001", "HIPAA", "GDPR", "PCI DSS", "NIST", "FedRAMP", "CMMC"]
@@ -96,7 +95,6 @@ export default function TcoAnalyzerUltimateV3() {
   const [isClient, setIsClient] = useState(false)
   useEffect(() => setIsClient(true), [])
 
-  // Configuration State
   const [orgSizeKey, setOrgSizeKey] = useState("medium")
   const [customDevices, setCustomDevices] = useState(initialOrgSizeDetails.medium.devices)
   const [customUsers, setCustomUsers] = useState(initialOrgSizeDetails.medium.users)
@@ -104,13 +102,11 @@ export default function TcoAnalyzerUltimateV3() {
   const [projectionYears, setProjectionYears] = useState(3)
   const [region, setRegion] = useState("north-america")
   const [portnoxBasePrice, setPortnoxBasePrice] = useState(4.0)
-  const [portnoxAddons, setPortnoxAddons] = useState({ atp: false, compliance: false }) // Default as per script
+  const [portnoxAddons, setPortnoxAddons] = useState({ atp: false, compliance: false })
 
-  // Vendor & View State
   const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco", "aruba"])
   const [activeView, setActiveView] = useState("dashboard")
 
-  // Results State
   const [results, setResults] = useState<CalculationResult[] | null>(null)
   const [calculationError, setCalculationError] = useState<string | null>(null)
 
@@ -137,7 +133,7 @@ export default function TcoAnalyzerUltimateV3() {
         portnoxBasePrice,
         portnoxAddons,
       )
-      setResults(calculatedResults as CalculationResult[]) // Cast needed if compareVendors isn't strictly typed
+      setResults(calculatedResults as CalculationResult[])
     } catch (error) {
       console.error("Calculation error:", error)
       setCalculationError("Failed to calculate TCO. Please check inputs.")
@@ -155,31 +151,28 @@ export default function TcoAnalyzerUltimateV3() {
     portnoxAddons,
   ])
 
-  // Auto-calculate on relevant state changes
   useEffect(() => {
     if (selectedVendors.length > 0) {
       handleCalculate()
     } else {
-      setResults(null) // Clear results if no vendors selected
+      setResults(null)
     }
-  }, [handleCalculate, selectedVendors.length]) // Add selectedVendors.length to re-trigger if it becomes 0
+  }, [handleCalculate, selectedVendors.length])
 
   const handleVendorSelection = (vendorId: string) => {
     setSelectedVendors((prev) => {
       const isSelected = prev.includes(vendorId)
-      if (vendorId === "portnox" && isSelected && prev.length === 1) return prev // Prevent deselecting Portnox if only one
+      if (vendorId === "portnox" && isSelected && prev.length === 1) return prev
 
       let newSelection
       if (isSelected) {
         newSelection = prev.filter((id) => id !== vendorId)
       } else {
         if (prev.length >= 6) {
-          // showToast("Maximum 6 vendors can be compared.", "warning"); // Implement toast
           return prev
         }
         newSelection = [...prev, vendorId]
       }
-      // Ensure Portnox is first if selected
       if (newSelection.includes("portnox")) {
         return ["portnox", ...newSelection.filter((id) => id !== "portnox")]
       }
@@ -240,7 +233,6 @@ export default function TcoAnalyzerUltimateV3() {
         )
       case "cost-breakdown":
         return <DetailedCostsView results={results} years={projectionYears} />
-      // Add other views here
       default:
         return (
           <Card className="p-6 text-center text-muted-foreground animate-fade-in">
@@ -254,7 +246,6 @@ export default function TcoAnalyzerUltimateV3() {
   return (
     <TooltipProvider>
       <div className="platform-wrapper bg-background text-foreground min-h-screen flex flex-col font-sans">
-        {/* Header */}
         <header className="bg-card border-b border-border shadow-sm sticky top-0 z-50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
             <div className="flex items-center gap-3">
@@ -284,7 +275,6 @@ export default function TcoAnalyzerUltimateV3() {
           </div>
         </header>
 
-        {/* Configuration Bar */}
         <div className="bg-secondary border-b border-border py-4 px-4 sm:px-6 lg:px-8">
           <div className="container mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-end">
             <div>
@@ -383,7 +373,6 @@ export default function TcoAnalyzerUltimateV3() {
           </div>
         </div>
 
-        {/* Vendor Selection */}
         <div className="bg-card border-b border-border py-4 px-4 sm:px-6 lg:px-8">
           <div className="container mx-auto">
             <div className="flex justify-between items-center mb-2">
@@ -446,7 +435,6 @@ export default function TcoAnalyzerUltimateV3() {
           </div>
         </div>
 
-        {/* Portnox Pricing Control - Simplified from script */}
         <div className="bg-secondary border-b border-border py-3 px-4 sm:px-6 lg:px-8">
           <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
@@ -496,10 +484,7 @@ export default function TcoAnalyzerUltimateV3() {
           </div>
         </div>
 
-        {/* Navigation Tabs */}
         <nav className="bg-card border-b border-border sticky top-[61px] z-40">
-          {" "}
-          {/* Adjusted for header height */}
           <div className="container mx-auto px-0 sm:px-4">
             <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
               <TabsList className="grid w-full grid-cols-4 sm:grid-cols-8 h-auto py-0 rounded-none border-none">
@@ -519,12 +504,10 @@ export default function TcoAnalyzerUltimateV3() {
           </div>
         </nav>
 
-        {/* Main Content Area */}
         <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8">
           <div className="container mx-auto">{renderView()}</div>
         </main>
 
-        {/* Footer */}
         <footer className="bg-secondary border-t border-border py-8 text-center">
           <div className="container mx-auto">
             <Image
@@ -552,8 +535,6 @@ export default function TcoAnalyzerUltimateV3() {
     </TooltipProvider>
   )
 }
-
-// --- Sub-Components for Views ---
 
 const ExecutiveDashboardView = ({
   results,
@@ -721,7 +702,6 @@ const ExecutiveDashboardView = ({
           </CardContent>
         </Card>
       </div>
-      {/* Add Winner Analysis and Recommendations here if desired */}
     </div>
   )
 }
