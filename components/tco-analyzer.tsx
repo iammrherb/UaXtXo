@@ -26,12 +26,6 @@ import {
   AreaChart,
   Area,
   CartesianGrid,
-  SunIcon,
-  AlertTriangleIcon,
-  UsersIcon,
-  TrendingUpIcon,
-  TargetIcon,
-  TrendingDownIcon,
 } from "recharts"
 
 import {
@@ -70,6 +64,12 @@ import {
   XIcon,
   YoutubeIcon,
   ZapIcon,
+  SunIcon,
+  AlertTriangleIcon,
+  UsersIcon,
+  TrendingUpIcon,
+  TargetIcon,
+  TrendingDownIcon,
 } from "lucide-react"
 
 type CalculationResult = NonNullable<ReturnType<typeof calculateVendorTCO>> & { id?: string }
