@@ -1262,7 +1262,11 @@ const AppSidebar = () => {
 // --- ENHANCED PAGE COMPONENTS ---
 const ExecutiveDashboard: React.FC<{ data: any[]; config: any }> = ({ data, config }) => {
   if (!data || data.length === 0) {
-    return <div className="text-center p-10 text-xl text-gray-400">No data available for the selected filters.</div>
+    return (
+      <div className="text-center p-10 text-xl text-gray-400">
+        No data available for the selected filters. Please adjust filters or check data sources.
+      </div>
+    )
   }
   const safeNum = (val: any, defaultVal = 0) => (Number.isFinite(Number(val)) ? Number(val) : defaultVal)
 
@@ -1392,112 +1396,120 @@ const ExecutiveDashboard: React.FC<{ data: any[]; config: any }> = ({ data, conf
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         <ChartContainer title="Total Cost of Ownership Analysis" description="3-year TCO comparison across vendors">
-          <ResponsiveBar
-            data={tcoComparisonData || []}
-            keys={["tco"]}
-            indexBy="shortName"
-            margin={{ top: 20, right: 20, bottom: 60, left: 80 }}
-            padding={0.3}
-            valueScale={{ type: "linear" }}
-            indexScale={{ type: "band", round: true }}
-            colors={(d: any) => (d.data.id === "portnox" ? "#00F5D4" : d.data.color || "#cccccc")}
-            borderColor={{ from: "color", modifiers: [["darker", 1.6]] }}
-            axisTop={null}
-            axisRight={null}
-            axisBottom={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: -45,
-              legend: "Vendor",
-              legendPosition: "middle",
-              legendOffset: 50,
-            }}
-            axisLeft={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-              legend: "Total Cost (USD)",
-              legendPosition: "middle",
-              legendOffset: -70,
-              format: (v: any) => `$${(safeNum(v) / 1000000).toFixed(1)}M`,
-            }}
-            labelSkipWidth={12}
-            labelSkipHeight={12}
-            labelTextColor={{ from: "color", modifiers: [["darker", 3]] }}
-            animate={true}
-            motionConfig="gentle"
-            theme={NIVO_THEME}
-            tooltip={({ id, value, color, data }: any) => (
-              <div className="p-3 rounded-lg glass-effect">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: data.color || "#cccccc" }} />
-                  <strong className="text-white">{data.name}</strong>
+          {tcoComparisonData.length > 0 ? (
+            <ResponsiveBar
+              data={tcoComparisonData}
+              keys={["tco"]}
+              indexBy="shortName"
+              margin={{ top: 20, right: 20, bottom: 60, left: 80 }}
+              padding={0.3}
+              valueScale={{ type: "linear" }}
+              indexScale={{ type: "band", round: true }}
+              colors={(d: any) => (d.data.id === "portnox" ? "#00F5D4" : d.data.color || "#cccccc")}
+              borderColor={{ from: "color", modifiers: [["darker", 1.6]] }}
+              axisTop={null}
+              axisRight={null}
+              axisBottom={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: -45,
+                legend: "Vendor",
+                legendPosition: "middle",
+                legendOffset: 50,
+              }}
+              axisLeft={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: 0,
+                legend: "Total Cost (USD)",
+                legendPosition: "middle",
+                legendOffset: -70,
+                format: (v: any) => `$${(safeNum(v) / 1000000).toFixed(1)}M`,
+              }}
+              labelSkipWidth={12}
+              labelSkipHeight={12}
+              labelTextColor={{ from: "color", modifiers: [["darker", 3]] }}
+              animate={true}
+              motionConfig="gentle"
+              theme={NIVO_THEME}
+              tooltip={({ id, value, color, data }: any) => (
+                <div className="p-3 rounded-lg glass-effect">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: data.color || "#cccccc" }} />
+                    <strong className="text-white">{data.name}</strong>
+                  </div>
+                  <div className="text-sm space-y-1">
+                    <div>
+                      TCO: <span className="font-mono">${safeNum(value).toLocaleString()}</span>
+                    </div>
+                    <div>
+                      Architecture: <span className="text-gray-400">{data.architecture}</span>
+                    </div>
+                    <div>
+                      Deployment: <span className="text-gray-400">{data.metrics?.deploymentTime || "N/A"} days</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-sm space-y-1">
-                  <div>
-                    TCO: <span className="font-mono">${safeNum(value).toLocaleString()}</span>
-                  </div>
-                  <div>
-                    Architecture: <span className="text-gray-400">{data.architecture}</span>
-                  </div>
-                  <div>
-                    Deployment: <span className="text-gray-400">{data.metrics?.deploymentTime || "N/A"} days</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          />
+              )}
+            />
+          ) : (
+            <div className="text-center p-4 text-gray-400">No data for TCO Comparison.</div>
+          )}
         </ChartContainer>
 
         <ChartContainer title="Compliance Coverage Analysis" description="Regulatory standard coverage comparison">
-          <ResponsiveRadar
-            data={complianceRadarData || []}
-            keys={["portnox", "average"]}
-            indexBy="standard"
-            maxValue={100}
-            margin={{ top: 40, right: 80, bottom: 40, left: 80 }}
-            curve="linearClosed"
-            borderWidth={2}
-            borderColor={{ from: "color" }}
-            gridLevels={5}
-            gridShape="circular"
-            gridLabelOffset={20}
-            enableDots={true}
-            dotSize={8}
-            dotColor={{ theme: "background" }}
-            dotBorderWidth={2}
-            dotBorderColor={{ from: "color" }}
-            enableDotLabel={true}
-            dotLabel="value"
-            dotLabelYOffset={-12}
-            colors={["#00F5D4", "#F15BB5"]}
-            fillOpacity={0.25}
-            blendMode="normal"
-            animate={true}
-            motionConfig="gentle"
-            theme={NIVO_THEME}
-            legends={[
-              {
-                anchor: "top-left",
-                direction: "column",
-                translateX: -50,
-                translateY: -40,
-                itemWidth: 80,
-                itemHeight: 20,
-                itemTextColor: "#999",
-                symbolSize: 12,
-                symbolShape: "circle",
-                effects: [
-                  {
-                    on: "hover",
-                    style: {
-                      itemTextColor: "#fff",
+          {complianceRadarData.length > 0 ? (
+            <ResponsiveRadar
+              data={complianceRadarData}
+              keys={["portnox", "average"]}
+              indexBy="standard"
+              maxValue={100}
+              margin={{ top: 40, right: 80, bottom: 40, left: 80 }}
+              curve="linearClosed"
+              borderWidth={2}
+              borderColor={{ from: "color" }}
+              gridLevels={5}
+              gridShape="circular"
+              gridLabelOffset={20}
+              enableDots={true}
+              dotSize={8}
+              dotColor={{ theme: "background" }}
+              dotBorderWidth={2}
+              dotBorderColor={{ from: "color" }}
+              enableDotLabel={true}
+              dotLabel="value"
+              dotLabelYOffset={-12}
+              colors={["#00F5D4", "#F15BB5"]}
+              fillOpacity={0.25}
+              blendMode="normal"
+              animate={true}
+              motionConfig="gentle"
+              theme={NIVO_THEME}
+              legends={[
+                {
+                  anchor: "top-left",
+                  direction: "column",
+                  translateX: -50,
+                  translateY: -40,
+                  itemWidth: 80,
+                  itemHeight: 20,
+                  itemTextColor: "#999",
+                  symbolSize: 12,
+                  symbolShape: "circle",
+                  effects: [
+                    {
+                      on: "hover",
+                      style: {
+                        itemTextColor: "#fff",
+                      },
                     },
-                  },
-                ],
-              },
-            ]}
-          />
+                  ],
+                },
+              ]}
+            />
+          ) : (
+            <div className="text-center p-4 text-gray-400">No data for Compliance Radar.</div>
+          )}
         </ChartContainer>
       </div>
 
@@ -1506,53 +1518,57 @@ const ExecutiveDashboard: React.FC<{ data: any[]; config: any }> = ({ data, conf
         description="Vendor compliance scores across industry standards"
       >
         <div style={{ height: 400 }}>
-          <ResponsiveHeatMap
-            data={heatmapData || []}
-            keys={heatmapKeys || []}
-            indexBy="id"
-            margin={{ top: 60, right: 90, bottom: 60, left: 90 }}
-            forceSquare={false}
-            axisTop={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: -45,
-              legend: "",
-              legendOffset: 46,
-            }}
-            axisRight={null}
-            axisBottom={null}
-            axisLeft={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-              legend: "",
-              legendPosition: "middle",
-              legendOffset: -72,
-            }}
-            cellOpacity={1}
-            cellBorderColor={{ from: "color", modifiers: [["darker", 0.4]] }}
-            labelTextColor={{ from: "color", modifiers: [["darker", 2]] }}
-            colors={{
-              type: "sequential",
-              scheme: "blue_green",
-              divergeAt: 0.5,
-              minValue: 0,
-              maxValue: 100,
-            }}
-            animate={true}
-            motionConfig="gentle"
-            theme={NIVO_THEME}
-            hoverTarget="cell"
-            cellHoverOthersOpacity={0.25}
-            tooltip={({ xKey, yKey, value, color }: any) => (
-              <div className="p-3 rounded-lg glass-effect">
-                <strong>{yKey as string}</strong> - {xKey as string}
-                <div className="text-2xl font-bold mt-1" style={{ color }}>
-                  {safeNum(value)}%
+          {heatmapData.length > 0 && heatmapKeys.length > 0 ? (
+            <ResponsiveHeatMap
+              data={heatmapData}
+              keys={heatmapKeys}
+              indexBy="id"
+              margin={{ top: 60, right: 90, bottom: 60, left: 90 }}
+              forceSquare={false}
+              axisTop={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: -45,
+                legend: "",
+                legendOffset: 46,
+              }}
+              axisRight={null}
+              axisBottom={null}
+              axisLeft={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: 0,
+                legend: "",
+                legendPosition: "middle",
+                legendOffset: -72,
+              }}
+              cellOpacity={1}
+              cellBorderColor={{ from: "color", modifiers: [["darker", 0.4]] }}
+              labelTextColor={{ from: "color", modifiers: [["darker", 2]] }}
+              colors={{
+                type: "sequential",
+                scheme: "blue_green",
+                divergeAt: 0.5,
+                minValue: 0,
+                maxValue: 100,
+              }}
+              animate={true}
+              motionConfig="gentle"
+              theme={NIVO_THEME}
+              hoverTarget="cell"
+              cellHoverOthersOpacity={0.25}
+              tooltip={({ xKey, yKey, value, color }: any) => (
+                <div className="p-3 rounded-lg glass-effect">
+                  <strong>{yKey as string}</strong> - {xKey as string}
+                  <div className="text-2xl font-bold mt-1" style={{ color }}>
+                    {safeNum(value)}%
+                  </div>
                 </div>
-              </div>
-            )}
-          />
+              )}
+            />
+          ) : (
+            <div className="text-center p-4 text-gray-400">No data for Heatmap.</div>
+          )}
         </div>
       </ChartContainer>
     </div>
@@ -1561,7 +1577,11 @@ const ExecutiveDashboard: React.FC<{ data: any[]; config: any }> = ({ data, conf
 
 const FinancialDeepDive: React.FC<{ data: any[]; config: any }> = ({ data, config }) => {
   if (!data || data.length === 0) {
-    return <div className="text-center p-10 text-xl text-gray-400">No data available for the selected filters.</div>
+    return (
+      <div className="text-center p-10 text-xl text-gray-400">
+        No data available for the selected filters. Please adjust filters or check data sources.
+      </div>
+    )
   }
   const safeNum = (val: any, defaultVal = 0) => (Number.isFinite(Number(val)) ? Number(val) : defaultVal)
 
@@ -1571,48 +1591,67 @@ const FinancialDeepDive: React.FC<{ data: any[]; config: any }> = ({ data, confi
   }
   const industry = MASTER_DATA.industries[config.industry as keyof typeof MASTER_DATA.industries]
 
-  const roiTimelineData: any[] = []
-  const currentAnalysisPeriod = safeNum(config.analysisPeriod, 1)
-  for (let month = 0; month <= 36; month += 3) {
-    const monthData: { month: string; [key: string]: any } = { month: `Month ${month}` }
-    ;(data || []).slice(0, 5).forEach((vendor) => {
-      if (!vendor.financials || !vendor.financials.breakdown) return
-      const monthlyOpex = safeNum(vendor.financials.breakdown.opex) / (currentAnalysisPeriod * 12)
-      const cumCost = safeNum(vendor.financials.breakdown.capex) + monthlyOpex * month
-      const cumSavings = (safeNum(vendor.financials.breakdown.totalSavings) / (currentAnalysisPeriod * 12)) * month
-      monthData[vendor.shortName] = Math.round(cumSavings - cumCost)
-    })
-    roiTimelineData.push(monthData)
-  }
+  const streamChartEssentials = useMemo(() => {
+    const chartData = data || []
+    const keys = chartData
+      .slice(0, 5)
+      .map((v) => v.shortName)
+      .filter(Boolean)
 
-  const streamKeys = (data || []).slice(0, 5).map((v) => v.shortName)
+    if (keys.length === 0 || chartData.length === 0) {
+      return null
+    }
 
-  const costBreakdownData = {
-    name: "Total Costs",
-    children: (data || [])
-      .slice(0, 8)
-      .map((vendor) => ({
-        name: vendor.shortName,
-        children: [
-          { name: "Hardware", value: safeNum(vendor.costs?.hardware), category: "capex" },
-          { name: "Implementation", value: safeNum(vendor.costs?.implementation), category: "capex" },
-          {
-            name: "Personnel",
-            value: safeNum(vendor.costs?.personnelPerYear) * currentAnalysisPeriod,
-            category: "opex",
-          },
-          {
-            name: "Licensing",
-            value:
-              vendor.pricing?.model === "subscription"
-                ? safeNum(vendor.pricing?.basePrice) * safeNum(config.deviceCount) * 12 * currentAnalysisPeriod
-                : safeNum(vendor.pricing?.basePrice) * safeNum(config.deviceCount),
-            category: "opex",
-          },
-        ].filter((item) => item.value > 0),
-      }))
-      .filter((vendor) => vendor.children.length > 0),
-  }
+    const timelineData: any[] = []
+    const currentAnalysisPeriod = safeNum(config.analysisPeriod, 1)
+    for (let month = 0; month <= 36; month += 3) {
+      const monthData: { month: string; [key: string]: any } = { month: `Month ${month}` }
+      chartData.slice(0, 5).forEach((vendor) => {
+        // Ensure vendor.shortName is one of the keys we are tracking
+        if (!keys.includes(vendor.shortName) || !vendor.financials || !vendor.financials.breakdown) return
+
+        const monthlyOpex = safeNum(vendor.financials.breakdown.opex) / (currentAnalysisPeriod * 12)
+        const cumCost = safeNum(vendor.financials.breakdown.capex) + monthlyOpex * month
+        const cumSavings = (safeNum(vendor.financials.breakdown.totalSavings) / (currentAnalysisPeriod * 12)) * month
+        monthData[vendor.shortName] = Math.round(cumSavings - cumCost)
+      })
+      timelineData.push(monthData)
+    }
+    return { data: timelineData, keys }
+  }, [data, config.analysisPeriod])
+
+  const costBreakdownData = useMemo(
+    () => ({
+      name: "Total Costs",
+      children: (data || [])
+        .slice(0, 8)
+        .map((vendor) => ({
+          name: vendor.shortName,
+          children: [
+            { name: "Hardware", value: safeNum(vendor.costs?.hardware), category: "capex" },
+            { name: "Implementation", value: safeNum(vendor.costs?.implementation), category: "capex" },
+            {
+              name: "Personnel",
+              value: safeNum(vendor.costs?.personnelPerYear) * safeNum(config.analysisPeriod, 1),
+              category: "opex",
+            },
+            {
+              name: "Licensing",
+              value:
+                vendor.pricing?.model === "subscription"
+                  ? safeNum(vendor.pricing?.basePrice) *
+                    safeNum(config.deviceCount) *
+                    12 *
+                    safeNum(config.analysisPeriod, 1)
+                  : safeNum(vendor.pricing?.basePrice) * safeNum(config.deviceCount),
+              category: "opex",
+            },
+          ].filter((item) => item.value > 0),
+        }))
+        .filter((vendor) => vendor.children.length > 0),
+    }),
+    [data, config.analysisPeriod, config.deviceCount],
+  )
 
   return (
     <div className="space-y-8">
@@ -1711,10 +1750,10 @@ const FinancialDeepDive: React.FC<{ data: any[]; config: any }> = ({ data, confi
 
       <ChartContainer title="Cumulative ROI Timeline" description="Net benefit progression over 36 months">
         <div style={{ height: 400 }}>
-          {streamKeys.length > 0 ? (
+          {streamChartEssentials ? (
             <ResponsiveStream
-              data={roiTimelineData || []}
-              keys={streamKeys}
+              data={streamChartEssentials.data}
+              keys={streamChartEssentials.keys}
               indexBy="month"
               margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
               axisTop={null}
@@ -1765,47 +1804,49 @@ const FinancialDeepDive: React.FC<{ data: any[]; config: any }> = ({ data, confi
               ]}
             />
           ) : (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              Not enough data to display timeline.
-            </div>
+            <div className="text-center p-4 text-gray-400">Not enough data for ROI Timeline.</div>
           )}
         </div>
       </ChartContainer>
 
       <ChartContainer title="Total Cost Structure Analysis" description="Hierarchical breakdown of all cost components">
         <div style={{ height: 500 }}>
-          <ResponsiveTreeMap
-            data={costBreakdownData.children.length > 0 ? costBreakdownData : { name: "No Data", children: [] }}
-            identity="name"
-            value="value" // Make sure 'value' is always a finite number
-            valueFormat={(v) => `$${safeNum(v).toLocaleString()}`} // Format value safely
-            margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
-            labelSkipSize={12}
-            labelTextColor={{ from: "color", modifiers: [["darker", 2]] }}
-            parentLabelTextColor={{ from: "color", modifiers: [["darker", 3]] }}
-            colors={(node: any) => {
-              if (node.data.category === "capex") return "#F15BB5"
-              if (node.data.category === "opex") return "#00BBF9"
-              const vendor = (data || []).find((v) => v.shortName === node.data.name)
-              return vendor?.color || "#666"
-            }}
-            borderColor={{ from: "color", modifiers: [["darker", 0.1]] }}
-            animate={true}
-            motionConfig="gentle"
-            theme={NIVO_THEME}
-            nodeOpacity={1}
-            tooltip={({ node }: any) => (
-              <div className="p-3 rounded-lg glass-effect">
-                <strong>{node.id}</strong>
-                <div className="text-sm mt-1">
-                  Value: <span className="font-mono">${safeNum(node.value).toLocaleString()}</span>
+          {costBreakdownData.children && costBreakdownData.children.length > 0 ? (
+            <ResponsiveTreeMap
+              data={costBreakdownData}
+              identity="name"
+              value="value"
+              valueFormat={(v) => `$${safeNum(v).toLocaleString()}`}
+              margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+              labelSkipSize={12}
+              labelTextColor={{ from: "color", modifiers: [["darker", 2]] }}
+              parentLabelTextColor={{ from: "color", modifiers: [["darker", 3]] }}
+              colors={(node: any) => {
+                if (node.data.category === "capex") return "#F15BB5"
+                if (node.data.category === "opex") return "#00BBF9"
+                const vendor = (data || []).find((v) => v.shortName === node.data.name)
+                return vendor?.color || "#666"
+              }}
+              borderColor={{ from: "color", modifiers: [["darker", 0.1]] }}
+              animate={true}
+              motionConfig="gentle"
+              theme={NIVO_THEME}
+              nodeOpacity={1}
+              tooltip={({ node }: any) => (
+                <div className="p-3 rounded-lg glass-effect">
+                  <strong>{node.id}</strong>
+                  <div className="text-sm mt-1">
+                    Value: <span className="font-mono">${safeNum(node.value).toLocaleString()}</span>
+                  </div>
+                  {node.data.category && (
+                    <div className="text-xs text-gray-400 mt-1">Type: {node.data.category.toUpperCase()}</div>
+                  )}
                 </div>
-                {node.data.category && (
-                  <div className="text-xs text-gray-400 mt-1">Type: {node.data.category.toUpperCase()}</div>
-                )}
-              </div>
-            )}
-          />
+              )}
+            />
+          ) : (
+            <div className="text-center p-4 text-gray-400">No data for Cost Structure Analysis.</div>
+          )}
         </div>
       </ChartContainer>
     </div>
@@ -1814,7 +1855,11 @@ const FinancialDeepDive: React.FC<{ data: any[]; config: any }> = ({ data, confi
 
 const ComplianceMatrix: React.FC<{ data: any[]; config: any }> = ({ data, config }) => {
   if (!data || data.length === 0) {
-    return <div className="text-center p-10 text-xl text-gray-400">No data available for the selected filters.</div>
+    return (
+      <div className="text-center p-10 text-xl text-gray-400">
+        No data available for the selected filters. Please adjust filters or check data sources.
+      </div>
+    )
   }
   const safeNum = (val: any, defaultVal = 0) => (Number.isFinite(Number(val)) ? Number(val) : defaultVal)
 
@@ -1824,54 +1869,81 @@ const ComplianceMatrix: React.FC<{ data: any[]; config: any }> = ({ data, config
   }
   const industry = MASTER_DATA.industries[config.industry as keyof typeof MASTER_DATA.industries]
 
-  const complianceByCategoryData = Object.entries(
-    Object.entries(MASTER_DATA.compliance).reduce(
-      (acc, [key, standard]) => {
-        const category = standard.category as string
-        if (!acc[category]) acc[category] = []
-        const pnCompliance = portnox.compliance && typeof portnox.compliance === "object" ? portnox.compliance : {}
-        acc[category].push({
-          standard: standard.name,
-          portnox: safeNum(pnCompliance[key as keyof typeof pnCompliance]),
-          controls: standard.controls,
-          description: standard.description,
-        })
-        return acc
-      },
-      {} as Record<string, any[]>,
-    ),
-  ).map(([category, standards]) => ({
-    category,
-    standards,
-    avgCoverage: safeNum(
-      Math.round(standards.reduce((acc, s) => acc + safeNum(s.portnox), 0) / (standards.length || 1)),
-    ),
-  }))
+  const complianceByCategoryData = useMemo(
+    () =>
+      Object.entries(
+        Object.entries(MASTER_DATA.compliance).reduce(
+          (acc, [key, standard]) => {
+            const category = standard.category as string
+            if (!acc[category]) acc[category] = []
+            const pnCompliance = portnox.compliance && typeof portnox.compliance === "object" ? portnox.compliance : {}
+            acc[category].push({
+              standard: standard.name,
+              portnox: safeNum(pnCompliance[key as keyof typeof pnCompliance]),
+              controls: standard.controls,
+              description: standard.description,
+            })
+            return acc
+          },
+          {} as Record<string, any[]>,
+        ),
+      ).map(([category, standards]) => ({
+        category,
+        standards,
+        avgCoverage: safeNum(
+          Math.round(standards.reduce((acc, s) => acc + safeNum(s.portnox), 0) / (standards.length || 1)),
+        ),
+      })),
+    [portnox.compliance],
+  )
 
-  const vendorComplianceData = (data || []).slice(0, 8).map((vendor) => {
-    const vendCompliance = vendor.compliance && typeof vendor.compliance === "object" ? vendor.compliance : {}
-    const complianceScores = Object.keys(MASTER_DATA.compliance).map((key) =>
-      safeNum(vendCompliance[key as keyof typeof vendCompliance]),
-    )
+  const sunburstChartData = useMemo(
+    () => ({
+      name: "Compliance",
+      children: (complianceByCategoryData || [])
+        .map((cat) => ({
+          name: cat.category,
+          children: (cat.standards || []).map((std: any) => ({
+            name: std.standard,
+            value: safeNum(std.portnox), // Ensure value is a number
+            controls: std.controls,
+          })),
+        }))
+        .filter((cat) => cat.children && cat.children.length > 0), // Ensure categories have standards
+    }),
+    [complianceByCategoryData],
+  )
 
-    let overallScore = 0
-    if (complianceScores.length > 0) {
-      const sum = complianceScores.reduce((a, b) => a + b, 0)
-      overallScore = safeNum(Math.round(sum / complianceScores.length))
-    }
+  const vendorComplianceData = useMemo(
+    () =>
+      (data || []).slice(0, 8).map((vendor) => {
+        const vendCompliance = vendor.compliance && typeof vendor.compliance === "object" ? vendor.compliance : {}
+        const complianceScores = Object.keys(MASTER_DATA.compliance).map((key) =>
+          safeNum(vendCompliance[key as keyof typeof vendCompliance]),
+        )
 
-    return {
-      vendor: vendor.shortName,
-      overallScore: overallScore,
-      ...Object.keys(MASTER_DATA.compliance).reduce(
-        (acc, key) => ({
-          ...acc,
-          [key]: safeNum(vendCompliance[key as keyof typeof vendCompliance]),
-        }),
-        {},
-      ),
-    }
-  })
+        let overallScore = 0
+        if (complianceScores.length > 0) {
+          const sum = complianceScores.reduce((a, b) => a + b, 0)
+          overallScore = safeNum(Math.round(sum / complianceScores.length))
+        }
+
+        return {
+          vendor: vendor.shortName,
+          overallScore: overallScore,
+          ...Object.keys(MASTER_DATA.compliance).reduce(
+            (acc, key) => ({
+              ...acc,
+              [key]: safeNum(vendCompliance[key as keyof typeof vendCompliance]),
+            }),
+            {},
+          ),
+        }
+      }),
+    [data],
+  )
+
+  const heatmapComplianceKeys = useMemo(() => Object.keys(MASTER_DATA.compliance), [])
 
   return (
     <div className="space-y-8">
@@ -1920,48 +1992,42 @@ const ComplianceMatrix: React.FC<{ data: any[]; config: any }> = ({ data, config
 
       <ChartContainer title="Compliance Coverage by Category" description="Hierarchical view of regulatory compliance">
         <div style={{ height: 500 }}>
-          <ResponsiveSunburst
-            data={{
-              name: "Compliance",
-              children: (complianceByCategoryData || []).map((cat) => ({
-                name: cat.category,
-                children: (cat.standards || []).map((std: any) => ({
-                  name: std.standard,
-                  value: safeNum(std.portnox),
-                  controls: std.controls,
-                })),
-              })),
-            }}
-            margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
-            id="name"
-            value="value"
-            cornerRadius={2}
-            borderColor={{ theme: "background" }}
-            colors={{ scheme: "spectral" }}
-            childColor={{
-              from: "color",
-              modifiers: [["brighter", 0.1]],
-            }}
-            enableArcLabels={true}
-            arcLabel={(d: any) => `${safeNum(d.value)}%`}
-            arcLabelsSkipAngle={10}
-            arcLabelsTextColor={{
-              from: "color",
-              modifiers: [["darker", 3]],
-            }}
-            animate={true}
-            motionConfig="gentle"
-            theme={NIVO_THEME}
-            tooltip={({ id, value, data }: any) => (
-              <div className="p-3 rounded-lg glass-effect">
-                <strong>{id}</strong>
-                <div className="text-sm mt-1">
-                  Coverage: <span className="font-mono">{safeNum(value)}%</span>
+          {sunburstChartData.children && sunburstChartData.children.length > 0 ? (
+            <ResponsiveSunburst
+              data={sunburstChartData}
+              margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+              id="name"
+              value="value"
+              cornerRadius={2}
+              borderColor={{ theme: "background" }}
+              colors={{ scheme: "spectral" }}
+              childColor={{
+                from: "color",
+                modifiers: [["brighter", 0.1]],
+              }}
+              enableArcLabels={true}
+              arcLabel={(d: any) => `${safeNum(d.value)}%`}
+              arcLabelsSkipAngle={10}
+              arcLabelsTextColor={{
+                from: "color",
+                modifiers: [["darker", 3]],
+              }}
+              animate={true}
+              motionConfig="gentle"
+              theme={NIVO_THEME}
+              tooltip={({ id, value, data }: any) => (
+                <div className="p-3 rounded-lg glass-effect">
+                  <strong>{id}</strong>
+                  <div className="text-sm mt-1">
+                    Coverage: <span className="font-mono">{safeNum(value)}%</span>
+                  </div>
+                  {data.controls && <div className="text-xs text-gray-400 mt-1">Controls: {data.controls}</div>}
                 </div>
-                {data.controls && <div className="text-xs text-gray-400 mt-1">Controls: {data.controls}</div>}
-              </div>
-            )}
-          />
+              )}
+            />
+          ) : (
+            <div className="text-center p-4 text-gray-400">No data for Compliance Sunburst.</div>
+          )}
         </div>
       </ChartContainer>
 
@@ -1971,77 +2037,81 @@ const ComplianceMatrix: React.FC<{ data: any[]; config: any }> = ({ data, config
       >
         <div style={{ height: 600, overflowX: "auto" }}>
           <div style={{ minWidth: 1200, height: "100%" }}>
-            <ResponsiveHeatMap
-              data={vendorComplianceData || []}
-              keys={Object.keys(MASTER_DATA.compliance)}
-              indexBy="vendor"
-              margin={{ top: 100, right: 60, bottom: 60, left: 100 }}
-              forceSquare={false}
-              axisTop={{
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: -45,
-                legend: "",
-                legendOffset: 46,
-                format: (v: any) => MASTER_DATA.compliance[v as keyof typeof MASTER_DATA.compliance]?.name || v,
-              }}
-              axisRight={null}
-              axisBottom={null}
-              axisLeft={{
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: 0,
-                legend: "Vendors",
-                legendPosition: "middle",
-                legendOffset: -80,
-              }}
-              cellOpacity={1}
-              cellBorderColor={{ from: "color", modifiers: [["darker", 0.4]] }}
-              labelTextColor={{ from: "color", modifiers: [["darker", 2]] }}
-              colors={{
-                type: "sequential",
-                scheme: "green_blue",
-                minValue: 0,
-                maxValue: 100,
-              }}
-              animate={true}
-              motionConfig="gentle"
-              theme={NIVO_THEME}
-              hoverTarget="cell"
-              cellHoverOthersOpacity={0.25}
-              tooltip={({ xKey, yKey, value, color }: any) => (
-                <div className="p-3 rounded-lg glass-effect">
-                  <strong>{yKey as string}</strong>
-                  <div className="text-sm mt-1">
-                    {MASTER_DATA.compliance[xKey as keyof typeof MASTER_DATA.compliance]?.fullName}
+            {vendorComplianceData.length > 0 && heatmapComplianceKeys.length > 0 ? (
+              <ResponsiveHeatMap
+                data={vendorComplianceData}
+                keys={heatmapComplianceKeys}
+                indexBy="vendor"
+                margin={{ top: 100, right: 60, bottom: 60, left: 100 }}
+                forceSquare={false}
+                axisTop={{
+                  tickSize: 5,
+                  tickPadding: 5,
+                  tickRotation: -45,
+                  legend: "",
+                  legendOffset: 46,
+                  format: (v: any) => MASTER_DATA.compliance[v as keyof typeof MASTER_DATA.compliance]?.name || v,
+                }}
+                axisRight={null}
+                axisBottom={null}
+                axisLeft={{
+                  tickSize: 5,
+                  tickPadding: 5,
+                  tickRotation: 0,
+                  legend: "Vendors",
+                  legendPosition: "middle",
+                  legendOffset: -80,
+                }}
+                cellOpacity={1}
+                cellBorderColor={{ from: "color", modifiers: [["darker", 0.4]] }}
+                labelTextColor={{ from: "color", modifiers: [["darker", 2]] }}
+                colors={{
+                  type: "sequential",
+                  scheme: "green_blue",
+                  minValue: 0,
+                  maxValue: 100,
+                }}
+                animate={true}
+                motionConfig="gentle"
+                theme={NIVO_THEME}
+                hoverTarget="cell"
+                cellHoverOthersOpacity={0.25}
+                tooltip={({ xKey, yKey, value, color }: any) => (
+                  <div className="p-3 rounded-lg glass-effect">
+                    <strong>{yKey as string}</strong>
+                    <div className="text-sm mt-1">
+                      {MASTER_DATA.compliance[xKey as keyof typeof MASTER_DATA.compliance]?.fullName}
+                    </div>
+                    <div className="text-2xl font-bold mt-2" style={{ color }}>
+                      {safeNum(value)}%
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      {MASTER_DATA.compliance[xKey as keyof typeof MASTER_DATA.compliance]?.controls} controls
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold mt-2" style={{ color }}>
-                    {safeNum(value)}%
-                  </div>
-                  <div className="text-xs text-gray-400 mt-1">
-                    {MASTER_DATA.compliance[xKey as keyof typeof MASTER_DATA.compliance]?.controls} controls
-                  </div>
-                </div>
-              )}
-              legends={[
-                {
-                  anchor: "bottom",
-                  translateX: 0,
-                  translateY: 30,
-                  length: 400,
-                  thickness: 8,
-                  direction: "row",
-                  tickPosition: "after",
-                  tickSize: 3,
-                  tickSpacing: 4,
-                  tickOverlap: false,
-                  tickFormat: ">-.0s",
-                  title: "Coverage %",
-                  titleAlign: "start",
-                  titleOffset: 4,
-                },
-              ]}
-            />
+                )}
+                legends={[
+                  {
+                    anchor: "bottom",
+                    translateX: 0,
+                    translateY: 30,
+                    length: 400,
+                    thickness: 8,
+                    direction: "row",
+                    tickPosition: "after",
+                    tickSize: 3,
+                    tickSpacing: 4,
+                    tickOverlap: false,
+                    tickFormat: ">-.0s",
+                    title: "Coverage %",
+                    titleAlign: "start",
+                    titleOffset: 4,
+                  },
+                ]}
+              />
+            ) : (
+              <div className="text-center p-4 text-gray-400">No data for Vendor Compliance Heatmap.</div>
+            )}
           </div>
         </div>
       </ChartContainer>
@@ -2179,7 +2249,6 @@ const App = () => {
           id,
           ...vendorData,
           financials: calculateFinancials(id, config),
-          // config: config, // config is already available in the scope where processedData is used
         }
       })
       .filter(
@@ -2193,6 +2262,9 @@ const App = () => {
   const AppContent = () => {
     const { currentPage } = useNav()
 
+    // Fallback for processedData if it's null or undefined, ensuring it's always an array for child components
+    const currentProcessedData = processedData || []
+
     return (
       <AnimatePresence mode="wait">
         <motion.div
@@ -2203,9 +2275,9 @@ const App = () => {
           transition={{ duration: 0.4, ease: "easeInOut" }}
           className="p-8"
         >
-          {currentPage === "dashboard" && <ExecutiveDashboard data={processedData || []} config={config} />}
-          {currentPage === "financial" && <FinancialDeepDive data={processedData || []} config={config} />}
-          {currentPage === "compliance" && <ComplianceMatrix data={processedData || []} config={config} />}
+          {currentPage === "dashboard" && <ExecutiveDashboard data={currentProcessedData} config={config} />}
+          {currentPage === "financial" && <FinancialDeepDive data={currentProcessedData} config={config} />}
+          {currentPage === "compliance" && <ComplianceMatrix data={currentProcessedData} config={config} />}
           {/* Add other pages as needed */}
           {currentPage !== "dashboard" && currentPage !== "financial" && currentPage !== "compliance" && (
             <div className="text-center p-10">
