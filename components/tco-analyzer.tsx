@@ -455,7 +455,7 @@ export default function TcoAnalyzerUltimate() {
   const TabNavigation = () => (
     <motion.nav
       className={cn(
-        "sticky top-16 z-40 backdrop-blur-md",
+        "sticky top-16 z-40 backdrop-blur-md", // top-16 assumes header height is 4rem (h-16)
         darkMode ? "bg-gray-800/70 border-b border-gray-700/60" : "bg-white/70 border-b border-gray-200/60",
       )}
       initial={{ opacity: 0, y: -20 }}
@@ -466,31 +466,32 @@ export default function TcoAnalyzerUltimate() {
         <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
           <TabsList
             className={cn(
-              "grid w-full h-auto py-0 bg-transparent rounded-none",
-              `grid-cols-${TABS_CONFIG.length < 5 ? TABS_CONFIG.length : "4"} sm:grid-cols-${TABS_CONFIG.length}`,
+              "flex flex-row items-center h-auto py-0 bg-transparent rounded-none overflow-x-auto no-scrollbar", // Use flex for horizontal layout, allow scrolling
+              // "justify-center" // Optionally center if tabs don't fill width
             )}
           >
             {TABS_CONFIG.map((tab, index) => (
               <motion.div
                 key={tab.value}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, x: 15 }} // Changed y to x for horizontal entry
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.25 + index * 0.05, type: "spring", stiffness: 120, damping: 15 }}
+                className="flex-shrink-0" // Prevent tabs from shrinking too much
               >
                 <TabsTrigger
                   value={tab.value}
                   className={cn(
-                    "relative flex-col sm:flex-row h-14 sm:h-12 text-xs rounded-none px-2 py-1 sm:px-3",
+                    "relative flex items-center h-14 sm:h-12 text-xs rounded-none px-3 py-1 sm:px-4", // Always flex items-center (row)
                     "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
                     darkMode
-                      ? "hover:bg-gray-700/50 data-[state=active]:text-portnox-primaryLight"
-                      : "hover:bg-gray-100 data-[state=active]:text-portnox-primary",
-                    "transition-all duration-200 group",
+                      ? "hover:bg-gray-700/50 data-[state=active]:text-portnox-primaryLight text-gray-300 hover:text-gray-100"
+                      : "hover:bg-gray-100 data-[state=active]:text-portnox-primary text-gray-600 hover:text-gray-800",
+                    "transition-all duration-200 group whitespace-nowrap", // whitespace-nowrap to keep icon and label together
                   )}
                 >
                   <div
                     className={cn(
-                      "h-5 w-5 mb-0.5 sm:mr-1.5 sm:mb-0 transition-transform duration-200 group-hover:scale-110",
+                      "h-5 w-5 mr-1.5 transition-transform duration-200 group-hover:scale-110",
                       activeView === tab.value
                         ? darkMode
                           ? "text-portnox-primaryLight"
@@ -502,16 +503,17 @@ export default function TcoAnalyzerUltimate() {
                   >
                     {React.cloneElement(tab.icon, { className: "h-full w-full" })}
                   </div>
+                  {/* Label display logic: show full label on sm+, shorter on xs */}
                   <span className={cn("hidden sm:inline", activeView === tab.value ? "font-semibold" : "")}>
                     {tab.label}
                   </span>
                   <span
                     className={cn(
-                      "inline sm:hidden text-[9px] leading-tight mt-0.5",
+                      "inline sm:hidden text-[10px] leading-tight", // Slightly larger for very small screens
                       activeView === tab.value ? "font-semibold" : "",
                     )}
                   >
-                    {tab.label.split(" ")[0]}
+                    {tab.label.split(" ")[0]} {/* Show first word or a shorter version */}
                   </span>
                   {activeView === tab.value && (
                     <motion.div
@@ -526,6 +528,16 @@ export default function TcoAnalyzerUltimate() {
           </TabsList>
         </Tabs>
       </div>
+      {/* Simple CSS to hide scrollbar if it appears */}
+      <style jsx global>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none; /* IE and Edge */
+          scrollbar-width: none; /* Firefox */
+        }
+      `}</style>
     </motion.nav>
   )
 
@@ -1314,12 +1326,73 @@ export default function TcoAnalyzerUltimate() {
         </Card>
       )
     // For brevity, not pasting full code.
+    // This view would ideally show charts on FTE savings, alert reduction, etc.
+    // For now, display a styled placeholder.
+    const portnoxOpData = AllVendorData.portnox.features.operational as any; // Example data source
+    const exampleOperationalMetrics = [
+        { title: "IT Admin Efficiency Gain", value: `${(portnoxResult?.roi?.laborSavings || 1.9) * 100}%`, detail: "Reduction in manual tasks for IT staff.", icon: <ZapIcon/>, gradient: "vibrant" as const },
+        { title: "Security Alert Reduction", value: "60%", detail: "Fewer false positives, faster triage.", icon: <ShieldCheck/>, gradient: "ocean" as const },
+        { title: "Automated Policy Enforcement", value: `${portnoxOpData?.automation?.score || 95}%`, detail: "Reduced manual configuration and errors.", icon: <SlidersHorizontal/>, gradient: "fire" as const },
+        { title: "Mean Time to Resolution (MTTR)", value: `< ${portnoxResult?.riskMetrics?.mttr || 15} min`, detail: "Faster incident response and remediation.", icon: <Clock/>, gradient: "sunset" as const },
+    ];
+
     return (
-      <Card className="p-6">
-        <CardTitle>Operations Impact View</CardTitle>
-        <CardContent>Content for Operations Impact...</CardContent>
-      </Card>
-    )
+      <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
+         <motion.div variants={fadeInUp}>
+            <GradientCard darkMode={darkMode}>
+                <CardHeader>
+                    <CardTitle className="flex items-center space-x-2 text-xl">
+                        <SlidersHorizontal className="h-5 w-5 text-portnox-primary" />
+                        <span>Operational Impact & Efficiency</span>
+                    </CardTitle>
+                    <CardDescription className={cn(darkMode ? "text-gray-400" : "text-gray-500")}>
+                        How {portnoxResult?.vendorName || "selected solution"} can streamline IT operations and improve team productivity.
+                    </CardDescription>
+                </CardHeader>
+            </GradientCard>
+        </motion.div>
+
+        <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" variants={staggerChildren}>
+          {exampleOperationalMetrics.map((metric, index) => (
+            <motion.div variants={fadeInUp} key={index}>
+              <MetricCard
+                title={metric.title}
+                value={metric.value}
+                detail={metric.detail}
+                icon={metric.icon}
+                gradient={metric.gradient}
+                darkMode={darkMode}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
+
+        <motion.div variants={fadeInUp}>
+            <GradientCard darkMode={darkMode}>
+                <CardHeader>
+                    <CardTitle className="flex items-center space-x-2 text-lg">
+                        <InfoIcon className="h-5 w-5 text-portnox-primary" />
+                        <span>Further Considerations</span>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className={cn("text-sm", darkMode ? "text-gray-300" : "text-gray-700")}>
+                    <p>
+                        The operational impact of a NAC solution extends beyond direct cost savings. Key benefits include:
+                    </p>
+                    <ul className={cn("list-disc pl-5 space-y-1 mt-2", darkMode ? "text-gray-400" : "text-gray-600")}>
+                        <li>Reduced burden on IT helpdesk through automated onboarding and issue resolution.</li>
+                        <li>Improved network performance and stability due to better device management.</li>
+                        <li>Enhanced ability to meet SLAs for network availability and security.</li>
+                        <li>Streamlined auditing processes with centralized visibility and control.</li>
+                    </ul>
+                    <p className="mt-3">
+                        These qualitative benefits contribute significantly to overall business value and should be considered alongside quantitative TCO and ROI figures.
+                    </p>
+                </CardContent>
+            </GradientCard>
+        </motion.div>
+      </motion.div>
+    );
   }
 
   const FeatureComparison = ({
@@ -1335,12 +1408,111 @@ export default function TcoAnalyzerUltimate() {
         </Card>
       )
     // For brevity, not pasting full code.
+    // This view will display a matrix of features for selected vendors.
+    if (!data || data.length === 0) {
+      return (
+        <Card className={cn("p-6 text-center", darkMode ? "bg-gray-800 text-gray-400" : "bg-white text-gray-500")}>
+          <InfoIcon className="mx-auto h-8 w-8 mb-2 text-portnox-primary" />
+          Select vendors to compare features.
+        </Card>
+      )
+    }
+
+    // Consolidate all unique feature keys from all selected vendors
+    const allFeatureKeys = data.reduce((acc, vendor) => {
+      Object.keys(vendor.features).forEach(key => {
+        if (!acc.includes(key)) acc.push(key);
+      });
+      return acc;
+    }, [] as string[]);
+
+    // More specific feature categories if available, otherwise use the keys directly
+    const featureCategories: Record<string, string[]> = {
+      "Core Network Access Control": ["deviceVisibility", "deviceProfiling", "networkSegmentation", "accessControl", "guestManagement", "byod", "agentless"],
+      "Security Capabilities": ["zeroTrust", "threatDetection", "incidentResponse", "riskScoring", "behavioralAnalytics", "microsegmentation", "iotSecurity"],
+      "Compliance & Reporting": ["reporting", "auditTrail", "policyTemplates", "continuousCompliance", "evidenceCollection"],
+      "Integrations & API": ["authProviders", "siem", "itsm", "mdm", "firewall", "api"],
+      "Operational Efficiency": ["dashboard", "automation", "aiOps", "multiTenancy", "rbac"],
+    };
+     // Create a flat list of features with their categories
+    const flatFeaturesList = Object.entries(featureCategories).flatMap(([category, features]) =>
+        features.map(featureKey => ({ category, featureKey, featureName: featureKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()) }))
+    );
+
+
     return (
-      <Card className="p-6">
-        <CardTitle>Feature Comparison View</CardTitle>
-        <CardContent>Content for Feature Comparison...</CardContent>
-      </Card>
-    )
+      <motion.div variants={fadeInUp}>
+        <GradientCard darkMode={darkMode}>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 text-xl">
+              <LayoutGrid className="h-5 w-5 text-portnox-primary" />
+              <span>Feature Matrix</span>
+            </CardTitle>
+            <CardDescription className={cn(darkMode ? "text-gray-400" : "text-gray-500")}>
+              Side-by-side feature comparison of selected solutions.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto rounded-lg border">
+              <table className={cn("w-full min-w-[900px] text-sm", darkMode ? "divide-gray-700" : "divide-gray-200")}>
+                <thead className={cn(darkMode ? "bg-gray-700/50" : "bg-gray-50")}>
+                  <tr>
+                    <th className={cn("py-3.5 px-4 text-left font-semibold sticky left-0 z-10", darkMode ? "text-gray-300 bg-gray-700/50" : "text-gray-600 bg-gray-50")}>Feature</th>
+                    {data.map(vendor => (
+                      <th key={vendor.id} className={cn("py-3.5 px-4 text-center font-semibold", darkMode ? "text-gray-300" : "text-gray-600")}>
+                        <div className="flex flex-col items-center gap-1">
+                          <Image src={vendor.logo || getVendorLogoPath(vendor.id) || "/placeholder.svg"} alt={vendor.name} width={24} height={24} className="h-6 w-auto object-contain rounded-sm mb-1"/>
+                          {vendor.name}
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className={cn("divide-y", darkMode ? "divide-gray-700 bg-gray-800" : "divide-gray-200 bg-white")}>
+                  {flatFeaturesList.map(({ category, featureKey, featureName }, index) => {
+                    const isNewCategory = index === 0 || flatFeaturesList[index - 1].category !== category;
+                    return (
+                        <React.Fragment key={featureKey}>
+                          {isNewCategory && (
+                            <tr className={cn(darkMode ? "bg-gray-700/30" : "bg-gray-100/80")}>
+                              <td colSpan={data.length + 1} className={cn("py-2 px-4 font-semibold text-xs sticky left-0 z-10", darkMode ? "text-portnox-primaryLight bg-gray-700/30" : "text-portnox-primary bg-gray-100/80")}>
+                                {category}
+                              </td>
+                            </tr>
+                          )}
+                          <tr className={cn(darkMode ? "hover:bg-gray-700/70" : "hover:bg-gray-50/70", "transition-colors")}>
+                            <td className={cn("py-3 px-4 font-medium sticky left-0 z-10", darkMode ? "text-gray-300 bg-gray-800 hover:bg-gray-700/70" : "text-gray-600 bg-white hover:bg-gray-50/70")}>{featureName}</td>
+                            {data.map(vendor => {
+                              const feature = vendor.features[featureKey];
+                              let displayValue: React.ReactNode;
+                              if (typeof feature === 'boolean') {
+                                displayValue = feature ? <Check className="h-5 w-5 text-green-500 mx-auto" /> : <XIcon className="h-5 w-5 text-red-500 mx-auto" />;
+                              } else if (feature && typeof feature === 'object' && 'available' in feature) {
+                                const typedFeature = feature as VendorFeature;
+                                displayValue = typedFeature.available ? <Check className="h-5 w-5 text-green-500 mx-auto" /> : <XIcon className="h-5 w-5 text-red-500 mx-auto" />;
+                                // Optionally, add more details from typedFeature.details or typedFeature.score
+                              } else if (typeof feature === 'string' || typeof feature === 'number') {
+                                displayValue = <span className="text-xs">{String(feature)}</span>;
+                              } else {
+                                displayValue = <XIcon className="h-5 w-5 text-gray-400 mx-auto" />;
+                              }
+                              return (
+                                <td key={`${vendor.id}-${featureKey}`} className="py-3 px-4 text-center">
+                                  {displayValue}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </GradientCard>
+      </motion.div>
+    );
   }
 
   const ImplementationRoadmapView = ({
@@ -1359,12 +1531,134 @@ export default function TcoAnalyzerUltimate() {
         </Card>
       )
     // For brevity, not pasting full code.
+    const { implementation } = vendor;
+    const roadmapPhases = [
+      {
+        name: "Proof of Concept (PoC)",
+        duration: implementation.deploymentTime.poc,
+        unit: "hours",
+        details: `Initial setup and validation for core use cases. Typically involves ${implementation.requiredResources.vendor || 0} vendor support hours and ${implementation.requiredResources.internal || 0.1} internal FTE.`,
+        icon: <RocketIcon />
+      },
+      {
+        name: "Pilot Program",
+        duration: implementation.deploymentTime.pilot,
+        unit: "hours",
+        details: `Expanded testing with a representative user group. Focus on integration and feedback. Estimated ${implementation.requiredResources.training || 8} hours training for pilot team.`,
+        icon: <UsersIcon />
+      },
+      {
+        name: "Full Deployment",
+        duration: implementation.deploymentTime.fullDeployment,
+        unit: "hours",
+        details: `Rollout to all ${deviceCount} devices and ${userCount} users. Complexity rated as: ${implementation.complexity}. Ongoing maintenance expected to be ${implementation.requiredResources.ongoing || 0.1} FTE.`,
+        icon: <TrendingUpIcon />
+      },
+      {
+        name: "Optimization & Expansion",
+        duration: vendor.roi.timeToValue || 30, // days
+        unit: "days",
+        details: `Post-deployment, focus on optimizing policies, integrating further systems, and scaling capabilities. Time to initial significant value: ~${vendor.roi.timeToValue || 30} days.`,
+        icon: <Award />
+      }
+    ];
+
+    const totalDurationHours = (implementation.deploymentTime.poc || 0) +
+                               (implementation.deploymentTime.pilot || 0) +
+                               (implementation.deploymentTime.fullDeployment || 0);
+    const totalDurationDays = Math.ceil(totalDurationHours / 8); // Assuming 8-hour work days
+
     return (
-      <Card className="p-6">
-        <CardTitle>Implementation Roadmap for {vendor.name}</CardTitle>
-        <CardContent>Content for Implementation Roadmap...</CardContent>
-      </Card>
-    )
+      <motion.div variants={fadeInUp} className="space-y-6">
+        <GradientCard darkMode={darkMode}>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 text-xl">
+              <Road className="h-5 w-5 text-portnox-primary" />
+              <span>Implementation Roadmap: {vendor.name}</span>
+            </CardTitle>
+            <CardDescription className={cn(darkMode ? "text-gray-400" : "text-gray-500")}>
+              Estimated timeline and key phases for deploying {vendor.name} for {deviceCount} devices and {userCount} users.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className={cn("p-4 rounded-lg", darkMode ? "bg-gray-700/50" : "bg-gray-100/70")}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={cn("text-sm font-medium", darkMode ? "text-gray-300" : "text-gray-600")}>Overall Complexity</p>
+                  <Badge variant={implementation.complexity === 'low' ? 'default' : implementation.complexity === 'medium' ? 'secondary' : 'destructive'}
+                         className={cn(implementation.complexity === 'low' && darkMode ? "bg-green-500/20 text-green-300 border-green-500/30" : "")}>
+                    {implementation.complexity.toUpperCase()}
+                  </Badge>
+                </div>
+                <div>
+                  <p className={cn("text-sm font-medium text-right", darkMode ? "text-gray-300" : "text-gray-600")}>Total Estimated Deployment Time</p>
+                  <p className={cn("text-lg font-bold text-right", darkMode ? "text-white" : "text-gray-900")}>
+                    ~{totalDurationDays} business days ({totalDurationHours} hours)
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative pl-6 after:absolute after:inset-y-0 after:w-px after:bg-gray-500/20 after:left-0">
+              {roadmapPhases.map((phase, index) => (
+                <div key={phase.name} className="grid md:grid-cols-[1fr_auto_1fr] items-start relative pb-8">
+                  <div className="md:text-right md:pr-6">
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className={cn("text-sm font-semibold", darkMode ? "text-portnox-primaryLight" : "text-portnox-primary")}
+                    >
+                      Phase {index + 1}: {phase.name}
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 + 0.05 }}
+                      className={cn("text-xs", darkMode ? "text-gray-400" : "text-gray-500")}
+                    >
+                      Est. Duration: {phase.duration} {phase.unit}
+                    </motion.div>
+                  </div>
+
+                  <div className="row-start-1 md:row-auto flex justify-center items-center my-2 md:my-0">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: index * 0.1, type: "spring", stiffness: 200, damping: 10 }}
+                      className={cn("z-10 flex items-center justify-center w-10 h-10 rounded-full", darkMode ? "bg-gray-700 border-2 border-portnox-primary" : "bg-white border-2 border-portnox-primary")}
+                    >
+                      {React.cloneElement(phase.icon, {className: cn("w-5 h-5", darkMode ? "text-portnox-primaryLight" : "text-portnox-primary")})}
+                    </motion.div>
+                  </div>
+
+                  <div className="pl-6 md:pl-0 md:ml-6">
+                     <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 + 0.1 }}
+                      className={cn("text-sm", darkMode ? "text-gray-300" : "text-gray-700")}
+                    >
+                      {phase.details}
+                    </motion.div>
+                    {vendor.implementation.prerequisites && index === 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 + 0.15 }}
+                        className={cn("mt-2 text-xs p-2 rounded", darkMode ? "bg-gray-700/40 text-gray-400" : "bg-gray-100 text-gray-500")}
+                      >
+                        <strong>Prerequisites:</strong> {vendor.implementation.prerequisites.join(", ")}
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </GradientCard>
+      </motion.div>
+    );
   }
 
   const ReportsView = ({
@@ -1375,12 +1669,57 @@ export default function TcoAnalyzerUltimate() {
     // ... (Implementation from tco-analyzer-ultimate.tsx attachment, adapted for darkMode)
     // This view will use jsPDF, html2canvas, xlsx for report generation.
     // For brevity, not pasting full code.
+    // This view will eventually contain functionality to generate PDF/XLSX reports.
+    // For now, it's a styled placeholder.
     return (
-      <Card className="p-6">
-        <CardTitle>Reports View</CardTitle>
-        <CardContent>Content for Reports...</CardContent>
-      </Card>
-    )
+      <motion.div variants={fadeInUp}>
+        <GradientCard darkMode={darkMode}>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 text-xl">
+              <FileText className="h-5 w-5 text-portnox-primary" />
+              <span>Downloadable Reports</span>
+            </CardTitle>
+            <CardDescription className={cn(darkMode ? "text-gray-400" : "text-gray-500")}>
+              Generate and download comprehensive TCO and ROI analysis reports.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className={cn("p-6 rounded-lg text-center", darkMode ? "bg-gray-700/50" : "bg-gray-100/70")}>
+              <Server className={cn("h-12 w-12 mx-auto mb-4", darkMode ? "text-portnox-primaryLight" : "text-portnox-primary")} />
+              <h3 className={cn("text-lg font-semibold mb-2", darkMode ? "text-white" : "text-gray-800")}>
+                Report Generation Coming Soon
+              </h3>
+              <p className={cn("text-sm", darkMode ? "text-gray-400" : "text-gray-600")}>
+                The ability to export your TCO analysis as PDF and Excel documents is currently under development.
+                This feature will allow you to easily share these insights with your team and stakeholders.
+              </p>
+              <div className="mt-6 flex justify-center gap-4">
+                <Button variant="outline" disabled className={cn(darkMode ? "border-gray-600 text-gray-500" : "")}>
+                  <Download className="mr-2 h-4 w-4" /> Export PDF (Soon)
+                </Button>
+                <Button variant="outline" disabled className={cn(darkMode ? "border-gray-600 text-gray-500" : "")}>
+                  <FilePieChart className="mr-2 h-4 w-4" /> Export Excel (Soon)
+                </Button>
+              </div>
+            </div>
+
+            <div className={cn("p-4 rounded-lg", darkMode ? "bg-gray-700/30" : "bg-gray-100/50")}>
+                <h4 className={cn("font-semibold mb-2 text-md", darkMode ? "text-gray-200" : "text-gray-700")}>Data Included in Reports:</h4>
+                <ul className={cn("list-disc list-inside text-xs space-y-1", darkMode ? "text-gray-400" : "text-gray-600")}>
+                    <li>Executive Summary with Key Findings</li>
+                    <li>Detailed TCO Breakdown per Vendor</li>
+                    <li>Cost Category Comparison Charts</li>
+                    <li>ROI Analysis and Payback Period</li>
+                    <li>Feature Matrix Comparison</li>
+                    <li>Compliance and Risk Overview</li>
+                    <li>Implementation Roadmap Summary</li>
+                    <li>Input Parameters Used for Analysis</li>
+                </ul>
+            </div>
+          </CardContent>
+        </GradientCard>
+      </motion.div>
+    );
   }
 
   // --- END OF VIEW COMPONENTS ---
