@@ -1,408 +1,307 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import Image from "next/image"
-import { motion, AnimatePresence } from "framer-motion"
-import {
-  ComprehensiveVendorDatabase,
-  getVendorLogoPath,
-  searchVendors,
-  getVendorsByCategory,
-} from "@/lib/comprehensive-vendor-data"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { cn } from "@/lib/utils"
-import {
-  Search,
-  X,
-  Check,
-  Star,
-  Users,
-  Building,
-  Cloud,
-  Shield,
-  TrendingUp,
-  DollarSign,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Info,
-} from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Progress } from "@/components/ui/progress"
+import { Search, Star, CheckCircle, Users } from "lucide-react"
+import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
 
 interface EnhancedVendorSelectionProps {
   selectedVendors: string[]
-  onVendorToggle: (vendorId: string) => void
-  onClearAll: () => void
-  onSelectRecommended: () => void
-  darkMode?: boolean
+  onVendorChange: (vendors: string[]) => void
+  configuration: CalculationConfiguration
+  onConfigurationChange: (config: Partial<CalculationConfiguration>) => void
+  results: CalculationResult[]
 }
 
-const CATEGORY_ICONS = {
-  "cloud-native": <Cloud className="h-4 w-4" />,
-  enterprise: <Building className="h-4 w-4" />,
-  "mid-market": <Users className="h-4 w-4" />,
-  sme: <Star className="h-4 w-4" />,
-}
+const VENDOR_CATEGORIES = [
+  { id: "enterprise", name: "Enterprise", description: "Large-scale enterprise solutions" },
+  { id: "cloud", name: "Cloud-Native", description: "Modern cloud-first platforms" },
+  { id: "traditional", name: "Traditional", description: "Established on-premise solutions" },
+]
 
-const MARKET_POSITION_COLORS = {
-  leader: "bg-green-500",
-  challenger: "bg-blue-500",
-  visionary: "bg-purple-500",
-  niche: "bg-orange-500",
-}
-
-const RECOMMENDED_VENDORS = ["portnox", "cisco", "aruba", "meraki"]
-const POPULAR_COMPARISONS = [
-  { name: "Enterprise Leaders", vendors: ["portnox", "cisco", "fortinet"] },
-  { name: "Cloud-First", vendors: ["portnox", "meraki", "microsoft"] },
-  { name: "Mid-Market", vendors: ["portnox", "aruba", "extreme"] },
-  { name: "Budget-Conscious", vendors: ["portnox", "packetfence", "foxpass"] },
+const FEATURE_CATEGORIES = [
+  { id: "core", name: "Core NAC", weight: 0.3 },
+  { id: "security", name: "Security", weight: 0.25 },
+  { id: "management", name: "Management", weight: 0.2 },
+  { id: "integration", name: "Integration", weight: 0.15 },
+  { id: "analytics", name: "Analytics", weight: 0.1 },
 ]
 
 export default function EnhancedVendorSelection({
   selectedVendors,
-  onVendorToggle,
-  onClearAll,
-  onSelectRecommended,
-  darkMode = false,
+  onVendorChange,
+  configuration,
+  onConfigurationChange,
+  results = [],
 }: EnhancedVendorSelectionProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [activeCategory, setActiveCategory] = useState("all")
-  const [showFilters, setShowFilters] = useState(false)
-  const [sortBy, setSortBy] = useState("marketShare")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [activeTab, setActiveTab] = useState("selection")
+  const [comparisonMode, setComparisonMode] = useState(false)
 
-  const filteredVendors = useMemo(() => {
-    let vendors = Object.values(ComprehensiveVendorDatabase)
+  // Memoize vendor data processing
+  const vendorData = useMemo(() => {
+    const vendors = Object.entries(ComprehensiveVendorDatabase).map(([id, vendor]) => {
+      const result = results.find((r) => r.vendor === id)
+      
+      // Calculate feature scores
+      const featureScore = FEATURE_CATEGORIES.reduce((total, category) => {
+        const categoryFeatures = vendor.features.filter((f) => f.category === category.id)
+        const categoryScore = categoryFeatures.reduce((sum, feature) => sum + feature.score, 0) / categoryFeatures.length || 0
+        return total + (categoryScore * category.weight)
+      }, 0)
 
-    // Apply search filter
-    if (searchQuery.trim()) {
-      vendors = searchVendors(searchQuery)
-    }
-
-    // Apply category filter
-    if (activeCategory !== "all") {
-      vendors = vendors.filter((vendor) => vendor.category === activeCategory)
-    }
-
-    // Sort vendors
-    vendors.sort((a, b) => {
-      switch (sortBy) {
-        case "marketShare":
-          return b.marketShare - a.marketShare
-        case "npsScore":
-          return b.npsScore - a.npsScore
-        case "pricing":
-          return a.pricing.basePrice - b.pricing.basePrice
-        case "name":
-          return a.name.localeCompare(b.name)
-        default:
-          return 0
+      return {
+        id,
+        ...vendor,
+        result,
+        featureScore: Math.round(featureScore),
+        totalCost: result?.total || 0,
+        roi: result?.roi?.percentage || 0,
+        payback: result?.roi?.paybackMonths || 0,
+        selected: selectedVendors.includes(id),
       }
     })
 
-    return vendors
-  }, [searchQuery, activeCategory, sortBy])
+    // Filter vendors
+    const filteredVendors = vendors.filter((vendor) => {
+      const matchesSearch = vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           vendor.description.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesCategory = selectedCategory === "all" || vendor.category === selectedCategory
+      return matchesSearch && matchesCategory
+    })
 
-  const categories = useMemo(() => {
-    const cats = ["all", ...new Set(Object.values(ComprehensiveVendorDatabase).map((v) => v.category))]
-    return cats.map((cat) => ({
-      id: cat,
-      name: cat === "all" ? "All Vendors" : cat.charAt(0).toUpperCase() + cat.slice(1).replace("-", " "),
-      count: cat === "all" ? Object.keys(ComprehensiveVendorDatabase).length : getVendorsByCategory(cat).length,
+    // Sort vendors by relevance score
+    const sortedVendors = filteredVendors.sort((a, b) => {
+      if (a.id === "portnox") return -1
+      if (b.id === "portnox") return 1
+      return b.featureScore - a.featureScore
+    })
+
+    return sortedVendors
+  }, [searchTerm, selectedCategory, selectedVendors, results])
+
+  // Comparison data for selected vendors
+  const comparisonData = useMemo(() => {
+    const selectedVendorData = vendorData.filter((v) => v.selected)
+    
+    // Feature comparison radar data
+    const radarData = FEATURE_CATEGORIES.map((category) => {
+      const data: any = { category: category.name }
+      selectedVendorData.forEach((vendor) => {
+        const categoryFeatures = vendor.features.filter((f) => f.category === category.id)
+        const score = categoryFeatures.reduce((sum, feature) => sum + feature.score, 0) / categoryFeatures.length || 0
+        data[vendor.id] = Math.round(score)
+      })
+      return data
+    })
+
+    // Cost comparison data
+    const costData = selectedVendorData.map((vendor) => ({
+      vendor: vendor.name,
+      total: vendor.totalCost,
+      roi: vendor.roi,
+      payback: vendor.payback,
     }))
-  }, [])
 
-  const VendorCard = ({ vendor }: { vendor: any }) => {
-    const isSelected = selectedVendors.includes(vendor.id)
-    const isPortnox = vendor.id === "portnox"
+    return { radarData, costData, selectedVendorData }
+  }, [vendorData])
 
-    return (
-      <motion.div
-        layout
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        whileHover={{ y: -2 }}
-        className="relative"
-      >
-        <Card
-          className={cn(
-            "cursor-pointer transition-all duration-200 hover:shadow-lg",
-            isSelected
-              ? isPortnox
-                ? "ring-2 ring-portnox-primary bg-portnox-primary/5"
-                : "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/20"
-              : darkMode
-                ? "hover:bg-gray-800 border-gray-700"
-                : "hover:bg-gray-50 border-gray-200",
-          )}
-          onClick={() => onVendorToggle(vendor.id)}
-        >
-          {isSelected && (
-            <div className="absolute -top-2 -right-2 z-10">
-              <div className={cn("rounded-full p-1", isPortnox ? "bg-portnox-primary" : "bg-blue-500")}>
-                <Check className="h-3 w-3 text-white" />
-              </div>
-            </div>
-          )}
+  const handleVendorToggle = (vendorId: string) => {
+    const newSelection = selectedVendors.includes(vendorId)
+      ? selectedVendors.filter((id) => id !== vendorId)
+      : [...selectedVendors, vendorId]
+    
+    onVendorChange(newSelection)
+  }
 
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Image
-                    src={getVendorLogoPath(vendor.id) || "/placeholder.svg"}
-                    alt={`${vendor.name} logo`}
-                    width={40}
-                    height={40}
-                    className="h-10 w-10 object-contain rounded-md"
-                  />
-                  {isPortnox && (
-                    <div className="absolute -top-1 -right-1">
-                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="text-sm font-semibold truncate">{vendor.name}</CardTitle>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge
-                      variant="outline"
-                      className={cn("text-xs px-1.5 py-0.5", darkMode ? "border-gray-600" : "border-gray-300")}
-                    >
-                      {CATEGORY_ICONS[vendor.category as keyof typeof CATEGORY_ICONS]}
-                      <span className="ml-1 capitalize">{vendor.category.replace("-", " ")}</span>
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                <div
-                  className={cn(
-                    "w-2 h-2 rounded-full",
-                    MARKET_POSITION_COLORS[vendor.marketPosition as keyof typeof MARKET_POSITION_COLORS],
-                  )}
-                  title={`Market Position: ${vendor.marketPosition}`}
-                />
-                <span className="text-xs text-gray-500">{vendor.marketShare.toFixed(1)}%</span>
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardContent className="pt-0">
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{vendor.description}</p>
-
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className="flex items-center gap-1">
-                <DollarSign className="h-3 w-3 text-green-500" />
-                <span className="text-xs font-medium">${vendor.pricing.basePrice}/mo</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3 text-blue-500" />
-                <span className="text-xs">{vendor.implementation.deploymentTime.fullDeployment}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <TrendingUp className="h-3 w-3 text-purple-500" />
-                <span className="text-xs">NPS {vendor.npsScore}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Shield className="h-3 w-3 text-orange-500" />
-                <span className="text-xs">{vendor.compliance.frameworks.length} frameworks</span>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-1">
-              {vendor.strengths.slice(0, 2).map((strength: string, index: number) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className="text-xs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
-                >
-                  {strength}
-                </Badge>
-              ))}
-              {vendor.strengths.length > 2 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                  +{vendor.strengths.length - 2}
-                </Badge>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-    )
+  const getVendorLogo = (vendorId: string) => {
+    const logoMap: Record<string, string> = {
+      portnox: "/portnox-logo.png",
+      cisco: "/cisco-logo.png",
+      aruba: "/aruba-logo.png",
+      meraki: "/meraki-logo.png",
+      forescout: "/forescout-logo.png",
+    }
+    return logoMap[vendorId] || "/default-logo.png"
   }
 
   return (
-    <Card className={cn("h-fit", darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200")}>
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Vendor Selection</CardTitle>
-          <Badge variant="outline" className="text-xs">
-            {selectedVendors.length} selected
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Vendor Selection & Comparison</h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Compare NAC vendors and select solutions for analysis
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={comparisonMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => setComparisonMode(!comparisonMode)}
+            className="gap-2 bg-transparent"
+          >
+            <Users className="h-4 w-4" />
+            {comparisonMode ? "Exit" : "Compare"}
+          </Button>
+          <Badge variant="outline" className="gap-2">
+            <CheckCircle className="h-4 w-4" />
+            {selectedVendors.length} Selected
           </Badge>
         </div>
+      </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search vendors..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-            </button>
-          )}
-        </div>
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="selection">Vendor Selection</TabsTrigger>
+          <TabsTrigger value="comparison">Feature Comparison</TabsTrigger>
+          <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+        </TabsList>
 
-        {/* Quick Actions */}
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={onSelectRecommended} className="flex-1 text-xs bg-transparent">
-            <Star className="h-3 w-3 mr-1" />
-            Recommended
-          </Button>
-          <Button variant="outline" size="sm" onClick={onClearAll} className="flex-1 text-xs bg-transparent">
-            <X className="h-3 w-3 mr-1" />
-            Clear All
-          </Button>
-        </div>
-      </CardHeader>
+        {/* Vendor Selection Tab */}
+        <TabsContent value="selection" className="space-y-6">
+          {/* Filters */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <Label htmlFor="search">Search Vendors</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="search"
+                      placeholder="Search by name or features..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="category">Category</Label>
+                  <select
+                    id="category"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full p-2 border rounded-md bg-background"
+                  >
+                    <option value="all">All Categories</option>
+                    {VENDOR_CATEGORIES.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-      <CardContent className="pt-0">
-        {/* Category Tabs */}
-        <Tabs value={activeCategory} onValueChange={setActiveCategory} className="mb-4">
-          <TabsList className="grid w-full grid-cols-2 h-auto p-1">
-            {categories.slice(0, 4).map((category) => (
-              <TabsTrigger
-                key={category.id}
-                value={category.id}
-                className="text-xs py-1.5 data-[state=active]:bg-portnox-primary data-[state=active]:text-white"
+          {/* Vendor Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {vendorData.map((vendor) => (
+              <Card
+                key={vendor.id}
+                className={`cursor-pointer transition-all ${
+                  vendor.selected
+                    ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                    : "hover:border-gray-300"
+                }`}
+                onClick={() => handleVendorToggle(vendor.id)}
               >
-                {category.name}
-                <Badge variant="secondary" className="ml-1 text-xs px-1">
-                  {category.count}
-                </Badge>
-              </TabsTrigger>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={getVendorLogo(vendor.id) || "/placeholder.svg"}
+                        alt={vendor.name}
+                        className="w-8 h-8 object-contain"
+                      />
+                      <div>
+                        <CardTitle className="text-lg">{vendor.name}</CardTitle>
+                        <Badge variant="outline" className="text-xs">
+                          {vendor.category}
+                        </Badge>
+                      </div>
+                    </div>
+                    <Checkbox checked={vendor.selected} onChange={() => {}} />
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {vendor.description}
+                  </p>
+
+                  {/* Key Metrics */}
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-500">Feature Score</p>
+                      <div className="flex items-center gap-2">
+                        <Progress value={vendor.featureScore} className="h-2 flex-1" />
+                        <span className="font-medium">{vendor.featureScore}%</span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Deployment</p>
+                      <p className="font-medium">{vendor.implementation.deploymentTime.pilot}</p>
+                    </div>
+                  </div>
+
+                  {/* Cost & ROI (if calculated) */}
+                  {vendor.result && (
+                    <div className="grid grid-cols-2 gap-4 text-sm pt-2 border-t">
+                      <div>
+                        <p className="text-gray-500">Total Cost</p>
+                        <p className="font-bold">${vendor.totalCost.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500">ROI</p>
+                        <p className="font-bold text-green-600">{vendor.roi}%</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Key Features */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Key Features:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {vendor.features.slice(0, 3).map((feature) => (
+                        <Badge key={feature.name} variant="secondary" className="text-xs">
+                          {feature.name}
+                        </Badge>
+                      ))}
+                      {vendor.features.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{vendor.features.length - 3} more
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Portnox Highlight */}
+                  {vendor.id === "portnox" && (
+                    <div className="flex items-center gap-2 text-sm text-green-600 bg-green-100 dark:bg-green-900/30 p-2 rounded">
+                      <Star className="h-4 w-4" />
+                      <span>Recommended Solution</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             ))}
-          </TabsList>
-        </Tabs>
-
-        {/* Sort Options */}
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-xs text-gray-500">Sort by:</span>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className={cn(
-              "text-xs border rounded px-2 py-1",
-              darkMode ? "bg-gray-700 border-gray-600" : "bg-white border-gray-300",
-            )}
-          >
-            <option value="marketShare">Market Share</option>
-            <option value="npsScore">NPS Score</option>
-            <option value="pricing">Price</option>
-            <option value="name">Name</option>
-          </select>
-        </div>
-
-        {/* Popular Comparisons */}
-        {!searchQuery && activeCategory === "all" && (
-          <div className="mb-4">
-            <h4 className="text-sm font-medium mb-2">Popular Comparisons</h4>
-            <div className="grid grid-cols-2 gap-2">
-              {POPULAR_COMPARISONS.map((comparison) => (
-                <Button
-                  key={comparison.name}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    comparison.vendors.forEach((vendorId) => {
-                      if (!selectedVendors.includes(vendorId)) {
-                        onVendorToggle(vendorId)
-                      }
-                    })
-                  }}
-                  className="text-xs h-8 justify-start"
-                >
-                  {comparison.name}
-                </Button>
-              ))}
-            </div>
           </div>
-        )}
+        </TabsContent>
 
-        <Separator className="mb-4" />
-
-        {/* Vendor Grid */}
-        <div className="space-y-3 max-h-[600px] overflow-y-auto">
-          <AnimatePresence mode="popLayout">
-            {filteredVendors.map((vendor) => (
-              <VendorCard key={vendor.id} vendor={vendor} />
-            ))}
-          </AnimatePresence>
-
-          {filteredVendors.length === 0 && (
-            <div className="text-center py-8">
-              <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">No vendors found matching your criteria</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSearchQuery("")
-                  setActiveCategory("all")
-                }}
-                className="mt-2"
-              >
-                Clear Filters
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {/* Selection Summary */}
-        {selectedVendors.length > 0 && (
-          <div className="mt-4 pt-4 border-t">
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
-              <span className="text-sm font-medium">
-                {selectedVendors.length} vendor{selectedVendors.length !== 1 ? "s" : ""} selected
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {selectedVendors.map((vendorId) => {
-                const vendor = ComprehensiveVendorDatabase[vendorId]
-                return (
-                  <Badge key={vendorId} variant={vendorId === "portnox" ? "default" : "secondary"} className="text-xs">
-                    {vendor?.name || vendorId}
-                  </Badge>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Info Note */}
-        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-md">
-          <div className="flex items-start gap-2">
-            <Info className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-xs text-blue-700 dark:text-blue-300">
-                <strong>Tip:</strong> Select 3-6 vendors for optimal comparison. Portnox is recommended as the baseline
-                for all analyses.
-              </p>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+        {/* Feature Comparison Tab */}
+        <TabsContent value="comparison" className="space-y-6">
+          {comparisonData.selectedVendorData.length ===

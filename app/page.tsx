@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -84,10 +84,9 @@ export default function PortnoxTCOCalculator() {
     }
   }, [])
 
-  // Calculate TCO results with error handling
-  const calculateResults = () => {
+  // Memoize the calculation results to prevent infinite re-renders
+  const results = useMemo(() => {
     try {
-      setIsLoading(true)
       // Ensure configuration has all required values
       const safeConfig = {
         ...configuration,
@@ -103,19 +102,14 @@ export default function PortnoxTCOCalculator() {
         },
       }
 
-      const results = compareVendors(selectedVendors, safeConfig)
-      setIsLoading(false)
-      return results
+      return compareVendors(selectedVendors, safeConfig)
     } catch (error) {
       console.error("Calculation error:", error)
-      setIsLoading(false)
       return []
     }
-  }
+  }, [configuration, selectedVendors])
 
-  const results = calculateResults()
-
-  const handleConfigurationChange = (newConfig: Partial<CalculationConfiguration>) => {
+  const handleConfigurationChange = useCallback((newConfig: Partial<CalculationConfiguration>) => {
     setConfiguration((prev) => ({
       ...prev,
       ...newConfig,
@@ -126,7 +120,11 @@ export default function PortnoxTCOCalculator() {
       portnoxBasePrice:
         typeof newConfig.portnoxBasePrice === "number" ? newConfig.portnoxBasePrice : prev.portnoxBasePrice,
     }))
-  }
+  }, [])
+
+  const handleVendorSelectionChange = useCallback((vendors: string[]) => {
+    setSelectedVendors(vendors)
+  }, [])
 
   const views = [
     {
@@ -160,6 +158,21 @@ export default function PortnoxTCOCalculator() {
       description: "Side-by-side vendor analysis",
     },
   ]
+
+  // Calculate savings for display
+  const savings = useMemo(() => {
+    if (results.length < 2) return null
+
+    const portnoxResult = results.find((r) => r.vendor === "portnox")
+    const competitorResults = results.filter((r) => r.vendor !== "portnox")
+
+    if (!portnoxResult || competitorResults.length === 0) return null
+
+    const avgCompetitorCost = competitorResults.reduce((sum, r) => sum + (r.total || 0), 0) / competitorResults.length
+    const savingsAmount = avgCompetitorCost - portnoxResult.total
+
+    return savingsAmount > 0 ? savingsAmount : 0
+  }, [results])
 
   return (
     <div className={cn("min-h-screen transition-colors duration-300", darkMode ? "dark bg-gray-900" : "bg-gray-50")}>
@@ -248,11 +261,7 @@ export default function PortnoxTCOCalculator() {
                 <DollarSign className="h-8 w-8 text-orange-600" />
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Portnox Savings</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {results.length > 1
-                      ? `$${((results[1]?.total || 0) - (results[0]?.total || 0)).toLocaleString()}`
-                      : "$0"}
-                  </p>
+                  <p className="text-2xl font-bold text-green-600">${(savings || 0).toLocaleString()}</p>
                 </div>
               </div>
             </CardContent>
@@ -277,7 +286,7 @@ export default function PortnoxTCOCalculator() {
               configuration={configuration}
               onConfigurationChange={handleConfigurationChange}
               selectedVendors={selectedVendors}
-              onVendorSelectionChange={setSelectedVendors}
+              onVendorSelectionChange={handleVendorSelectionChange}
               isLoading={isLoading}
             />
           </TabsContent>
@@ -297,7 +306,7 @@ export default function PortnoxTCOCalculator() {
           <TabsContent value="comparison">
             <EnhancedVendorSelection
               selectedVendors={selectedVendors}
-              onVendorChange={setSelectedVendors}
+              onVendorChange={handleVendorSelectionChange}
               configuration={configuration}
               onConfigurationChange={handleConfigurationChange}
               results={results}

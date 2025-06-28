@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -29,58 +29,70 @@ export default function TCOAnalyzer({
 }: TCOAnalyzerProps) {
   const [selectedMetric, setSelectedMetric] = useState("total")
 
-  // Safe data handling
-  const safeResults = results.filter((result) => result && typeof result.total === "number")
-  const portnoxResult = safeResults.find((r) => r.vendor === "portnox")
-  const competitorResults = safeResults.filter((r) => r.vendor !== "portnox")
+  // Memoize calculations to prevent re-renders
+  const analysisData = useMemo(() => {
+    // Safe data handling
+    const safeResults = results.filter((result) => result && typeof result.total === "number")
+    const portnoxResult = safeResults.find((r) => r.vendor === "portnox")
+    const competitorResults = safeResults.filter((r) => r.vendor !== "portnox")
 
-  // Calculate savings vs competitors
-  const calculateSavings = () => {
-    if (!portnoxResult || competitorResults.length === 0) return null
+    // Calculate savings vs competitors
+    const calculateSavings = () => {
+      if (!portnoxResult || competitorResults.length === 0) return null
 
-    const avgCompetitorCost = competitorResults.reduce((sum, r) => sum + (r.total || 0), 0) / competitorResults.length
-    const savings = avgCompetitorCost - portnoxResult.total
-    const percentage = (savings / avgCompetitorCost) * 100
+      const avgCompetitorCost = competitorResults.reduce((sum, r) => sum + (r.total || 0), 0) / competitorResults.length
+      const savings = avgCompetitorCost - portnoxResult.total
+      const percentage = (savings / avgCompetitorCost) * 100
+
+      return {
+        amount: savings,
+        percentage: percentage,
+        paybackMonths: portnoxResult.roi?.paybackMonths || 0,
+      }
+    }
+
+    const savings = calculateSavings()
+
+    // Prepare chart data
+    const chartData = safeResults.map((result) => ({
+      vendor: result.vendorName || result.vendor,
+      total: result.total || 0,
+      software: result.breakdown?.find((b) => b.name === "Software")?.value || 0,
+      hardware: result.breakdown?.find((b) => b.name === "Hardware")?.value || 0,
+      implementation: result.breakdown?.find((b) => b.name === "Implementation")?.value || 0,
+      support: result.breakdown?.find((b) => b.name === "Support")?.value || 0,
+      operations: result.breakdown?.find((b) => b.name === "Operations")?.value || 0,
+    }))
+
+    // ROI Timeline data
+    const roiTimelineData = Array.from({ length: configuration.years || 3 }, (_, i) => {
+      const year = i + 1
+      const portnoxCumulative = portnoxResult ? (portnoxResult.total / (configuration.years || 3)) * year : 0
+      const avgCompetitorCumulative =
+        competitorResults.length > 0
+          ? (competitorResults.reduce((sum, r) => sum + (r.total || 0), 0) /
+              competitorResults.length /
+              (configuration.years || 3)) *
+            year
+          : 0
+
+      return {
+        year: `Year ${year}`,
+        portnox: portnoxCumulative,
+        competitor: avgCompetitorCumulative,
+        savings: avgCompetitorCumulative - portnoxCumulative,
+      }
+    })
 
     return {
-      amount: savings,
-      percentage: percentage,
-      paybackMonths: portnoxResult.roi?.paybackMonths || 0,
+      safeResults,
+      portnoxResult,
+      competitorResults,
+      savings,
+      chartData,
+      roiTimelineData,
     }
-  }
-
-  const savings = calculateSavings()
-
-  // Prepare chart data
-  const chartData = safeResults.map((result) => ({
-    vendor: result.vendorName || result.vendor,
-    total: result.total || 0,
-    software: result.breakdown?.find((b) => b.name === "Software")?.value || 0,
-    hardware: result.breakdown?.find((b) => b.name === "Hardware")?.value || 0,
-    implementation: result.breakdown?.find((b) => b.name === "Implementation")?.value || 0,
-    support: result.breakdown?.find((b) => b.name === "Support")?.value || 0,
-    operations: result.breakdown?.find((b) => b.name === "Operations")?.value || 0,
-  }))
-
-  // ROI Timeline data
-  const roiTimelineData = Array.from({ length: configuration.years || 3 }, (_, i) => {
-    const year = i + 1
-    const portnoxCumulative = portnoxResult ? (portnoxResult.total / (configuration.years || 3)) * year : 0
-    const avgCompetitorCumulative =
-      competitorResults.length > 0
-        ? (competitorResults.reduce((sum, r) => sum + (r.total || 0), 0) /
-            competitorResults.length /
-            (configuration.years || 3)) *
-          year
-        : 0
-
-    return {
-      year: `Year ${year}`,
-      portnox: portnoxCumulative,
-      competitor: avgCompetitorCumulative,
-      savings: avgCompetitorCumulative - portnoxCumulative,
-    }
-  })
+  }, [results, configuration.years])
 
   if (isLoading) {
     return (
@@ -100,6 +112,8 @@ export default function TCOAnalyzer({
       </div>
     )
   }
+
+  const { safeResults, portnoxResult, competitorResults, savings, chartData, roiTimelineData } = analysisData
 
   return (
     <div className="space-y-8">

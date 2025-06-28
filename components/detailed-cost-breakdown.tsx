@@ -1,206 +1,160 @@
 "use client"
 
-import React, { useState, useMemo } from "react"
-import { motion } from "framer-motion"
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { cn } from "@/lib/utils"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-  PieChart,
-  Pie,
-  Cell,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip as ReTooltip,
-  Legend,
+  Tooltip,
   ResponsiveContainer,
-  Line,
+  PieChart,
+  Pie,
+  Cell,
   Area,
-  ComposedChart,
+  AreaChart,
   Treemap,
 } from "recharts"
 import {
   DollarSign,
-  TrendingUp,
   TrendingDown,
+  TrendingUp,
+  Calculator,
   Download,
   Eye,
   EyeOff,
-  Calculator,
-  Clock,
-  Building,
-  BarChart3,
-  PieChartIcon,
+  AlertTriangle,
+  Info,
+  Zap,
 } from "lucide-react"
-
-const PORTNOX_COLORS = {
-  primary: "#00D4AA",
-  primaryDark: "#00A88A",
-  accent: "#FF6B35",
-  success: "#10B981",
-  warning: "#F59E0B",
-  danger: "#EF4444",
-  info: "#3B82F6",
-  purple: "#8B5CF6",
-  pink: "#EC4899",
-}
-
-const COST_COLORS = [
-  PORTNOX_COLORS.primary,
-  PORTNOX_COLORS.accent,
-  PORTNOX_COLORS.info,
-  PORTNOX_COLORS.success,
-  PORTNOX_COLORS.warning,
-  PORTNOX_COLORS.purple,
-  PORTNOX_COLORS.pink,
-  "#06B6D4",
-  "#EF4444",
-  "#6366F1",
-]
+import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 
 interface DetailedCostBreakdownProps {
-  results: any[]
-  years: number
-  darkMode: boolean
-  configuration: any
+  results: CalculationResult[]
+  configuration: CalculationConfiguration
+  selectedVendors: string[]
 }
 
-export default function DetailedCostBreakdown({ results, years, darkMode, configuration }: DetailedCostBreakdownProps) {
-  const [selectedVendor, setSelectedVendor] = useState(results?.[0]?.vendor || "portnox")
-  const [viewMode, setViewMode] = useState<"absolute" | "percentage" | "per-device">("absolute")
-  const [showHiddenCosts, setShowHiddenCosts] = useState(true)
+const COST_COLORS = {
+  Software: "#10B981",
+  Hardware: "#3B82F6",
+  Implementation: "#8B5CF6",
+  Support: "#F59E0B",
+  Operations: "#EF4444",
+  Hidden: "#6B7280",
+}
+
+export default function DetailedCostBreakdown({
+  results = [],
+  configuration,
+  selectedVendors = [],
+}: DetailedCostBreakdownProps) {
   const [activeTab, setActiveTab] = useState("overview")
+  const [showHiddenCosts, setShowHiddenCosts] = useState(true)
+  const [selectedVendor, setSelectedVendor] = useState(results[0]?.vendor || "portnox")
 
-  const selectedResult = useMemo(() => results?.find((r) => r.vendor === selectedVendor), [results, selectedVendor])
+  // Memoize cost calculations
+  const costData = useMemo(() => {
+    const safeResults = results.filter((result) => result && result.breakdown)
 
-  const costComparisonData = useMemo(() => {
-    if (!results) return []
-
-    return results.map((result) => ({
-      vendor: result.vendorName,
-      vendorId: result.vendor,
-      software: result.breakdown.find((b) => b.name === "Software")?.value || 0,
-      hardware: result.breakdown.find((b) => b.name === "Hardware")?.value || 0,
-      implementation: result.breakdown.find((b) => b.name === "Implementation")?.value || 0,
-      support: result.breakdown.find((b) => b.name === "Support")?.value || 0,
-      operations: result.breakdown.find((b) => b.name === "Operations")?.value || 0,
-      hidden: showHiddenCosts ? result.breakdown.find((b) => b.name === "Hidden")?.value || 0 : 0,
-      total: result.total,
-      perDeviceMonthly: result.total / (configuration.devices * years * 12),
-    }))
-  }, [results, showHiddenCosts, configuration.devices, years])
-
-  const yearlyProjectionData = useMemo(() => {
-    if (!selectedResult) return []
-
-    const data = []
-    const annualCost = selectedResult.total / years
-
-    for (let year = 1; year <= Math.min(years, 5); year++) {
-      data.push({
-        year,
-        cumulative: annualCost * year,
-        annual: annualCost,
-        savings: selectedResult.roi.annualSavings * year,
-        netValue: selectedResult.roi.annualSavings * year - annualCost * year,
+    // Prepare data for different chart types
+    const barChartData = safeResults.map((result) => {
+      const data: any = { vendor: result.vendorName || result.vendor }
+      result.breakdown?.forEach((item) => {
+        data[item.name] = item.value
       })
+      return data
+    })
+
+    // Year-over-year projection
+    const yearlyData = Array.from({ length: configuration.years || 3 }, (_, yearIndex) => {
+      const year = yearIndex + 1
+      const yearData: any = { year: `Year ${year}` }
+
+      safeResults.forEach((result) => {
+        const annualCost = (result.total || 0) / (configuration.years || 3)
+        yearData[result.vendor] = annualCost * year
+      })
+
+      return yearData
+    })
+
+    // Cost category breakdown for selected vendor
+    const selectedResult = safeResults.find((r) => r.vendor === selectedVendor)
+    const pieData =
+      selectedResult?.breakdown?.map((item) => ({
+        name: item.name,
+        value: item.value,
+        percentage: item.percentage,
+        color: COST_COLORS[item.name as keyof typeof COST_COLORS] || "#6B7280",
+      })) || []
+
+    // Treemap data for cost visualization
+    const treemapData =
+      selectedResult?.breakdown?.map((item) => ({
+        name: item.name,
+        size: item.value,
+        fill: COST_COLORS[item.name as keyof typeof COST_COLORS] || "#6B7280",
+      })) || []
+
+    // Hidden costs analysis
+    const hiddenCostsData = safeResults.map((result) => {
+      const hiddenCost = result.breakdown?.find((b) => b.name === "Hidden")?.value || 0
+      const visibleCosts = (result.total || 0) - hiddenCost
+      return {
+        vendor: result.vendorName || result.vendor,
+        visible: visibleCosts,
+        hidden: hiddenCost,
+        total: result.total || 0,
+        hiddenPercentage: ((hiddenCost / (result.total || 1)) * 100).toFixed(1),
+      }
+    })
+
+    return {
+      barChartData,
+      yearlyData,
+      pieData,
+      treemapData,
+      hiddenCostsData,
+      safeResults,
     }
+  }, [results, configuration.years, selectedVendor])
 
-    return data
-  }, [selectedResult, years])
+  const { barChartData, yearlyData, pieData, treemapData, hiddenCostsData, safeResults } = costData
 
-  const costTreemapData = useMemo(() => {
-    if (!selectedResult) return []
-
-    return selectedResult.breakdown.map((item, index) => ({
-      name: item.name,
-      value: item.value,
-      percentage: item.percentage,
-      fill: COST_COLORS[index % COST_COLORS.length],
-    }))
-  }, [selectedResult])
-
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
-    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`
-    return `$${value.toLocaleString()}`
-  }
-
-  const CostMetricCard = ({ title, value, change, icon, color = "primary" }: any) => (
-    <motion.div
-      whileHover={{ y: -2, scale: 1.02 }}
-      className={cn(
-        "p-4 rounded-lg border transition-all duration-200",
-        darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
-      )}
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className={cn("text-sm font-medium", darkMode ? "text-gray-300" : "text-gray-600")}>{title}</p>
-          <p className={cn("text-2xl font-bold mt-1", darkMode ? "text-white" : "text-gray-900")}>
-            {typeof value === "number" ? formatCurrency(value) : value}
-          </p>
-          {change && (
-            <div className={cn("flex items-center text-sm mt-1", change > 0 ? "text-red-500" : "text-green-500")}>
-              {change > 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-              {Math.abs(change)}% vs baseline
-            </div>
-          )}
-        </div>
-        <div className={cn("p-3 rounded-full", color === "primary" ? "bg-portnox-primary/10" : `bg-${color}-100`)}>
-          {React.cloneElement(icon, {
-            className: cn("h-6 w-6", color === "primary" ? "text-portnox-primary" : `text-${color}-600`),
-          })}
-        </div>
-      </div>
-    </motion.div>
-  )
-
-  if (!results || results.length === 0) {
-    return (
-      <Card className="p-8 text-center">
-        <Calculator className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-        <h3 className="text-lg font-semibold mb-2">No Cost Data Available</h3>
-        <p className="text-gray-600">Select vendors and configure your environment to see detailed cost breakdowns.</p>
-      </Card>
-    )
-  }
+  // Calculate savings vs competitors
+  const portnoxResult = safeResults.find((r) => r.vendor === "portnox")
+  const competitorResults = safeResults.filter((r) => r.vendor !== "portnox")
+  const avgCompetitorCost =
+    competitorResults.length > 0
+      ? competitorResults.reduce((sum, r) => sum + (r.total || 0), 0) / competitorResults.length
+      : 0
+  const savings = portnoxResult && avgCompetitorCost > 0 ? avgCompetitorCost - portnoxResult.total : 0
 
   return (
     <div className="space-y-6">
-      {/* Header Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold mb-2">Detailed Cost Analysis</h2>
-          <p className={cn("text-sm", darkMode ? "text-gray-400" : "text-gray-600")}>
-            Comprehensive {years}-year TCO breakdown with vendor-specific cost components
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Detailed Cost Breakdown</h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Comprehensive TCO analysis over {configuration.years} years
           </p>
         </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowHiddenCosts(!showHiddenCosts)} className="gap-2">
-            {showHiddenCosts ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowHiddenCosts(!showHiddenCosts)}
+            className="gap-2 bg-transparent"
+          >
+            {showHiddenCosts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             {showHiddenCosts ? "Hide" : "Show"} Hidden Costs
           </Button>
-
-          <select
-            value={viewMode}
-            onChange={(e) => setViewMode(e.target.value as any)}
-            className={cn(
-              "px-3 py-2 border rounded-md text-sm",
-              darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300",
-            )}
-          >
-            <option value="absolute">Absolute Values</option>
-            <option value="percentage">Percentage View</option>
-            <option value="per-device">Per Device/Month</option>
-          </select>
-
           <Button variant="outline" size="sm" className="gap-2 bg-transparent">
             <Download className="h-4 w-4" />
             Export
@@ -208,87 +162,181 @@ export default function DetailedCostBreakdown({ results, years, darkMode, config
         </div>
       </div>
 
-      {/* Key Metrics Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <CostMetricCard title="Total TCO" value={selectedResult?.total} icon={<DollarSign />} color="primary" />
-        <CostMetricCard
-          title="Per Device/Month"
-          value={selectedResult ? `$${(selectedResult.total / (configuration.devices * years * 12)).toFixed(2)}` : "$0"}
-          icon={<Calculator />}
-          color="info"
-        />
-        <CostMetricCard
-          title="Implementation Time"
-          value={selectedResult?.implementation?.timeToValue || "N/A"}
-          icon={<Clock />}
-          color="warning"
-        />
-        <CostMetricCard
-          title="ROI Payback"
-          value={selectedResult ? `${selectedResult.roi.paybackMonths} months` : "N/A"}
-          icon={<TrendingUp />}
-          color="success"
-        />
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="border-green-200 bg-green-50 dark:bg-green-900/20">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 dark:bg-green-800 rounded-lg">
+                <TrendingDown className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-green-800 dark:text-green-200">Total Savings</p>
+                <p className="text-2xl font-bold text-green-900 dark:text-green-100">${savings.toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
+                <DollarSign className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Portnox TCO</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  ${(portnoxResult?.total || 0).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-100 dark:bg-purple-800 rounded-lg">
+                <Calculator className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Competitor</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  ${avgCompetitorCost.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-orange-100 dark:bg-orange-800 rounded-lg">
+                <AlertTriangle className="h-6 w-6 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Hidden Costs</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {hiddenCostsData[0]?.hiddenPercentage || 0}%
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
+      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="comparison">Vendor Comparison</TabsTrigger>
-          <TabsTrigger value="breakdown">Cost Breakdown</TabsTrigger>
-          <TabsTrigger value="projections">Projections</TabsTrigger>
-          <TabsTrigger value="analysis">Deep Analysis</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview">Cost Overview</TabsTrigger>
+          <TabsTrigger value="breakdown">Category Breakdown</TabsTrigger>
+          <TabsTrigger value="timeline">Year-over-Year</TabsTrigger>
+          <TabsTrigger value="hidden">Hidden Costs</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Vendor Selection */}
+          {/* Total Cost Comparison */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Total Cost of Ownership Comparison</CardTitle>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Complete cost breakdown by vendor over {configuration.years} years
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={barChartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="vendor" />
+                    <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                    <Tooltip
+                      formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]}
+                      labelStyle={{ color: "#374151" }}
+                    />
+                    {Object.entries(COST_COLORS).map(([category, color]) => (
+                      <Bar key={category} dataKey={category} stackId="a" fill={color} name={category} />
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Cost per Device/User */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building className="h-5 w-5" />
-                  Vendor Selection
-                </CardTitle>
+                <CardTitle>Cost per Device</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 gap-3">
-                  {results.map((result) => (
-                    <motion.button
-                      key={result.vendor}
-                      onClick={() => setSelectedVendor(result.vendor)}
-                      className={cn(
-                        "p-4 border rounded-lg text-left transition-all duration-200",
-                        selectedVendor === result.vendor
-                          ? "border-portnox-primary bg-portnox-primary/5"
-                          : darkMode
-                            ? "border-gray-700 hover:border-gray-600"
-                            : "border-gray-200 hover:border-gray-300",
-                      )}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-semibold">{result.vendorName}</h4>
-                          <p className="text-sm text-gray-600">{formatCurrency(result.total)} total</p>
+                <div className="space-y-4">
+                  {safeResults.map((result, index) => {
+                    const costPerDevice = (result.total || 0) / (configuration.devices || 1)
+                    return (
+                      <div key={result.vendor} className="flex items-center justify-between">
+                        <span className="font-medium">{result.vendorName || result.vendor}</span>
+                        <div className="text-right">
+                          <p className="font-bold">${costPerDevice.toFixed(2)}</p>
+                          <p className="text-xs text-gray-500">per device</p>
                         </div>
-                        <Badge variant={result.vendor === "portnox" ? "default" : "outline"}>
-                          {result.vendor === "portnox" ? "Recommended" : "Alternative"}
-                        </Badge>
                       </div>
-                    </motion.button>
-                  ))}
+                    )
+                  })}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Cost Distribution Pie Chart */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <PieChartIcon className="h-5 w-5" />
-                  Cost Distribution - {selectedResult?.vendorName}
+                <CardTitle>Cost per User</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {safeResults.map((result, index) => {
+                    const costPerUser = (result.total || 0) / (configuration.users || 1)
+                    return (
+                      <div key={result.vendor} className="flex items-center justify-between">
+                        <span className="font-medium">{result.vendorName || result.vendor}</span>
+                        <div className="text-right">
+                          <p className="font-bold">${costPerUser.toFixed(2)}</p>
+                          <p className="text-xs text-gray-500">per user</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Category Breakdown Tab */}
+        <TabsContent value="breakdown" className="space-y-6">
+          {/* Vendor Selection */}
+          <div className="flex gap-2">
+            {safeResults.map((result) => (
+              <Button
+                key={result.vendor}
+                variant={selectedVendor === result.vendor ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedVendor(result.vendor)}
+                className="bg-transparent"
+              >
+                {result.vendorName || result.vendor}
+              </Button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Pie Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  Cost Distribution - {safeResults.find((r) => r.vendor === selectedVendor)?.vendorName}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -296,7 +344,7 @@ export default function DetailedCostBreakdown({ results, years, darkMode, config
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={costTreemapData}
+                        data={pieData}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
@@ -305,485 +353,276 @@ export default function DetailedCostBreakdown({ results, years, darkMode, config
                         fill="#8884d8"
                         dataKey="value"
                       >
-                        {costTreemapData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <ReTooltip formatter={(value: number) => formatCurrency(value)} />
-                      <Legend />
+                      <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, "Cost"]} />
                     </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Treemap */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Cost Hierarchy</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <Treemap
+                      data={treemapData}
+                      dataKey="size"
+                      ratio={4 / 3}
+                      stroke="#fff"
+                      content={({ root, depth, x, y, width, height, index, payload, colors, name }) => {
+                        return (
+                          <g>
+                            <rect
+                              x={x}
+                              y={y}
+                              width={width}
+                              height={height}
+                              style={{
+                                fill: payload?.fill || colors,
+                                stroke: "#fff",
+                                strokeWidth: 2,
+                                strokeOpacity: 1,
+                              }}
+                            />
+                            {width > 60 && height > 30 && (
+                              <text
+                                x={x + width / 2}
+                                y={y + height / 2}
+                                textAnchor="middle"
+                                fill="#fff"
+                                fontSize="12"
+                                fontWeight="bold"
+                              >
+                                {name}
+                              </text>
+                            )}
+                            {width > 80 && height > 50 && (
+                              <text
+                                x={x + width / 2}
+                                y={y + height / 2 + 15}
+                                textAnchor="middle"
+                                fill="#fff"
+                                fontSize="10"
+                              >
+                                ${(payload?.size || 0).toLocaleString()}
+                              </text>
+                            )}
+                          </g>
+                        )
+                      }}
+                    />
                   </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Cost Components Detail */}
+          {/* Detailed Breakdown Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Cost Components Breakdown</CardTitle>
+              <CardTitle>Detailed Cost Categories</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {selectedResult?.breakdown.map((item, index) => (
-                  <motion.div
-                    key={item.name}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className={cn("p-4 border rounded-lg", darkMode ? "border-gray-700" : "border-gray-200")}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-4 h-4 rounded"
-                          style={{ backgroundColor: COST_COLORS[index % COST_COLORS.length] }}
-                        />
-                        <h4 className="font-semibold">{item.name}</h4>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold">{formatCurrency(item.value)}</p>
-                        <p className="text-sm text-gray-600">{item.percentage}% of total</p>
+                {pieData.map((category) => (
+                  <div key={category.name} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded" style={{ backgroundColor: category.color }}></div>
+                      <div>
+                        <h4 className="font-medium">{category.name}</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {
+                            safeResults
+                              .find((r) => r.vendor === selectedVendor)
+                              ?.breakdown?.find((b) => b.name === category.name)?.description
+                          }
+                        </p>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600 ml-7">{item.description}</p>
-
-                    {/* Progress bar */}
-                    <div className="mt-3 ml-7">
-                      <div
-                        className={cn("w-full bg-gray-200 rounded-full h-2", darkMode ? "bg-gray-700" : "bg-gray-200")}
-                      >
-                        <motion.div
-                          className="h-2 rounded-full"
-                          style={{ backgroundColor: COST_COLORS[index % COST_COLORS.length] }}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${item.percentage}%` }}
-                          transition={{ duration: 1, delay: index * 0.1 }}
-                        />
-                      </div>
+                    <div className="text-right">
+                      <p className="font-bold">${category.value.toLocaleString()}</p>
+                      <p className="text-sm text-gray-500">{category.percentage}% of total</p>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Vendor Comparison Tab */}
-        <TabsContent value="comparison" className="space-y-6">
+        {/* Timeline Tab */}
+        <TabsContent value="timeline" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Cumulative Cost Over Time</CardTitle>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Year-over-year cost accumulation comparison</p>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={yearlyData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="year" />
+                    <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                    <Tooltip
+                      formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]}
+                      labelStyle={{ color: "#374151" }}
+                    />
+                    {safeResults.map((result, index) => (
+                      <Area
+                        key={result.vendor}
+                        type="monotone"
+                        dataKey={result.vendor}
+                        stackId="1"
+                        stroke={Object.values(COST_COLORS)[index]}
+                        fill={Object.values(COST_COLORS)[index]}
+                        fillOpacity={0.6}
+                        name={result.vendorName || result.vendor}
+                      />
+                    ))}
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Annual Cost Breakdown */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Annual Cost Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {safeResults.map((result) => {
+                  const annualCost = (result.total || 0) / (configuration.years || 3)
+                  return (
+                    <div key={result.vendor} className="text-center p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2">{result.vendorName || result.vendor}</h4>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">${annualCost.toLocaleString()}</p>
+                      <p className="text-sm text-gray-500">per year</p>
+                      <div className="mt-3 space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span>Monthly</span>
+                          <span>${(annualCost / 12).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span>Daily</span>
+                          <span>${(annualCost / 365).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Hidden Costs Tab */}
+        <TabsContent value="hidden" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Vendor Cost Comparison
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                Hidden Cost Analysis
               </CardTitle>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Often overlooked costs that can significantly impact your TCO
+              </p>
             </CardHeader>
             <CardContent>
-              <div className="h-96">
+              <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={costComparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#E5E7EB"} />
-                    <XAxis
-                      dataKey="vendor"
-                      tick={{ fill: darkMode ? "#9CA3AF" : "#6B7280", fontSize: 12 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis
-                      tick={{ fill: darkMode ? "#9CA3AF" : "#6B7280", fontSize: 12 }}
-                      tickFormatter={formatCurrency}
-                    />
-                    <ReTooltip
-                      formatter={(value: number, name: string) => [formatCurrency(value), name]}
-                      contentStyle={{
-                        backgroundColor: darkMode ? "#1F2937" : "#FFFFFF",
-                        border: `1px solid ${darkMode ? "#374151" : "#E5E7EB"}`,
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="software" stackId="a" fill={COST_COLORS[0]} name="Software" />
-                    <Bar dataKey="hardware" stackId="a" fill={COST_COLORS[1]} name="Hardware" />
-                    <Bar dataKey="implementation" stackId="a" fill={COST_COLORS[2]} name="Implementation" />
-                    <Bar dataKey="support" stackId="a" fill={COST_COLORS[3]} name="Support" />
-                    <Bar dataKey="operations" stackId="a" fill={COST_COLORS[4]} name="Operations" />
-                    {showHiddenCosts && <Bar dataKey="hidden" stackId="a" fill={COST_COLORS[5]} name="Hidden Costs" />}
-                    <Line
-                      type="monotone"
-                      dataKey="total"
-                      stroke={PORTNOX_COLORS.accent}
-                      strokeWidth={3}
-                      name="Total Cost"
-                    />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Savings Comparison */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Cost Savings vs Portnox</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {results
-                    .filter((r) => r.vendor !== "portnox")
-                    .map((result) => {
-                      const portnoxResult = results.find((r) => r.vendor === "portnox")
-                      const savings = portnoxResult ? result.total - portnoxResult.total : 0
-                      const savingsPercent = portnoxResult ? (savings / result.total) * 100 : 0
-
-                      return (
-                        <div key={result.vendor} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div>
-                            <h4 className="font-semibold">{result.vendorName}</h4>
-                            <p className="text-sm text-gray-600">vs Portnox</p>
-                          </div>
-                          <div className="text-right">
-                            <p className={cn("font-bold", savings > 0 ? "text-green-600" : "text-red-600")}>
-                              {savings > 0 ? "+" : ""}
-                              {formatCurrency(Math.abs(savings))}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {savingsPercent > 0 ? "+" : ""}
-                              {savingsPercent.toFixed(1)}%
-                            </p>
-                          </div>
-                        </div>
-                      )
-                    })}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Per Device Monthly Cost</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={costComparisonData} layout="horizontal">
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" tickFormatter={(value) => `$${value.toFixed(2)}`} tick={{ fontSize: 12 }} />
-                      <YAxis type="category" dataKey="vendor" width={100} tick={{ fontSize: 12 }} />
-                      <ReTooltip formatter={(value: number) => [`$${value.toFixed(2)}`, "Per Device/Month"]} />
-                      <Bar dataKey="perDeviceMonthly" fill={PORTNOX_COLORS.primary} radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Cost Breakdown Tab */}
-        <TabsContent value="breakdown" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Interactive Cost Treemap</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <Treemap data={costTreemapData} dataKey="value" ratio={4 / 3} stroke="#fff" fill="#8884d8">
-                    <ReTooltip formatter={(value: number, name: string) => [formatCurrency(value), name]} />
-                  </Treemap>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Detailed Cost Analysis */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {["Software", "Hardware", "Operations"].map((category) => {
-              const categoryData = selectedResult?.breakdown.find((b) => b.name === category)
-              return (
-                <Card key={category}>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{category} Costs</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center mb-4">
-                      <p className="text-3xl font-bold">{formatCurrency(categoryData?.value || 0)}</p>
-                      <p className="text-sm text-gray-600">{categoryData?.percentage}% of total</p>
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      {category === "Software" && (
-                        <>
-                          <div className="flex justify-between">
-                            <span>Base Licensing</span>
-                            <span>{formatCurrency((categoryData?.value || 0) * 0.7)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Volume Discounts</span>
-                            <span className="text-green-600">-{formatCurrency((categoryData?.value || 0) * 0.1)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Multi-year Savings</span>
-                            <span className="text-green-600">-{formatCurrency((categoryData?.value || 0) * 0.05)}</span>
-                          </div>
-                        </>
-                      )}
-                      {category === "Hardware" && (
-                        <>
-                          <div className="flex justify-between">
-                            <span>Appliances</span>
-                            <span>{formatCurrency((categoryData?.value || 0) * 0.6)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Installation</span>
-                            <span>{formatCurrency((categoryData?.value || 0) * 0.2)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Refresh Costs</span>
-                            <span>{formatCurrency((categoryData?.value || 0) * 0.2)}</span>
-                          </div>
-                        </>
-                      )}
-                      {category === "Operations" && (
-                        <>
-                          <div className="flex justify-between">
-                            <span>Admin Time</span>
-                            <span>{formatCurrency((categoryData?.value || 0) * 0.5)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Training</span>
-                            <span>{formatCurrency((categoryData?.value || 0) * 0.3)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Monitoring</span>
-                            <span>{formatCurrency((categoryData?.value || 0) * 0.2)}</span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        </TabsContent>
-
-        {/* Projections Tab */}
-        <TabsContent value="projections" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>5-Year Cost and Value Projection</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={yearlyProjectionData}>
+                  <BarChart data={hiddenCostsData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="year" />
-                    <YAxis tickFormatter={formatCurrency} />
-                    <ReTooltip formatter={(value: number) => formatCurrency(value)} />
-                    <Legend />
-                    <Area
-                      type="monotone"
-                      dataKey="cumulative"
-                      fill={PORTNOX_COLORS.primary}
-                      fillOpacity={0.3}
-                      stroke={PORTNOX_COLORS.primary}
-                      name="Cumulative Cost"
+                    <XAxis dataKey="vendor" />
+                    <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                    <Tooltip
+                      formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]}
+                      labelStyle={{ color: "#374151" }}
                     />
-                    <Line
-                      type="monotone"
-                      dataKey="savings"
-                      stroke={PORTNOX_COLORS.success}
-                      strokeWidth={3}
-                      name="Cumulative Savings"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="netValue"
-                      stroke={PORTNOX_COLORS.accent}
-                      strokeWidth={3}
-                      strokeDasharray="5 5"
-                      name="Net Value"
-                    />
-                  </ComposedChart>
+                    <Bar dataKey="visible" stackId="a" fill="#10B981" name="Visible Costs" />
+                    <Bar dataKey="hidden" stackId="a" fill="#EF4444" name="Hidden Costs" />
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
 
-          {/* ROI Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Hidden Cost Categories */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Payback Analysis</CardTitle>
+                <CardTitle>Common Hidden Costs</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-portnox-primary">{selectedResult?.roi.paybackMonths || 0}</p>
-                  <p className="text-sm text-gray-600">Months to Payback</p>
-                </div>
-                <div className="mt-4 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Break-even Point</span>
-                    <span>Month {selectedResult?.roi.paybackMonths || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>5-Year ROI</span>
-                    <span className="text-green-600">{selectedResult?.roi.percentage || 0}%</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Annual Savings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-green-600">
-                    {formatCurrency(selectedResult?.roi.annualSavings || 0)}
-                  </p>
-                  <p className="text-sm text-gray-600">Per Year</p>
-                </div>
-                <div className="mt-4 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Labor Savings</span>
-                    <span>{formatCurrency((selectedResult?.roi.annualSavings || 0) * 0.4)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Risk Reduction</span>
-                    <span>{formatCurrency((selectedResult?.roi.annualSavings || 0) * 0.6)}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Efficiency Gains</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-blue-600">{selectedResult?.roi.laborSavingsFTE || 0}</p>
-                  <p className="text-sm text-gray-600">FTE Saved</p>
-                </div>
-                <div className="mt-4 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Admin Time Reduction</span>
-                    <span>75%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Incident Response</span>
-                    <span>60% Faster</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Deep Analysis Tab */}
-        <TabsContent value="analysis" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Cost Sensitivity Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-semibold mb-2">Device Count Impact</h4>
-                    <p className="text-sm text-gray-600 mb-3">How costs change with different device counts</p>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>50% fewer devices</span>
-                        <span className="text-green-600">-42% total cost</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Current devices</span>
-                        <span>{formatCurrency(selectedResult?.total || 0)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>50% more devices</span>
-                        <span className="text-red-600">+38% total cost</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-semibold mb-2">Time Horizon Impact</h4>
-                    <p className="text-sm text-gray-600 mb-3">Cost efficiency over different time periods</p>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>1 Year</span>
-                        <span>{formatCurrency((selectedResult?.total || 0) / years)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>3 Years</span>
-                        <span>{formatCurrency(selectedResult?.total || 0)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>5 Years</span>
-                        <span>{formatCurrency((selectedResult?.total || 0) * 1.67)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Risk-Adjusted TCO</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-semibold mb-2">Security Risk Costs</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Breach Probability</span>
-                        <span>15% annually</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Average Breach Cost</span>
-                        <span>{formatCurrency(4500000)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Risk-Adjusted Cost</span>
-                        <span className="text-red-600">{formatCurrency(675000)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-semibold mb-2">Compliance Risk</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Audit Failure Risk</span>
-                        <span>8% annually</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Penalty Exposure</span>
-                        <span>{formatCurrency(500000)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Risk-Adjusted Cost</span>
-                        <span className="text-red-600">{formatCurrency(40000)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-900/20">
-                    <h4 className="font-semibold mb-2 text-green-800 dark:text-green-200">Total Risk-Adjusted TCO</h4>
-                    <p className="text-2xl font-bold text-green-800 dark:text-green-200">
-                      {formatCurrency((selectedResult?.total || 0) + 715000)}
+              <CardContent className="space-y-4">
+                <div className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                  <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-red-800 dark:text-red-200">Downtime Costs</h4>
+                    <p className="text-sm text-red-700 dark:text-red-300">
+                      Network outages and system failures during implementation
                     </p>
-                    <p className="text-sm text-green-600 dark:text-green-300">
-                      Including security and compliance risks
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                  <Info className="h-5 w-5 text-orange-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-orange-800 dark:text-orange-200">Training Overhead</h4>
+                    <p className="text-sm text-orange-700 dark:text-orange-300">
+                      Extended training periods and productivity loss
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <Zap className="h-5 w-5 text-purple-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-purple-800 dark:text-purple-200">Integration Complexity</h4>
+                    <p className="text-sm text-purple-700 dark:text-purple-300">
+                      Additional tools and customizations required
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Portnox Advantage</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <TrendingDown className="h-5 w-5 text-green-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-green-800 dark:text-green-200">Minimal Downtime</h4>
+                    <p className="text-sm text-green-700 dark:text-green-300">
+                      Cloud-native deployment reduces implementation risks
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <Zap className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-blue-800 dark:text-blue-200">Intuitive Interface</h4>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      Reduced training time with user-friendly design
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-purple-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-purple-800 dark:text-purple-200">Native Integrations</h4>
+                    <p className="text-sm text-purple-700 dark:text-purple-300">
+                      Pre-built connectors eliminate custom development
                     </p>
                   </div>
                 </div>
@@ -791,29 +630,27 @@ export default function DetailedCostBreakdown({ results, years, darkMode, config
             </Card>
           </div>
 
-          {/* Advanced Metrics */}
+          {/* Hidden Cost Impact */}
           <Card>
             <CardHeader>
-              <CardTitle>Advanced Financial Metrics</CardTitle>
+              <CardTitle>Hidden Cost Impact by Vendor</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold">12.5%</p>
-                  <p className="text-sm text-gray-600">Internal Rate of Return</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold">2.3</p>
-                  <p className="text-sm text-gray-600">Benefit-Cost Ratio</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold">{formatCurrency(850000)}</p>
-                  <p className="text-sm text-gray-600">Net Present Value</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold">18 mo</p>
-                  <p className="text-sm text-gray-600">Discounted Payback</p>
-                </div>
+              <div className="space-y-4">
+                {hiddenCostsData.map((vendor) => (
+                  <div key={vendor.vendor} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">{vendor.vendor}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Hidden costs represent {vendor.hiddenPercentage}% of total TCO
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-red-600">${vendor.hidden.toLocaleString()}</p>
+                      <p className="text-sm text-gray-500">hidden costs</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
