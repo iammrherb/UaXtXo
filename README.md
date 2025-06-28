@@ -35,15 +35,15 @@ The Ultimate Portnox TCO Analyzer is a comprehensive web-based platform for comp
 ## Quick Start
 
 1. **Run the Setup Script**:
-   ```bash
+   \`\`\`bash
    chmod +x ultimate_portnox_tco.sh
    ./ultimate_portnox_tco.sh
-   ```
+   \`\`\`
 
 2. **Start the Web Server**:
-   ```bash
+   \`\`\`bash
    ./serve.sh
-   ```
+   \`\`\`
 
 3. **Open in Browser**:
    Navigate to `http://localhost:8080`
