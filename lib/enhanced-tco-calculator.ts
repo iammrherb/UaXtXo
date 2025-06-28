@@ -1,20 +1,12 @@
-import Decimal from "decimal.js"
+import { ComprehensiveVendorDatabase, type VendorData } from "./comprehensive-vendor-data"
 
 export interface CalculationConfiguration {
-  orgSize: "small" | "medium" | "large" | "enterprise"
+  orgSize: string
   devices: number
   users: number
-  industry:
-    | "healthcare"
-    | "financial"
-    | "retail"
-    | "technology"
-    | "manufacturing"
-    | "energy"
-    | "government"
-    | "education"
+  industry: string
   years: number
-  region: "north-america" | "europe" | "asia-pacific" | "latin-america"
+  region: string
   portnoxBasePrice: number
   portnoxAddons: {
     atp: boolean
@@ -24,48 +16,38 @@ export interface CalculationConfiguration {
   }
 }
 
-export interface CalculationResult {
-  vendor: string
+export interface CostBreakdown {
   name: string
-  total: number
-  breakdown: {
-    licensing: number
-    hardware: number
-    implementation: number
-    support: number
-    training: number
-    maintenance: number
-    hidden: number
-  }
-  yearlyBreakdown: Array<{
-    year: number
-    cost: number
-    cumulative: number
-  }>
-  roi: {
-    percentage: number
-    paybackMonths: number
-    netPresentValue: number
-    savings: number
-  }
-  riskFactors: {
-    complexity: number
-    vendor: number
-    technology: number
-    implementation: number
-  }
+  value: number
+  percentage: number
+  description: string
 }
 
-// Industry-specific multipliers
-const INDUSTRY_MULTIPLIERS = {
-  healthcare: { compliance: 1.4, security: 1.3, implementation: 1.2 },
-  financial: { compliance: 1.5, security: 1.4, implementation: 1.3 },
-  retail: { compliance: 1.2, security: 1.2, implementation: 1.1 },
-  technology: { compliance: 1.1, security: 1.1, implementation: 1.0 },
-  manufacturing: { compliance: 1.3, security: 1.2, implementation: 1.2 },
-  energy: { compliance: 1.4, security: 1.4, implementation: 1.3 },
-  government: { compliance: 1.6, security: 1.5, implementation: 1.4 },
-  education: { compliance: 1.2, security: 1.1, implementation: 1.1 },
+export interface ROIMetrics {
+  paybackMonths: number
+  percentage: number
+  annualSavings: number
+  breachReduction: number
+  laborSavingsFTE: number
+  complianceSavings: number
+}
+
+export interface CalculationResult {
+  vendor: string
+  vendorName: string
+  total: number
+  breakdown: CostBreakdown[]
+  roi: ROIMetrics
+  riskMetrics: {
+    breachProbabilityReduction: number
+    complianceScore: number
+    operationalEfficiency: number
+  }
+  implementation: {
+    timeToValue: string
+    complexity: string
+    resourceRequirement: string
+  }
 }
 
 // Regional cost multipliers
@@ -74,380 +56,389 @@ const REGIONAL_MULTIPLIERS = {
   europe: 1.15,
   "asia-pacific": 0.85,
   "latin-america": 0.75,
+  "middle-east": 1.1,
 }
 
-// Organization size multipliers
-const ORG_SIZE_MULTIPLIERS = {
-  small: { volume: 1.2, complexity: 0.8, support: 1.1 },
-  medium: { volume: 1.0, complexity: 1.0, support: 1.0 },
-  large: { volume: 0.9, complexity: 1.2, support: 0.9 },
-  enterprise: { volume: 0.8, complexity: 1.4, support: 0.8 },
+// Industry complexity multipliers
+const INDUSTRY_MULTIPLIERS = {
+  healthcare: 1.3,
+  financial: 1.4,
+  government: 1.5,
+  education: 0.9,
+  manufacturing: 1.1,
+  retail: 1.0,
+  technology: 1.0,
+  energy: 1.2,
 }
 
-// Vendor-specific calculation data
-const VENDOR_CALCULATIONS = {
-  portnox: {
-    licensing: { perDevice: 3.0, model: "subscription" },
-    hardware: { required: false, cost: 0 },
-    implementation: { baseCost: 0, complexity: 0.1, timeWeeks: 2 },
-    support: { included: true, premium: 0.5 },
-    training: { required: false, cost: 0 },
-    maintenance: { percentage: 0, annual: 0 },
-    hidden: { downtime: 0, complexity: 0, integration: 0 },
-    addons: {
-      atp: { perDevice: 1.5, description: "Advanced Threat Protection" },
-      compliance: { perDevice: 1.0, description: "Compliance Automation" },
-      iot: { perDevice: 2.0, description: "IoT/OT Security" },
-      analytics: { perDevice: 1.5, description: "Risk Analytics" },
-    },
-  },
-  cisco: {
-    licensing: { perDevice: 12.0, model: "perpetual" },
-    hardware: { required: true, baseCost: 65000, perDevice: 0.5 },
-    implementation: { baseCost: 150000, complexity: 3.0, timeWeeks: 24 },
-    support: { included: false, annual: 0.22 },
-    training: { required: true, cost: 25000 },
-    maintenance: { percentage: 0.22, annual: 0 },
-    hidden: { downtime: 100000, complexity: 80000, integration: 70000 },
-  },
-  aruba: {
-    licensing: { perDevice: 8.5, model: "perpetual" },
-    hardware: { required: true, baseCost: 28995, perDevice: 0.3 },
-    implementation: { baseCost: 80000, complexity: 2.0, timeWeeks: 12 },
-    support: { included: false, annual: 0.2 },
-    training: { required: true, cost: 15000 },
-    maintenance: { percentage: 0.2, annual: 0 },
-    hidden: { downtime: 50000, complexity: 50000, integration: 40000 },
-  },
-  meraki: {
-    licensing: { perDevice: 15.0, model: "subscription" },
-    hardware: { required: true, baseCost: 50000, perDevice: 1.0 },
-    implementation: { baseCost: 25000, complexity: 1.5, timeWeeks: 12 },
-    support: { included: true, premium: 0 },
-    training: { required: true, cost: 5000 },
-    maintenance: { percentage: 0, annual: 0 },
-    hidden: { downtime: 25000, complexity: 15000, integration: 20000 },
-  },
-  forescout: {
-    licensing: { perDevice: 15.0, model: "subscription" },
-    hardware: { required: true, baseCost: 55000, perDevice: 0.4 },
-    implementation: { baseCost: 80000, complexity: 2.5, timeWeeks: 16 },
-    support: { included: false, annual: 0.25 },
-    training: { required: true, cost: 20000 },
-    maintenance: { percentage: 0.25, annual: 0 },
-    hidden: { downtime: 75000, complexity: 30000, integration: 45000 },
-  },
-  fortinet: {
-    licensing: { perDevice: 9.5, model: "perpetual" },
-    hardware: { required: true, baseCost: 20000, perDevice: 0.25 },
-    implementation: { baseCost: 40000, complexity: 2.0, timeWeeks: 8 },
-    support: { included: false, annual: 0.18 },
-    training: { required: true, cost: 12000 },
-    maintenance: { percentage: 0.18, annual: 0 },
-    hidden: { downtime: 30000, complexity: 25000, integration: 20000 },
-  },
-  juniper: {
-    licensing: { perDevice: 8.0, model: "subscription" },
-    hardware: { required: false, baseCost: 0, perDevice: 0 },
-    implementation: { baseCost: 12000, complexity: 0.5, timeWeeks: 4 },
-    support: { included: true, premium: 0.3 },
-    training: { required: true, cost: 8000 },
-    maintenance: { percentage: 0, annual: 0 },
-    hidden: { downtime: 5000, complexity: 8000, integration: 5000 },
-  },
-  arista: {
-    licensing: { perDevice: 7.0, model: "subscription" },
-    hardware: { required: false, baseCost: 0, perDevice: 0 },
-    implementation: { baseCost: 10000, complexity: 1.0, timeWeeks: 6 },
-    support: { included: true, premium: 0.2 },
-    training: { required: true, cost: 6000 },
-    maintenance: { percentage: 0, annual: 0 },
-    hidden: { downtime: 8000, complexity: 12000, integration: 8000 },
-  },
+// Organization size factors
+const ORG_SIZE_FACTORS = {
+  startup: { complexity: 0.7, support: 0.8, training: 0.6 },
+  smb: { complexity: 0.8, support: 0.9, training: 0.8 },
+  medium: { complexity: 1.0, support: 1.0, training: 1.0 },
+  enterprise: { complexity: 1.3, support: 1.2, training: 1.4 },
+  xlarge: { complexity: 1.6, support: 1.4, training: 1.8 },
 }
 
-export function compareVendors(
-  selectedVendors: string[],
-  configuration: CalculationConfiguration,
-): CalculationResult[] {
-  return selectedVendors.map((vendorId) => calculateVendorTCO(vendorId, configuration))
-}
+function getVolumeDiscount(vendor: VendorData, deviceCount: number): number {
+  const { volumeDiscounts } = vendor.pricing
 
-export function calculateVendorTCO(vendorId: string, configuration: CalculationConfiguration): CalculationResult {
-  const vendorData = VENDOR_CALCULATIONS[vendorId as keyof typeof VENDOR_CALCULATIONS]
-  if (!vendorData) {
-    throw new Error(`Vendor ${vendorId} not found in calculations`)
+  if (deviceCount >= volumeDiscounts.tier3.threshold) {
+    return volumeDiscounts.tier3.discount
+  } else if (deviceCount >= volumeDiscounts.tier2.threshold) {
+    return volumeDiscounts.tier2.discount
+  } else if (deviceCount >= volumeDiscounts.tier1.threshold) {
+    return volumeDiscounts.tier1.discount
   }
 
-  const industryMultiplier = INDUSTRY_MULTIPLIERS[configuration.industry]
-  const regionalMultiplier = REGIONAL_MULTIPLIERS[configuration.region]
-  const orgMultiplier = ORG_SIZE_MULTIPLIERS[configuration.orgSize]
-
-  // Calculate base costs using Decimal for precision
-  const devices = new Decimal(configuration.devices || 1000)
-  const years = new Decimal(configuration.years || 3)
-
-  // Licensing costs
-  let licensingCost = new Decimal(0)
-  if (vendorId === "portnox") {
-    // Portnox with addons
-    let basePrice = new Decimal(configuration.portnoxBasePrice || 3.0)
-
-    // Add addon costs
-    if (configuration.portnoxAddons?.atp) {
-      basePrice = basePrice.plus(vendorData.addons?.atp?.perDevice || 0)
-    }
-    if (configuration.portnoxAddons?.compliance) {
-      basePrice = basePrice.plus(vendorData.addons?.compliance?.perDevice || 0)
-    }
-    if (configuration.portnoxAddons?.iot) {
-      basePrice = basePrice.plus(vendorData.addons?.iot?.perDevice || 0)
-    }
-    if (configuration.portnoxAddons?.analytics) {
-      basePrice = basePrice.plus(vendorData.addons?.analytics?.perDevice || 0)
-    }
-
-    licensingCost = basePrice.mul(devices).mul(12).mul(years) // Monthly to total
-  } else {
-    const baseDeviceCost = new Decimal(vendorData.licensing.perDevice)
-    if (vendorData.licensing.model === "subscription") {
-      licensingCost = baseDeviceCost.mul(devices).mul(12).mul(years)
-    } else {
-      licensingCost = baseDeviceCost.mul(devices)
-    }
-  }
-
-  // Apply volume discounts
-  const volumeDiscount = calculateVolumeDiscount(devices.toNumber())
-  licensingCost = licensingCost.mul(new Decimal(1).minus(volumeDiscount))
-
-  // Hardware costs
-  const hardwareCost = vendorData.hardware.required
-    ? new Decimal(vendorData.hardware.baseCost).plus(new Decimal(vendorData.hardware.perDevice).mul(devices))
-    : new Decimal(0)
-
-  // Implementation costs
-  const baseImplementation = new Decimal(vendorData.implementation.baseCost)
-  const complexityMultiplier = new Decimal(vendorData.implementation.complexity)
-  const implementationCost = baseImplementation.plus(
-    devices
-      .mul(complexityMultiplier)
-      .mul(100), // $100 per device per complexity point
-  )
-
-  // Support costs
-  const supportCost = vendorData.support.included ? new Decimal(0) : licensingCost.mul(vendorData.support.annual || 0)
-
-  // Training costs
-  const trainingCost = new Decimal(vendorData.training?.cost || 0)
-
-  // Maintenance costs
-  const maintenanceCost = vendorData.maintenance.percentage
-    ? hardwareCost.plus(licensingCost).mul(vendorData.maintenance.percentage).mul(years)
-    : new Decimal(vendorData.maintenance.annual || 0).mul(years)
-
-  // Hidden costs
-  const hiddenCost = new Decimal(vendorData.hidden.downtime || 0)
-    .plus(vendorData.hidden.complexity || 0)
-    .plus(vendorData.hidden.integration || 0)
-
-  // Apply multipliers
-  const industryFactor = new Decimal(industryMultiplier.implementation)
-  const regionalFactor = new Decimal(regionalMultiplier)
-  const orgFactor = new Decimal(orgMultiplier.complexity)
-
-  const totalMultiplier = industryFactor.mul(regionalFactor).mul(orgFactor)
-
-  // Calculate final costs
-  const finalLicensing = licensingCost.mul(totalMultiplier)
-  const finalHardware = hardwareCost.mul(regionalFactor)
-  const finalImplementation = implementationCost.mul(totalMultiplier)
-  const finalSupport = supportCost.mul(regionalFactor)
-  const finalTraining = trainingCost.mul(regionalFactor)
-  const finalMaintenance = maintenanceCost.mul(regionalFactor)
-  const finalHidden = hiddenCost.mul(totalMultiplier)
-
-  const totalCost = finalLicensing
-    .plus(finalHardware)
-    .plus(finalImplementation)
-    .plus(finalSupport)
-    .plus(finalTraining)
-    .plus(finalMaintenance)
-    .plus(finalHidden)
-
-  // Calculate yearly breakdown
-  const yearlyBreakdown = []
-  let cumulative = new Decimal(0)
-
-  for (let year = 1; year <= configuration.years; year++) {
-    let yearCost = new Decimal(0)
-
-    // Year 1 includes implementation, hardware, training
-    if (year === 1) {
-      yearCost = yearCost.plus(finalImplementation).plus(finalHardware).plus(finalTraining).plus(finalHidden)
-    }
-
-    // Annual costs (licensing, support, maintenance)
-    const annualLicensing = finalLicensing.div(years)
-    const annualSupport = finalSupport.div(years)
-    const annualMaintenance = finalMaintenance.div(years)
-
-    yearCost = yearCost.plus(annualLicensing).plus(annualSupport).plus(annualMaintenance)
-
-    cumulative = cumulative.plus(yearCost)
-
-    yearlyBreakdown.push({
-      year,
-      cost: yearCost.toNumber(),
-      cumulative: cumulative.toNumber(),
-    })
-  }
-
-  // Calculate ROI
-  const roi = calculateROI(vendorId, totalCost.toNumber(), configuration)
-
-  // Calculate risk factors
-  const riskFactors = calculateRiskFactors(vendorId, configuration)
-
-  return {
-    vendor: vendorId,
-    name: getVendorName(vendorId),
-    total: totalCost.toNumber(),
-    breakdown: {
-      licensing: finalLicensing.toNumber(),
-      hardware: finalHardware.toNumber(),
-      implementation: finalImplementation.toNumber(),
-      support: finalSupport.toNumber(),
-      training: finalTraining.toNumber(),
-      maintenance: finalMaintenance.toNumber(),
-      hidden: finalHidden.toNumber(),
-    },
-    yearlyBreakdown,
-    roi,
-    riskFactors,
-  }
-}
-
-function calculateVolumeDiscount(devices: number): number {
-  if (devices >= 50000) return 0.35
-  if (devices >= 25000) return 0.3
-  if (devices >= 10000) return 0.25
-  if (devices >= 5000) return 0.2
-  if (devices >= 2500) return 0.15
-  if (devices >= 1000) return 0.1
-  if (devices >= 500) return 0.05
   return 0
 }
 
-function calculateROI(vendorId: string, totalCost: number, configuration: CalculationConfiguration) {
-  // ROI benefits vary by vendor
-  const roiBenefits = {
-    portnox: {
-      laborSavings: 850000,
-      incidentReduction: 0.85,
-      complianceSavings: 200000,
-      breachRiskReduction: 0.8,
-      paybackMonths: 6,
-    },
-    cisco: {
-      laborSavings: 150000,
-      incidentReduction: 0.6,
-      complianceSavings: 75000,
-      breachRiskReduction: 0.55,
-      paybackMonths: 36,
-    },
-    aruba: {
-      laborSavings: 180000,
-      incidentReduction: 0.55,
-      complianceSavings: 60000,
-      breachRiskReduction: 0.5,
-      paybackMonths: 30,
-    },
-    meraki: {
-      laborSavings: 200000,
-      incidentReduction: 0.5,
-      complianceSavings: 50000,
-      breachRiskReduction: 0.45,
-      paybackMonths: 24,
-    },
-    forescout: {
-      laborSavings: 120000,
-      incidentReduction: 0.6,
-      complianceSavings: 80000,
-      breachRiskReduction: 0.5,
-      paybackMonths: 18,
-    },
-    fortinet: {
-      laborSavings: 160000,
-      incidentReduction: 0.55,
-      complianceSavings: 65000,
-      breachRiskReduction: 0.48,
-      paybackMonths: 22,
-    },
-    juniper: {
-      laborSavings: 300000,
-      incidentReduction: 0.75,
-      complianceSavings: 120000,
-      breachRiskReduction: 0.75,
-      paybackMonths: 10,
-    },
-    arista: {
-      laborSavings: 250000,
-      incidentReduction: 0.7,
-      complianceSavings: 100000,
-      breachRiskReduction: 0.7,
-      paybackMonths: 12,
-    },
+function calculateSoftwareCosts(vendor: VendorData, config: CalculationConfiguration): number {
+  const { devices, users, years } = config
+  let basePrice = vendor.pricing.basePrice
+
+  // Apply volume discounts
+  const discount = getVolumeDiscount(vendor, devices)
+  basePrice = basePrice * (1 - discount)
+
+  // Calculate based on pricing model
+  const unitCount = vendor.pricing.model === "per-user" ? users : devices
+  let monthlyCost = basePrice * unitCount
+
+  // Add Portnox addons if applicable
+  if (vendor.id === "portnox" && vendor.pricing.addOns) {
+    Object.entries(config.portnoxAddons).forEach(([key, enabled]) => {
+      if (enabled && vendor.pricing.addOns![key]) {
+        monthlyCost += vendor.pricing.addOns[key].price * devices
+      }
+    })
   }
 
-  const benefits = roiBenefits[vendorId as keyof typeof roiBenefits] || roiBenefits.cisco
+  // Convert to annual if needed
+  const annualCost = vendor.pricing.billingCycle === "monthly" ? monthlyCost * 12 : monthlyCost
 
-  const annualBenefits = benefits.laborSavings + benefits.complianceSavings
-  const totalBenefits = annualBenefits * configuration.years
-  const netBenefit = totalBenefits - totalCost
-  const roiPercentage = totalCost > 0 ? (netBenefit / totalCost) * 100 : 0
+  return annualCost * years
+}
 
-  // Calculate NPV with 10% discount rate
-  const discountRate = 0.1
-  let npv = -totalCost // Initial investment
-  for (let year = 1; year <= configuration.years; year++) {
-    npv += annualBenefits / Math.pow(1 + discountRate, year)
+function calculateHardwareCosts(vendor: VendorData, config: CalculationConfiguration): number {
+  if (!vendor.implementation.hardwareRequired) return 0
+
+  const { devices, years } = config
+  const regionalMultiplier = REGIONAL_MULTIPLIERS[config.region as keyof typeof REGIONAL_MULTIPLIERS] || 1.0
+
+  // Estimate hardware costs based on vendor and deployment size
+  let hardwareCostPerDevice = 0
+
+  switch (vendor.id) {
+    case "cisco":
+      hardwareCostPerDevice = devices > 5000 ? 800 : devices > 1000 ? 1200 : 1500
+      break
+    case "aruba":
+      hardwareCostPerDevice = devices > 5000 ? 600 : devices > 1000 ? 900 : 1200
+      break
+    case "forescout":
+      hardwareCostPerDevice = devices > 10000 ? 1000 : devices > 2000 ? 1500 : 2000
+      break
+    case "fortinet":
+      hardwareCostPerDevice = devices > 5000 ? 700 : devices > 1000 ? 1000 : 1300
+      break
+    case "juniper":
+      hardwareCostPerDevice = devices > 5000 ? 900 : devices > 1000 ? 1300 : 1600
+      break
+    case "arista":
+      hardwareCostPerDevice = devices > 10000 ? 1500 : devices > 5000 ? 2000 : 2500
+      break
+    default:
+      hardwareCostPerDevice = 500
+  }
+
+  // Calculate appliance count (rough estimate)
+  const applianceCount = Math.max(1, Math.ceil(devices / 2000))
+  const totalHardwareCost = applianceCount * hardwareCostPerDevice * regionalMultiplier
+
+  // Add refresh costs for multi-year deployments
+  const refreshCost = years > 3 ? totalHardwareCost * 0.5 : 0
+
+  return totalHardwareCost + refreshCost
+}
+
+function calculateImplementationCosts(vendor: VendorData, config: CalculationConfiguration): number {
+  const { devices, orgSize } = config
+  const regionalMultiplier = REGIONAL_MULTIPLIERS[config.region as keyof typeof REGIONAL_MULTIPLIERS] || 1.0
+  const industryMultiplier = INDUSTRY_MULTIPLIERS[config.industry as keyof typeof INDUSTRY_MULTIPLIERS] || 1.0
+  const orgSizeFactors = ORG_SIZE_FACTORS[orgSize as keyof typeof ORG_SIZE_FACTORS] || ORG_SIZE_FACTORS.medium
+
+  let baseCost = vendor.implementation.professionalServices.cost
+
+  // Scale based on device count
+  const deviceScaleFactor = Math.log10(devices / 1000) * 0.3 + 1
+  baseCost *= deviceScaleFactor
+
+  // Apply multipliers
+  baseCost *= regionalMultiplier * industryMultiplier * orgSizeFactors.complexity
+
+  // Add internal resource costs
+  const internalResourceCost = baseCost * 0.4 // 40% of PS cost in internal resources
+
+  return baseCost + internalResourceCost
+}
+
+function calculateSupportCosts(vendor: VendorData, config: CalculationConfiguration): number {
+  const { devices, years } = config
+  const softwareCost = calculateSoftwareCosts(vendor, config)
+
+  // Support typically 18-22% of software costs annually
+  const supportPercentage = vendor.category === "enterprise" ? 0.22 : 0.18
+  const annualSupportCost = (softwareCost / years) * supportPercentage
+
+  return annualSupportCost * years
+}
+
+function calculateOperationsCosts(vendor: VendorData, config: CalculationConfiguration): number {
+  const { devices, users, years } = config
+  const orgSizeFactors = ORG_SIZE_FACTORS[config.orgSize as keyof typeof ORG_SIZE_FACTORS] || ORG_SIZE_FACTORS.medium
+
+  // Estimate FTE requirements based on complexity
+  let fteRequired = 0
+  switch (vendor.implementation.complexity) {
+    case "low":
+      fteRequired = Math.max(0.25, devices / 10000)
+      break
+    case "medium":
+      fteRequired = Math.max(0.5, devices / 5000)
+      break
+    case "high":
+      fteRequired = Math.max(1.0, devices / 2500)
+      break
+  }
+
+  fteRequired *= orgSizeFactors.support
+
+  // Average IT salary + benefits
+  const annualFTECost = 120000
+  const annualOperationsCost = fteRequired * annualFTECost
+
+  return annualOperationsCost * years
+}
+
+function calculateHiddenCosts(vendor: VendorData, config: CalculationConfiguration): number {
+  const { devices, years } = config
+
+  // Hidden costs include: downtime, user productivity loss, additional tools, etc.
+  let hiddenCostFactor = 0
+
+  switch (vendor.implementation.complexity) {
+    case "low":
+      hiddenCostFactor = 0.05 // 5% of total visible costs
+      break
+    case "medium":
+      hiddenCostFactor = 0.12 // 12% of total visible costs
+      break
+    case "high":
+      hiddenCostFactor = 0.25 // 25% of total visible costs
+      break
+  }
+
+  // Calculate visible costs first
+  const softwareCost = calculateSoftwareCosts(vendor, config)
+  const hardwareCost = calculateHardwareCosts(vendor, config)
+  const implementationCost = calculateImplementationCosts(vendor, config)
+  const supportCost = calculateSupportCosts(vendor, config)
+  const operationsCost = calculateOperationsCosts(vendor, config)
+
+  const visibleCosts = softwareCost + hardwareCost + implementationCost + supportCost + operationsCost
+
+  return visibleCosts * hiddenCostFactor
+}
+
+function calculateROI(vendor: VendorData, totalCost: number, config: CalculationConfiguration): ROIMetrics {
+  const { devices, users, years, industry } = config
+
+  // Base savings calculations
+  let annualLaborSavings = 0
+  let breachRiskReduction = 0
+  let complianceSavings = 0
+
+  // Labor savings based on automation level
+  const automationLevel = vendor.compliance.automationLevel / 100
+  const avgITSalary = 120000
+  const laborSavingsFTE = automationLevel * Math.min(3, devices / 2000) // Max 3 FTE savings
+  annualLaborSavings = laborSavingsFTE * avgITSalary
+
+  // Breach risk reduction
+  const industryBreachCost = getIndustryBreachCost(industry)
+  const industryBreachProbability = getIndustryBreachProbability(industry)
+
+  // Vendor-specific risk reduction
+  let riskReductionFactor = 0
+  switch (vendor.id) {
+    case "portnox":
+      riskReductionFactor = 0.85 // 85% risk reduction
+      break
+    case "cisco":
+    case "fortinet":
+      riskReductionFactor = 0.7
+      break
+    case "aruba":
+    case "juniper":
+      riskReductionFactor = 0.65
+      break
+    case "forescout":
+      riskReductionFactor = 0.75
+      break
+    default:
+      riskReductionFactor = 0.5
+  }
+
+  breachRiskReduction = industryBreachCost * industryBreachProbability * riskReductionFactor
+
+  // Compliance savings
+  if (vendor.compliance.frameworks.length > 0) {
+    const auditCostReduction = (vendor.compliance.auditReadiness / 100) * 200000 // Up to $200K audit savings
+    const complianceEfficiency = (vendor.compliance.automationLevel / 100) * 150000 // Up to $150K efficiency
+    complianceSavings = auditCostReduction + complianceEfficiency
+  }
+
+  const totalAnnualSavings = annualLaborSavings + breachRiskReduction / years + complianceSavings
+  const totalSavings = totalAnnualSavings * years
+
+  // Calculate payback period
+  const paybackMonths = totalCost / (totalAnnualSavings / 12)
+
+  // Calculate ROI percentage
+  const roiPercentage = ((totalSavings - totalCost) / totalCost) * 100
+
+  return {
+    paybackMonths: Math.max(1, Math.round(paybackMonths)),
+    percentage: Math.round(roiPercentage),
+    annualSavings: Math.round(totalAnnualSavings),
+    breachReduction: Math.round(riskReductionFactor * 100),
+    laborSavingsFTE: Math.round(laborSavingsFTE * 10) / 10,
+    complianceSavings: Math.round(complianceSavings),
+  }
+}
+
+function getIndustryBreachCost(industry: string): number {
+  const costs = {
+    healthcare: 10930000,
+    financial: 5720000,
+    government: 4740000,
+    technology: 4880000,
+    education: 3790000,
+    manufacturing: 4470000,
+    retail: 3280000,
+    energy: 6950000,
+  }
+  return costs[industry as keyof typeof costs] || 4500000
+}
+
+function getIndustryBreachProbability(industry: string): number {
+  const probabilities = {
+    healthcare: 0.29,
+    financial: 0.19,
+    government: 0.15,
+    technology: 0.22,
+    education: 0.26,
+    manufacturing: 0.18,
+    retail: 0.24,
+    energy: 0.16,
+  }
+  return probabilities[industry as keyof typeof probabilities] || 0.2
+}
+
+export function calculateVendorTCO(vendorId: string, config: CalculationConfiguration): CalculationResult | null {
+  const vendor = ComprehensiveVendorDatabase[vendorId]
+  if (!vendor) return null
+
+  // Calculate all cost components
+  const softwareCost = calculateSoftwareCosts(vendor, config)
+  const hardwareCost = calculateHardwareCosts(vendor, config)
+  const implementationCost = calculateImplementationCosts(vendor, config)
+  const supportCost = calculateSupportCosts(vendor, config)
+  const operationsCost = calculateOperationsCosts(vendor, config)
+  const hiddenCost = calculateHiddenCosts(vendor, config)
+
+  const totalCost = softwareCost + hardwareCost + implementationCost + supportCost + operationsCost + hiddenCost
+
+  // Create breakdown
+  const breakdown: CostBreakdown[] = [
+    {
+      name: "Software",
+      value: Math.round(softwareCost),
+      percentage: Math.round((softwareCost / totalCost) * 100),
+      description: "Licensing and subscription costs",
+    },
+    {
+      name: "Hardware",
+      value: Math.round(hardwareCost),
+      percentage: Math.round((hardwareCost / totalCost) * 100),
+      description: "Appliances and infrastructure",
+    },
+    {
+      name: "Implementation",
+      value: Math.round(implementationCost),
+      percentage: Math.round((implementationCost / totalCost) * 100),
+      description: "Professional services and deployment",
+    },
+    {
+      name: "Support",
+      value: Math.round(supportCost),
+      percentage: Math.round((supportCost / totalCost) * 100),
+      description: "Maintenance and technical support",
+    },
+    {
+      name: "Operations",
+      value: Math.round(operationsCost),
+      percentage: Math.round((operationsCost / totalCost) * 100),
+      description: "Ongoing management and administration",
+    },
+    {
+      name: "Hidden",
+      value: Math.round(hiddenCost),
+      percentage: Math.round((hiddenCost / totalCost) * 100),
+      description: "Downtime, productivity loss, additional tools",
+    },
+  ]
+
+  // Calculate ROI
+  const roi = calculateROI(vendor, totalCost, config)
+
+  // Calculate risk metrics
+  const riskMetrics = {
+    breachProbabilityReduction: roi.breachReduction / 100,
+    complianceScore: vendor.compliance.auditReadiness,
+    operationalEfficiency: vendor.compliance.automationLevel,
+  }
+
+  // Implementation details
+  const implementation = {
+    timeToValue: vendor.implementation.deploymentTime.fullDeployment,
+    complexity: vendor.implementation.complexity,
+    resourceRequirement: vendor.implementation.professionalServices.required ? "High" : "Low",
   }
 
   return {
-    percentage: Math.round(roiPercentage),
-    paybackMonths: benefits.paybackMonths,
-    netPresentValue: Math.round(npv),
-    savings: Math.round(netBenefit),
+    vendor: vendorId,
+    vendorName: vendor.name,
+    total: Math.round(totalCost),
+    breakdown,
+    roi,
+    riskMetrics,
+    implementation,
   }
 }
 
-function calculateRiskFactors(vendorId: string, configuration: CalculationConfiguration) {
-  const riskProfiles = {
-    portnox: { complexity: 1, vendor: 2, technology: 1, implementation: 1 },
-    cisco: { complexity: 9, vendor: 2, technology: 3, implementation: 9 },
-    aruba: { complexity: 7, vendor: 3, technology: 4, implementation: 7 },
-    meraki: { complexity: 5, vendor: 3, technology: 5, implementation: 6 },
-    forescout: { complexity: 8, vendor: 5, technology: 4, implementation: 8 },
-    fortinet: { complexity: 6, vendor: 4, technology: 4, implementation: 6 },
-    juniper: { complexity: 3, vendor: 4, technology: 2, implementation: 3 },
-    arista: { complexity: 4, vendor: 4, technology: 3, implementation: 4 },
+export function compareVendors(vendorIds: string[], config: CalculationConfiguration): CalculationResult[] {
+  const results: CalculationResult[] = []
+
+  for (const vendorId of vendorIds) {
+    const result = calculateVendorTCO(vendorId, config)
+    if (result) {
+      results.push(result)
+    }
   }
 
-  return riskProfiles[vendorId as keyof typeof riskProfiles] || riskProfiles.cisco
-}
-
-function getVendorName(vendorId: string): string {
-  const names = {
-    portnox: "Portnox CLEAR",
-    cisco: "Cisco ISE",
-    aruba: "Aruba ClearPass",
-    meraki: "Cisco Meraki",
-    forescout: "Forescout eyeSight",
-    fortinet: "FortiNAC",
-    juniper: "Juniper Mist Access Assurance",
-    arista: "Arista CUE",
-  }
-
-  return names[vendorId as keyof typeof names] || vendorId
+  // Sort by total cost (ascending)
+  return results.sort((a, b) => a.total - b.total)
 }
