@@ -1,459 +1,580 @@
 "use client"
 
-import type React from "react"
+import React, { useState, useMemo } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Progress } from "@/components/ui/progress"
+import { cn } from "@/lib/utils"
 import {
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
 } from "recharts"
-import { Shield, AlertTriangle, CheckCircle, XCircle, Award, Lock, FileText, Users } from "lucide-react"
+import { Shield, AlertTriangle, FileText, Lock, Zap, TrendingUp, TrendingDown, Activity } from "lucide-react"
 
 const PORTNOX_COLORS = {
   primary: "#00D4AA",
-  primaryDark: "#00A88A",
-  accent: "#FF6B35",
   success: "#10B981",
   warning: "#F59E0B",
   danger: "#EF4444",
   info: "#3B82F6",
+  purple: "#8B5CF6",
+}
+
+const COMPLIANCE_FRAMEWORKS = {
+  "SOC 2": {
+    name: "SOC 2 Type II",
+    description: "Security, Availability, Processing Integrity, Confidentiality, Privacy",
+    industry: ["Technology", "SaaS", "Financial Services"],
+    annualCost: 75000,
+    penaltyRisk: 500000,
+    automationPotential: 85,
+    portnoxSupport: 95,
+    competitorAverage: 65,
+  },
+  "ISO 27001": {
+    name: "ISO 27001:2022",
+    description: "Information Security Management Systems",
+    industry: ["All Industries"],
+    annualCost: 60000,
+    penaltyRisk: 300000,
+    automationPotential: 80,
+    portnoxSupport: 90,
+    competitorAverage: 70,
+  },
+  HIPAA: {
+    name: "HIPAA",
+    description: "Healthcare Information Privacy and Security",
+    industry: ["Healthcare", "Health Tech"],
+    annualCost: 120000,
+    penaltyRisk: 1800000,
+    automationPotential: 75,
+    portnoxSupport: 88,
+    competitorAverage: 55,
+  },
+  "PCI DSS": {
+    name: "PCI DSS v4.0",
+    description: "Payment Card Industry Data Security Standard",
+    industry: ["Retail", "E-commerce", "Financial"],
+    annualCost: 90000,
+    penaltyRisk: 500000,
+    automationPotential: 70,
+    portnoxSupport: 85,
+    competitorAverage: 60,
+  },
+  GDPR: {
+    name: "GDPR",
+    description: "General Data Protection Regulation",
+    industry: ["All (EU Operations)"],
+    annualCost: 150000,
+    penaltyRisk: 20000000,
+    automationPotential: 65,
+    portnoxSupport: 82,
+    competitorAverage: 50,
+  },
+  NIST: {
+    name: "NIST Cybersecurity Framework",
+    description: "Comprehensive Cybersecurity Framework",
+    industry: ["Government", "Critical Infrastructure"],
+    annualCost: 200000,
+    penaltyRisk: 1000000,
+    automationPotential: 85,
+    portnoxSupport: 92,
+    competitorAverage: 65,
+  },
+  FedRAMP: {
+    name: "FedRAMP",
+    description: "Federal Risk and Authorization Management Program",
+    industry: ["Government", "Federal Contractors"],
+    annualCost: 500000,
+    penaltyRisk: 5000000,
+    automationPotential: 90,
+    portnoxSupport: 95,
+    competitorAverage: 40,
+  },
 }
 
 interface ComplianceRiskViewProps {
-  results?: any
+  results?: any[]
   industry?: string
   selectedVendors?: string[]
   darkMode?: boolean
 }
 
-const ComplianceRiskView: React.FC<ComplianceRiskViewProps> = ({
-  results = {},
+export default function ComplianceRiskView({
+  results = [],
   industry = "technology",
-  selectedVendors = ["portnox", "cisco", "aruba", "meraki"],
+  selectedVendors = ["portnox"],
   darkMode = false,
-}) => {
-  // Compliance frameworks data
-  const complianceFrameworks = {
-    "SOC 2 Type II": {
-      portnox: { status: "certified", score: 98, lastAudit: "2024-01" },
-      cisco: { status: "certified", score: 92, lastAudit: "2023-11" },
-      aruba: { status: "certified", score: 88, lastAudit: "2023-09" },
-      meraki: { status: "certified", score: 90, lastAudit: "2023-12" },
-    },
-    "ISO 27001": {
-      portnox: { status: "certified", score: 96, lastAudit: "2024-02" },
-      cisco: { status: "certified", score: 89, lastAudit: "2023-10" },
-      aruba: { status: "certified", score: 85, lastAudit: "2023-08" },
-      meraki: { status: "partial", score: 78, lastAudit: "2023-11" },
-    },
-    HIPAA: {
-      portnox: { status: "compliant", score: 95, lastAudit: "2024-01" },
-      cisco: { status: "compliant", score: 87, lastAudit: "2023-12" },
-      aruba: { status: "partial", score: 82, lastAudit: "2023-10" },
-      meraki: { status: "partial", score: 75, lastAudit: "2023-11" },
-    },
-    "PCI DSS": {
-      portnox: { status: "certified", score: 94, lastAudit: "2024-01" },
-      cisco: { status: "certified", score: 91, lastAudit: "2023-11" },
-      aruba: { status: "certified", score: 88, lastAudit: "2023-09" },
-      meraki: { status: "partial", score: 80, lastAudit: "2023-12" },
-    },
-    GDPR: {
-      portnox: { status: "compliant", score: 97, lastAudit: "2024-02" },
-      cisco: { status: "partial", score: 83, lastAudit: "2023-10" },
-      aruba: { status: "partial", score: 79, lastAudit: "2023-08" },
-      meraki: { status: "partial", score: 81, lastAudit: "2023-11" },
-    },
-    "NIST Cybersecurity Framework": {
-      portnox: { status: "compliant", score: 96, lastAudit: "2024-01" },
-      cisco: { status: "compliant", score: 88, lastAudit: "2023-12" },
-      aruba: { status: "compliant", score: 84, lastAudit: "2023-10" },
-      meraki: { status: "partial", score: 82, lastAudit: "2023-11" },
-    },
-    FedRAMP: {
-      portnox: { status: "authorized", score: 98, lastAudit: "2024-01" },
-      cisco: { status: "none", score: 0, lastAudit: "N/A" },
-      aruba: { status: "none", score: 0, lastAudit: "N/A" },
-      meraki: { status: "none", score: 0, lastAudit: "N/A" },
-    },
-  }
+}: ComplianceRiskViewProps) {
+  const [selectedFramework, setSelectedFramework] = useState("SOC 2")
+  const [activeTab, setActiveTab] = useState("overview")
 
-  // Risk assessment data
-  const riskAssessment = {
-    portnox: {
-      dataBreachRisk: 15,
-      complianceRisk: 8,
-      operationalRisk: 12,
-      financialRisk: 10,
-      reputationalRisk: 9,
-      overallRisk: 11,
-    },
-    cisco: {
-      dataBreachRisk: 35,
-      complianceRisk: 25,
-      operationalRisk: 45,
-      financialRisk: 40,
-      reputationalRisk: 30,
-      overallRisk: 35,
-    },
-    aruba: {
-      dataBreachRisk: 32,
-      complianceRisk: 28,
-      operationalRisk: 38,
-      financialRisk: 35,
-      reputationalRisk: 32,
-      overallRisk: 33,
-    },
-    meraki: {
-      dataBreachRisk: 28,
-      complianceRisk: 22,
-      operationalRisk: 30,
-      financialRisk: 28,
-      reputationalRisk: 25,
-      overallRisk: 27,
-    },
-  }
-
-  // Compliance score calculation
-  const calculateComplianceScore = (vendor: string) => {
-    const frameworks = Object.values(complianceFrameworks)
-    const scores = frameworks.map((framework) => framework[vendor as keyof typeof framework]?.score || 0)
-    return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
-  }
-
-  // Risk radar data
-  const riskRadarData = selectedVendors.map((vendor) => ({
-    vendor: vendor.charAt(0).toUpperCase() + vendor.slice(1),
-    dataBreachRisk: 100 - (riskAssessment[vendor as keyof typeof riskAssessment]?.dataBreachRisk || 0),
-    complianceRisk: 100 - (riskAssessment[vendor as keyof typeof riskAssessment]?.complianceRisk || 0),
-    operationalRisk: 100 - (riskAssessment[vendor as keyof typeof riskAssessment]?.operationalRisk || 0),
-    financialRisk: 100 - (riskAssessment[vendor as keyof typeof riskAssessment]?.financialRisk || 0),
-    reputationalRisk: 100 - (riskAssessment[vendor as keyof typeof riskAssessment]?.reputationalRisk || 0),
-  }))
-
-  // Compliance comparison data
-  const complianceComparisonData = selectedVendors.map((vendor) => ({
-    vendor: vendor.charAt(0).toUpperCase() + vendor.slice(1),
-    score: calculateComplianceScore(vendor),
-    risk: riskAssessment[vendor as keyof typeof riskAssessment]?.overallRisk || 0,
-  }))
-
-  // Industry-specific requirements
-  const industryRequirements = {
-    healthcare: ["HIPAA", "SOC 2 Type II", "GDPR"],
-    finance: ["PCI DSS", "SOC 2 Type II", "GDPR", "NIST Cybersecurity Framework"],
-    government: ["FedRAMP", "NIST Cybersecurity Framework", "SOC 2 Type II"],
-    technology: ["SOC 2 Type II", "ISO 27001", "GDPR"],
-    retail: ["PCI DSS", "GDPR", "SOC 2 Type II"],
-    education: ["GDPR", "SOC 2 Type II", "NIST Cybersecurity Framework"],
-  }
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "certified":
-      case "authorized":
-      case "compliant":
-        return <CheckCircle className="h-5 w-5 text-green-500" />
-      case "partial":
-        return <AlertTriangle className="h-5 w-5 text-yellow-500" />
-      case "none":
-        return <XCircle className="h-5 w-5 text-red-500" />
-      default:
-        return <XCircle className="h-5 w-5 text-gray-400" />
+  const portnoxResult = useMemo(() => {
+    if (!results || results.length === 0) {
+      return {
+        vendor: "portnox",
+        riskMetrics: {
+          complianceScore: 95,
+          operationalEfficiency: 95,
+        },
+        roi: {
+          breachReduction: 85,
+        },
+        complianceSummary: {
+          auditReadiness: 98,
+          continuousCompliance: true,
+          frameworks: ["SOC 2", "ISO 27001", "HIPAA", "PCI DSS", "GDPR", "NIST", "FedRAMP"],
+        },
+      }
     }
-  }
+    return results.find((r) => r.vendor === "portnox") || results[0]
+  }, [results])
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "certified":
-      case "authorized":
-        return <Badge className="bg-green-100 text-green-800 border-green-200">Certified</Badge>
-      case "compliant":
-        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Compliant</Badge>
-      case "partial":
-        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Partial</Badge>
-      case "none":
-        return <Badge className="bg-red-100 text-red-800 border-red-200">None</Badge>
-      default:
-        return <Badge className="bg-gray-100 text-gray-800 border-gray-200">Unknown</Badge>
+  const complianceScoreData = useMemo(() => {
+    if (!results || results.length === 0) {
+      return [
+        {
+          vendor: "Portnox",
+          vendorId: "portnox",
+          automation: 95,
+          auditReadiness: 98,
+          continuousCompliance: 100,
+          frameworkSupport: 87.5,
+          overallScore: 95,
+          isPortnox: true,
+        },
+      ]
     }
+
+    return results.map((result) => ({
+      vendor: result.vendorName || result.vendor,
+      vendorId: result.vendor,
+      automation: result.riskMetrics?.operationalEfficiency || 50,
+      auditReadiness: result.complianceSummary?.auditReadiness || 60,
+      continuousCompliance: result.complianceSummary?.continuousCompliance ? 100 : 30,
+      frameworkSupport: (result.complianceSummary?.frameworks?.length || 0) * 12.5,
+      overallScore:
+        ((result.riskMetrics?.operationalEfficiency || 50) +
+          (result.complianceSummary?.auditReadiness || 60) +
+          (result.complianceSummary?.continuousCompliance ? 100 : 30) +
+          (result.complianceSummary?.frameworks?.length || 0) * 12.5) /
+        4,
+      isPortnox: result.vendor === "portnox",
+    }))
+  }, [results])
+
+  const riskReductionData = useMemo(() => {
+    const baseRisk = {
+      breachProbability: 0.25,
+      complianceViolation: 0.15,
+      auditFailure: 0.12,
+      dataLoss: 0.08,
+      downtime: 0.2,
+    }
+
+    const portnoxReduction = {
+      breachProbability: 0.85,
+      complianceViolation: 0.9,
+      auditFailure: 0.95,
+      dataLoss: 0.8,
+      downtime: 0.75,
+    }
+
+    const competitorAverage = {
+      breachProbability: 0.55,
+      complianceViolation: 0.6,
+      auditFailure: 0.65,
+      dataLoss: 0.5,
+      downtime: 0.45,
+    }
+
+    return [
+      {
+        risk: "Security Breach",
+        baseline: baseRisk.breachProbability * 100,
+        portnox: baseRisk.breachProbability * (1 - portnoxReduction.breachProbability) * 100,
+        competitor: baseRisk.breachProbability * (1 - competitorAverage.breachProbability) * 100,
+        impact: 4500000,
+      },
+      {
+        risk: "Compliance Violation",
+        baseline: baseRisk.complianceViolation * 100,
+        portnox: baseRisk.complianceViolation * (1 - portnoxReduction.complianceViolation) * 100,
+        competitor: baseRisk.complianceViolation * (1 - competitorAverage.complianceViolation) * 100,
+        impact: 500000,
+      },
+      {
+        risk: "Audit Failure",
+        baseline: baseRisk.auditFailure * 100,
+        portnox: baseRisk.auditFailure * (1 - portnoxReduction.auditFailure) * 100,
+        competitor: baseRisk.auditFailure * (1 - competitorAverage.auditFailure) * 100,
+        impact: 200000,
+      },
+      {
+        risk: "Data Loss",
+        baseline: baseRisk.dataLoss * 100,
+        portnox: baseRisk.dataLoss * (1 - portnoxReduction.dataLoss) * 100,
+        competitor: baseRisk.dataLoss * (1 - competitorAverage.dataLoss) * 100,
+        impact: 1200000,
+      },
+      {
+        risk: "System Downtime",
+        baseline: baseRisk.downtime * 100,
+        portnox: baseRisk.downtime * (1 - portnoxReduction.downtime) * 100,
+        competitor: baseRisk.downtime * (1 - competitorAverage.downtime) * 100,
+        impact: 300000,
+      },
+    ]
+  }, [])
+
+  const frameworkComplianceData = useMemo(() => {
+    return Object.entries(COMPLIANCE_FRAMEWORKS).map(([key, framework]) => ({
+      framework: key,
+      name: framework.name,
+      portnoxSupport: framework.portnoxSupport,
+      competitorAverage: framework.competitorAverage,
+      automationPotential: framework.automationPotential,
+      annualCost: framework.annualCost,
+      penaltyRisk: framework.penaltyRisk,
+      gap: framework.portnoxSupport - framework.competitorAverage,
+    }))
+  }, [])
+
+  const formatCurrency = (value: number) => {
+    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
+    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`
+    return `$${value.toLocaleString()}`
   }
 
-  const ComplianceMetricCard = ({ title, value, subtitle, icon: Icon, trend, color = PORTNOX_COLORS.primary }: any) => (
-    <motion.div whileHover={{ y: -5, scale: 1.02 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
-      <Card className={`h-full ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-3 rounded-full" style={{ backgroundColor: `${color}20`, color: color }}>
-                <Icon className="h-6 w-6" />
-              </div>
-              <div>
-                <p className={`text-sm font-medium ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{title}</p>
-                <p className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>{value}</p>
-                {subtitle && <p className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>{subtitle}</p>}
-              </div>
+  const RiskMetricCard = ({ title, value, change, icon, severity = "medium" }: any) => (
+    <motion.div
+      whileHover={{ y: -2, scale: 1.02 }}
+      className={cn(
+        "p-4 rounded-lg border transition-all duration-200",
+        darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
+      )}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <p className={cn("text-sm font-medium", darkMode ? "text-gray-300" : "text-gray-600")}>{title}</p>
+          <p className={cn("text-2xl font-bold mt-1", darkMode ? "text-white" : "text-gray-900")}>{value}</p>
+          {change && (
+            <div className={cn("flex items-center text-sm mt-1", change > 0 ? "text-red-500" : "text-green-500")}>
+              {change > 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+              {Math.abs(change)}% vs baseline
             </div>
-            {trend && (
-              <Badge variant={trend > 0 ? "default" : "destructive"} className="ml-2">
-                {trend > 0 ? "+" : ""}
-                {trend}%
-              </Badge>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+          )}
+        </div>
+        <div
+          className={cn(
+            "p-3 rounded-full",
+            severity === "high" ? "bg-red-100" : severity === "medium" ? "bg-yellow-100" : "bg-green-100",
+          )}
+        >
+          {React.cloneElement(icon, {
+            className: cn(
+              "h-6 w-6",
+              severity === "high" ? "text-red-600" : severity === "medium" ? "text-yellow-600" : "text-green-600",
+            ),
+          })}
+        </div>
+      </div>
     </motion.div>
   )
+
+  if (!results || results.length === 0) {
+    return (
+      <Card className="p-8 text-center">
+        <Shield className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+        <h3 className="text-lg font-semibold mb-2">Compliance & Risk Analysis</h3>
+        <p className="text-gray-600 mb-6">Comprehensive security posture and regulatory compliance assessment</p>
+
+        {/* Show default Portnox compliance data */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+          <RiskMetricCard title="Security Posture Score" value="95/100" change={-15} icon={<Shield />} severity="low" />
+          <RiskMetricCard title="Breach Risk Reduction" value="85%" change={-70} icon={<Lock />} severity="low" />
+          <RiskMetricCard title="Compliance Automation" value="95%" change={-45} icon={<Zap />} severity="low" />
+          <RiskMetricCard title="Audit Readiness" value="98%" change={-25} icon={<FileText />} severity="low" />
+        </div>
+      </Card>
+    )
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <Card
-          className={`${darkMode ? "bg-gradient-to-r from-gray-800 to-gray-900" : "bg-gradient-to-r from-red-50 to-orange-50"}`}
-        >
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-2xl font-bold flex items-center gap-3">
-                  <Shield className="h-8 w-8 text-red-600" />
-                  Compliance & Risk Assessment
-                </CardTitle>
-                <p className={`mt-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-                  Comprehensive compliance framework analysis for {industry} industry
-                </p>
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-green-600">{calculateComplianceScore("portnox")}%</div>
-                <div className="text-sm text-green-600">Portnox Compliance Score</div>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
-      </motion.div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold mb-2">Compliance & Risk Analysis</h2>
+          <p className={cn("text-sm", darkMode ? "text-gray-400" : "text-gray-600")}>
+            Comprehensive security posture and regulatory compliance assessment
+          </p>
+        </div>
 
-      {/* Key Compliance Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <ComplianceMetricCard
-          title="Overall Compliance"
-          value={`${calculateComplianceScore("portnox")}%`}
-          subtitle="Framework coverage"
-          icon={Shield}
-          trend={15}
-          color={PORTNOX_COLORS.success}
-        />
-        <ComplianceMetricCard
-          title="Risk Reduction"
-          value={`${100 - (riskAssessment.portnox?.overallRisk || 0)}%`}
-          subtitle="vs industry average"
-          icon={AlertTriangle}
-          trend={-89}
-          color={PORTNOX_COLORS.primary}
-        />
-        <ComplianceMetricCard
-          title="Audit Readiness"
-          value="98%"
-          subtitle="Automated compliance"
-          icon={FileText}
-          trend={25}
-          color={PORTNOX_COLORS.info}
-        />
-        <ComplianceMetricCard
-          title="Certifications"
-          value="7/7"
-          subtitle="Active certifications"
-          icon={Award}
-          trend={100}
-          color={PORTNOX_COLORS.accent}
-        />
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Compliance Comparison */}
-        <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart className="h-5 w-5 text-blue-600" />
-              Compliance Score Comparison
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={complianceComparisonData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#E5E7EB"} />
-                <XAxis dataKey="vendor" tick={{ fill: darkMode ? "#D1D5DB" : "#6B7280", fontSize: 12 }} />
-                <YAxis domain={[0, 100]} tick={{ fill: darkMode ? "#D1D5DB" : "#6B7280", fontSize: 12 }} />
-                <Tooltip
-                  formatter={(value: number) => [`${value}%`, "Compliance Score"]}
-                  contentStyle={{
-                    backgroundColor: darkMode ? "#1F2937" : "#FFFFFF",
-                    border: `1px solid ${darkMode ? "#374151" : "#E5E7EB"}`,
-                    borderRadius: "8px",
-                  }}
-                />
-                <Bar dataKey="score" fill={PORTNOX_COLORS.primary} radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Risk Assessment Radar */}
-        <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-600" />
-              Risk Assessment Matrix
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <RadarChart data={riskRadarData}>
-                <PolarGrid stroke={darkMode ? "#374151" : "#E5E7EB"} />
-                <PolarAngleAxis dataKey="vendor" tick={{ fill: darkMode ? "#D1D5DB" : "#6B7280", fontSize: 12 }} />
-                <PolarRadiusAxis
-                  angle={90}
-                  domain={[0, 100]}
-                  tick={{ fill: darkMode ? "#D1D5DB" : "#6B7280", fontSize: 10 }}
-                />
-                {selectedVendors.map((vendor, index) => (
-                  <Radar
-                    key={vendor}
-                    name={vendor.charAt(0).toUpperCase() + vendor.slice(1)}
-                    dataKey={`${vendor}Risk`}
-                    stroke={Object.values(PORTNOX_COLORS)[index % Object.values(PORTNOX_COLORS).length]}
-                    fill={Object.values(PORTNOX_COLORS)[index % Object.values(PORTNOX_COLORS).length]}
-                    fillOpacity={0.1}
-                    strokeWidth={2}
-                  />
-                ))}
-                <Tooltip />
-              </RadarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Compliance Framework Matrix */}
-      <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5 text-purple-600" />
-            Compliance Framework Matrix
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className={`border-b ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
-                  <th className={`text-left p-3 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Framework</th>
-                  {selectedVendors.map((vendor) => (
-                    <th key={vendor} className={`text-center p-3 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-                      {vendor.charAt(0).toUpperCase() + vendor.slice(1)}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(complianceFrameworks).map(([framework, vendors]) => (
-                  <tr key={framework} className={`border-b ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
-                    <td className={`p-3 font-medium ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
-                      <div className="flex items-center space-x-2">
-                        <span>{framework}</span>
-                        {industryRequirements[industry as keyof typeof industryRequirements]?.includes(framework) && (
-                          <Badge variant="outline" className="text-xs">
-                            Required
-                          </Badge>
-                        )}
-                      </div>
-                    </td>
-                    {selectedVendors.map((vendor) => (
-                      <td key={vendor} className="p-3 text-center">
-                        <div className="flex flex-col items-center space-y-1">
-                          {getStatusIcon(vendors[vendor as keyof typeof vendors]?.status || "none")}
-                          <span className={`text-sm font-medium ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
-                            {vendors[vendor as keyof typeof vendors]?.score || 0}%
-                          </span>
-                          {getStatusBadge(vendors[vendor as keyof typeof vendors]?.status || "none")}
-                        </div>
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Risk Mitigation Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          {
-            title: "Data Breach Prevention",
-            description: "Advanced threat detection and zero-trust architecture",
-            value: `${100 - (riskAssessment.portnox?.dataBreachRisk || 0)}% Risk Reduction`,
-            color: PORTNOX_COLORS.success,
-            icon: Shield,
-          },
-          {
-            title: "Compliance Automation",
-            description: "Built-in compliance frameworks and automated reporting",
-            value: `${100 - (riskAssessment.portnox?.complianceRisk || 0)}% Compliance Risk Reduction`,
-            color: PORTNOX_COLORS.info,
-            icon: FileText,
-          },
-          {
-            title: "Operational Resilience",
-            description: "Cloud-native architecture with 99.9% uptime SLA",
-            value: `${100 - (riskAssessment.portnox?.operationalRisk || 0)}% Operational Risk Reduction`,
-            color: PORTNOX_COLORS.accent,
-            icon: Users,
-          },
-        ].map((mitigation, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
+        <div className="flex items-center gap-2">
+          <select
+            value={selectedFramework}
+            onChange={(e) => setSelectedFramework(e.target.value)}
+            className={cn(
+              "px-3 py-2 border rounded-md text-sm",
+              darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300",
+            )}
           >
-            <Card className={`h-full ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <div
-                    className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center"
-                    style={{ backgroundColor: `${mitigation.color}20` }}
-                  >
-                    <mitigation.icon className="h-6 w-6" style={{ color: mitigation.color }} />
-                  </div>
-                  <div className="text-lg font-bold mb-2" style={{ color: mitigation.color }}>
-                    {mitigation.value}
-                  </div>
-                  <h3 className={`font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>
-                    {mitigation.title}
-                  </h3>
-                  <p className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{mitigation.description}</p>
+            {Object.keys(COMPLIANCE_FRAMEWORKS).map((framework) => (
+              <option key={framework} value={framework}>
+                {framework}
+              </option>
+            ))}
+          </select>
+
+          <Button variant="outline" size="sm">
+            Generate Report
+          </Button>
+        </div>
+      </div>
+
+      {/* Key Risk Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <RiskMetricCard
+          title="Security Posture Score"
+          value={`${portnoxResult?.riskMetrics?.complianceScore || 95}/100`}
+          change={-15}
+          icon={<Shield />}
+          severity="low"
+        />
+        <RiskMetricCard
+          title="Breach Risk Reduction"
+          value={`${portnoxResult?.roi?.breachReduction || 85}%`}
+          change={-70}
+          icon={<Lock />}
+          severity="low"
+        />
+        <RiskMetricCard
+          title="Compliance Automation"
+          value={`${portnoxResult?.riskMetrics?.operationalEfficiency || 95}%`}
+          change={-45}
+          icon={<Zap />}
+          severity="low"
+        />
+        <RiskMetricCard
+          title="Audit Readiness"
+          value={`${portnoxResult?.complianceSummary?.auditReadiness || 98}%`}
+          change={-25}
+          icon={<FileText />}
+          severity="low"
+        />
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="frameworks">Frameworks</TabsTrigger>
+          <TabsTrigger value="risk-analysis">Risk Analysis</TabsTrigger>
+          <TabsTrigger value="vendor-comparison">Vendor Comparison</TabsTrigger>
+          <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+        </TabsList>
+
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Compliance Score Radar */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Compliance Maturity Assessment
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart
+                      data={[
+                        { metric: "Policy Management", portnox: 95, competitor: 65 },
+                        { metric: "Access Controls", portnox: 98, competitor: 70 },
+                        { metric: "Audit Logging", portnox: 100, competitor: 75 },
+                        { metric: "Risk Assessment", portnox: 90, competitor: 55 },
+                        { metric: "Incident Response", portnox: 85, competitor: 60 },
+                        { metric: "Continuous Monitoring", portnox: 95, competitor: 45 },
+                        { metric: "Evidence Collection", portnox: 92, competitor: 50 },
+                        { metric: "Reporting Automation", portnox: 98, competitor: 40 },
+                      ]}
+                    >
+                      <PolarGrid />
+                      <PolarAngleAxis dataKey="metric" />
+                      <PolarRadiusAxis angle={90} domain={[0, 100]} />
+                      <Radar
+                        name="Portnox"
+                        dataKey="portnox"
+                        stroke={PORTNOX_COLORS.primary}
+                        fill={PORTNOX_COLORS.primary}
+                        fillOpacity={0.3}
+                        strokeWidth={2}
+                      />
+                      <Radar
+                        name="Competitor Average"
+                        dataKey="competitor"
+                        stroke={PORTNOX_COLORS.danger}
+                        fill={PORTNOX_COLORS.danger}
+                        fillOpacity={0.1}
+                        strokeWidth={2}
+                        strokeDasharray="5 5"
+                      />
+                      <Legend />
+                    </RadarChart>
+                  </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
-        ))}
-      </div>
+
+            {/* Risk Heat Map */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5" />
+                  Risk Reduction Impact
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={riskReductionData} layout="horizontal">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" domain={[0, 25]} />
+                      <YAxis type="category" dataKey="risk" width={120} />
+                      <Tooltip
+                        formatter={(value: number, name: string) => [
+                          `${value.toFixed(1)}%`,
+                          name === "baseline"
+                            ? "Current Risk"
+                            : name === "portnox"
+                              ? "With Portnox"
+                              : "Competitor Average",
+                        ]}
+                      />
+                      <Legend />
+                      <Bar dataKey="baseline" fill={PORTNOX_COLORS.danger} name="Current Risk" />
+                      <Bar dataKey="competitor" fill={PORTNOX_COLORS.warning} name="Competitor Average" />
+                      <Bar dataKey="portnox" fill={PORTNOX_COLORS.success} name="With Portnox" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Compliance Status Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {Object.entries(COMPLIANCE_FRAMEWORKS)
+              .slice(0, 4)
+              .map(([key, framework]) => (
+                <Card key={key}>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center justify-between">
+                      {key}
+                      <Badge
+                        variant={
+                          framework.portnoxSupport >= 90
+                            ? "default"
+                            : framework.portnoxSupport >= 70
+                              ? "secondary"
+                              : "destructive"
+                        }
+                      >
+                        {framework.portnoxSupport}%
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Portnox Support</span>
+                          <span>{framework.portnoxSupport}%</span>
+                        </div>
+                        <Progress value={framework.portnoxSupport} className="h-2" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Industry Average</span>
+                          <span>{framework.competitorAverage}%</span>
+                        </div>
+                        <Progress value={framework.competitorAverage} className="h-2" />
+                      </div>
+                      <div className="pt-2 border-t">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Advantage</span>
+                          <span className="font-semibold text-green-600">
+                            +{framework.portnoxSupport - framework.competitorAverage}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+          </div>
+        </TabsContent>
+
+        {/* Other tabs content would go here but keeping it simple for now */}
+        <TabsContent value="frameworks">
+          <Card>
+            <CardHeader>
+              <CardTitle>Compliance Frameworks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Framework analysis content would go here.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="risk-analysis">
+          <Card>
+            <CardHeader>
+              <CardTitle>Risk Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Risk analysis content would go here.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="vendor-comparison">
+          <Card>
+            <CardHeader>
+              <CardTitle>Vendor Comparison</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Vendor comparison content would go here.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="recommendations">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recommendations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Recommendations content would go here.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
-
-export default ComplianceRiskView
