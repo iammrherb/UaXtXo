@@ -52,6 +52,8 @@ export default function SettingsPanel({
 }: SettingsPanelProps) {
   const [activeTab, setActiveTab] = useState("organization")
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [currency, setCurrency] = useState("USD")
+  const [numberFormat, setNumberFormat] = useState("en-US")
 
   const handleConfigChange = (key: string, value: any) => {
     onConfigurationChange({ ...configuration, [key]: value })
@@ -472,7 +474,8 @@ export default function SettingsPanel({
                       <div>
                         <Label>Currency Display</Label>
                         <select
-                          value="USD"
+                          value={currency}
+                          onChange={(e) => setCurrency(e.target.value)}
                           className={cn(
                             "w-full p-2 border rounded-md mt-2",
                             darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300",
@@ -488,7 +491,8 @@ export default function SettingsPanel({
                       <div>
                         <Label>Number Format</Label>
                         <select
-                          value="en-US"
+                          value={numberFormat}
+                          onChange={(e) => setNumberFormat(e.target.value)}
                           className={cn(
                             "w-full p-2 border rounded-md mt-2",
                             darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300",

@@ -1,1427 +1,1851 @@
-// Comprehensive Vendor Database - Production Ready
-// Based on real market data and industry benchmarks
-
-export interface VendorFeature {
-  available: boolean
-  details?: string
-  score?: number // 0-100
-  category?: "core" | "security" | "compliance" | "operational" | "integration" | "advanced"
+export interface VendorFeatures {
+  core: {
+    networkAccess: boolean
+    deviceProfiling: boolean
+    policyEnforcement: boolean
+    guestAccess: boolean
+    byod: boolean
+    iot: boolean
+    compliance: boolean
+    reporting: boolean
+    integration: boolean
+    cloudNative: boolean
+  }
+  advanced: {
+    aiMl: boolean
+    zeroTrust: boolean
+    automation: boolean
+    api: boolean
+    multiTenant: boolean
+    federation: boolean
+    riskScoring: boolean
+    behaviorAnalytics: boolean
+  }
+  security: {
+    threatDetection: boolean
+    incidentResponse: boolean
+    forensics: boolean
+    encryption: boolean
+    certificateManagement: boolean
+    vulnerabilityAssessment: boolean
+  }
 }
 
-export interface VendorPricingTier {
-  name: string
-  minDevices?: number | null
-  maxDevices?: number | null
-  pricePerDevice?: number // monthly
-  pricePerUser?: number // monthly
-  featuresIncluded?: string[]
-  annualPricePerDevice?: number
-  triennialPricePerDevice?: number
+export interface VendorPricing {
+  model: "per-device" | "per-user" | "per-site" | "enterprise"
+  basePrice: number
+  currency: "USD"
+  billingCycle: "monthly" | "annual"
+  minimumUsers?: number
+  volumeDiscounts: {
+    tier1: { threshold: number; discount: number }
+    tier2: { threshold: number; discount: number }
+    tier3: { threshold: number; discount: number }
+  }
+  addOns?: {
+    [key: string]: {
+      name: string
+      price: number
+      description: string
+    }
+  }
 }
 
-export interface ComprehensiveVendorData {
+export interface VendorImplementation {
+  deploymentTime: {
+    pilot: string
+    fullDeployment: string
+  }
+  complexity: "low" | "medium" | "high"
+  hardwareRequired: boolean
+  cloudOptions: boolean
+  onPremiseOptions: boolean
+  hybridOptions: boolean
+  professionalServices: {
+    required: boolean
+    cost: number
+    duration: string
+  }
+}
+
+export interface VendorSupport {
+  levels: string[]
+  sla: {
+    uptime: number
+    responseTime: string
+  }
+  channels: string[]
+  documentation: "excellent" | "good" | "fair" | "poor"
+  community: boolean
+}
+
+export interface VendorData {
   id: string
   name: string
-  type: "cloud-native" | "on-premise" | "cloud-radius" | "open-source" | "hybrid" | "cloud-managed"
-  category: string
-  logo: string
+  category: "enterprise" | "mid-market" | "sme" | "cloud-native"
   description: string
-  marketPosition?: string
-  yearFounded?: number
-  headquarters?: string
-  globalPresence?: string[]
-
-  pricing: {
-    model: string
-    currency?: "USD" | "EUR" | "GBP"
-    billingOptions?: string[]
-    tiers?: VendorPricingTier[]
-    perDevice?: { monthly: number; annual?: number; triennial?: number; fiveYear?: number }
-    perUser?: { monthly: number }
-    licenses?: { base?: number; device?: number; subscription?: number; plus?: number; apex?: number }
-    hardware?: Record<string, { cost: number; capacity?: string; description?: string; lifespan?: number }>
-    infrastructure?: {
-      servers?: number
-      storage?: number
-      networking?: number
-      virtualization?: number
-    }
-    addOns?: Record<
-      string,
-      {
-        perDevice?: number
-        perUser?: number
-        features: string
-        category: "security" | "compliance" | "operations" | "integration" | "advanced"
-      }
-    >
-    professionalServices?: {
-      available?: boolean
-      implementation?: number
-      training?: number
-      customization?: number
-      migration?: number
-      healthCheck?: number
-      designServices?: number
-      standard?: number
-    }
-    support?: {
-      basic?: { cost: number; sla: string; included: boolean }
-      premium?: { cost: number; sla: string; features: string[] }
-      enterprise?: { cost: number; sla: string; features: string[] }
-      advanced?: { availability: string; responseTime: string; channels: string[] }
-      standard?: { availability: string; responseTime: string; channels: string[] }
-    }
-    maintenance?: number
-    hiddenCosts?: {
-      downtime?: number
-      complexity?: number
-      integration?: number
-      staffTraining?: number
-      networkRefresh?: number
-      total?: number
-    }
-    volumeDiscounts?: Record<number, number>
-    additionalCosts?: {
-      implementation?: number
-      training?: number
-      support?: number
-    }
+  marketPosition: "leader" | "challenger" | "visionary" | "niche"
+  founded: number
+  headquarters: string
+  employees: string
+  revenue: string
+  customerBase: {
+    total: number
+    enterprise: number
+    midMarket: number
+    sme: number
   }
-
-  implementation: {
-    deploymentTime: { poc?: number; pilot?: number; fullDeployment: number }
-    deploymentModel?: string[]
-    requiredResources: {
-      internal?: number
-      vendor?: number
-      training?: number
-      ongoing?: number
-    }
-    complexity: "low" | "medium" | "high" | "very-high"
-    prerequisites?: string[]
-  }
-
-  infrastructure?: {
-    architecture?: string
-    hosting?: string[]
-    redundancy?: string
-    dataResidency?: string[]
-    certifications?: string[]
-    scalability?: {
-      maxDevices: string | number
-      maxSites?: string | number
-      maxUsers?: string | number
-      performanceMetrics?: Record<string, string>
-    }
-    reliability?: {
-      sla?: number
-      mttr?: number
-      rto?: number
-      rpo?: number
-      historicalUptime?: number
-    }
-  }
-
-  features: {
-    core?: Record<string, VendorFeature | boolean | string | number>
-    security?: Record<string, VendorFeature | boolean | string | number>
-    compliance?: {
-      frameworksSupported?: string[]
-      automationLevel?: number
-      reporting?: VendorFeature | boolean | string | number
-      auditTrail?: VendorFeature | boolean | string | number
-      policyTemplates?: VendorFeature | boolean | string | number
-      continuousCompliance?: VendorFeature | boolean | string | number
-      evidenceCollection?: VendorFeature | boolean | string | number
-      [key: string]: any
-    }
-    operational?: Record<string, VendorFeature | boolean | string | number>
-    integration?: {
-      authProviders?: VendorFeature & { supported?: string[] }
-      siem?: VendorFeature & { supported?: string[] }
-      itsm?: VendorFeature & { supported?: string[] }
-      mdm?: VendorFeature & { supported?: string[] }
-      firewall?: VendorFeature & { supported?: string[] }
-      cloud?: VendorFeature & { supported?: string[] }
-      api?: VendorFeature & { type?: string[]; documentation?: string }
-      [key: string]: any
-    }
-    advanced?: Record<string, VendorFeature | boolean | string | number>
-    authentication?: {
-      dot1x?: VendorFeature | boolean
-      mab?: VendorFeature | boolean
-      webAuth?: VendorFeature | boolean
-      certificates?: VendorFeature | boolean
-      pki?: VendorFeature & { details?: string }
-      tacacs?: VendorFeature & { version?: string }
-      radius?: VendorFeature & { features?: string[] }
-      saml?: VendorFeature | boolean
-      oauth?: VendorFeature | boolean
-      conditionalAccess?: VendorFeature & { policies?: string[]; granularity?: "basic" | "advanced" | "enterprise" }
-    }
-    api?: {
-      rest?: VendorFeature | boolean
-      graphql?: VendorFeature | boolean
-      webhooks?: VendorFeature | boolean
-      rateLimit?: string
-      documentation?: "basic" | "comprehensive" | "enterprise" | "Good" | "Complex" | "Limited"
-      sdks?: string[]
-    }
-    dashboards?: {
-      executive?: VendorFeature | boolean
-      operational?: VendorFeature | boolean
-      compliance?: VendorFeature | boolean
-      customizable?: VendorFeature | boolean
-      realtime?: VendorFeature | boolean
-      mobileApp?: VendorFeature | boolean
-    }
-    iotOt?: {
-      deviceProfiling?: VendorFeature | boolean
-      anomalyDetection?: VendorFeature | boolean
-      segmentation?: VendorFeature | boolean
-      protocols?: string[]
-      industrialSupport?: VendorFeature | boolean
-    }
-    [key: string]: any
-  }
-
-  support?: {
-    tiers?: Array<{ name: string; availability: string; responseTime: string; channels: string[] }>
-    languages?: string[]
-    resources?: {
-      documentation?: string
-      training?: string
-      community?: string
-      professionalServices?: string
-    }
-  }
-
-  roi: {
-    paybackPeriod?: number
-    yearlyBenefit?: number
-    laborSavings?: number
-    incidentReduction?: number
-    complianceSavings?: number
-    breachRiskReduction?: number
-    downtimeReduction?: number
-    operationalEfficiency?: number
-    efficiencyGains?: number
-    timeToValue?: number
-    [key: string]: any
-  }
-
-  riskMetrics?: {
-    mttr?: number
-    mtbf?: number
-    breachProbabilityReduction?: number
-    complianceViolationRisk?: number
-    securityPostureScore?: number
-    cyberInsuranceImpact?: number
-  }
-
-  complianceSummary?: {
+  marketShare: number
+  npsScore: number
+  csatScore: number
+  retentionRate: number
+  features: VendorFeatures
+  pricing: VendorPricing
+  implementation: VendorImplementation
+  support: VendorSupport
+  compliance: {
     frameworks: string[]
     certifications: string[]
     automationLevel: number
     auditReadiness: number
-    continuousCompliance: boolean
   }
-
-  competitiveAdvantages?: string[]
-  customerMetrics?: {
-    nps?: number
-    csat?: number
-    retention?: number
-    expansionRate?: number
-    timeToDeploy?: number
-    adoptionRate?: number
-  }
-
-  marketShare?: string
-  scalability?: {
-    maxDevices: string | number
-    maxSites?: string | number | "Unlimited networks"
-    performance?: string
-    notes?: string
-  }
-  [key: string]: any
+  strengths: string[]
+  weaknesses: string[]
+  idealFor: string[]
+  competitiveAdvantages: string[]
+  recentUpdates: string[]
+  logoPath: string
 }
 
-// Comprehensive compliance and risk data
-export const complianceFrameworksData: Record<
-  string,
-  {
-    name: string
-    categories: string[]
-    industries: string[]
-    annualAuditCost: number
-    nonCompliancePenalty: number
-    implementationEffort: number
-  }
-> = {
-  "SOC 2": {
-    name: "SOC 2 Type II",
-    categories: ["Security", "Availability", "Processing Integrity", "Confidentiality", "Privacy"],
-    industries: ["Technology", "SaaS", "Financial Services", "Healthcare"],
-    annualAuditCost: 50000,
-    nonCompliancePenalty: 500000,
-    implementationEffort: 6,
-  },
-  "ISO 27001": {
-    name: "ISO 27001:2022",
-    categories: ["Information Security Management"],
-    industries: ["All"],
-    annualAuditCost: 40000,
-    nonCompliancePenalty: 300000,
-    implementationEffort: 9,
-  },
-  HIPAA: {
-    name: "HIPAA",
-    categories: ["Privacy", "Security", "Breach Notification"],
-    industries: ["Healthcare", "Health Tech", "Insurance"],
-    annualAuditCost: 75000,
-    nonCompliancePenalty: 1800000,
-    implementationEffort: 12,
-  },
-  "PCI DSS": {
-    name: "PCI DSS v4.0",
-    categories: ["Payment Card Security"],
-    industries: ["Retail", "E-commerce", "Financial Services"],
-    annualAuditCost: 60000,
-    nonCompliancePenalty: 500000,
-    implementationEffort: 8,
-  },
-  GDPR: {
-    name: "GDPR",
-    categories: ["Data Privacy", "Data Protection"],
-    industries: ["All (EU Operations)"],
-    annualAuditCost: 80000,
-    nonCompliancePenalty: 20000000,
-    implementationEffort: 12,
-  },
-  NIST: {
-    name: "NIST Cybersecurity Framework",
-    categories: ["Identify", "Protect", "Detect", "Respond", "Recover"],
-    industries: ["Government", "Critical Infrastructure", "Defense"],
-    annualAuditCost: 100000,
-    nonCompliancePenalty: 1000000,
-    implementationEffort: 18,
-  },
-  FedRAMP: {
-    name: "FedRAMP",
-    categories: ["Cloud Security", "Government Standards"],
-    industries: ["Government", "Federal Contractors"],
-    annualAuditCost: 500000,
-    nonCompliancePenalty: 5000000,
-    implementationEffort: 24,
-  },
-  CMMC: {
-    name: "CMMC 2.0",
-    categories: ["Defense Industrial Base Security"],
-    industries: ["Defense", "Government Contractors"],
-    annualAuditCost: 200000,
-    nonCompliancePenalty: 3000000,
-    implementationEffort: 18,
-  },
-  "NERC CIP": {
-    name: "NERC CIP",
-    categories: ["Critical Infrastructure Protection"],
-    industries: ["Energy", "Utilities"],
-    annualAuditCost: 150000,
-    nonCompliancePenalty: 1000000,
-    implementationEffort: 24,
-  },
-  SOX: {
-    name: "Sarbanes-Oxley",
-    categories: ["Financial Reporting", "Internal Controls"],
-    industries: ["Public Companies", "Financial Services"],
-    annualAuditCost: 200000,
-    nonCompliancePenalty: 5000000,
-    implementationEffort: 12,
-  },
-}
-
-// Industry-specific security metrics
-export const industrySecurityMetricsData: Record<
-  string,
-  {
-    avgBreachCost: number
-    avgRecordsBreached: number
-    avgMTTR: number
-    cyberInsurancePremium: number
-    breachProbability: number
-    iotDeviceRatio: number
-    criticalAssets: string[]
-  }
-> = {
-  healthcare: {
-    avgBreachCost: 10930000,
-    avgRecordsBreached: 42000,
-    avgMTTR: 277,
-    cyberInsurancePremium: 250000,
-    breachProbability: 0.28,
-    iotDeviceRatio: 0.35,
-    criticalAssets: ["PHI", "Medical Devices", "Clinical Systems"],
-  },
-  financial: {
-    avgBreachCost: 5970000,
-    avgRecordsBreached: 35000,
-    avgMTTR: 233,
-    cyberInsurancePremium: 180000,
-    breachProbability: 0.22,
-    iotDeviceRatio: 0.15,
-    criticalAssets: ["PII", "Financial Data", "Trading Systems"],
-  },
-  retail: {
-    avgBreachCost: 3860000,
-    avgRecordsBreached: 28000,
-    avgMTTR: 247,
-    cyberInsurancePremium: 120000,
-    breachProbability: 0.25,
-    iotDeviceRatio: 0.45,
-    criticalAssets: ["PCI Data", "Customer Data", "POS Systems"],
-  },
-  technology: {
-    avgBreachCost: 5040000,
-    avgRecordsBreached: 32000,
-    avgMTTR: 215,
-    cyberInsurancePremium: 150000,
-    breachProbability: 0.2,
-    iotDeviceRatio: 0.25,
-    criticalAssets: ["Source Code", "Customer Data", "Infrastructure"],
-  },
-  manufacturing: {
-    avgBreachCost: 4470000,
-    avgRecordsBreached: 25000,
-    avgMTTR: 261,
-    cyberInsurancePremium: 140000,
-    breachProbability: 0.23,
-    iotDeviceRatio: 0.55,
-    criticalAssets: ["IP", "OT Systems", "Supply Chain"],
-  },
-  energy: {
-    avgBreachCost: 4650000,
-    avgRecordsBreached: 22000,
-    avgMTTR: 254,
-    cyberInsurancePremium: 200000,
-    breachProbability: 0.18,
-    iotDeviceRatio: 0.6,
-    criticalAssets: ["SCADA", "Critical Infrastructure", "Grid Systems"],
-  },
-  government: {
-    avgBreachCost: 5010000,
-    avgRecordsBreached: 50000,
-    avgMTTR: 286,
-    cyberInsurancePremium: 300000,
-    breachProbability: 0.3,
-    iotDeviceRatio: 0.2,
-    criticalAssets: ["Classified Data", "Citizen Data", "Critical Services"],
-  },
-  education: {
-    avgBreachCost: 3790000,
-    avgRecordsBreached: 45000,
-    avgMTTR: 269,
-    cyberInsurancePremium: 100000,
-    breachProbability: 0.26,
-    iotDeviceRatio: 0.3,
-    criticalAssets: ["Student Data", "Research", "Financial Aid"],
-  },
-}
-
-// Complete vendor database with all vendors from the script
-export const ComprehensiveVendorDatabase: Record<string, ComprehensiveVendorData> = {
+export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
   portnox: {
     id: "portnox",
-    name: "Portnox CLEAR",
-    type: "cloud-native",
-    category: "Next-Gen Cloud NAC",
-    logo: "/portnox-logo.png",
-    description: "AI-powered cloud-native zero-trust NAC with unmatched ease of deployment",
-    marketPosition: "Leader",
-    yearFounded: 2007,
+    name: "Portnox",
+    category: "cloud-native",
+    description: "AI-powered cloud-native NAC with zero-trust architecture and rapid deployment",
+    marketPosition: "visionary",
+    founded: 2008,
     headquarters: "New York, USA",
-    globalPresence: ["North America", "Europe", "APAC", "LATAM"],
-    pricing: {
-      model: "SaaS Subscription",
-      currency: "USD",
-      billingOptions: ["Monthly", "Annual", "Multi-Year"],
-      tiers: [
-        {
-          name: "Essentials",
-          minDevices: 1,
-          maxDevices: 250,
-          pricePerDevice: 5.0,
-          featuresIncluded: ["Core NAC", "Basic Compliance", "Standard Support"],
-        },
-        {
-          name: "Professional",
-          minDevices: 251,
-          maxDevices: 1000,
-          pricePerDevice: 4.0,
-          featuresIncluded: ["Advanced NAC", "Compliance Automation", "Priority Support", "API Access"],
-        },
-        {
-          name: "Enterprise",
-          minDevices: 1001,
-          maxDevices: 5000,
-          pricePerDevice: 3.0,
-          featuresIncluded: ["Full Platform", "Advanced Analytics", "24/7 Support", "Custom Integrations"],
-        },
-        {
-          name: "Enterprise Plus",
-          minDevices: 5001,
-          pricePerDevice: 2.5,
-          featuresIncluded: ["Everything", "Dedicated Success Manager", "Custom SLA", "White Glove Service"],
-        },
-      ],
-      volumeDiscounts: { 500: 5, 1000: 10, 2500: 15, 5000: 20, 10000: 25, 25000: 30, 50000: 35 },
-      hardware: {},
-      additionalCosts: { implementation: 0, training: 0, support: 0 },
-      professionalServices: { available: true, implementation: 0, training: 0, customization: 5000 },
-      hiddenCosts: { downtime: 0, complexity: 0, integration: 0, total: 0 },
-      addOns: {
-        "Advanced Threat Protection": {
-          perDevice: 1.5,
-          features: "ML-based threat detection, SOAR integration, Threat intel feeds",
-          category: "security",
-        },
-        "Compliance Automation": {
-          perDevice: 1.0,
-          features: "Automated reporting, Continuous monitoring, Evidence collection",
-          category: "compliance",
-        },
-        "IoT/OT Security": {
-          perDevice: 2.0,
-          features: "OT protocol support, Industrial device profiling, SCADA integration",
-          category: "security",
-        },
-        "Risk Analytics": {
-          perDevice: 1.5,
-          features: "Device risk scoring, User behavior analytics, Predictive insights",
-          category: "operations",
-        },
-      },
-      perDevice: { monthly: 4.0 },
+    employees: "200-500",
+    revenue: "$50M+",
+    customerBase: {
+      total: 1500,
+      enterprise: 400,
+      midMarket: 800,
+      sme: 300,
     },
-    implementation: {
-      deploymentTime: { poc: 4, pilot: 24, fullDeployment: 96 },
-      deploymentModel: ["SaaS", "Multi-tenant", "Single-tenant"],
-      requiredResources: { internal: 0.1, vendor: 0, training: 4, ongoing: 0.1 },
-      complexity: "low",
-      prerequisites: ["Internet connectivity", "Basic network access"],
-    },
-    infrastructure: {
-      architecture: "Cloud-Native Microservices",
-      hosting: ["AWS", "Azure", "GCP"],
-      redundancy: "Multi-region active-active",
-      dataResidency: ["US", "EU", "APAC", "Custom"],
-      certifications: ["SOC 2 Type II", "ISO 27001", "ISO 27017", "ISO 27018", "CSA STAR"],
-      scalability: {
-        maxDevices: "Unlimited",
-        maxSites: "Unlimited",
-        maxUsers: "Unlimited",
-        performanceMetrics: {
-          authenticationRate: "10,000/second",
-          concurrentSessions: "1,000,000+",
-          apiRateLimit: "10,000/minute",
-        },
-      },
-      reliability: { sla: 99.99, mttr: 15, rto: 30, rpo: 5, historicalUptime: 99.995 },
-    },
+    marketShare: 3.2,
+    npsScore: 72,
+    csatScore: 4.6,
+    retentionRate: 94,
     features: {
       core: {
-        deviceVisibility: { available: true, details: "Real-time, ML-enhanced", score: 100 },
-        deviceProfiling: { available: true, details: "20,000+ device fingerprints", score: 100 },
-        networkSegmentation: { available: true, details: "Dynamic, policy-based", score: 100 },
-        accessControl: { available: true, details: "802.1X, MAB, Web Auth", score: 100 },
-        guestManagement: { available: true, details: "Self-service, sponsored", score: 100 },
-        byod: { available: true, details: "Automated onboarding", score: 100 },
-        agentless: { available: true, details: "100% agentless option", score: 100 },
-        cloudNative: { available: true, details: "Built for cloud", score: 100 },
-      },
-      security: {
-        zeroTrust: { available: true, details: "Full ZTNA implementation", score: 100 },
-        threatDetection: { available: true, details: "AI-powered, real-time", score: 95 },
-        incidentResponse: { available: true, details: "Automated containment", score: 95 },
-        riskScoring: { available: true, details: "Continuous assessment", score: 95 },
-        behavioralAnalytics: { available: true, details: "UEBA integration", score: 90 },
-        microsegmentation: { available: true, details: "Dynamic policies", score: 100 },
-        iotSecurity: { available: true, details: "Specialized IoT/OT", score: 95 },
-        lateralMovement: { available: true, details: "East-west blocking", score: 95 },
-      },
-      compliance: {
-        frameworksSupported: ["SOC 2", "ISO 27001", "HIPAA", "PCI DSS", "GDPR", "NIST", "CMMC"],
-        automationLevel: 95,
-        reporting: { available: true, details: "Scheduled, customizable", score: 100 },
-        auditTrail: { available: true, details: "Immutable, searchable", score: 100 },
-        policyTemplates: { available: true, details: "Pre-built for all frameworks", score: 95 },
-        continuousCompliance: { available: true, details: "Real-time monitoring", score: 95 },
-        evidenceCollection: { available: true, details: "Automated artifacts", score: 90 },
-        automation: 95,
-      },
-      integration: {
-        authProviders: {
-          available: true,
-          supported: ["Azure AD", "Google", "Okta", "Ping", "AD", "LDAP", "SAML", "RADIUS"],
-          score: 100,
-        },
-        siem: { available: true, supported: ["Splunk", "QRadar", "Sentinel", "Chronicle", "Elastic"], score: 100 },
-        itsm: { available: true, supported: ["ServiceNow", "Jira", "BMC", "Freshservice"], score: 95 },
-        mdm: { available: true, supported: ["Intune", "JAMF", "Workspace ONE", "MobileIron"], score: 95 },
-        firewall: {
-          available: true,
-          supported: ["Palo Alto", "Fortinet", "Check Point", "Cisco", "Juniper"],
-          score: 90,
-        },
-        cloud: { available: true, supported: ["AWS", "Azure", "GCP", "Oracle Cloud"], score: 95 },
-        api: { available: true, type: ["REST", "GraphQL", "Webhooks"], documentation: "comprehensive", score: 100 },
-      },
-      operational: {
-        dashboard: { available: true, details: "Real-time, customizable", score: 100 },
-        reporting: { available: true, details: "Advanced analytics", score: 95 },
-        automation: { available: true, details: "95% task automation", score: 95 },
-        aiOps: { available: true, details: "Predictive, self-healing", score: 90 },
-        multiTenancy: { available: true, details: "Full isolation", score: 100 },
-        rbac: { available: true, details: "Granular permissions", score: 100 },
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: true,
+        byod: true,
+        iot: true,
+        compliance: true,
+        reporting: true,
+        integration: true,
+        cloudNative: true,
       },
       advanced: {
-        pki: { available: true, details: "Built-in CA, SCEP", score: 90 },
-        tacacs: { available: true, details: "TACACS+ support", score: 85 },
-        conditionalAccess: { available: true, details: "Context-aware policies", score: 95 },
-        deviceHealth: { available: true, details: "Posture assessment", score: 90 },
-        containerSupport: { available: true, details: "Docker, K8s visibility", score: 85 },
+        aiMl: true,
+        zeroTrust: true,
+        automation: true,
+        api: true,
+        multiTenant: true,
+        federation: true,
+        riskScoring: true,
+        behaviorAnalytics: true,
+      },
+      security: {
+        threatDetection: true,
+        incidentResponse: true,
+        forensics: true,
+        encryption: true,
+        certificateManagement: true,
+        vulnerabilityAssessment: true,
+      },
+    },
+    pricing: {
+      model: "per-device",
+      basePrice: 4.0,
+      currency: "USD",
+      billingCycle: "monthly",
+      volumeDiscounts: {
+        tier1: { threshold: 1000, discount: 0.15 },
+        tier2: { threshold: 5000, discount: 0.25 },
+        tier3: { threshold: 10000, discount: 0.35 },
+      },
+      addOns: {
+        atp: {
+          name: "Advanced Threat Protection",
+          price: 1.5,
+          description: "ML-based threat detection and SOAR integration",
+        },
+        compliance: {
+          name: "Compliance Automation",
+          price: 1.0,
+          description: "Automated reporting and continuous monitoring",
+        },
+        iot: {
+          name: "IoT/OT Security",
+          price: 2.0,
+          description: "Industrial device profiling and OT protocol support",
+        },
+        analytics: {
+          name: "Risk Analytics",
+          price: 1.5,
+          description: "Advanced risk scoring and behavioral analytics",
+        },
+      },
+    },
+    implementation: {
+      deploymentTime: {
+        pilot: "2-4 hours",
+        fullDeployment: "1-2 weeks",
+      },
+      complexity: "low",
+      hardwareRequired: false,
+      cloudOptions: true,
+      onPremiseOptions: false,
+      hybridOptions: true,
+      professionalServices: {
+        required: false,
+        cost: 15000,
+        duration: "1-2 weeks",
       },
     },
     support: {
-      tiers: [
-        { name: "Standard", availability: "Business hours", responseTime: "4 hours", channels: ["Email", "Portal"] },
-        {
-          name: "Priority",
-          availability: "Extended hours",
-          responseTime: "1 hour",
-          channels: ["Email", "Portal", "Phone"],
-        },
-        { name: "Premium", availability: "24/7", responseTime: "15 minutes", channels: ["All", "Dedicated TAM"] },
-      ],
-      languages: ["English", "Spanish", "German", "French", "Japanese"],
-      resources: {
-        documentation: "Comprehensive online docs",
-        training: "Free online university",
-        community: "Active user community",
-        professionalServices: "Available globally",
+      levels: ["Standard", "Premium", "Enterprise"],
+      sla: {
+        uptime: 99.9,
+        responseTime: "< 4 hours",
       },
+      channels: ["Email", "Phone", "Chat", "Portal"],
+      documentation: "excellent",
+      community: true,
     },
-    roi: {
-      paybackPeriod: 6,
-      yearlyBenefit: 850000,
-      laborSavings: 1.9,
-      incidentReduction: 0.85,
-      complianceSavings: 200000,
-      breachRiskReduction: 0.8,
-      operationalEfficiency: 0.75,
-      timeToValue: 7,
+    compliance: {
+      frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "ISO 27001", "NIST", "FedRAMP"],
+      certifications: ["SOC 2 Type II", "ISO 27001", "FedRAMP Authorized"],
+      automationLevel: 85,
+      auditReadiness: 92,
     },
-    riskMetrics: {
-      mttr: 5,
-      mtbf: 8760,
-      breachProbabilityReduction: 0.8,
-      complianceViolationRisk: 1,
-      securityPostureScore: 95,
-      cyberInsuranceImpact: 25,
-    },
-    complianceSummary: {
-      frameworks: ["SOC 2", "ISO 27001", "HIPAA", "PCI DSS", "GDPR", "NIST", "CMMC", "FedRAMP"],
-      certifications: ["SOC 2 Type II", "ISO 27001", "ISO 27017", "ISO 27018", "CSA STAR"],
-      automationLevel: 95,
-      auditReadiness: 98,
-      continuousCompliance: true,
-    },
-    competitiveAdvantages: [
-      "Fastest deployment",
-      "No hardware",
-      "Lowest TCO",
-      "Most integrations",
-      "True cloud-native",
+    strengths: [
+      "Fastest deployment in market",
       "AI-powered automation",
-      "Zero learning curve",
+      "Cloud-native architecture",
+      "No hardware requirements",
+      "Excellent ROI",
     ],
-    customerMetrics: { nps: 72, csat: 4.8, retention: 0.96, expansionRate: 1.35, timeToDeploy: 4, adoptionRate: 0.95 },
-    marketShare: "Leader",
-    scalability: { maxDevices: "Unlimited" },
+    weaknesses: ["Newer market presence", "Limited on-premise options"],
+    idealFor: ["Cloud-first organizations", "Rapid deployments", "Cost-conscious buyers", "SMB to Enterprise"],
+    competitiveAdvantages: [
+      "99% faster deployment than competitors",
+      "AI-driven policy automation",
+      "Zero hardware footprint",
+      "Lowest TCO in market",
+    ],
+    recentUpdates: [
+      "Enhanced AI threat detection (Q4 2024)",
+      "New IoT/OT module launch",
+      "FedRAMP authorization achieved",
+    ],
+    logoPath: "/portnox-logo.png",
   },
-
-  // Cisco ISE - Traditional Enterprise NAC
   cisco: {
     id: "cisco",
     name: "Cisco ISE",
-    type: "on-premise",
-    category: "Traditional Enterprise NAC",
-    logo: "/cisco-logo.png",
-    description: "Industry standard enterprise NAC with complex deployment",
-    marketPosition: "Legacy Leader",
-    yearFounded: 1984,
+    category: "enterprise",
+    description: "Industry-leading identity services engine with comprehensive policy management",
+    marketPosition: "leader",
+    founded: 1984,
     headquarters: "San Jose, USA",
-    globalPresence: ["Worldwide"],
-    pricing: {
-      model: "Perpetual + Subscription",
-      currency: "USD",
-      billingOptions: ["Perpetual", "Subscription"],
-      licenses: { base: 25000, plus: 45000, apex: 65000, device: 85, subscription: 120 },
-      hardware: {
-        "SNS-3615-K9": { cost: 65000, capacity: "5,000 endpoints", lifespan: 5, description: "Small Appliance" },
-        "SNS-3655-K9": { cost: 110000, capacity: "20,000 endpoints", lifespan: 5, description: "Medium Appliance" },
-        "SNS-3695-K9": { cost: 175000, capacity: "50,000 endpoints", lifespan: 5, description: "Large Appliance" },
-      },
-      maintenance: 0.22,
-      professionalServices: {
-        implementation: 150000,
-        training: 25000,
-        healthCheck: 40000,
-        customization: 75000,
-      },
-      additionalCosts: { implementation: 150000, training: 25000, support: 50000 },
-      hiddenCosts: { downtime: 100000, complexity: 80000, staffTraining: 50000, integration: 70000, total: 300000 },
+    employees: "80,000+",
+    revenue: "$51.6B",
+    customerBase: {
+      total: 25000,
+      enterprise: 15000,
+      midMarket: 8000,
+      sme: 2000,
     },
-    implementation: {
-      deploymentTime: { poc: 720, pilot: 2160, fullDeployment: 4320 },
-      deploymentModel: ["On-Premise", "Virtual Appliance", "Private Cloud"],
-      requiredResources: { internal: 3.0, vendor: 1.5, training: 80, ongoing: 2.5 },
-      complexity: "very-high",
-      prerequisites: ["Hardware sizing", "Network redesign", "Staff training", "Certificate infrastructure"],
-    },
-    infrastructure: {
-      architecture: "Distributed with PSNs",
-      hosting: ["On-premise data center"],
-      redundancy: "Active-standby",
-      dataResidency: ["Customer controlled"],
-      certifications: ["Common Criteria", "FIPS 140-2"],
-      scalability: {
-        maxDevices: "500,000",
-        maxSites: "Unlimited with PSNs",
-        maxUsers: "2,000,000",
-        performanceMetrics: {
-          authenticationRate: "Depends on hardware",
-          concurrentSessions: "Hardware limited",
-          apiRateLimit: "Limited",
-        },
-      },
-      reliability: { sla: 99.5, mttr: 360, rto: 720, rpo: 120, historicalUptime: 98.5 },
-    },
+    marketShare: 35.2,
+    npsScore: 42,
+    csatScore: 3.8,
+    retentionRate: 87,
     features: {
       core: {
-        deviceVisibility: { available: true, details: "With profiler", score: 85 },
-        deviceProfiling: { available: true, details: "Cisco profiler", score: 90 },
-        networkSegmentation: { available: true, details: "TrustSec", score: 85 },
-        accessControl: { available: true, details: "Full 802.1X", score: 95 },
-        guestManagement: { available: true, details: "Guest portal", score: 80 },
-        byod: { available: true, details: "BYOD portal", score: 75 },
-        agentless: { available: false, details: "Agent recommended", score: 30 },
-        cloudNative: { available: false, details: "On-premise only", score: 0 },
-      },
-      security: {
-        zeroTrust: { available: false, details: "Traditional model", score: 40 },
-        threatDetection: { available: true, details: "With pxGrid", score: 70 },
-        incidentResponse: { available: true, details: "TC-NAC", score: 65 },
-        riskScoring: { available: true, details: "Basic scoring", score: 60 },
-        behavioralAnalytics: { available: false, details: "Limited", score: 40 },
-        microsegmentation: { available: true, details: "TrustSec", score: 80 },
-        iotSecurity: { available: true, details: "IoT classification", score: 70 },
-        lateralMovement: { available: true, details: "SGT-based", score: 75 },
-      },
-      compliance: {
-        frameworksSupported: ["SOC 2", "ISO 27001", "HIPAA", "PCI DSS", "NIST"],
-        automationLevel: 50,
-        reporting: { available: true, details: "Manual reports", score: 60 },
-        auditTrail: { available: true, details: "Comprehensive logs", score: 85 },
-        policyTemplates: { available: true, details: "Some templates", score: 65 },
-        continuousCompliance: { available: false, details: "Periodic", score: 45 },
-        evidenceCollection: { available: false, details: "Manual", score: 30 },
-        automation: 50,
-      },
-      integration: {
-        authProviders: { available: true, supported: ["AD", "LDAP", "RADIUS", "SAML", "RSA"], score: 85 },
-        siem: { available: true, supported: ["pxGrid", "Syslog", "SNMP"], score: 80 },
-        itsm: { available: true, supported: ["ServiceNow", "BMC"], score: 60 },
-        mdm: { available: true, supported: ["AirWatch", "MobileIron", "Intune"], score: 70 },
-        firewall: { available: true, supported: ["Cisco ASA", "FTD", "Firepower"], score: 90 },
-        cloud: { available: false, supported: [], score: 20 },
-        api: { available: true, type: ["REST", "pxGrid"], documentation: "Complex", score: 60 },
-      },
-      operational: {
-        dashboard: { available: true, details: "Complex UI", score: 50 },
-        reporting: { available: true, details: "Built-in reports", score: 65 },
-        automation: { available: false, details: "Limited", score: 30 },
-        aiOps: { available: false, details: "Not available", score: 0 },
-        multiTenancy: { available: false, details: "Single tenant", score: 20 },
-        rbac: { available: true, details: "Admin roles", score: 70 },
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: true,
+        byod: true,
+        iot: true,
+        compliance: true,
+        reporting: true,
+        integration: true,
+        cloudNative: false,
       },
       advanced: {
-        pki: { available: true, details: "Built-in CA", score: 85 },
-        tacacs: { available: true, details: "Full TACACS+", score: 95 },
-        conditionalAccess: { available: true, details: "Policy sets", score: 75 },
-        deviceHealth: { available: true, details: "Posture assessment", score: 80 },
-        containerSupport: { available: false, details: "Not supported", score: 0 },
+        aiMl: false,
+        zeroTrust: true,
+        automation: false,
+        api: true,
+        multiTenant: false,
+        federation: true,
+        riskScoring: false,
+        behaviorAnalytics: false,
+      },
+      security: {
+        threatDetection: true,
+        incidentResponse: true,
+        forensics: true,
+        encryption: true,
+        certificateManagement: true,
+        vulnerabilityAssessment: true,
+      },
+    },
+    pricing: {
+      model: "per-device",
+      basePrice: 12.0,
+      currency: "USD",
+      billingCycle: "annual",
+      minimumUsers: 100,
+      volumeDiscounts: {
+        tier1: { threshold: 1000, discount: 0.1 },
+        tier2: { threshold: 5000, discount: 0.2 },
+        tier3: { threshold: 10000, discount: 0.3 },
+      },
+    },
+    implementation: {
+      deploymentTime: {
+        pilot: "4-8 weeks",
+        fullDeployment: "6-12 months",
+      },
+      complexity: "high",
+      hardwareRequired: true,
+      cloudOptions: true,
+      onPremiseOptions: true,
+      hybridOptions: true,
+      professionalServices: {
+        required: true,
+        cost: 150000,
+        duration: "3-6 months",
       },
     },
     support: {
-      tiers: [
-        { name: "8x5xNBD", availability: "Business hours", responseTime: "Next business day", channels: ["TAC"] },
-        { name: "24x7x4", availability: "24/7", responseTime: "4 hours", channels: ["TAC", "Phone"] },
-        { name: "24x7x2", availability: "24/7", responseTime: "2 hours", channels: ["TAC", "Phone", "On-site"] },
-      ],
-      languages: ["Multiple languages"],
-      resources: {
-        documentation: "Extensive but complex",
-        training: "Cisco Learning",
-        community: "Cisco Community",
-        professionalServices: "Cisco Advanced Services",
+      levels: ["Basic", "Enhanced", "Premium"],
+      sla: {
+        uptime: 99.5,
+        responseTime: "< 8 hours",
       },
+      channels: ["Email", "Phone", "Portal", "TAC"],
+      documentation: "excellent",
+      community: true,
     },
-    roi: {
-      paybackPeriod: 36,
-      yearlyBenefit: 150000,
-      laborSavings: -2.0,
-      incidentReduction: 0.6,
-      complianceSavings: 75000,
-      breachRiskReduction: 0.55,
-      operationalEfficiency: 0.3,
-      timeToValue: 180,
+    compliance: {
+      frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "ISO 27001", "NIST", "Common Criteria"],
+      certifications: ["FIPS 140-2", "Common Criteria", "ISO 27001"],
+      automationLevel: 35,
+      auditReadiness: 78,
     },
-    riskMetrics: {
-      mttr: 360,
-      mtbf: 2000,
-      breachProbabilityReduction: 0.55,
-      complianceViolationRisk: 7,
-      securityPostureScore: 65,
-      cyberInsuranceImpact: 0,
-    },
-    complianceSummary: {
-      frameworks: ["SOC 2", "ISO 27001", "HIPAA", "PCI DSS", "NIST"],
-      certifications: ["Common Criteria", "FIPS 140-2"],
-      automationLevel: 50,
-      auditReadiness: 70,
-      continuousCompliance: false,
-    },
-    competitiveAdvantages: [
-      "Industry standard",
-      "Deep Cisco ecosystem integration",
-      "Mature product",
-      "Extensive features",
+    strengths: [
+      "Market leader with proven track record",
+      "Comprehensive feature set",
+      "Strong ecosystem integration",
+      "Enterprise-grade scalability",
     ],
-    customerMetrics: {
-      nps: 25,
-      csat: 3.2,
-      retention: 0.75,
-      expansionRate: 1.05,
-      timeToDeploy: 4320,
-      adoptionRate: 0.6,
-    },
-    marketShare: "High",
-    scalability: { maxDevices: "500,000" },
+    weaknesses: [
+      "Complex deployment and management",
+      "High total cost of ownership",
+      "Requires significant hardware investment",
+      "Long implementation timelines",
+    ],
+    idealFor: ["Large enterprises", "Complex network environments", "Cisco-centric infrastructures"],
+    competitiveAdvantages: [
+      "Largest market share",
+      "Comprehensive Cisco ecosystem integration",
+      "Mature product with extensive features",
+    ],
+    recentUpdates: [
+      "Enhanced cloud management (2024)",
+      "Improved threat intelligence integration",
+      "New API capabilities",
+    ],
+    logoPath: "/cisco-logo.png",
   },
-
-  // Aruba ClearPass
   aruba: {
     id: "aruba",
     name: "Aruba ClearPass",
-    type: "on-premise",
-    category: "Enterprise NAC",
-    logo: "/aruba-logo.png",
-    description: "HPE Aruba's network access control and policy management",
-    marketPosition: "Challenger",
-    yearFounded: 2002,
+    category: "enterprise",
+    description: "Policy management platform with strong wireless integration and user experience focus",
+    marketPosition: "challenger",
+    founded: 2002,
     headquarters: "Santa Clara, USA",
-    globalPresence: ["Worldwide"],
-    pricing: {
-      model: "Perpetual + Support",
-      currency: "USD",
-      billingOptions: ["Perpetual", "Subscription"],
-      licenses: { base: 50000, device: 60, subscription: 35 },
-      hardware: {
-        "CP-HW-5K": { cost: 28995, capacity: "5,000 endpoints", lifespan: 5, description: "Small Appliance" },
-        "CP-HW-25K": { cost: 69995, capacity: "25,000 endpoints", lifespan: 5, description: "Medium Appliance" },
-      },
-      maintenance: 0.2,
-      professionalServices: { implementation: 80000, training: 15000, customization: 50000 },
-      additionalCosts: { implementation: 80000, training: 15000, support: 30000 },
-      hiddenCosts: { complexity: 50000, integration: 40000, total: 120000 },
+    employees: "3,000+",
+    revenue: "$3.2B",
+    customerBase: {
+      total: 18000,
+      enterprise: 8000,
+      midMarket: 7000,
+      sme: 3000,
     },
-    implementation: {
-      deploymentTime: { poc: 480, pilot: 1440, fullDeployment: 2880 },
-      deploymentModel: ["On-Premise", "Virtual", "Hardware Appliance"],
-      requiredResources: { internal: 2.0, vendor: 1.0, training: 40, ongoing: 1.5 },
-      complexity: "high",
-      prerequisites: ["Hardware planning", "Network design", "Certificate setup"],
-    },
-    infrastructure: {
-      architecture: "Clustered architecture",
-      hosting: ["On-premise"],
-      redundancy: "Active-active clustering",
-      dataResidency: ["Customer controlled"],
-      certifications: ["Common Criteria"],
-      scalability: {
-        maxDevices: "100,000",
-        maxSites: "Multi-site capable",
-        maxUsers: "250,000",
-        performanceMetrics: {
-          authenticationRate: "30,000/hour",
-          concurrentSessions: "100,000",
-          apiRateLimit: "Limited",
-        },
-      },
-      reliability: { sla: 99.0, mttr: 240, rto: 480, rpo: 60, historicalUptime: 98.0 },
-    },
+    marketShare: 22.1,
+    npsScore: 58,
+    csatScore: 4.1,
+    retentionRate: 89,
     features: {
       core: {
-        deviceVisibility: { available: true, details: "Device Insight", score: 80 },
-        deviceProfiling: { available: true, details: "Profiling", score: 85 },
-        networkSegmentation: { available: true, details: "Dynamic segmentation", score: 80 },
-        accessControl: { available: true, details: "802.1X, MAC auth", score: 90 },
-        guestManagement: { available: true, details: "Guest module", score: 85 },
-        byod: { available: true, details: "OnBoard", score: 80 },
-        agentless: { available: true, details: "Agentless available", score: 70 },
-        cloudNative: { available: false, details: "On-premise", score: 0 },
-      },
-      security: {
-        zeroTrust: { available: false, details: "Traditional NAC", score: 35 },
-        threatDetection: { available: true, details: "IntroSpect integration", score: 65 },
-        incidentResponse: { available: true, details: "Manual workflows", score: 55 },
-        riskScoring: { available: true, details: "Device profiling", score: 60 },
-        behavioralAnalytics: { available: false, details: "Limited", score: 35 },
-        microsegmentation: { available: true, details: "Dynamic roles", score: 70 },
-        iotSecurity: { available: true, details: "IoT profiling", score: 65 },
-        lateralMovement: { available: true, details: "Role-based", score: 65 },
-      },
-      compliance: {
-        frameworksSupported: ["ISO 27001", "HIPAA", "PCI DSS"],
-        automationLevel: 35,
-        reporting: { available: true, details: "Basic reports", score: 55 },
-        auditTrail: { available: true, details: "Audit logs", score: 75 },
-        policyTemplates: { available: false, details: "Manual creation", score: 25 },
-        continuousCompliance: { available: false, details: "Not available", score: 20 },
-        evidenceCollection: { available: false, details: "Manual", score: 20 },
-        automation: 35,
-      },
-      integration: {
-        authProviders: { available: true, supported: ["AD", "LDAP", "RADIUS"], score: 70 },
-        siem: { available: true, supported: ["Syslog", "ArcSight"], score: 50 },
-        itsm: { available: false, supported: [], score: 15 },
-        mdm: { available: true, supported: ["AirWatch", "MobileIron"], score: 60 },
-        firewall: { available: true, supported: ["Aruba", "Palo Alto"], score: 70 },
-        cloud: { available: false, supported: [], score: 10 },
-        api: { available: true, type: ["REST"], documentation: "Limited", score: 50 },
-      },
-      operational: {
-        dashboard: { available: true, details: "ClearPass UI", score: 60 },
-        reporting: { available: true, details: "Basic analytics", score: 55 },
-        automation: { available: false, details: "Manual processes", score: 25 },
-        aiOps: { available: false, details: "Not available", score: 0 },
-        multiTenancy: { available: false, details: "Single tenant", score: 15 },
-        rbac: { available: true, details: "Admin roles", score: 65 },
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: true,
+        byod: true,
+        iot: true,
+        compliance: true,
+        reporting: true,
+        integration: true,
+        cloudNative: false,
       },
       advanced: {
-        pki: { available: true, details: "Onboard CA", score: 75 },
-        tacacs: { available: true, details: "TACACS+ support", score: 80 },
-        conditionalAccess: { available: true, details: "Policy engine", score: 70 },
-        deviceHealth: { available: true, details: "OnGuard", score: 75 },
-        containerSupport: { available: false, details: "Not supported", score: 0 },
+        aiMl: true,
+        zeroTrust: true,
+        automation: true,
+        api: true,
+        multiTenant: false,
+        federation: true,
+        riskScoring: true,
+        behaviorAnalytics: true,
+      },
+      security: {
+        threatDetection: true,
+        incidentResponse: true,
+        forensics: true,
+        encryption: true,
+        certificateManagement: true,
+        vulnerabilityAssessment: false,
+      },
+    },
+    pricing: {
+      model: "per-device",
+      basePrice: 8.5,
+      currency: "USD",
+      billingCycle: "annual",
+      minimumUsers: 50,
+      volumeDiscounts: {
+        tier1: { threshold: 1000, discount: 0.12 },
+        tier2: { threshold: 5000, discount: 0.22 },
+        tier3: { threshold: 10000, discount: 0.32 },
+      },
+    },
+    implementation: {
+      deploymentTime: {
+        pilot: "2-4 weeks",
+        fullDeployment: "3-6 months",
+      },
+      complexity: "medium",
+      hardwareRequired: true,
+      cloudOptions: true,
+      onPremiseOptions: true,
+      hybridOptions: true,
+      professionalServices: {
+        required: true,
+        cost: 75000,
+        duration: "2-4 months",
       },
     },
     support: {
-      tiers: [
-        { name: "Foundation Care", availability: "Business hours", responseTime: "NBD", channels: ["Portal"] },
-        { name: "24x7 Care", availability: "24/7", responseTime: "4 hours", channels: ["Phone", "Portal"] },
-      ],
-      languages: ["English", "Limited others"],
-      resources: {
-        documentation: "HPE documentation",
-        training: "HPE Education",
-        community: "Airheads Community",
-        professionalServices: "HPE Services",
+      levels: ["Foundation", "Enhanced", "Premium"],
+      sla: {
+        uptime: 99.7,
+        responseTime: "< 6 hours",
       },
+      channels: ["Email", "Phone", "Chat", "Portal"],
+      documentation: "good",
+      community: true,
     },
-    roi: {
-      paybackPeriod: 30,
-      yearlyBenefit: 180000,
-      laborSavings: -1.0,
-      incidentReduction: 0.55,
-      complianceSavings: 60000,
-      breachRiskReduction: 0.5,
-      operationalEfficiency: 0.35,
-      timeToValue: 120,
+    compliance: {
+      frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "ISO 27001", "NIST"],
+      certifications: ["SOC 2", "ISO 27001", "FIPS 140-2"],
+      automationLevel: 65,
+      auditReadiness: 82,
     },
-    riskMetrics: {
-      mttr: 240,
-      mtbf: 3000,
-      breachProbabilityReduction: 0.5,
-      complianceViolationRisk: 8,
-      securityPostureScore: 60,
-      cyberInsuranceImpact: -5,
-    },
-    complianceSummary: {
-      frameworks: ["ISO 27001", "HIPAA", "PCI DSS"],
-      certifications: ["Common Criteria"],
-      automationLevel: 35,
-      auditReadiness: 65,
-      continuousCompliance: false,
-    },
-    competitiveAdvantages: [
-      "Good for Aruba wireless",
-      "Established product",
-      "Hardware appliance option",
-      "TACACS+ support",
+    strengths: [
+      "Strong wireless integration",
+      "User-friendly interface",
+      "Good AI/ML capabilities",
+      "Solid ecosystem partnerships",
     ],
-    customerMetrics: {
-      nps: 35,
-      csat: 3.5,
-      retention: 0.78,
-      expansionRate: 1.08,
-      timeToDeploy: 2880,
-      adoptionRate: 0.65,
-    },
-    marketShare: "Medium",
-    scalability: { maxDevices: "100,000" },
+    weaknesses: ["Hardware dependency", "Complex licensing model", "Limited cloud-native features"],
+    idealFor: ["Aruba wireless environments", "Mid to large enterprises", "Education sector"],
+    competitiveAdvantages: ["Best-in-class wireless integration", "Strong user experience focus", "AI-driven insights"],
+    recentUpdates: ["Enhanced AI analytics (2024)", "New cloud management features", "Improved IoT device profiling"],
+    logoPath: "/aruba-logo.png",
   },
-
-  // Cisco Meraki
   meraki: {
     id: "meraki",
     name: "Cisco Meraki",
-    type: "cloud-managed",
-    category: "Cloud-Managed NAC",
-    logo: "/meraki-logo.png",
-    description: "Cloud-managed IT with integrated access control",
-    marketPosition: "Strong Contender",
-    yearFounded: 2006,
+    category: "mid-market",
+    description: "Cloud-managed networking with integrated security and simple deployment",
+    marketPosition: "challenger",
+    founded: 2006,
     headquarters: "San Francisco, USA",
-    globalPresence: ["North America", "Europe", "APAC"],
-    pricing: {
-      model: "Hardware + Subscription",
-      currency: "USD",
-      billingOptions: ["Annual", "3-Year", "5-Year"],
-      perDevice: { monthly: 15, annual: 150, triennial: 135, fiveYear: 120 },
-      hardware: {
-        MR46: { cost: 1395, capacity: "WiFi 6 AP", lifespan: 5, description: "WiFi 6 Access Point" },
-        "MS250-48": { cost: 4795, capacity: "48-port switch", lifespan: 7, description: "48-port PoE Switch" },
-        MX84: { cost: 2395, capacity: "Security appliance", lifespan: 5, description: "Security & SD-WAN Appliance" },
-      },
-      licenses: { enterprise: 150, advanced: 300 },
-      professionalServices: { implementation: 25000, training: 5000, designServices: 15000 },
-      additionalCosts: { implementation: 25000, training: 5000, support: 10000 },
-      hiddenCosts: { networkRefresh: 50000, complexity: 15000, integration: 20000, total: 85000 },
+    employees: "1,500+",
+    revenue: "$1.8B",
+    customerBase: {
+      total: 12000,
+      enterprise: 3000,
+      midMarket: 6000,
+      sme: 3000,
     },
-    implementation: {
-      deploymentTime: { poc: 168, pilot: 720, fullDeployment: 2160 },
-      deploymentModel: ["Cloud-Managed", "On-Premise Hardware"],
-      requiredResources: { internal: 1.5, vendor: 0.5, training: 40, ongoing: 1.0 },
-      complexity: "medium",
-      prerequisites: ["Network refresh", "Meraki hardware", "Internet connectivity"],
-    },
-    infrastructure: {
-      architecture: "Cloud-Managed Hardware",
-      hosting: ["Meraki Cloud"],
-      redundancy: "Hardware redundancy required",
-      dataResidency: ["Limited options"],
-      certifications: ["SOC 2", "ISO 27001"],
-      scalability: {
-        maxDevices: "10,000 per network",
-        maxSites: "Unlimited networks",
-        maxUsers: "Hardware dependent",
-        performanceMetrics: {
-          authenticationRate: "Hardware limited",
-          concurrentSessions: "Hardware limited",
-          apiRateLimit: "5 requests/second",
-        },
-      },
-      reliability: { sla: 99.9, mttr: 240, rto: 480, rpo: 60, historicalUptime: 99.5 },
-    },
+    marketShare: 15.3,
+    npsScore: 65,
+    csatScore: 4.3,
+    retentionRate: 91,
     features: {
       core: {
-        deviceVisibility: { available: true, details: "Basic visibility", score: 70 },
-        deviceProfiling: { available: true, details: "Limited profiling", score: 65 },
-        networkSegmentation: { available: true, details: "VLAN-based", score: 75 },
-        accessControl: { available: true, details: "802.1X, MAB", score: 80 },
-        guestManagement: { available: true, details: "Splash pages", score: 85 },
-        byod: { available: true, details: "Systems Manager", score: 75 },
-        agentless: { available: false, details: "Agent required for visibility", score: 40 },
-        cloudNative: { available: false, details: "Cloud-managed hardware", score: 60 },
-      },
-      security: {
-        zeroTrust: { available: false, details: "Traditional perimeter", score: 30 },
-        threatDetection: { available: true, details: "Basic IDS/IPS", score: 60 },
-        incidentResponse: { available: false, details: "Manual response", score: 40 },
-        riskScoring: { available: false, details: "Not available", score: 20 },
-        behavioralAnalytics: { available: false, details: "Limited", score: 30 },
-        microsegmentation: { available: true, details: "Group policies", score: 60 },
-        iotSecurity: { available: true, details: "MT sensors", score: 70 },
-        lateralMovement: { available: true, details: "VLAN isolation", score: 65 },
-      },
-      compliance: {
-        frameworksSupported: ["SOC 2", "ISO 27001", "HIPAA", "PCI DSS"],
-        automationLevel: 40,
-        reporting: { available: true, details: "Basic reports", score: 60 },
-        auditTrail: { available: true, details: "Event log", score: 70 },
-        policyTemplates: { available: false, details: "Manual setup", score: 30 },
-        continuousCompliance: { available: false, details: "Periodic checks", score: 40 },
-        evidenceCollection: { available: false, details: "Manual", score: 20 },
-        automation: 40,
-      },
-      integration: {
-        authProviders: { available: true, supported: ["AD", "RADIUS", "LDAP", "Google", "Azure AD"], score: 70 },
-        siem: { available: true, supported: ["Syslog only"], score: 40 },
-        itsm: { available: false, supported: [], score: 20 },
-        mdm: { available: true, supported: ["Systems Manager"], score: 60 },
-        firewall: { available: true, supported: ["Meraki MX"], score: 80 },
-        cloud: { available: false, supported: [], score: 20 },
-        api: { available: true, type: ["REST"], documentation: "Good", score: 70 },
-      },
-      operational: {
-        dashboard: { available: true, details: "Meraki Dashboard", score: 85 },
-        reporting: { available: true, details: "Basic analytics", score: 65 },
-        automation: { available: false, details: "Limited automation", score: 30 },
-        aiOps: { available: false, details: "Not available", score: 0 },
-        multiTenancy: { available: true, details: "Organization-based", score: 80 },
-        rbac: { available: true, details: "Role-based admin", score: 75 },
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: true,
+        byod: true,
+        iot: true,
+        compliance: false,
+        reporting: true,
+        integration: true,
+        cloudNative: true,
       },
       advanced: {
-        pki: { available: false, details: "External PKI only", score: 30 },
-        tacacs: { available: false, details: "Not supported", score: 0 },
-        conditionalAccess: { available: false, details: "Basic policies", score: 40 },
-        deviceHealth: { available: true, details: "Systems Manager", score: 60 },
-        containerSupport: { available: false, details: "Not supported", score: 0 },
+        aiMl: false,
+        zeroTrust: false,
+        automation: true,
+        api: true,
+        multiTenant: true,
+        federation: false,
+        riskScoring: false,
+        behaviorAnalytics: false,
+      },
+      security: {
+        threatDetection: true,
+        incidentResponse: false,
+        forensics: false,
+        encryption: true,
+        certificateManagement: false,
+        vulnerabilityAssessment: false,
+      },
+    },
+    pricing: {
+      model: "per-device",
+      basePrice: 6.0,
+      currency: "USD",
+      billingCycle: "annual",
+      minimumUsers: 25,
+      volumeDiscounts: {
+        tier1: { threshold: 500, discount: 0.1 },
+        tier2: { threshold: 2000, discount: 0.18 },
+        tier3: { threshold: 5000, discount: 0.25 },
+      },
+    },
+    implementation: {
+      deploymentTime: {
+        pilot: "1-2 weeks",
+        fullDeployment: "1-3 months",
+      },
+      complexity: "low",
+      hardwareRequired: true,
+      cloudOptions: true,
+      onPremiseOptions: false,
+      hybridOptions: false,
+      professionalServices: {
+        required: false,
+        cost: 25000,
+        duration: "1-2 months",
       },
     },
     support: {
-      tiers: [
-        { name: "Standard", availability: "Business hours", responseTime: "Next business day", channels: ["Portal"] },
-        { name: "Advanced", availability: "24/7", responseTime: "4 hours", channels: ["Portal", "Phone"] },
-      ],
-      languages: ["English", "Japanese", "Spanish"],
-      resources: {
-        documentation: "Meraki documentation",
-        training: "Paid training courses",
-        community: "Meraki community",
-        professionalServices: "Cisco partners",
+      levels: ["Standard", "Premium"],
+      sla: {
+        uptime: 99.8,
+        responseTime: "< 4 hours",
+      },
+      channels: ["Email", "Phone", "Chat", "Portal"],
+      documentation: "good",
+      community: true,
+    },
+    compliance: {
+      frameworks: ["PCI-DSS", "GDPR", "HIPAA"],
+      certifications: ["SOC 2", "FedRAMP"],
+      automationLevel: 45,
+      auditReadiness: 65,
+    },
+    strengths: [
+      "Simple cloud management",
+      "Easy deployment",
+      "Good for distributed environments",
+      "Strong dashboard and reporting",
+    ],
+    weaknesses: [
+      "Limited enterprise features",
+      "Hardware lock-in",
+      "Basic compliance capabilities",
+      "No on-premise option",
+    ],
+    idealFor: ["SMB to mid-market", "Distributed organizations", "Simple deployments"],
+    competitiveAdvantages: ["Simplest deployment model", "Cloud-first architecture", "Good for multi-site deployments"],
+    recentUpdates: ["Enhanced security features (2024)", "New API capabilities", "Improved mobile management"],
+    logoPath: "/meraki-logo.png",
+  },
+  forescout: {
+    id: "forescout",
+    name: "Forescout",
+    category: "enterprise",
+    description: "Device visibility and compliance platform with strong IoT and OT security focus",
+    marketPosition: "niche",
+    founded: 2000,
+    headquarters: "San Jose, USA",
+    employees: "1,000+",
+    revenue: "$400M",
+    customerBase: {
+      total: 3500,
+      enterprise: 2000,
+      midMarket: 1200,
+      sme: 300,
+    },
+    marketShare: 8.7,
+    npsScore: 48,
+    csatScore: 3.9,
+    retentionRate: 85,
+    features: {
+      core: {
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: false,
+        byod: true,
+        iot: true,
+        compliance: true,
+        reporting: true,
+        integration: true,
+        cloudNative: false,
+      },
+      advanced: {
+        aiMl: true,
+        zeroTrust: true,
+        automation: true,
+        api: true,
+        multiTenant: false,
+        federation: false,
+        riskScoring: true,
+        behaviorAnalytics: true,
+      },
+      security: {
+        threatDetection: true,
+        incidentResponse: true,
+        forensics: true,
+        encryption: true,
+        certificateManagement: false,
+        vulnerabilityAssessment: true,
       },
     },
-    roi: {
-      paybackPeriod: 24,
-      yearlyBenefit: 200000,
-      laborSavings: -0.5,
-      incidentReduction: 0.5,
-      complianceSavings: 50000,
-      breachRiskReduction: 0.45,
-      operationalEfficiency: 0.4,
-      timeToValue: 90,
+    pricing: {
+      model: "per-device",
+      basePrice: 15.0,
+      currency: "USD",
+      billingCycle: "annual",
+      minimumUsers: 500,
+      volumeDiscounts: {
+        tier1: { threshold: 2000, discount: 0.15 },
+        tier2: { threshold: 10000, discount: 0.25 },
+        tier3: { threshold: 25000, discount: 0.35 },
+      },
     },
-    riskMetrics: {
-      mttr: 240,
-      mtbf: 4380,
-      breachProbabilityReduction: 0.45,
-      complianceViolationRisk: 6,
-      securityPostureScore: 60,
-      cyberInsuranceImpact: 5,
+    implementation: {
+      deploymentTime: {
+        pilot: "6-8 weeks",
+        fullDeployment: "4-8 months",
+      },
+      complexity: "high",
+      hardwareRequired: true,
+      cloudOptions: true,
+      onPremiseOptions: true,
+      hybridOptions: true,
+      professionalServices: {
+        required: true,
+        cost: 200000,
+        duration: "4-6 months",
+      },
     },
-    complianceSummary: {
-      frameworks: ["SOC 2", "ISO 27001", "HIPAA", "PCI DSS"],
+    support: {
+      levels: ["Standard", "Premium", "Enterprise"],
+      sla: {
+        uptime: 99.5,
+        responseTime: "< 8 hours",
+      },
+      channels: ["Email", "Phone", "Portal"],
+      documentation: "fair",
+      community: false,
+    },
+    compliance: {
+      frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "ISO 27001", "NIST", "NERC CIP"],
+      certifications: ["SOC 2", "ISO 27001", "Common Criteria"],
+      automationLevel: 70,
+      auditReadiness: 88,
+    },
+    strengths: [
+      "Excellent device visibility",
+      "Strong IoT/OT security",
+      "Comprehensive compliance features",
+      "Good threat detection",
+    ],
+    weaknesses: ["Complex deployment", "High cost", "Limited guest access features", "Steep learning curve"],
+    idealFor: ["Large enterprises", "IoT/OT heavy environments", "Compliance-focused organizations"],
+    competitiveAdvantages: [
+      "Best-in-class device visibility",
+      "Strong IoT/OT security capabilities",
+      "Comprehensive compliance automation",
+    ],
+    recentUpdates: [
+      "Enhanced OT security features (2024)",
+      "New cloud deployment options",
+      "Improved threat intelligence",
+    ],
+    logoPath: "/forescout-logo.png",
+  },
+  extreme: {
+    id: "extreme",
+    name: "Extreme Networks",
+    category: "mid-market",
+    description: "Network infrastructure with integrated access control and cloud management",
+    marketPosition: "niche",
+    founded: 1996,
+    headquarters: "San Jose, USA",
+    employees: "2,500+",
+    revenue: "$1.0B",
+    customerBase: {
+      total: 8000,
+      enterprise: 2000,
+      midMarket: 4000,
+      sme: 2000,
+    },
+    marketShare: 5.2,
+    npsScore: 52,
+    csatScore: 3.7,
+    retentionRate: 82,
+    features: {
+      core: {
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: true,
+        byod: true,
+        iot: false,
+        compliance: false,
+        reporting: true,
+        integration: true,
+        cloudNative: true,
+      },
+      advanced: {
+        aiMl: true,
+        zeroTrust: false,
+        automation: true,
+        api: true,
+        multiTenant: false,
+        federation: false,
+        riskScoring: false,
+        behaviorAnalytics: true,
+      },
+      security: {
+        threatDetection: true,
+        incidentResponse: false,
+        forensics: false,
+        encryption: true,
+        certificateManagement: false,
+        vulnerabilityAssessment: false,
+      },
+    },
+    pricing: {
+      model: "per-device",
+      basePrice: 5.5,
+      currency: "USD",
+      billingCycle: "annual",
+      minimumUsers: 100,
+      volumeDiscounts: {
+        tier1: { threshold: 1000, discount: 0.1 },
+        tier2: { threshold: 3000, discount: 0.2 },
+        tier3: { threshold: 8000, discount: 0.3 },
+      },
+    },
+    implementation: {
+      deploymentTime: {
+        pilot: "2-3 weeks",
+        fullDeployment: "2-4 months",
+      },
+      complexity: "medium",
+      hardwareRequired: true,
+      cloudOptions: true,
+      onPremiseOptions: true,
+      hybridOptions: true,
+      professionalServices: {
+        required: true,
+        cost: 50000,
+        duration: "2-3 months",
+      },
+    },
+    support: {
+      levels: ["Basic", "Advanced", "Premium"],
+      sla: {
+        uptime: 99.5,
+        responseTime: "< 6 hours",
+      },
+      channels: ["Email", "Phone", "Portal"],
+      documentation: "good",
+      community: true,
+    },
+    compliance: {
+      frameworks: ["PCI-DSS", "GDPR", "HIPAA"],
       certifications: ["SOC 2"],
       automationLevel: 40,
       auditReadiness: 60,
-      continuousCompliance: false,
     },
-    competitiveAdvantages: [
-      "Integrated with Meraki ecosystem",
-      "Simple dashboard interface",
-      "Good for existing Meraki customers",
-      "Reliable hardware",
+    strengths: ["Good cloud management", "AI-driven insights", "Competitive pricing", "Strong wireless integration"],
+    weaknesses: [
+      "Limited enterprise features",
+      "Weak compliance capabilities",
+      "Small market presence",
+      "Limited IoT support",
     ],
-    customerMetrics: {
-      nps: 45,
-      csat: 3.8,
-      retention: 0.82,
-      expansionRate: 1.1,
-      timeToDeploy: 2160,
-      adoptionRate: 0.75,
-    },
-    marketShare: "High (in Meraki ecosystem)",
-    scalability: { maxDevices: "10,000 per network" },
+    idealFor: ["Mid-market organizations", "Education", "Hospitality"],
+    competitiveAdvantages: ["AI-driven network insights", "Good price-performance ratio", "Cloud-first approach"],
+    recentUpdates: ["Enhanced AI analytics (2024)", "New cloud features", "Improved user experience"],
+    logoPath: "/extreme-logo.png",
   },
-
-  // Forescout eyeSight
-  forescout: {
-    id: "forescout",
-    name: "Forescout eyeSight",
-    type: "on-premise",
-    category: "Agentless NAC",
-    logo: "/forescout-logo.png",
-    description: "Agentless device visibility and control platform",
-    pricing: {
-      model: "Subscription",
-      tiers: [
-        { name: "eyeSight", pricePerDevice: 13 },
-        { name: "eyeControl", pricePerDevice: 25 },
-        { name: "eyeExtend", pricePerDevice: 37 },
-      ],
-      hardware: {
-        physical_small: { cost: 25000, description: "Small Appliance" },
-        physical_medium: { cost: 55000, description: "Medium Appliance" },
-      },
-      professionalServices: { standard: 80000 },
-      hiddenCosts: { complexity: 30000, total: 30000 },
-    },
-    implementation: {
-      deploymentTime: { fullDeployment: 90 * 24 },
-      requiredResources: { internal: 2.5, vendor: 1.0, training: 32 },
-      complexity: "high",
-    },
-    features: {
-      core: { agentless: true, deploymentModel: "On-Premise/Virtual Appliance", hardwareRequired: true },
-      security: { zeroTrust: { score: 50 } },
-      compliance: { automation: 20 },
-    },
-    roi: { paybackPeriod: 15, laborSavings: -1.5, incidentReduction: 0.6, breachRiskReduction: 0.5 },
-    marketShare: "Medium",
-    scalability: { maxDevices: "Medium" },
-  },
-
-  // Additional vendors from the script...
-  extreme: {
-    id: "extreme",
-    name: "ExtremeControl",
-    type: "hybrid",
-    category: "Enterprise NAC",
-    logo: "/extreme-logo.png",
-    description: "Policy-based NAC for wired and wireless networks.",
-    pricing: {
-      model: "Subscription + Hardware",
-      perDevice: { monthly: 10 },
-      hardware: { controller: { cost: 15000, description: "Controller Hardware" } },
-      professionalServices: { standard: 30000 },
-    },
-    implementation: {
-      deploymentTime: { fullDeployment: 60 * 24 },
-      requiredResources: { internal: 2.0, training: 24 },
-      complexity: "medium",
-    },
-    features: { core: { deploymentModel: "Hybrid" } },
-    roi: { paybackPeriod: 20, breachRiskReduction: 0.55 },
-    marketShare: "Low",
-    scalability: { maxDevices: "Medium" },
-  },
-
   arista: {
     id: "arista",
-    name: "Arista CUE",
-    type: "cloud-native",
-    category: "Cloud-Managed NAC",
-    logo: "/arista-logo.png",
-    description: "Cloud-managed network services including NAC.",
-    pricing: { model: "SaaS Subscription", perDevice: { monthly: 7 }, professionalServices: { implementation: 10000 } },
-    implementation: {
-      deploymentTime: { fullDeployment: 30 * 24 },
-      requiredResources: { internal: 1.0, training: 16 },
-      complexity: "medium",
+    name: "Arista Networks",
+    category: "enterprise",
+    description: "High-performance networking with integrated security and automation capabilities",
+    marketPosition: "niche",
+    founded: 2004,
+    headquarters: "Santa Clara, USA",
+    employees: "3,500+",
+    revenue: "$4.4B",
+    customerBase: {
+      total: 2500,
+      enterprise: 1800,
+      midMarket: 600,
+      sme: 100,
     },
-    features: { core: { cloudNative: true, deploymentModel: "Cloud SaaS" } },
-    roi: { paybackPeriod: 12, breachRiskReduction: 0.7 },
-    marketShare: "Low",
-    scalability: { maxDevices: "High" },
+    marketShare: 3.8,
+    npsScore: 68,
+    csatScore: 4.4,
+    retentionRate: 93,
+    features: {
+      core: {
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: false,
+        byod: false,
+        iot: true,
+        compliance: true,
+        reporting: true,
+        integration: true,
+        cloudNative: false,
+      },
+      advanced: {
+        aiMl: true,
+        zeroTrust: true,
+        automation: true,
+        api: true,
+        multiTenant: false,
+        federation: false,
+        riskScoring: true,
+        behaviorAnalytics: true,
+      },
+      security: {
+        threatDetection: true,
+        incidentResponse: true,
+        forensics: true,
+        encryption: true,
+        certificateManagement: true,
+        vulnerabilityAssessment: true,
+      },
+    },
+    pricing: {
+      model: "per-device",
+      basePrice: 18.0,
+      currency: "USD",
+      billingCycle: "annual",
+      minimumUsers: 1000,
+      volumeDiscounts: {
+        tier1: { threshold: 5000, discount: 0.1 },
+        tier2: { threshold: 15000, discount: 0.2 },
+        tier3: { threshold: 30000, discount: 0.3 },
+      },
+    },
+    implementation: {
+      deploymentTime: {
+        pilot: "8-12 weeks",
+        fullDeployment: "6-12 months",
+      },
+      complexity: "high",
+      hardwareRequired: true,
+      cloudOptions: false,
+      onPremiseOptions: true,
+      hybridOptions: false,
+      professionalServices: {
+        required: true,
+        cost: 300000,
+        duration: "6-9 months",
+      },
+    },
+    support: {
+      levels: ["Standard", "Premium", "Elite"],
+      sla: {
+        uptime: 99.9,
+        responseTime: "< 2 hours",
+      },
+      channels: ["Email", "Phone", "Portal", "TAC"],
+      documentation: "excellent",
+      community: false,
+    },
+    compliance: {
+      frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "ISO 27001", "NIST"],
+      certifications: ["FIPS 140-2", "Common Criteria", "ISO 27001"],
+      automationLevel: 80,
+      auditReadiness: 90,
+    },
+    strengths: [
+      "High-performance networking",
+      "Excellent automation",
+      "Strong security features",
+      "Premium support quality",
+    ],
+    weaknesses: ["Very high cost", "Complex deployment", "Limited cloud options", "Overkill for most organizations"],
+    idealFor: ["Large data centers", "High-performance computing", "Financial services"],
+    competitiveAdvantages: [
+      "Highest performance networking",
+      "Advanced automation capabilities",
+      "Premium enterprise support",
+    ],
+    recentUpdates: ["Enhanced automation features (2024)", "New security integrations", "Improved analytics platform"],
+    logoPath: "/arista-logo.png",
   },
-
   juniper: {
     id: "juniper",
-    name: "Juniper Mist Access Assurance",
-    type: "cloud-native",
-    category: "AI-Driven NAC",
-    logo: "/juniper-logo.png",
-    description: "AI-driven cloud NAC for modern enterprises.",
-    pricing: { model: "SaaS Subscription", perDevice: { monthly: 8 }, professionalServices: { implementation: 12000 } },
-    implementation: {
-      deploymentTime: { fullDeployment: 20 * 24 },
-      requiredResources: { internal: 0.5, training: 8 },
-      complexity: "low",
+    name: "Juniper Networks",
+    category: "enterprise",
+    description: "Enterprise networking with AI-driven operations and security integration",
+    marketPosition: "challenger",
+    founded: 1996,
+    headquarters: "Sunnyvale, USA",
+    employees: "10,000+",
+    revenue: "$5.0B",
+    customerBase: {
+      total: 8000,
+      enterprise: 5000,
+      midMarket: 2500,
+      sme: 500,
     },
-    features: { core: { cloudNative: true, aiPowered: true, deploymentModel: "Cloud SaaS" } },
-    roi: { paybackPeriod: 10, breachRiskReduction: 0.75 },
-    marketShare: "Emerging",
-    scalability: { maxDevices: "High" },
+    marketShare: 12.5,
+    npsScore: 55,
+    csatScore: 4.0,
+    retentionRate: 88,
+    features: {
+      core: {
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: true,
+        byod: true,
+        iot: true,
+        compliance: true,
+        reporting: true,
+        integration: true,
+        cloudNative: true,
+      },
+      advanced: {
+        aiMl: true,
+        zeroTrust: true,
+        automation: true,
+        api: true,
+        multiTenant: true,
+        federation: true,
+        riskScoring: true,
+        behaviorAnalytics: true,
+      },
+      security: {
+        threatDetection: true,
+        incidentResponse: true,
+        forensics: true,
+        encryption: true,
+        certificateManagement: true,
+        vulnerabilityAssessment: true,
+      },
+    },
+    pricing: {
+      model: "per-device",
+      basePrice: 10.0,
+      currency: "USD",
+      billingCycle: "annual",
+      minimumUsers: 200,
+      volumeDiscounts: {
+        tier1: { threshold: 1000, discount: 0.12 },
+        tier2: { threshold: 5000, discount: 0.22 },
+        tier3: { threshold: 15000, discount: 0.32 },
+      },
+    },
+    implementation: {
+      deploymentTime: {
+        pilot: "4-6 weeks",
+        fullDeployment: "4-8 months",
+      },
+      complexity: "high",
+      hardwareRequired: true,
+      cloudOptions: true,
+      onPremiseOptions: true,
+      hybridOptions: true,
+      professionalServices: {
+        required: true,
+        cost: 120000,
+        duration: "3-5 months",
+      },
+    },
+    support: {
+      levels: ["Basic", "Enhanced", "Premium"],
+      sla: {
+        uptime: 99.7,
+        responseTime: "< 6 hours",
+      },
+      channels: ["Email", "Phone", "Portal", "JTAC"],
+      documentation: "good",
+      community: true,
+    },
+    compliance: {
+      frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "ISO 27001", "NIST"],
+      certifications: ["FIPS 140-2", "SOC 2", "ISO 27001"],
+      automationLevel: 70,
+      auditReadiness: 85,
+    },
+    strengths: [
+      "Strong AI-driven operations",
+      "Good wireless integration",
+      "Comprehensive security features",
+      "Cloud and on-premise options",
+    ],
+    weaknesses: ["Complex management", "High implementation costs", "Steep learning curve", "Hardware dependency"],
+    idealFor: ["Large enterprises", "Service providers", "Campus networks"],
+    competitiveAdvantages: [
+      "AI-driven network operations",
+      "Strong wireless-wired integration",
+      "Comprehensive security portfolio",
+    ],
+    recentUpdates: ["Enhanced AI operations (2024)", "New cloud management features", "Improved security integrations"],
+    logoPath: "/juniper-logo.png",
   },
-
   fortinet: {
     id: "fortinet",
-    name: "FortiNAC",
-    type: "on-premise",
-    category: "Security Fabric NAC",
-    logo: "/fortinet-logo.png",
-    description: "Network access control integrated with Fortinet Security Fabric.",
+    name: "Fortinet",
+    category: "enterprise",
+    description: "Integrated security platform with network access control and threat protection",
+    marketPosition: "leader",
+    founded: 2000,
+    headquarters: "Sunnyvale, USA",
+    employees: "12,000+",
+    revenue: "$4.4B",
+    customerBase: {
+      total: 15000,
+      enterprise: 8000,
+      midMarket: 5000,
+      sme: 2000,
+    },
+    marketShare: 18.7,
+    npsScore: 61,
+    csatScore: 4.2,
+    retentionRate: 90,
+    features: {
+      core: {
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: true,
+        byod: true,
+        iot: true,
+        compliance: true,
+        reporting: true,
+        integration: true,
+        cloudNative: false,
+      },
+      advanced: {
+        aiMl: true,
+        zeroTrust: true,
+        automation: true,
+        api: true,
+        multiTenant: true,
+        federation: true,
+        riskScoring: true,
+        behaviorAnalytics: true,
+      },
+      security: {
+        threatDetection: true,
+        incidentResponse: true,
+        forensics: true,
+        encryption: true,
+        certificateManagement: true,
+        vulnerabilityAssessment: true,
+      },
+    },
     pricing: {
-      model: "Perpetual + Subscription",
-      licenses: { device: 60 },
-      hardware: { appliance: { cost: 20000, description: "Appliance Hardware" } },
-      professionalServices: { standard: 40000 },
+      model: "per-device",
+      basePrice: 9.0,
+      currency: "USD",
+      billingCycle: "annual",
+      minimumUsers: 100,
+      volumeDiscounts: {
+        tier1: { threshold: 1000, discount: 0.15 },
+        tier2: { threshold: 5000, discount: 0.25 },
+        tier3: { threshold: 15000, discount: 0.35 },
+      },
     },
     implementation: {
-      deploymentTime: { fullDeployment: 90 * 24 },
-      requiredResources: { internal: 2.5, training: 32 },
-      complexity: "high",
+      deploymentTime: {
+        pilot: "3-5 weeks",
+        fullDeployment: "3-6 months",
+      },
+      complexity: "medium",
+      hardwareRequired: true,
+      cloudOptions: true,
+      onPremiseOptions: true,
+      hybridOptions: true,
+      professionalServices: {
+        required: true,
+        cost: 80000,
+        duration: "2-4 months",
+      },
     },
-    features: { core: { deploymentModel: "On-Premise Appliance" } },
-    roi: { paybackPeriod: 22, breachRiskReduction: 0.6 },
-    marketShare: "Medium",
-    scalability: { maxDevices: "Medium" },
+    support: {
+      levels: ["Standard", "Premium", "Elite"],
+      sla: {
+        uptime: 99.8,
+        responseTime: "< 4 hours",
+      },
+      channels: ["Email", "Phone", "Chat", "Portal"],
+      documentation: "good",
+      community: true,
+    },
+    compliance: {
+      frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "ISO 27001", "NIST"],
+      certifications: ["FIPS 140-2", "SOC 2", "ISO 27001", "Common Criteria"],
+      automationLevel: 75,
+      auditReadiness: 88,
+    },
+    strengths: [
+      "Integrated security platform",
+      "Strong threat protection",
+      "Good automation capabilities",
+      "Comprehensive feature set",
+    ],
+    weaknesses: [
+      "Complex management interface",
+      "Hardware dependency",
+      "Steep learning curve",
+      "Limited cloud-native features",
+    ],
+    idealFor: ["Security-focused organizations", "Large enterprises", "Multi-vendor environments"],
+    competitiveAdvantages: [
+      "Integrated security fabric",
+      "Strong threat intelligence",
+      "Comprehensive security portfolio",
+    ],
+    recentUpdates: [
+      "Enhanced AI security features (2024)",
+      "New cloud integrations",
+      "Improved automation capabilities",
+    ],
+    logoPath: "/fortinet-logo.png",
   },
-
   microsoft: {
     id: "microsoft",
-    name: "Microsoft Intune/NPS",
-    type: "hybrid",
-    category: "MDM/Endpoint NAC",
-    logo: "/microsoft-logo.png",
-    description: "Leverages Intune for MDM and NPS for network policy.",
+    name: "Microsoft",
+    category: "enterprise",
+    description: "Cloud-integrated identity and access management with Azure AD integration",
+    marketPosition: "leader",
+    founded: 1975,
+    headquarters: "Redmond, USA",
+    employees: "220,000+",
+    revenue: "$211B",
+    customerBase: {
+      total: 30000,
+      enterprise: 20000,
+      midMarket: 8000,
+      sme: 2000,
+    },
+    marketShare: 25.8,
+    npsScore: 58,
+    csatScore: 4.1,
+    retentionRate: 92,
+    features: {
+      core: {
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: true,
+        byod: true,
+        iot: false,
+        compliance: true,
+        reporting: true,
+        integration: true,
+        cloudNative: true,
+      },
+      advanced: {
+        aiMl: true,
+        zeroTrust: true,
+        automation: true,
+        api: true,
+        multiTenant: true,
+        federation: true,
+        riskScoring: true,
+        behaviorAnalytics: true,
+      },
+      security: {
+        threatDetection: true,
+        incidentResponse: true,
+        forensics: true,
+        encryption: true,
+        certificateManagement: true,
+        vulnerabilityAssessment: true,
+      },
+    },
     pricing: {
-      model: "Subscription (Part of M365)",
-      perUser: { monthly: 5 },
-      professionalServices: { implementation: 25000 },
+      model: "per-user",
+      basePrice: 12.0,
+      currency: "USD",
+      billingCycle: "monthly",
+      minimumUsers: 1,
+      volumeDiscounts: {
+        tier1: { threshold: 300, discount: 0.1 },
+        tier2: { threshold: 1000, discount: 0.2 },
+        tier3: { threshold: 5000, discount: 0.3 },
+      },
     },
     implementation: {
-      deploymentTime: { fullDeployment: 45 * 24 },
-      requiredResources: { internal: 1.5, training: 20 },
+      deploymentTime: {
+        pilot: "1-2 weeks",
+        fullDeployment: "2-4 months",
+      },
       complexity: "medium",
+      hardwareRequired: false,
+      cloudOptions: true,
+      onPremiseOptions: false,
+      hybridOptions: true,
+      professionalServices: {
+        required: false,
+        cost: 50000,
+        duration: "1-3 months",
+      },
     },
-    features: { core: { deploymentModel: "Hybrid" } },
-    roi: { paybackPeriod: 18, breachRiskReduction: 0.5 },
-    marketShare: "High (as part of M365)",
-    scalability: { maxDevices: "High (with Azure)" },
+    support: {
+      levels: ["Basic", "Standard", "Premier"],
+      sla: {
+        uptime: 99.9,
+        responseTime: "< 4 hours",
+      },
+      channels: ["Email", "Phone", "Chat", "Portal"],
+      documentation: "excellent",
+      community: true,
+    },
+    compliance: {
+      frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "ISO 27001", "NIST", "FedRAMP"],
+      certifications: ["SOC 2", "ISO 27001", "FedRAMP", "FIPS 140-2"],
+      automationLevel: 80,
+      auditReadiness: 92,
+    },
+    strengths: [
+      "Seamless Azure integration",
+      "Strong identity management",
+      "Cloud-native architecture",
+      "Comprehensive compliance",
+    ],
+    weaknesses: [
+      "Limited network-level controls",
+      "Requires Microsoft ecosystem",
+      "Complex licensing",
+      "Limited IoT support",
+    ],
+    idealFor: ["Microsoft-centric organizations", "Cloud-first companies", "Office 365 users"],
+    competitiveAdvantages: [
+      "Deep Microsoft ecosystem integration",
+      "Strong identity and access management",
+      "Cloud-native zero trust",
+    ],
+    recentUpdates: [
+      "Enhanced zero trust features (2024)",
+      "New conditional access policies",
+      "Improved threat protection",
+    ],
+    logoPath: "/microsoft-logo.png",
   },
-
   packetfence: {
     id: "packetfence",
     name: "PacketFence",
-    type: "open-source",
-    category: "Open Source NAC",
-    logo: "/packetfence-logo.png",
-    description: "Open source NAC solution requiring extensive customization",
+    category: "sme",
+    description: "Open-source network access control with customizable policies and integrations",
+    marketPosition: "niche",
+    founded: 2004,
+    headquarters: "Montreal, Canada",
+    employees: "50-100",
+    revenue: "$10M",
+    customerBase: {
+      total: 2000,
+      enterprise: 200,
+      midMarket: 800,
+      sme: 1000,
+    },
+    marketShare: 1.8,
+    npsScore: 45,
+    csatScore: 3.5,
+    retentionRate: 78,
+    features: {
+      core: {
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: true,
+        byod: true,
+        iot: false,
+        compliance: false,
+        reporting: true,
+        integration: true,
+        cloudNative: false,
+      },
+      advanced: {
+        aiMl: false,
+        zeroTrust: false,
+        automation: false,
+        api: true,
+        multiTenant: false,
+        federation: false,
+        riskScoring: false,
+        behaviorAnalytics: false,
+      },
+      security: {
+        threatDetection: false,
+        incidentResponse: false,
+        forensics: false,
+        encryption: true,
+        certificateManagement: true,
+        vulnerabilityAssessment: false,
+      },
+    },
     pricing: {
-      model: "Open Source + Support",
-      licenses: { base: 0 },
-      professionalServices: { implementation: 95000 },
-      additionalCosts: { support: 25000 },
+      model: "per-device",
+      basePrice: 2.0,
+      currency: "USD",
+      billingCycle: "annual",
+      minimumUsers: 50,
+      volumeDiscounts: {
+        tier1: { threshold: 500, discount: 0.1 },
+        tier2: { threshold: 2000, discount: 0.2 },
+        tier3: { threshold: 5000, discount: 0.3 },
+      },
     },
     implementation: {
-      deploymentTime: { fullDeployment: 120 * 24 },
-      requiredResources: { internal: 4.0 },
-      complexity: "very-high",
+      deploymentTime: {
+        pilot: "2-4 weeks",
+        fullDeployment: "2-6 months",
+      },
+      complexity: "high",
+      hardwareRequired: true,
+      cloudOptions: false,
+      onPremiseOptions: true,
+      hybridOptions: false,
+      professionalServices: {
+        required: true,
+        cost: 30000,
+        duration: "2-4 months",
+      },
     },
-    features: {
-      core: { customizable: true, complexSetup: true, requiresExpertise: true, deploymentModel: "Self-Hosted" },
+    support: {
+      levels: ["Community", "Professional", "Enterprise"],
+      sla: {
+        uptime: 99.0,
+        responseTime: "< 24 hours",
+      },
+      channels: ["Email", "Forum", "Portal"],
+      documentation: "fair",
+      community: true,
     },
-    roi: { paybackPeriod: 30, breachRiskReduction: 0.4 },
-    marketShare: "Low",
-    scalability: { maxDevices: "Varies" },
+    compliance: {
+      frameworks: ["PCI-DSS", "GDPR"],
+      certifications: [],
+      automationLevel: 20,
+      auditReadiness: 40,
+    },
+    strengths: ["Open-source flexibility", "Low cost", "Customizable", "Good community support"],
+    weaknesses: [
+      "Requires technical expertise",
+      "Limited enterprise features",
+      "No cloud options",
+      "Basic compliance support",
+    ],
+    idealFor: ["Budget-conscious organizations", "Technical teams", "Custom deployments"],
+    competitiveAdvantages: ["Open-source model", "Lowest cost option", "High customization potential"],
+    recentUpdates: ["New API features (2024)", "Improved web interface", "Enhanced integration capabilities"],
+    logoPath: "/packetfence-logo.png",
   },
-
   foxpass: {
     id: "foxpass",
     name: "Foxpass",
-    type: "cloud-radius",
-    category: "Cloud RADIUS",
-    logo: "/foxpass-logo.png",
-    description: "Simple cloud-hosted RADIUS for basic authentication",
-    pricing: { model: "SaaS Subscription", perUser: { monthly: 1.5 } },
-    implementation: {
-      deploymentTime: { fullDeployment: 3 * 24 },
-      requiredResources: { internal: 0.25 },
-      complexity: "low",
+    category: "sme",
+    description: "Cloud-based LDAP and RADIUS service with simple setup and management",
+    marketPosition: "niche",
+    founded: 2015,
+    headquarters: "San Francisco, USA",
+    employees: "10-50",
+    revenue: "$5M",
+    customerBase: {
+      total: 800,
+      enterprise: 50,
+      midMarket: 300,
+      sme: 450,
     },
+    marketShare: 0.8,
+    npsScore: 62,
+    csatScore: 4.2,
+    retentionRate: 88,
     features: {
       core: {
-        radiusServer: true,
-        ldapSync: true,
-        basicAuth: true,
-        limitedNAC: true,
-        noDeviceProfiling: true,
-        noRiskAssessment: true,
-        noCompliance: true,
-        deploymentModel: "Cloud SaaS",
+        networkAccess: true,
+        deviceProfiling: false,
+        policyEnforcement: true,
+        guestAccess: false,
+        byod: true,
+        iot: false,
+        compliance: false,
+        reporting: true,
+        integration: true,
+        cloudNative: true,
+      },
+      advanced: {
+        aiMl: false,
+        zeroTrust: false,
+        automation: false,
+        api: true,
+        multiTenant: true,
+        federation: true,
+        riskScoring: false,
+        behaviorAnalytics: false,
+      },
+      security: {
+        threatDetection: false,
+        incidentResponse: false,
+        forensics: false,
+        encryption: true,
+        certificateManagement: false,
+        vulnerabilityAssessment: false,
       },
     },
-    roi: { paybackPeriod: 6, breachRiskReduction: 0.3 },
-    marketShare: "Low",
-    scalability: { maxDevices: "Medium" },
+    pricing: {
+      model: "per-user",
+      basePrice: 3.0,
+      currency: "USD",
+      billingCycle: "monthly",
+      minimumUsers: 5,
+      volumeDiscounts: {
+        tier1: { threshold: 100, discount: 0.1 },
+        tier2: { threshold: 500, discount: 0.2 },
+        tier3: { threshold: 1000, discount: 0.3 },
+      },
+    },
+    implementation: {
+      deploymentTime: {
+        pilot: "1-2 days",
+        fullDeployment: "1-2 weeks",
+      },
+      complexity: "low",
+      hardwareRequired: false,
+      cloudOptions: true,
+      onPremiseOptions: false,
+      hybridOptions: false,
+      professionalServices: {
+        required: false,
+        cost: 5000,
+        duration: "1 week",
+      },
+    },
+    support: {
+      levels: ["Standard", "Premium"],
+      sla: {
+        uptime: 99.5,
+        responseTime: "< 8 hours",
+      },
+      channels: ["Email", "Chat"],
+      documentation: "good",
+      community: false,
+    },
+    compliance: {
+      frameworks: ["GDPR"],
+      certifications: ["SOC 2"],
+      automationLevel: 30,
+      auditReadiness: 50,
+    },
+    strengths: ["Very simple setup", "Cloud-native", "Good for small teams", "Affordable pricing"],
+    weaknesses: [
+      "Limited enterprise features",
+      "Basic security capabilities",
+      "No device profiling",
+      "Limited compliance support",
+    ],
+    idealFor: ["Small businesses", "Startups", "Simple deployments"],
+    competitiveAdvantages: ["Simplest deployment", "Cloud-first approach", "Good for small teams"],
+    recentUpdates: ["Enhanced API features (2024)", "New integration options", "Improved user interface"],
+    logoPath: "/foxpass-logo.png",
   },
-
   securew2: {
     id: "securew2",
     name: "SecureW2",
-    type: "cloud-radius",
-    category: "Cloud PKI & RADIUS",
-    logo: "/securew2-logo.png",
-    description: "Cloud-based PKI and RADIUS for certificate-based authentication.",
-    pricing: { model: "SaaS Subscription", perUser: { monthly: 2.5 }, professionalServices: { implementation: 5000 } },
-    implementation: {
-      deploymentTime: { fullDeployment: 7 * 24 },
-      requiredResources: { internal: 0.5, training: 8 },
-      complexity: "low",
+    category: "sme",
+    description: "Certificate-based authentication with focus on wireless security and BYOD",
+    marketPosition: "niche",
+    founded: 2008,
+    headquarters: "San Jose, USA",
+    employees: "50-100",
+    revenue: "$15M",
+    customerBase: {
+      total: 1200,
+      enterprise: 300,
+      midMarket: 600,
+      sme: 300,
     },
-    features: { core: { pki: true, cloudRadius: true, deploymentModel: "Cloud SaaS" } },
-    roi: { paybackPeriod: 9, breachRiskReduction: 0.45 },
-    marketShare: "Low",
-    scalability: { maxDevices: "Medium" },
+    marketShare: 1.2,
+    npsScore: 58,
+    csatScore: 4.0,
+    retentionRate: 85,
+    features: {
+      core: {
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: true,
+        byod: true,
+        iot: false,
+        compliance: true,
+        reporting: true,
+        integration: true,
+        cloudNative: true,
+      },
+      advanced: {
+        aiMl: false,
+        zeroTrust: false,
+        automation: true,
+        api: true,
+        multiTenant: false,
+        federation: false,
+        riskScoring: false,
+        behaviorAnalytics: false,
+      },
+      security: {
+        threatDetection: false,
+        incidentResponse: false,
+        forensics: false,
+        encryption: true,
+        certificateManagement: true,
+        vulnerabilityAssessment: false,
+      },
+    },
+    pricing: {
+      model: "per-device",
+      basePrice: 4.5,
+      currency: "USD",
+      billingCycle: "annual",
+      minimumUsers: 25,
+      volumeDiscounts: {
+        tier1: { threshold: 500, discount: 0.1 },
+        tier2: { threshold: 2000, discount: 0.2 },
+        tier3: { threshold: 5000, discount: 0.3 },
+      },
+    },
+    implementation: {
+      deploymentTime: {
+        pilot: "1-2 weeks",
+        fullDeployment: "1-2 months",
+      },
+      complexity: "low",
+      hardwareRequired: false,
+      cloudOptions: true,
+      onPremiseOptions: true,
+      hybridOptions: true,
+      professionalServices: {
+        required: false,
+        cost: 15000,
+        duration: "2-4 weeks",
+      },
+    },
+    support: {
+      levels: ["Standard", "Premium"],
+      sla: {
+        uptime: 99.5,
+        responseTime: "< 6 hours",
+      },
+      channels: ["Email", "Phone", "Chat"],
+      documentation: "good",
+      community: true,
+    },
+    compliance: {
+      frameworks: ["PCI-DSS", "GDPR", "HIPAA"],
+      certifications: ["SOC 2"],
+      automationLevel: 60,
+      auditReadiness: 70,
+    },
+    strengths: [
+      "Strong certificate management",
+      "Good wireless security",
+      "Easy BYOD onboarding",
+      "Cloud and on-premise options",
+    ],
+    weaknesses: [
+      "Limited enterprise features",
+      "No AI/ML capabilities",
+      "Basic threat detection",
+      "Small market presence",
+    ],
+    idealFor: ["Education", "Healthcare", "BYOD-heavy environments"],
+    competitiveAdvantages: ["Certificate-based security", "Strong wireless focus", "Good BYOD support"],
+    recentUpdates: ["Enhanced certificate automation (2024)", "New cloud features", "Improved mobile support"],
+    logoPath: "/securew2-logo.png",
   },
-
   radiusaas: {
     id: "radiusaas",
-    name: "RADIUS-as-a-Service",
-    type: "cloud-radius",
-    category: "Managed RADIUS",
-    logo: "/radiusaas-logo.png",
-    description: "Managed RADIUS service for various authentication needs.",
-    pricing: { model: "SaaS Subscription", perUser: { monthly: 1.0 }, professionalServices: { implementation: 2000 } },
-    implementation: {
-      deploymentTime: { fullDeployment: 5 * 24 },
-      requiredResources: { internal: 0.2, training: 4 },
-      complexity: "low",
+    name: "RADIUSaaS",
+    category: "sme",
+    description: "Cloud-based RADIUS service with simple setup and multi-tenant architecture",
+    marketPosition: "niche",
+    founded: 2018,
+    headquarters: "Austin, USA",
+    employees: "10-25",
+    revenue: "$2M",
+    customerBase: {
+      total: 400,
+      enterprise: 20,
+      midMarket: 150,
+      sme: 230,
     },
-    features: { core: { managedRadius: true, deploymentModel: "Cloud SaaS" } },
-    roi: { paybackPeriod: 5, breachRiskReduction: 0.25 },
-    marketShare: "Niche",
-    scalability: { maxDevices: "Medium" },
+    marketShare: 0.3,
+    npsScore: 55,
+    csatScore: 3.8,
+    retentionRate: 82,
+    features: {
+      core: {
+        networkAccess: true,
+        deviceProfiling: false,
+        policyEnforcement: true,
+        guestAccess: true,
+        byod: true,
+        iot: false,
+        compliance: false,
+        reporting: true,
+        integration: true,
+        cloudNative: true,
+      },
+      advanced: {
+        aiMl: false,
+        zeroTrust: false,
+        automation: false,
+        api: true,
+        multiTenant: true,
+        federation: false,
+        riskScoring: false,
+        behaviorAnalytics: false,
+      },
+      security: {
+        threatDetection: false,
+        incidentResponse: false,
+        forensics: false,
+        encryption: true,
+        certificateManagement: false,
+        vulnerabilityAssessment: false,
+      },
+    },
+    pricing: {
+      model: "per-user",
+      basePrice: 2.5,
+      currency: "USD",
+      billingCycle: "monthly",
+      minimumUsers: 10,
+      volumeDiscounts: {
+        tier1: { threshold: 100, discount: 0.1 },
+        tier2: { threshold: 500, discount: 0.2 },
+        tier3: { threshold: 1000, discount: 0.3 },
+      },
+    },
+    implementation: {
+      deploymentTime: {
+        pilot: "1 day",
+        fullDeployment: "1 week",
+      },
+      complexity: "low",
+      hardwareRequired: false,
+      cloudOptions: true,
+      onPremiseOptions: false,
+      hybridOptions: false,
+      professionalServices: {
+        required: false,
+        cost: 2000,
+        duration: "1 week",
+      },
+    },
+    support: {
+      levels: ["Standard"],
+      sla: {
+        uptime: 99.0,
+        responseTime: "< 12 hours",
+      },
+      channels: ["Email"],
+      documentation: "fair",
+      community: false,
+    },
+    compliance: {
+      frameworks: ["GDPR"],
+      certifications: [],
+      automationLevel: 20,
+      auditReadiness: 30,
+    },
+    strengths: ["Very simple setup", "Low cost", "Cloud-native", "Quick deployment"],
+    weaknesses: ["Very limited features", "No device profiling", "Basic support", "Limited compliance"],
+    idealFor: ["Very small businesses", "Basic RADIUS needs", "Budget deployments"],
+    competitiveAdvantages: ["Lowest cost RADIUS service", "Fastest deployment", "Simple cloud service"],
+    recentUpdates: ["New API endpoints (2024)", "Improved reliability", "Enhanced logging"],
+    logoPath: "/radiusaas-logo.png",
   },
 }
 
-// Vendor logo mappings
 export const getVendorLogoPath = (vendorId: string): string => {
-  return ComprehensiveVendorDatabase[vendorId]?.logo || "/placeholder.svg"
+  return ComprehensiveVendorDatabase[vendorId]?.logoPath || "/placeholder.svg"
 }
 
-// Organization size configurations
-export const orgSizeConfigurations = {
-  startup: { devices: 100, users: 50, itStaff: 2 },
-  smb: { devices: 500, users: 250, itStaff: 5 },
-  medium: { devices: 2500, users: 1500, itStaff: 15 },
-  enterprise: { devices: 10000, users: 7500, itStaff: 50 },
-  xlarge: { devices: 50000, users: 35000, itStaff: 200 },
-  custom: { devices: 2500, users: 1500, itStaff: 15 },
+export const getVendorsByCategory = (category: string): VendorData[] => {
+  return Object.values(ComprehensiveVendorDatabase).filter((vendor) => vendor.category === category)
 }
 
-// Regional cost factors
-export const regionalCostFactors = {
-  "north-america": { itAdmin: 125000, securityAnalyst: 145000, networkEngineer: 135000, costMultiplier: 1.0 },
-  europe: { itAdmin: 95000, securityAnalyst: 115000, networkEngineer: 105000, costMultiplier: 0.85 },
-  "asia-pacific": { itAdmin: 65000, securityAnalyst: 85000, networkEngineer: 75000, costMultiplier: 0.7 },
-  "latin-america": { itAdmin: 55000, securityAnalyst: 70000, networkEngineer: 60000, costMultiplier: 0.6 },
-  "middle-east": { itAdmin: 80000, securityAnalyst: 100000, networkEngineer: 90000, costMultiplier: 0.8 },
+export const getVendorsByMarketPosition = (position: string): VendorData[] => {
+  return Object.values(ComprehensiveVendorDatabase).filter((vendor) => vendor.marketPosition === position)
 }
 
-// Industry-specific factors
-export const industryFactors = {
-  healthcare: { breachCostMultiplier: 1.5, complianceComplexity: 1.3, regulatoryPressure: 1.4 },
-  financial: { breachCostMultiplier: 1.3, complianceComplexity: 1.4, regulatoryPressure: 1.5 },
-  government: { breachCostMultiplier: 1.1, complianceComplexity: 1.2, regulatoryPressure: 1.6 },
-  technology: { breachCostMultiplier: 1.0, complianceComplexity: 1.0, regulatoryPressure: 1.0 },
-  manufacturing: { breachCostMultiplier: 1.1, complianceComplexity: 1.1, regulatoryPressure: 1.2 },
-  retail: { breachCostMultiplier: 1.2, complianceComplexity: 1.2, regulatoryPressure: 1.3 },
-  energy: { breachCostMultiplier: 1.4, complianceComplexity: 1.3, regulatoryPressure: 1.5 },
-  education: { breachCostMultiplier: 0.9, complianceComplexity: 1.1, regulatoryPressure: 1.2 },
+export const searchVendors = (query: string): VendorData[] => {
+  const lowercaseQuery = query.toLowerCase()
+  return Object.values(ComprehensiveVendorDatabase).filter(
+    (vendor) =>
+      vendor.name.toLowerCase().includes(lowercaseQuery) ||
+      vendor.description.toLowerCase().includes(lowercaseQuery) ||
+      vendor.strengths.some((strength) => strength.toLowerCase().includes(lowercaseQuery)) ||
+      vendor.idealFor.some((ideal) => ideal.toLowerCase().includes(lowercaseQuery)),
+  )
+}
+
+// Compliance frameworks data
+export const complianceFrameworksData = {
+  sox: {
+    name: "Sarbanes-Oxley (SOX)",
+    description: "Financial reporting and internal controls",
+    industry: "Financial Services",
+    requirements: ["Access controls", "Audit trails", "Data integrity"],
+  },
+  hipaa: {
+    name: "HIPAA",
+    description: "Healthcare information privacy and security",
+    industry: "Healthcare",
+    requirements: ["Access controls", "Audit logs", "Encryption", "Risk assessments"],
+  },
+  "pci-dss": {
+    name: "PCI-DSS",
+    description: "Payment card industry data security",
+    industry: "Retail/Finance",
+    requirements: ["Network segmentation", "Access controls", "Monitoring", "Encryption"],
+  },
+  gdpr: {
+    name: "GDPR",
+    description: "General Data Protection Regulation",
+    industry: "All (EU)",
+    requirements: ["Data protection", "Privacy controls", "Breach notification", "Consent management"],
+  },
+  "iso-27001": {
+    name: "ISO 27001",
+    description: "Information security management systems",
+    industry: "All",
+    requirements: ["Risk management", "Security controls", "Continuous monitoring", "Documentation"],
+  },
+  nist: {
+    name: "NIST Cybersecurity Framework",
+    description: "Cybersecurity risk management framework",
+    industry: "All",
+    requirements: ["Identify", "Protect", "Detect", "Respond", "Recover"],
+  },
+  fedramp: {
+    name: "FedRAMP",
+    description: "Federal risk and authorization management program",
+    industry: "Government",
+    requirements: ["Security controls", "Continuous monitoring", "Incident response", "Documentation"],
+  },
+  "nerc-cip": {
+    name: "NERC CIP",
+    description: "Critical infrastructure protection for utilities",
+    industry: "Energy/Utilities",
+    requirements: ["Asset identification", "Security controls", "Personnel training", "Incident reporting"],
+  },
+}
+
+// Industry security metrics
+export const industrySecurityMetricsData = {
+  healthcare: {
+    averageBreachCost: 10930000,
+    breachProbability: 0.29,
+    complianceRequirements: ["HIPAA", "HITECH", "FDA"],
+    criticalAssets: ["Patient records", "Medical devices", "Research data"],
+  },
+  financial: {
+    averageBreachCost: 5720000,
+    breachProbability: 0.19,
+    complianceRequirements: ["SOX", "PCI-DSS", "GLBA", "FFIEC"],
+    criticalAssets: ["Customer data", "Transaction records", "Trading systems"],
+  },
+  government: {
+    averageBreachCost: 4740000,
+    breachProbability: 0.15,
+    complianceRequirements: ["FedRAMP", "FISMA", "NIST", "CJIS"],
+    criticalAssets: ["Citizen data", "Government systems", "Classified information"],
+  },
+  technology: {
+    averageBreachCost: 4880000,
+    breachProbability: 0.22,
+    complianceRequirements: ["SOC 2", "ISO 27001", "GDPR"],
+    criticalAssets: ["Source code", "Customer data", "Intellectual property"],
+  },
+  education: {
+    averageBreachCost: 3790000,
+    breachProbability: 0.26,
+    complianceRequirements: ["FERPA", "COPPA", "GDPR"],
+    criticalAssets: ["Student records", "Research data", "Financial information"],
+  },
+  manufacturing: {
+    averageBreachCost: 4470000,
+    breachProbability: 0.18,
+    complianceRequirements: ["ISO 27001", "NIST", "IEC 62443"],
+    criticalAssets: ["Production systems", "Design data", "Supply chain information"],
+  },
+  retail: {
+    averageBreachCost: 3280000,
+    breachProbability: 0.24,
+    complianceRequirements: ["PCI-DSS", "GDPR", "CCPA"],
+    criticalAssets: ["Customer data", "Payment information", "Inventory systems"],
+  },
+  energy: {
+    averageBreachCost: 6950000,
+    breachProbability: 0.16,
+    complianceRequirements: ["NERC CIP", "NIST", "IEC 62443"],
+    criticalAssets: ["SCADA systems", "Grid infrastructure", "Customer data"],
+  },
 }
