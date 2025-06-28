@@ -8,6 +8,8 @@ const config = {
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
     "*.{js,ts,jsx,tsx,mdx}",
+    // Add Tremor node_modules path
+    "./node_modules/@tremor/**/*.{js,ts,jsx,tsx}",
   ],
   prefix: "",
   theme: {
