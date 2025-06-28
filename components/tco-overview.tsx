@@ -43,12 +43,43 @@ const CHART_COLORS = [
 ]
 
 interface TCOOverviewProps {
-  results: any
-  configuration: any
-  darkMode: boolean
+  results?: any
+  configuration?: {
+    years?: number
+    devices?: number
+    users?: number
+    industry?: string
+    orgSize?: string
+    region?: string
+    portnoxBasePrice?: number
+  }
+  darkMode?: boolean
 }
 
-const TCOOverview: React.FC<TCOOverviewProps> = ({ results, configuration, darkMode }) => {
+const TCOOverview: React.FC<TCOOverviewProps> = ({
+  results = {},
+  configuration = {
+    years: 3,
+    devices: 2500,
+    users: 1500,
+    industry: "technology",
+    orgSize: "medium",
+    region: "north-america",
+    portnoxBasePrice: 3.0,
+  },
+  darkMode = false,
+}) => {
+  // Ensure configuration has default values
+  const config = {
+    years: configuration.years || 3,
+    devices: configuration.devices || 2500,
+    users: configuration.users || 1500,
+    industry: configuration.industry || "technology",
+    orgSize: configuration.orgSize || "medium",
+    region: configuration.region || "north-america",
+    portnoxBasePrice: configuration.portnoxBasePrice || 3.0,
+  }
+
   // Mock data for demonstration
   const mockResults = {
     portnox: { tco: 180000, roi: 285, complianceScore: 98, deploymentTime: 2 },
@@ -119,7 +150,7 @@ const TCOOverview: React.FC<TCOOverviewProps> = ({ results, configuration, darkM
                   TCO Analysis Summary
                 </CardTitle>
                 <p className={`mt-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-                  {configuration.years}-year analysis for {configuration.devices.toLocaleString()} devices
+                  {config.years}-year analysis for {config.devices.toLocaleString()} devices
                 </p>
               </div>
               <div className="text-right">

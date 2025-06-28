@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import type { calculateVendorTCO, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 import { Button } from "@/components/ui/button"
@@ -90,19 +90,33 @@ const TABS_CONFIG = [
 ]
 
 interface TCOAnalyzerProps {
-  results: { [vendor: string]: CalculationResult }
-  selectedVendors: string[]
-  darkMode: boolean
-  configuration: CalculationConfiguration
-  setConfiguration: React.Dispatch<React.SetStateAction<CalculationConfiguration>>
+  results?: any
+  selectedVendors?: string[]
+  darkMode?: boolean
+  configuration?: CalculationConfiguration
+  setConfiguration?: React.Dispatch<React.SetStateAction<CalculationConfiguration>>
 }
 
 const TCOAnalyzer: React.FC<TCOAnalyzerProps> = ({
-  results,
-  selectedVendors,
-  darkMode,
-  configuration,
-  setConfiguration,
+  results = {},
+  selectedVendors = ["portnox", "cisco", "aruba", "meraki"],
+  darkMode = false,
+  configuration = {
+    orgSize: "medium",
+    devices: 2500,
+    users: 1500,
+    industry: "technology",
+    years: 3,
+    region: "north-america",
+    portnoxBasePrice: 3.0,
+    portnoxAddons: {
+      atp: false,
+      compliance: false,
+      iot: false,
+      analytics: false,
+    },
+  },
+  setConfiguration = () => {},
 }) => {
   const [activeTab, setActiveTab] = useState(TABS_CONFIG[0].value)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -115,41 +129,10 @@ const TCOAnalyzer: React.FC<TCOAnalyzerProps> = ({
     setIsSettingsOpen(!isSettingsOpen)
   }
 
-  const sortedVendors = useMemo(() => {
-    if (!results || Object.keys(results).length === 0) {
-      return []
-    }
-
-    const vendorsWithTCO = Object.entries(results)
-      .filter(([vendor]) => selectedVendors.includes(vendor))
-      .sort(([, a], [, b]) => a.totalCostOfOwnership - b.totalCostOfOwnership)
-      .map(([vendor]) => vendor)
-
-    return vendorsWithTCO
-  }, [results, selectedVendors])
-
-  const bestVendor = sortedVendors.length > 0 ? sortedVendors[0] : null
-
-  const worstVendor = sortedVendors.length > 1 ? sortedVendors[sortedVendors.length - 1] : null
-
-  const vendorComparisonData = useMemo(() => {
-    if (!results || Object.keys(results).length === 0) {
-      return []
-    }
-
-    return Object.entries(results)
-      .filter(([vendor]) => selectedVendors.includes(vendor))
-      .map(([vendor, data]) => ({
-        vendor,
-        tco: data.totalCostOfOwnership,
-        roi: data.roi,
-        complianceScore: data.complianceScore,
-        featureScore: data.featureScore,
-      }))
-  }, [results, selectedVendors])
-
   const handleConfigurationChange = (newConfiguration: CalculationConfiguration) => {
-    setConfiguration(newConfiguration)
+    if (setConfiguration) {
+      setConfiguration(newConfiguration)
+    }
   }
 
   return (
@@ -199,8 +182,8 @@ const TCOAnalyzer: React.FC<TCOAnalyzerProps> = ({
               >
                 <SettingsPanel
                   configuration={configuration}
-                  setConfiguration={setConfiguration}
                   onConfigurationChange={handleConfigurationChange}
+                  darkMode={darkMode}
                 />
               </motion.aside>
             )}

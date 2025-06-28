@@ -4,13 +4,26 @@ import type React from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from "recharts"
-import { CheckCircle, XCircle, AlertTriangle, Clock, DollarSign, Shield, Zap, Users } from "lucide-react"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  Legend,
+} from "recharts"
+import { CheckCircle, XCircle, DollarSign, Shield } from "lucide-react"
 import Image from "next/image"
 
 const PORTNOX_COLORS = {
   primary: "#00D4AA",
-  primaryDark: "#00A88A",
   accent: "#FF6B35",
   success: "#10B981",
   warning: "#F59E0B",
@@ -19,226 +32,214 @@ const PORTNOX_COLORS = {
 }
 
 interface VendorComparisonProps {
-  results: any
-  selectedVendors: string[]
-  darkMode: boolean
+  results?: any
+  selectedVendors?: string[]
+  darkMode?: boolean
 }
 
-const VendorComparison: React.FC<VendorComparisonProps> = ({ results, selectedVendors, darkMode }) => {
-  const vendorData = [
-    {
+const VendorComparison: React.FC<VendorComparisonProps> = ({
+  results = {},
+  selectedVendors = ["portnox", "cisco", "aruba", "meraki"],
+  darkMode = false,
+}) => {
+  const vendorData = {
+    portnox: {
       name: "Portnox",
       logo: "/portnox-logo.png",
       tco: 180000,
       deployment: 2,
-      licensing: "Per Device",
-      support: "24/7 Included",
-      hardware: "None Required",
+      complexity: "Low",
+      hardware: false,
       cloudNative: true,
-      addOns: "All Included",
+      support: "24/7",
       compliance: 98,
       automation: 95,
-      integration: 90,
-      usability: 95,
-      performance: 92,
-      security: 96,
+      features: {
+        nac: true,
+        iot: true,
+        byod: true,
+        compliance: true,
+        analytics: true,
+        ai: true,
+      },
+      pricing: {
+        model: "Per Device",
+        basePrice: "$3/device/month",
+        addOns: "None - All Included",
+      },
     },
-    {
+    cisco: {
       name: "Cisco ISE",
       logo: "/cisco-logo.png",
       tco: 450000,
       deployment: 180,
-      licensing: "Base + Add-ons",
-      support: "Premium Required",
-      hardware: "Appliances Required",
+      complexity: "High",
+      hardware: true,
       cloudNative: false,
-      addOns: "Multiple Tiers",
+      support: "Business Hours",
       compliance: 85,
       automation: 60,
-      integration: 85,
-      usability: 65,
-      performance: 80,
-      security: 88,
+      features: {
+        nac: true,
+        iot: false,
+        byod: true,
+        compliance: false,
+        analytics: false,
+        ai: false,
+      },
+      pricing: {
+        model: "Per Device + Appliance",
+        basePrice: "$15/device + $50K appliance",
+        addOns: "Multiple expensive modules",
+      },
     },
-    {
+    aruba: {
       name: "Aruba ClearPass",
       logo: "/aruba-logo.png",
       tco: 380000,
       deployment: 120,
-      licensing: "Concurrent Users",
-      support: "Standard/Premium",
-      hardware: "VM or Appliance",
+      complexity: "Medium",
+      hardware: true,
       cloudNative: false,
-      addOns: "Policy Manager+",
+      support: "Business Hours",
       compliance: 82,
-      automation: 70,
-      integration: 80,
-      usability: 75,
-      performance: 85,
-      security: 85,
+      automation: 65,
+      features: {
+        nac: true,
+        iot: true,
+        byod: true,
+        compliance: false,
+        analytics: false,
+        ai: false,
+      },
+      pricing: {
+        model: "Per Device + Appliance",
+        basePrice: "$12/device + $30K appliance",
+        addOns: "IoT, Analytics modules extra",
+      },
     },
-    {
+    meraki: {
       name: "Cisco Meraki",
       logo: "/meraki-logo.png",
       tco: 320000,
       deployment: 90,
-      licensing: "Per Device",
-      support: "Cloud Included",
-      hardware: "Access Points",
+      complexity: "Medium",
+      hardware: false,
       cloudNative: true,
-      addOns: "Advanced Security",
+      support: "Business Hours",
       compliance: 88,
-      automation: 80,
-      integration: 75,
-      usability: 85,
-      performance: 82,
-      security: 80,
+      automation: 70,
+      features: {
+        nac: true,
+        iot: false,
+        byod: true,
+        compliance: false,
+        analytics: true,
+        ai: false,
+      },
+      pricing: {
+        model: "Per Device",
+        basePrice: "$8/device/month",
+        addOns: "Advanced features extra",
+      },
     },
+  }
+
+  const comparisonData = selectedVendors.map((vendor) => {
+    const data = vendorData[vendor as keyof typeof vendorData]
+    return {
+      vendor: data.name,
+      tco: data.tco,
+      deployment: data.deployment,
+      compliance: data.compliance,
+      automation: data.automation,
+    }
+  })
+
+  const radarData = [
+    { subject: "Cost Efficiency", portnox: 95, cisco: 40, aruba: 55, meraki: 65 },
+    { subject: "Deployment Speed", portnox: 98, cisco: 20, aruba: 35, meraki: 60 },
+    { subject: "Compliance", portnox: 98, cisco: 85, aruba: 82, meraki: 88 },
+    { subject: "Automation", portnox: 95, cisco: 60, aruba: 65, meraki: 70 },
+    { subject: "Cloud Native", portnox: 100, cisco: 0, aruba: 0, meraki: 80 },
+    { subject: "Feature Completeness", portnox: 100, cisco: 60, aruba: 70, meraki: 65 },
   ]
 
-  const radarData = vendorData.map((vendor) => ({
-    vendor: vendor.name,
-    Compliance: vendor.compliance,
-    Automation: vendor.automation,
-    Integration: vendor.integration,
-    Usability: vendor.usability,
-    Performance: vendor.performance,
-    Security: vendor.security,
-  }))
-
-  const ComparisonTable = () => (
-    <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
-      <CardHeader>
-        <CardTitle>Detailed Vendor Comparison</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className={`border-b ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
-                <th className={`text-left p-3 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Vendor</th>
-                <th className={`text-left p-3 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>3-Year TCO</th>
-                <th className={`text-left p-3 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Deployment</th>
-                <th className={`text-left p-3 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Licensing</th>
-                <th className={`text-left p-3 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Hardware</th>
-                <th className={`text-left p-3 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Cloud Native</th>
-                <th className={`text-left p-3 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Add-ons</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vendorData.map((vendor, index) => (
-                <motion.tr
-                  key={vendor.name}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  className={`border-b ${darkMode ? "border-gray-700" : "border-gray-200"} hover:${darkMode ? "bg-gray-700" : "bg-gray-50"}`}
-                >
-                  <td className="p-3">
-                    <div className="flex items-center gap-3">
-                      <Image
-                        src={vendor.logo || "/placeholder.svg"}
-                        alt={vendor.name}
-                        width={80}
-                        height={20}
-                        className="h-5 w-auto"
-                      />
-                      <span className={`font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{vendor.name}</span>
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    <div className="flex flex-col">
-                      <span
-                        className={`font-semibold ${vendor.name === "Portnox" ? "text-green-600" : darkMode ? "text-white" : "text-gray-900"}`}
-                      >
-                        ${(vendor.tco / 1000).toFixed(0)}K
-                      </span>
-                      {vendor.name === "Portnox" && (
-                        <Badge variant="default" className="w-fit mt-1">
-                          Lowest
-                        </Badge>
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    <div className="flex items-center gap-2">
-                      <Clock
-                        className={`h-4 w-4 ${vendor.deployment <= 7 ? "text-green-500" : vendor.deployment <= 90 ? "text-yellow-500" : "text-red-500"}`}
-                      />
-                      <span className={`${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-                        {vendor.deployment} {vendor.deployment === 2 ? "days" : "days"}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    <span className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-                      {vendor.licensing}
-                    </span>
-                  </td>
-                  <td className="p-3">
-                    <div className="flex items-center gap-2">
-                      {vendor.hardware === "None Required" ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                      )}
-                      <span className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-                        {vendor.hardware}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    {vendor.cloudNative ? (
-                      <CheckCircle className="h-5 w-5 text-green-500" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-red-500" />
-                    )}
-                  </td>
-                  <td className="p-3">
-                    <span
-                      className={`text-sm ${vendor.addOns === "All Included" ? "text-green-600 font-medium" : darkMode ? "text-gray-300" : "text-gray-600"}`}
-                    >
-                      {vendor.addOns}
-                    </span>
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
-  )
+  const FeatureIcon = ({ enabled }: { enabled: boolean }) => {
+    if (enabled) {
+      return <CheckCircle className="h-5 w-5 text-green-500" />
+    }
+    return <XCircle className="h-5 w-5 text-red-500" />
+  }
 
   return (
     <div className="space-y-6">
-      {/* Radar Chart Comparison */}
+      {/* Header */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">Vendor Comparison Matrix</CardTitle>
+            <p className={`${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+              Comprehensive comparison across key evaluation criteria
+            </p>
+          </CardHeader>
+        </Card>
+      </motion.div>
+
+      {/* TCO Comparison Chart */}
+      <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DollarSign className="h-5 w-5 text-green-600" />
+            Total Cost of Ownership (3 Years)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={comparisonData} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#E5E7EB"} />
+              <XAxis
+                type="number"
+                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                tick={{ fill: darkMode ? "#D1D5DB" : "#6B7280", fontSize: 12 }}
+              />
+              <YAxis
+                type="category"
+                dataKey="vendor"
+                width={100}
+                tick={{ fill: darkMode ? "#D1D5DB" : "#6B7280", fontSize: 12 }}
+              />
+              <Tooltip
+                formatter={(value: number) => [`$${value.toLocaleString()}`, "TCO"]}
+                contentStyle={{
+                  backgroundColor: darkMode ? "#1F2937" : "#FFFFFF",
+                  border: `1px solid ${darkMode ? "#374151" : "#E5E7EB"}`,
+                  borderRadius: "8px",
+                }}
+              />
+              <Bar
+                dataKey="tco"
+                fill={(entry: any) => (entry.vendor === "Portnox" ? PORTNOX_COLORS.primary : PORTNOX_COLORS.accent)}
+                radius={[0, 4, 4, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Radar Chart */}
       <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-blue-600" />
-            Capability Comparison
+            Multi-Dimensional Comparison
           </CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
-            <RadarChart
-              data={
-                radarData[0]
-                  ? Object.keys(radarData[0])
-                      .filter((key) => key !== "vendor")
-                      .map((key) => ({
-                        capability: key,
-                        Portnox: radarData.find((d) => d.vendor === "Portnox")?.[key] || 0,
-                        "Cisco ISE": radarData.find((d) => d.vendor === "Cisco ISE")?.[key] || 0,
-                        "Aruba ClearPass": radarData.find((d) => d.vendor === "Aruba ClearPass")?.[key] || 0,
-                        "Cisco Meraki": radarData.find((d) => d.vendor === "Cisco Meraki")?.[key] || 0,
-                      }))
-                  : []
-              }
-            >
+            <RadarChart data={radarData}>
               <PolarGrid stroke={darkMode ? "#374151" : "#E5E7EB"} />
-              <PolarAngleAxis dataKey="capability" tick={{ fill: darkMode ? "#D1D5DB" : "#6B7280", fontSize: 12 }} />
+              <PolarAngleAxis tick={{ fill: darkMode ? "#D1D5DB" : "#6B7280", fontSize: 12 }} />
               <PolarRadiusAxis
                 angle={90}
                 domain={[0, 100]}
@@ -246,31 +247,31 @@ const VendorComparison: React.FC<VendorComparisonProps> = ({ results, selectedVe
               />
               <Radar
                 name="Portnox"
-                dataKey="Portnox"
+                dataKey="portnox"
                 stroke={PORTNOX_COLORS.primary}
                 fill={PORTNOX_COLORS.primary}
                 fillOpacity={0.3}
                 strokeWidth={2}
               />
               <Radar
-                name="Cisco ISE"
-                dataKey="Cisco ISE"
+                name="Cisco"
+                dataKey="cisco"
                 stroke={PORTNOX_COLORS.accent}
                 fill={PORTNOX_COLORS.accent}
                 fillOpacity={0.1}
                 strokeWidth={2}
               />
               <Radar
-                name="Aruba ClearPass"
-                dataKey="Aruba ClearPass"
+                name="Aruba"
+                dataKey="aruba"
                 stroke={PORTNOX_COLORS.info}
                 fill={PORTNOX_COLORS.info}
                 fillOpacity={0.1}
                 strokeWidth={2}
               />
               <Radar
-                name="Cisco Meraki"
-                dataKey="Cisco Meraki"
+                name="Meraki"
+                dataKey="meraki"
                 stroke={PORTNOX_COLORS.warning}
                 fill={PORTNOX_COLORS.warning}
                 fillOpacity={0.1}
@@ -283,76 +284,123 @@ const VendorComparison: React.FC<VendorComparisonProps> = ({ results, selectedVe
       </Card>
 
       {/* Detailed Comparison Table */}
-      <ComparisonTable />
+      <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
+        <CardHeader>
+          <CardTitle>Detailed Feature Comparison</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className={`border-b ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
+                  <th className={`text-left p-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Criteria</th>
+                  {selectedVendors.map((vendor) => {
+                    const data = vendorData[vendor as keyof typeof vendorData]
+                    return (
+                      <th key={vendor} className={`text-center p-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                        <div className="flex flex-col items-center gap-2">
+                          <Image
+                            src={data.logo || "/placeholder.svg"}
+                            alt={data.name}
+                            width={80}
+                            height={20}
+                            className="h-6 w-auto"
+                          />
+                          <span className="text-sm">{data.name}</span>
+                        </div>
+                      </th>
+                    )
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { label: "3-Year TCO", key: "tco", format: (val: number) => `$${(val / 1000).toFixed(0)}K` },
+                  { label: "Deployment Time", key: "deployment", format: (val: number) => `${val} days` },
+                  { label: "Complexity", key: "complexity" },
+                  { label: "Hardware Required", key: "hardware", format: (val: boolean) => (val ? "Yes" : "No") },
+                  { label: "Cloud Native", key: "cloudNative", format: (val: boolean) => (val ? "Yes" : "No") },
+                  { label: "Support", key: "support" },
+                  { label: "Compliance Score", key: "compliance", format: (val: number) => `${val}%` },
+                  { label: "Automation Level", key: "automation", format: (val: number) => `${val}%` },
+                ].map((row, index) => (
+                  <tr key={index} className={`border-b ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
+                    <td className={`p-4 font-medium ${darkMode ? "text-gray-300" : "text-gray-700"}`}>{row.label}</td>
+                    {selectedVendors.map((vendor) => {
+                      const data = vendorData[vendor as keyof typeof vendorData]
+                      const value = data[row.key as keyof typeof data]
+                      const displayValue = row.format ? row.format(value as any) : value
 
-      {/* Key Differentiators */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          {
-            title: "Deployment Speed",
-            portnox: "2 days",
-            competitor: "3-6 months",
-            advantage: "99% faster",
-            icon: Zap,
-            color: PORTNOX_COLORS.accent,
-          },
-          {
-            title: "Total Cost",
-            portnox: "$180K",
-            competitor: "$320K+",
-            advantage: "60% lower",
-            icon: DollarSign,
-            color: PORTNOX_COLORS.success,
-          },
-          {
-            title: "Hardware Required",
-            portnox: "None",
-            competitor: "Appliances",
-            advantage: "Cloud-native",
-            icon: Shield,
-            color: PORTNOX_COLORS.info,
-          },
-          {
-            title: "Add-on Costs",
-            portnox: "All included",
-            competitor: "Extra fees",
-            advantage: "No surprises",
-            icon: Users,
-            color: PORTNOX_COLORS.primary,
-          },
-        ].map((diff, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-          >
-            <Card className={`h-full ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-full" style={{ backgroundColor: `${diff.color}20` }}>
-                    <diff.icon className="h-5 w-5" style={{ color: diff.color }} />
-                  </div>
-                  <h3 className={`font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>{diff.title}</h3>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Portnox:</span>
-                    <span className={`text-sm font-medium text-green-600`}>{diff.portnox}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Competitors:</span>
-                    <span className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{diff.competitor}</span>
-                  </div>
-                  <Badge variant="default" className="w-full justify-center mt-2">
-                    {diff.advantage}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+                      return (
+                        <td key={vendor} className={`p-4 text-center ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                          {vendor === "portnox" && (
+                            <Badge variant="default" className="bg-green-100 text-green-800 mr-2">
+                              Best
+                            </Badge>
+                          )}
+                          {displayValue}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Feature Matrix */}
+      <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
+        <CardHeader>
+          <CardTitle>Feature Availability Matrix</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className={`border-b ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
+                  <th className={`text-left p-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Feature</th>
+                  {selectedVendors.map((vendor) => {
+                    const data = vendorData[vendor as keyof typeof vendorData]
+                    return (
+                      <th key={vendor} className={`text-center p-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                        {data.name}
+                      </th>
+                    )
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { label: "Network Access Control", key: "nac" },
+                  { label: "IoT Device Management", key: "iot" },
+                  { label: "BYOD Support", key: "byod" },
+                  { label: "Compliance Automation", key: "compliance" },
+                  { label: "Advanced Analytics", key: "analytics" },
+                  { label: "AI-Powered Security", key: "ai" },
+                ].map((feature, index) => (
+                  <tr key={index} className={`border-b ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
+                    <td className={`p-4 font-medium ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                      {feature.label}
+                    </td>
+                    {selectedVendors.map((vendor) => {
+                      const data = vendorData[vendor as keyof typeof vendorData]
+                      const hasFeature = data.features[feature.key as keyof typeof data.features]
+
+                      return (
+                        <td key={vendor} className="p-4 text-center">
+                          <FeatureIcon enabled={hasFeature} />
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
