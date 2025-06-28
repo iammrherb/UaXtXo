@@ -18,8 +18,8 @@ export function formatNumber(num: number): string {
   return new Intl.NumberFormat("en-US").format(num)
 }
 
-export function formatPercentage(num: number, decimals = 1): string {
-  return `${num.toFixed(decimals)}%`
+export function formatPercentage(num: number): string {
+  return `${num.toFixed(1)}%`
 }
 
 export function calculatePercentageChange(oldValue: number, newValue: number): number {
@@ -27,27 +27,24 @@ export function calculatePercentageChange(oldValue: number, newValue: number): n
   return ((newValue - oldValue) / oldValue) * 100
 }
 
-export function debounce<T extends (...args: any[]) => any>(func: T, wait: number): T {
-  let timeout: NodeJS.Timeout | null = null
-  return ((...args: any[]) => {
-    if (timeout) clearTimeout(timeout)
+export function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout)
     timeout = setTimeout(() => func(...args), wait)
-  }) as T
-}
-
-export function throttle<T extends (...args: any[]) => any>(func: T, limit: number): T {
-  let inThrottle: boolean
-  return ((...args: any[]) => {
-    if (!inThrottle) {
-      func(...args)
-      inThrottle = true
-      setTimeout(() => (inThrottle = false), limit)
-    }
-  }) as T
+  }
 }
 
 export function generateId(): string {
   return Math.random().toString(36).substr(2, 9)
+}
+
+export function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
+}
+
+export function roundToDecimal(value: number, decimals: number): number {
+  return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals)
 }
 
 export function isValidEmail(email: string): boolean {
@@ -222,17 +219,8 @@ export function createRange(start: number, end: number, step = 1): number[] {
   return range
 }
 
-export function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max)
-}
-
 export function lerp(start: number, end: number, factor: number): number {
   return start + (end - start) * factor
-}
-
-export function roundTo(num: number, decimals: number): number {
-  const factor = Math.pow(10, decimals)
-  return Math.round(num * factor) / factor
 }
 
 export function getRandomColor(): string {
