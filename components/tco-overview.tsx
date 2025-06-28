@@ -32,16 +32,6 @@ const PORTNOX_COLORS = {
   info: "#3B82F6",
 }
 
-const CHART_COLORS = [
-  PORTNOX_COLORS.primary,
-  PORTNOX_COLORS.accent,
-  PORTNOX_COLORS.info,
-  PORTNOX_COLORS.success,
-  PORTNOX_COLORS.warning,
-  "#8B5CF6",
-  "#EC4899",
-]
-
 interface TCOOverviewProps {
   results?: any
   configuration?: {
@@ -56,28 +46,16 @@ interface TCOOverviewProps {
   darkMode?: boolean
 }
 
-const TCOOverview: React.FC<TCOOverviewProps> = ({
-  results = {},
-  configuration = {
-    years: 3,
-    devices: 2500,
-    users: 1500,
-    industry: "technology",
-    orgSize: "medium",
-    region: "north-america",
-    portnoxBasePrice: 3.0,
-  },
-  darkMode = false,
-}) => {
+const TCOOverview: React.FC<TCOOverviewProps> = ({ results = {}, configuration, darkMode = false }) => {
   // Ensure configuration has default values
   const config = {
-    years: configuration.years || 3,
-    devices: configuration.devices || 2500,
-    users: configuration.users || 1500,
-    industry: configuration.industry || "technology",
-    orgSize: configuration.orgSize || "medium",
-    region: configuration.region || "north-america",
-    portnoxBasePrice: configuration.portnoxBasePrice || 3.0,
+    years: configuration?.years ?? 3,
+    devices: configuration?.devices ?? 2500,
+    users: configuration?.users ?? 1500,
+    industry: configuration?.industry ?? "technology",
+    orgSize: configuration?.orgSize ?? "medium",
+    region: configuration?.region ?? "north-america",
+    portnoxBasePrice: configuration?.portnoxBasePrice ?? 3.0,
   }
 
   // Mock data for demonstration

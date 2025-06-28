@@ -1,42 +1,24 @@
 "use client"
 
-import React, { useState, useMemo } from "react"
+import type React from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { cn } from "@/lib/utils"
 import {
-  PieChart,
-  Pie,
-  Cell,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip as ReTooltip,
-  Legend,
+  Tooltip,
   ResponsiveContainer,
+  PieChart,
   Line,
   Area,
-  ComposedChart,
-  Treemap,
+  AreaChart,
 } from "recharts"
-import {
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-  Download,
-  Eye,
-  EyeOff,
-  Calculator,
-  Clock,
-  Building,
-  BarChart3,
-  PieChartIcon,
-} from "lucide-react"
+import { DollarSign, TrendingDown, AlertTriangle, Calculator, Zap, Clock } from "lucide-react"
+import Image from "next/image"
 
 const PORTNOX_COLORS = {
   primary: "#00D4AA",
@@ -46,779 +28,603 @@ const PORTNOX_COLORS = {
   warning: "#F59E0B",
   danger: "#EF4444",
   info: "#3B82F6",
-  purple: "#8B5CF6",
-  pink: "#EC4899",
 }
-
-const COST_COLORS = [
-  PORTNOX_COLORS.primary,
-  PORTNOX_COLORS.accent,
-  PORTNOX_COLORS.info,
-  PORTNOX_COLORS.success,
-  PORTNOX_COLORS.warning,
-  PORTNOX_COLORS.purple,
-  PORTNOX_COLORS.pink,
-  "#06B6D4",
-  "#EF4444",
-  "#6366F1",
-]
 
 interface DetailedCostBreakdownProps {
-  results: any[]
-  years: number
-  darkMode: boolean
-  configuration: any
+  results?: any
+  years?: number
+  darkMode?: boolean
+  configuration?: any
 }
 
-export default function DetailedCostBreakdown({ results, years, darkMode, configuration }: DetailedCostBreakdownProps) {
-  const [selectedVendor, setSelectedVendor] = useState(results?.[0]?.vendor || "portnox")
-  const [viewMode, setViewMode] = useState<"absolute" | "percentage" | "per-device">("absolute")
-  const [showHiddenCosts, setShowHiddenCosts] = useState(true)
-  const [activeTab, setActiveTab] = useState("overview")
+const DetailedCostBreakdown: React.FC<DetailedCostBreakdownProps> = ({
+  results = {},
+  years = 3,
+  darkMode = false,
+  configuration = {},
+}) => {
+  const devices = configuration?.devices || 2500
+  const users = configuration?.users || 1500
 
-  const selectedResult = useMemo(() => results?.find((r) => r.vendor === selectedVendor), [results, selectedVendor])
-
-  const costComparisonData = useMemo(() => {
-    if (!results) return []
-
-    return results.map((result) => ({
-      vendor: result.vendorName,
-      vendorId: result.vendor,
-      software: result.breakdown.find((b) => b.name === "Software")?.value || 0,
-      hardware: result.breakdown.find((b) => b.name === "Hardware")?.value || 0,
-      implementation: result.breakdown.find((b) => b.name === "Implementation")?.value || 0,
-      support: result.breakdown.find((b) => b.name === "Support")?.value || 0,
-      operations: result.breakdown.find((b) => b.name === "Operations")?.value || 0,
-      hidden: showHiddenCosts ? result.breakdown.find((b) => b.name === "Hidden")?.value || 0 : 0,
-      total: result.total,
-      perDeviceMonthly: result.total / (configuration.devices * years * 12),
-    }))
-  }, [results, showHiddenCosts, configuration.devices, years])
-
-  const yearlyProjectionData = useMemo(() => {
-    if (!selectedResult) return []
-
-    const data = []
-    const annualCost = selectedResult.total / years
-
-    for (let year = 1; year <= Math.min(years, 5); year++) {
-      data.push({
-        year,
-        cumulative: annualCost * year,
-        annual: annualCost,
-        savings: selectedResult.roi.annualSavings * year,
-        netValue: selectedResult.roi.annualSavings * year - annualCost * year,
-      })
-    }
-
-    return data
-  }, [selectedResult, years])
-
-  const costTreemapData = useMemo(() => {
-    if (!selectedResult) return []
-
-    return selectedResult.breakdown.map((item, index) => ({
-      name: item.name,
-      value: item.value,
-      percentage: item.percentage,
-      fill: COST_COLORS[index % COST_COLORS.length],
-    }))
-  }, [selectedResult])
-
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
-    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`
-    return `$${value.toLocaleString()}`
+  // Detailed cost breakdown data
+  const vendorCostData = {
+    portnox: {
+      name: "Portnox",
+      logo: "/portnox-logo.png",
+      licensing: {
+        perDevice: 3.0,
+        total: devices * 3.0 * 12 * years,
+        model: "Per device/month",
+        tiers: 1,
+      },
+      implementation: {
+        professional: 15000,
+        training: 5000,
+        migration: 8000,
+        total: 28000,
+      },
+      hardware: {
+        servers: 0,
+        appliances: 0,
+        networking: 0,
+        total: 0,
+      },
+      support: {
+        annual: devices * 0.5 * 12,
+        total: devices * 0.5 * 12 * years,
+        tier: "Premium included",
+      },
+      hidden: {
+        maintenance: 0,
+        upgrades: 0,
+        consulting: 0,
+        total: 0,
+      },
+    },
+    cisco: {
+      name: "Cisco ISE",
+      logo: "/cisco-logo.png",
+      licensing: {
+        perDevice: 8.5,
+        total: devices * 8.5 * 12 * years,
+        model: "Per device/month + base",
+        tiers: 3,
+      },
+      implementation: {
+        professional: 85000,
+        training: 25000,
+        migration: 35000,
+        total: 145000,
+      },
+      hardware: {
+        servers: 45000,
+        appliances: 25000,
+        networking: 15000,
+        total: 85000,
+      },
+      support: {
+        annual: 35000,
+        total: 35000 * years,
+        tier: "SmartNet required",
+      },
+      hidden: {
+        maintenance: 15000 * years,
+        upgrades: 25000,
+        consulting: 20000 * years,
+        total: 15000 * years + 25000 + 20000 * years,
+      },
+    },
+    aruba: {
+      name: "Aruba ClearPass",
+      logo: "/aruba-logo.png",
+      licensing: {
+        perDevice: 7.2,
+        total: devices * 7.2 * 12 * years,
+        model: "Per device/month",
+        tiers: 2,
+      },
+      implementation: {
+        professional: 65000,
+        training: 18000,
+        migration: 28000,
+        total: 111000,
+      },
+      hardware: {
+        servers: 35000,
+        appliances: 20000,
+        networking: 12000,
+        total: 67000,
+      },
+      support: {
+        annual: 28000,
+        total: 28000 * years,
+        tier: "Foundation Care",
+      },
+      hidden: {
+        maintenance: 12000 * years,
+        upgrades: 18000,
+        consulting: 15000 * years,
+        total: 12000 * years + 18000 + 15000 * years,
+      },
+    },
+    meraki: {
+      name: "Cisco Meraki",
+      logo: "/meraki-logo.png",
+      licensing: {
+        perDevice: 6.8,
+        total: devices * 6.8 * 12 * years,
+        model: "Per device/month",
+        tiers: 2,
+      },
+      implementation: {
+        professional: 45000,
+        training: 12000,
+        migration: 18000,
+        total: 75000,
+      },
+      hardware: {
+        servers: 0,
+        appliances: 35000,
+        networking: 25000,
+        total: 60000,
+      },
+      support: {
+        annual: 22000,
+        total: 22000 * years,
+        tier: "Cloud support",
+      },
+      hidden: {
+        maintenance: 8000 * years,
+        upgrades: 12000,
+        consulting: 10000 * years,
+        total: 8000 * years + 12000 + 10000 * years,
+      },
+    },
   }
 
-  const CostMetricCard = ({ title, value, change, icon, color = "primary" }: any) => (
-    <motion.div
-      whileHover={{ y: -2, scale: 1.02 }}
-      className={cn(
-        "p-4 rounded-lg border transition-all duration-200",
-        darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
-      )}
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className={cn("text-sm font-medium", darkMode ? "text-gray-300" : "text-gray-600")}>{title}</p>
-          <p className={cn("text-2xl font-bold mt-1", darkMode ? "text-white" : "text-gray-900")}>
-            {typeof value === "number" ? formatCurrency(value) : value}
-          </p>
-          {change && (
-            <div className={cn("flex items-center text-sm mt-1", change > 0 ? "text-red-500" : "text-green-500")}>
-              {change > 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-              {Math.abs(change)}% vs baseline
+  const selectedVendors = ["portnox", "cisco", "aruba", "meraki"]
+
+  // Calculate total costs
+  const totalCostData = selectedVendors.map((vendor) => {
+    const data = vendorCostData[vendor as keyof typeof vendorCostData]
+    const total =
+      data.licensing.total + data.implementation.total + data.hardware.total + data.support.total + data.hidden.total
+    return {
+      vendor: data.name,
+      licensing: data.licensing.total,
+      implementation: data.implementation.total,
+      hardware: data.hardware.total,
+      support: data.support.total,
+      hidden: data.hidden.total,
+      total,
+    }
+  })
+
+  // Cost breakdown by category
+  const costCategoryData = [
+    {
+      name: "Licensing",
+      portnox: vendorCostData.portnox.licensing.total,
+      cisco: vendorCostData.cisco.licensing.total,
+      aruba: vendorCostData.aruba.licensing.total,
+      meraki: vendorCostData.meraki.licensing.total,
+    },
+    {
+      name: "Implementation",
+      portnox: vendorCostData.portnox.implementation.total,
+      cisco: vendorCostData.cisco.implementation.total,
+      aruba: vendorCostData.aruba.implementation.total,
+      meraki: vendorCostData.meraki.implementation.total,
+    },
+    {
+      name: "Hardware",
+      portnox: vendorCostData.portnox.hardware.total,
+      cisco: vendorCostData.cisco.hardware.total,
+      aruba: vendorCostData.aruba.hardware.total,
+      meraki: vendorCostData.meraki.hardware.total,
+    },
+    {
+      name: "Support",
+      portnox: vendorCostData.portnox.support.total,
+      cisco: vendorCostData.cisco.support.total,
+      aruba: vendorCostData.aruba.support.total,
+      meraki: vendorCostData.meraki.support.total,
+    },
+    {
+      name: "Hidden Costs",
+      portnox: vendorCostData.portnox.hidden.total,
+      cisco: vendorCostData.cisco.hidden.total,
+      aruba: vendorCostData.aruba.hidden.total,
+      meraki: vendorCostData.meraki.hidden.total,
+    },
+  ]
+
+  // Year-over-year cost projection
+  const yearlyProjection = Array.from({ length: years }, (_, index) => {
+    const year = index + 1
+    return {
+      year: `Year ${year}`,
+      portnox:
+        vendorCostData.portnox.licensing.total / years + (year === 1 ? vendorCostData.portnox.implementation.total : 0),
+      cisco:
+        vendorCostData.cisco.licensing.total / years +
+        vendorCostData.cisco.support.total / years +
+        vendorCostData.cisco.hidden.total / years +
+        (year === 1 ? vendorCostData.cisco.implementation.total + vendorCostData.cisco.hardware.total : 0),
+      aruba:
+        vendorCostData.aruba.licensing.total / years +
+        vendorCostData.aruba.support.total / years +
+        vendorCostData.aruba.hidden.total / years +
+        (year === 1 ? vendorCostData.aruba.implementation.total + vendorCostData.aruba.hardware.total : 0),
+      meraki:
+        vendorCostData.meraki.licensing.total / years +
+        vendorCostData.meraki.support.total / years +
+        vendorCostData.meraki.hidden.total / years +
+        (year === 1 ? vendorCostData.meraki.implementation.total + vendorCostData.meraki.hardware.total : 0),
+    }
+  })
+
+  // Treemap data for cost visualization
+  const treemapData = selectedVendors.map((vendor) => {
+    const data = vendorCostData[vendor as keyof typeof vendorCostData]
+    return {
+      name: data.name,
+      size:
+        data.licensing.total + data.implementation.total + data.hardware.total + data.support.total + data.hidden.total,
+      children: [
+        { name: "Licensing", size: data.licensing.total, fill: PORTNOX_COLORS.primary },
+        { name: "Implementation", size: data.implementation.total, fill: PORTNOX_COLORS.accent },
+        { name: "Hardware", size: data.hardware.total, fill: PORTNOX_COLORS.danger },
+        { name: "Support", size: data.support.total, fill: PORTNOX_COLORS.info },
+        { name: "Hidden", size: data.hidden.total, fill: PORTNOX_COLORS.warning },
+      ],
+    }
+  })
+
+  const CostMetricCard = ({ title, value, subtitle, icon: Icon, trend, color = PORTNOX_COLORS.primary }: any) => (
+    <motion.div whileHover={{ y: -5, scale: 1.02 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
+      <Card className={`h-full ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-3 rounded-full" style={{ backgroundColor: `${color}20`, color: color }}>
+                <Icon className="h-6 w-6" />
+              </div>
+              <div>
+                <p className={`text-sm font-medium ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{title}</p>
+                <p className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>{value}</p>
+                {subtitle && <p className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>{subtitle}</p>}
+              </div>
             </div>
-          )}
-        </div>
-        <div className={cn("p-3 rounded-full", color === "primary" ? "bg-portnox-primary/10" : `bg-${color}-100`)}>
-          {React.cloneElement(icon, {
-            className: cn("h-6 w-6", color === "primary" ? "text-portnox-primary" : `text-${color}-600`),
-          })}
-        </div>
-      </div>
+            {trend && (
+              <Badge variant={trend < 0 ? "default" : "destructive"} className="ml-2">
+                {trend > 0 ? "+" : ""}
+                {trend}%
+              </Badge>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   )
 
-  if (!results || results.length === 0) {
-    return (
-      <Card className="p-8 text-center">
-        <Calculator className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-        <h3 className="text-lg font-semibold mb-2">No Cost Data Available</h3>
-        <p className="text-gray-600">Select vendors and configure your environment to see detailed cost breakdowns.</p>
-      </Card>
-    )
-  }
-
   return (
     <div className="space-y-6">
-      {/* Header Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Detailed Cost Analysis</h2>
-          <p className={cn("text-sm", darkMode ? "text-gray-400" : "text-gray-600")}>
-            Comprehensive {years}-year TCO breakdown with vendor-specific cost components
-          </p>
-        </div>
+      {/* Header */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <Card
+          className={`${darkMode ? "bg-gradient-to-r from-gray-800 to-gray-900" : "bg-gradient-to-r from-blue-50 to-indigo-50"}`}
+        >
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                  <Calculator className="h-8 w-8 text-blue-600" />
+                  Detailed Cost Analysis
+                </CardTitle>
+                <p className={`mt-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                  {years}-year comprehensive cost breakdown for {devices.toLocaleString()} devices
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-bold text-green-600">
+                  $
+                  {(
+                    vendorCostData.cisco.licensing.total +
+                    vendorCostData.cisco.implementation.total +
+                    vendorCostData.cisco.hardware.total +
+                    vendorCostData.cisco.support.total +
+                    vendorCostData.cisco.hidden.total -
+                    (vendorCostData.portnox.licensing.total +
+                      vendorCostData.portnox.implementation.total +
+                      vendorCostData.portnox.hardware.total +
+                      vendorCostData.portnox.support.total +
+                      vendorCostData.portnox.hidden.total) /
+                      1000
+                  ).toFixed(0)}
+                  K
+                </div>
+                <div className="text-sm text-green-600">Total Savings vs Cisco</div>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+      </motion.div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowHiddenCosts(!showHiddenCosts)} className="gap-2">
-            {showHiddenCosts ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-            {showHiddenCosts ? "Hide" : "Show"} Hidden Costs
-          </Button>
-
-          <select
-            value={viewMode}
-            onChange={(e) => setViewMode(e.target.value as any)}
-            className={cn(
-              "px-3 py-2 border rounded-md text-sm",
-              darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300",
-            )}
-          >
-            <option value="absolute">Absolute Values</option>
-            <option value="percentage">Percentage View</option>
-            <option value="per-device">Per Device/Month</option>
-          </select>
-
-          <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
-        </div>
-      </div>
-
-      {/* Key Metrics Overview */}
+      {/* Key Cost Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <CostMetricCard title="Total TCO" value={selectedResult?.total} icon={<DollarSign />} color="primary" />
         <CostMetricCard
-          title="Per Device/Month"
-          value={selectedResult ? `$${(selectedResult.total / (configuration.devices * years * 12)).toFixed(2)}` : "$0"}
-          icon={<Calculator />}
-          color="info"
+          title="Portnox Total TCO"
+          value={`$${((vendorCostData.portnox.licensing.total + vendorCostData.portnox.implementation.total + vendorCostData.portnox.hardware.total + vendorCostData.portnox.support.total + vendorCostData.portnox.hidden.total) / 1000).toFixed(0)}K`}
+          subtitle={`$${(vendorCostData.portnox.licensing.perDevice * 12).toFixed(0)}/device/year`}
+          icon={DollarSign}
+          trend={-65}
+          color={PORTNOX_COLORS.primary}
         />
         <CostMetricCard
-          title="Implementation Time"
-          value={selectedResult?.implementation?.timeToValue || "N/A"}
-          icon={<Clock />}
-          color="warning"
+          title="Hidden Cost Savings"
+          value={`$${((vendorCostData.cisco.hidden.total - vendorCostData.portnox.hidden.total) / 1000).toFixed(0)}K`}
+          subtitle="Maintenance, upgrades, consulting"
+          icon={AlertTriangle}
+          trend={-100}
+          color={PORTNOX_COLORS.success}
         />
         <CostMetricCard
-          title="ROI Payback"
-          value={selectedResult ? `${selectedResult.roi.paybackMonths} months` : "N/A"}
-          icon={<TrendingUp />}
-          color="success"
+          title="Hardware Savings"
+          value={`$${((vendorCostData.cisco.hardware.total - vendorCostData.portnox.hardware.total) / 1000).toFixed(0)}K`}
+          subtitle="Cloud-native advantage"
+          icon={Zap}
+          trend={-100}
+          color={PORTNOX_COLORS.accent}
+        />
+        <CostMetricCard
+          title="Deployment Speed"
+          value="2 days"
+          subtitle="vs 6 months average"
+          icon={Clock}
+          trend={-95}
+          color={PORTNOX_COLORS.info}
         />
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="comparison">Vendor Comparison</TabsTrigger>
-          <TabsTrigger value="breakdown">Cost Breakdown</TabsTrigger>
-          <TabsTrigger value="projections">Projections</TabsTrigger>
-          <TabsTrigger value="analysis">Deep Analysis</TabsTrigger>
-        </TabsList>
+      {/* Cost Comparison Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Total Cost Comparison */}
+        <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart className="h-5 w-5 text-blue-600" />
+              Total Cost Comparison
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={totalCostData} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#E5E7EB"} />
+                <XAxis
+                  type="number"
+                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                  tick={{ fill: darkMode ? "#D1D5DB" : "#6B7280", fontSize: 12 }}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="vendor"
+                  width={100}
+                  tick={{ fill: darkMode ? "#D1D5DB" : "#6B7280", fontSize: 12 }}
+                />
+                <Tooltip
+                  formatter={(value: number) => [`$${value.toLocaleString()}`, "Total Cost"]}
+                  contentStyle={{
+                    backgroundColor: darkMode ? "#1F2937" : "#FFFFFF",
+                    border: `1px solid ${darkMode ? "#374151" : "#E5E7EB"}`,
+                    borderRadius: "8px",
+                  }}
+                />
+                <Bar dataKey="total" fill={PORTNOX_COLORS.primary} radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Vendor Selection */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building className="h-5 w-5" />
-                  Vendor Selection
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 gap-3">
-                  {results.map((result) => (
-                    <motion.button
-                      key={result.vendor}
-                      onClick={() => setSelectedVendor(result.vendor)}
-                      className={cn(
-                        "p-4 border rounded-lg text-left transition-all duration-200",
-                        selectedVendor === result.vendor
-                          ? "border-portnox-primary bg-portnox-primary/5"
-                          : darkMode
-                            ? "border-gray-700 hover:border-gray-600"
-                            : "border-gray-200 hover:border-gray-300",
-                      )}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-semibold">{result.vendorName}</h4>
-                          <p className="text-sm text-gray-600">{formatCurrency(result.total)} total</p>
-                        </div>
-                        <Badge variant={result.vendor === "portnox" ? "default" : "outline"}>
-                          {result.vendor === "portnox" ? "Recommended" : "Alternative"}
-                        </Badge>
-                      </div>
-                    </motion.button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+        {/* Cost Category Breakdown */}
+        <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PieChart className="h-5 w-5 text-green-600" />
+              Cost Category Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={costCategoryData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#E5E7EB"} />
+                <XAxis dataKey="name" tick={{ fill: darkMode ? "#D1D5DB" : "#6B7280", fontSize: 12 }} />
+                <YAxis
+                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                  tick={{ fill: darkMode ? "#D1D5DB" : "#6B7280", fontSize: 12 }}
+                />
+                <Tooltip
+                  formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]}
+                  contentStyle={{
+                    backgroundColor: darkMode ? "#1F2937" : "#FFFFFF",
+                    border: `1px solid ${darkMode ? "#374151" : "#E5E7EB"}`,
+                    borderRadius: "8px",
+                  }}
+                />
+                <Bar dataKey="portnox" fill={PORTNOX_COLORS.primary} name="Portnox" />
+                <Bar dataKey="cisco" fill={PORTNOX_COLORS.accent} name="Cisco ISE" />
+                <Bar dataKey="aruba" fill={PORTNOX_COLORS.info} name="Aruba" />
+                <Bar dataKey="meraki" fill={PORTNOX_COLORS.warning} name="Meraki" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
 
-            {/* Cost Distribution Pie Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <PieChartIcon className="h-5 w-5" />
-                  Cost Distribution - {selectedResult?.vendorName}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={costTreemapData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percentage }) => `${name}: ${percentage}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {costTreemapData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <ReTooltip formatter={(value: number) => formatCurrency(value)} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+      {/* Year-over-Year Projection */}
+      <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingDown className="h-5 w-5 text-purple-600" />
+            Year-over-Year Cost Projection
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={400}>
+            <AreaChart data={yearlyProjection}>
+              <defs>
+                <linearGradient id="portnoxGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={PORTNOX_COLORS.primary} stopOpacity={0.8} />
+                  <stop offset="95%" stopColor={PORTNOX_COLORS.primary} stopOpacity={0.1} />
+                </linearGradient>
+                <linearGradient id="ciscoGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={PORTNOX_COLORS.accent} stopOpacity={0.8} />
+                  <stop offset="95%" stopColor={PORTNOX_COLORS.accent} stopOpacity={0.1} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#E5E7EB"} />
+              <XAxis dataKey="year" tick={{ fill: darkMode ? "#D1D5DB" : "#6B7280", fontSize: 12 }} />
+              <YAxis
+                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                tick={{ fill: darkMode ? "#D1D5DB" : "#6B7280", fontSize: 12 }}
+              />
+              <Tooltip
+                formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]}
+                contentStyle={{
+                  backgroundColor: darkMode ? "#1F2937" : "#FFFFFF",
+                  border: `1px solid ${darkMode ? "#374151" : "#E5E7EB"}`,
+                  borderRadius: "8px",
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="portnox"
+                stroke={PORTNOX_COLORS.primary}
+                fillOpacity={1}
+                fill="url(#portnoxGradient)"
+                strokeWidth={2}
+                name="Portnox"
+              />
+              <Area
+                type="monotone"
+                dataKey="cisco"
+                stroke={PORTNOX_COLORS.accent}
+                fillOpacity={1}
+                fill="url(#ciscoGradient)"
+                strokeWidth={2}
+                name="Cisco ISE"
+              />
+              <Line
+                type="monotone"
+                dataKey="aruba"
+                stroke={PORTNOX_COLORS.info}
+                strokeWidth={2}
+                strokeDasharray="4 4"
+                dot={false}
+                name="Aruba"
+              />
+              <Line
+                type="monotone"
+                dataKey="meraki"
+                stroke={PORTNOX_COLORS.warning}
+                strokeWidth={2}
+                strokeDasharray="4 4"
+                dot={false}
+                name="Meraki"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
 
-          {/* Cost Components Detail */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Cost Components Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {selectedResult?.breakdown.map((item, index) => (
-                  <motion.div
-                    key={item.name}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className={cn("p-4 border rounded-lg", darkMode ? "border-gray-700" : "border-gray-200")}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-4 h-4 rounded"
-                          style={{ backgroundColor: COST_COLORS[index % COST_COLORS.length] }}
-                        />
-                        <h4 className="font-semibold">{item.name}</h4>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold">{formatCurrency(item.value)}</p>
-                        <p className="text-sm text-gray-600">{item.percentage}% of total</p>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600 ml-7">{item.description}</p>
-
-                    {/* Progress bar */}
-                    <div className="mt-3 ml-7">
+      {/* Detailed Cost Tables */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {selectedVendors.slice(0, 2).map((vendor, index) => {
+          const data = vendorCostData[vendor as keyof typeof vendorCostData]
+          return (
+            <motion.div
+              key={vendor}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <Image
+                      src={data.logo || "/placeholder.svg"}
+                      alt={data.name}
+                      width={100}
+                      height={25}
+                      className="h-6 w-auto"
+                    />
+                    Cost Breakdown
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { category: "Licensing", data: data.licensing, icon: DollarSign },
+                      { category: "Implementation", data: data.implementation, icon: Zap },
+                      { category: "Hardware", data: data.hardware, icon: AlertTriangle },
+                      { category: "Support", data: data.support, icon: Clock },
+                      { category: "Hidden Costs", data: data.hidden, icon: TrendingDown },
+                    ].map((item) => (
                       <div
-                        className={cn("w-full bg-gray-200 rounded-full h-2", darkMode ? "bg-gray-700" : "bg-gray-200")}
+                        key={item.category}
+                        className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700"
                       >
-                        <motion.div
-                          className="h-2 rounded-full"
-                          style={{ backgroundColor: COST_COLORS[index % COST_COLORS.length] }}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${item.percentage}%` }}
-                          transition={{ duration: 1, delay: index * 0.1 }}
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Vendor Comparison Tab */}
-        <TabsContent value="comparison" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Vendor Cost Comparison
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={costComparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#E5E7EB"} />
-                    <XAxis
-                      dataKey="vendor"
-                      tick={{ fill: darkMode ? "#9CA3AF" : "#6B7280", fontSize: 12 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis
-                      tick={{ fill: darkMode ? "#9CA3AF" : "#6B7280", fontSize: 12 }}
-                      tickFormatter={formatCurrency}
-                    />
-                    <ReTooltip
-                      formatter={(value: number, name: string) => [formatCurrency(value), name]}
-                      contentStyle={{
-                        backgroundColor: darkMode ? "#1F2937" : "#FFFFFF",
-                        border: `1px solid ${darkMode ? "#374151" : "#E5E7EB"}`,
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="software" stackId="a" fill={COST_COLORS[0]} name="Software" />
-                    <Bar dataKey="hardware" stackId="a" fill={COST_COLORS[1]} name="Hardware" />
-                    <Bar dataKey="implementation" stackId="a" fill={COST_COLORS[2]} name="Implementation" />
-                    <Bar dataKey="support" stackId="a" fill={COST_COLORS[3]} name="Support" />
-                    <Bar dataKey="operations" stackId="a" fill={COST_COLORS[4]} name="Operations" />
-                    {showHiddenCosts && <Bar dataKey="hidden" stackId="a" fill={COST_COLORS[5]} name="Hidden Costs" />}
-                    <Line
-                      type="monotone"
-                      dataKey="total"
-                      stroke={PORTNOX_COLORS.accent}
-                      strokeWidth={3}
-                      name="Total Cost"
-                    />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Savings Comparison */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Cost Savings vs Portnox</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {results
-                    .filter((r) => r.vendor !== "portnox")
-                    .map((result) => {
-                      const portnoxResult = results.find((r) => r.vendor === "portnox")
-                      const savings = portnoxResult ? result.total - portnoxResult.total : 0
-                      const savingsPercent = portnoxResult ? (savings / result.total) * 100 : 0
-
-                      return (
-                        <div key={result.vendor} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <item.icon className="h-5 w-5 text-gray-500" />
                           <div>
-                            <h4 className="font-semibold">{result.vendorName}</h4>
-                            <p className="text-sm text-gray-600">vs Portnox</p>
-                          </div>
-                          <div className="text-right">
-                            <p className={cn("font-bold", savings > 0 ? "text-green-600" : "text-red-600")}>
-                              {savings > 0 ? "+" : ""}
-                              {formatCurrency(Math.abs(savings))}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {savingsPercent > 0 ? "+" : ""}
-                              {savingsPercent.toFixed(1)}%
-                            </p>
+                            <div className={`font-medium ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                              {item.category}
+                            </div>
+                            {item.data.model && (
+                              <div className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                                {item.data.model}
+                              </div>
+                            )}
                           </div>
                         </div>
-                      )
-                    })}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Per Device Monthly Cost</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={costComparisonData} layout="horizontal">
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" tickFormatter={(value) => `$${value.toFixed(2)}`} tick={{ fontSize: 12 }} />
-                      <YAxis type="category" dataKey="vendor" width={100} tick={{ fontSize: 12 }} />
-                      <ReTooltip formatter={(value: number) => [`$${value.toFixed(2)}`, "Per Device/Month"]} />
-                      <Bar dataKey="perDeviceMonthly" fill={PORTNOX_COLORS.primary} radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Cost Breakdown Tab */}
-        <TabsContent value="breakdown" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Interactive Cost Treemap</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <Treemap data={costTreemapData} dataKey="value" ratio={4 / 3} stroke="#fff" fill="#8884d8">
-                    <ReTooltip formatter={(value: number, name: string) => [formatCurrency(value), name]} />
-                  </Treemap>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Detailed Cost Analysis */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {["Software", "Hardware", "Operations"].map((category) => {
-              const categoryData = selectedResult?.breakdown.find((b) => b.name === category)
-              return (
-                <Card key={category}>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{category} Costs</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center mb-4">
-                      <p className="text-3xl font-bold">{formatCurrency(categoryData?.value || 0)}</p>
-                      <p className="text-sm text-gray-600">{categoryData?.percentage}% of total</p>
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      {category === "Software" && (
-                        <>
-                          <div className="flex justify-between">
-                            <span>Base Licensing</span>
-                            <span>{formatCurrency((categoryData?.value || 0) * 0.7)}</span>
+                        <div className="text-right">
+                          <div className={`font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>
+                            ${item.data.total.toLocaleString()}
                           </div>
-                          <div className="flex justify-between">
-                            <span>Volume Discounts</span>
-                            <span className="text-green-600">-{formatCurrency((categoryData?.value || 0) * 0.1)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Multi-year Savings</span>
-                            <span className="text-green-600">-{formatCurrency((categoryData?.value || 0) * 0.05)}</span>
-                          </div>
-                        </>
-                      )}
-                      {category === "Hardware" && (
-                        <>
-                          <div className="flex justify-between">
-                            <span>Appliances</span>
-                            <span>{formatCurrency((categoryData?.value || 0) * 0.6)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Installation</span>
-                            <span>{formatCurrency((categoryData?.value || 0) * 0.2)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Refresh Costs</span>
-                            <span>{formatCurrency((categoryData?.value || 0) * 0.2)}</span>
-                          </div>
-                        </>
-                      )}
-                      {category === "Operations" && (
-                        <>
-                          <div className="flex justify-between">
-                            <span>Admin Time</span>
-                            <span>{formatCurrency((categoryData?.value || 0) * 0.5)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Training</span>
-                            <span>{formatCurrency((categoryData?.value || 0) * 0.3)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Monitoring</span>
-                            <span>{formatCurrency((categoryData?.value || 0) * 0.2)}</span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        </TabsContent>
-
-        {/* Projections Tab */}
-        <TabsContent value="projections" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>5-Year Cost and Value Projection</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={yearlyProjectionData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="year" />
-                    <YAxis tickFormatter={formatCurrency} />
-                    <ReTooltip formatter={(value: number) => formatCurrency(value)} />
-                    <Legend />
-                    <Area
-                      type="monotone"
-                      dataKey="cumulative"
-                      fill={PORTNOX_COLORS.primary}
-                      fillOpacity={0.3}
-                      stroke={PORTNOX_COLORS.primary}
-                      name="Cumulative Cost"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="savings"
-                      stroke={PORTNOX_COLORS.success}
-                      strokeWidth={3}
-                      name="Cumulative Savings"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="netValue"
-                      stroke={PORTNOX_COLORS.accent}
-                      strokeWidth={3}
-                      strokeDasharray="5 5"
-                      name="Net Value"
-                    />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* ROI Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Payback Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-portnox-primary">{selectedResult?.roi.paybackMonths || 0}</p>
-                  <p className="text-sm text-gray-600">Months to Payback</p>
-                </div>
-                <div className="mt-4 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Break-even Point</span>
-                    <span>Month {selectedResult?.roi.paybackMonths || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>5-Year ROI</span>
-                    <span className="text-green-600">{selectedResult?.roi.percentage || 0}%</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Annual Savings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-green-600">
-                    {formatCurrency(selectedResult?.roi.annualSavings || 0)}
-                  </p>
-                  <p className="text-sm text-gray-600">Per Year</p>
-                </div>
-                <div className="mt-4 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Labor Savings</span>
-                    <span>{formatCurrency((selectedResult?.roi.annualSavings || 0) * 0.4)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Risk Reduction</span>
-                    <span>{formatCurrency((selectedResult?.roi.annualSavings || 0) * 0.6)}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Efficiency Gains</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-blue-600">{selectedResult?.roi.laborSavingsFTE || 0}</p>
-                  <p className="text-sm text-gray-600">FTE Saved</p>
-                </div>
-                <div className="mt-4 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Admin Time Reduction</span>
-                    <span>75%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Incident Response</span>
-                    <span>60% Faster</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Deep Analysis Tab */}
-        <TabsContent value="analysis" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Cost Sensitivity Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-semibold mb-2">Device Count Impact</h4>
-                    <p className="text-sm text-gray-600 mb-3">How costs change with different device counts</p>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>50% fewer devices</span>
-                        <span className="text-green-600">-42% total cost</span>
+                          {item.data.perDevice && (
+                            <div className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                              ${item.data.perDevice}/device/month
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Current devices</span>
-                        <span>{formatCurrency(selectedResult?.total || 0)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>50% more devices</span>
-                        <span className="text-red-600">+38% total cost</span>
+                    ))}
+                    <div className="border-t pt-3">
+                      <div className="flex items-center justify-between">
+                        <div className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>
+                          Total TCO
+                        </div>
+                        <div className={`font-bold text-xl ${darkMode ? "text-white" : "text-gray-900"}`}>
+                          $
+                          {(
+                            data.licensing.total +
+                            data.implementation.total +
+                            data.hardware.total +
+                            data.support.total +
+                            data.hidden.total
+                          ).toLocaleString()}
+                        </div>
                       </div>
                     </div>
                   </div>
-
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-semibold mb-2">Time Horizon Impact</h4>
-                    <p className="text-sm text-gray-600 mb-3">Cost efficiency over different time periods</p>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>1 Year</span>
-                        <span>{formatCurrency((selectedResult?.total || 0) / years)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>3 Years</span>
-                        <span>{formatCurrency(selectedResult?.total || 0)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>5 Years</span>
-                        <span>{formatCurrency((selectedResult?.total || 0) * 1.67)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Risk-Adjusted TCO</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-semibold mb-2">Security Risk Costs</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Breach Probability</span>
-                        <span>15% annually</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Average Breach Cost</span>
-                        <span>{formatCurrency(4500000)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Risk-Adjusted Cost</span>
-                        <span className="text-red-600">{formatCurrency(675000)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-semibold mb-2">Compliance Risk</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Audit Failure Risk</span>
-                        <span>8% annually</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Penalty Exposure</span>
-                        <span>{formatCurrency(500000)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Risk-Adjusted Cost</span>
-                        <span className="text-red-600">{formatCurrency(40000)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-900/20">
-                    <h4 className="font-semibold mb-2 text-green-800 dark:text-green-200">Total Risk-Adjusted TCO</h4>
-                    <p className="text-2xl font-bold text-green-800 dark:text-green-200">
-                      {formatCurrency((selectedResult?.total || 0) + 715000)}
-                    </p>
-                    <p className="text-sm text-green-600 dark:text-green-300">
-                      Including security and compliance risks
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Advanced Metrics */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Advanced Financial Metrics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold">12.5%</p>
-                  <p className="text-sm text-gray-600">Internal Rate of Return</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold">2.3</p>
-                  <p className="text-sm text-gray-600">Benefit-Cost Ratio</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold">{formatCurrency(850000)}</p>
-                  <p className="text-sm text-gray-600">Net Present Value</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold">18 mo</p>
-                  <p className="text-sm text-gray-600">Discounted Payback</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )
+        })}
+      </div>
     </div>
   )
 }
+
+export default DetailedCostBreakdown

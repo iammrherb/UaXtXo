@@ -4,8 +4,18 @@ import type React from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, XCircle, AlertCircle, Star, Crown } from "lucide-react"
+import { CheckCircle, XCircle, AlertCircle, Star, Shield, Zap, Settings } from "lucide-react"
 import Image from "next/image"
+
+const PORTNOX_COLORS = {
+  primary: "#00D4AA",
+  primaryDark: "#00A88A",
+  accent: "#FF6B35",
+  success: "#10B981",
+  warning: "#F59E0B",
+  danger: "#EF4444",
+  info: "#3B82F6",
+}
 
 interface FeatureMatrixProps {
   results?: any
@@ -18,268 +28,373 @@ const FeatureMatrix: React.FC<FeatureMatrixProps> = ({
   selectedVendors = ["portnox", "cisco", "aruba", "meraki"],
   darkMode = false,
 }) => {
-  const vendorFeatures = {
+  const vendorData = {
     portnox: {
       name: "Portnox",
       logo: "/portnox-logo.png",
-      category: "Cloud-Native NAC",
-      features: {
-        core: {
-          "Network Access Control": "full",
-          "Device Discovery": "full",
-          "Policy Enforcement": "full",
-          "Guest Access": "full",
-          "Certificate Management": "full",
-        },
-        advanced: {
-          "AI-Powered Threat Detection": "full",
-          "IoT Device Management": "full",
-          "BYOD Support": "full",
-          "Zero Trust Architecture": "full",
-          "Behavioral Analytics": "full",
-        },
-        compliance: {
-          "SOC 2 Type II": "full",
-          "ISO 27001": "full",
-          HIPAA: "full",
-          "PCI DSS": "full",
-          GDPR: "full",
-          FedRAMP: "full",
-        },
-        integration: {
-          "Active Directory": "full",
-          LDAP: "full",
-          RADIUS: "full",
-          "SAML/SSO": "full",
-          "API Access": "full",
-          "SIEM Integration": "full",
-        },
-        deployment: {
-          "Cloud Deployment": "full",
-          "On-Premises": "partial",
-          Hybrid: "full",
-          "Multi-Tenant": "full",
-          "Auto-Scaling": "full",
-        },
-      },
+      tier: "Enterprise",
     },
     cisco: {
       name: "Cisco ISE",
       logo: "/cisco-logo.png",
-      category: "Enterprise NAC",
-      features: {
-        core: {
-          "Network Access Control": "full",
-          "Device Discovery": "full",
-          "Policy Enforcement": "full",
-          "Guest Access": "full",
-          "Certificate Management": "partial",
-        },
-        advanced: {
-          "AI-Powered Threat Detection": "none",
-          "IoT Device Management": "partial",
-          "BYOD Support": "full",
-          "Zero Trust Architecture": "partial",
-          "Behavioral Analytics": "none",
-        },
-        compliance: {
-          "SOC 2 Type II": "full",
-          "ISO 27001": "full",
-          HIPAA: "partial",
-          "PCI DSS": "full",
-          GDPR: "partial",
-          FedRAMP: "none",
-        },
-        integration: {
-          "Active Directory": "full",
-          LDAP: "full",
-          RADIUS: "full",
-          "SAML/SSO": "full",
-          "API Access": "partial",
-          "SIEM Integration": "partial",
-        },
-        deployment: {
-          "Cloud Deployment": "partial",
-          "On-Premises": "full",
-          Hybrid: "partial",
-          "Multi-Tenant": "none",
-          "Auto-Scaling": "none",
-        },
-      },
+      tier: "Enterprise",
     },
     aruba: {
       name: "Aruba ClearPass",
       logo: "/aruba-logo.png",
-      category: "Enterprise NAC",
-      features: {
-        core: {
-          "Network Access Control": "full",
-          "Device Discovery": "full",
-          "Policy Enforcement": "full",
-          "Guest Access": "full",
-          "Certificate Management": "full",
-        },
-        advanced: {
-          "AI-Powered Threat Detection": "none",
-          "IoT Device Management": "full",
-          "BYOD Support": "full",
-          "Zero Trust Architecture": "partial",
-          "Behavioral Analytics": "partial",
-        },
-        compliance: {
-          "SOC 2 Type II": "full",
-          "ISO 27001": "full",
-          HIPAA: "partial",
-          "PCI DSS": "full",
-          GDPR: "partial",
-          FedRAMP: "none",
-        },
-        integration: {
-          "Active Directory": "full",
-          LDAP: "full",
-          RADIUS: "full",
-          "SAML/SSO": "full",
-          "API Access": "full",
-          "SIEM Integration": "partial",
-        },
-        deployment: {
-          "Cloud Deployment": "partial",
-          "On-Premises": "full",
-          Hybrid: "partial",
-          "Multi-Tenant": "none",
-          "Auto-Scaling": "none",
-        },
-      },
+      tier: "Enterprise",
     },
     meraki: {
       name: "Cisco Meraki",
       logo: "/meraki-logo.png",
-      category: "Cloud-Managed NAC",
-      features: {
-        core: {
-          "Network Access Control": "full",
-          "Device Discovery": "full",
-          "Policy Enforcement": "full",
-          "Guest Access": "full",
-          "Certificate Management": "partial",
-        },
-        advanced: {
-          "AI-Powered Threat Detection": "none",
-          "IoT Device Management": "partial",
-          "BYOD Support": "full",
-          "Zero Trust Architecture": "partial",
-          "Behavioral Analytics": "partial",
-        },
-        compliance: {
-          "SOC 2 Type II": "full",
-          "ISO 27001": "full",
-          HIPAA: "partial",
-          "PCI DSS": "full",
-          GDPR: "partial",
-          FedRAMP: "none",
-        },
-        integration: {
-          "Active Directory": "full",
-          LDAP: "full",
-          RADIUS: "full",
-          "SAML/SSO": "full",
-          "API Access": "full",
-          "SIEM Integration": "partial",
-        },
-        deployment: {
-          "Cloud Deployment": "full",
-          "On-Premises": "none",
-          Hybrid: "partial",
-          "Multi-Tenant": "partial",
-          "Auto-Scaling": "full",
-        },
-      },
+      tier: "Cloud",
     },
   }
 
-  const FeatureIcon = ({ level }: { level: "full" | "partial" | "none" }) => {
-    switch (level) {
+  const featureCategories = [
+    {
+      name: "Core NAC Features",
+      icon: <Shield className="h-5 w-5" />,
+      features: [
+        {
+          name: "Device Discovery & Profiling",
+          portnox: "full",
+          cisco: "full",
+          aruba: "full",
+          meraki: "partial",
+        },
+        {
+          name: "Policy Enforcement",
+          portnox: "full",
+          cisco: "full",
+          aruba: "full",
+          meraki: "full",
+        },
+        {
+          name: "Guest Access Management",
+          portnox: "full",
+          cisco: "full",
+          aruba: "full",
+          meraki: "full",
+        },
+        {
+          name: "BYOD Support",
+          portnox: "full",
+          cisco: "full",
+          aruba: "full",
+          meraki: "partial",
+        },
+        {
+          name: "IoT Device Management",
+          portnox: "full",
+          cisco: "partial",
+          aruba: "partial",
+          meraki: "partial",
+        },
+      ],
+    },
+    {
+      name: "Advanced Security",
+      icon: <Star className="h-5 w-5" />,
+      features: [
+        {
+          name: "AI-Powered Threat Detection",
+          portnox: "full",
+          cisco: "none",
+          aruba: "none",
+          meraki: "none",
+        },
+        {
+          name: "Behavioral Analytics",
+          portnox: "full",
+          cisco: "addon",
+          aruba: "addon",
+          meraki: "none",
+        },
+        {
+          name: "Zero Trust Architecture",
+          portnox: "full",
+          cisco: "partial",
+          aruba: "partial",
+          meraki: "partial",
+        },
+        {
+          name: "Automated Incident Response",
+          portnox: "full",
+          cisco: "addon",
+          aruba: "none",
+          meraki: "none",
+        },
+        {
+          name: "Risk-Based Authentication",
+          portnox: "full",
+          cisco: "partial",
+          aruba: "partial",
+          meraki: "none",
+        },
+      ],
+    },
+    {
+      name: "Compliance & Reporting",
+      icon: <Settings className="h-5 w-5" />,
+      features: [
+        {
+          name: "SOC 2 Type II Compliance",
+          portnox: "full",
+          cisco: "full",
+          aruba: "full",
+          meraki: "full",
+        },
+        {
+          name: "HIPAA Compliance",
+          portnox: "full",
+          cisco: "full",
+          aruba: "partial",
+          meraki: "partial",
+        },
+        {
+          name: "PCI DSS Compliance",
+          portnox: "full",
+          cisco: "full",
+          aruba: "full",
+          meraki: "partial",
+        },
+        {
+          name: "GDPR Compliance",
+          portnox: "full",
+          cisco: "partial",
+          aruba: "partial",
+          meraki: "partial",
+        },
+        {
+          name: "FedRAMP Authorization",
+          portnox: "full",
+          cisco: "none",
+          aruba: "none",
+          meraki: "none",
+        },
+      ],
+    },
+    {
+      name: "Integration & APIs",
+      icon: <Zap className="h-5 w-5" />,
+      features: [
+        {
+          name: "REST API",
+          portnox: "full",
+          cisco: "full",
+          aruba: "full",
+          meraki: "full",
+        },
+        {
+          name: "SIEM Integration",
+          portnox: "full",
+          cisco: "full",
+          aruba: "full",
+          meraki: "partial",
+        },
+        {
+          name: "Active Directory Integration",
+          portnox: "full",
+          cisco: "full",
+          aruba: "full",
+          meraki: "full",
+        },
+        {
+          name: "Cloud Identity Providers",
+          portnox: "full",
+          cisco: "partial",
+          aruba: "partial",
+          meraki: "full",
+        },
+        {
+          name: "Webhook Support",
+          portnox: "full",
+          cisco: "none",
+          aruba: "none",
+          meraki: "partial",
+        },
+      ],
+    },
+  ]
+
+  const getFeatureIcon = (status: string) => {
+    switch (status) {
       case "full":
         return <CheckCircle className="h-5 w-5 text-green-500" />
       case "partial":
         return <AlertCircle className="h-5 w-5 text-yellow-500" />
+      case "addon":
+        return <AlertCircle className="h-5 w-5 text-orange-500" />
       case "none":
         return <XCircle className="h-5 w-5 text-red-500" />
+      default:
+        return <XCircle className="h-5 w-5 text-gray-400" />
     }
   }
 
-  const getFeatureScore = (vendor: string) => {
-    const features = vendorFeatures[vendor as keyof typeof vendorFeatures]?.features
-    if (!features) return 0
+  const getFeatureText = (status: string) => {
+    switch (status) {
+      case "full":
+        return "Included"
+      case "partial":
+        return "Limited"
+      case "addon":
+        return "Add-on"
+      case "none":
+        return "Not Available"
+      default:
+        return "Unknown"
+    }
+  }
 
-    let total = 0
-    let score = 0
-
-    Object.values(features).forEach((category) => {
-      Object.values(category).forEach((level) => {
-        total += 1
-        if (level === "full") score += 1
-        else if (level === "partial") score += 0.5
-      })
-    })
-
-    return Math.round((score / total) * 100)
+  const getFeatureBadge = (status: string) => {
+    switch (status) {
+      case "full":
+        return <Badge className="bg-green-100 text-green-800 border-green-200">Full</Badge>
+      case "partial":
+        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Partial</Badge>
+      case "addon":
+        return <Badge className="bg-orange-100 text-orange-800 border-orange-200">Add-on</Badge>
+      case "none":
+        return <Badge className="bg-red-100 text-red-800 border-red-200">None</Badge>
+      default:
+        return <Badge className="bg-gray-100 text-gray-800 border-gray-200">Unknown</Badge>
+    }
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold flex items-center gap-2">
-              <Star className="h-6 w-6 text-yellow-500" />
-              Comprehensive Feature Matrix
-            </CardTitle>
+            <CardTitle className="text-2xl font-bold">Feature Comparison Matrix</CardTitle>
             <p className={`${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-              Detailed feature comparison across all vendors and categories
+              Comprehensive feature analysis across {selectedVendors.length} vendors
             </p>
           </CardHeader>
         </Card>
       </motion.div>
 
-      {/* Feature Scores Overview */}
+      {/* Feature Categories */}
+      {featureCategories.map((category, categoryIndex) => (
+        <motion.div
+          key={category.name}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
+        >
+          <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {category.icon}
+                {category.name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className={`border-b ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
+                      <th className={`text-left p-3 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Feature</th>
+                      {selectedVendors.map((vendor) => (
+                        <th key={vendor} className={`text-center p-3 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                          <div className="flex flex-col items-center">
+                            <Image
+                              src={vendorData[vendor as keyof typeof vendorData]?.logo || "/placeholder.svg"}
+                              alt={vendorData[vendor as keyof typeof vendorData]?.name || vendor}
+                              width={80}
+                              height={20}
+                              className="h-5 w-auto mb-1"
+                            />
+                            <span className="text-xs">
+                              {vendorData[vendor as keyof typeof vendorData]?.name || vendor}
+                            </span>
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {category.features.map((feature, featureIndex) => (
+                      <tr key={featureIndex} className={`border-b ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
+                        <td className={`p-3 font-medium ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                          {feature.name}
+                        </td>
+                        {selectedVendors.map((vendor) => (
+                          <td key={vendor} className="p-3 text-center">
+                            <div className="flex flex-col items-center space-y-1">
+                              {getFeatureIcon(feature[vendor as keyof typeof feature] as string)}
+                              <span className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                                {getFeatureText(feature[vendor as keyof typeof feature] as string)}
+                              </span>
+                            </div>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      ))}
+
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {selectedVendors.map((vendor, index) => {
-          const data = vendorFeatures[vendor as keyof typeof vendorFeatures]
-          const score = getFeatureScore(vendor)
+          const data = vendorData[vendor as keyof typeof vendorData]
+          const fullFeatures = featureCategories.reduce((acc, category) => {
+            return acc + category.features.filter((f) => f[vendor as keyof typeof f] === "full").length
+          }, 0)
+          const totalFeatures = featureCategories.reduce((acc, category) => acc + category.features.length, 0)
+          const completeness = Math.round((fullFeatures / totalFeatures) * 100)
 
           return (
             <motion.div
               key={vendor}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
             >
               <Card className={`h-full ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
                 <CardContent className="p-6 text-center">
-                  <div className="flex items-center justify-center mb-4">
-                    <Image
-                      src={data.logo || "/placeholder.svg"}
-                      alt={data.name}
-                      width={100}
-                      height={25}
-                      className="h-8 w-auto"
-                    />
-                    {vendor === "portnox" && <Crown className="h-5 w-5 text-yellow-500 ml-2" />}
+                  <Image
+                    src={data?.logo || "/placeholder.svg"}
+                    alt={data?.name || vendor}
+                    width={120}
+                    height={30}
+                    className="h-8 w-auto mx-auto mb-4"
+                  />
+                  <h3 className={`font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>
+                    {data?.name || vendor}
+                  </h3>
+                  <div className="space-y-2">
+                    <div
+                      className="text-2xl font-bold"
+                      style={{
+                        color:
+                          completeness >= 90
+                            ? PORTNOX_COLORS.success
+                            : completeness >= 70
+                              ? PORTNOX_COLORS.warning
+                              : PORTNOX_COLORS.danger,
+                      }}
+                    >
+                      {completeness}%
+                    </div>
+                    <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Feature Completeness</p>
+                    <div className="text-xs space-y-1">
+                      <div className={`${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                        {fullFeatures}/{totalFeatures} Full Features
+                      </div>
+                      <Badge variant={data?.tier === "Enterprise" ? "default" : "secondary"}>
+                        {data?.tier || "Standard"}
+                      </Badge>
+                    </div>
                   </div>
-                  <div
-                    className="text-3xl font-bold mb-2"
-                    style={{
-                      color: score >= 90 ? "#10B981" : score >= 70 ? "#F59E0B" : "#EF4444",
-                    }}
-                  >
-                    {score}%
-                  </div>
-                  <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Feature Completeness</p>
-                  <Badge variant={vendor === "portnox" ? "default" : "secondary"} className="mt-2">
-                    {data.category}
-                  </Badge>
                 </CardContent>
               </Card>
             </motion.div>
@@ -287,95 +402,29 @@ const FeatureMatrix: React.FC<FeatureMatrixProps> = ({
         })}
       </div>
 
-      {/* Detailed Feature Matrix */}
-      {Object.entries(vendorFeatures.portnox.features).map(([categoryName, categoryFeatures]) => (
-        <Card key={categoryName} className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
-          <CardHeader>
-            <CardTitle className="capitalize">{categoryName.replace(/([A-Z])/g, " $1").trim()} Features</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className={`border-b ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
-                    <th className={`text-left p-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Feature</th>
-                    {selectedVendors.map((vendor) => {
-                      const data = vendorFeatures[vendor as keyof typeof vendorFeatures]
-                      return (
-                        <th key={vendor} className={`text-center p-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-                          <div className="flex flex-col items-center gap-2">
-                            <Image
-                              src={data.logo || "/placeholder.svg"}
-                              alt={data.name}
-                              width={80}
-                              height={20}
-                              className="h-6 w-auto"
-                            />
-                            <span className="text-sm">{data.name}</span>
-                          </div>
-                        </th>
-                      )
-                    })}
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(categoryFeatures).map(([featureName, _], index) => (
-                    <tr key={index} className={`border-b ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
-                      <td className={`p-4 font-medium ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
-                        {featureName}
-                      </td>
-                      {selectedVendors.map((vendor) => {
-                        const vendorData = vendorFeatures[vendor as keyof typeof vendorFeatures]
-                        const featureLevel =
-                          vendorData.features[categoryName as keyof typeof vendorData.features]?.[
-                            featureName as keyof typeof categoryFeatures
-                          ] || "none"
-
-                        return (
-                          <td key={vendor} className="p-4 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <FeatureIcon level={featureLevel as "full" | "partial" | "none"} />
-                              {vendor === "portnox" && featureLevel === "full" && (
-                                <Badge variant="default" className="text-xs">
-                                  Best
-                                </Badge>
-                              )}
-                            </div>
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-
       {/* Legend */}
       <Card className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}`}>
-        <CardContent className="p-6">
-          <h3 className={`font-semibold mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>Legend</h3>
-          <div className="flex flex-wrap gap-6">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <span className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-                Full Support - Complete feature implementation
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-yellow-500" />
-              <span className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-                Partial Support - Limited or add-on required
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-red-500" />
-              <span className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-                Not Supported - Feature not available
-              </span>
-            </div>
+        <CardHeader>
+          <CardTitle>Legend</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { status: "full", icon: CheckCircle, color: "text-green-500", description: "Fully included" },
+              { status: "partial", icon: AlertCircle, color: "text-yellow-500", description: "Limited functionality" },
+              { status: "addon", icon: AlertCircle, color: "text-orange-500", description: "Available as add-on" },
+              { status: "none", icon: XCircle, color: "text-red-500", description: "Not available" },
+            ].map((item) => (
+              <div key={item.status} className="flex items-center space-x-2">
+                <item.icon className={`h-5 w-5 ${item.color}`} />
+                <div>
+                  <div className={`font-medium ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                    {getFeatureText(item.status)}
+                  </div>
+                  <div className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>{item.description}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
