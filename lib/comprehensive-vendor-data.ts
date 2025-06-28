@@ -172,7 +172,7 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
     },
     pricing: {
       model: "per-device",
-      basePrice: 4.0,
+      basePrice: 3.0, // Updated to reflect actual Portnox pricing
       currency: "USD",
       billingCycle: "monthly",
       volumeDiscounts: {
@@ -180,28 +180,7 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
         tier2: { threshold: 5000, discount: 0.25 },
         tier3: { threshold: 10000, discount: 0.35 },
       },
-      addOns: {
-        atp: {
-          name: "Advanced Threat Protection",
-          price: 1.5,
-          description: "ML-based threat detection and SOAR integration",
-        },
-        compliance: {
-          name: "Compliance Automation",
-          price: 1.0,
-          description: "Automated reporting and continuous monitoring",
-        },
-        iot: {
-          name: "IoT/OT Security",
-          price: 2.0,
-          description: "Industrial device profiling and OT protocol support",
-        },
-        analytics: {
-          name: "Risk Analytics",
-          price: 1.5,
-          description: "Advanced risk scoring and behavioral analytics",
-        },
-      },
+      // Remove addOns since Portnox doesn't have separate add-on modules
     },
     implementation: {
       deploymentTime: {
@@ -255,7 +234,7 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       "New IoT/OT module launch",
       "FedRAMP authorization achieved",
     ],
-    logoPath: "/portnox-logo.png",
+    logoPath: "https://www.portnox.com/wp-content/uploads/2021/03/Portnotx_Logo_Color-768x193.png",
   },
   cisco: {
     id: "cisco",

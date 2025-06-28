@@ -24,9 +24,9 @@ import {
   Building,
   Palette,
   Bell,
-  Shield,
   Zap,
   HelpCircle,
+  CheckCircle,
 } from "lucide-react"
 
 interface SettingsPanelProps {
@@ -358,7 +358,7 @@ export default function SettingsPanel({
                         <div className="mt-2 space-y-2">
                           <div className="flex items-center gap-4">
                             <Slider
-                              value={[configuration.portnoxBasePrice || 4.0]}
+                              value={[configuration.portnoxBasePrice || 3.0]}
                               onValueChange={(value) => handleConfigChange("portnoxBasePrice", value[0])}
                               min={1}
                               max={10}
@@ -366,11 +366,11 @@ export default function SettingsPanel({
                               className="flex-1"
                             />
                             <Badge variant="outline" className="min-w-[80px] justify-center">
-                              ${(configuration.portnoxBasePrice || 4.0).toFixed(2)}
+                              ${(configuration.portnoxBasePrice || 3.0).toFixed(2)}
                             </Badge>
                           </div>
                           <p className="text-xs text-gray-500">
-                            Adjust based on your negotiated rate or enterprise pricing
+                            Based on actual Portnox pricing from portnox.com/pricing
                           </p>
                         </div>
                       </div>
@@ -378,71 +378,24 @@ export default function SettingsPanel({
                       <Separator />
 
                       <div>
-                        <Label className="text-base font-medium">Add-on Modules</Label>
+                        <Label className="text-base font-medium">Portnox Pricing Model</Label>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                          Select additional Portnox modules for enhanced functionality
+                          Simple, transparent per-device pricing with no hidden costs or add-on modules
                         </p>
 
-                        <div className="space-y-4">
-                          {[
-                            {
-                              key: "atp",
-                              name: "Advanced Threat Protection",
-                              description: "ML-based threat detection, SOAR integration, threat intel feeds",
-                              price: 1.5,
-                              icon: <Shield className="h-4 w-4" />,
-                            },
-                            {
-                              key: "compliance",
-                              name: "Compliance Automation",
-                              description: "Automated reporting, continuous monitoring, evidence collection",
-                              price: 1.0,
-                              icon: <Shield className="h-4 w-4" />,
-                            },
-                            {
-                              key: "iot",
-                              name: "IoT/OT Security",
-                              description: "OT protocol support, industrial device profiling, SCADA integration",
-                              price: 2.0,
-                              icon: <Zap className="h-4 w-4" />,
-                            },
-                            {
-                              key: "analytics",
-                              name: "Risk Analytics",
-                              description: "Device risk scoring, user behavior analytics, predictive insights",
-                              price: 1.5,
-                              icon: <Zap className="h-4 w-4" />,
-                            },
-                          ].map((addon) => (
-                            <div
-                              key={addon.key}
-                              className={cn(
-                                "p-4 border rounded-lg",
-                                portnoxAddons[addon.key]
-                                  ? "border-portnox-primary bg-portnox-primary/5"
-                                  : "border-gray-200 dark:border-gray-700",
-                              )}
-                            >
-                              <div className="flex items-start justify-between">
-                                <div className="flex items-start gap-3 flex-1">
-                                  <div className="p-2 rounded-md bg-portnox-primary/10">{addon.icon}</div>
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                      <h4 className="font-medium">{addon.name}</h4>
-                                      <Badge variant="outline" className="text-xs">
-                                        +${addon.price}/device/month
-                                      </Badge>
-                                    </div>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{addon.description}</p>
-                                  </div>
-                                </div>
-                                <Switch
-                                  checked={portnoxAddons[addon.key]}
-                                  onCheckedChange={(checked) => handleAddonChange(addon.key, checked)}
-                                />
-                              </div>
-                            </div>
-                          ))}
+                        <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-900/20">
+                          <div className="flex items-center gap-2 mb-2">
+                            <CheckCircle className="h-5 w-5 text-green-600" />
+                            <h4 className="font-medium text-green-800 dark:text-green-200">All Features Included</h4>
+                          </div>
+                          <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
+                            <li>• Complete NAC functionality</li>
+                            <li>• AI-powered threat detection</li>
+                            <li>• Compliance automation</li>
+                            <li>• IoT/OT device support</li>
+                            <li>• Advanced analytics</li>
+                            <li>• 24/7 support included</li>
+                          </ul>
                         </div>
                       </div>
                     </CardContent>
