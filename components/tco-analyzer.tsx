@@ -1,317 +1,325 @@
 "use client"
 
-import type React from "react"
 import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import type { calculateVendorTCO, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { motion } from "framer-motion"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import SettingsPanel from "./settings-panel"
-import TCOOverview from "./tco-overview"
-import VendorComparison from "./vendor-comparison"
-import FeatureMatrix from "./feature-matrix"
-import DetailedCostBreakdown from "./detailed-cost-breakdown"
-import ROIBusinessValue from "./roi-business-value"
-import ComplianceRiskView from "./compliance-risk-view"
-
-import {
-  BarChart3,
-  LayoutGrid,
-  ShieldCheck,
-  BarChartHorizontal,
-  FilePieChart,
-  SlidersHorizontal,
-  UsersIcon,
-  Settings,
-} from "lucide-react"
-
-type CalculationResult = NonNullable<ReturnType<typeof calculateVendorTCO>>
-
-// Enhanced color palette with vibrant Portnox branding
-const PORTNOX_COLORS = {
-  primary: "#00D4AA",
-  primaryDark: "#00A88A",
-  primaryLight: "#33DDBB",
-  secondary: "#0A1628",
-  secondaryLight: "#1A2638",
-  accent: "#FF6B35",
-  success: "#10B981",
-  warning: "#F59E0B",
-  danger: "#EF4444",
-  info: "#3B82F6",
-  purple: "#8B5CF6",
-  pink: "#EC4899",
-  textPrimaryDark: "#E0E0E0",
-  textSecondaryDark: "#A0A0A0",
-  textPrimaryLight: "#1F2937",
-  textSecondaryLight: "#6B7280",
-  gradient: {
-    primary: "linear-gradient(135deg, #00D4AA 0%, #00A88A 100%)",
-    secondary: "linear-gradient(135deg, #0A1628 0%, #1A2638 100%)",
-    vibrant: "linear-gradient(135deg, #00D4AA 0%, #3B82F6 50%, #8B5CF6 100%)",
-    fire: "linear-gradient(135deg, #FF6B35 0%, #F59E0B 50%, #EF4444 100%)",
-    ocean: "linear-gradient(135deg, #00D4AA 0%, #06B6D4 50%, #3B82F6 100%)",
-    sunset: "linear-gradient(135deg, #FF6B35 0%, #EC4899 50%, #8B5CF6 100%)",
-  },
-}
-
-const VIBRANT_COLORS = [
-  PORTNOX_COLORS.primary,
-  PORTNOX_COLORS.accent,
-  PORTNOX_COLORS.info,
-  PORTNOX_COLORS.success,
-  PORTNOX_COLORS.warning,
-  PORTNOX_COLORS.purple,
-  PORTNOX_COLORS.pink,
-  "#06B6D4",
-  "#EF4444",
-  "#6366F1",
-  "#14B8A6",
-  "#F97316",
-]
-
-// Animation variants
-const fadeInUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 } }
-const staggerChildren = { animate: { transition: { staggerChildren: 0.07 } } }
-const pulseAnimation = {
-  scale: [1, 1.03, 1],
-  transition: { duration: 1.5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
-}
-
-const TABS_CONFIG = [
-  { value: "dashboard", label: "Executive Dashboard", icon: <BarChartHorizontal /> },
-  { value: "cost-breakdown", label: "Detailed Costs", icon: <FilePieChart /> },
-  { value: "roi-analysis", label: "ROI & Business Value", icon: <BarChart3 /> },
-  { value: "compliance", label: "Compliance & Risk", icon: <ShieldCheck /> },
-  { value: "operations", label: "Operations Impact", icon: <SlidersHorizontal /> },
-  { value: "feature-matrix", label: "Feature Matrix", icon: <LayoutGrid /> },
-  { value: "vendor-comparison", label: "Vendor Comparison", icon: <UsersIcon /> },
-]
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts"
+import { TrendingDown, TrendingUp, Clock, Shield, Zap, CheckCircle, Info, Download, Share } from "lucide-react"
+import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 
 interface TCOAnalyzerProps {
-  results?: any
-  selectedVendors?: string[]
-  darkMode?: boolean
-  configuration?: CalculationConfiguration
-  setConfiguration?: React.Dispatch<React.SetStateAction<CalculationConfiguration>>
+  results: CalculationResult[]
+  configuration: CalculationConfiguration
+  onConfigurationChange: (config: Partial<CalculationConfiguration>) => void
+  selectedVendors: string[]
+  onVendorSelectionChange: (vendors: string[]) => void
+  isLoading?: boolean
 }
 
-const TCOAnalyzer: React.FC<TCOAnalyzerProps> = ({
-  results = {},
-  selectedVendors = ["portnox", "cisco", "aruba", "meraki"],
-  darkMode = false,
-  configuration = {
-    orgSize: "medium",
-    devices: 2500,
-    users: 1500,
-    industry: "technology",
-    years: 3,
-    region: "north-america",
-    portnoxBasePrice: 3.0,
-    portnoxAddons: {
-      atp: false,
-      compliance: false,
-      iot: false,
-      analytics: false,
-    },
-  },
-  setConfiguration = () => {},
-}) => {
-  const [activeTab, setActiveTab] = useState(TABS_CONFIG[0].value)
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+const COLORS = ["#10B981", "#3B82F6", "#8B5CF6", "#F59E0B", "#EF4444", "#6B7280"]
 
-  const handleTabChange = (tabValue: string) => {
-    setActiveTab(tabValue)
-  }
+export default function TCOAnalyzer({
+  results = [],
+  configuration,
+  onConfigurationChange,
+  selectedVendors,
+  onVendorSelectionChange,
+  isLoading = false,
+}: TCOAnalyzerProps) {
+  const [selectedMetric, setSelectedMetric] = useState("total")
 
-  const toggleSettingsPanel = () => {
-    setIsSettingsOpen(!isSettingsOpen)
-  }
+  // Safe data handling
+  const safeResults = results.filter((result) => result && typeof result.total === "number")
+  const portnoxResult = safeResults.find((r) => r.vendor === "portnox")
+  const competitorResults = safeResults.filter((r) => r.vendor !== "portnox")
 
-  const handleConfigurationChange = (newConfiguration: CalculationConfiguration) => {
-    if (setConfiguration) {
-      setConfiguration(newConfiguration)
+  // Calculate savings vs competitors
+  const calculateSavings = () => {
+    if (!portnoxResult || competitorResults.length === 0) return null
+
+    const avgCompetitorCost = competitorResults.reduce((sum, r) => sum + (r.total || 0), 0) / competitorResults.length
+    const savings = avgCompetitorCost - portnoxResult.total
+    const percentage = (savings / avgCompetitorCost) * 100
+
+    return {
+      amount: savings,
+      percentage: percentage,
+      paybackMonths: portnoxResult.roi?.paybackMonths || 0,
     }
   }
 
-  return (
-    <TooltipProvider>
-      <div className="flex flex-col h-full">
-        {/* Header with Tabs and Settings */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-grow">
-            <TabsList className="flex space-x-2 lg:space-x-4">
-              {TABS_CONFIG.map((tab) => (
-                <TabsTrigger
-                  key={tab.value}
-                  value={tab.value}
-                  className="flex items-center space-x-2 data-[state=active]:bg-secondary-foreground data-[state=active]:text-secondary"
-                >
-                  {tab.icon}
-                  <span className="hidden lg:block">{tab.label}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+  const savings = calculateSavings()
 
-          <Tooltip>
-            <TooltipTrigger>
-              <Button variant="outline" size="icon" onClick={toggleSettingsPanel}>
-                <Settings className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Adjust Calculation Settings</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
+  // Prepare chart data
+  const chartData = safeResults.map((result) => ({
+    vendor: result.vendorName || result.vendor,
+    total: result.total || 0,
+    software: result.breakdown?.find((b) => b.name === "Software")?.value || 0,
+    hardware: result.breakdown?.find((b) => b.name === "Hardware")?.value || 0,
+    implementation: result.breakdown?.find((b) => b.name === "Implementation")?.value || 0,
+    support: result.breakdown?.find((b) => b.name === "Support")?.value || 0,
+    operations: result.breakdown?.find((b) => b.name === "Operations")?.value || 0,
+  }))
 
-        {/* Main Content Area */}
-        <div className="flex flex-grow overflow-auto">
-          {/* Settings Panel (Sidebar) */}
-          <AnimatePresence>
-            {isSettingsOpen && (
-              <motion.aside
-                key="settings-panel"
-                initial={{ x: "100%", opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: "100%", opacity: 0 }}
-                transition={{ type: "spring", stiffness: 150, damping: 20 }}
-                className="w-full md:w-80 border-l border-gray-200 dark:border-gray-700 bg-secondary-background p-4"
-              >
-                <SettingsPanel
-                  configuration={configuration}
-                  onConfigurationChange={handleConfigurationChange}
-                  darkMode={darkMode}
-                />
-              </motion.aside>
-            )}
-          </AnimatePresence>
+  // ROI Timeline data
+  const roiTimelineData = Array.from({ length: configuration.years || 3 }, (_, i) => {
+    const year = i + 1
+    const portnoxCumulative = portnoxResult ? (portnoxResult.total / (configuration.years || 3)) * year : 0
+    const avgCompetitorCumulative =
+      competitorResults.length > 0
+        ? (competitorResults.reduce((sum, r) => sum + (r.total || 0), 0) /
+            competitorResults.length /
+            (configuration.years || 3)) *
+          year
+        : 0
 
-          {/* Content Views */}
-          <div className="flex-grow p-4">
-            <AnimatePresence mode="wait" initial={false}>
-              {activeTab === "dashboard" && (
-                <motion.div
-                  key="dashboard"
-                  className="flex flex-col space-y-4"
-                  variants={staggerChildren}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <motion.div variants={fadeInUp}>
-                    <TCOOverview results={results} configuration={configuration} darkMode={darkMode} />
-                  </motion.div>
-                </motion.div>
-              )}
+    return {
+      year: `Year ${year}`,
+      portnox: portnoxCumulative,
+      competitor: avgCompetitorCumulative,
+      savings: avgCompetitorCumulative - portnoxCumulative,
+    }
+  })
 
-              {activeTab === "cost-breakdown" && (
-                <motion.div
-                  key="cost-breakdown"
-                  className="flex flex-col space-y-4"
-                  variants={staggerChildren}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <motion.div variants={fadeInUp}>
-                    <DetailedCostBreakdown
-                      results={results}
-                      years={configuration.years}
-                      darkMode={darkMode}
-                      configuration={configuration}
-                    />
-                  </motion.div>
-                </motion.div>
-              )}
-
-              {activeTab === "roi-analysis" && (
-                <motion.div
-                  key="roi-analysis"
-                  className="flex flex-col space-y-4"
-                  variants={staggerChildren}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <motion.div variants={fadeInUp}>
-                    <ROIBusinessValue results={results} configuration={configuration} darkMode={darkMode} />
-                  </motion.div>
-                </motion.div>
-              )}
-
-              {activeTab === "compliance" && (
-                <motion.div
-                  key="compliance"
-                  className="flex flex-col space-y-4"
-                  variants={staggerChildren}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <motion.div variants={fadeInUp}>
-                    <ComplianceRiskView
-                      results={results}
-                      industry={configuration.industry}
-                      selectedVendors={selectedVendors}
-                      darkMode={darkMode}
-                    />
-                  </motion.div>
-                </motion.div>
-              )}
-
-              {activeTab === "vendor-comparison" && (
-                <motion.div
-                  key="vendor-comparison"
-                  className="flex flex-col space-y-4"
-                  variants={staggerChildren}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <motion.div variants={fadeInUp}>
-                    <VendorComparison results={results} selectedVendors={selectedVendors} darkMode={darkMode} />
-                  </motion.div>
-                </motion.div>
-              )}
-
-              {activeTab === "feature-matrix" && (
-                <motion.div
-                  key="feature-matrix"
-                  className="flex flex-col space-y-4"
-                  variants={staggerChildren}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <motion.div variants={fadeInUp}>
-                    <FeatureMatrix results={results} selectedVendors={selectedVendors} darkMode={darkMode} />
-                  </motion.div>
-                </motion.div>
-              )}
-
-              {activeTab === "operations" && (
-                <motion.div
-                  key="operations"
-                  className="flex flex-col space-y-4"
-                  variants={staggerChildren}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <motion.div variants={fadeInUp}>
-                    <div>Operations View Content</div>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
-    </TooltipProvider>
+    )
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* Executive Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <Card className="border-green-200 bg-green-50 dark:bg-green-900/20">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 dark:bg-green-800 rounded-lg">
+                  <TrendingDown className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-green-800 dark:text-green-200">Total Savings</p>
+                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                    {savings ? `$${savings.amount.toLocaleString()}` : "$0"}
+                  </p>
+                  <p className="text-xs text-green-600">
+                    {savings ? `${savings.percentage.toFixed(1)}% less than competitors` : "No comparison data"}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
+                  <Clock className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Payback Period</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {portnoxResult?.roi?.paybackMonths || 0} months
+                  </p>
+                  <p className="text-xs text-gray-500">ROI: {portnoxResult?.roi?.percentage || 0}%</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 dark:bg-purple-800 rounded-lg">
+                  <Shield className="h-6 w-6 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Risk Reduction</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {portnoxResult?.roi?.breachReduction || 0}%
+                  </p>
+                  <p className="text-xs text-gray-500">Security breach probability</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Key Insights */}
+      {portnoxResult && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              Key Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-green-800 dark:text-green-200">Lower Total Cost</h4>
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    Portnox offers {savings ? `${savings.percentage.toFixed(1)}%` : "significant"} cost savings compared
+                    to traditional NAC solutions
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <Zap className="h-5 w-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-blue-800 dark:text-blue-200">Faster Implementation</h4>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    Cloud-native architecture enables rapid deployment with minimal infrastructure requirements
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <Shield className="h-5 w-5 text-purple-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-purple-800 dark:text-purple-200">Enhanced Security</h4>
+                  <p className="text-sm text-purple-700 dark:text-purple-300">
+                    AI-powered threat detection provides superior security posture with automated response
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-orange-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-orange-800 dark:text-orange-200">Operational Efficiency</h4>
+                  <p className="text-sm text-orange-700 dark:text-orange-300">
+                    Reduced operational overhead saves {portnoxResult.roi?.laborSavingsFTE || 0} FTE annually
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Cost Comparison Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Total Cost of Ownership Comparison</CardTitle>
+          <div className="flex gap-2">
+            <Button
+              variant={selectedMetric === "total" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedMetric("total")}
+            >
+              Total Cost
+            </Button>
+            <Button
+              variant={selectedMetric === "breakdown" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedMetric("breakdown")}
+            >
+              Cost Breakdown
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              {selectedMetric === "total" ? (
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="vendor" />
+                  <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                  <Tooltip
+                    formatter={(value: number) => [`$${value.toLocaleString()}`, "Total Cost"]}
+                    labelStyle={{ color: "#374151" }}
+                  />
+                  <Bar dataKey="total" fill="#3B82F6" />
+                </BarChart>
+              ) : (
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="vendor" />
+                  <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                  <Tooltip
+                    formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]}
+                    labelStyle={{ color: "#374151" }}
+                  />
+                  <Bar dataKey="software" stackId="a" fill="#10B981" />
+                  <Bar dataKey="hardware" stackId="a" fill="#3B82F6" />
+                  <Bar dataKey="implementation" stackId="a" fill="#8B5CF6" />
+                  <Bar dataKey="support" stackId="a" fill="#F59E0B" />
+                  <Bar dataKey="operations" stackId="a" fill="#EF4444" />
+                </BarChart>
+              )}
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ROI Timeline */}
+      <Card>
+        <CardHeader>
+          <CardTitle>ROI Timeline Analysis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={roiTimelineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="year" />
+                <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                <Tooltip
+                  formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]}
+                  labelStyle={{ color: "#374151" }}
+                />
+                <Line type="monotone" dataKey="portnox" stroke="#10B981" strokeWidth={3} name="Portnox" />
+                <Line type="monotone" dataKey="competitor" stroke="#EF4444" strokeWidth={3} name="Avg Competitor" />
+                <Line
+                  type="monotone"
+                  dataKey="savings"
+                  stroke="#3B82F6"
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  name="Cumulative Savings"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Action Buttons */}
+      <div className="flex gap-4">
+        <Button className="gap-2">
+          <Download className="h-4 w-4" />
+          Export Report
+        </Button>
+        <Button variant="outline" className="gap-2 bg-transparent">
+          <Share className="h-4 w-4" />
+          Share Analysis
+        </Button>
+      </div>
+    </div>
   )
 }
-
-export default TCOAnalyzer
