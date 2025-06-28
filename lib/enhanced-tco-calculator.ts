@@ -1,7 +1,7 @@
 import { ComprehensiveVendorDatabase, type VendorData } from "./comprehensive-vendor-data"
 
 export interface CalculationConfiguration {
-  orgSize: "small" | "medium" | "large" | "enterprise"
+  orgSize: "startup" | "smb" | "medium" | "enterprise" | "xlarge"
   devices: number
   users: number
   industry:
@@ -12,7 +12,7 @@ export interface CalculationConfiguration {
     | "education"
     | "retail"
     | "manufacturing"
-    | "other"
+    | "energy"
   years: number
   region: "north-america" | "europe" | "asia-pacific" | "latin-america" | "middle-east"
   portnoxBasePrice: number
@@ -41,9 +41,9 @@ export interface ROIMetrics {
 }
 
 export interface RiskMetrics {
+  breachProbabilityReduction: number
   complianceScore: number
-  securityPosture: number
-  operationalRisk: number
+  operationalEfficiency: number
 }
 
 export interface CalculationResult {
@@ -67,7 +67,7 @@ const REGIONAL_MULTIPLIERS = {
   "asia-pacific": 0.85,
   "latin-america": 0.75,
   "middle-east": 1.1,
-}
+} as const
 
 // Industry complexity multipliers
 const INDUSTRY_MULTIPLIERS = {
@@ -79,7 +79,7 @@ const INDUSTRY_MULTIPLIERS = {
   manufacturing: 1.1,
   retail: 1.0,
   energy: 1.2,
-}
+} as const
 
 // Organization size factors
 const ORG_SIZE_FACTORS = {
@@ -88,7 +88,7 @@ const ORG_SIZE_FACTORS = {
   medium: { complexity: 1.0, support: 1.0, training: 1.0 },
   enterprise: { complexity: 1.3, support: 1.2, training: 1.4 },
   xlarge: { complexity: 1.6, support: 1.4, training: 1.8 },
-}
+} as const
 
 function getVolumeDiscount(vendor: VendorData, deviceCount: number): number {
   const { volumeDiscounts } = vendor.pricing
@@ -135,7 +135,7 @@ function calculateHardwareCosts(vendor: VendorData, config: CalculationConfigura
   if (!vendor.implementation.hardwareRequired) return 0
 
   const { devices, years } = config
-  const regionalMultiplier = REGIONAL_MULTIPLIERS[config.region as keyof typeof REGIONAL_MULTIPLIERS] || 1.0
+  const regionalMultiplier = REGIONAL_MULTIPLIERS[config.region] || 1.0
 
   // Estimate hardware costs based on vendor and deployment size
   let hardwareCostPerDevice = 0
@@ -175,9 +175,9 @@ function calculateHardwareCosts(vendor: VendorData, config: CalculationConfigura
 
 function calculateImplementationCosts(vendor: VendorData, config: CalculationConfiguration): number {
   const { devices, orgSize } = config
-  const regionalMultiplier = REGIONAL_MULTIPLIERS[config.region as keyof typeof REGIONAL_MULTIPLIERS] || 1.0
-  const industryMultiplier = INDUSTRY_MULTIPLIERS[config.industry as keyof typeof INDUSTRY_MULTIPLIERS] || 1.0
-  const orgSizeFactors = ORG_SIZE_FACTORS[orgSize as keyof typeof ORG_SIZE_FACTORS] || ORG_SIZE_FACTORS.medium
+  const regionalMultiplier = REGIONAL_MULTIPLIERS[config.region] || 1.0
+  const industryMultiplier = INDUSTRY_MULTIPLIERS[config.industry] || 1.0
+  const orgSizeFactors = ORG_SIZE_FACTORS[orgSize] || ORG_SIZE_FACTORS.medium
 
   let baseCost = vendor.implementation.professionalServices.cost
 
@@ -195,7 +195,7 @@ function calculateImplementationCosts(vendor: VendorData, config: CalculationCon
 }
 
 function calculateSupportCosts(vendor: VendorData, config: CalculationConfiguration): number {
-  const { devices, years } = config
+  const { years } = config
   const softwareCost = calculateSoftwareCosts(vendor, config)
 
   // Support typically 18-22% of software costs annually
@@ -206,8 +206,8 @@ function calculateSupportCosts(vendor: VendorData, config: CalculationConfigurat
 }
 
 function calculateOperationsCosts(vendor: VendorData, config: CalculationConfiguration): number {
-  const { devices, users, years } = config
-  const orgSizeFactors = ORG_SIZE_FACTORS[config.orgSize as keyof typeof ORG_SIZE_FACTORS] || ORG_SIZE_FACTORS.medium
+  const { devices, years } = config
+  const orgSizeFactors = ORG_SIZE_FACTORS[config.orgSize] || ORG_SIZE_FACTORS.medium
 
   // Estimate FTE requirements based on complexity
   let fteRequired = 0
@@ -233,8 +233,6 @@ function calculateOperationsCosts(vendor: VendorData, config: CalculationConfigu
 }
 
 function calculateHiddenCosts(vendor: VendorData, config: CalculationConfiguration): number {
-  const { devices, years } = config
-
   // Hidden costs include: downtime, user productivity loss, additional tools, etc.
   let hiddenCostFactor = 0
 
@@ -263,7 +261,7 @@ function calculateHiddenCosts(vendor: VendorData, config: CalculationConfigurati
 }
 
 function calculateROI(vendor: VendorData, totalCost: number, config: CalculationConfiguration): ROIMetrics {
-  const { devices, users, years, industry } = config
+  const { devices, years, industry } = config
 
   // Base savings calculations
   let annualLaborSavings = 0
@@ -314,10 +312,10 @@ function calculateROI(vendor: VendorData, totalCost: number, config: Calculation
   const totalSavings = totalAnnualSavings * years
 
   // Calculate payback period
-  const paybackMonths = totalCost / (totalAnnualSavings / 12)
+  const paybackMonths = totalAnnualSavings > 0 ? totalCost / (totalAnnualSavings / 12) : 999
 
   // Calculate ROI percentage
-  const roiPercentage = ((totalSavings - totalCost) / totalCost) * 100
+  const roiPercentage = totalCost > 0 ? ((totalSavings - totalCost) / totalCost) * 100 : 0
 
   return {
     paybackMonths: Math.max(1, Math.round(paybackMonths)),
@@ -376,37 +374,37 @@ export function calculateVendorTCO(vendorId: string, config: CalculationConfigur
     {
       name: "Software",
       value: Math.round(softwareCost),
-      percentage: Math.round((softwareCost / totalCost) * 100),
+      percentage: totalCost > 0 ? Math.round((softwareCost / totalCost) * 100) : 0,
       description: "Licensing and subscription costs",
     },
     {
       name: "Hardware",
       value: Math.round(hardwareCost),
-      percentage: Math.round((hardwareCost / totalCost) * 100),
+      percentage: totalCost > 0 ? Math.round((hardwareCost / totalCost) * 100) : 0,
       description: "Appliances and infrastructure",
     },
     {
       name: "Implementation",
       value: Math.round(implementationCost),
-      percentage: Math.round((implementationCost / totalCost) * 100),
+      percentage: totalCost > 0 ? Math.round((implementationCost / totalCost) * 100) : 0,
       description: "Professional services and deployment",
     },
     {
       name: "Support",
       value: Math.round(supportCost),
-      percentage: Math.round((supportCost / totalCost) * 100),
+      percentage: totalCost > 0 ? Math.round((supportCost / totalCost) * 100) : 0,
       description: "Maintenance and technical support",
     },
     {
       name: "Operations",
       value: Math.round(operationsCost),
-      percentage: Math.round((operationsCost / totalCost) * 100),
+      percentage: totalCost > 0 ? Math.round((operationsCost / totalCost) * 100) : 0,
       description: "Ongoing management and administration",
     },
     {
       name: "Hidden",
       value: Math.round(hiddenCost),
-      percentage: Math.round((hiddenCost / totalCost) * 100),
+      percentage: totalCost > 0 ? Math.round((hiddenCost / totalCost) * 100) : 0,
       description: "Downtime, productivity loss, additional tools",
     },
   ]
@@ -415,7 +413,7 @@ export function calculateVendorTCO(vendorId: string, config: CalculationConfigur
   const roi = calculateROI(vendor, totalCost, config)
 
   // Calculate risk metrics
-  const riskMetrics = {
+  const riskMetrics: RiskMetrics = {
     breachProbabilityReduction: roi.breachReduction / 100,
     complianceScore: vendor.compliance.auditReadiness,
     operationalEfficiency: vendor.compliance.automationLevel,

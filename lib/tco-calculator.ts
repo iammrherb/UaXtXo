@@ -358,3 +358,117 @@ export function compareVendors(
   results.sort((a, b) => (a.total ?? Number.POSITIVE_INFINITY) - (b.total ?? Number.POSITIVE_INFINITY))
   return results
 }
+
+const REGIONAL_MULTIPLIERS = {
+  "north-america": 1.0,
+  europe: 1.15,
+  "asia-pacific": 0.85,
+  "latin-america": 0.75,
+  "middle-east": 1.1,
+}
+
+const INDUSTRY_MULTIPLIERS = {
+  technology: 1.0,
+  healthcare: 1.3,
+  financial: 1.4,
+  government: 1.5,
+  education: 0.9,
+  manufacturing: 1.1,
+  retail: 1.0,
+  other: 1.0,
+}
+
+const ORG_SIZE_MULTIPLIERS = {
+  small: 0.8,
+  medium: 1.0,
+  large: 1.2,
+  enterprise: 1.5,
+}
+
+export interface TCOCalculation {
+  vendor: string
+  total: number
+  breakdown: {
+    software: number
+    hardware: number
+    implementation: number
+    support: number
+    operations: number
+  }
+  roi: {
+    paybackMonths: number
+    percentage: number
+  }
+}
+
+export interface CalculationInputs {
+  devices: number
+  users: number
+  years: number
+  orgSize: "small" | "medium" | "large" | "enterprise"
+  industry:
+    | "technology"
+    | "healthcare"
+    | "financial"
+    | "government"
+    | "education"
+    | "retail"
+    | "manufacturing"
+    | "other"
+  region: "north-america" | "europe" | "asia-pacific" | "latin-america" | "middle-east"
+}
+
+export function calculateTCO(vendor: VendorData, inputs: CalculationInputs): TCOCalculation {
+  const { devices, users, years, orgSize, industry, region } = inputs
+
+  const regionalMultiplier = REGIONAL_MULTIPLIERS[region] || 1.0
+  const industryMultiplier = INDUSTRY_MULTIPLIERS[industry] || 1.0
+  const orgSizeMultiplier = ORG_SIZE_MULTIPLIERS[orgSize] || 1.0
+
+  // Software costs
+  const unitCount = vendor.pricing.model === "per-user" ? users : devices
+  const baseSoftwareCost = vendor.pricing.basePrice * unitCount * years
+  const softwareCost = baseSoftwareCost * regionalMultiplier
+
+  // Hardware costs (if required)
+  const hardwareCost = vendor.implementation.hardwareRequired
+    ? devices * 500 * regionalMultiplier + (years > 3 ? devices * 250 : 0)
+    : 0
+
+  // Implementation costs
+  const baseImplementationCost = vendor.implementation.professionalServices.required
+    ? vendor.implementation.professionalServices.cost
+    : devices * 10
+  const implementationCost = baseImplementationCost * regionalMultiplier * industryMultiplier * orgSizeMultiplier
+
+  // Support costs (20% of software annually)
+  const supportCost = softwareCost * 0.2
+
+  // Operations costs (FTE requirements)
+  const fteRequired = Math.max(0.5, devices / 5000)
+  const operationsCost = fteRequired * 120000 * years * regionalMultiplier
+
+  const total = softwareCost + hardwareCost + implementationCost + supportCost + operationsCost
+
+  // ROI calculation (simplified)
+  const annualSavings = devices * 50 // $50 per device per year in operational savings
+  const totalSavings = annualSavings * years
+  const paybackMonths = Math.ceil(total / (annualSavings / 12))
+  const roiPercentage = ((totalSavings - total) / total) * 100
+
+  return {
+    vendor: vendor.id,
+    total: Math.round(total),
+    breakdown: {
+      software: Math.round(softwareCost),
+      hardware: Math.round(hardwareCost),
+      implementation: Math.round(implementationCost),
+      support: Math.round(supportCost),
+      operations: Math.round(operationsCost),
+    },
+    roi: {
+      paybackMonths: Math.max(1, paybackMonths),
+      percentage: Math.round(roiPercentage),
+    },
+  }
+}
