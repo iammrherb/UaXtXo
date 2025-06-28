@@ -28,6 +28,8 @@ import {
 import {
   Shield,
   AlertTriangle,
+  CheckCircle,
+  XCircle,
   Clock,
   FileText,
   Award,
@@ -134,25 +136,24 @@ export default function ComplianceRiskView({ results, industry, selectedVendors,
   const [activeTab, setActiveTab] = useState("overview")
   const [riskTimeframe, setRiskTimeframe] = useState(12)
 
-  const portnoxResult = useMemo(() => 
-    results?.find(r => r.vendor === "portnox"), 
-    [results]
-  )
+  const portnoxResult = useMemo(() => results?.find((r) => r.vendor === "portnox"), [results])
 
   const complianceScoreData = useMemo(() => {
     if (!results) return []
-    
-    return results.map(result => ({
+
+    return results.map((result) => ({
       vendor: result.vendorName,
       vendorId: result.vendor,
       automation: result.riskMetrics?.operationalEfficiency || 50,
       auditReadiness: result.complianceSummary?.auditReadiness || 60,
       continuousCompliance: result.complianceSummary?.continuousCompliance ? 100 : 30,
       frameworkSupport: (result.complianceSummary?.frameworks?.length || 0) * 12.5,
-      overallScore: ((result.riskMetrics?.operationalEfficiency || 50) + 
-                    (result.complianceSummary?.auditReadiness || 60) + 
-                    (result.complianceSummary?.continuousCompliance ? 100 : 30) + 
-                    ((result.complianceSummary?.frameworks?.length || 0) * 12.5)) / 4,
+      overallScore:
+        ((result.riskMetrics?.operationalEfficiency || 50) +
+          (result.complianceSummary?.auditReadiness || 60) +
+          (result.complianceSummary?.continuousCompliance ? 100 : 30) +
+          (result.complianceSummary?.frameworks?.length || 0) * 12.5) /
+        4,
       isPortnox: result.vendor === "portnox",
     }))
   }, [results])
@@ -163,25 +164,25 @@ export default function ComplianceRiskView({ results, industry, selectedVendors,
       complianceViolation: 0.15,
       auditFailure: 0.12,
       dataLoss: 0.08,
-      downtime: 0.20,
+      downtime: 0.2,
     }
-    
+
     const portnoxReduction = {
       breachProbability: 0.85,
-      complianceViolation: 0.90,
+      complianceViolation: 0.9,
       auditFailure: 0.95,
-      dataLoss: 0.80,
+      dataLoss: 0.8,
       downtime: 0.75,
     }
-    
+
     const competitorAverage = {
       breachProbability: 0.55,
-      complianceViolation: 0.60,
+      complianceViolation: 0.6,
       auditFailure: 0.65,
-      dataLoss: 0.50,
+      dataLoss: 0.5,
       downtime: 0.45,
     }
-    
+
     return [
       {
         risk: "Security Breach",
@@ -245,38 +246,31 @@ export default function ComplianceRiskView({ results, industry, selectedVendors,
       whileHover={{ y: -2, scale: 1.02 }}
       className={cn(
         "p-4 rounded-lg border transition-all duration-200",
-        darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+        darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
       )}
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className={cn("text-sm font-medium", darkMode ? "text-gray-300" : "text-gray-600")}>
-            {title}
-          </p>
-          <p className={cn("text-2xl font-bold mt-1", darkMode ? "text-white" : "text-gray-900")}>
-            {value}
-          </p>
+          <p className={cn("text-sm font-medium", darkMode ? "text-gray-300" : "text-gray-600")}>{title}</p>
+          <p className={cn("text-2xl font-bold mt-1", darkMode ? "text-white" : "text-gray-900")}>{value}</p>
           {change && (
-            <div className={cn(
-              "flex items-center text-sm mt-1",
-              change > 0 ? "text-red-500" : "text-green-500"
-            )}>
+            <div className={cn("flex items-center text-sm mt-1", change > 0 ? "text-red-500" : "text-green-500")}>
               {change > 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
               {Math.abs(change)}% vs baseline
             </div>
           )}
         </div>
-        <div className={cn(
-          "p-3 rounded-full",
-          severity === "high" ? "bg-red-100" :
-          severity === "medium" ? "bg-yellow-100" : "bg-green-100"
-        )}>
-          {React.cloneElement(icon, { 
+        <div
+          className={cn(
+            "p-3 rounded-full",
+            severity === "high" ? "bg-red-100" : severity === "medium" ? "bg-yellow-100" : "bg-green-100",
+          )}
+        >
+          {React.cloneElement(icon, {
             className: cn(
               "h-6 w-6",
-              severity === "high" ? "text-red-600" :
-              severity === "medium" ? "text-yellow-600" : "text-green-600"
-            )
+              severity === "high" ? "text-red-600" : severity === "medium" ? "text-yellow-600" : "text-green-600",
+            ),
           })}
         </div>
       </div>
@@ -303,21 +297,23 @@ export default function ComplianceRiskView({ results, industry, selectedVendors,
             Comprehensive security posture and regulatory compliance assessment
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <select
             value={selectedFramework}
             onChange={(e) => setSelectedFramework(e.target.value)}
             className={cn(
               "px-3 py-2 border rounded-md text-sm",
-              darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"
+              darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300",
             )}
           >
-            {Object.keys(COMPLIANCE_FRAMEWORKS).map(framework => (
-              <option key={framework} value={framework}>{framework}</option>
+            {Object.keys(COMPLIANCE_FRAMEWORKS).map((framework) => (
+              <option key={framework} value={framework}>
+                {framework}
+              </option>
             ))}
           </select>
-          
+
           <Button variant="outline" size="sm">
             Generate Report
           </Button>
@@ -379,16 +375,18 @@ export default function ComplianceRiskView({ results, industry, selectedVendors,
               <CardContent>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={[
-                      { metric: "Policy Management", portnox: 95, competitor: 65 },
-                      { metric: "Access Controls", portnox: 98, competitor: 70 },
-                      { metric: "Audit Logging", portnox: 100, competitor: 75 },
-                      { metric: "Risk Assessment", portnox: 90, competitor: 55 },
-                      { metric: "Incident Response", portnox: 85, competitor: 60 },
-                      { metric: "Continuous Monitoring", portnox: 95, competitor: 45 },
-                      { metric: "Evidence Collection", portnox: 92, competitor: 50 },
-                      { metric: "Reporting Automation", portnox: 98, competitor: 40 },
-                    ]}>
+                    <RadarChart
+                      data={[
+                        { metric: "Policy Management", portnox: 95, competitor: 65 },
+                        { metric: "Access Controls", portnox: 98, competitor: 70 },
+                        { metric: "Audit Logging", portnox: 100, competitor: 75 },
+                        { metric: "Risk Assessment", portnox: 90, competitor: 55 },
+                        { metric: "Incident Response", portnox: 85, competitor: 60 },
+                        { metric: "Continuous Monitoring", portnox: 95, competitor: 45 },
+                        { metric: "Evidence Collection", portnox: 92, competitor: 50 },
+                        { metric: "Reporting Automation", portnox: 98, competitor: 40 },
+                      ]}
+                    >
                       <PolarGrid />
                       <PolarAngleAxis dataKey="metric" />
                       <PolarRadiusAxis angle={90} domain={[0, 100]} />
@@ -431,11 +429,14 @@ export default function ComplianceRiskView({ results, industry, selectedVendors,
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis type="number" domain={[0, 25]} />
                       <YAxis type="category" dataKey="risk" width={120} />
-                      <Tooltip 
+                      <Tooltip
                         formatter={(value: number, name: string) => [
-                          `${value.toFixed(1)}%`, 
-                          name === "baseline" ? "Current Risk" :
-                          name === "portnox" ? "With Portnox" : "Competitor Average"
+                          `${value.toFixed(1)}%`,
+                          name === "baseline"
+                            ? "Current Risk"
+                            : name === "portnox"
+                              ? "With Portnox"
+                              : "Competitor Average",
                         ]}
                       />
                       <Legend />
@@ -451,47 +452,54 @@ export default function ComplianceRiskView({ results, industry, selectedVendors,
 
           {/* Compliance Status Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Object.entries(COMPLIANCE_FRAMEWORKS).slice(0, 4).map(([key, framework]) => (
-              <Card key={key}>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center justify-between">
-                    {key}
-                    <Badge 
-                      variant={framework.portnoxSupport >= 90 ? "default" : 
-                              framework.portnoxSupport >= 70 ? "secondary" : "destructive"}
-                    >
-                      {framework.portnoxSupport}%
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Portnox Support</span>
-                        <span>{framework.portnoxSupport}%</span>
+            {Object.entries(COMPLIANCE_FRAMEWORKS)
+              .slice(0, 4)
+              .map(([key, framework]) => (
+                <Card key={key}>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center justify-between">
+                      {key}
+                      <Badge
+                        variant={
+                          framework.portnoxSupport >= 90
+                            ? "default"
+                            : framework.portnoxSupport >= 70
+                              ? "secondary"
+                              : "destructive"
+                        }
+                      >
+                        {framework.portnoxSupport}%
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Portnox Support</span>
+                          <span>{framework.portnoxSupport}%</span>
+                        </div>
+                        <Progress value={framework.portnoxSupport} className="h-2" />
                       </div>
-                      <Progress value={framework.portnoxSupport} className="h-2" />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Industry Average</span>
-                        <span>{framework.competitorAverage}%</span>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Industry Average</span>
+                          <span>{framework.competitorAverage}%</span>
+                        </div>
+                        <Progress value={framework.competitorAverage} className="h-2" />
                       </div>
-                      <Progress value={framework.competitorAverage} className="h-2" />
-                    </div>
-                    <div className="pt-2 border-t">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Advantage</span>
-                        <span className="font-semibold text-green-600">
-                          +{framework.portnoxSupport - framework.competitorAverage}%
-                        </span>
+                      <div className="pt-2 border-t">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Advantage</span>
+                          <span className="font-semibold text-green-600">
+                            +{framework.portnoxSupport - framework.competitorAverage}%
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
           </div>
         </TabsContent>
 
@@ -525,48 +533,59 @@ export default function ComplianceRiskView({ results, industry, selectedVendors,
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].name}</CardTitle>
+                <CardTitle>
+                  {COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].name}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <p className="text-sm text-gray-600">
                     {COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].description}
                   </p>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm font-medium">Annual Compliance Cost</p>
                       <p className="text-2xl font-bold">
-                        {formatCurrency(COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].annualCost)}
+                        {formatCurrency(
+                          COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].annualCost,
+                        )}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm font-medium">Penalty Risk</p>
                       <p className="text-2xl font-bold text-red-600">
-                        {formatCurrency(COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].penaltyRisk)}
+                        {formatCurrency(
+                          COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].penaltyRisk,
+                        )}
                       </p>
                     </div>
                   </div>
 
                   <div>
                     <p className="text-sm font-medium mb-2">Portnox Automation Level</p>
-                    <Progress 
-                      value={COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].portnoxSupport} 
+                    <Progress
+                      value={
+                        COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].portnoxSupport
+                      }
                       className="h-3"
                     />
                     <p className="text-xs text-gray-600 mt-1">
-                      {COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].portnoxSupport}% automated compliance
+                      {COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].portnoxSupport}%
+                      automated compliance
                     </p>
                   </div>
 
                   <div>
                     <p className="text-sm font-medium mb-2">Applicable Industries</p>
                     <div className="flex flex-wrap gap-1">
-                      {COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].industry.map(ind => (
-                        <Badge key={ind} variant="outline" className="text-xs">
-                          {ind}
-                        </Badge>
-                      ))}
+                      {COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].industry.map(
+                        (ind) => (
+                          <Badge key={ind} variant="outline" className="text-xs">
+                            {ind}
+                          </Badge>
+                        ),
+                      )}
                     </div>
                   </div>
                 </div>
@@ -607,21 +626,29 @@ export default function ComplianceRiskView({ results, industry, selectedVendors,
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Annual Savings</span>
                       <span className="font-bold text-green-600">
-                        {formatCurrency(COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].annualCost * 0.6)}
+                        {formatCurrency(
+                          COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].annualCost *
+                            0.6,
+                        )}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Risk Mitigation Value</span>
                       <span className="font-bold text-green-600">
-                        {formatCurrency(COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].penaltyRisk * 0.8)}
+                        {formatCurrency(
+                          COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].penaltyRisk *
+                            0.8,
+                        )}
                       </span>
                     </div>
                     <div className="flex justify-between items-center pt-2 border-t">
                       <span className="font-medium">Total Annual Value</span>
                       <span className="font-bold text-green-600 text-lg">
                         {formatCurrency(
-                          COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].annualCost * 0.6 +
-                          COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].penaltyRisk * 0.8
+                          COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].annualCost *
+                            0.6 +
+                            COMPLIANCE_FRAMEWORKS[selectedFramework as keyof typeof COMPLIANCE_FRAMEWORKS].penaltyRisk *
+                              0.8,
                         )}
                       </span>
                     </div>
@@ -646,12 +673,14 @@ export default function ComplianceRiskView({ results, industry, selectedVendors,
               <CardContent>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={Array.from({length: 12}, (_, i) => ({
-                      month: i + 1,
-                      withoutNAC: 25 - (i * 0.5),
-                      withCompetitor: 15 - (i * 0.3),
-                      withPortnox: 5 - (i * 0.1),
-                    }))}>
+                    <AreaChart
+                      data={Array.from({ length: 12 }, (_, i) => ({
+                        month: i + 1,
+                        withoutNAC: 25 - i * 0.5,
+                        withCompetitor: 15 - i * 0.3,
+                        withPortnox: 5 - i * 0.1,
+                      }))}
+                    >
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="month" />
                       <YAxis />
@@ -710,28 +739,26 @@ export default function ComplianceRiskView({ results, industry, selectedVendors,
                     >
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-semibold">{risk.risk}</h4>
-                        <Badge variant="outline">
-                          {formatCurrency(risk.impact)} impact
-                        </Badge>
+                        <Badge variant="outline">{formatCurrency(risk.impact)} impact</Badge>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span>Current Risk</span>
                           <span className="text-red-600 font-semibold">{risk.baseline.toFixed(1)}%</span>
                         </div>
                         <Progress value={risk.baseline} className="h-2" />
-                        
+
                         <div className="flex justify-between text-sm">
                           <span>With Portnox</span>
                           <span className="text-green-600 font-semibold">{risk.portnox.toFixed(1)}%</span>
                         </div>
                         <Progress value={risk.portnox} className="h-2" />
-                        
+
                         <div className="flex justify-between text-sm pt-1 border-t">
                           <span>Risk Reduction</span>
                           <span className="text-green-600 font-bold">
-                            -{((risk.baseline - risk.portnox) / risk.baseline * 100).toFixed(0)}%
+                            -{(((risk.baseline - risk.portnox) / risk.baseline) * 100).toFixed(0)}%
                           </span>
                         </div>
                       </div>
@@ -751,25 +778,28 @@ export default function ComplianceRiskView({ results, industry, selectedVendors,
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <p className="text-3xl font-bold text-red-600">
-                    {formatCurrency(riskReductionData.reduce((sum, risk) => 
-                      sum + (risk.baseline / 100 * risk.impact), 0
-                    ))}
+                    {formatCurrency(
+                      riskReductionData.reduce((sum, risk) => sum + (risk.baseline / 100) * risk.impact, 0),
+                    )}
                   </p>
                   <p className="text-sm text-gray-600">Annual Risk Exposure (Current)</p>
                 </div>
                 <div className="text-center">
                   <p className="text-3xl font-bold text-green-600">
-                    {formatCurrency(riskReductionData.reduce((sum, risk) => 
-                      sum + (risk.portnox / 100 * risk.impact), 0
-                    ))}
+                    {formatCurrency(
+                      riskReductionData.reduce((sum, risk) => sum + (risk.portnox / 100) * risk.impact, 0),
+                    )}
                   </p>
                   <p className="text-sm text-gray-600">Annual Risk Exposure (With Portnox)</p>
                 </div>
                 <div className="text-center">
                   <p className="text-3xl font-bold text-portnox-primary">
-                    {formatCurrency(riskReductionData.reduce((sum, risk) => 
-                      sum + ((risk.baseline - risk.portnox) / 100 * risk.impact), 0
-                    ))}
+                    {formatCurrency(
+                      riskReductionData.reduce(
+                        (sum, risk) => sum + ((risk.baseline - risk.portnox) / 100) * risk.impact,
+                        0,
+                      ),
+                    )}
                   </p>
                   <p className="text-sm text-gray-600">Annual Risk Reduction Value</p>
                 </div>
@@ -828,4 +858,253 @@ export default function ComplianceRiskView({ results, industry, selectedVendors,
                       <motion.tr
                         key={vendor.vendor}
                         initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className={cn(
+                          "border-b transition-colors",
+                          darkMode ? "border-gray-700 hover:bg-gray-800" : "border-gray-200 hover:bg-gray-50",
+                          vendor.isPortnox ? "bg-portnox-primary/5" : "",
+                        )}
+                      >
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{vendor.vendor}</span>
+                            {vendor.isPortnox && (
+                              <Badge variant="default" className="text-xs">
+                                Best
+                              </Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="text-center p-3">
+                          <div className="flex items-center justify-center gap-2">
+                            <Progress value={vendor.automation} className="w-16 h-2" />
+                            <span className="text-xs">{vendor.automation}%</span>
+                          </div>
+                        </td>
+                        <td className="text-center p-3">
+                          <div className="flex items-center justify-center gap-2">
+                            <Progress value={vendor.auditReadiness} className="w-16 h-2" />
+                            <span className="text-xs">{vendor.auditReadiness}%</span>
+                          </div>
+                        </td>
+                        <td className="text-center p-3">
+                          {vendor.continuousCompliance > 50 ? (
+                            <CheckCircle className="h-5 w-5 text-green-600 mx-auto" />
+                          ) : (
+                            <XCircle className="h-5 w-5 text-red-600 mx-auto" />
+                          )}
+                        </td>
+                        <td className="text-center p-3">
+                          <Badge variant="outline">{Math.floor(vendor.frameworkSupport / 12.5)}/8</Badge>
+                        </td>
+                        <td className="text-center p-3">
+                          <span
+                            className={cn(
+                              "font-bold",
+                              vendor.overallScore >= 80
+                                ? "text-green-600"
+                                : vendor.overallScore >= 60
+                                  ? "text-yellow-600"
+                                  : "text-red-600",
+                            )}
+                          >
+                            {vendor.overallScore.toFixed(0)}
+                          </span>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Recommendations Tab */}
+        <TabsContent value="recommendations" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  Immediate Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {[
+                    {
+                      priority: "High",
+                      action: "Deploy Portnox NAC",
+                      impact: "85% risk reduction",
+                      timeline: "1-2 weeks",
+                    },
+                    {
+                      priority: "High",
+                      action: "Enable automated compliance reporting",
+                      impact: "90% audit prep time savings",
+                      timeline: "1 day",
+                    },
+                    {
+                      priority: "Medium",
+                      action: "Configure industry-specific policies",
+                      impact: "Framework compliance",
+                      timeline: "1 week",
+                    },
+                    {
+                      priority: "Medium",
+                      action: "Set up continuous monitoring",
+                      impact: "Real-time compliance",
+                      timeline: "2-3 days",
+                    },
+                  ].map((item, index) => (
+                    <motion.div
+                      key={item.action}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="p-4 border rounded-lg"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge variant={item.priority === "High" ? "destructive" : "secondary"} className="text-xs">
+                              {item.priority}
+                            </Badge>
+                            <span className="text-sm font-medium">{item.action}</span>
+                          </div>
+                          <p className="text-xs text-gray-600">{item.impact}</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {item.timeline}
+                        </Badge>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-blue-600" />
+                  Long-term Strategy
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {[
+                    {
+                      phase: "Phase 1 (Month 1)",
+                      goals: ["Deploy core NAC", "Basic compliance automation"],
+                      outcome: "Immediate risk reduction",
+                    },
+                    {
+                      phase: "Phase 2 (Months 2-3)",
+                      goals: ["Advanced policy tuning", "Integration completion"],
+                      outcome: "Optimized security posture",
+                    },
+                    {
+                      phase: "Phase 3 (Months 4-6)",
+                      goals: ["Full automation", "Continuous improvement"],
+                      outcome: "Mature compliance program",
+                    },
+                    {
+                      phase: "Phase 4 (Ongoing)",
+                      goals: ["Regular assessments", "Framework updates"],
+                      outcome: "Sustained compliance",
+                    },
+                  ].map((phase, index) => (
+                    <motion.div
+                      key={phase.phase}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.2 }}
+                      className="p-4 border rounded-lg"
+                    >
+                      <h4 className="font-semibold mb-2">{phase.phase}</h4>
+                      <ul className="text-sm text-gray-600 mb-2">
+                        {phase.goals.map((goal) => (
+                          <li key={goal}>• {goal}</li>
+                        ))}
+                      </ul>
+                      <Badge variant="outline" className="text-xs">
+                        {phase.outcome}
+                      </Badge>
+                    </motion.div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Executive Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Executive Summary & Business Case
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <h4 className="font-semibold text-green-800 dark:text-green-200 mb-2">
+                    Recommendation: Deploy Portnox NAC Immediately
+                  </h4>
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    Portnox provides the highest compliance automation, fastest deployment, and strongest risk reduction
+                    in the market. The solution pays for itself through compliance cost savings alone.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 border rounded-lg">
+                    <p className="text-2xl font-bold text-green-600">85%</p>
+                    <p className="text-sm text-gray-600">Risk Reduction</p>
+                  </div>
+                  <div className="text-center p-4 border rounded-lg">
+                    <p className="text-2xl font-bold text-blue-600">90%</p>
+                    <p className="text-sm text-gray-600">Compliance Automation</p>
+                  </div>
+                  <div className="text-center p-4 border rounded-lg">
+                    <p className="text-2xl font-bold text-portnox-primary">{formatCurrency(500000)}</p>
+                    <p className="text-sm text-gray-600">Annual Risk Savings</p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <h4 className="font-semibold mb-2">Key Decision Factors</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <h5 className="font-medium text-green-600 mb-1">Portnox Advantages</h5>
+                      <ul className="space-y-1 text-gray-600">
+                        <li>• Fastest deployment (hours vs months)</li>
+                        <li>• Highest automation level (95%)</li>
+                        <li>• No hardware requirements</li>
+                        <li>• All features included</li>
+                        <li>• Lowest total cost</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="font-medium text-red-600 mb-1">Competitor Limitations</h5>
+                      <ul className="space-y-1 text-gray-600">
+                        <li>• Complex, lengthy deployments</li>
+                        <li>• Manual compliance processes</li>
+                        <li>• Hardware dependencies</li>
+                        <li>• Additional licensing costs</li>
+                        <li>• Higher operational overhead</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
