@@ -1,128 +1,76 @@
-export interface VendorData {
+// Comprehensive Vendor Database with Enhanced Features and Market Data
+
+export interface VendorFeatures {
+  cloudNative: boolean
+  zeroTrust: boolean
+  aiMl: boolean
+  iotSupport: boolean
+  byod: boolean
+  guestAccess: boolean
+  apiIntegration: boolean
+  singleSignOn: boolean
+  multiTenant: boolean
+  agentless: boolean
+  realTimeVisibility: boolean
+  threatDetection: boolean
+  behaviorAnalytics: boolean
+  microsegmentation: boolean
+}
+
+export interface MarketMetrics {
+  marketShare: number // 0-100
+  customerSatisfaction: number // 0-5
+  deploymentSuccess: number // 0-100
+  supportRating: number // 0-5
+}
+
+export interface TechnicalSpecs {
+  maxDevices: number | string
+  maxUsers: number | string
+  uptime: number // percentage
+  mttr: number // minutes
+  apiRateLimit: string
+}
+
+export interface Implementation {
+  complexity: "low" | "medium" | "high" | "very-high"
+  deploymentTime: {
+    poc?: string
+    pilot: string
+    fullDeployment: string
+  }
+  requiredResources: {
+    internal: number
+    vendor?: number
+    training: number
+    ongoing: number
+  }
+}
+
+export interface ComprehensiveVendorData {
   id: string
   name: string
   category: "enterprise" | "mid-market" | "smb"
   description: string
   logo: string
+  features: VendorFeatures
+  marketMetrics: MarketMetrics
+  technicalSpecs: TechnicalSpecs
+  implementation: Implementation
   pricing: {
-    model: "per-device" | "per-user" | "tiered"
-    basePrice: number
-    billingCycle: "monthly" | "annual"
-    volumeDiscounts: {
-      tier1: { threshold: number; discount: number }
-      tier2: { threshold: number; discount: number }
-      tier3: { threshold: number; discount: number }
-    }
-    addOns?: {
-      [key: string]: {
-        name: string
-        price: number
-        description: string
-      }
-    }
-  }
-  implementation: {
-    complexity: "low" | "medium" | "high"
-    deploymentTime: {
-      pilot: string
-      fullDeployment: string
-    }
-    hardwareRequired: boolean
-    professionalServices: {
-      required: boolean
-      cost: number
-      duration: string
-    }
-  }
-  compliance: {
-    frameworks: string[]
-    auditReadiness: number
-    automationLevel: number
-    reportingCapabilities: string[]
-  }
-  features: {
-    [key: string]: boolean | string | number
-  }
-  marketMetrics: {
-    marketShare: number
-    customerSatisfaction: number
-    deploymentSuccess: number
-    supportRating: number
-  }
-  technicalSpecs: {
-    maxDevices: number | string
-    maxUsers: number | string
-    apiRateLimit: string
-    uptime: number
-    mttr: number
+    model: string
+    startingPrice: number
+    currency: string
   }
 }
 
-export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
+export const ComprehensiveVendorDatabase: Record<string, ComprehensiveVendorData> = {
   portnox: {
     id: "portnox",
-    name: "Portnox",
+    name: "Portnox CLEAR",
     category: "enterprise",
-    description: "Cloud-native NAC solution with zero-trust security and AI-powered automation",
+    description: "AI-powered cloud-native zero-trust NAC with unmatched ease of deployment",
     logo: "/portnox-logo.png",
-    pricing: {
-      model: "per-device",
-      basePrice: 8.5,
-      billingCycle: "monthly",
-      volumeDiscounts: {
-        tier1: { threshold: 500, discount: 0.1 },
-        tier2: { threshold: 2000, discount: 0.2 },
-        tier3: { threshold: 10000, discount: 0.3 },
-      },
-      addOns: {
-        atp: {
-          name: "Advanced Threat Protection",
-          price: 2.5,
-          description: "AI-powered threat detection and response with ML algorithms",
-        },
-        compliance: {
-          name: "Compliance Suite",
-          price: 1.5,
-          description: "Automated compliance reporting and audit trails for major frameworks",
-        },
-        iot: {
-          name: "IoT Security",
-          price: 1.0,
-          description: "Specialized IoT device profiling and security with OT protocol support",
-        },
-        analytics: {
-          name: "Advanced Analytics",
-          price: 2.0,
-          description: "Deep network insights and behavioral analytics with predictive capabilities",
-        },
-      },
-    },
-    implementation: {
-      complexity: "low",
-      deploymentTime: {
-        pilot: "2-4 weeks",
-        fullDeployment: "6-12 weeks",
-      },
-      hardwareRequired: false,
-      professionalServices: {
-        required: false,
-        cost: 25000,
-        duration: "4-6 weeks",
-      },
-    },
-    compliance: {
-      frameworks: ["SOC2", "HIPAA", "PCI-DSS", "GDPR", "NIST", "ISO27001", "CMMC", "FedRAMP"],
-      auditReadiness: 95,
-      automationLevel: 90,
-      reportingCapabilities: [
-        "Real-time dashboards",
-        "Automated reports",
-        "Custom queries",
-        "API access",
-        "Compliance templates",
-        "Evidence collection",
-      ],
-    },
     features: {
       cloudNative: true,
       zeroTrust: true,
@@ -133,65 +81,54 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       apiIntegration: true,
       singleSignOn: true,
       multiTenant: true,
-      scalability: "unlimited",
       agentless: true,
       realTimeVisibility: true,
-      behaviorAnalytics: true,
       threatDetection: true,
+      behaviorAnalytics: true,
       microsegmentation: true,
     },
     marketMetrics: {
       marketShare: 15,
       customerSatisfaction: 4.8,
       deploymentSuccess: 98,
-      supportRating: 4.7,
+      supportRating: 4.9,
     },
     technicalSpecs: {
-      maxDevices: "unlimited",
-      maxUsers: "unlimited",
-      apiRateLimit: "10,000/minute",
+      maxDevices: "Unlimited",
+      maxUsers: "Unlimited",
       uptime: 99.99,
-      mttr: 15,
+      mttr: 5,
+      apiRateLimit: "10,000/min",
+    },
+    implementation: {
+      complexity: "low",
+      deploymentTime: {
+        poc: "4 hours",
+        pilot: "1-2 weeks",
+        fullDeployment: "2-4 weeks",
+      },
+      requiredResources: {
+        internal: 0.1,
+        vendor: 0,
+        training: 4,
+        ongoing: 0.1,
+      },
+    },
+    pricing: {
+      model: "SaaS Subscription",
+      startingPrice: 3.0,
+      currency: "USD",
     },
   },
   cisco: {
     id: "cisco",
     name: "Cisco ISE",
     category: "enterprise",
-    description: "Industry-leading identity services engine with comprehensive policy management",
+    description: "Industry standard enterprise NAC with complex deployment and high costs",
     logo: "/cisco-logo.png",
-    pricing: {
-      model: "per-device",
-      basePrice: 12.0,
-      billingCycle: "annual",
-      volumeDiscounts: {
-        tier1: { threshold: 1000, discount: 0.05 },
-        tier2: { threshold: 5000, discount: 0.15 },
-        tier3: { threshold: 15000, discount: 0.25 },
-      },
-    },
-    implementation: {
-      complexity: "high",
-      deploymentTime: {
-        pilot: "8-12 weeks",
-        fullDeployment: "6-12 months",
-      },
-      hardwareRequired: true,
-      professionalServices: {
-        required: true,
-        cost: 150000,
-        duration: "12-16 weeks",
-      },
-    },
-    compliance: {
-      frameworks: ["SOC2", "HIPAA", "PCI-DSS", "FISMA", "Common Criteria", "NIST"],
-      auditReadiness: 85,
-      automationLevel: 70,
-      reportingCapabilities: ["Standard reports", "Custom dashboards", "SIEM integration", "pxGrid"],
-    },
     features: {
       cloudNative: false,
-      zeroTrust: true,
+      zeroTrust: false,
       aiMl: false,
       iotSupport: true,
       byod: true,
@@ -199,11 +136,10 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       apiIntegration: true,
       singleSignOn: true,
       multiTenant: false,
-      scalability: "high",
       agentless: false,
       realTimeVisibility: true,
-      behaviorAnalytics: false,
       threatDetection: true,
+      behaviorAnalytics: false,
       microsegmentation: true,
     },
     marketMetrics: {
@@ -215,61 +151,50 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
     technicalSpecs: {
       maxDevices: 500000,
       maxUsers: 2000000,
-      apiRateLimit: "limited",
       uptime: 99.5,
       mttr: 360,
+      apiRateLimit: "Limited",
+    },
+    implementation: {
+      complexity: "very-high",
+      deploymentTime: {
+        poc: "1-2 weeks",
+        pilot: "3-6 months",
+        fullDeployment: "6-12 months",
+      },
+      requiredResources: {
+        internal: 3.0,
+        vendor: 1.5,
+        training: 80,
+        ongoing: 2.5,
+      },
+    },
+    pricing: {
+      model: "Perpetual + Subscription",
+      startingPrice: 12.0,
+      currency: "USD",
     },
   },
   aruba: {
     id: "aruba",
     name: "Aruba ClearPass",
     category: "enterprise",
-    description: "Policy management platform with strong wireless integration and user experience focus",
+    description: "HPE Aruba's network access control with strong wireless integration",
     logo: "/aruba-logo.png",
-    pricing: {
-      model: "per-device",
-      basePrice: 10.5,
-      billingCycle: "annual",
-      volumeDiscounts: {
-        tier1: { threshold: 500, discount: 0.08 },
-        tier2: { threshold: 2500, discount: 0.18 },
-        tier3: { threshold: 10000, discount: 0.28 },
-      },
-    },
-    implementation: {
-      complexity: "medium",
-      deploymentTime: {
-        pilot: "4-6 weeks",
-        fullDeployment: "3-6 months",
-      },
-      hardwareRequired: true,
-      professionalServices: {
-        required: true,
-        cost: 75000,
-        duration: "8-12 weeks",
-      },
-    },
-    compliance: {
-      frameworks: ["SOC2", "HIPAA", "PCI-DSS", "GDPR", "ISO27001"],
-      auditReadiness: 80,
-      automationLevel: 75,
-      reportingCapabilities: ["Standard reports", "Real-time monitoring", "Custom dashboards", "OnGuard"],
-    },
     features: {
       cloudNative: false,
-      zeroTrust: true,
+      zeroTrust: false,
       aiMl: true,
       iotSupport: true,
       byod: true,
       guestAccess: true,
       apiIntegration: true,
       singleSignOn: true,
-      multiTenant: true,
-      scalability: "high",
+      multiTenant: false,
       agentless: true,
       realTimeVisibility: true,
-      behaviorAnalytics: false,
       threatDetection: true,
+      behaviorAnalytics: false,
       microsegmentation: true,
     },
     marketMetrics: {
@@ -281,52 +206,91 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
     technicalSpecs: {
       maxDevices: 100000,
       maxUsers: 250000,
-      apiRateLimit: "moderate",
       uptime: 99.0,
       mttr: 240,
-    },
-  },
-  forescout: {
-    id: "forescout",
-    name: "Forescout",
-    category: "enterprise",
-    description: "Device visibility and compliance platform with strong IoT and OT security focus",
-    logo: "/forescout-logo.png",
-    pricing: {
-      model: "per-device",
-      basePrice: 15.0,
-      billingCycle: "annual",
-      volumeDiscounts: {
-        tier1: { threshold: 1000, discount: 0.1 },
-        tier2: { threshold: 5000, discount: 0.2 },
-        tier3: { threshold: 20000, discount: 0.3 },
-      },
+      apiRateLimit: "Limited",
     },
     implementation: {
       complexity: "high",
       deploymentTime: {
-        pilot: "6-8 weeks",
-        fullDeployment: "4-8 months",
+        poc: "1 week",
+        pilot: "2-4 weeks",
+        fullDeployment: "3-6 months",
       },
-      hardwareRequired: true,
-      professionalServices: {
-        required: true,
-        cost: 125000,
-        duration: "10-14 weeks",
+      requiredResources: {
+        internal: 2.0,
+        vendor: 1.0,
+        training: 40,
+        ongoing: 1.5,
       },
     },
-    compliance: {
-      frameworks: ["SOC2", "HIPAA", "PCI-DSS", "NIST", "ISO27001", "NERC CIP"],
-      auditReadiness: 90,
-      automationLevel: 85,
-      reportingCapabilities: [
-        "Advanced analytics",
-        "Custom reports",
-        "Real-time dashboards",
-        "API access",
-        "Threat intelligence",
-      ],
+    pricing: {
+      model: "Perpetual + Support",
+      startingPrice: 8.5,
+      currency: "USD",
     },
+  },
+  meraki: {
+    id: "meraki",
+    name: "Cisco Meraki",
+    category: "mid-market",
+    description: "Cloud-managed IT with integrated access control, requires hardware refresh",
+    logo: "/meraki-logo.png",
+    features: {
+      cloudNative: false,
+      zeroTrust: false,
+      aiMl: false,
+      iotSupport: true,
+      byod: true,
+      guestAccess: true,
+      apiIntegration: true,
+      singleSignOn: false,
+      multiTenant: true,
+      agentless: false,
+      realTimeVisibility: false,
+      threatDetection: true,
+      behaviorAnalytics: false,
+      microsegmentation: true,
+    },
+    marketMetrics: {
+      marketShare: 12,
+      customerSatisfaction: 3.8,
+      deploymentSuccess: 80,
+      supportRating: 4.0,
+    },
+    technicalSpecs: {
+      maxDevices: "10,000 per network",
+      maxUsers: "Hardware dependent",
+      uptime: 99.9,
+      mttr: 240,
+      apiRateLimit: "5/second",
+    },
+    implementation: {
+      complexity: "medium",
+      deploymentTime: {
+        poc: "1 week",
+        pilot: "4-6 weeks",
+        fullDeployment: "3-6 months",
+      },
+      requiredResources: {
+        internal: 1.5,
+        vendor: 0.5,
+        training: 40,
+        ongoing: 1.0,
+      },
+    },
+    pricing: {
+      model: "Hardware + Subscription",
+      startingPrice: 15.0,
+      currency: "USD",
+    },
+  },
+  forescout: {
+    id: "forescout",
+    name: "Forescout eyeSight",
+    category: "enterprise",
+    description: "Agentless device visibility and control platform with high complexity",
+    logo: "/forescout-logo.png",
     features: {
       cloudNative: false,
       zeroTrust: true,
@@ -337,62 +301,51 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       apiIntegration: true,
       singleSignOn: false,
       multiTenant: false,
-      scalability: "very high",
       agentless: true,
       realTimeVisibility: true,
-      behaviorAnalytics: true,
       threatDetection: true,
+      behaviorAnalytics: true,
       microsegmentation: true,
     },
     marketMetrics: {
-      marketShare: 12,
-      customerSatisfaction: 3.8,
-      deploymentSuccess: 70,
-      supportRating: 4.0,
+      marketShare: 8,
+      customerSatisfaction: 3.4,
+      deploymentSuccess: 60,
+      supportRating: 3.2,
     },
     technicalSpecs: {
-      maxDevices: 1000000,
-      maxUsers: 500000,
-      apiRateLimit: "high",
-      uptime: 99.5,
-      mttr: 180,
+      maxDevices: "Medium",
+      maxUsers: "Medium",
+      uptime: 98.5,
+      mttr: 480,
+      apiRateLimit: "Limited",
+    },
+    implementation: {
+      complexity: "high",
+      deploymentTime: {
+        poc: "2 weeks",
+        pilot: "6-8 weeks",
+        fullDeployment: "4-8 months",
+      },
+      requiredResources: {
+        internal: 2.5,
+        vendor: 1.0,
+        training: 32,
+        ongoing: 2.0,
+      },
+    },
+    pricing: {
+      model: "Subscription",
+      startingPrice: 15.0,
+      currency: "USD",
     },
   },
   fortinet: {
     id: "fortinet",
-    name: "Fortinet FortiNAC",
+    name: "FortiNAC",
     category: "enterprise",
-    description: "Network access control with security fabric integration and comprehensive threat protection",
+    description: "Network access control integrated with Fortinet Security Fabric",
     logo: "/fortinet-logo.png",
-    pricing: {
-      model: "per-device",
-      basePrice: 9.5,
-      billingCycle: "annual",
-      volumeDiscounts: {
-        tier1: { threshold: 750, discount: 0.12 },
-        tier2: { threshold: 3000, discount: 0.22 },
-        tier3: { threshold: 12000, discount: 0.32 },
-      },
-    },
-    implementation: {
-      complexity: "medium",
-      deploymentTime: {
-        pilot: "3-5 weeks",
-        fullDeployment: "2-4 months",
-      },
-      hardwareRequired: true,
-      professionalServices: {
-        required: true,
-        cost: 60000,
-        duration: "6-10 weeks",
-      },
-    },
-    compliance: {
-      frameworks: ["SOC2", "PCI-DSS", "HIPAA", "GDPR", "ISO27001"],
-      auditReadiness: 75,
-      automationLevel: 70,
-      reportingCapabilities: ["Standard reports", "Security fabric integration", "Custom dashboards", "FortiAnalyzer"],
-    },
     features: {
       cloudNative: false,
       zeroTrust: true,
@@ -403,62 +356,51 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       apiIntegration: true,
       singleSignOn: true,
       multiTenant: false,
-      scalability: "high",
       agentless: false,
       realTimeVisibility: true,
-      behaviorAnalytics: false,
       threatDetection: true,
+      behaviorAnalytics: false,
       microsegmentation: true,
     },
     marketMetrics: {
-      marketShare: 8,
+      marketShare: 10,
       customerSatisfaction: 3.6,
-      deploymentSuccess: 72,
+      deploymentSuccess: 70,
       supportRating: 3.7,
     },
     technicalSpecs: {
-      maxDevices: 200000,
-      maxUsers: 150000,
-      apiRateLimit: "moderate",
-      uptime: 99.2,
-      mttr: 200,
+      maxDevices: "Medium",
+      maxUsers: "Medium",
+      uptime: 99.0,
+      mttr: 180,
+      apiRateLimit: "Moderate",
+    },
+    implementation: {
+      complexity: "medium",
+      deploymentTime: {
+        poc: "1 week",
+        pilot: "3-4 weeks",
+        fullDeployment: "2-4 months",
+      },
+      requiredResources: {
+        internal: 2.5,
+        vendor: 0.5,
+        training: 32,
+        ongoing: 1.5,
+      },
+    },
+    pricing: {
+      model: "Perpetual + Subscription",
+      startingPrice: 9.5,
+      currency: "USD",
     },
   },
   juniper: {
     id: "juniper",
     name: "Juniper Mist Access Assurance",
     category: "enterprise",
-    description: "AI-driven network access control and assurance with cloud and on-premise options",
+    description: "AI-driven cloud NAC for modern enterprises with good automation",
     logo: "/juniper-logo.png",
-    pricing: {
-      model: "per-device",
-      basePrice: 11.0,
-      billingCycle: "annual",
-      volumeDiscounts: {
-        tier1: { threshold: 600, discount: 0.1 },
-        tier2: { threshold: 2000, discount: 0.2 },
-        tier3: { threshold: 8000, discount: 0.3 },
-      },
-    },
-    implementation: {
-      complexity: "medium",
-      deploymentTime: {
-        pilot: "4-6 weeks",
-        fullDeployment: "3-5 months",
-      },
-      hardwareRequired: true,
-      professionalServices: {
-        required: true,
-        cost: 85000,
-        duration: "8-12 weeks",
-      },
-    },
-    compliance: {
-      frameworks: ["SOC2", "HIPAA", "PCI-DSS", "GDPR", "ISO27001"],
-      auditReadiness: 82,
-      automationLevel: 80,
-      reportingCapabilities: ["AI insights", "Real-time analytics", "Custom reports", "API access", "Marvis AI"],
-    },
     features: {
       cloudNative: true,
       zeroTrust: true,
@@ -469,70 +411,53 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       apiIntegration: true,
       singleSignOn: true,
       multiTenant: true,
-      scalability: "high",
-      agentless: true,
+      agentless: false,
       realTimeVisibility: true,
-      behaviorAnalytics: true,
       threatDetection: true,
+      behaviorAnalytics: true,
       microsegmentation: true,
     },
     marketMetrics: {
-      marketShare: 6,
+      marketShare: 5,
       customerSatisfaction: 4.2,
       deploymentSuccess: 85,
-      supportRating: 4.3,
+      supportRating: 4.1,
     },
     technicalSpecs: {
-      maxDevices: 300000,
-      maxUsers: 200000,
-      apiRateLimit: "high",
-      uptime: 99.8,
+      maxDevices: "High",
+      maxUsers: "High",
+      uptime: 99.5,
       mttr: 120,
+      apiRateLimit: "Good",
+    },
+    implementation: {
+      complexity: "low",
+      deploymentTime: {
+        poc: "3 days",
+        pilot: "1-2 weeks",
+        fullDeployment: "3-5 weeks",
+      },
+      requiredResources: {
+        internal: 0.5,
+        vendor: 0.2,
+        training: 8,
+        ongoing: 0.3,
+      },
+    },
+    pricing: {
+      model: "SaaS Subscription",
+      startingPrice: 8.0,
+      currency: "USD",
     },
   },
   arista: {
     id: "arista",
-    name: "Arista NDR",
+    name: "Arista CUE",
     category: "enterprise",
-    description: "High-performance network detection and response with integrated access control",
+    description: "Cloud-managed network services including NAC with high performance focus",
     logo: "/arista-logo.png",
-    pricing: {
-      model: "per-device",
-      basePrice: 18.0,
-      billingCycle: "annual",
-      volumeDiscounts: {
-        tier1: { threshold: 2000, discount: 0.08 },
-        tier2: { threshold: 8000, discount: 0.18 },
-        tier3: { threshold: 25000, discount: 0.28 },
-      },
-    },
-    implementation: {
-      complexity: "high",
-      deploymentTime: {
-        pilot: "8-10 weeks",
-        fullDeployment: "6-10 months",
-      },
-      hardwareRequired: true,
-      professionalServices: {
-        required: true,
-        cost: 200000,
-        duration: "14-18 weeks",
-      },
-    },
-    compliance: {
-      frameworks: ["SOC2", "NIST", "ISO27001", "Common Criteria"],
-      auditReadiness: 88,
-      automationLevel: 85,
-      reportingCapabilities: [
-        "Advanced threat analytics",
-        "Custom dashboards",
-        "API integration",
-        "ML insights",
-        "CloudVision",
-      ],
-    },
     features: {
-      cloudNative: false,
+      cloudNative: true,
       zeroTrust: true,
       aiMl: true,
       iotSupport: true,
@@ -541,62 +466,51 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       apiIntegration: true,
       singleSignOn: false,
       multiTenant: false,
-      scalability: "very high",
-      agentless: true,
+      agentless: false,
       realTimeVisibility: true,
-      behaviorAnalytics: true,
       threatDetection: true,
+      behaviorAnalytics: true,
       microsegmentation: true,
     },
     marketMetrics: {
       marketShare: 3,
-      customerSatisfaction: 4.5,
-      deploymentSuccess: 80,
-      supportRating: 4.6,
+      customerSatisfaction: 4.0,
+      deploymentSuccess: 75,
+      supportRating: 4.2,
     },
     technicalSpecs: {
-      maxDevices: 2000000,
-      maxUsers: 1000000,
-      apiRateLimit: "very high",
-      uptime: 99.95,
-      mttr: 60,
-    },
-  },
-  meraki: {
-    id: "meraki",
-    name: "Cisco Meraki",
-    category: "mid-market",
-    description: "Cloud-managed IT with integrated access control and simple dashboard interface",
-    logo: "/meraki-logo.png",
-    pricing: {
-      model: "per-device",
-      basePrice: 15.0,
-      billingCycle: "annual",
-      volumeDiscounts: {
-        tier1: { threshold: 100, discount: 0.05 },
-        tier2: { threshold: 500, discount: 0.1 },
-        tier3: { threshold: 2000, discount: 0.15 },
-      },
+      maxDevices: "High",
+      maxUsers: "High",
+      uptime: 99.8,
+      mttr: 90,
+      apiRateLimit: "High",
     },
     implementation: {
       complexity: "medium",
       deploymentTime: {
+        poc: "1 week",
         pilot: "2-3 weeks",
-        fullDeployment: "6-10 weeks",
+        fullDeployment: "4-6 weeks",
       },
-      hardwareRequired: true,
-      professionalServices: {
-        required: false,
-        cost: 35000,
-        duration: "4-6 weeks",
+      requiredResources: {
+        internal: 1.0,
+        vendor: 0.3,
+        training: 16,
+        ongoing: 0.5,
       },
     },
-    compliance: {
-      frameworks: ["SOC2", "ISO27001", "HIPAA", "PCI-DSS"],
-      auditReadiness: 70,
-      automationLevel: 40,
-      reportingCapabilities: ["Basic reports", "Dashboard analytics", "Event logs", "Systems Manager"],
+    pricing: {
+      model: "SaaS Subscription",
+      startingPrice: 7.0,
+      currency: "USD",
     },
+  },
+  extreme: {
+    id: "extreme",
+    name: "ExtremeControl",
+    category: "mid-market",
+    description: "Policy-based NAC for wired and wireless networks with moderate complexity",
+    logo: "/extreme-logo.png",
     features: {
       cloudNative: false,
       zeroTrust: false,
@@ -606,129 +520,319 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       guestAccess: true,
       apiIntegration: true,
       singleSignOn: true,
-      multiTenant: true,
-      scalability: "medium",
-      agentless: false,
+      multiTenant: false,
+      agentless: true,
       realTimeVisibility: true,
+      threatDetection: false,
       behaviorAnalytics: false,
-      threatDetection: true,
+      microsegmentation: true,
+    },
+    marketMetrics: {
+      marketShare: 4,
+      customerSatisfaction: 3.3,
+      deploymentSuccess: 70,
+      supportRating: 3.4,
+    },
+    technicalSpecs: {
+      maxDevices: "Medium",
+      maxUsers: "Medium",
+      uptime: 98.5,
+      mttr: 300,
+      apiRateLimit: "Limited",
+    },
+    implementation: {
+      complexity: "medium",
+      deploymentTime: {
+        poc: "1 week",
+        pilot: "4-6 weeks",
+        fullDeployment: "2-3 months",
+      },
+      requiredResources: {
+        internal: 2.0,
+        vendor: 0.5,
+        training: 24,
+        ongoing: 1.2,
+      },
+    },
+    pricing: {
+      model: "Subscription + Hardware",
+      startingPrice: 10.0,
+      currency: "USD",
+    },
+  },
+  microsoft: {
+    id: "microsoft",
+    name: "Microsoft Intune/NPS",
+    category: "enterprise",
+    description: "Leverages Intune for MDM and NPS for network policy as part of M365 ecosystem",
+    logo: "/microsoft-logo.png",
+    features: {
+      cloudNative: true,
+      zeroTrust: true,
+      aiMl: false,
+      iotSupport: false,
+      byod: true,
+      guestAccess: false,
+      apiIntegration: true,
+      singleSignOn: true,
+      multiTenant: true,
+      agentless: false,
+      realTimeVisibility: false,
+      threatDetection: false,
+      behaviorAnalytics: false,
       microsegmentation: false,
     },
     marketMetrics: {
-      marketShare: 10,
-      customerSatisfaction: 3.8,
-      deploymentSuccess: 88,
+      marketShare: 25,
+      customerSatisfaction: 3.7,
+      deploymentSuccess: 80,
       supportRating: 3.9,
     },
     technicalSpecs: {
-      maxDevices: 10000,
-      maxUsers: 50000,
-      apiRateLimit: "low",
+      maxDevices: "High (with Azure)",
+      maxUsers: "Unlimited",
       uptime: 99.9,
-      mttr: 240,
+      mttr: 120,
+      apiRateLimit: "High",
+    },
+    implementation: {
+      complexity: "medium",
+      deploymentTime: {
+        poc: "3 days",
+        pilot: "2-3 weeks",
+        fullDeployment: "6-8 weeks",
+      },
+      requiredResources: {
+        internal: 1.5,
+        vendor: 0,
+        training: 20,
+        ongoing: 0.8,
+      },
+    },
+    pricing: {
+      model: "Subscription (Part of M365)",
+      startingPrice: 5.0,
+      currency: "USD",
     },
   },
-}
-
-export const getVendorLogoPath = (vendorId: string): string => {
-  return ComprehensiveVendorDatabase[vendorId]?.logo || "/placeholder.svg"
-}
-
-export const getVendorsByCategory = (category: string): VendorData[] => {
-  return Object.values(ComprehensiveVendorDatabase).filter((vendor) => vendor.category === category)
-}
-
-export const searchVendors = (query: string): VendorData[] => {
-  const lowercaseQuery = query.toLowerCase()
-  return Object.values(ComprehensiveVendorDatabase).filter(
-    (vendor) =>
-      vendor.name.toLowerCase().includes(lowercaseQuery) || vendor.description.toLowerCase().includes(lowercaseQuery),
-  )
-}
-
-// Industry-specific security metrics
-export const industrySecurityMetricsData: Record<
-  string,
-  {
-    avgBreachCost: number
-    avgRecordsBreached: number
-    avgMTTR: number // days
-    cyberInsurancePremium: number
-    breachProbability: number
-    iotDeviceRatio: number
-    criticalAssets: string[]
-  }
-> = {
-  healthcare: {
-    avgBreachCost: 10930000,
-    avgRecordsBreached: 42000,
-    avgMTTR: 277,
-    cyberInsurancePremium: 250000,
-    breachProbability: 0.28,
-    iotDeviceRatio: 0.35,
-    criticalAssets: ["PHI", "Medical Devices", "Clinical Systems"],
+  packetfence: {
+    id: "packetfence",
+    name: "PacketFence",
+    category: "smb",
+    description: "Open source NAC solution requiring extensive customization and expertise",
+    logo: "/packetfence-logo.png",
+    features: {
+      cloudNative: false,
+      zeroTrust: false,
+      aiMl: false,
+      iotSupport: true,
+      byod: true,
+      guestAccess: true,
+      apiIntegration: true,
+      singleSignOn: false,
+      multiTenant: false,
+      agentless: true,
+      realTimeVisibility: true,
+      threatDetection: false,
+      behaviorAnalytics: false,
+      microsegmentation: true,
+    },
+    marketMetrics: {
+      marketShare: 2,
+      customerSatisfaction: 3.0,
+      deploymentSuccess: 45,
+      supportRating: 2.8,
+    },
+    technicalSpecs: {
+      maxDevices: "Varies",
+      maxUsers: "Varies",
+      uptime: 95.0,
+      mttr: 720,
+      apiRateLimit: "Custom",
+    },
+    implementation: {
+      complexity: "very-high",
+      deploymentTime: {
+        poc: "2 weeks",
+        pilot: "8-12 weeks",
+        fullDeployment: "4-6 months",
+      },
+      requiredResources: {
+        internal: 4.0,
+        vendor: 0,
+        training: 80,
+        ongoing: 3.0,
+      },
+    },
+    pricing: {
+      model: "Open Source + Support",
+      startingPrice: 0,
+      currency: "USD",
+    },
   },
-  financial: {
-    avgBreachCost: 5970000,
-    avgRecordsBreached: 35000,
-    avgMTTR: 233,
-    cyberInsurancePremium: 180000,
-    breachProbability: 0.22,
-    iotDeviceRatio: 0.15,
-    criticalAssets: ["PII", "Financial Data", "Trading Systems"],
+  foxpass: {
+    id: "foxpass",
+    name: "Foxpass",
+    category: "smb",
+    description: "Simple cloud-hosted RADIUS for basic authentication with limited NAC features",
+    logo: "/foxpass-logo.png",
+    features: {
+      cloudNative: true,
+      zeroTrust: false,
+      aiMl: false,
+      iotSupport: false,
+      byod: false,
+      guestAccess: false,
+      apiIntegration: true,
+      singleSignOn: true,
+      multiTenant: false,
+      agentless: true,
+      realTimeVisibility: false,
+      threatDetection: false,
+      behaviorAnalytics: false,
+      microsegmentation: false,
+    },
+    marketMetrics: {
+      marketShare: 1,
+      customerSatisfaction: 3.5,
+      deploymentSuccess: 90,
+      supportRating: 3.8,
+    },
+    technicalSpecs: {
+      maxDevices: "Medium",
+      maxUsers: "Medium",
+      uptime: 99.5,
+      mttr: 30,
+      apiRateLimit: "Good",
+    },
+    implementation: {
+      complexity: "low",
+      deploymentTime: {
+        poc: "1 day",
+        pilot: "3 days",
+        fullDeployment: "1 week",
+      },
+      requiredResources: {
+        internal: 0.25,
+        vendor: 0,
+        training: 2,
+        ongoing: 0.1,
+      },
+    },
+    pricing: {
+      model: "SaaS Subscription",
+      startingPrice: 1.5,
+      currency: "USD",
+    },
   },
-  retail: {
-    avgBreachCost: 3860000,
-    avgRecordsBreached: 28000,
-    avgMTTR: 247,
-    cyberInsurancePremium: 120000,
-    breachProbability: 0.25,
-    iotDeviceRatio: 0.45,
-    criticalAssets: ["PCI Data", "Customer Data", "POS Systems"],
+  securew2: {
+    id: "securew2",
+    name: "SecureW2",
+    category: "smb",
+    description: "Cloud-based PKI and RADIUS for certificate-based authentication",
+    logo: "/securew2-logo.png",
+    features: {
+      cloudNative: true,
+      zeroTrust: false,
+      aiMl: false,
+      iotSupport: false,
+      byod: true,
+      guestAccess: false,
+      apiIntegration: true,
+      singleSignOn: false,
+      multiTenant: false,
+      agentless: true,
+      realTimeVisibility: false,
+      threatDetection: false,
+      behaviorAnalytics: false,
+      microsegmentation: false,
+    },
+    marketMetrics: {
+      marketShare: 1,
+      customerSatisfaction: 3.8,
+      deploymentSuccess: 85,
+      supportRating: 4.0,
+    },
+    technicalSpecs: {
+      maxDevices: "Medium",
+      maxUsers: "Medium",
+      uptime: 99.0,
+      mttr: 60,
+      apiRateLimit: "Moderate",
+    },
+    implementation: {
+      complexity: "low",
+      deploymentTime: {
+        poc: "2 days",
+        pilot: "1 week",
+        fullDeployment: "2 weeks",
+      },
+      requiredResources: {
+        internal: 0.5,
+        vendor: 0.1,
+        training: 8,
+        ongoing: 0.2,
+      },
+    },
+    pricing: {
+      model: "SaaS Subscription",
+      startingPrice: 2.5,
+      currency: "USD",
+    },
   },
-  technology: {
-    avgBreachCost: 5040000,
-    avgRecordsBreached: 32000,
-    avgMTTR: 215,
-    cyberInsurancePremium: 150000,
-    breachProbability: 0.2,
-    iotDeviceRatio: 0.25,
-    criticalAssets: ["Source Code", "Customer Data", "Infrastructure"],
-  },
-  manufacturing: {
-    avgBreachCost: 4470000,
-    avgRecordsBreached: 25000,
-    avgMTTR: 261,
-    cyberInsurancePremium: 140000,
-    breachProbability: 0.23,
-    iotDeviceRatio: 0.55,
-    criticalAssets: ["IP", "OT Systems", "Supply Chain"],
-  },
-  energy: {
-    avgBreachCost: 4650000,
-    avgRecordsBreached: 22000,
-    avgMTTR: 254,
-    cyberInsurancePremium: 200000,
-    breachProbability: 0.18,
-    iotDeviceRatio: 0.6,
-    criticalAssets: ["SCADA", "Critical Infrastructure", "Grid Systems"],
-  },
-  government: {
-    avgBreachCost: 5010000,
-    avgRecordsBreached: 50000,
-    avgMTTR: 286,
-    cyberInsurancePremium: 300000,
-    breachProbability: 0.3,
-    iotDeviceRatio: 0.2,
-    criticalAssets: ["Classified Data", "Citizen Data", "Critical Services"],
-  },
-  education: {
-    avgBreachCost: 3790000,
-    avgRecordsBreached: 45000,
-    avgMTTR: 269,
-    cyberInsurancePremium: 100000,
-    breachProbability: 0.26,
-    iotDeviceRatio: 0.3,
-    criticalAssets: ["Student Data", "Research", "Financial Aid"],
+  radiusaas: {
+    id: "radiusaas",
+    name: "RADIUS-as-a-Service",
+    category: "smb",
+    description: "Managed RADIUS service for various authentication needs with basic features",
+    logo: "/radiusaas-logo.png",
+    features: {
+      cloudNative: true,
+      zeroTrust: false,
+      aiMl: false,
+      iotSupport: false,
+      byod: false,
+      guestAccess: false,
+      apiIntegration: false,
+      singleSignOn: false,
+      multiTenant: false,
+      agentless: true,
+      realTimeVisibility: false,
+      threatDetection: false,
+      behaviorAnalytics: false,
+      microsegmentation: false,
+    },
+    marketMetrics: {
+      marketShare: 0.5,
+      customerSatisfaction: 3.2,
+      deploymentSuccess: 80,
+      supportRating: 3.0,
+    },
+    technicalSpecs: {
+      maxDevices: "Medium",
+      maxUsers: "Medium",
+      uptime: 98.0,
+      mttr: 120,
+      apiRateLimit: "Limited",
+    },
+    implementation: {
+      complexity: "low",
+      deploymentTime: {
+        poc: "1 day",
+        pilot: "5 days",
+        fullDeployment: "1 week",
+      },
+      requiredResources: {
+        internal: 0.2,
+        vendor: 0,
+        training: 4,
+        ongoing: 0.1,
+      },
+    },
+    pricing: {
+      model: "SaaS Subscription",
+      startingPrice: 1.0,
+      currency: "USD",
+    },
   },
 }
