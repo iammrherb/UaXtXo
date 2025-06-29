@@ -17,7 +17,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
+import ComplianceOverview from "@/components/charts/dashboards/ComplianceOverview"
 
 import {
   BarChart as ReBarChart,
@@ -31,6 +33,11 @@ import {
   AreaChart,
   Area,
   CartesianGrid,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
 } from "recharts"
 
 import {
@@ -43,16 +50,12 @@ import {
   FileText,
   RouteIcon as Road,
   FilePieChart,
-  Check,
   Clock,
   Shield,
   Crown,
   ArrowUpRight,
   ArrowDownRight,
-  Mail,
   Phone,
-  Linkedin,
-  Twitter,
   SlidersHorizontal,
   InfoIcon,
   MoonIcon,
@@ -71,6 +74,9 @@ import {
   Save,
   Building,
   Zap,
+  ChevronsLeft,
+  ChevronsRight,
+  CheckCircle2,
 } from "lucide-react"
 
 type CalculationResult = NonNullable<ReturnType<typeof calculateVendorTCO>> & { id?: string }
@@ -331,6 +337,8 @@ const VENDOR_DATA = {
     marketShare: 8.5,
     logo: "/portnox-logo-color.png",
     description: "AI-powered, cloud-native Zero Trust Network Access Control",
+    priceIndicator: "$$",
+    difficulty: 1,
     features: {
       core: {
         "802.1X": true,
@@ -341,6 +349,11 @@ const VENDOR_DATA = {
         "API Integration": true,
         "Real-time Monitoring": true,
         "Automated Remediation": true,
+        SSO: true,
+        TACACS: true,
+        "Guest Portal": true,
+        PKI: true,
+        RADIUS: true,
       },
       advanced: {
         "AI/ML Analytics": true,
@@ -349,6 +362,7 @@ const VENDOR_DATA = {
         "Threat Detection": true,
         "Compliance Automation": true,
         "Multi-tenant": true,
+        "IoT Security": true,
       },
     },
     implementation: {
@@ -378,6 +392,8 @@ const VENDOR_DATA = {
     marketShare: 35.2,
     logo: "/cisco-logo.png",
     description: "Industry-leading identity services engine with comprehensive NAC",
+    priceIndicator: "$$$$",
+    difficulty: 5,
     features: {
       core: {
         "802.1X": true,
@@ -388,6 +404,11 @@ const VENDOR_DATA = {
         "API Integration": true,
         "Real-time Monitoring": true,
         "Automated Remediation": false,
+        SSO: true,
+        TACACS: true,
+        "Guest Portal": true,
+        PKI: true,
+        RADIUS: true,
       },
       advanced: {
         "AI/ML Analytics": false,
@@ -396,6 +417,7 @@ const VENDOR_DATA = {
         "Threat Detection": true,
         "Compliance Automation": false,
         "Multi-tenant": false,
+        "IoT Security": false,
       },
     },
     implementation: {
@@ -419,6 +441,8 @@ const VENDOR_DATA = {
     marketShare: 18.7,
     logo: "/aruba-logo.png",
     description: "Comprehensive network access control with policy enforcement",
+    priceIndicator: "$$$",
+    difficulty: 4,
     features: {
       core: {
         "802.1X": true,
@@ -429,6 +453,11 @@ const VENDOR_DATA = {
         "API Integration": true,
         "Real-time Monitoring": true,
         "Automated Remediation": false,
+        SSO: true,
+        TACACS: true,
+        "Guest Portal": true,
+        PKI: true,
+        RADIUS: true,
       },
       advanced: {
         "AI/ML Analytics": false,
@@ -437,6 +466,7 @@ const VENDOR_DATA = {
         "Threat Detection": true,
         "Compliance Automation": false,
         "Multi-tenant": false,
+        "IoT Security": true,
       },
     },
     implementation: {
@@ -460,6 +490,8 @@ const VENDOR_DATA = {
     marketShare: 12.3,
     logo: "/meraki-logo.png",
     description: "Cloud-managed networking with integrated security",
+    priceIndicator: "$$$",
+    difficulty: 2,
     features: {
       core: {
         "802.1X": true,
@@ -470,6 +502,11 @@ const VENDOR_DATA = {
         "API Integration": true,
         "Real-time Monitoring": true,
         "Automated Remediation": false,
+        SSO: true,
+        TACACS: false,
+        "Guest Portal": true,
+        PKI: false,
+        RADIUS: true,
       },
       advanced: {
         "AI/ML Analytics": false,
@@ -478,6 +515,7 @@ const VENDOR_DATA = {
         "Threat Detection": true,
         "Compliance Automation": false,
         "Multi-tenant": true,
+        "IoT Security": false,
       },
     },
     implementation: {
@@ -501,6 +539,8 @@ const VENDOR_DATA = {
     marketShare: 9.8,
     logo: "/fortinet-logo.png",
     description: "Network access control integrated with security fabric",
+    priceIndicator: "$$$",
+    difficulty: 3,
     features: {
       core: {
         "802.1X": true,
@@ -511,6 +551,11 @@ const VENDOR_DATA = {
         "API Integration": true,
         "Real-time Monitoring": true,
         "Automated Remediation": true,
+        SSO: true,
+        TACACS: false,
+        "Guest Portal": true,
+        PKI: true,
+        RADIUS: true,
       },
       advanced: {
         "AI/ML Analytics": false,
@@ -519,6 +564,7 @@ const VENDOR_DATA = {
         "Threat Detection": true,
         "Compliance Automation": false,
         "Multi-tenant": false,
+        "IoT Security": true,
       },
     },
     implementation: {
@@ -542,6 +588,8 @@ const VENDOR_DATA = {
     marketShare: 7.2,
     logo: "/forescout-logo.png",
     description: "Agentless device visibility and control platform",
+    priceIndicator: "$$$$",
+    difficulty: 4,
     features: {
       core: {
         "802.1X": false,
@@ -552,6 +600,11 @@ const VENDOR_DATA = {
         "API Integration": true,
         "Real-time Monitoring": true,
         "Automated Remediation": true,
+        SSO: true,
+        TACACS: false,
+        "Guest Portal": true,
+        PKI: false,
+        RADIUS: true,
       },
       advanced: {
         "AI/ML Analytics": true,
@@ -560,6 +613,7 @@ const VENDOR_DATA = {
         "Threat Detection": true,
         "Compliance Automation": true,
         "Multi-tenant": false,
+        "IoT Security": true,
       },
     },
     implementation: {
@@ -583,6 +637,8 @@ const VENDOR_DATA = {
     marketShare: 4.1,
     logo: "/extreme-logo.png",
     description: "NAC solution integrated with Extreme Networks infrastructure",
+    priceIndicator: "$$",
+    difficulty: 3,
     features: {
       core: {
         "802.1X": true,
@@ -593,6 +649,11 @@ const VENDOR_DATA = {
         "API Integration": true,
         "Real-time Monitoring": true,
         "Automated Remediation": false,
+        SSO: true,
+        TACACS: false,
+        "Guest Portal": true,
+        PKI: false,
+        RADIUS: true,
       },
       advanced: {
         "AI/ML Analytics": false,
@@ -601,6 +662,7 @@ const VENDOR_DATA = {
         "Threat Detection": false,
         "Compliance Automation": false,
         "Multi-tenant": false,
+        "IoT Security": false,
       },
     },
     implementation: {
@@ -624,11 +686,13 @@ const VENDOR_DATA = {
   },
   juniper: {
     id: "juniper",
-    name: "Juniper Mist Access Assurance",
+    name: "Juniper Mist AA",
     category: "AI-Driven",
     marketShare: 3.8,
     logo: "/juniper-logo.png",
     description: "AI-driven access assurance with Mist cloud platform",
+    priceIndicator: "$$",
+    difficulty: 2,
     features: {
       core: {
         "802.1X": true,
@@ -639,6 +703,11 @@ const VENDOR_DATA = {
         "API Integration": true,
         "Real-time Monitoring": true,
         "Automated Remediation": true,
+        SSO: true,
+        TACACS: false,
+        "Guest Portal": true,
+        PKI: true,
+        RADIUS: true,
       },
       advanced: {
         "AI/ML Analytics": true,
@@ -647,6 +716,7 @@ const VENDOR_DATA = {
         "Threat Detection": true,
         "Compliance Automation": false,
         "Multi-tenant": true,
+        "IoT Security": true,
       },
     },
     implementation: {
@@ -665,11 +735,13 @@ const VENDOR_DATA = {
   },
   microsoft: {
     id: "microsoft",
-    name: "Microsoft NPS + Intune",
+    name: "Microsoft NPS/Intune",
     category: "Ecosystem NAC",
     marketShare: 15.6,
     logo: "/microsoft-logo.png",
     description: "Microsoft ecosystem NAC using NPS, Intune, and Conditional Access",
+    priceIndicator: "$",
+    difficulty: 3,
     features: {
       core: {
         "802.1X": true,
@@ -680,6 +752,11 @@ const VENDOR_DATA = {
         "API Integration": true,
         "Real-time Monitoring": true,
         "Automated Remediation": false,
+        SSO: true,
+        TACACS: false,
+        "Guest Portal": false,
+        PKI: true,
+        RADIUS: true,
       },
       advanced: {
         "AI/ML Analytics": false,
@@ -688,6 +765,7 @@ const VENDOR_DATA = {
         "Threat Detection": true,
         "Compliance Automation": true,
         "Multi-tenant": true,
+        "IoT Security": false,
       },
     },
     implementation: {
@@ -716,6 +794,8 @@ const VENDOR_DATA = {
     marketShare: 2.1,
     logo: "/packetfence-logo.png",
     description: "Open-source network access control solution",
+    priceIndicator: "$",
+    difficulty: 5,
     features: {
       core: {
         "802.1X": true,
@@ -726,6 +806,11 @@ const VENDOR_DATA = {
         "API Integration": true,
         "Real-time Monitoring": true,
         "Automated Remediation": false,
+        SSO: true,
+        TACACS: true,
+        "Guest Portal": true,
+        PKI: true,
+        RADIUS: true,
       },
       advanced: {
         "AI/ML Analytics": false,
@@ -734,6 +819,7 @@ const VENDOR_DATA = {
         "Threat Detection": false,
         "Compliance Automation": false,
         "Multi-tenant": false,
+        "IoT Security": true,
       },
     },
     implementation: {
@@ -757,6 +843,8 @@ const VENDOR_DATA = {
     marketShare: 1.8,
     logo: "/foxpass-logo.png",
     description: "Cloud-hosted RADIUS and LDAP for Wi-Fi and VPN",
+    priceIndicator: "$",
+    difficulty: 1,
     features: {
       core: {
         "802.1X": true,
@@ -767,6 +855,11 @@ const VENDOR_DATA = {
         "API Integration": true,
         "Real-time Monitoring": false,
         "Automated Remediation": false,
+        SSO: true,
+        TACACS: false,
+        "Guest Portal": false,
+        PKI: false,
+        RADIUS: true,
       },
       advanced: {
         "AI/ML Analytics": false,
@@ -775,6 +868,7 @@ const VENDOR_DATA = {
         "Threat Detection": false,
         "Compliance Automation": false,
         "Multi-tenant": true,
+        "IoT Security": false,
       },
     },
     implementation: {
@@ -798,6 +892,8 @@ const VENDOR_DATA = {
     marketShare: 2.3,
     logo: "/securew2-logo.png",
     description: "Cloud-based PKI and certificate management for secure Wi-Fi",
+    priceIndicator: "$$",
+    difficulty: 2,
     features: {
       core: {
         "802.1X": true,
@@ -808,6 +904,11 @@ const VENDOR_DATA = {
         "API Integration": true,
         "Real-time Monitoring": false,
         "Automated Remediation": false,
+        SSO: true,
+        TACACS: false,
+        "Guest Portal": false,
+        PKI: true,
+        RADIUS: true,
       },
       advanced: {
         "AI/ML Analytics": false,
@@ -816,6 +917,7 @@ const VENDOR_DATA = {
         "Threat Detection": false,
         "Compliance Automation": false,
         "Multi-tenant": true,
+        "IoT Security": false,
       },
     },
     implementation: {
@@ -839,6 +941,8 @@ const VENDOR_DATA = {
     marketShare: 1.2,
     logo: "/radiusaas-logo.png",
     description: "Cloud-based RADIUS service for network authentication",
+    priceIndicator: "$",
+    difficulty: 1,
     features: {
       core: {
         "802.1X": true,
@@ -849,6 +953,11 @@ const VENDOR_DATA = {
         "API Integration": false,
         "Real-time Monitoring": false,
         "Automated Remediation": false,
+        SSO: false,
+        TACACS: false,
+        "Guest Portal": false,
+        PKI: false,
+        RADIUS: true,
       },
       advanced: {
         "AI/ML Analytics": false,
@@ -857,6 +966,7 @@ const VENDOR_DATA = {
         "Threat Detection": false,
         "Compliance Automation": false,
         "Multi-tenant": false,
+        "IoT Security": false,
       },
     },
     implementation: {
@@ -872,6 +982,55 @@ const VENDOR_DATA = {
     },
     strengths: ["Simple RADIUS service", "Pay per use", "Quick setup", "Basic authentication"],
     weaknesses: ["Very limited features", "No NAC capabilities", "Authentication only", "Minimal management"],
+  },
+  arista: {
+    id: "arista",
+    name: "Arista AGNI",
+    category: "Cloud-Native NAC",
+    marketShare: 2.5,
+    logo: "/arista-logo.png",
+    description: "Cloud-native NAC service integrated with Arista's CloudVision.",
+    priceIndicator: "$$$",
+    difficulty: 3,
+    features: {
+      core: {
+        "802.1X": true,
+        "Risk-Based Auth": true,
+        "Device Profiling": true,
+        "Policy Automation": true,
+        "Cloud Management": true,
+        "API Integration": true,
+        "Real-time Monitoring": true,
+        "Automated Remediation": false,
+        SSO: true,
+        TACACS: true,
+        "Guest Portal": true,
+        PKI: true,
+        RADIUS: true,
+      },
+      advanced: {
+        "AI/ML Analytics": true,
+        "Zero Trust": true,
+        Microsegmentation: true,
+        "Threat Detection": true,
+        "Compliance Automation": false,
+        "Multi-tenant": true,
+        "IoT Security": true,
+      },
+    },
+    implementation: {
+      deploymentTime: { poc: 60, fullDeployment: 960 },
+      complexity: "Medium",
+      requiresHardware: false,
+      cloudNative: true,
+    },
+    pricing: {
+      model: "Subscription per device",
+      startingPrice: 6.0,
+      enterprise: 7.5,
+    },
+    strengths: ["Deep integration with Arista ecosystem", "CloudVision management", "Strong for data center & campus"],
+    weaknesses: ["Best value within Arista environments", "Newer entrant in NAC space"],
   },
 }
 
@@ -1208,212 +1367,134 @@ const VendorSelectionPanel = ({
   darkMode,
   searchTerm,
   setSearchTerm,
+  isCollapsed,
 }: {
   selectedVendors: string[]
   onVendorToggle: (vendorId: string) => void
   darkMode: boolean
   searchTerm: string
   setSearchTerm: (term: string) => void
+  isCollapsed: boolean
 }) => {
-  const vendorCategories = {
-    Recommended: ["portnox"],
-    "Cloud-Native Leaders": ["portnox", "juniper", "microsoft"],
-    "Traditional Enterprise": ["cisco", "aruba", "fortinet"],
-    "Cloud-Managed": ["meraki", "extreme"],
-    "Specialized Solutions": ["forescout"],
-    "Open Source & Budget": ["packetfence", "foxpass", "securew2", "radiusaas"],
-  }
-
-  const filteredVendors = Object.entries(vendorCategories).reduce(
-    (acc, [category, vendors]) => {
-      const filtered = vendors.filter((vendorId) => {
-        const vendor = VENDOR_DATA[vendorId]
-        return vendor && vendor.name.toLowerCase().includes(searchTerm.toLowerCase())
-      })
-      if (filtered.length > 0) {
-        acc[category] = filtered
-      }
-      return acc
-    },
-    {} as Record<string, string[]>,
+  const filteredVendors = Object.values(VENDOR_DATA).filter((vendor) =>
+    vendor.name.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
+  const DifficultyBadge = ({ level }: { level: number }) => {
+    const config = {
+      1: { label: "Very Low", color: "bg-green-500" },
+      2: { label: "Low", color: "bg-lime-500" },
+      3: { label: "Medium", color: "bg-yellow-500" },
+      4: { label: "High", color: "bg-orange-500" },
+      5: { label: "Very High", color: "bg-red-500" },
+    }[level] || { label: "N/A", color: "bg-gray-500" }
+
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className={cn("h-2 w-2 rounded-full", i < level ? config.color : "bg-gray-300 dark:bg-gray-600")}
+                />
+              ))}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Implementation Difficulty: {config.label}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    )
+  }
+
   return (
-    <div
+    <motion.div
+      animate={{ width: isCollapsed ? 0 : 384 }} // 96 * 4 = 384px
+      transition={{ duration: 0.3, ease: "easeInOut" }}
       className={cn(
-        "w-80 border-r flex flex-col",
+        "border-r flex flex-col flex-shrink-0 overflow-hidden",
         darkMode ? "bg-slate-900 border-slate-700" : "bg-slate-50 border-slate-200",
       )}
     >
-      {/* Header */}
-      <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-        <div className="flex items-center gap-2 mb-3">
-          <Filter className="h-5 w-5 text-emerald-500" />
-          <h3 className="font-semibold text-lg">Vendor Selection</h3>
-          <Badge variant="secondary" className="ml-auto">
-            {selectedVendors.length} selected
-          </Badge>
+      <div className="w-96 flex flex-col h-full">
+        {/* Header */}
+        <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+          <div className="flex items-center gap-2 mb-3">
+            <Filter className="h-5 w-5 text-emerald-500" />
+            <h3 className="font-semibold text-lg">Vendor Selection</h3>
+            <Badge variant="secondary" className="ml-auto">
+              {selectedVendors.length} selected
+            </Badge>
+          </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Search vendors..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={cn(
+                "pl-9",
+                darkMode ? "bg-slate-800 border-slate-600 text-slate-100" : "bg-white border-slate-300",
+              )}
+            />
+          </div>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Search vendors..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={cn(
-              "pl-9",
-              darkMode ? "bg-slate-800 border-slate-600 text-slate-100" : "bg-white border-slate-300",
-            )}
-          />
-        </div>
-
-        {/* Quick Actions */}
-        <div className="flex items-center justify-between mt-3">
-          <div className="flex items-center space-x-2">
-            <Button size="sm" variant="ghost" className="h-7 px-2">
-              <Star className="h-3 w-3 mr-1" />
-              Recommended
-            </Button>
-          </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 px-2"
-            onClick={() => selectedVendors.forEach(onVendorToggle)}
-          >
-            <X className="h-3 w-3 mr-1" />
-            Clear All
-          </Button>
-        </div>
-      </div>
-
-      {/* Vendor Categories */}
-      <ScrollArea className="flex-1">
-        <div className="p-4 space-y-6">
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className={cn("p-2 rounded", darkMode ? "bg-slate-800" : "bg-white")}>
-              <div className="text-emerald-500 font-medium">All Vendors</div>
-              <div className={cn(darkMode ? "text-slate-300" : "text-slate-600")}>14</div>
-            </div>
-            <div className={cn("p-2 rounded", darkMode ? "bg-slate-800" : "bg-white")}>
-              <div className="text-blue-500 font-medium">Cloud-native</div>
-              <div className={cn(darkMode ? "text-slate-300" : "text-slate-600")}>5</div>
-            </div>
-            <div className={cn("p-2 rounded", darkMode ? "bg-slate-800" : "bg-white")}>
-              <div className="text-purple-500 font-medium">Enterprise</div>
-              <div className={cn(darkMode ? "text-slate-300" : "text-slate-600")}>7</div>
-            </div>
-            <div className={cn("p-2 rounded", darkMode ? "bg-slate-800" : "bg-white")}>
-              <div className="text-orange-500 font-medium">Mid-market</div>
-              <div className={cn(darkMode ? "text-slate-300" : "text-slate-600")}>8</div>
-            </div>
-          </div>
-
-          {/* Popular Comparisons */}
-          <div>
-            <h4 className={cn("font-medium text-sm mb-3", darkMode ? "text-slate-300" : "text-slate-700")}>
-              Popular Comparisons
-            </h4>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { label: "Enterprise Leaders", vendors: ["portnox", "cisco", "aruba"] },
-                { label: "Cloud-First", vendors: ["portnox", "juniper", "meraki"] },
-                { label: "Mid-Market", vendors: ["portnox", "fortinet", "extreme"] },
-                { label: "Budget-Conscious", vendors: ["portnox", "microsoft", "packetfence"] },
-              ].map((comparison) => (
-                <Button
-                  key={comparison.label}
-                  size="sm"
-                  variant="outline"
-                  className={cn(
-                    "h-auto p-2 text-xs justify-start",
-                    darkMode ? "border-slate-600 hover:bg-slate-700" : "border-slate-300 hover:bg-slate-100",
-                  )}
-                  onClick={() => {
-                    // Clear current selection and select comparison vendors
-                    selectedVendors.forEach(onVendorToggle)
-                    comparison.vendors.forEach(onVendorToggle)
-                  }}
-                >
-                  {comparison.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Vendor Categories */}
-          {Object.entries(filteredVendors).map(([category, vendorIds]) => (
-            <div key={category}>
-              <h4
-                className={cn(
-                  "font-medium text-sm mb-3 uppercase tracking-wide",
-                  darkMode ? "text-slate-400" : "text-slate-600",
-                )}
-              >
-                {category}
-              </h4>
-              <div className="space-y-2">
-                {vendorIds.map((vendorId) => {
-                  const vendor = VENDOR_DATA[vendorId]
-                  if (!vendor) return null
-
-                  const isSelected = selectedVendors.includes(vendorId)
-
-                  return (
-                    <motion.div key={vendorId} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <div
-                        className={cn(
-                          "flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-all",
-                          isSelected
-                            ? darkMode
-                              ? "bg-emerald-500/10 border-emerald-500/50"
-                              : "bg-emerald-50 border-emerald-200"
-                            : darkMode
-                              ? "bg-slate-800 border-slate-700 hover:bg-slate-750"
-                              : "bg-white border-slate-200 hover:bg-slate-50",
-                        )}
-                        onClick={() => onVendorToggle(vendorId)}
-                      >
-                        <Checkbox
-                          checked={isSelected}
-                          onChange={() => onVendorToggle(vendorId)}
-                          className="data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
-                        />
+        {/* Vendor Grid */}
+        <ScrollArea className="flex-1">
+          <div className="p-4 grid grid-cols-2 gap-4">
+            {filteredVendors.map((vendor) => {
+              const isSelected = selectedVendors.includes(vendor.id)
+              return (
+                <motion.div key={vendor.id} whileHover={{ y: -3 }} whileTap={{ scale: 0.97 }}>
+                  <Card
+                    onClick={() => onVendorToggle(vendor.id)}
+                    className={cn(
+                      "cursor-pointer transition-all duration-200 h-full",
+                      isSelected
+                        ? "border-emerald-500 ring-2 ring-emerald-500"
+                        : darkMode
+                          ? "hover:border-slate-600"
+                          : "hover:border-slate-400",
+                    )}
+                  >
+                    <CardHeader className="p-3">
+                      <div className="flex items-center justify-between">
                         <Image
                           src={vendor.logo || "/placeholder.svg"}
                           alt={vendor.name}
-                          width={32}
-                          height={32}
-                          className="h-8 w-8 object-contain rounded"
+                          width={80}
+                          height={20}
+                          className="h-5 object-contain"
                         />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <p className="font-medium text-sm truncate">{vendor.name}</p>
-                            {vendorId === "portnox" && <Crown className="h-3 w-3 text-yellow-500" />}
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <p className={cn("text-xs truncate", darkMode ? "text-slate-400" : "text-slate-500")}>
-                              {vendor.category}
-                            </p>
-                            <span className={cn("text-xs", darkMode ? "text-slate-400" : "text-slate-500")}>
-                              {vendor.marketShare}%
-                            </span>
-                          </div>
-                        </div>
-                        {isSelected && <Check className="h-4 w-4 text-emerald-500" />}
+                        <Checkbox
+                          checked={isSelected}
+                          className="data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
+                        />
                       </div>
-                    </motion.div>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </ScrollArea>
-    </div>
+                      <CardTitle className="text-base pt-2">{vendor.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3 text-xs space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Price:</span>
+                        <span className="font-semibold">{vendor.priceIndicator}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Difficulty:</span>
+                        <DifficultyBadge level={vendor.difficulty} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )
+            })}
+          </div>
+        </ScrollArea>
+      </div>
+    </motion.div>
   )
 }
 
@@ -1423,6 +1504,7 @@ export default function TcoAnalyzerUltimate() {
   const [darkMode, setDarkMode] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -1511,15 +1593,11 @@ export default function TcoAnalyzerUltimate() {
         newSelection = prev.filter((id) => id !== vendorId)
       } else {
         if (prev.length >= 6) {
-          if (prev.includes("portnox")) {
-            const nonPortnox = prev.filter((id) => id !== "portnox")
-            newSelection = ["portnox", ...nonPortnox.slice(0, 4), vendorId]
-          } else {
-            newSelection = [...prev.slice(0, 5), vendorId]
-          }
-        } else {
-          newSelection = [...prev, vendorId]
+          // Simple alert, could be replaced with a toast notification
+          alert("You can select a maximum of 6 vendors for comparison.")
+          return prev
         }
+        newSelection = [...prev, vendorId]
       }
       if (newSelection.includes("portnox")) {
         return ["portnox", ...newSelection.filter((id) => id !== "portnox")]
@@ -1627,13 +1705,8 @@ export default function TcoAnalyzerUltimate() {
 
         return {
           vendor: vendor.name,
-          planning: vendor.implementation?.deploymentTime?.poc || 24,
-          deployment: vendor.implementation?.deploymentTime?.fullDeployment || 120,
-          optimization: 30,
-          total:
-            (vendor.implementation?.deploymentTime?.poc || 24) +
-            (vendor.implementation?.deploymentTime?.fullDeployment || 120) +
-            30,
+          "PoC (days)": vendor.implementation?.deploymentTime?.poc / 24 || 1,
+          "Full Deployment (days)": vendor.implementation?.deploymentTime?.fullDeployment / 24 || 5,
         }
       })
       .filter(Boolean)
@@ -1703,25 +1776,25 @@ export default function TcoAnalyzerUltimate() {
       transition={{ type: "spring", stiffness: 200, damping: 25, delay: 0.1 }}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-3">
-            <motion.div whileHover={{ rotate: [0, -5, 5, -5, 0], scale: 1.05 }} transition={{ duration: 0.5 }}>
+        <div className="flex items-center justify-between h-20">
+          <div className="flex items-center space-x-4">
+            <motion.div whileHover={{ rotate: [0, -5, 5, -5, 0], scale: 1.1 }} transition={{ duration: 0.5 }}>
               <Image
                 src="/portnox-logo-color.png"
                 alt="Portnox Logo"
-                width={140}
-                height={35}
-                className="h-8 w-auto relative"
+                width={180}
+                height={45}
+                className="h-11 w-auto relative"
                 priority
               />
             </motion.div>
-            <Separator orientation="vertical" className={cn("h-6", darkMode ? "bg-slate-700" : "bg-slate-300")} />
+            <Separator orientation="vertical" className={cn("h-8", darkMode ? "bg-slate-700" : "bg-slate-300")} />
             <div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent">
-                TCO Analyzer
+              <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+                Total Cost Analyzer
               </h1>
-              <p className={cn("text-xs", darkMode ? "text-slate-400" : "text-slate-500")}>
-                Enterprise Decision Platform v3.0
+              <p className={cn("text-xs font-medium", darkMode ? "text-slate-400" : "text-slate-500")}>
+                Executive Intelligence Decision Platform
               </p>
             </div>
           </div>
@@ -1806,7 +1879,7 @@ export default function TcoAnalyzerUltimate() {
   const MainTabNavigation = () => (
     <motion.nav
       className={cn(
-        "sticky top-16 z-40 backdrop-blur-md border-b",
+        "sticky top-20 z-40 backdrop-blur-md border-b",
         darkMode ? "bg-slate-900/80 border-slate-700/60" : "bg-white/80 border-slate-200/60",
       )}
       initial={{ opacity: 0, y: -20 }}
@@ -1987,14 +2060,14 @@ export default function TcoAnalyzerUltimate() {
         const featureData = safeResultsForFeatures.map((r) => ({
           id: r.vendor,
           name: r.vendorName,
-          features: VENDOR_DATA[r.vendor]?.features?.core || {},
+          features: VENDOR_DATA[r.vendor]?.features || {},
           logo: VENDOR_DATA[r.vendor]?.logo,
         }))
         return <FeatureComparison data={featureData} darkMode={darkMode} />
       case "roadmap":
         return (
           <ImplementationRoadmapView
-            selectedVendor={selectedVendors[0] || "portnox"}
+            selectedVendors={selectedVendors}
             deviceCount={currentDeviceCount}
             userCount={currentUsersCount}
             darkMode={darkMode}
@@ -2035,11 +2108,55 @@ export default function TcoAnalyzerUltimate() {
         </Card>
       )
 
-    const costBreakdownData = generateCostBreakdownData(results)
-    const roiComparisonData = generateROIComparisonData(results)
-    const riskReductionData = generateRiskReductionData(results)
     const implementationData = generateImplementationTimelineData(selectedVendors)
-    const savingsTreemapData = generateCostSavingsTreemapData(portnoxResult, competitors)
+
+    const PortnoxAdvantages = () => (
+      <GradientCard darkMode={darkMode} gradient="cosmic">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2 text-lg">
+            <Star className="h-5 w-5 text-yellow-400" />
+            <span>The Portnox Advantage</span>
+          </CardTitle>
+          <CardDescription className={cn(darkMode ? "text-slate-400" : "text-slate-500")}>
+            Key differentiators driving superior value and security.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-3">
+            {[
+              {
+                icon: <RocketIcon className="h-5 w-5 text-emerald-400" />,
+                title: "100% Cloud-Native",
+                desc: "Zero hardware, infinite scalability, and rapid deployment.",
+              },
+              {
+                icon: <Zap className="h-5 w-5 text-purple-400" />,
+                title: "AI-Powered Automation",
+                desc: "Reduces manual effort and human error with intelligent policy enforcement.",
+              },
+              {
+                icon: <ShieldCheck className="h-5 w-5 text-blue-400" />,
+                title: "Zero Trust Security",
+                desc: "Enforces least-privilege access for every user and device.",
+              },
+              {
+                icon: <Clock className="h-5 w-5 text-orange-400" />,
+                title: "Fastest Time-to-Value",
+                desc: "Deploy in days, not months, and see immediate ROI.",
+              },
+            ].map((item) => (
+              <li key={item.title} className="flex items-start space-x-3">
+                <div className="flex-shrink-0 pt-1">{item.icon}</div>
+                <div>
+                  <p className="font-semibold">{item.title}</p>
+                  <p className="text-sm text-muted-foreground">{item.desc}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </GradientCard>
+    )
 
     return (
       <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
@@ -2122,9 +2239,9 @@ export default function TcoAnalyzerUltimate() {
           </motion.div>
           <motion.div variants={fadeInUp}>
             <MetricCard
-              title="Efficiency Gain"
-              value={`${portnoxResult?.roi?.laborSavings || 1.9} FTE`}
-              detail="Staff hours saved"
+              title="Efficiency Gain (FTE)"
+              value={`${(portnoxResult?.roi?.laborSavingsFTE || 1.9).toFixed(1)} FTE`}
+              detail="Full-Time Equivalents saved"
               icon={<UsersIcon />}
               trend="up"
               trendValue="Notable"
@@ -2273,68 +2390,407 @@ export default function TcoAnalyzerUltimate() {
             </GradientCard>
           </motion.div>
         </div>
-
-        {/* Additional charts and content would continue here... */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <motion.div variants={fadeInUp}>
+            <PortnoxAdvantages />
+          </motion.div>
+          <motion.div variants={fadeInUp}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Implementation Timeline</CardTitle>
+                <CardDescription>Estimated time for PoC and full deployment</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ReBarChart data={implementationData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" unit=" days" />
+                    <YAxis type="category" dataKey="vendor" width={100} />
+                    <ReTooltip />
+                    <ReLegend />
+                    <Bar dataKey="PoC (days)" stackId="a" fill={PORTNOX_COLORS.info} />
+                    <Bar
+                      dataKey="Full Deployment (days)"
+                      stackId="a"
+                      fill={PORTNOX_COLORS.primary}
+                      radius={[0, 4, 4, 0]}
+                    />
+                  </ReBarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
       </motion.div>
     )
   }
 
   // Additional view components would be implemented here...
-  const DetailedCostsView = ({ results, years, darkMode }: any) => (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Detailed Cost Analysis</h2>
-      <p>Implementation in progress...</p>
-    </div>
-  )
+  const DetailedCostsView = ({ results, years, darkMode }: any) => {
+    if (!results) return <Card className="p-6 text-center">No data to display.</Card>
+    const data = generateCostBreakdownData(results)
+    const costCategories = ["software", "hardware", "implementation", "support", "operations", "hidden"]
 
-  const ComplianceRiskView = ({ results, industry, selectedVendors, darkMode }: any) => (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Compliance & Risk Analysis</h2>
-      <p>Implementation in progress...</p>
-    </div>
-  )
+    return (
+      <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
+        <motion.div variants={fadeInUp}>
+          <Card>
+            <CardHeader>
+              <CardTitle>TCO Cost Breakdown Chart</CardTitle>
+              <CardDescription>{years}-year projected costs by category as a percentage of total cost.</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <ReBarChart data={data} layout="vertical" stackOffset="expand">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" tickFormatter={(tick) => `${Math.round(tick * 100)}%`} />
+                  <YAxis type="category" dataKey="vendor" width={120} interval={0} />
+                  <ReTooltip formatter={(value, name) => [`${(value * 100).toFixed(1)}%`, name]} />
+                  <ReLegend />
+                  {costCategories.map((cat, i) => (
+                    <Bar key={cat} dataKey={cat} stackId="a" fill={VIBRANT_COLORS[i % VIBRANT_COLORS.length]} />
+                  ))}
+                </ReBarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={fadeInUp}>
+          <Card>
+            <CardHeader>
+              <CardTitle>TCO Cost Breakdown Table</CardTitle>
+              <CardDescription>Detailed {years}-year cost breakdown in USD.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Vendor</TableHead>
+                    <TableHead className="text-right">Software</TableHead>
+                    <TableHead className="text-right">Hardware</TableHead>
+                    <TableHead className="text-right">Implementation</TableHead>
+                    <TableHead className="text-right">Operations</TableHead>
+                    <TableHead className="text-right">Total TCO</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.map((d) => (
+                    <TableRow key={d.vendor}>
+                      <TableCell className="font-medium">{d.vendor}</TableCell>
+                      <TableCell className="text-right">${d.software.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">${d.hardware.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">${d.implementation.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">${d.operations.toLocaleString()}</TableCell>
+                      <TableCell className="text-right font-bold">${d.total.toLocaleString()}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+    )
+  }
 
-  const ROIAnalysisView = ({ results, years, darkMode }: any) => (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">ROI & Business Value Analysis</h2>
-      <p>Implementation in progress...</p>
-    </div>
-  )
+  const ComplianceRiskView = ({ results, industry, selectedVendors, darkMode }: any) => {
+    if (!results) return <Card className="p-6 text-center">No data to display.</Card>
+    const riskData = [
+      { subject: "Security", A: 120, B: 110, fullMark: 150 },
+      { subject: "Compliance", A: 98, B: 130, fullMark: 150 },
+      { subject: "Operational", A: 86, B: 130, fullMark: 150 },
+      { subject: "Financial", A: 99, B: 100, fullMark: 150 },
+      { subject: "Reputation", A: 85, B: 90, fullMark: 150 },
+    ]
 
-  const OperationsImpactView = ({ results, currentDeviceCount, currentUsersCount, region, darkMode }: any) => (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Operations Impact Analysis</h2>
-      <p>Implementation in progress...</p>
-    </div>
-  )
+    return (
+      <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
+        <motion.div variants={fadeInUp}>
+          <ComplianceOverview />
+        </motion.div>
+        <motion.div variants={fadeInUp}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Risk Profile Comparison</CardTitle>
+              <CardDescription>Qualitative risk assessment across key domains</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={riskData}>
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="subject" />
+                  <PolarRadiusAxis />
+                  <Radar name="Portnox" dataKey="A" stroke="#00D4AA" fill="#00D4AA" fillOpacity={0.6} />
+                  <Radar name="Average Competitor" dataKey="B" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                  <ReLegend />
+                  <ReTooltip />
+                </RadarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+    )
+  }
 
-  const TimelineView = ({ results, years, darkMode }: any) => (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Timeline View</h2>
-      <p>Implementation in progress...</p>
-    </div>
-  )
+  const ROIAnalysisView = ({ results, years, darkMode }: any) => {
+    if (!results) return <Card className="p-6 text-center">No data to display.</Card>
+    const roiData = generateROIComparisonData(results)
 
-  const FeatureComparison = ({ data, darkMode }: any) => (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Feature Comparison Matrix</h2>
-      <p>Implementation in progress...</p>
-    </div>
-  )
+    return (
+      <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
+        <motion.div variants={fadeInUp}>
+          <Card>
+            <CardHeader>
+              <CardTitle>ROI & Payback Period</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <ReBarChart data={roiData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="vendor" />
+                  <YAxis
+                    yAxisId="left"
+                    orientation="left"
+                    stroke="#8884d8"
+                    label={{ value: "ROI (%)", angle: -90, position: "insideLeft" }}
+                  />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    stroke="#82ca9d"
+                    label={{ value: "Payback (Months)", angle: 90, position: "insideRight" }}
+                  />
+                  <ReTooltip />
+                  <ReLegend />
+                  <Bar yAxisId="left" dataKey="roi" fill="#8884d8" name="ROI (%)" />
+                  <Bar yAxisId="right" dataKey="payback" fill="#82ca9d" name="Payback (Months)" />
+                </ReBarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+    )
+  }
 
-  const ImplementationRoadmapView = ({ selectedVendor, deviceCount, userCount, darkMode }: any) => (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Implementation Roadmap</h2>
-      <p>Implementation in progress...</p>
-    </div>
-  )
+  const OperationsImpactView = ({ results, currentDeviceCount, currentUsersCount, region, darkMode }: any) => {
+    if (!results) return <Card className="p-6 text-center">No data to display.</Card>
+    const opsData = results.map((r) => ({
+      name: r.vendorName,
+      "FTE Savings": r.roi.laborSavingsFTE,
+      "Alert Reduction (%)": (r.roi.breachRiskReduction || 0) * 20, // Example metric
+    }))
 
-  const VendorDetailsView = ({ selectedVendors, darkMode }: any) => (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Vendor Details</h2>
-      <p>Implementation in progress...</p>
-    </div>
-  )
+    return (
+      <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
+        <motion.div variants={fadeInUp}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Operational Impact</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <ReBarChart data={opsData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <ReTooltip />
+                  <ReLegend />
+                  <Bar dataKey="FTE Savings" fill={PORTNOX_COLORS.success} />
+                  <Bar dataKey="Alert Reduction (%)" fill={PORTNOX_COLORS.info} />
+                </ReBarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+    )
+  }
+
+  const TimelineView = ({ results, years, darkMode }: any) => {
+    if (!results) return <Card className="p-6 text-center">No data to display.</Card>
+    const timelineData = results.map((r) => ({
+      name: r.vendorName,
+      Implementation: r.breakdown.implementation,
+      "Year 1 Cost": r.annualTCO,
+      "Year 2 Cost": r.annualTCO,
+      "Year 3 Cost": r.annualTCO,
+    }))
+
+    return (
+      <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
+        <motion.div variants={fadeInUp}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Cost Timeline</CardTitle>
+              <CardDescription>Projected costs over the {years}-year period.</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={timelineData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <ReTooltip />
+                  <ReLegend />
+                  <Area type="monotone" dataKey="Year 1 Cost" stackId="1" stroke="#8884d8" fill="#8884d8" />
+                  <Area type="monotone" dataKey="Year 2 Cost" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
+                  <Area type="monotone" dataKey="Year 3 Cost" stackId="1" stroke="#ffc658" fill="#ffc658" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+    )
+  }
+
+  const FeatureComparison = ({ data, darkMode }: any) => {
+    if (!data || data.length === 0) return <Card className="p-6 text-center">No vendors selected.</Card>
+
+    const allFeatures = data.reduce((acc, vendor) => {
+      if (vendor.features.core) Object.keys(vendor.features.core).forEach((f) => acc.add(f))
+      if (vendor.features.advanced) Object.keys(vendor.features.advanced).forEach((f) => acc.add(f))
+      return acc
+    }, new Set<string>())
+
+    const featureList = Array.from(allFeatures)
+
+    return (
+      <motion.div initial="initial" animate="animate" variants={staggerChildren}>
+        <motion.div variants={fadeInUp}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Feature Comparison Matrix</CardTitle>
+              <CardDescription>Side-by-side feature comparison of selected vendors.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[600px] w-full">
+                <Table className="w-full">
+                  <TableHeader className="sticky top-0 bg-background/95 backdrop-blur-sm">
+                    <TableRow>
+                      <TableHead className="w-[250px] font-semibold">Feature</TableHead>
+                      {data.map((vendor: any) => (
+                        <TableHead key={vendor.id} className="text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <Image
+                              src={vendor.logo || "/placeholder.svg"}
+                              alt={vendor.name}
+                              width={100}
+                              height={25}
+                              className="h-6 object-contain"
+                            />
+                            <span>{vendor.name}</span>
+                          </div>
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {featureList.map((feature) => (
+                      <TableRow key={feature}>
+                        <TableCell className="font-medium">{feature}</TableCell>
+                        {data.map((vendor: any) => (
+                          <TableCell key={`${vendor.id}-${feature}`} className="text-center">
+                            {(vendor.features.core?.[feature] || vendor.features.advanced?.[feature]) && (
+                              <CheckCircle2 className="h-5 w-5 text-emerald-500 mx-auto" />
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+    )
+  }
+
+  const ImplementationRoadmapView = ({ selectedVendors, deviceCount, userCount, darkMode }: any) => {
+    if (!selectedVendors || selectedVendors.length === 0)
+      return <Card className="p-6 text-center">No vendors selected.</Card>
+    const data = generateImplementationTimelineData(selectedVendors)
+
+    return (
+      <motion.div initial="initial" animate="animate" variants={staggerChildren}>
+        <motion.div variants={fadeInUp}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Implementation Roadmap</CardTitle>
+              <CardDescription>A high-level overview of the implementation phases and timelines.</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <ReBarChart data={data} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" unit=" days" />
+                  <YAxis type="category" dataKey="vendor" width={120} interval={0} />
+                  <ReTooltip />
+                  <ReLegend />
+                  <Bar dataKey="PoC (days)" stackId="a" fill={PORTNOX_COLORS.info} />
+                  <Bar
+                    dataKey="Full Deployment (days)"
+                    stackId="a"
+                    fill={PORTNOX_COLORS.primary}
+                    radius={[0, 4, 4, 0]}
+                  />
+                </ReBarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+    )
+  }
+
+  const VendorDetailsView = ({ selectedVendors, darkMode }: any) => {
+    if (!selectedVendors || selectedVendors.length === 0)
+      return <Card className="p-6 text-center">No vendors selected.</Card>
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {selectedVendors.map((vendorId) => {
+          const vendor = VENDOR_DATA[vendorId]
+          if (!vendor) return null
+          return (
+            <motion.div key={vendorId} variants={fadeInUp}>
+              <Card className="h-full">
+                <CardHeader>
+                  <Image
+                    src={vendor.logo || "/placeholder.svg"}
+                    alt={vendor.name}
+                    width={120}
+                    height={30}
+                    className="h-8 object-contain mb-4"
+                  />
+                  <CardTitle>{vendor.name}</CardTitle>
+                  <CardDescription>{vendor.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <h4 className="font-semibold mb-2">Strengths</h4>
+                  <ul className="list-disc list-inside text-sm space-y-1 mb-4">
+                    {vendor.strengths.map((s, i) => (
+                      <li key={i}>{s}</li>
+                    ))}
+                  </ul>
+                  <h4 className="font-semibold mb-2">Weaknesses</h4>
+                  <ul className="list-disc list-inside text-sm space-y-1">
+                    {vendor.weaknesses.map((w, i) => (
+                      <li key={i}>{w}</li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )
+        })}
+      </div>
+    )
+  }
 
   const ReportsView = ({ results, config, darkMode }: any) => (
     <div className="p-6">
@@ -2346,111 +2802,30 @@ export default function TcoAnalyzerUltimate() {
   const Footer = () => (
     <motion.footer
       className={cn(
-        "mt-auto border-t",
-        darkMode ? "bg-slate-900 border-slate-800/50" : "bg-slate-100 border-slate-200/50",
+        "border-t",
+        darkMode ? "bg-slate-900/80 border-slate-800/50" : "bg-slate-50/80 border-slate-200/50",
       )}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.5, duration: 0.5 }}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          <div className="space-y-4">
-            <Image src="/portnox-logo-color.png" alt="Portnox Logo" width={150} height={38} className="h-9 w-auto" />
-            <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-600")}>
-              AI-powered cloud-native NAC delivering zero-trust security with unmatched simplicity.
-            </p>
-            <div className="flex space-x-4">
-              {[
-                { href: "https://www.linkedin.com/company/portnox/", icon: <Linkedin className="h-5 w-5" /> },
-                { href: "https://twitter.com/Portnox", icon: <Twitter className="h-5 w-5" /> },
-              ].map((social) => (
-                <motion.a
-                  key={social.href}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.15, color: PORTNOX_COLORS.primary }}
-                  className={cn(darkMode ? "text-slate-400" : "text-slate-500", "transition-colors")}
-                >
-                  {social.icon}
-                </motion.a>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h4 className={cn("font-semibold mb-3", darkMode ? "text-slate-200" : "text-slate-800")}>Resources</h4>
-            <ul className="space-y-1.5 text-sm">
-              {["Documentation", "API Reference", "Case Studies", "Webinars", "Blog"].map((link) => (
-                <li key={link}>
-                  <a
-                    href="#"
-                    className={cn(
-                      darkMode ? "text-slate-400 hover:text-emerald-400" : "text-slate-600 hover:text-emerald-600",
-                      "transition-colors",
-                    )}
-                  >
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className={cn("font-semibold mb-3", darkMode ? "text-slate-200" : "text-slate-800")}>Company</h4>
-            <ul className="space-y-1.5 text-sm">
-              {["About Us", "Careers", "Partners", "Newsroom", "Contact Us"].map((link) => (
-                <li key={link}>
-                  <a
-                    href="#"
-                    className={cn(
-                      darkMode ? "text-slate-400 hover:text-emerald-400" : "text-slate-600 hover:text-emerald-600",
-                      "transition-colors",
-                    )}
-                  >
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className={cn("font-semibold mb-3", darkMode ? "text-slate-200" : "text-slate-800")}>Get Started</h4>
-            <div className="space-y-3">
-              <Button className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:shadow-md transition-all transform hover:-translate-y-px">
-                <Phone className="h-4 w-4 mr-2" />
-                Schedule Demo
-              </Button>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full",
-                  darkMode ? "border-slate-600 hover:bg-slate-700" : "border-slate-300 hover:bg-slate-100",
-                )}
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                Contact Sales
-              </Button>
-            </div>
-          </div>
-        </div>
-        <Separator className={cn("my-6", darkMode ? "bg-slate-700" : "bg-slate-200")} />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div
           className={cn(
             "flex flex-col md:flex-row items-center justify-between text-xs",
             darkMode ? "text-slate-500" : "text-slate-400",
           )}
         >
-          <p>
-            &copy; {new Date().getFullYear()} Portnox. All rights reserved. This TCO Analyzer is for estimation purposes
-            only.
-          </p>
-          <div className="flex items-center space-x-3 mt-3 md:mt-0">
+          <p>&copy; {new Date().getFullYear()} Portnox. All rights reserved. For estimation purposes only.</p>
+          <div className="flex items-center space-x-4 mt-2 md:mt-0">
             <a href="#" className="hover:text-emerald-500 transition-colors">
               Privacy Policy
             </a>
             <a href="#" className="hover:text-emerald-500 transition-colors">
               Terms of Service
+            </a>
+            <a href="#" className="hover:text-emerald-500 transition-colors">
+              Contact Us
             </a>
           </div>
         </div>
@@ -2466,34 +2841,49 @@ export default function TcoAnalyzerUltimate() {
           darkMode ? "dark bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900",
         )}
       >
-        {/* Vendor Selection Sidebar */}
-        <VendorSelectionPanel
-          selectedVendors={selectedVendors}
-          onVendorToggle={handleVendorToggle}
-          darkMode={darkMode}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-        />
+        <div className="flex w-full">
+          {/* Vendor Selection Sidebar */}
+          <VendorSelectionPanel
+            selectedVendors={selectedVendors}
+            onVendorToggle={handleVendorToggle}
+            darkMode={darkMode}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            isCollapsed={sidebarCollapsed}
+          />
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col">
-          <Header />
-          <MainTabNavigation />
-          <SubTabNavigation />
-          <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8">
-            <div className="container mx-auto max-w-screen-2xl">
-              <motion.div
-                key={`${activeMainTab}-${activeSubTab}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-              >
-                {renderMainContent()}
-              </motion.div>
-            </div>
-          </main>
-          <Footer />
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col relative">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className={cn(
+                "absolute top-1/2 -translate-y-1/2 z-10 h-12 w-6 rounded-l-none transition-all duration-300",
+                sidebarCollapsed ? "left-0" : "left-[-1px]",
+              )}
+            >
+              {sidebarCollapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
+            </Button>
+
+            <Header />
+            <MainTabNavigation />
+            <SubTabNavigation />
+            <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8 overflow-y-auto">
+              <div className="container mx-auto max-w-screen-2xl">
+                <motion.div
+                  key={`${activeMainTab}-${activeSubTab}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
+                  {renderMainContent()}
+                </motion.div>
+              </div>
+            </main>
+            <Footer />
+          </div>
         </div>
 
         {/* Settings Panel */}
