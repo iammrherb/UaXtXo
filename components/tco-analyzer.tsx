@@ -31,7 +31,6 @@ import {
   Area,
   CartesianGrid,
   ComposedChart,
-  Line,
 } from "recharts"
 
 import {
@@ -76,16 +75,6 @@ import {
   Cpu,
   Globe,
   Lock,
-  Users,
-  AlertTriangle,
-  CheckCircle,
-  FileDown,
-  Printer,
-  Share2,
-  Calendar,
-  Calculator,
-  PieChartIcon,
-  FileSpreadsheet,
 } from "lucide-react"
 
 type CalculationResult = NonNullable<ReturnType<typeof calculateVendorTCO>> & { id?: string }
@@ -251,8 +240,8 @@ const modernAnimations = {
   },
 }
 
-// Compact Vendor Selection Panel Component
-const CompactVendorSelectionPanel = ({
+// Enhanced Vendor Selection Panel Component
+const EnhancedVendorSelectionPanel = ({
   selectedVendors,
   onVendorToggle,
   darkMode,
@@ -271,9 +260,46 @@ const CompactVendorSelectionPanel = ({
     vendor.name.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  // Compact Vendor Card with essential information
-  const CompactVendorCard = ({ vendor }: { vendor: any }) => {
+  const [hoveredVendor, setHoveredVendor] = useState<string | null>(null)
+
+  // Enhanced Difficulty Badge with modern styling
+  const ModernDifficultyBadge = ({ level }: { level: number }) => {
+    const configs = {
+      1: { label: "Very Low", gradient: MODERN_COLORS.gradients.success, icon: "🟢" },
+      2: { label: "Low", gradient: MODERN_COLORS.gradients.info, icon: "🔵" },
+      3: { label: "Medium", gradient: MODERN_COLORS.gradients.warning, icon: "🟡" },
+      4: { label: "High", gradient: MODERN_COLORS.gradients.danger, icon: "🟠" },
+      5: { label: "Very High", gradient: "linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%)", icon: "🔴" },
+    }
+
+    const config = configs[level] || configs[3]
+
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <motion.div
+              className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium text-white"
+              style={{ background: config.gradient }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="text-xs">{config.icon}</span>
+              <span>{level}/5</span>
+            </motion.div>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="bg-slate-900 border-slate-700">
+            <p className="text-white">Implementation Difficulty: {config.label}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    )
+  }
+
+  // Enhanced Vendor Card with modern glass morphism
+  const ModernVendorCard = ({ vendor }: { vendor: any }) => {
     const isSelected = selectedVendors.includes(vendor.id)
+    const isHovered = hoveredVendor === vendor.id
     const isPortnox = vendor.id === "portnox"
 
     return (
@@ -281,100 +307,202 @@ const CompactVendorSelectionPanel = ({
         layout
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        whileHover={{ scale: 1.02 }}
+        whileHover={{ y: -8, scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
+        onHoverStart={() => setHoveredVendor(vendor.id)}
+        onHoverEnd={() => setHoveredVendor(null)}
         className="relative group"
       >
+        {/* Background Gradient */}
+        <div
+          className={cn(
+            "absolute inset-0 rounded-2xl opacity-20 transition-opacity duration-300",
+            isSelected && "opacity-40",
+            isHovered && "opacity-60",
+          )}
+          style={{
+            background: isPortnox
+              ? MODERN_COLORS.gradients.portnox
+              : vendor.id === "cisco"
+                ? MODERN_COLORS.gradients.cisco
+                : vendor.id === "aruba"
+                  ? MODERN_COLORS.gradients.aruba
+                  : vendor.id === "microsoft"
+                    ? MODERN_COLORS.gradients.microsoft
+                    : MODERN_COLORS.gradients.hologram,
+          }}
+        />
+
+        {/* Glow Effect */}
+        {isSelected && (
+          <motion.div
+            className="absolute inset-0 rounded-2xl"
+            animate={modernAnimations.glowPulse}
+            style={{
+              background: `linear-gradient(135deg, ${MODERN_COLORS.primary[400]}20 0%, ${MODERN_COLORS.primary[600]}40 100%)`,
+              filter: "blur(8px)",
+            }}
+          />
+        )}
+
         <Card
           onClick={() => onVendorToggle(vendor.id)}
           className={cn(
-            "relative cursor-pointer transition-all duration-300 border-0 overflow-hidden p-3",
+            "relative cursor-pointer transition-all duration-300 h-full border-0 overflow-hidden",
             "backdrop-blur-xl bg-white/10 dark:bg-black/20",
-            isSelected && "ring-2 ring-primary/50 shadow-lg bg-white/20 dark:bg-black/30",
+            isSelected && "ring-2 ring-primary/50 shadow-2xl",
             darkMode ? "hover:bg-white/20" : "hover:bg-black/5",
           )}
         >
           {/* Selection Indicator */}
           {isSelected && (
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-2 right-2 z-10">
-              <div className="w-4 h-4 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 flex items-center justify-center">
-                <CheckCircle className="w-3 h-3 text-white" />
+              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 flex items-center justify-center">
+                <motion.div initial={{ rotate: -90 }} animate={{ rotate: 0 }} transition={{ delay: 0.1 }}>
+                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </motion.div>
               </div>
             </motion.div>
           )}
 
-          <div className="space-y-2">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+          <CardHeader className="p-4 pb-2">
+            <div className="flex items-center justify-between mb-3">
+              <motion.div className="relative" whileHover={modernAnimations.rotateHover}>
                 <Image
                   src={vendor.logo || "/placeholder.svg"}
                   alt={vendor.name}
-                  width={24}
+                  width={80}
                   height={24}
-                  className="h-4 w-auto object-contain"
+                  className="h-6 object-contain filter brightness-110"
                 />
-                {isPortnox && <Star className="w-3 h-3 text-yellow-400 fill-current" />}
+              </motion.div>
+
+              {isPortnox && (
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  className="flex items-center gap-1"
+                >
+                  <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                  <span className="text-xs font-bold text-yellow-400">BEST</span>
+                </motion.div>
+              )}
+            </div>
+
+            <CardTitle className="text-base font-bold leading-tight">{vendor.name}</CardTitle>
+
+            <p className="text-xs text-muted-foreground mt-1">{vendor.category}</p>
+          </CardHeader>
+
+          <CardContent className="p-4 pt-0 space-y-3">
+            {/* Market Share Indicator */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-muted-foreground">Market Share</span>
+                <span className="font-semibold">{vendor.marketShare}%</span>
               </div>
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-xs px-1.5 py-0.5",
-                  vendor.difficulty <= 2
-                    ? "border-green-500/30 text-green-400"
-                    : vendor.difficulty <= 3
-                      ? "border-yellow-500/30 text-yellow-400"
-                      : "border-red-500/30 text-red-400",
-                )}
+              <div className="w-full bg-muted/30 rounded-full h-1.5 overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{
+                    background: isPortnox ? MODERN_COLORS.gradients.portnox : MODERN_COLORS.gradients.info,
+                  }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(vendor.marketShare * 2.5, 100)}%` }}
+                  transition={{ duration: 1, delay: 0.2 }}
+                />
+              </div>
+            </div>
+
+            {/* Price and Difficulty */}
+            <div className="flex justify-between items-center">
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground">Price</span>
+                <span className="font-bold text-sm">{vendor.priceIndicator}</span>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="text-xs text-muted-foreground mb-1">Difficulty</span>
+                <ModernDifficultyBadge level={vendor.difficulty} />
+              </div>
+            </div>
+
+            {/* Key Features Preview */}
+            <div className="space-y-2">
+              <span className="text-xs text-muted-foreground">Key Features</span>
+              <div className="flex flex-wrap gap-1">
+                {Object.entries(vendor.features?.advanced || {})
+                  .filter(([_, enabled]) => enabled)
+                  .slice(0, 3)
+                  .map(([feature, _]) => (
+                    <motion.span
+                      key={feature}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary font-medium"
+                    >
+                      {feature}
+                    </motion.span>
+                  ))}
+              </div>
+            </div>
+
+            {/* Hover Actions */}
+            <AnimatePresence>
+              {isHovered && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="flex gap-2 pt-2"
+                >
+                  <Button size="sm" variant="outline" className="flex-1 h-7 text-xs bg-transparent">
+                    <InfoIcon className="w-3 h-3 mr-1" />
+                    Details
+                  </Button>
+                  <Button size="sm" variant="outline" className="flex-1 h-7 text-xs bg-transparent">
+                    <BarChart3 className="w-3 h-3 mr-1" />
+                    Compare
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </CardContent>
+
+          {/* Floating Icons for Special Features */}
+          <div className="absolute top-4 left-4 flex flex-col gap-1">
+            {vendor.features?.advanced?.["AI/ML Analytics"] && (
+              <motion.div
+                animate={modernAnimations.float}
+                className="w-5 h-5 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center"
               >
-                {vendor.difficulty}/5
-              </Badge>
-            </div>
-
-            {/* Vendor Name */}
-            <h4 className="text-sm font-semibold text-white leading-tight">{vendor.name}</h4>
-
-            {/* Key Metrics */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <span className="text-slate-400">Price:</span>
-                <span className="text-white font-medium ml-1">{vendor.priceIndicator}</span>
-              </div>
-              <div>
-                <span className="text-slate-400">Share:</span>
-                <span className="text-white font-medium ml-1">{vendor.marketShare}%</span>
-              </div>
-            </div>
-
-            {/* Deployment Info */}
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-1">
-                <Clock className="w-3 h-3 text-slate-400" />
-                <span className="text-slate-300">
-                  {Math.round(vendor.implementation?.deploymentTime?.fullDeployment / 24 || 30)} days
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                {vendor.implementation?.cloudNative ? (
-                  <Globe className="w-3 h-3 text-blue-400" />
-                ) : (
-                  <Building className="w-3 h-3 text-slate-400" />
-                )}
-                <span className="text-slate-300">{vendor.implementation?.cloudNative ? "Cloud" : "On-Prem"}</span>
-              </div>
-            </div>
-
-            {/* Key Features (top 2) */}
-            <div className="flex flex-wrap gap-1">
-              {Object.entries(vendor.features?.advanced || {})
-                .filter(([_, enabled]) => enabled)
-                .slice(0, 2)
-                .map(([feature, _]) => (
-                  <span key={feature} className="px-1.5 py-0.5 text-xs rounded bg-primary/20 text-primary font-medium">
-                    {feature.replace(/([A-Z])/g, " $1").trim()}
-                  </span>
-                ))}
-            </div>
+                <Cpu className="w-2.5 h-2.5 text-white" />
+              </motion.div>
+            )}
+            {vendor.implementation?.cloudNative && (
+              <motion.div
+                animate={{
+                  ...modernAnimations.float,
+                  transition: { ...modernAnimations.float.transition, delay: 0.5 },
+                }}
+                className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400 flex items-center justify-center"
+              >
+                <Globe className="w-2.5 h-2.5 text-white" />
+              </motion.div>
+            )}
+            {vendor.features?.advanced?.["Zero Trust"] && (
+              <motion.div
+                animate={{ ...modernAnimations.float, transition: { ...modernAnimations.float.transition, delay: 1 } }}
+                className="w-5 h-5 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 flex items-center justify-center"
+              >
+                <Lock className="w-2.5 h-2.5 text-white" />
+              </motion.div>
+            )}
           </div>
         </Card>
       </motion.div>
@@ -383,7 +511,7 @@ const CompactVendorSelectionPanel = ({
 
   return (
     <motion.div
-      animate={{ width: isCollapsed ? 0 : 320 }}
+      animate={{ width: isCollapsed ? 0 : 400 }}
       transition={{ duration: 0.4, ease: "easeInOut" }}
       className={cn(
         "border-r flex flex-col flex-shrink-0 overflow-hidden relative",
@@ -392,61 +520,130 @@ const CompactVendorSelectionPanel = ({
           : "bg-gradient-to-b from-slate-50 via-white to-slate-50 border-slate-200/50",
       )}
     >
-      <div className="w-[320px] flex flex-col h-full relative z-10">
-        {/* Compact Header */}
+      {/* Animated Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div
+          className="w-full h-full"
+          style={{
+            backgroundImage: `radial-gradient(circle at 25% 25%, ${MODERN_COLORS.primary[500]}40 0%, transparent 50%), 
+                             radial-gradient(circle at 75% 75%, ${MODERN_COLORS.purple[500]}40 0%, transparent 50%)`,
+            backgroundSize: "100px 100px",
+            animation: "float 20s ease-in-out infinite",
+          }}
+        />
+      </div>
+
+      <div className="w-[400px] flex flex-col h-full relative z-10">
+        {/* Enhanced Header */}
         <motion.div
           className={cn(
-            "p-4 border-b backdrop-blur-xl",
+            "p-6 border-b backdrop-blur-xl",
             darkMode ? "border-slate-800/50 bg-slate-900/50" : "border-slate-200/50 bg-white/50",
           )}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="flex items-center gap-2 mb-3">
-            <div className="p-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500">
-              <Filter className="h-4 w-4 text-white" />
-            </div>
+          <div className="flex items-center gap-3 mb-4">
+            <motion.div
+              className="p-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500"
+              whileHover={modernAnimations.scaleHover}
+            >
+              <Filter className="h-5 w-5 text-white" />
+            </motion.div>
             <div className="flex-1">
-              <h3 className="font-bold text-base text-white">Vendors</h3>
-              <p className="text-xs text-muted-foreground">{selectedVendors.length} selected</p>
+              <h3 className="font-bold text-lg bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                Vendor Selection
+              </h3>
+              <p className="text-xs text-muted-foreground">Choose your comparison vendors</p>
             </div>
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3 }}>
+              <Badge
+                variant="secondary"
+                className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+              >
+                {selectedVendors.length} selected
+              </Badge>
+            </motion.div>
           </div>
 
-          {/* Compact Search */}
+          {/* Enhanced Search */}
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+            <motion.div
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10"
+              animate={{ rotate: searchTerm ? 360 : 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Search className="h-4 w-4 text-muted-foreground" />
+            </motion.div>
             <Input
-              placeholder="Search..."
+              placeholder="Search vendors..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={cn(
-                "pl-8 pr-3 h-8 text-sm border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl",
+                "pl-10 pr-4 border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl",
+                "focus:ring-2 focus:ring-emerald-500/50 transition-all duration-300",
                 darkMode ? "text-white placeholder:text-slate-400" : "text-slate-900 placeholder:text-slate-500",
               )}
             />
+            {searchTerm && (
+              <motion.button
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setSearchTerm("")}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </motion.button>
+            )}
+          </div>
+
+          {/* Quick Filters */}
+          <div className="flex gap-2 mt-4">
+            {["All", "Cloud", "Traditional", "AI-Powered"].map((filter, index) => (
+              <motion.button
+                key={filter}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={modernAnimations.scaleHover}
+                whileTap={{ scale: 0.95 }}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-300",
+                  filter === "All"
+                    ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg"
+                    : darkMode
+                      ? "bg-slate-800/50 text-slate-300 hover:bg-slate-700/50"
+                      : "bg-slate-100/50 text-slate-600 hover:bg-slate-200/50",
+                )}
+              >
+                {filter}
+              </motion.button>
+            ))}
           </div>
         </motion.div>
 
-        {/* Compact Vendor Grid */}
+        {/* Enhanced Vendor Grid */}
         <ScrollArea className="flex-1">
           <motion.div
-            className="p-3 space-y-2"
+            className="p-6 grid grid-cols-1 gap-6"
             variants={modernAnimations.staggerContainer}
             initial="hidden"
             animate="visible"
           >
             {filteredVendors.map((vendor, index) => (
-              <motion.div key={vendor.id} variants={modernAnimations.slideInUp} transition={{ delay: index * 0.05 }}>
-                <CompactVendorCard vendor={vendor} />
+              <motion.div key={vendor.id} variants={modernAnimations.slideInUp} transition={{ delay: index * 0.1 }}>
+                <ModernVendorCard vendor={vendor} />
               </motion.div>
             ))}
           </motion.div>
         </ScrollArea>
 
-        {/* Compact Footer */}
+        {/* Enhanced Footer */}
         <motion.div
           className={cn(
-            "p-3 border-t backdrop-blur-xl",
+            "p-4 border-t backdrop-blur-xl",
             darkMode ? "border-slate-800/50 bg-slate-900/50" : "border-slate-200/50 bg-white/50",
           )}
           initial={{ opacity: 0, y: 20 }}
@@ -454,10 +651,303 @@ const CompactVendorSelectionPanel = ({
           transition={{ delay: 0.5 }}
         >
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{filteredVendors.length} available</span>
-            <span>Max 6 vendors</span>
+            <span>{filteredVendors.length} vendors available</span>
+            <motion.button
+              whileHover={modernAnimations.scaleHover}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-1 text-emerald-600 hover:text-emerald-500"
+            >
+              <Sparkles className="w-3 h-3" />
+              Get Recommendations
+            </motion.button>
           </div>
         </motion.div>
+      </div>
+    </motion.div>
+  )
+}
+
+// Enhanced Styled Components with Modern Design
+const ModernGradientCard = ({
+  children,
+  className,
+  gradient = "hologram",
+  darkMode,
+  glow = false,
+  ...props
+}: {
+  children: React.ReactNode
+  className?: string
+  gradient?: keyof typeof MODERN_COLORS.gradients
+  darkMode?: boolean
+  glow?: boolean
+  [key: string]: any
+}) => (
+  <motion.div
+    className={cn(
+      "relative overflow-hidden transition-all duration-500 border-0 rounded-3xl",
+      "backdrop-blur-xl bg-white/5 dark:bg-black/10",
+      "hover:shadow-2xl hover:shadow-primary/20",
+      className,
+    )}
+    whileHover={{ y: -8, scale: 1.02 }}
+    animate={glow ? modernAnimations.glowPulse : {}}
+    {...props}
+  >
+    {/* Animated Background */}
+    <div className="absolute inset-0 opacity-10" style={{ background: MODERN_COLORS.gradients[gradient] }} />
+
+    {/* Mesh Gradient Overlay */}
+    <div className="absolute inset-0 opacity-20">
+      <div
+        className="w-full h-full"
+        style={{
+          backgroundImage: `radial-gradient(circle at 20% 80%, ${MODERN_COLORS.primary[400]}40 0%, transparent 50%), 
+                           radial-gradient(circle at 80% 20%, ${MODERN_COLORS.purple[400]}40 0%, transparent 50%),
+                           radial-gradient(circle at 40% 40%, ${MODERN_COLORS.blue[400]}40 0%, transparent 50%)`,
+        }}
+      />
+    </div>
+
+    {/* Glass Border */}
+    <div className="absolute inset-0 rounded-3xl border border-white/20 dark:border-white/10" />
+
+    <div className="relative z-10">{children}</div>
+  </motion.div>
+)
+
+// Enhanced KPI Card with Modern Styling
+const ModernKPICard = ({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+  trend,
+  trendValue,
+  color = "primary",
+  darkMode,
+  sparklineData,
+  interactive = true,
+  size = "default",
+}: {
+  title: string
+  value: string | number
+  subtitle?: string
+  icon: React.ElementType
+  trend?: "up" | "down" | "neutral"
+  trendValue?: string
+  color?: string
+  darkMode?: boolean
+  sparklineData?: any[]
+  interactive?: boolean
+  size?: "small" | "default" | "large"
+}) => {
+  const [isHovered, setIsHovered] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  const colorMap = {
+    primary: MODERN_COLORS.gradients.portnox,
+    success: MODERN_COLORS.gradients.success,
+    warning: MODERN_COLORS.gradients.warning,
+    danger: MODERN_COLORS.gradients.danger,
+    info: MODERN_COLORS.gradients.info,
+    purple: MODERN_COLORS.gradients.hologram,
+    cyan: MODERN_COLORS.gradients.aurora,
+    pink: MODERN_COLORS.gradients.sunset,
+  }
+
+  const selectedGradient = colorMap[color] || MODERN_COLORS.gradients.portnox
+  const TrendIcon = trend === "up" ? ArrowUpRight : trend === "down" ? ArrowDownRight : Activity
+
+  return (
+    <motion.div
+      className={cn(
+        "relative overflow-hidden rounded-3xl border-0 transition-all duration-500",
+        "backdrop-blur-xl bg-white/5 dark:bg-black/10",
+        size === "small" && "p-4",
+        size === "default" && "p-6",
+        size === "large" && "p-8",
+      )}
+      whileHover={{ y: -12, scale: 1.03 }}
+      whileTap={{ scale: 0.98 }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      onClick={() => interactive && setIsExpanded(!isExpanded)}
+      style={{ cursor: interactive ? "pointer" : "default" }}
+    >
+      {/* Animated Background Gradient */}
+      <motion.div
+        className="absolute inset-0 opacity-20"
+        style={{ background: selectedGradient }}
+        animate={{
+          opacity: isHovered ? 0.3 : 0.1,
+          scale: isHovered ? 1.1 : 1,
+        }}
+        transition={{ duration: 0.5 }}
+      />
+
+      {/* Mesh Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div
+          className="w-full h-full"
+          style={{
+            backgroundImage: `radial-gradient(circle at 25% 25%, ${MODERN_COLORS.primary[400]}60 0%, transparent 50%)`,
+            backgroundSize: "50px 50px",
+          }}
+        />
+      </div>
+
+      {/* Glass Border */}
+      <motion.div
+        className="absolute inset-0 rounded-3xl border"
+        style={{ borderColor: "rgba(255, 255, 255, 0.2)" }}
+        animate={{
+          borderColor: isHovered ? "rgba(20, 184, 166, 0.5)" : "rgba(255, 255, 255, 0.2)",
+          boxShadow: isHovered ? "0 0 40px rgba(20, 184, 166, 0.3)" : "0 0 0px rgba(20, 184, 166, 0)",
+        }}
+        transition={{ duration: 0.3 }}
+      />
+
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-4">
+            <motion.div
+              className="p-4 rounded-2xl relative"
+              style={{ background: selectedGradient }}
+              animate={isHovered ? modernAnimations.float : {}}
+            >
+              <Icon className="h-6 w-6 text-white" />
+
+              {/* Icon Glow */}
+              <motion.div
+                className="absolute inset-0 rounded-2xl"
+                style={{ background: selectedGradient }}
+                animate={{
+                  scale: isHovered ? [1, 1.2, 1] : 1,
+                  opacity: isHovered ? [0.5, 0.8, 0.5] : 0,
+                }}
+                transition={{ duration: 1, repeat: isHovered ? Number.POSITIVE_INFINITY : 0 }}
+              />
+            </motion.div>
+
+            <div>
+              <h3 className={cn("text-sm font-semibold", darkMode ? "text-slate-200" : "text-slate-700")}>{title}</h3>
+              {subtitle && (
+                <p className={cn("text-xs mt-1", darkMode ? "text-slate-400" : "text-slate-500")}>{subtitle}</p>
+              )}
+            </div>
+          </div>
+
+          {interactive && (
+            <motion.button
+              className={cn("p-2 rounded-xl transition-colors", darkMode ? "hover:bg-white/10" : "hover:bg-black/5")}
+              whileHover={modernAnimations.scaleHover}
+              whileTap={{ scale: 0.9 }}
+            >
+              {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </motion.button>
+          )}
+        </div>
+
+        {/* Value Display */}
+        <motion.div
+          className={cn("text-4xl font-bold mb-4", darkMode ? "text-white" : "text-slate-900")}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">{value}</span>
+        </motion.div>
+
+        {/* Trend Indicator */}
+        {trend && trendValue && (
+          <motion.div
+            className="flex items-center space-x-3 mb-4"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div
+              className={cn(
+                "p-2 rounded-xl",
+                trend === "up" ? "bg-emerald-500/20" : trend === "down" ? "bg-red-500/20" : "bg-slate-500/20",
+              )}
+            >
+              <TrendIcon
+                className={cn(
+                  "h-4 w-4",
+                  trend === "up" ? "text-emerald-400" : trend === "down" ? "text-red-400" : "text-slate-400",
+                )}
+              />
+            </div>
+            <span
+              className={cn(
+                "text-sm font-semibold",
+                trend === "up" ? "text-emerald-400" : trend === "down" ? "text-red-400" : "text-slate-400",
+              )}
+            >
+              {trendValue}
+            </span>
+          </motion.div>
+        )}
+
+        {/* Sparkline Chart */}
+        {sparklineData && sparklineData.length > 0 && (
+          <motion.div
+            className="h-16 -mx-2 -mb-2 mt-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={sparklineData}>
+                <defs>
+                  <linearGradient id={`sparkline-${color}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#14b8a6"
+                  strokeWidth={3}
+                  fill={`url(#sparkline-${color})`}
+                  dot={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </motion.div>
+        )}
+
+        {/* Expanded Content */}
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.4 }}
+              className="mt-6 pt-6 border-t border-white/10"
+            >
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Previous Period:</span>
+                  <span className="text-slate-200 font-semibold">$2.1M</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Growth Rate:</span>
+                  <span className="text-emerald-400 font-semibold">+23.5%</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Benchmark:</span>
+                  <span className="text-slate-200 font-semibold">Industry Avg</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   )
@@ -849,6 +1339,448 @@ const VENDOR_DATA = {
     },
     strengths: ["Excellent device visibility", "Strong IoT/OT support", "Agentless discovery", "Broad integrations"],
     weaknesses: ["Complex implementation", "High cost", "Limited NAC features", "Requires expertise"],
+  },
+  extreme: {
+    id: "extreme",
+    name: "ExtremeControl",
+    category: "Network-Integrated",
+    marketShare: 4.1,
+    logo: "/extreme-logo.png",
+    description: "NAC solution integrated with Extreme Networks infrastructure",
+    priceIndicator: "$$",
+    difficulty: 3,
+    features: {
+      core: {
+        "802.1X": true,
+        "Risk-Based Auth": false,
+        "Device Profiling": true,
+        "Policy Automation": true,
+        "Cloud Management": true,
+        "API Integration": true,
+        "Real-time Monitoring": true,
+        "Automated Remediation": false,
+        SSO: true,
+        TACACS: false,
+        "Guest Portal": true,
+        PKI: false,
+        RADIUS: true,
+      },
+      advanced: {
+        "AI/ML Analytics": false,
+        "Zero Trust": false,
+        Microsegmentation: false,
+        "Threat Detection": false,
+        "Compliance Automation": false,
+        "Multi-tenant": false,
+        "IoT Security": false,
+      },
+    },
+    implementation: {
+      deploymentTime: { poc: 72, fullDeployment: 2040, fullScale: 2040 },
+      complexity: "Medium",
+      requiresHardware: false,
+      cloudNative: true,
+    },
+    pricing: {
+      model: "Per device licensing",
+      startingPrice: 5.8,
+      enterprise: 7.2,
+    },
+    roi: {
+      breachRiskReduction: 0.55,
+      operationalEfficiency: 0.5,
+      complianceAutomation: 0.4,
+    },
+    strengths: [
+      "Extreme ecosystem integration",
+      "Cloud management",
+      "Fabric automation",
+      "Good for existing customers",
+    ],
+    weaknesses: ["Limited to Extreme environments", "Basic feature set", "Narrow market focus"],
+  },
+  juniper: {
+    id: "juniper",
+    name: "Juniper Mist AA",
+    category: "AI-Driven",
+    marketShare: 3.8,
+    logo: "/juniper-logo.png",
+    description: "AI-driven access assurance with Mist cloud platform",
+    priceIndicator: "$$",
+    difficulty: 2,
+    features: {
+      core: {
+        "802.1X": true,
+        "Risk-Based Auth": true,
+        "Device Profiling": true,
+        "Policy Automation": true,
+        "Cloud Management": true,
+        "API Integration": true,
+        "Real-time Monitoring": true,
+        "Automated Remediation": true,
+        SSO: true,
+        TACACS: false,
+        "Guest Portal": true,
+        PKI: true,
+        RADIUS: true,
+      },
+      advanced: {
+        "AI/ML Analytics": true,
+        "Zero Trust": true,
+        Microsegmentation: true,
+        "Threat Detection": true,
+        "Compliance Automation": false,
+        "Multi-tenant": true,
+        "IoT Security": true,
+      },
+    },
+    implementation: {
+      deploymentTime: { poc: 48, fullDeployment: 480, fullScale: 480 },
+      complexity: "Medium",
+      requiresHardware: false,
+      cloudNative: true,
+    },
+    pricing: {
+      model: "Subscription per AP/user",
+      startingPrice: 5.2,
+      enterprise: 6.8,
+    },
+    roi: {
+      breachRiskReduction: 0.78,
+      operationalEfficiency: 0.75,
+      complianceAutomation: 0.65,
+    },
+    strengths: ["AI-driven operations", "Cloud-native", "Mist platform integration", "Proactive troubleshooting"],
+    weaknesses: ["Juniper ecosystem focus", "Newer NAC offering", "Limited standalone deployment"],
+  },
+  microsoft: {
+    id: "microsoft",
+    name: "Microsoft NPS/Intune",
+    category: "Ecosystem NAC",
+    marketShare: 15.6,
+    logo: "/microsoft-logo.png",
+    description: "Microsoft ecosystem NAC using NPS, Intune, and Conditional Access",
+    priceIndicator: "$",
+    difficulty: 3,
+    features: {
+      core: {
+        "802.1X": true,
+        "Risk-Based Auth": true,
+        "Device Profiling": true,
+        "Policy Automation": true,
+        "Cloud Management": true,
+        "API Integration": true,
+        "Real-time Monitoring": true,
+        "Automated Remediation": false,
+        SSO: true,
+        TACACS: false,
+        "Guest Portal": false,
+        PKI: true,
+        RADIUS: true,
+      },
+      advanced: {
+        "AI/ML Analytics": false,
+        "Zero Trust": true,
+        Microsegmentation: false,
+        "Threat Detection": true,
+        "Compliance Automation": true,
+        "Multi-tenant": true,
+        "IoT Security": false,
+      },
+    },
+    implementation: {
+      deploymentTime: { poc: 96, fullDeployment: 1080, fullScale: 1080 },
+      complexity: "Medium",
+      requiresHardware: false,
+      cloudNative: true,
+    },
+    pricing: {
+      model: "M365 licensing",
+      startingPrice: 4.2,
+      enterprise: 5.8,
+    },
+    roi: {
+      breachRiskReduction: 0.62,
+      operationalEfficiency: 0.58,
+      complianceAutomation: 0.7,
+    },
+    strengths: [
+      "Microsoft ecosystem integration",
+      "Conditional access",
+      "Good endpoint compliance",
+      "Cost-effective for M365 customers",
+    ],
+    weaknesses: ["Windows-centric", "Limited non-Windows support", "Complex NPS scaling", "Not dedicated NAC"],
+  },
+  packetfence: {
+    id: "packetfence",
+    name: "PacketFence",
+    category: "Open Source",
+    marketShare: 2.1,
+    logo: "/packetfence-logo.png",
+    description: "Open-source network access control solution",
+    priceIndicator: "$",
+    difficulty: 5,
+    features: {
+      core: {
+        "802.1X": true,
+        "Risk-Based Auth": false,
+        "Device Profiling": true,
+        "Policy Automation": false,
+        "Cloud Management": false,
+        "API Integration": true,
+        "Real-time Monitoring": true,
+        "Automated Remediation": false,
+        SSO: true,
+        TACACS: true,
+        "Guest Portal": true,
+        PKI: true,
+        RADIUS: true,
+      },
+      advanced: {
+        "AI/ML Analytics": false,
+        "Zero Trust": false,
+        Microsegmentation: false,
+        "Threat Detection": false,
+        "Compliance Automation": false,
+        "Multi-tenant": false,
+        "IoT Security": true,
+      },
+    },
+    implementation: {
+      deploymentTime: { poc: 240, fullDeployment: 3600, fullScale: 3600 },
+      complexity: "Very High",
+      requiresHardware: true,
+      cloudNative: false,
+    },
+    pricing: {
+      model: "Open source + support",
+      startingPrice: 0,
+      enterprise: 2.5,
+    },
+    roi: {
+      breachRiskReduction: 0.45,
+      operationalEfficiency: 0.35,
+      complianceAutomation: 0.25,
+    },
+    strengths: ["No licensing costs", "Highly customizable", "Community support", "Full source access"],
+    weaknesses: ["Very complex setup", "Requires expertise", "Limited enterprise support", "High operational overhead"],
+  },
+  foxpass: {
+    id: "foxpass",
+    name: "Foxpass",
+    category: "Cloud RADIUS",
+    marketShare: 1.8,
+    logo: "/foxpass-logo.png",
+    description: "Cloud-hosted RADIUS and LDAP for Wi-Fi and VPN",
+    priceIndicator: "$",
+    difficulty: 1,
+    features: {
+      core: {
+        "802.1X": true,
+        "Risk-Based Auth": false,
+        "Device Profiling": false,
+        "Policy Automation": false,
+        "Cloud Management": true,
+        "API Integration": true,
+        "Real-time Monitoring": false,
+        "Automated Remediation": false,
+        SSO: true,
+        TACACS: false,
+        "Guest Portal": false,
+        PKI: false,
+        RADIUS: true,
+      },
+      advanced: {
+        "AI/ML Analytics": false,
+        "Zero Trust": false,
+        Microsegmentation: false,
+        "Threat Detection": false,
+        "Compliance Automation": false,
+        "Multi-tenant": true,
+        "IoT Security": false,
+      },
+    },
+    implementation: {
+      deploymentTime: { poc: 8, fullDeployment: 120, fullScale: 120 },
+      complexity: "Low",
+      requiresHardware: false,
+      cloudNative: true,
+    },
+    pricing: {
+      model: "Per user/month",
+      startingPrice: 2.5,
+      enterprise: 3.2,
+    },
+    roi: {
+      breachRiskReduction: 0.35,
+      operationalEfficiency: 0.4,
+      complianceAutomation: 0.2,
+    },
+    strengths: ["Very simple setup", "Cloud RADIUS/LDAP", "Affordable", "Quick deployment"],
+    weaknesses: ["Limited NAC features", "Basic functionality", "No device profiling", "Authentication only"],
+  },
+  securew2: {
+    id: "securew2",
+    name: "SecureW2",
+    category: "Certificate-based",
+    marketShare: 2.3,
+    logo: "/securew2-logo.png",
+    description: "Cloud-based PKI and certificate management for secure Wi-Fi",
+    priceIndicator: "$$",
+    difficulty: 2,
+    features: {
+      core: {
+        "802.1X": true,
+        "Risk-Based Auth": false,
+        "Device Profiling": false,
+        "Policy Automation": false,
+        "Cloud Management": true,
+        "API Integration": true,
+        "Real-time Monitoring": false,
+        "Automated Remediation": false,
+        SSO: true,
+        TACACS: false,
+        "Guest Portal": false,
+        PKI: true,
+        RADIUS: true,
+      },
+      advanced: {
+        "AI/ML Analytics": false,
+        "Zero Trust": false,
+        Microsegmentation: false,
+        "Threat Detection": false,
+        "Compliance Automation": false,
+        "Multi-tenant": true,
+        "IoT Security": false,
+      },
+    },
+    implementation: {
+      deploymentTime: { poc: 24, fullDeployment: 360, fullScale: 360 },
+      complexity: "Low",
+      requiresHardware: false,
+      cloudNative: true,
+    },
+    pricing: {
+      model: "Per user/year",
+      startingPrice: 3.8,
+      enterprise: 4.5,
+    },
+    roi: {
+      breachRiskReduction: 0.4,
+      operationalEfficiency: 0.45,
+      complianceAutomation: 0.3,
+    },
+    strengths: ["Strong certificate management", "EAP-TLS focus", "Cloud PKI", "Easy certificate deployment"],
+    weaknesses: ["Limited to authentication", "No device visibility", "Certificate-only approach", "Narrow use case"],
+  },
+  radiusaas: {
+    id: "radiusaas",
+    name: "RADIUS-as-a-Service",
+    category: "Cloud RADIUS",
+    marketShare: 1.2,
+    logo: "/radiusaas-logo.png",
+    description: "Cloud-based RADIUS service for network authentication",
+    priceIndicator: "$",
+    difficulty: 1,
+    features: {
+      core: {
+        "802.1X": true,
+        "Risk-Based Auth": false,
+        "Device Profiling": false,
+        "Policy Automation": false,
+        "Cloud Management": true,
+        "API Integration": false,
+        "Real-time Monitoring": false,
+        "Automated Remediation": false,
+        SSO: false,
+        TACACS: false,
+        "Guest Portal": false,
+        PKI: false,
+        RADIUS: true,
+      },
+      advanced: {
+        "AI/ML Analytics": false,
+        "Zero Trust": false,
+        Microsegmentation: false,
+        "Threat Detection": false,
+        "Compliance Automation": false,
+        "Multi-tenant": false,
+        "IoT Security": false,
+      },
+    },
+    implementation: {
+      deploymentTime: { poc: 4, fullDeployment: 48, fullScale: 48 },
+      complexity: "Low",
+      requiresHardware: false,
+      cloudNative: true,
+    },
+    pricing: {
+      model: "Per authentication",
+      startingPrice: 1.8,
+      enterprise: 2.2,
+    },
+    roi: {
+      breachRiskReduction: 0.25,
+      operationalEfficiency: 0.3,
+      complianceAutomation: 0.15,
+    },
+    strengths: ["Simple RADIUS service", "Pay per use", "Quick setup", "Basic authentication"],
+    weaknesses: ["Very limited features", "No NAC capabilities", "Authentication only", "Minimal management"],
+  },
+  arista: {
+    id: "arista",
+    name: "Arista AGNI",
+    category: "Cloud-Native NAC",
+    marketShare: 2.5,
+    logo: "/arista-logo.png",
+    description: "Cloud-native NAC service integrated with Arista's CloudVision.",
+    priceIndicator: "$$$",
+    difficulty: 3,
+    features: {
+      core: {
+        "802.1X": true,
+        "Risk-Based Auth": true,
+        "Device Profiling": true,
+        "Policy Automation": true,
+        "Cloud Management": true,
+        "API Integration": true,
+        "Real-time Monitoring": true,
+        "Automated Remediation": false,
+        SSO: true,
+        TACACS: true,
+        "Guest Portal": true,
+        PKI: true,
+        RADIUS: true,
+      },
+      advanced: {
+        "AI/ML Analytics": true,
+        "Zero Trust": true,
+        Microsegmentation: true,
+        "Threat Detection": true,
+        "Compliance Automation": false,
+        "Multi-tenant": true,
+        "IoT Security": true,
+      },
+    },
+    implementation: {
+      deploymentTime: { poc: 60, fullDeployment: 960, fullScale: 960 },
+      complexity: "Medium",
+      requiresHardware: false,
+      cloudNative: true,
+    },
+    pricing: {
+      model: "Subscription per device",
+      startingPrice: 6.0,
+      enterprise: 7.5,
+    },
+    roi: {
+      breachRiskReduction: 0.72,
+      operationalEfficiency: 0.68,
+      complianceAutomation: 0.6,
+    },
+    strengths: ["Deep integration with Arista ecosystem", "CloudVision management", "Strong for data center & campus"],
+    weaknesses: ["Best value within Arista environments", "Newer entrant in NAC space"],
   },
 }
 
@@ -1498,243 +2430,6 @@ const SettingsPanel = ({
         </motion.div>
       )}
     </AnimatePresence>
-  )
-}
-
-// Enhanced KPI Card with Modern Styling
-const ModernKPICard = ({
-  title,
-  value,
-  subtitle,
-  icon: Icon,
-  trend,
-  trendValue,
-  color = "primary",
-  darkMode,
-  sparklineData,
-  interactive = true,
-  size = "default",
-}: {
-  title: string
-  value: string | number
-  subtitle?: string
-  icon: React.ElementType
-  trend?: "up" | "down" | "neutral"
-  trendValue?: string
-  color?: string
-  darkMode?: boolean
-  sparklineData?: any[]
-  interactive?: boolean
-  size?: "small" | "default" | "large"
-}) => {
-  const [isHovered, setIsHovered] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
-
-  const colorMap = {
-    primary: MODERN_COLORS.gradients.portnox,
-    success: MODERN_COLORS.gradients.success,
-    warning: MODERN_COLORS.gradients.warning,
-    danger: MODERN_COLORS.gradients.danger,
-    info: MODERN_COLORS.gradients.info,
-    purple: MODERN_COLORS.gradients.hologram,
-    cyan: MODERN_COLORS.gradients.aurora,
-    pink: MODERN_COLORS.gradients.sunset,
-  }
-
-  const selectedGradient = colorMap[color] || MODERN_COLORS.gradients.portnox
-  const TrendIcon = trend === "up" ? ArrowUpRight : trend === "down" ? ArrowDownRight : Activity
-
-  return (
-    <motion.div
-      className={cn(
-        "relative overflow-hidden rounded-3xl border-0 transition-all duration-500",
-        "backdrop-blur-xl bg-white/5 dark:bg-black/10",
-        size === "small" && "p-4",
-        size === "default" && "p-6",
-        size === "large" && "p-8",
-      )}
-      whileHover={{ y: -12, scale: 1.03 }}
-      whileTap={{ scale: 0.98 }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      onClick={() => interactive && setIsExpanded(!isExpanded)}
-      style={{ cursor: interactive ? "pointer" : "default" }}
-    >
-      {/* Animated Background Gradient */}
-      <motion.div
-        className="absolute inset-0 opacity-20"
-        style={{ background: selectedGradient }}
-        animate={{
-          opacity: isHovered ? 0.3 : 0.1,
-          scale: isHovered ? 1.1 : 1,
-        }}
-        transition={{ duration: 0.5 }}
-      />
-
-      {/* Mesh Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div
-          className="w-full h-full"
-          style={{
-            backgroundImage: `radial-gradient(circle at 25% 25%, ${MODERN_COLORS.primary[400]}60 0%, transparent 50%)`,
-            backgroundSize: "50px 50px",
-          }}
-        />
-      </div>
-
-      {/* Glass Border */}
-      <motion.div
-        className="absolute inset-0 rounded-3xl border"
-        style={{ borderColor: "rgba(255, 255, 255, 0.2)" }}
-        animate={{
-          borderColor: isHovered ? "rgba(20, 184, 166, 0.5)" : "rgba(255, 255, 255, 0.2)",
-          boxShadow: isHovered ? "0 0 40px rgba(20, 184, 166, 0.3)" : "0 0 0px rgba(20, 184, 166, 0)",
-        }}
-        transition={{ duration: 0.3 }}
-      />
-
-      <div className="relative z-10">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <motion.div
-              className="p-4 rounded-2xl relative"
-              style={{ background: selectedGradient }}
-              animate={isHovered ? modernAnimations.float : {}}
-            >
-              <Icon className="h-6 w-6 text-white" />
-
-              {/* Icon Glow */}
-              <motion.div
-                className="absolute inset-0 rounded-2xl"
-                style={{ background: selectedGradient }}
-                animate={{
-                  scale: isHovered ? [1, 1.2, 1] : 1,
-                  opacity: isHovered ? [0.5, 0.8, 0.5] : 0,
-                }}
-                transition={{ duration: 1, repeat: isHovered ? Number.POSITIVE_INFINITY : 0 }}
-              />
-            </motion.div>
-
-            <div>
-              <h3 className={cn("text-sm font-semibold", darkMode ? "text-slate-200" : "text-slate-700")}>{title}</h3>
-              {subtitle && (
-                <p className={cn("text-xs mt-1", darkMode ? "text-slate-400" : "text-slate-500")}>{subtitle}</p>
-              )}
-            </div>
-          </div>
-
-          {interactive && (
-            <motion.button
-              className={cn("p-2 rounded-xl transition-colors", darkMode ? "hover:bg-white/10" : "hover:bg-black/5")}
-              whileHover={modernAnimations.scaleHover}
-              whileTap={{ scale: 0.9 }}
-            >
-              {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-            </motion.button>
-          )}
-        </div>
-
-        {/* Value Display */}
-        <motion.div
-          className={cn("text-4xl font-bold mb-4", darkMode ? "text-white" : "text-slate-900")}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
-          <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">{value}</span>
-        </motion.div>
-
-        {/* Trend Indicator */}
-        {trend && trendValue && (
-          <motion.div
-            className="flex items-center space-x-3 mb-4"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div
-              className={cn(
-                "p-2 rounded-xl",
-                trend === "up" ? "bg-emerald-500/20" : trend === "down" ? "bg-red-500/20" : "bg-slate-500/20",
-              )}
-            >
-              <TrendIcon
-                className={cn(
-                  "h-4 w-4",
-                  trend === "up" ? "text-emerald-400" : trend === "down" ? "text-red-400" : "text-slate-400",
-                )}
-              />
-            </div>
-            <span
-              className={cn(
-                "text-sm font-semibold",
-                trend === "up" ? "text-emerald-400" : trend === "down" ? "text-red-400" : "text-slate-400",
-              )}
-            >
-              {trendValue}
-            </span>
-          </motion.div>
-        )}
-
-        {/* Sparkline Chart */}
-        {sparklineData && sparklineData.length > 0 && (
-          <motion.div
-            className="h-16 -mx-2 -mb-2 mt-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={sparklineData}>
-                <defs>
-                  <linearGradient id={`sparkline-${color}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#14b8a6"
-                  strokeWidth={3}
-                  fill={`url(#sparkline-${color})`}
-                  dot={false}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </motion.div>
-        )}
-
-        {/* Expanded Content */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.4 }}
-              className="mt-6 pt-6 border-t border-white/10"
-            >
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Previous Period:</span>
-                  <span className="text-slate-200 font-semibold">$2.1M</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Growth Rate:</span>
-                  <span className="text-emerald-400 font-semibold">+23.5%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Benchmark:</span>
-                  <span className="text-slate-200 font-semibold">Industry Avg</span>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.div>
   )
 }
 
@@ -2404,34 +3099,14 @@ export default function TcoAnalyzerUltimate() {
           color: "cyan",
           sparklineData: generateTimeSeriesData(7, 12, "stable"),
         },
-        {
-          title: "FTE Reduction",
-          value: "2.5 FTE",
-          subtitle: "IT staff savings",
-          icon: Users,
-          trend: "down",
-          trendValue: "-70%",
-          color: "warning",
-          sparklineData: generateTimeSeriesData(2.5, 12, "stable"),
-        },
-        {
-          title: "Operational Efficiency",
-          value: "85%",
-          subtitle: "Process automation",
-          icon: Zap,
-          trend: "up",
-          trendValue: "+65%",
-          color: "info",
-          sparklineData: generateTimeSeriesData(85, 12, "up"),
-        },
       ]
     }, [results])
 
     return (
       <motion.div className="space-y-8" variants={modernAnimations.staggerContainer} initial="hidden" animate="visible">
-        {/* Enhanced KPI Cards Grid */}
+        {/* KPI Cards Grid */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
           variants={modernAnimations.slideInUp}
         >
           {kpiData.map((kpi, index) => (
@@ -2441,25 +3116,25 @@ export default function TcoAnalyzerUltimate() {
           ))}
         </motion.div>
 
-        {/* Comprehensive TCO Comparison Chart */}
+        {/* Main Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Enhanced TCO Comparison Chart */}
+          {/* TCO Comparison Chart */}
           <motion.div variants={modernAnimations.slideInUp}>
-            <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
+            <ModernGradientCard darkMode={darkMode} gradient="hologram" glow={false}>
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className={cn("text-xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                      Comprehensive TCO Analysis
+                      Total Cost Comparison
                     </CardTitle>
                     <p className={cn("text-sm mt-1", darkMode ? "text-slate-400" : "text-slate-500")}>
-                      {projectionYears}-year total cost breakdown with operational impact
+                      {projectionYears}-year TCO analysis
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button size="sm" variant="outline" className="h-8 bg-transparent">
                       <BarChart3 className="h-3 w-3 mr-1" />
-                      Drill Down
+                      Details
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -2475,10 +3150,6 @@ export default function TcoAnalyzerUltimate() {
                         <DropdownMenuItem>
                           <Maximize2 className="h-4 w-4 mr-2" />
                           Full Screen
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Share2 className="h-4 w-4 mr-2" />
-                          Share Analysis
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -2497,17 +3168,12 @@ export default function TcoAnalyzerUltimate() {
                           implementation: r.implementation,
                           operations: r.operations,
                           roi: r.roi?.percentage || 0,
-                          fteReduction: VENDOR_DATA[r.vendor]?.roi?.operationalEfficiency * 3 || 0,
                         }))}
                       >
                         <defs>
                           <linearGradient id="totalGradient" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.8} />
                             <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.2} />
-                          </linearGradient>
-                          <linearGradient id="roiGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8} />
-                            <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.2} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
@@ -2517,17 +3183,9 @@ export default function TcoAnalyzerUltimate() {
                           axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
                         />
                         <YAxis
-                          yAxisId="cost"
                           tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
                           axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
                           tickFormatter={(value) => formatCurrency(value, true)}
-                        />
-                        <YAxis
-                          yAxisId="roi"
-                          orientation="right"
-                          tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
-                          axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
-                          tickFormatter={(value) => `${value}%`}
                         />
                         <ReTooltip
                           contentStyle={{
@@ -2537,44 +3195,12 @@ export default function TcoAnalyzerUltimate() {
                             boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                           }}
                           formatter={(value: any, name: string) => [
-                            typeof value === "number"
-                              ? name === "roi"
-                                ? `${value.toFixed(1)}%`
-                                : name === "fteReduction"
-                                  ? `${value.toFixed(1)} FTE`
-                                  : formatCurrency(value)
-                              : value,
-                            name === "roi"
-                              ? "ROI"
-                              : name === "fteReduction"
-                                ? "FTE Reduction"
-                                : name.charAt(0).toUpperCase() + name.slice(1),
+                            typeof value === "number" ? formatCurrency(value) : value,
+                            name,
                           ]}
                         />
                         <ReLegend />
-                        <Bar
-                          yAxisId="cost"
-                          dataKey="total"
-                          fill="url(#totalGradient)"
-                          radius={[4, 4, 0, 0]}
-                          name="Total TCO"
-                        />
-                        <Line
-                          yAxisId="roi"
-                          type="monotone"
-                          dataKey="roi"
-                          stroke="#f59e0b"
-                          strokeWidth={3}
-                          name="ROI %"
-                        />
-                        <Area
-                          yAxisId="cost"
-                          type="monotone"
-                          dataKey="fteReduction"
-                          fill="url(#roiGradient)"
-                          stroke="#8b5cf6"
-                          name="FTE Reduction"
-                        />
+                        <Bar dataKey="total" fill="url(#totalGradient)" radius={[4, 4, 0, 0]} />
                       </ComposedChart>
                     </ResponsiveContainer>
                   </div>
@@ -2585,32 +3211,32 @@ export default function TcoAnalyzerUltimate() {
                         className={cn("h-12 w-12 mx-auto mb-4", darkMode ? "text-slate-600" : "text-slate-400")}
                       />
                       <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                        Select vendors to view comprehensive analysis
+                        Select vendors to view comparison
                       </p>
                     </div>
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </ModernGradientCard>
           </motion.div>
 
-          {/* Enhanced ROI Timeline Chart */}
+          {/* ROI Timeline Chart */}
           <motion.div variants={modernAnimations.slideInUp}>
-            <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
+            <ModernGradientCard darkMode={darkMode} gradient="aurora" glow={false}>
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className={cn("text-xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                      ROI & Operational Impact Timeline
+                      ROI Timeline
                     </CardTitle>
                     <p className={cn("text-sm mt-1", darkMode ? "text-slate-400" : "text-slate-500")}>
-                      Return on investment and operational efficiency over time
+                      Return on investment over time
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button size="sm" variant="outline" className="h-8 bg-transparent">
                       <LineChartIcon className="h-3 w-3 mr-1" />
-                      Forecast
+                      Analyze
                     </Button>
                   </div>
                 </div>
@@ -2618,22 +3244,11 @@ export default function TcoAnalyzerUltimate() {
               <CardContent>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart
-                      data={generateTimeSeriesData(100, 60, "up").map((item, index) => ({
-                        ...item,
-                        roi: item.value,
-                        efficiency: Math.min(95, 40 + index * 0.8),
-                        fteReduction: Math.min(3, index * 0.05),
-                      }))}
-                    >
+                    <AreaChart data={generateTimeSeriesData(100, 60, "up")}>
                       <defs>
-                        <linearGradient id="roiTimelineGradient" x1="0" y1="0" x2="0" y2="1">
+                        <linearGradient id="roiGradient" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
                           <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1} />
-                        </linearGradient>
-                        <linearGradient id="efficiencyGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.6} />
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
@@ -2643,17 +3258,9 @@ export default function TcoAnalyzerUltimate() {
                         axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
                       />
                       <YAxis
-                        yAxisId="left"
                         tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
                         axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
                         tickFormatter={(value) => `${value}%`}
-                      />
-                      <YAxis
-                        yAxisId="right"
-                        orientation="right"
-                        tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
-                        axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
-                        tickFormatter={(value) => `${value.toFixed(1)} FTE`}
                       />
                       <ReTooltip
                         contentStyle={{
@@ -2662,1787 +3269,397 @@ export default function TcoAnalyzerUltimate() {
                           borderRadius: "12px",
                           boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                         }}
-                        formatter={(value: any, name: string) => [
-                          name === "fteReduction" ? `${value.toFixed(1)} FTE` : `${value.toFixed(1)}%`,
-                          name === "roi" ? "ROI" : name === "efficiency" ? "Operational Efficiency" : "FTE Reduction",
-                        ]}
+                        formatter={(value: any) => [`${value.toFixed(1)}%`, "ROI"]}
                         labelFormatter={(label) => `Month ${label}`}
                       />
-                      <ReLegend />
-                      <Area
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="roi"
-                        stroke="#3b82f6"
-                        strokeWidth={3}
-                        fill="url(#roiTimelineGradient)"
-                        name="ROI %"
-                      />
-                      <Area
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="efficiency"
-                        stroke="#10b981"
-                        strokeWidth={2}
-                        fill="url(#efficiencyGradient)"
-                        name="Efficiency %"
-                      />
-                      <Line
-                        yAxisId="right"
-                        type="monotone"
-                        dataKey="fteReduction"
-                        stroke="#f59e0b"
-                        strokeWidth={3}
-                        name="FTE Reduction"
-                      />
-                    </ComposedChart>
+                      <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={3} fill="url(#roiGradient)" />
+                    </AreaChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
-            </Card>
+            </ModernGradientCard>
           </motion.div>
         </div>
 
-        {/* Enhanced Bottom Section - Detailed Analytics */}
+        {/* Bottom Section - Insights and Recommendations */}
         <motion.div className="grid grid-cols-1 lg:grid-cols-3 gap-8" variants={modernAnimations.slideInUp}>
-          {/* Detailed Key Insights */}
+          {/* Key Insights */}
           <motion.div variants={modernAnimations.slideInUp}>
-            <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
+            <ModernGradientCard darkMode={darkMode} gradient="sunset" glow={false}>
               <CardHeader>
                 <CardTitle
                   className={cn("text-lg font-bold flex items-center", darkMode ? "text-white" : "text-slate-900")}
                 >
                   <Sparkles className="h-5 w-5 mr-2 text-yellow-400" />
-                  Detailed Key Insights
+                  Key Insights
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
-                  <div className={cn("p-4 rounded-xl", darkMode ? "bg-white/5" : "bg-black/5")}>
+                  <div className={cn("p-3 rounded-xl", darkMode ? "bg-white/5" : "bg-black/5")}>
                     <div className="flex items-center space-x-2 mb-2">
                       <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
-                      <span className="text-sm font-semibold">67% TCO Reduction</span>
+                      <span className="text-sm font-semibold">Cost Advantage</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Portnox delivers industry-leading cost efficiency through cloud-native architecture and automated
-                      operations
+                      Portnox delivers 67% lower TCO compared to traditional solutions
                     </p>
                   </div>
 
-                  <div className={cn("p-4 rounded-xl", darkMode ? "bg-white/5" : "bg-black/5")}>
+                  <div className={cn("p-3 rounded-xl", darkMode ? "bg-white/5" : "bg-black/5")}>
                     <div className="flex items-center space-x-2 mb-2">
                       <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                      <span className="text-sm font-semibold">94% Faster Deployment</span>
+                      <span className="text-sm font-semibold">Deployment Speed</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      7-day deployment vs 120+ days for traditional solutions, enabling rapid time-to-value
-                    </p>
+                    <p className="text-xs text-muted-foreground">94% faster deployment than legacy NAC solutions</p>
                   </div>
 
-                  <div className={cn("p-4 rounded-xl", darkMode ? "bg-white/5" : "bg-black/5")}>
+                  <div className={cn("p-3 rounded-xl", darkMode ? "bg-white/5" : "bg-black/5")}>
                     <div className="flex items-center space-x-2 mb-2">
                       <div className="w-2 h-2 rounded-full bg-purple-400"></div>
-                      <span className="text-sm font-semibold">2.5 FTE Savings</span>
+                      <span className="text-sm font-semibold">Risk Mitigation</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Automated policy management and AI-driven operations reduce IT overhead by 70%
-                    </p>
-                  </div>
-
-                  <div className={cn("p-4 rounded-xl", darkMode ? "bg-white/5" : "bg-black/5")}>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <div className="w-2 h-2 rounded-full bg-orange-400"></div>
-                      <span className="text-sm font-semibold">98% Risk Reduction</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      AI-powered threat detection and automated remediation significantly reduce security incidents
-                    </p>
-                  </div>
-
-                  <div className={cn("p-4 rounded-xl", darkMode ? "bg-white/5" : "bg-black/5")}>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <div className="w-2 h-2 rounded-full bg-cyan-400"></div>
-                      <span className="text-sm font-semibold">85% Process Automation</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Comprehensive automation of compliance, monitoring, and policy enforcement workflows
-                    </p>
+                    <p className="text-xs text-muted-foreground">Superior threat detection with AI-powered analytics</p>
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </ModernGradientCard>
           </motion.div>
 
-          {/* Portnox Competitive Advantages */}
+          {/* Recommendations */}
           <motion.div variants={modernAnimations.slideInUp}>
-            <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
+            <ModernGradientCard darkMode={darkMode} gradient="cosmic" glow={false}>
               <CardHeader>
                 <CardTitle
                   className={cn("text-lg font-bold flex items-center", darkMode ? "text-white" : "text-slate-900")}
                 >
-                  <Award className="h-5 w-5 mr-2 text-emerald-400" />
-                  Portnox Advantages
+                  <Target className="h-5 w-5 mr-2 text-orange-400" />
+                  Recommendations
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div
                     className={cn(
-                      "p-4 rounded-xl border-l-4 border-emerald-400",
+                      "p-3 rounded-xl border-l-4 border-emerald-400",
                       darkMode ? "bg-emerald-400/10" : "bg-emerald-50",
                     )}
                   >
                     <div className="flex items-center space-x-2 mb-1">
-                      <Globe className="h-4 w-4 text-emerald-400" />
-                      <span className="text-sm font-semibold">100% Cloud-Native</span>
+                      <Award className="h-4 w-4 text-emerald-400" />
+                      <span className="text-sm font-semibold">Immediate Action</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      No hardware dependencies, infinite scalability, automatic updates
+                      Start with Portnox pilot deployment in critical network segments
                     </p>
                   </div>
 
                   <div
                     className={cn(
-                      "p-4 rounded-xl border-l-4 border-blue-400",
+                      "p-3 rounded-xl border-l-4 border-blue-400",
                       darkMode ? "bg-blue-400/10" : "bg-blue-50",
                     )}
                   >
                     <div className="flex items-center space-x-2 mb-1">
-                      <Cpu className="h-4 w-4 text-blue-400" />
-                      <span className="text-sm font-semibold">AI-Powered Analytics</span>
+                      <Zap className="h-4 w-4 text-blue-400" />
+                      <span className="text-sm font-semibold">Quick Wins</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Machine learning for threat detection, behavioral analysis, and predictive insights
+                      Enable AI analytics and compliance automation features
                     </p>
                   </div>
 
                   <div
                     className={cn(
-                      "p-4 rounded-xl border-l-4 border-purple-400",
+                      "p-3 rounded-xl border-l-4 border-purple-400",
                       darkMode ? "bg-purple-400/10" : "bg-purple-50",
                     )}
                   >
                     <div className="flex items-center space-x-2 mb-1">
-                      <Zap className="h-4 w-4 text-purple-400" />
-                      <span className="text-sm font-semibold">Agentless Deployment</span>
+                      <Activity className="h-4 w-4 text-purple-400" />
+                      <span className="text-sm font-semibold">Long-term</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      97% agentless coverage, minimal endpoint impact, simplified management
-                    </p>
-                  </div>
-
-                  <div
-                    className={cn(
-                      "p-4 rounded-xl border-l-4 border-orange-400",
-                      darkMode ? "bg-orange-400/10" : "bg-orange-50",
-                    )}
-                  >
-                    <div className="flex items-center space-x-2 mb-1">
-                      <Lock className="h-4 w-4 text-orange-400" />
-                      <span className="text-sm font-semibold">Zero Trust Architecture</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Native zero trust implementation with continuous verification and risk assessment
-                    </p>
-                  </div>
-
-                  <div
-                    className={cn(
-                      "p-4 rounded-xl border-l-4 border-cyan-400",
-                      darkMode ? "bg-cyan-400/10" : "bg-cyan-50",
-                    )}
-                  >
-                    <div className="flex items-center space-x-2 mb-1">
-                      <Activity className="h-4 w-4 text-cyan-400" />
-                      <span className="text-sm font-semibold">Real-Time Response</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Instant threat response, automated remediation, sub-second policy enforcement
+                      Plan full migration strategy with phased rollout approach
                     </p>
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </ModernGradientCard>
           </motion.div>
 
           {/* Executive Summary */}
           <motion.div variants={modernAnimations.slideInUp}>
-            <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
+            <ModernGradientCard darkMode={darkMode} gradient="matrix" glow={false}>
               <CardHeader>
                 <CardTitle
                   className={cn("text-lg font-bold flex items-center", darkMode ? "text-white" : "text-slate-900")}
                 >
-                  <Target className="h-5 w-5 mr-2 text-teal-400" />
+                  <FileText className="h-5 w-5 mr-2 text-cyan-400" />
                   Executive Summary
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-semibold mb-2 text-emerald-400">Business Impact</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Portnox CLEAR delivers a {savingsPercentVsLowestCompetitor.toFixed(1)}% cost advantage over the
-                      nearest competitor, translating to {formatCurrency(totalSavingsVsLowestCompetitor)} in savings
-                      over {projectionYears} years. The solution enables rapid deployment with 94% faster time-to-value
-                      and 70% reduction in operational overhead.
-                    </p>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-emerald-400 mb-1">
+                      {formatCurrency(totalSavingsVsLowestCompetitor, true)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Total Savings vs Best Competitor</div>
                   </div>
 
-                  <div>
-                    <h4 className="text-sm font-semibold mb-2 text-blue-400">Strategic Advantages</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Cloud-native architecture eliminates hardware dependencies and provides infinite scalability.
-                      AI-powered automation reduces manual processes by 85%, while comprehensive API integration enables
-                      seamless ecosystem connectivity and future-proof operations.
-                    </p>
-                  </div>
+                  <Separator className={darkMode ? "bg-slate-700" : "bg-slate-200"} />
 
-                  <div>
-                    <h4 className="text-sm font-semibold mb-2 text-purple-400">Risk Mitigation</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Zero Trust architecture with continuous verification reduces breach risk by 94%. Real-time threat
-                      detection and automated remediation provide comprehensive security coverage with minimal IT
-                      resource requirements.
-                    </p>
-                  </div>
-
-                  <div>
-                    <h4 className="text-sm font-semibold mb-2 text-orange-400">Recommendation</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Portnox CLEAR represents the optimal choice for organizations seeking comprehensive NAC
-                      capabilities with minimal complexity and maximum ROI. The solution's cloud-native design and
-                      AI-powered automation provide sustainable competitive advantages.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </motion.div>
-      </motion.div>
-    )
-  }
-
-  // TCO Analysis Tab Content
-  const TcoAnalysisContent = () => {
-    return (
-      <motion.div className="space-y-8" variants={modernAnimations.staggerContainer} initial="hidden" animate="visible">
-        {activeSubTab === "cost-breakdown" && (
-          <motion.div variants={modernAnimations.slideInUp}>
-            <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-              <CardHeader>
-                <CardTitle className={cn("text-xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                  Detailed Cost Breakdown Analysis
-                </CardTitle>
-                <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                  Comprehensive breakdown of all cost components over {projectionYears} years
-                </p>
-              </CardHeader>
-              <CardContent>
-                {results && results.length > 0 ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Stacked Bar Chart */}
-                    <div className="h-96">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <Bar
-                          data={results.map((r) => ({
-                            vendor: r.vendorName,
-                            licensing: r.licensing,
-                            implementation: r.implementation,
-                            operations: r.operations,
-                            hardware: r.hardware || 0,
-                            training: r.training || 0,
-                            support: r.support || 0,
-                          }))}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
-                          <XAxis
-                            dataKey="vendor"
-                            tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
-                            axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
-                          />
-                          <YAxis
-                            tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
-                            axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
-                            tickFormatter={(value) => formatCurrency(value, true)}
-                          />
-                          <ReTooltip
-                            contentStyle={{
-                              backgroundColor: darkMode ? "#1f2937" : "#ffffff",
-                              border: "none",
-                              borderRadius: "12px",
-                              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-                            }}
-                            formatter={(value: any) => [formatCurrency(value), ""]}
-                          />
-                          <ReLegend />
-                          <Bar dataKey="licensing" stackId="a" fill="#14b8a6" name="Licensing" />
-                          <Bar dataKey="implementation" stackId="a" fill="#3b82f6" name="Implementation" />
-                          <Bar dataKey="operations" stackId="a" fill="#f59e0b" name="Operations" />
-                          <Bar dataKey="hardware" stackId="a" fill="#ef4444" name="Hardware" />
-                          <Bar dataKey="training" stackId="a" fill="#8b5cf6" name="Training" />
-                          <Bar dataKey="support" stackId="a" fill="#06b6d4" name="Support" />
-                        </Bar>
-                      </ResponsiveContainer>
-                    </div>
-
-                    {/* Cost Breakdown Table */}
-                    <div className="space-y-4">
-                      <h4 className={cn("text-lg font-semibold", darkMode ? "text-white" : "text-slate-900")}>
-                        Cost Component Analysis
-                      </h4>
-                      <div className="space-y-3">
-                        {results.map((result) => (
-                          <div
-                            key={result.vendor}
-                            className={cn(
-                              "p-4 rounded-xl border",
-                              darkMode ? "bg-white/5 border-slate-700/50" : "bg-slate-50/50 border-slate-200/50",
-                            )}
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center space-x-3">
-                                <Image
-                                  src={VENDOR_DATA[result.vendor]?.logo || "/placeholder.svg"}
-                                  alt={result.vendorName}
-                                  width={24}
-                                  height={24}
-                                  className="h-6 w-auto"
-                                />
-                                <span className="font-semibold">{result.vendorName}</span>
-                              </div>
-                              <span className="text-lg font-bold text-emerald-400">{formatCurrency(result.total)}</span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Licensing:</span>
-                                <span>{formatCurrency(result.licensing)}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Implementation:</span>
-                                <span>{formatCurrency(result.implementation)}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Operations:</span>
-                                <span>{formatCurrency(result.operations)}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Hardware:</span>
-                                <span>{formatCurrency(result.hardware || 0)}</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="h-96 flex items-center justify-center">
-                    <div className="text-center">
-                      <FilePieChart
-                        className={cn("h-12 w-12 mx-auto mb-4", darkMode ? "text-slate-600" : "text-slate-400")}
-                      />
-                      <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                        Select vendors to view detailed cost breakdown
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {activeSubTab === "roi-analysis" && (
-          <motion.div variants={modernAnimations.slideInUp}>
-            <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-              <CardHeader>
-                <CardTitle className={cn("text-xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                  ROI & Business Value Analysis
-                </CardTitle>
-                <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                  Return on investment and business value metrics comparison
-                </p>
-              </CardHeader>
-              <CardContent>
-                {results && results.length > 0 ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* ROI Comparison Chart */}
-                    <div className="h-96">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart
-                          data={results.map((r) => ({
-                            vendor: r.vendorName,
-                            roi: r.roi?.percentage || 0,
-                            payback: r.roi?.paybackMonths || 0,
-                            npv: r.roi?.npv || 0,
-                          }))}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
-                          <XAxis
-                            dataKey="vendor"
-                            tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
-                            axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
-                          />
-                          <YAxis
-                            yAxisId="left"
-                            tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
-                            axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
-                            tickFormatter={(value) => `${value}%`}
-                          />
-                          <YAxis
-                            yAxisId="right"
-                            orientation="right"
-                            tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
-                            axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
-                            tickFormatter={(value) => `${value}mo`}
-                          />
-                          <ReTooltip
-                            contentStyle={{
-                              backgroundColor: darkMode ? "#1f2937" : "#ffffff",
-                              border: "none",
-                              borderRadius: "12px",
-                              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-                            }}
-                            formatter={(value: any, name: string) => [
-                              name === "roi"
-                                ? `${value.toFixed(1)}%`
-                                : name === "payback"
-                                  ? `${value} months`
-                                  : formatCurrency(value),
-                              name === "roi" ? "ROI" : name === "payback" ? "Payback Period" : "NPV",
-                            ]}
-                          />
-                          <ReLegend />
-                          <Bar yAxisId="left" dataKey="roi" fill="#10b981" name="ROI %" />
-                          <Line
-                            yAxisId="right"
-                            type="monotone"
-                            dataKey="payback"
-                            stroke="#f59e0b"
-                            strokeWidth={3}
-                            name="Payback (months)"
-                          />
-                        </ComposedChart>
-                      </ResponsiveContainer>
-                    </div>
-
-                    {/* ROI Metrics Table */}
-                    <div className="space-y-4">
-                      <h4 className={cn("text-lg font-semibold", darkMode ? "text-white" : "text-slate-900")}>
-                        Business Value Metrics
-                      </h4>
-                      <div className="space-y-3">
-                        {results.map((result) => (
-                          <div
-                            key={result.vendor}
-                            className={cn(
-                              "p-4 rounded-xl border",
-                              darkMode ? "bg-white/5 border-slate-700/50" : "bg-slate-50/50 border-slate-200/50",
-                            )}
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center space-x-3">
-                                <Image
-                                  src={VENDOR_DATA[result.vendor]?.logo || "/placeholder.svg"}
-                                  alt={result.vendorName}
-                                  width={24}
-                                  height={24}
-                                  className="h-6 w-auto"
-                                />
-                                <span className="font-semibold">{result.vendorName}</span>
-                              </div>
-                              <Badge
-                                variant={
-                                  result.roi?.percentage && result.roi.percentage > 100 ? "default" : "secondary"
-                                }
-                                className={
-                                  result.roi?.percentage && result.roi.percentage > 100
-                                    ? "bg-emerald-500/20 text-emerald-400"
-                                    : ""
-                                }
-                              >
-                                {result.roi?.percentage?.toFixed(1) || 0}% ROI
-                              </Badge>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Payback Period:</span>
-                                <span>{result.roi?.paybackMonths || 0} months</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">NPV:</span>
-                                <span>{formatCurrency(result.roi?.npv || 0)}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Risk Reduction:</span>
-                                <span>
-                                  {((VENDOR_DATA[result.vendor]?.roi?.breachRiskReduction || 0) * 100).toFixed(0)}%
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Efficiency Gain:</span>
-                                <span>
-                                  {((VENDOR_DATA[result.vendor]?.roi?.operationalEfficiency || 0) * 100).toFixed(0)}%
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="h-96 flex items-center justify-center">
-                    <div className="text-center">
-                      <TrendingUp
-                        className={cn("h-12 w-12 mx-auto mb-4", darkMode ? "text-slate-600" : "text-slate-400")}
-                      />
-                      <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                        Select vendors to view ROI analysis
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {activeSubTab === "operations" && (
-          <motion.div variants={modernAnimations.slideInUp}>
-            <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-              <CardHeader>
-                <CardTitle className={cn("text-xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                  Operations Impact Analysis
-                </CardTitle>
-                <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                  Operational efficiency and resource impact comparison
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* FTE Impact Chart */}
-                  <div className="h-96">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={
-                          results?.map((r) => ({
-                            vendor: r.vendorName,
-                            fteReduction: (VENDOR_DATA[r.vendor]?.roi?.operationalEfficiency || 0) * 3,
-                            deploymentTime:
-                              (VENDOR_DATA[r.vendor]?.implementation?.deploymentTime?.fullDeployment || 0) / 24,
-                            complexity: VENDOR_DATA[r.vendor]?.difficulty || 1,
-                          })) || []
-                        }
-                      >
-                        <defs>
-                          <linearGradient id="fteGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
-                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
-                        <XAxis
-                          dataKey="vendor"
-                          tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
-                          axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
-                        />
-                        <YAxis
-                          tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
-                          axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
-                          tickFormatter={(value) => `${value.toFixed(1)} FTE`}
-                        />
-                        <ReTooltip
-                          contentStyle={{
-                            backgroundColor: darkMode ? "#1f2937" : "#ffffff",
-                            border: "none",
-                            borderRadius: "12px",
-                            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-                          }}
-                          formatter={(value: any, name: string) => [
-                            name === "fteReduction"
-                              ? `${value.toFixed(1)} FTE`
-                              : name === "deploymentTime"
-                                ? `${value} days`
-                                : `${value}/5`,
-                            name === "fteReduction"
-                              ? "FTE Reduction"
-                              : name === "deploymentTime"
-                                ? "Deployment Time"
-                                : "Complexity",
-                          ]}
-                        />
-                        <ReLegend />
-                        <Area
-                          type="monotone"
-                          dataKey="fteReduction"
-                          stroke="#8b5cf6"
-                          fill="url(#fteGradient)"
-                          name="FTE Reduction"
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-
-                  {/* Operations Metrics */}
-                  <div className="space-y-4">
-                    <h4 className={cn("text-lg font-semibold", darkMode ? "text-white" : "text-slate-900")}>
-                      Operational Metrics
-                    </h4>
-                    <div className="space-y-3">
-                      {results?.map((result) => (
-                        <div
-                          key={result.vendor}
-                          className={cn(
-                            "p-4 rounded-xl border",
-                            darkMode ? "bg-white/5 border-slate-700/50" : "bg-slate-50/50 border-slate-200/50",
-                          )}
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center space-x-3">
-                              <Image
-                                src={VENDOR_DATA[result.vendor]?.logo || "/placeholder.svg"}
-                                alt={result.vendorName}
-                                width={24}
-                                height={24}
-                                className="h-6 w-auto"
-                              />
-                              <span className="font-semibold">{result.vendorName}</span>
-                            </div>
-                            <Badge
-                              variant={VENDOR_DATA[result.vendor]?.difficulty <= 2 ? "default" : "secondary"}
-                              className={
-                                VENDOR_DATA[result.vendor]?.difficulty <= 2
-                                  ? "bg-emerald-500/20 text-emerald-400"
-                                  : VENDOR_DATA[result.vendor]?.difficulty <= 3
-                                    ? "bg-yellow-500/20 text-yellow-400"
-                                    : "bg-red-500/20 text-red-400"
-                              }
-                            >
-                              {VENDOR_DATA[result.vendor]?.difficulty}/5 Complexity
-                            </Badge>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Deployment:</span>
-                              <span>
-                                {Math.round(
-                                  (VENDOR_DATA[result.vendor]?.implementation?.deploymentTime?.fullDeployment || 0) /
-                                    24,
-                                )}{" "}
-                                days
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">FTE Reduction:</span>
-                              <span>
-                                {((VENDOR_DATA[result.vendor]?.roi?.operationalEfficiency || 0) * 3).toFixed(1)} FTE
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Automation:</span>
-                              <span>
-                                {((VENDOR_DATA[result.vendor]?.roi?.operationalEfficiency || 0) * 100).toFixed(0)}%
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Cloud Native:</span>
-                              <span>{VENDOR_DATA[result.vendor]?.implementation?.cloudNative ? "Yes" : "No"}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {activeSubTab === "timeline" && (
-          <motion.div variants={modernAnimations.slideInUp}>
-            <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-              <CardHeader>
-                <CardTitle className={cn("text-xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                  Implementation Timeline View
-                </CardTitle>
-                <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                  Deployment timeline and milestone comparison
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-8">
-                  {results?.map((result) => (
-                    <div key={result.vendor} className="space-y-4">
-                      <div className="flex items-center space-x-4">
-                        <Image
-                          src={VENDOR_DATA[result.vendor]?.logo || "/placeholder.svg"}
-                          alt={result.vendorName}
-                          width={32}
-                          height={32}
-                          className="h-8 w-auto"
-                        />
-                        <div>
-                          <h4 className={cn("text-lg font-semibold", darkMode ? "text-white" : "text-slate-900")}>
-                            {result.vendorName}
-                          </h4>
-                          <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                            Total deployment:{" "}
-                            {Math.round(
-                              (VENDOR_DATA[result.vendor]?.implementation?.deploymentTime?.fullDeployment || 0) / 24,
-                            )}{" "}
-                            days
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Timeline visualization */}
-                      <div className="relative">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <div className="w-4 h-4 rounded-full bg-emerald-500"></div>
-                          <span className="text-sm font-medium">Planning & Design</span>
-                          <span className="text-xs text-muted-foreground">
-                            {Math.round((VENDOR_DATA[result.vendor]?.implementation?.deploymentTime?.poc || 24) / 24)}{" "}
-                            days
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-2 mb-2">
-                          <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-                          <span className="text-sm font-medium">Implementation</span>
-                          <span className="text-xs text-muted-foreground">
-                            {Math.round(
-                              ((VENDOR_DATA[result.vendor]?.implementation?.deploymentTime?.fullDeployment || 0) -
-                                (VENDOR_DATA[result.vendor]?.implementation?.deploymentTime?.poc || 0)) /
-                                24,
-                            )}{" "}
-                            days
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-2 mb-2">
-                          <div className="w-4 h-4 rounded-full bg-purple-500"></div>
-                          <span className="text-sm font-medium">Testing & Validation</span>
-                          <span className="text-xs text-muted-foreground">
-                            {Math.round(
-                              ((VENDOR_DATA[result.vendor]?.implementation?.deploymentTime?.fullScale || 0) / 24) * 0.2,
-                            )}{" "}
-                            days
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-4 h-4 rounded-full bg-orange-500"></div>
-                          <span className="text-sm font-medium">Go-Live & Support</span>
-                          <span className="text-xs text-muted-foreground">Ongoing</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-      </motion.div>
-    )
-  }
-
-  // Vendor Comparison Tab Content
-  const VendorComparisonContent = () => {
-    return (
-      <motion.div className="space-y-8" variants={modernAnimations.staggerContainer} initial="hidden" animate="visible">
-        {activeSubTab === "feature-matrix" && (
-          <motion.div variants={modernAnimations.slideInUp}>
-            <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-              <CardHeader>
-                <CardTitle className={cn("text-xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                  Feature Comparison Matrix
-                </CardTitle>
-                <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                  Comprehensive feature comparison across selected vendors
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className={cn("border-b", darkMode ? "border-slate-700" : "border-slate-200")}>
-                        <th className="text-left p-4 font-semibold">Feature</th>
-                        {selectedVendors.map((vendorId) => (
-                          <th key={vendorId} className="text-center p-4 font-semibold min-w-32">
-                            <div className="flex flex-col items-center space-y-2">
-                              <Image
-                                src={VENDOR_DATA[vendorId]?.logo || "/placeholder.svg"}
-                                alt={VENDOR_DATA[vendorId]?.name || ""}
-                                width={24}
-                                height={24}
-                                className="h-6 w-auto"
-                              />
-                              <span className="text-xs">{VENDOR_DATA[vendorId]?.name}</span>
-                            </div>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {/* Core Features */}
-                      <tr className={cn("border-b", darkMode ? "border-slate-800" : "border-slate-100")}>
-                        <td colSpan={selectedVendors.length + 1} className="p-4 font-semibold text-emerald-400">
-                          Core Features
-                        </td>
-                      </tr>
-                      {Object.keys(VENDOR_DATA.portnox.features.core).map((feature) => (
-                        <tr
-                          key={feature}
-                          className={cn("border-b", darkMode ? "border-slate-800/50" : "border-slate-100")}
-                        >
-                          <td className="p-4 text-sm">{feature}</td>
-                          {selectedVendors.map((vendorId) => (
-                            <td key={vendorId} className="text-center p-4">
-                              {VENDOR_DATA[vendorId]?.features?.core?.[feature] ? (
-                                <CheckCircle className="h-5 w-5 text-emerald-400 mx-auto" />
-                              ) : (
-                                <X className="h-5 w-5 text-red-400 mx-auto" />
-                              )}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-
-                      {/* Advanced Features */}
-                      <tr className={cn("border-b", darkMode ? "border-slate-800" : "border-slate-100")}>
-                        <td colSpan={selectedVendors.length + 1} className="p-4 font-semibold text-blue-400">
-                          Advanced Features
-                        </td>
-                      </tr>
-                      {Object.keys(VENDOR_DATA.portnox.features.advanced).map((feature) => (
-                        <tr
-                          key={feature}
-                          className={cn("border-b", darkMode ? "border-slate-800/50" : "border-slate-100")}
-                        >
-                          <td className="p-4 text-sm">{feature}</td>
-                          {selectedVendors.map((vendorId) => (
-                            <td key={vendorId} className="text-center p-4">
-                              {VENDOR_DATA[vendorId]?.features?.advanced?.[feature] ? (
-                                <CheckCircle className="h-5 w-5 text-emerald-400 mx-auto" />
-                              ) : (
-                                <X className="h-5 w-5 text-red-400 mx-auto" />
-                              )}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {activeSubTab === "roadmap" && (
-          <motion.div variants={modernAnimations.slideInUp}>
-            <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-              <CardHeader>
-                <CardTitle className={cn("text-xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                  Implementation Roadmap Comparison
-                </CardTitle>
-                <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                  Deployment timeline and complexity comparison
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-8">
-                  {selectedVendors.map((vendorId) => (
-                    <div key={vendorId} className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <Image
-                            src={VENDOR_DATA[vendorId]?.logo || "/placeholder.svg"}
-                            alt={VENDOR_DATA[vendorId]?.name || ""}
-                            width={32}
-                            height={32}
-                            className="h-8 w-auto"
-                          />
-                          <div>
-                            <h4 className={cn("text-lg font-semibold", darkMode ? "text-white" : "text-slate-900")}>
-                              {VENDOR_DATA[vendorId]?.name}
-                            </h4>
-                            <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                              {VENDOR_DATA[vendorId]?.implementation?.complexity} complexity
-                            </p>
-                          </div>
-                        </div>
-                        <Badge
-                          variant={VENDOR_DATA[vendorId]?.difficulty <= 2 ? "default" : "secondary"}
-                          className={
-                            VENDOR_DATA[vendorId]?.difficulty <= 2
-                              ? "bg-emerald-500/20 text-emerald-400"
-                              : VENDOR_DATA[vendorId]?.difficulty <= 3
-                                ? "bg-yellow-500/20 text-yellow-400"
-                                : "bg-red-500/20 text-red-400"
-                          }
-                        >
-                          {Math.round(
-                            (VENDOR_DATA[vendorId]?.implementation?.deploymentTime?.fullDeployment || 0) / 24,
-                          )}{" "}
-                          days
-                        </Badge>
-                      </div>
-
-                      {/* Roadmap visualization */}
-                      <div className="relative pl-8">
-                        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-emerald-500 to-blue-500"></div>
-
-                        <div className="space-y-6">
-                          <div className="relative">
-                            <div className="absolute -left-2 w-4 h-4 rounded-full bg-emerald-500"></div>
-                            <div className="ml-4">
-                              <h5 className="font-semibold text-sm">Phase 1: Planning & Assessment</h5>
-                              <p className="text-xs text-muted-foreground">
-                                {Math.round((VENDOR_DATA[vendorId]?.implementation?.deploymentTime?.poc || 24) / 24)}{" "}
-                                days
-                              </p>
-                              <ul className="text-xs text-muted-foreground mt-1 space-y-1">
-                                <li>• Requirements gathering</li>
-                                <li>• Network assessment</li>
-                                <li>• Architecture design</li>
-                              </ul>
-                            </div>
-                          </div>
-
-                          <div className="relative">
-                            <div className="absolute -left-2 w-4 h-4 rounded-full bg-blue-500"></div>
-                            <div className="ml-4">
-                              <h5 className="font-semibold text-sm">Phase 2: Implementation</h5>
-                              <p className="text-xs text-muted-foreground">
-                                {Math.round(
-                                  ((VENDOR_DATA[vendorId]?.implementation?.deploymentTime?.fullDeployment || 0) -
-                                    (VENDOR_DATA[vendorId]?.implementation?.deploymentTime?.poc || 0)) /
-                                    24,
-                                )}{" "}
-                                days
-                              </p>
-                              <ul className="text-xs text-muted-foreground mt-1 space-y-1">
-                                <li>
-                                  •{" "}
-                                  {VENDOR_DATA[vendorId]?.implementation?.requiresHardware
-                                    ? "Hardware installation"
-                                    : "Cloud deployment"}
-                                </li>
-                                <li>• Policy configuration</li>
-                                <li>• Integration setup</li>
-                              </ul>
-                            </div>
-                          </div>
-
-                          <div className="relative">
-                            <div className="absolute -left-2 w-4 h-4 rounded-full bg-purple-500"></div>
-                            <div className="ml-4">
-                              <h5 className="font-semibold text-sm">Phase 3: Testing & Validation</h5>
-                              <p className="text-xs text-muted-foreground">
-                                {Math.round(
-                                  ((VENDOR_DATA[vendorId]?.implementation?.deploymentTime?.fullScale || 0) / 24) * 0.2,
-                                )}{" "}
-                                days
-                              </p>
-                              <ul className="text-xs text-muted-foreground mt-1 space-y-1">
-                                <li>• Pilot testing</li>
-                                <li>• Performance validation</li>
-                                <li>• Security verification</li>
-                              </ul>
-                            </div>
-                          </div>
-
-                          <div className="relative">
-                            <div className="absolute -left-2 w-4 h-4 rounded-full bg-orange-500"></div>
-                            <div className="ml-4">
-                              <h5 className="font-semibold text-sm">Phase 4: Go-Live & Support</h5>
-                              <p className="text-xs text-muted-foreground">Ongoing</p>
-                              <ul className="text-xs text-muted-foreground mt-1 space-y-1">
-                                <li>• Production rollout</li>
-                                <li>• User training</li>
-                                <li>• Ongoing support</li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {activeSubTab === "vendor-details" && (
-          <motion.div variants={modernAnimations.slideInUp}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {selectedVendors.map((vendorId) => (
-                <Card key={vendorId} className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-                  <CardHeader>
-                    <div className="flex items-center space-x-4">
-                      <Image
-                        src={VENDOR_DATA[vendorId]?.logo || "/placeholder.svg"}
-                        alt={VENDOR_DATA[vendorId]?.name || ""}
-                        width={48}
-                        height={48}
-                        className="h-12 w-auto"
-                      />
-                      <div>
-                        <CardTitle className={cn("text-xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                          {VENDOR_DATA[vendorId]?.name}
-                        </CardTitle>
-                        <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                          {VENDOR_DATA[vendorId]?.category} • {VENDOR_DATA[vendorId]?.marketShare}% market share
-                        </p>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4 text-center">
                     <div>
-                      <h4 className="font-semibold mb-2">Description</h4>
-                      <p className="text-sm text-muted-foreground">{VENDOR_DATA[vendorId]?.description}</p>
+                      <div className="text-lg font-bold text-blue-400">{portnoxResult?.roi?.paybackMonths || 0}</div>
+                      <div className="text-xs text-muted-foreground">Months Payback</div>
                     </div>
-
                     <div>
-                      <h4 className="font-semibold mb-2">Key Metrics</h4>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Price Range:</span>
-                          <span>{VENDOR_DATA[vendorId]?.priceIndicator}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Complexity:</span>
-                          <span>{VENDOR_DATA[vendorId]?.difficulty}/5</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Cloud Native:</span>
-                          <span>{VENDOR_DATA[vendorId]?.implementation?.cloudNative ? "Yes" : "No"}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Hardware Req:</span>
-                          <span>{VENDOR_DATA[vendorId]?.implementation?.requiresHardware ? "Yes" : "No"}</span>
-                        </div>
+                      <div className="text-lg font-bold text-purple-400">
+                        {savingsPercentVsLowestCompetitor.toFixed(1)}%
                       </div>
+                      <div className="text-xs text-muted-foreground">Cost Reduction</div>
                     </div>
-
-                    <div>
-                      <h4 className="font-semibold mb-2">Strengths</h4>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        {VENDOR_DATA[vendorId]?.strengths?.map((strength, index) => (
-                          <li key={index} className="flex items-start space-x-2">
-                            <CheckCircle className="h-3 w-3 text-emerald-400 mt-0.5 flex-shrink-0" />
-                            <span>{strength}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold mb-2">Considerations</h4>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        {VENDOR_DATA[vendorId]?.weaknesses?.map((weakness, index) => (
-                          <li key={index} className="flex items-start space-x-2">
-                            <AlertTriangle className="h-3 w-3 text-yellow-400 mt-0.5 flex-shrink-0" />
-                            <span>{weakness}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </motion.div>
-    )
-  }
-
-  // Compliance & Risk Tab Content
-  const ComplianceRiskContent = () => {
-    const complianceData = [
-      { framework: "SOX", portnox: 95, cisco: 85, aruba: 80, meraki: 70 },
-      { framework: "HIPAA", portnox: 98, cisco: 90, aruba: 85, meraki: 75 },
-      { framework: "PCI DSS", portnox: 96, cisco: 88, aruba: 82, meraki: 72 },
-      { framework: "GDPR", portnox: 94, cisco: 86, aruba: 81, meraki: 71 },
-      { framework: "ISO 27001", portnox: 97, cisco: 89, aruba: 84, meraki: 74 },
-    ]
-
-    const riskMetrics = [
-      { category: "Breach Risk", portnox: 6, cisco: 35, aruba: 28, meraki: 42 },
-      { category: "Downtime Risk", portnox: 2, cisco: 15, aruba: 12, meraki: 18 },
-      { category: "Compliance Risk", portnox: 5, cisco: 14, aruba: 19, meraki: 29 },
-      { category: "Operational Risk", portnox: 8, cisco: 25, aruba: 22, meraki: 31 },
-    ]
-
-    return (
-      <motion.div className="space-y-8" variants={modernAnimations.staggerContainer} initial="hidden" animate="visible">
-        {/* Compliance Scorecard */}
-        <motion.div variants={modernAnimations.slideInUp}>
-          <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-            <CardHeader>
-              <CardTitle className={cn("text-xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                Compliance Framework Scorecard
-              </CardTitle>
-              <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                Compliance readiness across major regulatory frameworks
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <Bar data={complianceData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
-                    <XAxis
-                      dataKey="framework"
-                      tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
-                      axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
-                    />
-                    <YAxis
-                      tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
-                      axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
-                      tickFormatter={(value) => `${value}%`}
-                    />
-                    <ReTooltip
-                      contentStyle={{
-                        backgroundColor: darkMode ? "#1f2937" : "#ffffff",
-                        border: "none",
-                        borderRadius: "12px",
-                        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-                      }}
-                      formatter={(value: any) => [`${value}%`, ""]}
-                    />
-                    <ReLegend />
-                    <Bar dataKey="portnox" fill="#14b8a6" name="Portnox" />
-                    <Bar dataKey="cisco" fill="#3b82f6" name="Cisco" />
-                    <Bar dataKey="aruba" fill="#f59e0b" name="Aruba" />
-                    <Bar dataKey="meraki" fill="#8b5cf6" name="Meraki" />
-                  </Bar>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Risk Assessment */}
-        <motion.div variants={modernAnimations.slideInUp}>
-          <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-            <CardHeader>
-              <CardTitle className={cn("text-xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                Risk Assessment Matrix
-              </CardTitle>
-              <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                Comparative risk levels across security categories
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <Bar data={riskMetrics}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
-                    <XAxis
-                      dataKey="category"
-                      tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
-                      axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
-                    />
-                    <YAxis
-                      tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
-                      axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
-                      tickFormatter={(value) => `${value}%`}
-                    />
-                    <ReTooltip
-                      contentStyle={{
-                        backgroundColor: darkMode ? "#1f2937" : "#ffffff",
-                        border: "none",
-                        borderRadius: "12px",
-                        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-                      }}
-                      formatter={(value: any) => [`${value}% Risk`, ""]}
-                    />
-                    <ReLegend />
-                    <Bar dataKey="portnox" fill="#10b981" name="Portnox" />
-                    <Bar dataKey="cisco" fill="#ef4444" name="Cisco" />
-                    <Bar dataKey="aruba" fill="#f59e0b" name="Aruba" />
-                    <Bar dataKey="meraki" fill="#8b5cf6" name="Meraki" />
-                  </Bar>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Detailed Risk Analysis */}
-        <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-8" variants={modernAnimations.slideInUp}>
-          <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-            <CardHeader>
-              <CardTitle className={cn("text-lg font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                Security Risk Factors
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className={cn("p-4 rounded-xl", darkMode ? "bg-emerald-500/10" : "bg-emerald-50")}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold">Data Breach Risk</span>
-                    <Badge className="bg-emerald-500/20 text-emerald-400">Low</Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Portnox's AI-powered threat detection reduces breach probability by 94%
-                  </p>
-                </div>
 
-                <div className={cn("p-4 rounded-xl", darkMode ? "bg-blue-500/10" : "bg-blue-50")}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold">Compliance Violations</span>
-                    <Badge className="bg-blue-500/20 text-blue-400">Very Low</Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Automated compliance monitoring ensures continuous adherence to regulations
-                  </p>
-                </div>
-
-                <div className={cn("p-4 rounded-xl", darkMode ? "bg-purple-500/10" : "bg-purple-50")}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold">Operational Disruption</span>
-                    <Badge className="bg-purple-500/20 text-purple-400">Minimal</Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Cloud-native architecture eliminates single points of failure
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-            <CardHeader>
-              <CardTitle className={cn("text-lg font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                Compliance Benefits
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className={cn("p-4 rounded-xl", darkMode ? "bg-white/5" : "bg-slate-50")}>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <CheckCircle className="h-4 w-4 text-emerald-400" />
-                    <span className="text-sm font-semibold">Automated Audit Trails</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Comprehensive logging and reporting for all compliance frameworks
-                  </p>
-                </div>
-
-                <div className={cn("p-4 rounded-xl", darkMode ? "bg-white/5" : "bg-slate-50")}>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <CheckCircle className="h-4 w-4 text-emerald-400" />
-                    <span className="text-sm font-semibold">Real-time Monitoring</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Continuous compliance monitoring with instant violation alerts
-                  </p>
-                </div>
-
-                <div className={cn("p-4 rounded-xl", darkMode ? "bg-white/5" : "bg-slate-50")}>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <CheckCircle className="h-4 w-4 text-emerald-400" />
-                    <span className="text-sm font-semibold">Policy Automation</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Automated policy enforcement reduces human error and ensures consistency
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </motion.div>
-    )
-  }
-
-  // Reports Tab Content
-  const ReportsContent = () => {
-    const [reportType, setReportType] = useState("executive")
-    const [reportFormat, setReportFormat] = useState("pdf")
-    const [customizations, setCustomizations] = useState({
-      includeCostBreakdown: true,
-      includeROIAnalysis: true,
-      includeRiskAssessment: true,
-      includeComplianceMatrix: true,
-      includeVendorComparison: true,
-      includeExecutiveSummary: true,
-      includeCharts: true,
-      includeRecommendations: true,
-    })
-
-    const reportTemplates = [
-      {
-        id: "executive",
-        name: "Executive Summary Report",
-        description: "High-level overview for C-suite and decision makers",
-        icon: <FileText />,
-        pages: "8-12 pages",
-        sections: ["Executive Summary", "Key Findings", "ROI Analysis", "Recommendations"],
-      },
-      {
-        id: "technical",
-        name: "Technical Analysis Report",
-        description: "Detailed technical comparison and implementation guide",
-        icon: <FileSpreadsheet />,
-        pages: "15-25 pages",
-        sections: ["Technical Specifications", "Feature Matrix", "Implementation Roadmap", "Risk Analysis"],
-      },
-      {
-        id: "financial",
-        name: "Financial Impact Report",
-        description: "Comprehensive financial analysis and cost modeling",
-        icon: <Calculator />,
-        pages: "10-15 pages",
-        sections: ["Cost Breakdown", "ROI Projections", "Budget Planning", "Financial Recommendations"],
-      },
-      {
-        id: "compliance",
-        name: "Compliance & Risk Report",
-        description: "Regulatory compliance and security risk assessment",
-        icon: <Shield />,
-        pages: "12-18 pages",
-        sections: ["Compliance Matrix", "Risk Assessment", "Security Analysis", "Audit Readiness"],
-      },
-    ]
-
-    const generateReport = () => {
-      // This would typically trigger the actual report generation
-      console.log("Generating report:", { reportType, reportFormat, customizations })
-      // For demo purposes, we'll just show a success message
-      alert(`Generating ${reportType} report in ${reportFormat.toUpperCase()} format...`)
-    }
-
-    const exportToHTML = () => {
-      // Generate HTML report
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Portnox TCO Analysis Report</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 40px; }
-            .header { text-align: center; margin-bottom: 40px; }
-            .section { margin-bottom: 30px; }
-            .chart { background: #f5f5f5; padding: 20px; margin: 20px 0; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-            th { background-color: #f2f2f2; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>Portnox TCO Analysis Report</h1>
-            <p>Generated on ${new Date().toLocaleDateString()}</p>
-          </div>
-          
-          <div class="section">
-            <h2>Executive Summary</h2>
-            <p>Portnox CLEAR delivers significant cost advantages and operational benefits...</p>
-          </div>
-          
-          <div class="section">
-            <h2>Cost Analysis</h2>
-            <table>
-              <tr><th>Vendor</th><th>Total TCO</th><th>Savings vs Portnox</th></tr>
-              ${
-                results
-                  ?.map(
-                    (r) => `
-                <tr>
-                  <td>${r.vendorName}</td>
-                  <td>$${r.total.toLocaleString()}</td>
-                  <td>${r.vendor === "portnox" ? "Baseline" : `$${(r.total - (portnoxResult?.total || 0)).toLocaleString()}`}</td>
-                </tr>
-              `,
-                  )
-                  .join("") || ""
-              }
-            </table>
-          </div>
-        </body>
-        </html>
-      `
-
-      const blob = new Blob([htmlContent], { type: "text/html" })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = "portnox-tco-report.html"
-      a.click()
-      URL.revokeObjectURL(url)
-    }
-
-    return (
-      <motion.div className="space-y-8" variants={modernAnimations.staggerContainer} initial="hidden" animate="visible">
-        {/* Report Templates */}
-        <motion.div variants={modernAnimations.slideInUp}>
-          <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-            <CardHeader>
-              <CardTitle className={cn("text-xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                Professional Report Templates
-              </CardTitle>
-              <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                Choose from professionally designed report templates
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {reportTemplates.map((template) => (
-                  <motion.div
-                    key={template.id}
-                    className={cn(
-                      "p-6 rounded-xl border-2 cursor-pointer transition-all duration-300",
-                      reportType === template.id
-                        ? "border-emerald-500 bg-emerald-500/10"
-                        : darkMode
-                          ? "border-slate-700/50 bg-white/5 hover:bg-white/10"
-                          : "border-slate-200/50 bg-slate-50/50 hover:bg-slate-100/50",
-                    )}
-                    onClick={() => setReportType(template.id)}
-                    whileHover={modernAnimations.scaleHover}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <div className="flex items-start space-x-4">
-                      <div
-                        className={cn(
-                          "p-3 rounded-xl",
-                          reportType === template.id
-                            ? "bg-emerald-500 text-white"
-                            : darkMode
-                              ? "bg-slate-700 text-slate-300"
-                              : "bg-slate-200 text-slate-600",
-                        )}
-                      >
-                        {React.cloneElement(template.icon, { className: "h-6 w-6" })}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className={cn("font-semibold mb-2", darkMode ? "text-white" : "text-slate-900")}>
-                          {template.name}
-                        </h4>
-                        <p className={cn("text-sm mb-3", darkMode ? "text-slate-400" : "text-slate-500")}>
-                          {template.description}
-                        </p>
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">{template.pages}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {template.sections.length} sections
-                          </Badge>
-                        </div>
-                        <div className="mt-2">
-                          <div className="flex flex-wrap gap-1">
-                            {template.sections.slice(0, 2).map((section) => (
-                              <span key={section} className="px-2 py-1 text-xs rounded bg-slate-500/20 text-slate-400">
-                                {section}
-                              </span>
-                            ))}
-                            {template.sections.length > 2 && (
-                              <span className="px-2 py-1 text-xs rounded bg-slate-500/20 text-slate-400">
-                                +{template.sections.length - 2} more
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Report Customization */}
-        <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-8" variants={modernAnimations.slideInUp}>
-          <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-            <CardHeader>
-              <CardTitle className={cn("text-lg font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                Report Customization
-              </CardTitle>
-              <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                Customize report content and sections
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                {Object.entries(customizations).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <span className="text-sm font-medium">
-                      {key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
-                    </span>
-                    <Switch
-                      checked={value}
-                      onCheckedChange={(checked) => setCustomizations({ ...customizations, [key]: checked })}
-                      className="data-[state=checked]:bg-emerald-500"
-                    />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-            <CardHeader>
-              <CardTitle className={cn("text-lg font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                Export Options
-              </CardTitle>
-              <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                Choose format and delivery options
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold">Report Format</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { value: "pdf", label: "PDF", icon: <FileDown /> },
-                    { value: "html", label: "HTML", icon: <Globe /> },
-                    { value: "excel", label: "Excel", icon: <FileSpreadsheet /> },
-                    { value: "powerpoint", label: "PowerPoint", icon: <PieChartIcon /> },
-                  ].map((format) => (
-                    <motion.button
-                      key={format.value}
-                      onClick={() => setReportFormat(format.value)}
-                      className={cn(
-                        "p-3 rounded-xl border-2 transition-all duration-300 flex items-center space-x-2",
-                        reportFormat === format.value
-                          ? "border-emerald-500 bg-emerald-500/10"
-                          : darkMode
-                            ? "border-slate-700/50 bg-white/5 hover:bg-white/10"
-                            : "border-slate-200/50 bg-slate-50/50 hover:bg-slate-100/50",
-                      )}
-                      whileHover={modernAnimations.scaleHover}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      {React.cloneElement(format.icon, {
-                        className: cn(
-                          "h-4 w-4",
-                          reportFormat === format.value ? "text-emerald-400" : "text-muted-foreground",
-                        ),
-                      })}
-                      <span className="text-sm font-medium">{format.label}</span>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Generated on: {new Date().toLocaleDateString()}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Organization: {initialOrgSizeDetails[orgSizeKey]?.label}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Building className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Industry: {industryOptions.find((i) => i.value === industry)?.label}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Generate Report Actions */}
-        <motion.div variants={modernAnimations.slideInUp}>
-          <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-            <CardHeader>
-              <CardTitle className={cn("text-lg font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                Generate Professional Report
-              </CardTitle>
-              <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
-                Create and export your customized TCO analysis report
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-4">
-                <motion.div whileHover={modernAnimations.scaleHover} whileTap={{ scale: 0.95 }}>
                   <Button
-                    onClick={generateReport}
-                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
+                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-0"
+                    size="sm"
                   >
-                    <FileDown className="h-4 w-4 mr-2" />
-                    Generate {reportFormat.toUpperCase()} Report
+                    <Phone className="h-4 w-4 mr-2" />
+                    Schedule Executive Briefing
                   </Button>
-                </motion.div>
-
-                <motion.div whileHover={modernAnimations.scaleHover} whileTap={{ scale: 0.95 }}>
-                  <Button onClick={exportToHTML} variant="outline">
-                    <Globe className="h-4 w-4 mr-2" />
-                    Export HTML
-                  </Button>
-                </motion.div>
-
-                <motion.div whileHover={modernAnimations.scaleHover} whileTap={{ scale: 0.95 }}>
-                  <Button variant="outline">
-                    <Printer className="h-4 w-4 mr-2" />
-                    Print Preview
-                  </Button>
-                </motion.div>
-
-                <motion.div whileHover={modernAnimations.scaleHover} whileTap={{ scale: 0.95 }}>
-                  <Button variant="outline">
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share Report
-                  </Button>
-                </motion.div>
-
-                <motion.div whileHover={modernAnimations.scaleHover} whileTap={{ scale: 0.95 }}>
-                  <Button variant="outline">
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Template
-                  </Button>
-                </motion.div>
-              </div>
-
-              <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20">
-                <div className="flex items-start space-x-3">
-                  <InfoIcon className="h-5 w-5 text-blue-400 mt-0.5" />
-                  <div>
-                    <h4 className="text-sm font-semibold text-blue-400 mb-1">Professional Report Features</h4>
-                    <ul className="text-xs text-muted-foreground space-y-1">
-                      <li>• Executive-ready formatting with professional branding</li>
-                      <li>• Interactive charts and visualizations</li>
-                      <li>• Comprehensive data analysis and insights</li>
-                      <li>• Customizable sections and content</li>
-                      <li>• Multiple export formats (PDF, HTML, Excel, PowerPoint)</li>
-                      <li>• Automated calculations and projections</li>
-                    </ul>
-                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </ModernGradientCard>
+          </motion.div>
         </motion.div>
       </motion.div>
     )
-  }
-
-  // Main content renderer
-  const renderMainContent = () => {
-    switch (activeMainTab) {
-      case "dashboard":
-        return <ExecutiveDashboard />
-      case "analysis":
-        return <TcoAnalysisContent />
-      case "comparison":
-        return <VendorComparisonContent />
-      case "compliance":
-        return <ComplianceRiskContent />
-      case "reports":
-        return <ReportsContent />
-      default:
-        return <ExecutiveDashboard />
-    }
   }
 
   if (!isClient) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-400">Loading TCO Analyzer...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>
       </div>
     )
   }
 
   return (
-    <div
-      className={cn(
-        "min-h-screen transition-all duration-500",
-        darkMode
-          ? "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950"
-          : "bg-gradient-to-br from-slate-50 via-white to-slate-50",
-      )}
-    >
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-gradient-to-r from-emerald-500/10 to-teal-500/10 blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-gradient-to-r from-cyan-500/5 to-pink-500/5 blur-3xl animate-pulse delay-2000"></div>
-      </div>
+    <div className={cn("min-h-screen transition-colors duration-500", darkMode ? "dark bg-slate-950" : "bg-slate-50")}>
+      <TooltipProvider delayDuration={100}>
+        {/* Enhanced Header */}
+        <ModernHeader />
 
-      {/* Header */}
-      <ModernHeader />
+        {/* Enhanced Main Navigation */}
+        <ModernMainTabNavigation />
 
-      {/* Main Navigation */}
-      <ModernMainTabNavigation />
-
-      {/* Sub Navigation */}
-      <ModernSubTabNavigation />
-
-      {/* Main Layout */}
-      <div className="flex relative z-10">
-        {/* Compact Vendor Selection Sidebar */}
-        <CompactVendorSelectionPanel
-          selectedVendors={selectedVendors}
-          onVendorToggle={handleVendorToggle}
-          darkMode={darkMode}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          isCollapsed={sidebarCollapsed}
-        />
-
-        {/* Sidebar Toggle Button */}
-        <motion.button
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className={cn(
-            "fixed left-2 top-1/2 transform -translate-y-1/2 z-50 p-2 rounded-full transition-all duration-300",
-            darkMode
-              ? "bg-slate-800/80 hover:bg-slate-700/80 text-slate-300"
-              : "bg-white/80 hover:bg-slate-100/80 text-slate-700",
-            "backdrop-blur-xl border shadow-lg",
-            darkMode ? "border-slate-700/50" : "border-slate-200/50",
-          )}
-          whileHover={modernAnimations.scaleHover}
-          whileTap={{ scale: 0.9 }}
-        >
-          {sidebarCollapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
-        </motion.button>
+        {/* Enhanced Sub Navigation */}
+        <ModernSubTabNavigation />
 
         {/* Main Content Area */}
-        <main className="flex-1 p-6 overflow-hidden">
-          <motion.div
-            className="max-w-full"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
-            {renderMainContent()}
-          </motion.div>
-        </main>
-      </div>
+        <div className="flex min-h-[calc(100vh-160px)]">
+          {/* Enhanced Vendor Selection Panel */}
+          <EnhancedVendorSelectionPanel
+            selectedVendors={selectedVendors}
+            onVendorToggle={handleVendorToggle}
+            darkMode={darkMode}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            isCollapsed={sidebarCollapsed}
+          />
 
-      {/* Settings Panel */}
-      <SettingsPanel
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-        orgSizeKey={orgSizeKey}
-        setOrgSizeKey={setOrgSizeKey}
-        customDevices={customDevices}
-        setCustomDevices={setCustomDevices}
-        customUsers={customUsers}
-        setCustomUsers={setCustomUsers}
-        industry={industry}
-        setIndustry={setIndustry}
-        region={region}
-        setRegion={setRegion}
-        projectionYears={projectionYears}
-        setProjectionYears={setProjectionYears}
-        portnoxBasePrice={portnoxBasePrice}
-        setPortnoxBasePrice={setPortnoxBasePrice}
-        portnoxAddons={portnoxAddons}
-        setPortnoxAddons={setPortnoxAddons}
-        darkMode={darkMode}
-      />
+          {/* Sidebar Toggle Button */}
+          <motion.button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className={cn(
+              "fixed left-2 top-1/2 -translate-y-1/2 z-50 p-3 rounded-2xl transition-all duration-300",
+              "backdrop-blur-xl border shadow-lg",
+              darkMode
+                ? "bg-slate-900/80 border-slate-700/50 text-slate-300 hover:text-white"
+                : "bg-white/80 border-slate-200/50 text-slate-600 hover:text-slate-900",
+            )}
+            whileHover={modernAnimations.scaleHover}
+            whileTap={{ scale: 0.9 }}
+            style={{ left: sidebarCollapsed ? "1rem" : "25rem" }}
+          >
+            {sidebarCollapsed ? <ChevronsRight className="h-5 w-5" /> : <ChevronsLeft className="h-5 w-5" />}
+          </motion.button>
+
+          {/* Main Content */}
+          <main className="flex-1 overflow-hidden">
+            <div className="h-full overflow-y-auto">
+              <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeMainTab}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {activeMainTab === "dashboard" && <ExecutiveDashboard />}
+
+                    {activeMainTab === "analysis" && (
+                      <div className="space-y-8">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-center"
+                        >
+                          <h2 className={cn("text-3xl font-bold mb-4", darkMode ? "text-white" : "text-slate-900")}>
+                            Detailed TCO Analysis
+                          </h2>
+                          <p className={cn("text-lg", darkMode ? "text-slate-400" : "text-slate-500")}>
+                            Comprehensive cost breakdown and ROI analysis
+                          </p>
+                        </motion.div>
+
+                        {/* Analysis content would go here */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                          <ModernGradientCard darkMode={darkMode} gradient="hologram">
+                            <CardHeader>
+                              <CardTitle>Cost Breakdown Analysis</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="h-80 flex items-center justify-center">
+                                <p className="text-muted-foreground">Detailed cost analysis coming soon...</p>
+                              </div>
+                            </CardContent>
+                          </ModernGradientCard>
+
+                          <ModernGradientCard darkMode={darkMode} gradient="aurora">
+                            <CardHeader>
+                              <CardTitle>ROI Projections</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="h-80 flex items-center justify-center">
+                                <p className="text-muted-foreground">ROI projections coming soon...</p>
+                              </div>
+                            </CardContent>
+                          </ModernGradientCard>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeMainTab === "comparison" && (
+                      <div className="space-y-8">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-center"
+                        >
+                          <h2 className={cn("text-3xl font-bold mb-4", darkMode ? "text-white" : "text-slate-900")}>
+                            Vendor Comparison Matrix
+                          </h2>
+                          <p className={cn("text-lg", darkMode ? "text-slate-400" : "text-slate-500")}>
+                            Side-by-side feature and cost comparison
+                          </p>
+                        </motion.div>
+
+                        {/* Comparison content would go here */}
+                        <ModernGradientCard darkMode={darkMode} gradient="cosmic">
+                          <CardHeader>
+                            <CardTitle>Feature Comparison Matrix</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-96 flex items-center justify-center">
+                              <p className="text-muted-foreground">Detailed vendor comparison coming soon...</p>
+                            </div>
+                          </CardContent>
+                        </ModernGradientCard>
+                      </div>
+                    )}
+
+                    {activeMainTab === "compliance" && (
+                      <div className="space-y-8">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-center"
+                        >
+                          <h2 className={cn("text-3xl font-bold mb-4", darkMode ? "text-white" : "text-slate-900")}>
+                            Compliance & Risk Assessment
+                          </h2>
+                          <p className={cn("text-lg", darkMode ? "text-slate-400" : "text-slate-500")}>
+                            Security compliance and risk analysis
+                          </p>
+                        </motion.div>
+
+                        {/* Compliance content would go here */}
+                        <ModernGradientCard darkMode={darkMode} gradient="matrix">
+                          <CardHeader>
+                            <CardTitle>Compliance Dashboard</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-96 flex items-center justify-center">
+                              <p className="text-muted-foreground">Compliance analysis coming soon...</p>
+                            </div>
+                          </CardContent>
+                        </ModernGradientCard>
+                      </div>
+                    )}
+
+                    {activeMainTab === "reports" && (
+                      <div className="space-y-8">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-center"
+                        >
+                          <h2 className={cn("text-3xl font-bold mb-4", darkMode ? "text-white" : "text-slate-900")}>
+                            Executive Reports
+                          </h2>
+                          <p className={cn("text-lg", darkMode ? "text-slate-400" : "text-slate-500")}>
+                            Generate and export detailed reports
+                          </p>
+                        </motion.div>
+
+                        {/* Reports content would go here */}
+                        <ModernGradientCard darkMode={darkMode} gradient="sunset">
+                          <CardHeader>
+                            <CardTitle>Report Generator</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-96 flex items-center justify-center">
+                              <p className="text-muted-foreground">Report generation coming soon...</p>
+                            </div>
+                          </CardContent>
+                        </ModernGradientCard>
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+          </main>
+        </div>
+
+        {/* Enhanced Settings Panel */}
+        <SettingsPanel
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+          orgSizeKey={orgSizeKey}
+          setOrgSizeKey={setOrgSizeKey}
+          customDevices={customDevices}
+          setCustomDevices={setCustomDevices}
+          customUsers={customUsers}
+          setCustomUsers={setCustomUsers}
+          industry={industry}
+          setIndustry={setIndustry}
+          region={region}
+          setRegion={setRegion}
+          projectionYears={projectionYears}
+          setProjectionYears={setProjectionYears}
+          portnoxBasePrice={portnoxBasePrice}
+          setPortnoxBasePrice={setPortnoxBasePrice}
+          portnoxAddons={portnoxAddons}
+          setPortnoxAddons={setPortnoxAddons}
+          darkMode={darkMode}
+        />
+      </TooltipProvider>
     </div>
   )
 }
