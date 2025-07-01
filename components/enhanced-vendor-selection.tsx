@@ -1,5 +1,6 @@
 "use client"
 
+import { Badge } from "@/components/ui/badge"
 import { useState, useMemo } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
@@ -11,8 +12,6 @@ import {
 } from "@/lib/comprehensive-vendor-data"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
@@ -31,6 +30,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Info,
+  Trash2,
 } from "lucide-react"
 
 interface EnhancedVendorSelectionProps {
@@ -63,6 +63,8 @@ const POPULAR_COMPARISONS = [
   { name: "Budget-Conscious", vendors: ["portnox", "packetfence", "foxpass"] },
 ]
 
+const ALL_VENDORS = Object.values(ComprehensiveVendorDatabase).sort((a, b) => a.name.localeCompare(b.name))
+
 export default function EnhancedVendorSelection({
   selectedVendors,
   onVendorToggle,
@@ -76,7 +78,7 @@ export default function EnhancedVendorSelection({
   const [sortBy, setSortBy] = useState("marketShare")
 
   const filteredVendors = useMemo(() => {
-    let vendors = Object.values(ComprehensiveVendorDatabase)
+    let vendors = ALL_VENDORS
 
     // Apply search filter
     if (searchQuery.trim()) {
@@ -108,11 +110,11 @@ export default function EnhancedVendorSelection({
   }, [searchQuery, activeCategory, sortBy])
 
   const categories = useMemo(() => {
-    const cats = ["all", ...new Set(Object.values(ComprehensiveVendorDatabase).map((v) => v.category))]
+    const cats = ["all", ...new Set(ALL_VENDORS.map((v) => v.category))]
     return cats.map((cat) => ({
       id: cat,
       name: cat === "all" ? "All Vendors" : cat.charAt(0).toUpperCase() + cat.slice(1).replace("-", " "),
-      count: cat === "all" ? Object.keys(ComprehensiveVendorDatabase).length : getVendorsByCategory(cat).length,
+      count: cat === "all" ? ALL_VENDORS.length : getVendorsByCategory(cat).length,
     }))
   }, [])
 
@@ -170,13 +172,7 @@ export default function EnhancedVendorSelection({
                 <div className="flex-1 min-w-0">
                   <CardTitle className="text-sm font-semibold truncate">{vendor.name}</CardTitle>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge
-                      variant="outline"
-                      className={cn("text-xs px-1.5 py-0.5", darkMode ? "border-gray-600" : "border-gray-300")}
-                    >
-                      {CATEGORY_ICONS[vendor.category as keyof typeof CATEGORY_ICONS]}
-                      <span className="ml-1 capitalize">{vendor.category.replace("-", " ")}</span>
-                    </Badge>
+                    <span className="ml-1 capitalize">{vendor.category.replace("-", " ")}</span>
                   </div>
                 </div>
               </div>
@@ -217,18 +213,15 @@ export default function EnhancedVendorSelection({
 
             <div className="flex flex-wrap gap-1">
               {vendor.strengths.slice(0, 2).map((strength: string, index: number) => (
-                <Badge
+                <span
                   key={index}
-                  variant="secondary"
                   className="text-xs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                 >
                   {strength}
-                </Badge>
+                </span>
               ))}
               {vendor.strengths.length > 2 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                  +{vendor.strengths.length - 2}
-                </Badge>
+                <span className="text-xs px-1.5 py-0.5">+{vendor.strengths.length - 2}</span>
               )}
             </div>
           </CardContent>
@@ -250,7 +243,7 @@ export default function EnhancedVendorSelection({
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
+          <input
             placeholder="Search vendors..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -270,7 +263,7 @@ export default function EnhancedVendorSelection({
             Recommended
           </Button>
           <Button variant="outline" size="sm" onClick={onClearAll} className="flex-1 text-xs bg-transparent">
-            <X className="h-3 w-3 mr-1" />
+            <Trash2 className="h-3 w-3 mr-1" />
             Clear All
           </Button>
         </div>
@@ -287,9 +280,7 @@ export default function EnhancedVendorSelection({
                 className="text-xs py-1.5 data-[state=active]:bg-portnox-primary data-[state=active]:text-white"
               >
                 {category.name}
-                <Badge variant="secondary" className="ml-1 text-xs px-1">
-                  {category.count}
-                </Badge>
+                <span className="ml-1 text-xs px-1">{category.count}</span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -381,9 +372,12 @@ export default function EnhancedVendorSelection({
               {selectedVendors.map((vendorId) => {
                 const vendor = ComprehensiveVendorDatabase[vendorId]
                 return (
-                  <Badge key={vendorId} variant={vendorId === "portnox" ? "default" : "secondary"} className="text-xs">
+                  <span
+                    key={vendorId}
+                    className="text-xs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                  >
                     {vendor?.name || vendorId}
-                  </Badge>
+                  </span>
                 )
               })}
             </div>

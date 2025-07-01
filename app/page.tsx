@@ -1,4 +1,4 @@
-import TcoAnalyzerUltimate from "@/components/tco-analyzer" // Updated import
+import TcoAnalyzerUltimate from "@/components/tco-analyzer"
 
 export default function HomePage() {
   return (
