@@ -1,6 +1,7 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
+import type React from "react"
+
 import { useState, useMemo } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
@@ -9,9 +10,12 @@ import {
   getVendorLogoPath,
   searchVendors,
   getVendorsByCategory,
+  type VendorData,
 } from "@/lib/comprehensive-vendor-data"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
@@ -41,14 +45,14 @@ interface EnhancedVendorSelectionProps {
   darkMode?: boolean
 }
 
-const CATEGORY_ICONS = {
+const CATEGORY_ICONS: { [key: string]: React.ReactNode } = {
   "cloud-native": <Cloud className="h-4 w-4" />,
   enterprise: <Building className="h-4 w-4" />,
   "mid-market": <Users className="h-4 w-4" />,
   sme: <Star className="h-4 w-4" />,
 }
 
-const MARKET_POSITION_COLORS = {
+const MARKET_POSITION_COLORS: { [key: string]: string } = {
   leader: "bg-green-500",
   challenger: "bg-blue-500",
   visionary: "bg-purple-500",
@@ -74,11 +78,10 @@ export default function EnhancedVendorSelection({
 }: EnhancedVendorSelectionProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState("all")
-  const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState("marketShare")
 
   const filteredVendors = useMemo(() => {
-    let vendors = ALL_VENDORS
+    let vendors: VendorData[] = [...ALL_VENDORS]
 
     // Apply search filter
     if (searchQuery.trim()) {
@@ -94,11 +97,11 @@ export default function EnhancedVendorSelection({
     vendors.sort((a, b) => {
       switch (sortBy) {
         case "marketShare":
-          return b.marketShare - a.marketShare
+          return (b.marketShare || 0) - (a.marketShare || 0)
         case "npsScore":
-          return b.npsScore - a.npsScore
+          return (b.npsScore || 0) - (a.npsScore || 0)
         case "pricing":
-          return a.pricing.basePrice - b.pricing.basePrice
+          return (a.pricing?.basePrice || 0) - (b.pricing?.basePrice || 0)
         case "name":
           return a.name.localeCompare(b.name)
         default:
@@ -118,7 +121,7 @@ export default function EnhancedVendorSelection({
     }))
   }, [])
 
-  const VendorCard = ({ vendor }: { vendor: any }) => {
+  const VendorCard = ({ vendor }: { vendor: VendorData }) => {
     const isSelected = selectedVendors.includes(vendor.id)
     const isPortnox = vendor.id === "portnox"
 
@@ -172,56 +175,68 @@ export default function EnhancedVendorSelection({
                 <div className="flex-1 min-w-0">
                   <CardTitle className="text-sm font-semibold truncate">{vendor.name}</CardTitle>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="ml-1 capitalize">{vendor.category.replace("-", " ")}</span>
+                    <Badge
+                      variant="outline"
+                      className={cn("text-xs px-1.5 py-0.5", darkMode ? "border-gray-600" : "border-gray-300")}
+                    >
+                      {CATEGORY_ICONS[vendor.category] || <Star className="h-4 w-4" />}
+                      <span className="ml-1 capitalize">{vendor.category.replace("-", " ")}</span>
+                    </Badge>
                   </div>
                 </div>
               </div>
               <div className="flex flex-col items-end gap-1">
-                <div
-                  className={cn(
-                    "w-2 h-2 rounded-full",
-                    MARKET_POSITION_COLORS[vendor.marketPosition as keyof typeof MARKET_POSITION_COLORS],
-                  )}
-                  title={`Market Position: ${vendor.marketPosition}`}
-                />
-                <span className="text-xs text-gray-500">{vendor.marketShare.toFixed(1)}%</span>
+                {vendor.marketPosition && (
+                  <div
+                    className={cn("w-2 h-2 rounded-full", MARKET_POSITION_COLORS[vendor.marketPosition])}
+                    title={`Market Position: ${vendor.marketPosition}`}
+                  />
+                )}
+                {vendor.marketShare !== undefined ? (
+                  <span className="text-xs text-gray-500">{vendor.marketShare.toFixed(1)}%</span>
+                ) : (
+                  <span className="text-xs text-gray-500">N/A</span>
+                )}
               </div>
             </div>
           </CardHeader>
 
           <CardContent className="pt-0">
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{vendor.description}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{vendor.description || ""}</p>
 
             <div className="grid grid-cols-2 gap-2 mb-3">
               <div className="flex items-center gap-1">
                 <DollarSign className="h-3 w-3 text-green-500" />
-                <span className="text-xs font-medium">${vendor.pricing.basePrice}/mo</span>
+                <span className="text-xs font-medium">${vendor.pricing?.basePrice || "N/A"}/mo</span>
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="h-3 w-3 text-blue-500" />
-                <span className="text-xs">{vendor.implementation.deploymentTime.fullDeployment}</span>
+                <span className="text-xs">{vendor.implementation?.deploymentTime?.fullDeployment || "N/A"}</span>
               </div>
               <div className="flex items-center gap-1">
                 <TrendingUp className="h-3 w-3 text-purple-500" />
-                <span className="text-xs">NPS {vendor.npsScore}</span>
+                <span className="text-xs">NPS {vendor.npsScore || "N/A"}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Shield className="h-3 w-3 text-orange-500" />
-                <span className="text-xs">{vendor.compliance.frameworks.length} frameworks</span>
+                <span className="text-xs">{vendor.compliance?.frameworks?.length || 0} frameworks</span>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-1">
-              {vendor.strengths.slice(0, 2).map((strength: string, index: number) => (
-                <span
+              {(vendor.strengths || []).slice(0, 2).map((strength: string, index: number) => (
+                <Badge
                   key={index}
+                  variant="secondary"
                   className="text-xs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                 >
                   {strength}
-                </span>
+                </Badge>
               ))}
-              {vendor.strengths.length > 2 && (
-                <span className="text-xs px-1.5 py-0.5">+{vendor.strengths.length - 2}</span>
+              {vendor.strengths && vendor.strengths.length > 2 && (
+                <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                  +{vendor.strengths.length - 2}
+                </Badge>
               )}
             </div>
           </CardContent>
@@ -243,7 +258,7 @@ export default function EnhancedVendorSelection({
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
+          <Input
             placeholder="Search vendors..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -280,7 +295,9 @@ export default function EnhancedVendorSelection({
                 className="text-xs py-1.5 data-[state=active]:bg-portnox-primary data-[state=active]:text-white"
               >
                 {category.name}
-                <span className="ml-1 text-xs px-1">{category.count}</span>
+                <Badge variant="secondary" className="ml-1 text-xs px-1">
+                  {category.count}
+                </Badge>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -372,12 +389,9 @@ export default function EnhancedVendorSelection({
               {selectedVendors.map((vendorId) => {
                 const vendor = ComprehensiveVendorDatabase[vendorId]
                 return (
-                  <span
-                    key={vendorId}
-                    className="text-xs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
-                  >
+                  <Badge key={vendorId} variant={vendorId === "portnox" ? "default" : "secondary"} className="text-xs">
                     {vendor?.name || vendorId}
-                  </span>
+                  </Badge>
                 )
               })}
             </div>
