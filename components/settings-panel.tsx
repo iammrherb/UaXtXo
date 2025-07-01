@@ -1,15 +1,16 @@
 "use client"
 
 import type React from "react"
+
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import type { CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-import { cn } from "@/lib/utils"
 
 interface SettingsPanelProps {
   isOpen: boolean
@@ -19,10 +20,23 @@ interface SettingsPanelProps {
   portnoxAddons: CalculationConfiguration["portnoxAddons"]
   onAddonsChange: (addons: CalculationConfiguration["portnoxAddons"]) => void
   darkMode: boolean
-  onDarkModeChange: (isDark: boolean) => void
+  onDarkModeChange: (darkMode: boolean) => void
 }
 
-const SettingsPanel: React.FC<SettingsPanelProps> = ({
+const ORG_SIZES = ["startup", "smb", "medium", "enterprise", "xlarge"]
+const INDUSTRIES = [
+  "technology",
+  "healthcare",
+  "financial",
+  "government",
+  "education",
+  "manufacturing",
+  "retail",
+  "energy",
+]
+const REGIONS = ["north-america", "europe", "asia-pacific", "latin-america", "middle-east"]
+
+export default function SettingsPanel({
   isOpen,
   onClose,
   configuration,
@@ -31,107 +45,190 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onAddonsChange,
   darkMode,
   onDarkModeChange,
-}) => {
-  const handleConfigChange = (key: keyof CalculationConfiguration, value: any) => {
-    onConfigurationChange({ ...configuration, [key]: value })
+}: SettingsPanelProps) {
+  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    const numericValue = value === "" ? 0 : Number.parseInt(value, 10)
+    if (!isNaN(numericValue)) {
+      onConfigurationChange({
+        ...configuration,
+        [name]: numericValue,
+      })
+    }
   }
 
-  const handleAddonToggle = (addon: keyof typeof portnoxAddons) => {
-    onAddonsChange({ ...portnoxAddons, [addon]: !portnoxAddons[addon] })
+  const handleFloatChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    const floatValue = value === "" ? 0 : Number.parseFloat(value)
+    if (!isNaN(floatValue)) {
+      onConfigurationChange({
+        ...configuration,
+        [name]: floatValue,
+      })
+    }
+  }
+
+  const handleSelectChange = (name: string) => (value: string) => {
+    onConfigurationChange({
+      ...configuration,
+      [name]: value,
+    })
+  }
+
+  const handleAddonChange = (name: keyof typeof portnoxAddons) => (checked: boolean) => {
+    onAddonsChange({
+      ...portnoxAddons,
+      [name]: checked,
+    })
   }
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className={cn("w-[400px] sm:w-[540px]", darkMode ? "dark" : "")}>
+      <SheetContent className="w-[400px] sm:w-[540px] flex flex-col">
         <SheetHeader>
           <SheetTitle>Settings & Configuration</SheetTitle>
-          <SheetDescription>Adjust the parameters for a more accurate TCO calculation.</SheetDescription>
+          <SheetDescription>Adjust the parameters for the TCO calculation.</SheetDescription>
         </SheetHeader>
-        <div className="py-4 space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+        <Separator />
+        <ScrollArea className="flex-grow pr-6">
+          <div className="space-y-6 py-6">
             <div className="space-y-2">
-              <Label htmlFor="devices">Number of Devices</Label>
-              <Input
-                id="devices"
-                type="number"
-                value={configuration.devices}
-                onChange={(e) => handleConfigChange("devices", Number.parseInt(e.target.value, 10))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="users">Number of Users</Label>
-              <Input
-                id="users"
-                type="number"
-                value={configuration.users}
-                onChange={(e) => handleConfigChange("users", Number.parseInt(e.target.value, 10))}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="industry">Industry</Label>
-            <Select value={configuration.industry} onValueChange={(value) => handleConfigChange("industry", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select industry" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="technology">Technology</SelectItem>
-                <SelectItem value="healthcare">Healthcare</SelectItem>
-                <SelectItem value="financial">Financial Services</SelectItem>
-                <SelectItem value="education">Education</SelectItem>
-                <SelectItem value="retail">Retail</SelectItem>
-                <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                <SelectItem value="government">Government</SelectItem>
-                <SelectItem value="energy">Energy</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="years">Analysis Period (Years)</Label>
-            <Select
-              value={String(configuration.years)}
-              onValueChange={(v) => handleConfigChange("years", Number.parseInt(v))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select period" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">1 Year</SelectItem>
-                <SelectItem value="3">3 Years</SelectItem>
-                <SelectItem value="5">5 Years</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Separator />
-
-          <div className="space-y-4">
-            <h4 className="font-medium">Portnox Add-ons</h4>
-            {Object.entries(portnoxAddons).map(([key, value]) => (
-              <div key={key} className="flex items-center justify-between">
-                <Label htmlFor={`addon-${key}`} className="capitalize">
-                  {key}
-                </Label>
-                <Switch id={`addon-${key}`} checked={value} onCheckedChange={() => handleAddonToggle(key as any)} />
+              <h4 className="font-medium">Organization Profile</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label htmlFor="orgSize">Organization Size</Label>
+                  <Select name="orgSize" value={configuration.orgSize} onValueChange={handleSelectChange("orgSize")}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ORG_SIZES.map((size) => (
+                        <SelectItem key={size} value={size} className="capitalize">
+                          {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="industry">Industry</Label>
+                  <Select name="industry" value={configuration.industry} onValueChange={handleSelectChange("industry")}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select industry" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INDUSTRIES.map((industry) => (
+                        <SelectItem key={industry} value={industry} className="capitalize">
+                          {industry}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
 
-          <Separator />
+            <div className="space-y-2">
+              <h4 className="font-medium">Scope</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label htmlFor="devices">Device Count</Label>
+                  <Input
+                    id="devices"
+                    name="devices"
+                    type="number"
+                    value={configuration.devices}
+                    onChange={handleNumericChange}
+                    min="0"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="users">User Count</Label>
+                  <Input
+                    id="users"
+                    name="users"
+                    type="number"
+                    value={configuration.users}
+                    onChange={handleNumericChange}
+                    min="0"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="years">Analysis Period (Years)</Label>
+                  <Input
+                    id="years"
+                    name="years"
+                    type="number"
+                    value={configuration.years}
+                    onChange={handleNumericChange}
+                    min="1"
+                    max="10"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="region">Region</Label>
+                  <Select name="region" value={configuration.region} onValueChange={handleSelectChange("region")}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select region" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {REGIONS.map((region) => (
+                        <SelectItem key={region} value={region} className="capitalize">
+                          {region.replace("-", " ")}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
 
-          <div className="flex items-center justify-between">
-            <Label>Dark Mode</Label>
-            <Switch checked={darkMode} onCheckedChange={onDarkModeChange} />
+            <div className="space-y-2">
+              <h4 className="font-medium">Portnox Specifics</h4>
+              <div className="space-y-1">
+                <Label htmlFor="portnoxBasePrice">Base Price ($/device/mo)</Label>
+                <Input
+                  id="portnoxBasePrice"
+                  name="portnoxBasePrice"
+                  type="number"
+                  value={configuration.portnoxBasePrice}
+                  onChange={handleFloatChange}
+                  step="0.1"
+                  min="0"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                {Object.keys(portnoxAddons).map((addonKey) => (
+                  <div key={addonKey} className="flex items-center space-x-2">
+                    <Switch
+                      id={addonKey}
+                      checked={portnoxAddons[addonKey as keyof typeof portnoxAddons]}
+                      onCheckedChange={handleAddonChange(addonKey as keyof typeof portnoxAddons)}
+                    />
+                    <Label htmlFor={addonKey} className="capitalize">
+                      {addonKey} Add-on
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="font-medium">Display Settings</h4>
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div className="space-y-0.5">
+                  <Label>Dark Mode</Label>
+                  <p className="text-xs text-muted-foreground">Toggle between light and dark themes.</p>
+                </div>
+                <Switch checked={darkMode} onCheckedChange={onDarkModeChange} />
+              </div>
+            </div>
           </div>
-        </div>
+        </ScrollArea>
         <SheetFooter>
-          <Button onClick={onClose}>Done</Button>
+          <Button onClick={onClose}>Close</Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>
   )
 }
-
-export default SettingsPanel
