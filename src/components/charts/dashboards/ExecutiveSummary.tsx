@@ -1,38 +1,56 @@
-"use client";
+"use client"
 
-import React, { useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // Assuming shadcn/ui Card
-import { Badge } from '@/components/ui/badge'; // Assuming shadcn/ui Badge
-import { ArrowUpRight, ArrowDownRight, DollarSign, Zap, ShieldCheck, CheckCircle, BarChart3, Users, Clock, TrendingUp, Award } from 'lucide-react';
-import { useVendorData, VendorId } from '@/hooks/useVendorData';
-import { useTcoCalculator, TCOResult } from '@/hooks/useTcoCalculator';
-import type { OrgSizeId, IndustryId } from '@/types/common';
-import { NewVendorData } from '@/lib/vendors/data';
-import { cn } from '@/lib/utils'; // Assuming this utility exists
+import type React from "react"
+import { useMemo, useState } from "react"
+import { motion } from "framer-motion"
+import {
+  ArrowUpRight,
+  ArrowDownRight,
+  DollarSign,
+  Zap,
+  ShieldCheck,
+  BarChart3,
+  Users,
+  Clock,
+  TrendingUp,
+  Award,
+} from "lucide-react"
+import { useVendorData, type VendorId } from "@/hooks/useVendorData"
+import { useTcoCalculator, type TCOResult } from "@/hooks/useTcoCalculator"
+import { useDashboardSettings } from "@/context/DashboardContext"
+import { cn } from "@/lib/utils"
 
-// Re-usable Metric Card component (can be moved to a shared UI location later)
 interface MetricCardProps {
-  title: string;
-  value: string | number;
-  description?: string;
-  icon?: React.ElementType;
-  trend?: "up" | "down" | "neutral";
-  trendText?: string;
-  unit?: string;
-  variant?: "default" | "primary" | "highlight";
-  isLoading?: boolean;
+  title: string
+  value: string | number
+  description?: string
+  icon?: React.ElementType
+  trend?: "up" | "down" | "neutral"
+  trendText?: string
+  unit?: string
+  variant?: "default" | "primary" | "highlight"
+  isLoading?: boolean
 }
 
-const GlassMetricCard: React.FC<MetricCardProps> = ({ title, value, description, icon: Icon, trend, trendText, unit, variant, isLoading }) => {
-  const TrendIcon = trend === "up" ? ArrowUpRight : trend === "down" ? ArrowDownRight : null;
+const GlassMetricCard: React.FC<MetricCardProps> = ({
+  title,
+  value,
+  description,
+  icon: Icon,
+  trend,
+  trendText,
+  unit,
+  variant,
+  isLoading,
+}) => {
+  const TrendIcon = trend === "up" ? ArrowUpRight : trend === "down" ? ArrowDownRight : null
 
   return (
     <motion.div
       className={cn(
         "rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg shadow-xl p-6 transition-all duration-300 hover:bg-white/10",
         variant === "primary" && "bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border-cyan-400/30",
-        variant === "highlight" && "bg-portnox-primary/10 border-portnox-primary/30"
+        variant === "highlight" && "bg-portnox-primary/10 border-portnox-primary/30",
       )}
       whileHover={{ y: -5 }}
     >
@@ -54,9 +72,12 @@ const GlassMetricCard: React.FC<MetricCardProps> = ({ title, value, description,
           </p>
           {description && <p className="text-xs text-slate-400 mb-3">{description}</p>}
           {trend && TrendIcon && trendText && (
-            <div className={cn("flex items-center text-xs",
-              trend === "up" ? "text-emerald-400" : trend === "down" ? "text-red-400" : "text-slate-400"
-            )}>
+            <div
+              className={cn(
+                "flex items-center text-xs",
+                trend === "up" ? "text-emerald-400" : trend === "down" ? "text-red-400" : "text-slate-400",
+              )}
+            >
               <TrendIcon className="h-4 w-4 mr-1" />
               {trendText}
             </div>
@@ -64,110 +85,104 @@ const GlassMetricCard: React.FC<MetricCardProps> = ({ title, value, description,
         </>
       )}
     </motion.div>
-  );
-};
-
-
-import { useDashboardSettings } from '@/context/DashboardContext'; // Import the context hook
+  )
+}
 
 export interface ExecutiveSummaryProps {
-  // Props are now optional as they will come from context primarily
-  primaryVendorId?: VendorId;
-  competitorVendorIds?: VendorId[];
+  primaryVendorId?: VendorId
+  competitorVendorIds?: VendorId[]
 }
 
 const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
-  primaryVendorId = "portnox", // Default primary vendor
-  // Default competitor for summary can be dynamic or a fixed example
+  primaryVendorId = "portnox",
   competitorVendorIds: initialCompetitorIds = ["cisco_ise"],
 }) => {
-  const { selectedOrgSize, selectedIndustry, comparisonYears } = useDashboardSettings();
-  const { getVendor, vendorsMap, isLoadingAllVendors } = useVendorData(); // Use vendorsMap for easier iteration
-  const { calculateSingleVendorTco } = useTcoCalculator();
+  const { selectedOrgSize, selectedIndustry, comparisonYears } = useDashboardSettings()
+  const { getVendor, vendorsMap, isLoadingAllVendors } = useVendorData()
+  const { calculateSingleVendorTco } = useTcoCalculator()
 
-  // Use a state for competitor IDs if we want to change them dynamically within this component,
-  // or receive them as props if controlled from outside.
-  const [competitorIdsForSummary] = useState(initialCompetitorIds);
+  const [competitorIdsForSummary] = useState(initialCompetitorIds)
+  const [summaryData, setSummaryData] = useState<any>(null)
 
-
-  // isLoading will now depend on vendor data and calculations
-  const [isCalculating, setIsCalculating] = useState(true);
-  const [summaryData, setSummaryData] = useState<any>(null);
-
-  const portnoxData = useMemo(() => getVendor(primaryVendorId), [getVendor, primaryVendorId]);
+  const portnoxData = useMemo(() => getVendor(primaryVendorId), [getVendor, primaryVendorId])
 
   const portnoxTcoResult = useMemo(() => {
-    if (!portnoxData || !selectedOrgSize || !selectedIndustry || !comparisonYears) return null;
-    return calculateSingleVendorTco(primaryVendorId, selectedOrgSize, selectedIndustry, comparisonYears);
-  }, [primaryVendorId, selectedOrgSize, selectedIndustry, comparisonYears, portnoxData, calculateSingleVendorTco]);
+    if (!portnoxData || !selectedOrgSize || !selectedIndustry || !comparisonYears) return null
+    return calculateSingleVendorTco(primaryVendorId, selectedOrgSize, selectedIndustry, comparisonYears)
+  }, [primaryVendorId, selectedOrgSize, selectedIndustry, comparisonYears, portnoxData, calculateSingleVendorTco])
 
   const competitorTcoResults = useMemo(() => {
-    if (competitorIdsForSummary.length === 0 || !selectedOrgSize || !selectedIndustry || !comparisonYears || !vendorsMap) return [];
-    return competitorIdsForSummary.map(id => {
-      const competitorData = vendorsMap.get(id); // Use vendorsMap from hook
-      if (!competitorData) return null;
-      return calculateSingleVendorTco(id, selectedOrgSize, selectedIndustry, comparisonYears);
-    }).filter(Boolean) as TCOResult[];
-  }, [competitorIdsForSummary, selectedOrgSize, selectedIndustry, comparisonYears, vendorsMap, calculateSingleVendorTco]);
-
+    if (
+      competitorIdsForSummary.length === 0 ||
+      !selectedOrgSize ||
+      !selectedIndustry ||
+      !comparisonYears ||
+      !vendorsMap
+    )
+      return []
+    return competitorIdsForSummary
+      .map((id) => {
+        const competitorData = vendorsMap.get(id)
+        if (!competitorData) return null
+        return calculateSingleVendorTco(id, selectedOrgSize, selectedIndustry, comparisonYears)
+      })
+      .filter(Boolean) as TCOResult[]
+  }, [
+    competitorIdsForSummary,
+    selectedOrgSize,
+    selectedIndustry,
+    comparisonYears,
+    vendorsMap,
+    calculateSingleVendorTco,
+  ])
 
   useMemo(() => {
-    if (isLoadingAllVendors) {
-      setIsCalculating(true);
-      return;
+    if (isLoadingAllVendors || !portnoxTcoResult || !portnoxData) {
+      setSummaryData(null)
+      return
     }
-    setIsCalculating(true); // Start calculation
-    if (portnoxTcoResult && portnoxData) {
-      let tcoReductionPercent = 0;
-      let traditionalNacDeploymentTime = 120;
-      let competitorName = 'Traditional NAC Baseline';
 
-      if (competitorTcoResults.length > 0 && competitorTcoResults[0]) {
-        const mainCompetitor = competitorTcoResults[0];
-        competitorName = mainCompetitor.vendorName;
-        const mainCompetitorTco = mainCompetitor.totalTCO;
-        if (mainCompetitorTco > 0) {
-          tcoReductionPercent = ((mainCompetitorTco - portnoxTcoResult.totalTCO) / mainCompetitorTco) * 100;
-        }
-        const compData = vendorsMap?.get(mainCompetitor.vendorId);
-        traditionalNacDeploymentTime = compData?.implementation.averageDeploymentTimeDays || 120;
-      } else {
-        // Fallback: ZTCA spec mentions "67% TCO Reduction with Portnox vs traditional NAC"
-        // To achieve this, traditional NAC TCO must be approx. 3x Portnox TCO.
-        // (P_TCO / (P_TCO / (1-0.67))) - 1 = -0.67
-        // So, Traditional_TCO = Portnox_TCO / (1 - 0.67)
-        const assumedTraditionalTCO = portnoxTcoResult.totalTCO / (1 - 0.67);
-        if (assumedTraditionalTCO > 0) {
-             tcoReductionPercent = ((assumedTraditionalTCO - portnoxTcoResult.totalTCO) / assumedTraditionalTCO) * 100;
-        }
+    let tcoReductionPercent = 0
+    let traditionalNacDeploymentTime = 120
+    let competitorName = "Traditional NAC Baseline"
+
+    if (competitorTcoResults.length > 0 && competitorTcoResults[0]) {
+      const mainCompetitor = competitorTcoResults[0]
+      competitorName = mainCompetitor.vendorName
+      const mainCompetitorTco = mainCompetitor.totalTCO
+      if (mainCompetitorTco > 0) {
+        tcoReductionPercent = ((mainCompetitorTco - portnoxTcoResult.totalTCO) / mainCompetitorTco) * 100
       }
-
-      setSummaryData({
-        portnoxName: portnoxData.name,
-        tcoReductionPercent: parseFloat(tcoReductionPercent.toFixed(0)),
-        competitorNameForTco: competitorName,
-        complianceCoverage: portnoxData.comparativeScores?.complianceCoverageScore || 95,
-        roiPaybackMonths: portnoxTcoResult.roiMetrics.paybackPeriodMonths,
-        riskReductionPercent: portnoxData.roiFactors.incidentReductionPercent || 98,
-        deploymentTimeDays: portnoxData.implementation.averageDeploymentTimeDays,
-        traditionalNacDeploymentTimeDays: traditionalNacDeploymentTime,
-        portnoxSpecificMetrics: portnoxData.portnoxSpecificMetrics,
-      });
-      setIsCalculating(false);
-    } else if (!isLoadingAllVendors) { // if not loading vendors and still no data
-      setIsCalculating(false); // stop calculating if data is missing
-      setSummaryData(null); // Clear summary data
+      const compData = vendorsMap?.get(mainCompetitor.vendorId)
+      traditionalNacDeploymentTime = compData?.implementation.averageDeploymentTimeDays || 120
+    } else {
+      const assumedTraditionalTCO = portnoxTcoResult.totalTCO / (1 - 0.67)
+      if (assumedTraditionalTCO > 0) {
+        tcoReductionPercent = ((assumedTraditionalTCO - portnoxTcoResult.totalTCO) / assumedTraditionalTCO) * 100
+      }
     }
-  }, [portnoxTcoResult, competitorTcoResults, portnoxData, vendorsMap, isLoadingAllVendors]);
 
+    setSummaryData({
+      portnoxName: portnoxData.name,
+      tcoReductionPercent: Number.parseFloat(tcoReductionPercent.toFixed(0)),
+      competitorNameForTco: competitorName,
+      complianceCoverage: portnoxData.comparativeScores?.complianceCoverageScore || 95,
+      roiPaybackMonths: portnoxTcoResult.roiMetrics.paybackPeriodMonths,
+      riskReductionPercent: portnoxData.roiFactors.incidentReductionPercent || 98,
+      deploymentTimeDays: portnoxData.implementation.averageDeploymentTimeDays,
+      traditionalNacDeploymentTimeDays: traditionalNacDeploymentTime,
+      portnoxSpecificMetrics: portnoxData.portnoxSpecificMetrics,
+      annualizedROIPercent: portnoxTcoResult.roiMetrics.annualizedROIPercent,
+    })
+  }, [portnoxTcoResult, competitorTcoResults, portnoxData, vendorsMap, isLoadingAllVendors])
 
-  const isLoading = isCalculating || isLoadingAllVendors; // Combined loading state
+  const isLoading = isLoadingAllVendors || !summaryData
 
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.5, ease: "easeOut" }
-  };
+    transition: { duration: 0.5, ease: "easeOut" },
+  }
 
   return (
     <motion.div variants={fadeInUp} initial="initial" animate="animate" className="space-y-8">
@@ -176,18 +191,17 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
           Executive Intelligence Summary
         </h1>
         <p className="text-lg text-slate-300 max-w-3xl mx-auto">
-          Key performance indicators for {summaryData?.portnoxName || "Portnox"} compared to industry baselines and traditional solutions,
+          Key performance indicators for {summaryData?.portnoxName || "Portnox"} compared to industry baselines,
           highlighting strategic advantages in cost, security, and operational efficiency.
         </p>
       </div>
 
-      {/* Main KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <GlassMetricCard
           title="TCO Reduction"
           value={summaryData?.tcoReductionPercent || 0}
           unit="%"
-          description={`vs. Traditional NAC / ${competitorTcoResults.length > 0 ? competitorTcoResults[0].vendorName : 'Baseline'}`}
+          description={`vs. ${summaryData?.competitorNameForTco || "Baseline"}`}
           icon={DollarSign}
           trend="up"
           trendText="Significant Savings"
@@ -195,22 +209,22 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
           isLoading={isLoading}
         />
         <GlassMetricCard
-          title="Compliance Coverage"
-          value={summaryData?.complianceCoverage || 0}
+          title="Annualized ROI"
+          value={summaryData?.annualizedROIPercent || 0}
           unit="%"
-          description="Across key industry standards"
-          icon={ShieldCheck}
+          description="Annual return on investment"
+          icon={TrendingUp}
           trend="up"
-          trendText="Comprehensive Adherence"
+          trendText="High Return"
           isLoading={isLoading}
         />
         <GlassMetricCard
           title="ROI Payback Period"
           value={summaryData?.roiPaybackMonths || "N/A"}
-          unit={typeof summaryData?.roiPaybackMonths === 'number' ? "Months" : ""}
+          unit={typeof summaryData?.roiPaybackMonths === "number" ? "Months" : ""}
           description="Time to realize positive return"
-          icon={TrendingUp}
-          trend="neutral" // Payback is a point in time
+          icon={Clock}
+          trend="neutral"
           isLoading={isLoading}
         />
         <GlassMetricCard
@@ -218,7 +232,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
           value={summaryData?.riskReductionPercent || 0}
           unit="%"
           description="Decrease in security breach probability"
-          icon={CheckCircle}
+          icon={ShieldCheck}
           trend="up"
           trendText="Enhanced Security Posture"
           variant="highlight"
@@ -228,38 +242,49 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
           title="Deployment Time"
           value={summaryData?.deploymentTimeDays || 0}
           unit="Days"
-          description={`vs. ${summaryData?.traditionalNacDeploymentTimeDays || '120+'} Days (Traditional)`}
+          description={`vs. ${summaryData?.traditionalNacDeploymentTimeDays || "120+"} Days (Traditional)`}
           icon={Zap}
-          trend="up" // Faster is better, framing as positive trend
+          trend="up"
           trendText="Rapid Implementation"
           isLoading={isLoading}
         />
-         <GlassMetricCard
+        <GlassMetricCard
           title="Automated Remediation"
           value={summaryData?.portnoxSpecificMetrics?.automatedRemediationRate || 0}
           unit="%"
           description="Of policy violations & threats"
-          icon={Award} // Using Award as a stand-in for a more specific automation icon
+          icon={Award}
           trend="up"
           trendText="Proactive Security"
           isLoading={isLoading}
         />
       </div>
 
-      {/* TODO: Add more sections like:
-          - Small charts summarizing TCO comparison (mini bar chart)
-          - Key Portnox differentiators list
-          - Call to action to dive deeper into other tabs
-      */}
-       <div className="mt-12 p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-xl">
+      <div className="mt-12 p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-xl">
         <h3 className="text-2xl font-bold text-white mb-4 text-center">Portnox Platform Highlights</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
           {[
-            { label: "Risk-Based Auth", value: `${summaryData?.portnoxSpecificMetrics?.riskBasedAuthenticationCoverage || 0}%`, icon: Users },
-            { label: "Continuous Monitoring", value: `${summaryData?.portnoxSpecificMetrics?.continuousMonitoringCoverage || 0}%`, icon: Clock },
-            { label: "Cloud-Native Arch.", value: summaryData?.portnoxSpecificMetrics?.is100PercentCloudNative ? "100%" : "N/A", icon: Zap },
-            { label: "Agentless Deployment", value: `${summaryData?.portnoxSpecificMetrics?.agentlessDeploymentPercent || 0}%`, icon: BarChart3 },
-          ].map(item => (
+            {
+              label: "Risk-Based Auth",
+              value: `${summaryData?.portnoxSpecificMetrics?.riskBasedAuthenticationCoverage || 0}%`,
+              icon: Users,
+            },
+            {
+              label: "Continuous Monitoring",
+              value: `${summaryData?.portnoxSpecificMetrics?.continuousMonitoringCoverage || 0}%`,
+              icon: Clock,
+            },
+            {
+              label: "Cloud-Native Arch.",
+              value: summaryData?.portnoxSpecificMetrics?.is100PercentCloudNative ? "100%" : "N/A",
+              icon: Zap,
+            },
+            {
+              label: "Agentless Deployment",
+              value: `${summaryData?.portnoxSpecificMetrics?.agentlessDeploymentPercent || 0}%`,
+              icon: BarChart3,
+            },
+          ].map((item) => (
             <div key={item.label} className="p-4 bg-white/5 rounded-lg">
               <item.icon className="h-8 w-8 text-portnox-primary-light mx-auto mb-2" />
               <p className="text-sm text-slate-300">{item.label}</p>
@@ -268,9 +293,8 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
           ))}
         </div>
       </div>
-
     </motion.div>
-  );
-};
+  )
+}
 
-export default ExecutiveSummary;
+export default ExecutiveSummary
