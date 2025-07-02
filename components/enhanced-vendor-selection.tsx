@@ -19,19 +19,21 @@ import { Search, X } from "lucide-react"
 
 const VENDOR_CATEGORIES = ["cloud-native", "enterprise", "mid-market", "sme", "open-source"]
 
-export default function EnhancedVendorSelection({
-  selectedVendors,
-  onVendorToggle,
-  onClearAll,
-  onSelectRecommended,
-  darkMode,
-}: {
+interface EnhancedVendorSelectionProps {
   selectedVendors: string[]
-  onVendorToggle: (vendorId: string) => void
+  handleVendorToggle: (vendorId: string) => void
   onClearAll: () => void
   onSelectRecommended: () => void
   darkMode: boolean
-}) {
+}
+
+export default function EnhancedVendorSelection({
+  selectedVendors,
+  handleVendorToggle,
+  onClearAll,
+  onSelectRecommended,
+  darkMode,
+}: EnhancedVendorSelectionProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState("all")
 
@@ -110,7 +112,7 @@ export default function EnhancedVendorSelection({
                   <Checkbox
                     id={vendor.id}
                     checked={selectedVendors.includes(vendor.id)}
-                    onCheckedChange={() => onVendorToggle(vendor.id)}
+                    onCheckedChange={() => handleVendorToggle(vendor.id)}
                   />
                   <Image
                     src={getVendorLogoPath(vendor.id) || "/placeholder.svg"}
