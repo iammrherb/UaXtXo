@@ -1,9 +1,8 @@
 "use client"
+
+import { useMemo } from "react"
 import { motion } from "framer-motion"
-import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
 import {
-  ResponsiveContainer,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
@@ -11,69 +10,84 @@ import {
   Radar,
   Tooltip,
   Legend,
+  ResponsiveContainer,
 } from "recharts"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { SectionTitle, fadeInUp, staggerChildren, VIBRANT_COLORS, MetricCard } from "./shared-ui"
-import { ShieldCheck, CheckCircle2, XCircle } from "lucide-react"
+import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
+import { staggerChildren, fadeInUp, MetricCard } from "./shared-ui"
+import { CheckCircle2, ShieldCheck, XCircle } from "lucide-react"
 
-interface CybersecurityPostureViewProps {
+const VIBRANT_COLORS = ["#00D4AA", "#FF6B35", "#3B82F6", "#10B981", "#F59E0B", "#8B5CF6"]
+
+export default function CybersecurityPostureView({
+  results,
+  config,
+}: {
   results: CalculationResult[]
   config: CalculationConfiguration
-}
+}) {
+  const complianceFrameworks = ["PCI DSS", "HIPAA", "SOC2", "ISO 27001", "GDPR"]
+  const radarData = useMemo(() => {
+    const subjects = results.map((r) => r.vendorName)
+    return complianceFrameworks.map((framework) => {
+      const point: { [key: string]: string | number } = { subject: framework }
+      results.forEach((r) => {
+        const vendorData = ComprehensiveVendorDatabase[r.vendor]
+        point[r.vendorName] =
+          vendorData.featureSupport.compliance[framework] === "✓✓✓"
+            ? 100
+            : vendorData.featureSupport.compliance[framework] === "✓✓"
+              ? 75
+              : 50
+      })
+      return point
+    })
+  }, [results, complianceFrameworks])
 
-export default function CybersecurityPostureView({ results, config }: CybersecurityPostureViewProps) {
-  const complianceFrameworks = ["pci", "hipaa", "soc2", "gdpr", "iso27001"]
-  const radarData = complianceFrameworks.map((fw) => {
-    const dataPoint: { [key: string]: string | number } = { subject: fw.toUpperCase() }
+  const allCerts = useMemo(() => {
+    const certs = new Set<string>()
     results.forEach((r) => {
       const vendorData = ComprehensiveVendorDatabase[r.vendor]
-      const hasCompliance = vendorData.compliance.certifications.some((c) => c.toLowerCase().includes(fw))
-      dataPoint[r.vendorName] = hasCompliance ? 100 : 20
+      Object.keys(vendorData.featureSupport.compliance).forEach((cert) => {
+        if (vendorData.featureSupport.compliance[cert] !== "✗") {
+          certs.add(cert)
+        }
+      })
     })
-    return dataPoint
-  })
-
-  const allCerts = Array.from(
-    new Set(results.flatMap((r) => ComprehensiveVendorDatabase[r.vendor].compliance.certifications)),
-  )
+    return Array.from(certs)
+  }, [results])
 
   return (
-    <motion.div className="space-y-8" initial="initial" animate="animate" variants={staggerChildren}>
-      <motion.div variants={fadeInUp}>
-        <SectionTitle
-          icon={<ShieldCheck />}
-          title="Cybersecurity Posture & Risk"
-          description="Evaluating compliance coverage, risk reduction, and security certifications."
-        />
-      </motion.div>
-
-      <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" variants={staggerChildren}>
+    <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
+      <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" variants={staggerChildren}>
         {results.map((r) => (
           <motion.div variants={fadeInUp} key={r.vendor}>
             <MetricCard
               title={`${r.vendorName} Risk Reduction`}
-              value={`${(r.risk.reduction * 100).toFixed(0)}%`}
+              value={`${(r.risk.breachReduction * 100).toFixed(0)}%`}
               detail="Breach Probability Reduction"
               icon={<ShieldCheck />}
-              gradient="ocean"
             />
           </motion.div>
         ))}
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <motion.div variants={fadeInUp}>
           <Card>
             <CardHeader>
-              <h3 className="font-semibold">Compliance Framework Coverage</h3>
+              <CardTitle>Compliance Framework Coverage</CardTitle>
             </CardHeader>
             <CardContent className="h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
                   <PolarGrid />
                   <PolarAngleAxis dataKey="subject" />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                  <Tooltip />
+                  <Legend />
                   {results.map((r, i) => (
                     <Radar
                       key={r.vendor}
@@ -84,8 +98,6 @@ export default function CybersecurityPostureView({ results, config }: Cybersecur
                       fillOpacity={0.6}
                     />
                   ))}
-                  <Legend />
-                  <Tooltip />
                 </RadarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -94,39 +106,37 @@ export default function CybersecurityPostureView({ results, config }: Cybersecur
         <motion.div variants={fadeInUp}>
           <Card>
             <CardHeader>
-              <h3 className="font-semibold">Security Certifications Matrix</h3>
+              <CardTitle>Security Certifications Matrix</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[400px] overflow-y-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Certification</TableHead>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Certification</TableHead>
+                    {results.map((r) => (
+                      <TableHead key={r.vendor} className="text-center">
+                        {r.vendorName}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {allCerts.map((cert) => (
+                    <TableRow key={cert}>
+                      <TableCell>{cert}</TableCell>
                       {results.map((r) => (
-                        <TableHead key={r.vendor} className="text-center">
-                          {r.vendorName}
-                        </TableHead>
+                        <TableCell key={r.vendor} className="text-center">
+                          {ComprehensiveVendorDatabase[r.vendor].featureSupport.compliance[cert] !== "✗" ? (
+                            <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
+                          ) : (
+                            <XCircle className="h-5 w-5 text-red-500 mx-auto" />
+                          )}
+                        </TableCell>
                       ))}
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {allCerts.map((cert) => (
-                      <TableRow key={cert}>
-                        <TableCell>{cert}</TableCell>
-                        {results.map((r) => (
-                          <TableCell key={r.vendor} className="text-center">
-                            {ComprehensiveVendorDatabase[r.vendor].compliance.certifications.includes(cert) ? (
-                              <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
-                            ) : (
-                              <XCircle className="h-5 w-5 text-red-500 mx-auto" />
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </motion.div>

@@ -49,6 +49,22 @@ export default function ExecutiveReportView({ results, config }: ExecutiveReport
       </motion.div>
 
       <motion.div variants={fadeInUp}>
+        <Card className="p-6">
+          <CardHeader>
+            <CardTitle>Reports & Export</CardTitle>
+            <CardDescription>Generate and download comprehensive reports.</CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <p>Report generation is coming soon.</p>
+            <Button className="mt-4">
+              <Download className="mr-2 h-4 w-4" /> Download Sample PDF
+            </Button>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div variants={fadeInUp}>
         <Card>
           <CardHeader>
             <CardTitle>Key Findings</CardTitle>

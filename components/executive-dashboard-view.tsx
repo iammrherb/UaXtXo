@@ -2,55 +2,62 @@
 
 import { useMemo } from "react"
 import { motion } from "framer-motion"
-import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 import {
-  ResponsiveContainer,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   Tooltip,
+  Legend,
+  ResponsiveContainer,
   AreaChart,
   Area,
   CartesianGrid,
-  Legend,
 } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { GradientCard, MetricCard, fadeInUp, staggerChildren, PORTNOX_COLORS, VIBRANT_COLORS } from "./shared-ui"
+import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { MetricCard, GradientCard, fadeInUp, staggerChildren } from "./shared-ui"
 import { DollarSign, RocketIcon, Shield, UsersIcon, TrendingUpIcon, BarChart3 } from "lucide-react"
 
-interface ExecutiveDashboardViewProps {
+const VIBRANT_COLORS = ["#00D4AA", "#FF6B35", "#3B82F6", "#10B981", "#F59E0B", "#8B5CF6"]
+
+export default function ExecutiveDashboardView({
+  results,
+  config,
+}: {
   results: CalculationResult[]
   config: CalculationConfiguration
-}
-
-export default function ExecutiveDashboardView({ results, config }: ExecutiveDashboardViewProps) {
+}) {
   const portnoxResult = useMemo(() => results.find((r) => r.vendor === "portnox"), [results])
   const competitors = useMemo(() => results.filter((r) => r.vendor !== "portnox"), [results])
-  const lowestCompetitor = useMemo(() => competitors.sort((a, b) => a.totalTco - b.totalTco)[0], [competitors])
+  const lowestCompetitor = useMemo(() => competitors.sort((a, b) => a.total - b.total)[0], [competitors])
 
   const totalSavings = useMemo(() => {
     if (!portnoxResult || !lowestCompetitor) return 0
-    return lowestCompetitor.totalTco - portnoxResult.totalTco
+    return lowestCompetitor.total - portnoxResult.total
   }, [portnoxResult, lowestCompetitor])
 
   const savingsPercent = useMemo(() => {
-    if (!lowestCompetitor || lowestCompetitor.totalTco === 0) return 0
-    return (totalSavings / lowestCompetitor.totalTco) * 100
-  }, [totalSavings, lowestCompetitor])
+    if (!portnoxResult || !lowestCompetitor || lowestCompetitor.total === 0) return 0
+    return (totalSavings / lowestCompetitor.total) * 100
+  }, [totalSavings, lowestCompetitor, portnoxResult])
 
   const roiTimelineData = useMemo(() => {
     if (!portnoxResult) return []
+    const months = config.years * 12
     const data = []
-    for (let year = 0; year <= config.years; year++) {
-      data.push({
-        year: `Year ${year}`,
-        portnox: (portnoxResult.roi.cumulativeRoi[year] || 0) * 100,
-        average: (lowestCompetitor?.roi.cumulativeRoi[year] || 0) * 100,
-      })
+    for (let month = 0; month <= months; month += Math.max(1, Math.floor(months / 12))) {
+      let portnoxROI = 0
+      if (portnoxResult.roi.paybackMonths > 0 && portnoxResult.total > 0) {
+        if (month >= portnoxResult.roi.paybackMonths) {
+          const annualNetBenefit = portnoxResult.roi.annualSavings - portnoxResult.total / config.years
+          portnoxROI = ((annualNetBenefit * (month / 12)) / portnoxResult.total) * 100
+        }
+      }
+      data.push({ month, portnox: Math.max(0, portnoxROI) })
     }
     return data
-  }, [portnoxResult, lowestCompetitor, config.years])
+  }, [portnoxResult, config.years])
 
   if (!portnoxResult) {
     return <Card className="p-6">Portnox data not available for comparison.</Card>
@@ -59,16 +66,18 @@ export default function ExecutiveDashboardView({ results, config }: ExecutiveDas
   return (
     <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
       <motion.div variants={fadeInUp}>
-        <GradientCard gradient="vibrant" className="p-6 sm:p-8">
+        <GradientCard className="p-6 sm:p-8">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="mb-6 md:mb-0 text-center md:text-left">
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Executive Summary</h2>
-              <p className="text-sm sm:text-base text-white/80">{config.years}-Year Total Cost of Ownership Analysis</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-card-foreground mb-1 sm:mb-2">Executive Summary</h2>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                {config.years}-Year Total Cost of Ownership Analysis
+              </p>
             </div>
             <div className="flex items-center space-x-2">
               <div className="text-right">
-                <p className="text-xs sm:text-sm text-white/80">Portnox Advantage</p>
-                <p className="text-xl sm:text-2xl font-bold text-white">{savingsPercent.toFixed(0)}% Lower TCO</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Portnox Advantage</p>
+                <p className="text-xl sm:text-2xl font-bold text-primary">{savingsPercent.toFixed(0)}% Lower TCO</p>
               </div>
             </div>
           </div>
@@ -79,45 +88,41 @@ export default function ExecutiveDashboardView({ results, config }: ExecutiveDas
         <motion.div variants={fadeInUp}>
           <MetricCard
             title="Total Savings"
-            value={`$${(totalSavings / 1000).toLocaleString("en-US", { maximumFractionDigits: 0 })}K`}
+            value={`$${Math.round(Math.abs(totalSavings) / 1000).toLocaleString()}K`}
             detail={`vs. ${lowestCompetitor?.vendorName || "Next Best"}`}
             icon={<DollarSign />}
             trend="up"
             trendValue={`${savingsPercent.toFixed(0)}%`}
-            gradient="vibrant"
           />
         </motion.div>
         <motion.div variants={fadeInUp}>
           <MetricCard
             title="ROI Achievement"
-            value={`${portnoxResult.roi.paybackMonths.toFixed(1)} mo`}
+            value={`${portnoxResult.roi.paybackMonths} mo`}
             detail="Payback period"
             icon={<RocketIcon />}
             trend="down"
             trendValue="Faster"
-            gradient="fire"
           />
         </motion.div>
         <motion.div variants={fadeInUp}>
           <MetricCard
             title="Risk Reduction"
-            value={`${(portnoxResult.risk.reduction * 100).toFixed(0)}%`}
+            value={`${portnoxResult.risk.breachReduction * 100}%`}
             detail="Breach probability decrease"
             icon={<Shield />}
             trend="up"
             trendValue="Significant"
-            gradient="ocean"
           />
         </motion.div>
         <motion.div variants={fadeInUp}>
           <MetricCard
             title="Efficiency Gain"
-            value={`${portnoxResult.operational.fteSaved.toFixed(1)} FTE`}
+            value={`${portnoxResult.ops.fteSaved} FTE`}
             detail="Staff hours saved"
             icon={<UsersIcon />}
             trend="up"
             trendValue="Notable"
-            gradient="sunset"
           />
         </motion.div>
       </motion.div>
@@ -135,36 +140,26 @@ export default function ExecutiveDashboardView({ results, config }: ExecutiveDas
             <CardContent className="h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={results.map((r) => ({
-                    name: r.vendorName,
-                    TCO: r.totalTco,
-                    fill: r.vendor === "portnox" ? PORTNOX_COLORS.primary : VIBRANT_COLORS[1],
-                  }))}
+                  data={results.map((r) => ({ name: r.vendorName, TCO: r.total }))}
                   layout="vertical"
                   margin={{ right: 30, left: 10 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis
-                    type="number"
-                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    width={100}
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                    interval={0}
-                  />
-                  <Tooltip
-                    formatter={(value: number) => [`$${value.toLocaleString()}`, "Total TCO"]}
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--background))",
-                      border: "1px solid hsl(var(--border))",
-                    }}
-                    cursor={{ fill: "hsl(var(--accent-foreground) / 0.1)" }}
-                  />
-                  <Bar dataKey="TCO" radius={[0, 6, 6, 0]} barSize={20} />
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                  <YAxis type="category" dataKey="name" width={100} interval={0} />
+                  <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, "Total TCO"]} />
+                  <Bar dataKey="TCO" radius={[0, 6, 6, 0]} barSize={20}>
+                    {results.map((entry, index) => (
+                      <Bar
+                        key={`cell-${index}`}
+                        fill={
+                          entry.vendor === "portnox"
+                            ? VIBRANT_COLORS[0]
+                            : VIBRANT_COLORS[(index + 1) % VIBRANT_COLORS.length]
+                        }
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -177,46 +172,28 @@ export default function ExecutiveDashboardView({ results, config }: ExecutiveDas
                 <TrendingUpIcon className="h-5 w-5 text-primary" />
                 <span>ROI Timeline</span>
               </CardTitle>
-              <CardDescription>Cumulative value over {config.years} years</CardDescription>
+              <CardDescription>Cumulative value over {config.years * 12} months</CardDescription>
             </CardHeader>
             <CardContent className="h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={roiTimelineData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
                   <defs>
                     <linearGradient id="roiGradientFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={PORTNOX_COLORS.primary} stopOpacity={0.6} />
-                      <stop offset="95%" stopColor={PORTNOX_COLORS.primary} stopOpacity={0.05} />
+                      <stop offset="5%" stopColor={VIBRANT_COLORS[0]} stopOpacity={0.6} />
+                      <stop offset="95%" stopColor={VIBRANT_COLORS[0]} stopOpacity={0.05} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="year" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
-                  <YAxis
-                    tickFormatter={(value) => `${value}%`}
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                  />
-                  <Tooltip
-                    formatter={(value: number, name: string) => [`${value.toFixed(0)}%`, name]}
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--background))",
-                      border: "1px solid hsl(var(--border))",
-                    }}
-                  />
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" tickFormatter={(value) => `M${value}`} />
+                  <YAxis tickFormatter={(value) => `${value}%`} />
+                  <Tooltip formatter={(value: number) => [`${value.toFixed(0)}%`, "Portnox ROI"]} />
                   <Area
                     type="monotone"
                     dataKey="portnox"
-                    stroke={PORTNOX_COLORS.primary}
+                    stroke={VIBRANT_COLORS[0]}
                     strokeWidth={2.5}
                     fill="url(#roiGradientFill)"
                     name="Portnox ROI"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="average"
-                    stroke={VIBRANT_COLORS[2]}
-                    strokeWidth={2}
-                    strokeDasharray="4 4"
-                    fill="transparent"
-                    name="Competitor Avg. ROI"
                   />
                   <Legend wrapperStyle={{ fontSize: "12px" }} />
                 </AreaChart>
