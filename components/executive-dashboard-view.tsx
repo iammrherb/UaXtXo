@@ -1,200 +1,269 @@
 "use client"
 
+import { useMemo } from "react"
 import { motion } from "framer-motion"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Area,
-  AreaChart,
-} from "recharts"
-import { TrendingUp, DollarSign, Shield, Clock, AlertTriangle, CheckCircle, Target } from "lucide-react"
-import {
-  SectionTitle,
-  MetricCard,
-  GradientCard,
-  StatusBadge,
-  staggerChildren,
-  fadeInUp,
-  VIBRANT_COLORS,
-} from "./shared-ui"
+import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { SectionTitle, MetricCard, GradientCard, staggerChildren, fadeInUp, VIBRANT_COLORS } from "./shared-ui"
+import { TrendingUp, DollarSign, Clock, Target, Award, Zap } from "lucide-react"
 
 interface ExecutiveDashboardViewProps {
-  results: any
-  selectedVendors: string[]
+  results: CalculationResult[]
+  config: CalculationConfiguration
 }
 
-export default function ExecutiveDashboardView({ results, selectedVendors }: ExecutiveDashboardViewProps) {
-  // Safe data access with fallbacks
-  const portnoxResult = results?.find((r: any) => r?.vendor === "Portnox") || {}
-  const competitorResults = results?.filter((r: any) => r?.vendor !== "Portnox") || []
+export default function ExecutiveDashboardView({ results, config }: ExecutiveDashboardViewProps) {
+  // Safe data processing with fallbacks
+  const safeResults = useMemo(() => {
+    if (!results || !Array.isArray(results)) return []
+    return results.filter((result) => result && typeof result === "object")
+  }, [results])
 
-  // Calculate metrics with safe fallbacks
-  const totalSavings = portnoxResult?.totalCost
-    ? Math.max(...competitorResults.map((r: any) => r?.totalCost || 0)) - (portnoxResult.totalCost || 0)
-    : 0
+  // Key metrics calculations with safe fallbacks
+  const keyMetrics = useMemo(() => {
+    if (safeResults.length === 0) {
+      return {
+        lowestTCO: 0,
+        bestROI: 0,
+        fastestPayback: 0,
+        totalSavings: 0,
+        recommendedVendor: "N/A",
+      }
+    }
 
-  const roiValue = portnoxResult?.roi || 0
-  const paybackMonths = portnoxResult?.paybackPeriod || 0
-  const riskReduction = 85 // Static value for demo
+    const costs = safeResults.map((r) => r.totalCost || 0)
+    const rois = safeResults.map((r) => r.roi?.percentage || 0)
+    const paybacks = safeResults.map((r) => r.roi?.paybackPeriod || 0)
 
-  // Chart data
-  const costComparisonData =
-    results?.map((result: any) => ({
-      vendor: result?.vendor || "Unknown",
-      totalCost: result?.totalCost || 0,
-      yearOne: result?.yearOneCost || 0,
-      yearThree: result?.yearThreeCost || 0,
-    })) || []
+    const lowestTCO = Math.min(...costs)
+    const bestROI = Math.max(...rois)
+    const fastestPayback = Math.min(...paybacks.filter((p) => p > 0))
+    const highestCost = Math.max(...costs)
+    const totalSavings = highestCost - lowestTCO
 
-  const roiProjectionData = [
-    { year: "Year 1", roi: Math.max(0, roiValue * 0.3) },
-    { year: "Year 2", roi: Math.max(0, roiValue * 0.7) },
-    { year: "Year 3", roi: Math.max(0, roiValue) },
-    { year: "Year 4", roi: Math.max(0, roiValue * 1.2) },
-    { year: "Year 5", roi: Math.max(0, roiValue * 1.5) },
-  ]
+    const recommendedVendor = safeResults.find((r) => (r.totalCost || 0) === lowestTCO)?.vendorName || "N/A"
 
-  const riskAssessmentData = [
-    { category: "Security Gaps", current: 75, withPortnox: 15 },
-    { category: "Compliance Risk", current: 60, withPortnox: 10 },
-    { category: "Operational Risk", current: 45, withPortnox: 8 },
-    { category: "Financial Risk", current: 55, withPortnox: 12 },
-  ]
+    return {
+      lowestTCO,
+      bestROI,
+      fastestPayback,
+      totalSavings,
+      recommendedVendor,
+    }
+  }, [safeResults])
 
-  const vendorScoreData =
-    results?.map((result: any, index: number) => ({
-      vendor: result?.vendor || "Unknown",
-      score: result?.overallScore || Math.random() * 100,
-      color: VIBRANT_COLORS[index % VIBRANT_COLORS.length],
-    })) || []
+  // Chart data preparation
+  const tcoComparisonData = useMemo(() => {
+    return safeResults.map((result) => ({
+      vendor: result.vendorName || result.vendor || "Unknown",
+      totalCost: result.totalCost || 0,
+      roi: result.roi?.percentage || 0,
+      payback: result.roi?.paybackPeriod || 0,
+    }))
+  }, [safeResults])
+
+  const costBreakdownData = useMemo(() => {
+    return safeResults.map((result) => {
+      const categories = result.costCategories || {}
+      return {
+        vendor: result.vendorName || result.vendor || "Unknown",
+        licensing: categories.licensing || 0,
+        hardware: categories.hardware || 0,
+        services: categories.professionalServices || 0,
+        training: categories.training || 0,
+        maintenance: categories.maintenance || 0,
+        operational: categories.operational || 0,
+      }
+    })
+  }, [safeResults])
+
+  const roiTrendData = useMemo(() => {
+    const years = config?.years || 3
+    return Array.from({ length: years }, (_, i) => {
+      const year = i + 1
+      const yearData: any = { year }
+
+      safeResults.forEach((result) => {
+        const annualROI = ((result.roi?.percentage || 0) * year) / years
+        yearData[result.vendorName || result.vendor || "Unknown"] = annualROI
+      })
+      return yearData
+    })
+  }, [safeResults, config])
 
   return (
-    <motion.div initial="initial" animate="animate" variants={staggerChildren} className="space-y-8">
-      <SectionTitle
-        title="Executive Dashboard"
-        subtitle="Strategic overview of your NAC investment analysis"
-        icon={<Target className="h-6 w-6" />}
-      />
-
-      {/* Key Metrics Grid */}
-      <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard
-          title="Total Cost Savings"
-          value={`$${(totalSavings / 1000).toFixed(0)}K`}
-          change="+23% vs alternatives"
-          changeType="positive"
-          icon={<DollarSign className="h-5 w-5" />}
-        />
-        <MetricCard
-          title="ROI Improvement"
-          value={`${Math.round(roiValue)}%`}
-          change="+15% over 3 years"
-          changeType="positive"
-          icon={<TrendingUp className="h-5 w-5" />}
-        />
-        <MetricCard
-          title="Payback Period"
-          value={`${Math.round(paybackMonths)} months`}
-          change="3 months faster"
-          changeType="positive"
-          icon={<Clock className="h-5 w-5" />}
-        />
-        <MetricCard
-          title="Risk Reduction"
-          value={`${riskReduction}%`}
-          change="Critical improvement"
-          changeType="positive"
-          icon={<Shield className="h-5 w-5" />}
+    <motion.div className="space-y-8" initial="initial" animate="animate" variants={staggerChildren}>
+      {/* Header */}
+      <motion.div variants={fadeInUp}>
+        <SectionTitle
+          icon={<Target className="h-6 w-6" />}
+          title="Executive Dashboard"
+          subtitle="Strategic overview of NAC investment analysis"
         />
       </motion.div>
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Cost Comparison Chart */}
-        <GradientCard title="Total Cost of Ownership Comparison" gradient="primary">
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={costComparisonData}>
+      {/* Key Metrics */}
+      <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" variants={staggerChildren}>
+        <motion.div variants={fadeInUp}>
+          <GradientCard
+            title="Recommended Solution"
+            value={keyMetrics.recommendedVendor}
+            subtitle="Lowest TCO"
+            gradient="primary"
+            icon={<Award className="h-6 w-6" />}
+          />
+        </motion.div>
+        <motion.div variants={fadeInUp}>
+          <MetricCard
+            title="Total Cost Savings"
+            value={`$${keyMetrics.totalSavings.toLocaleString()}`}
+            change={`${((keyMetrics.totalSavings / (keyMetrics.lowestTCO || 1)) * 100).toFixed(1)}%`}
+            changeType="positive"
+            icon={<DollarSign className="h-4 w-4" />}
+          />
+        </motion.div>
+        <motion.div variants={fadeInUp}>
+          <MetricCard
+            title="Best ROI"
+            value={`${keyMetrics.bestROI.toFixed(1)}%`}
+            detail="3-year projection"
+            icon={<TrendingUp className="h-4 w-4" />}
+          />
+        </motion.div>
+        <motion.div variants={fadeInUp}>
+          <MetricCard
+            title="Fastest Payback"
+            value={`${Math.round(keyMetrics.fastestPayback)} months`}
+            detail="Break-even point"
+            icon={<Clock className="h-4 w-4" />}
+          />
+        </motion.div>
+      </motion.div>
+
+      {/* Charts Section */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* TCO Comparison */}
+        <motion.div variants={fadeInUp}>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Total Cost of Ownership
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={tcoComparisonData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="vendor" />
+                  <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                  <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
+                  <Bar dataKey="totalCost" fill={VIBRANT_COLORS[0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* ROI Comparison */}
+        <motion.div variants={fadeInUp}>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Return on Investment
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={tcoComparisonData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="vendor" />
+                  <YAxis tickFormatter={(value) => `${value}%`} />
+                  <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
+                  <Bar dataKey="roi" fill={VIBRANT_COLORS[1]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Cost Breakdown */}
+      <motion.div variants={fadeInUp}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Cost Category Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart data={costBreakdownData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="vendor" />
                 <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                <Tooltip
-                  formatter={(value: any) => [`$${(value / 1000).toFixed(0)}K`, "Total Cost"]}
-                  labelStyle={{ color: "hsl(var(--foreground))" }}
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--background))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "6px",
-                  }}
-                />
-                <Bar dataKey="totalCost" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
+                <Bar dataKey="licensing" stackId="a" fill={VIBRANT_COLORS[0]} name="Licensing" />
+                <Bar dataKey="hardware" stackId="a" fill={VIBRANT_COLORS[1]} name="Hardware" />
+                <Bar dataKey="services" stackId="a" fill={VIBRANT_COLORS[2]} name="Services" />
+                <Bar dataKey="training" stackId="a" fill={VIBRANT_COLORS[3]} name="Training" />
+                <Bar dataKey="maintenance" stackId="a" fill={VIBRANT_COLORS[4]} name="Maintenance" />
+                <Bar dataKey="operational" stackId="a" fill={VIBRANT_COLORS[5]} name="Operational" />
               </BarChart>
             </ResponsiveContainer>
-          </div>
-        </GradientCard>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-        {/* ROI Projection Chart */}
-        <GradientCard title="ROI Projection Over Time" gradient="success">
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={roiProjectionData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="year" />
-                <YAxis tickFormatter={(value) => `${value}%`} />
-                <Tooltip
-                  formatter={(value: any) => [`${Math.round(value)}%`, "ROI"]}
-                  labelStyle={{ color: "hsl(var(--foreground))" }}
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--background))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "6px",
-                  }}
-                />
-                <Area type="monotone" dataKey="roi" stroke="#10B981" fill="#10B981" fillOpacity={0.3} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </GradientCard>
-      </div>
-
-      {/* Risk Assessment and Vendor Scores */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Risk Assessment */}
+      {/* Vendor Highlights */}
+      <motion.div variants={fadeInUp}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
-              <span>Risk Assessment</span>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5" />
+              Vendor Highlights
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {riskAssessmentData.map((item, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>{item.category}</span>
-                    <span className="text-muted-foreground">
-                      {item.current}% → {item.withPortnox}%
-                    </span>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {safeResults.slice(0, 3).map((result, index) => (
+                <div key={result.vendor || index} className="p-4 border rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold">{result.vendorName || result.vendor || "Unknown"}</h4>
+                    <Badge variant={index === 0 ? "default" : "secondary"}>
+                      {index === 0 ? "Recommended" : `Option ${index + 1}`}
+                    </Badge>
                   </div>
-                  <div className="flex space-x-2">
-                    <div className="flex-1">
-                      <Progress value={item.current} className="h-2" />
-                      <span className="text-xs text-muted-foreground">Current</span>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Total Cost:</span>
+                      <span className="font-medium">${(result.totalCost || 0).toLocaleString()}</span>
                     </div>
-                    <div className="flex-1">
-                      <Progress value={item.withPortnox} className="h-2" />
-                      <span className="text-xs text-muted-foreground">With Portnox</span>
+                    <div className="flex justify-between text-sm">
+                      <span>ROI:</span>
+                      <span className="font-medium">{(result.roi?.percentage || 0).toFixed(1)}%</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Payback:</span>
+                      <span className="font-medium">{Math.round(result.roi?.paybackPeriod || 0)} months</span>
+                    </div>
+                    <div className="mt-3">
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>Implementation Risk</span>
+                        <span>{result.riskMetrics?.operationalRisk || "medium"}</span>
+                      </div>
+                      <Progress
+                        value={
+                          result.riskMetrics?.operationalRisk === "low"
+                            ? 25
+                            : result.riskMetrics?.operationalRisk === "medium"
+                              ? 50
+                              : 75
+                        }
+                        className="h-2"
+                      />
                     </div>
                   </div>
                 </div>
@@ -202,78 +271,38 @@ export default function ExecutiveDashboardView({ results, selectedVendors }: Exe
             </div>
           </CardContent>
         </Card>
+      </motion.div>
 
-        {/* Vendor Performance Scores */}
+      {/* ROI Trend */}
+      <motion.div variants={fadeInUp}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <span>Vendor Performance Scores</span>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              ROI Projection Over Time
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={vendorScoreData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    dataKey="score"
-                    label={({ vendor, score }) => `${vendor}: ${Math.round(score)}`}
-                  >
-                    {vendorScoreData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value: any) => [Math.round(value), "Score"]}
-                    labelStyle={{ color: "hsl(var(--foreground))" }}
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--background))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "6px",
-                    }}
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={roiTrendData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="year" />
+                <YAxis tickFormatter={(value) => `${value}%`} />
+                <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
+                {safeResults.map((result, index) => (
+                  <Line
+                    key={result.vendor}
+                    type="monotone"
+                    dataKey={result.vendorName || result.vendor}
+                    stroke={VIBRANT_COLORS[index % VIBRANT_COLORS.length]}
+                    strokeWidth={2}
                   />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Strategic Recommendations */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Strategic Recommendations</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <StatusBadge status="high" label="High Priority" />
-              <h4 className="font-semibold">Immediate Implementation</h4>
-              <p className="text-sm text-muted-foreground">
-                Deploy Portnox NAC solution to achieve immediate security improvements and cost savings.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <StatusBadge status="medium" label="Medium Priority" />
-              <h4 className="font-semibold">Staff Training</h4>
-              <p className="text-sm text-muted-foreground">
-                Invest in comprehensive training programs to maximize ROI and operational efficiency.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <StatusBadge status="low" label="Low Priority" />
-              <h4 className="font-semibold">Future Expansion</h4>
-              <p className="text-sm text-muted-foreground">
-                Plan for additional security integrations and advanced features in year 2-3.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      </motion.div>
     </motion.div>
   )
 }
