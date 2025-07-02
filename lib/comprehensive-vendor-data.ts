@@ -1,51 +1,52 @@
 export interface FeatureMatrix {
   core: {
-    networkAccess: boolean
-    deviceProfiling: boolean
-    policyEnforcement: boolean
-    guestAccess: boolean
-    byod: boolean
-    iot: boolean
-    compliance: boolean
-    reporting: boolean
-    integration: boolean
-    cloudNative: boolean
+    networkAccess: boolean | string
+    deviceProfiling: boolean | string
+    policyEnforcement: boolean | string
+    guestAccess: boolean | string
+    byod: boolean | string
+    iot: boolean | string
+    compliance: boolean | string
+    reporting: boolean | string
+    integration: boolean | string
+    cloudNative: boolean | string
   }
   advanced: {
-    aiMl: boolean
-    zeroTrust: boolean
-    automation: boolean
-    api: boolean
-    multiTenant: boolean
-    federation: boolean
-    riskScoring: boolean
-    behaviorAnalytics: boolean
+    aiMl: boolean | string
+    zeroTrust: boolean | string
+    automation: boolean | string
+    api: boolean | string
+    multiTenant: boolean | string
+    federation: boolean | string
+    riskScoring: boolean | string
+    behaviorAnalytics: boolean | string
   }
   security: {
-    threatDetection: boolean
-    incidentResponse: boolean
-    forensics: boolean
-    encryption: boolean
-    certificateManagement: boolean
-    vulnerabilityAssessment: boolean
+    threatDetection: boolean | string
+    incidentResponse: boolean | string
+    forensics: boolean | string
+    encryption: boolean | string
+    certificateManagement: boolean | string
+    vulnerabilityAssessment: boolean | string
   }
 }
 
 export const CORE_FEATURES: Record<keyof FeatureMatrix["core"], string> = {
   networkAccess: "Network Access Control",
-  deviceProfiling: "Device Profiling",
-  policyEnforcement: "Policy Enforcement",
-  guestAccess: "Guest Access",
-  byod: "BYOD Support",
-  iot: "IoT Security",
-  compliance: "Compliance Module",
-  reporting: "Advanced Reporting",
-  integration: "Broad Integration",
-  cloudNative: "Cloud-Native",
+  deviceProfiling: "Device Profiling & Visibility",
+  policyEnforcement: "Dynamic Policy Enforcement",
+  guestAccess: "Guest & Contractor Access",
+  byod: "BYOD & Self-Service",
+  iot: "IoT & OT Security",
+  compliance: "Compliance Automation",
+  reporting: "Reporting & Analytics",
+  integration: "Ecosystem Integrations",
+  cloudNative: "Cloud-Native Architecture",
 }
 
 export interface VendorPricing {
-  model: "per-device" | "per-user" | "per-site" | "enterprise"
+  model: "per-device" | "per-user" | "per-site" | "enterprise" | "none"
+  basePrice: number // Normalized monthly price per unit for comparison
   tiers: {
     [key: string]: {
       name: string
@@ -69,23 +70,37 @@ export interface VendorPricing {
   supportCost: number // as a percentage of license cost
 }
 
+export interface ImplementationPhase {
+  name: string
+  duration: string // e.g., "1-2 Weeks"
+  durationDays: [number, number] // min, max days
+  icon: string
+  tasks: string[]
+  resources: string[]
+}
+
 export interface VendorImplementation {
   deploymentTime: {
     pilot: string
     fullDeployment: string
   }
-  complexity: "low" | "medium" | "high"
+  complexity: "low" | "medium" | "high" | "very-high"
   hardwareRequired: boolean
   professionalServicesRequired: boolean
+  phases: ImplementationPhase[]
 }
 
 export interface VendorData {
   id: string
   name: string
-  category: "enterprise" | "mid-market" | "sme" | "cloud-native"
+  category: "cloud-native" | "enterprise" | "mid-market" | "sme" | "platform-add-on" | "baseline"
   description: string
   marketPosition: "leader" | "challenger" | "visionary" | "niche"
   logoPath: string
+  marketShare: number
+  npsScore: number
+  strengths: string[]
+  idealFor: string[]
   features: FeatureMatrix
   pricing: VendorPricing
   implementation: VendorImplementation
@@ -99,16 +114,45 @@ export interface VendorData {
     fteRequirement: number
     commonIssues: string[]
   }
+  cyberInsuranceImpact: {
+    premiumReduction: number // percentage
+    coverageIncrease: number // percentage
+  }
+  mitreAttackCoverage: { [key: string]: number } // percentage coverage for tactics
+  nistCsfAlignment: { [key: string]: number } // percentage alignment for functions
+  downtimeCostPerHour: number
 }
+
+const MITRE_TACTICS = [
+  "Initial Access",
+  "Execution",
+  "Persistence",
+  "Privilege Escalation",
+  "Defense Evasion",
+  "Credential Access",
+  "Discovery",
+  "Lateral Movement",
+  "Collection",
+  "Command and Control",
+  "Exfiltration",
+  "Impact",
+]
+
+const NIST_FUNCTIONS = ["Identify", "Protect", "Detect", "Respond", "Recover"]
 
 export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
   portnox: {
     id: "portnox",
     name: "Portnox",
     category: "cloud-native",
-    description: "AI-powered cloud-native NAC with zero-trust architecture and rapid deployment",
+    description:
+      "AI-powered cloud-native NAC delivering zero-trust security with unmatched simplicity and rapid time-to-value.",
     marketPosition: "visionary",
     logoPath: "/portnox-logo.png",
+    marketShare: 5.5,
+    npsScore: 75,
+    strengths: ["Rapid Deployment", "Cloud-Native", "Zero-Trust", "AI-Powered"],
+    idealFor: ["Mid-market to Enterprise", "Hybrid Environments", "Resource-constrained IT teams"],
     features: {
       core: {
         networkAccess: true,
@@ -135,7 +179,7 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       security: {
         threatDetection: true,
         incidentResponse: true,
-        forensics: true,
+        forensics: "limited",
         encryption: true,
         certificateManagement: true,
         vulnerabilityAssessment: true,
@@ -143,38 +187,92 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
     },
     pricing: {
       model: "per-device",
+      basePrice: 4,
       tiers: {
-        essentials: { name: "Essentials", price: 36, features: ["Basic NAC", "Cloud RADIUS"] },
-        professional: { name: "Professional", price: 48, features: ["Advanced NAC", "Risk Scoring"] },
-        enterprise: { name: "Enterprise", price: 60, features: ["Full Platform", "All Modules"] },
+        essentials: { name: "Essentials", price: 36, features: [] },
+        professional: { name: "Professional", price: 48, features: [] },
+        enterprise: { name: "Enterprise", price: 60, features: [] },
       },
       professionalServices: { quickStart: 7500, advanced: 15000, migration: 20000 },
-      supportCost: 0, // Included
+      supportCost: 0,
     },
     implementation: {
       deploymentTime: { pilot: "2-4 hours", fullDeployment: "1-2 weeks" },
       complexity: "low",
       hardwareRequired: false,
       professionalServicesRequired: false,
+      phases: [
+        {
+          name: "Planning & Design",
+          duration: "1-2 Days",
+          durationDays: [1, 2],
+          icon: "ClipboardList",
+          tasks: ["Define scope", "Cloud account setup"],
+          resources: ["IT Admin"],
+        },
+        {
+          name: "Integration & Setup",
+          duration: "2-3 Days",
+          durationDays: [2, 3],
+          icon: "Network",
+          tasks: ["Integrate with IdP", "Setup cloud connectors"],
+          resources: ["IT Admin", "Network Engineer"],
+        },
+        {
+          name: "Pilot Deployment",
+          duration: "1 Week",
+          durationDays: [5, 5],
+          icon: "UsersIcon",
+          tasks: ["Onboard pilot group", "Test initial policies"],
+          resources: ["IT Admin"],
+        },
+        {
+          name: "Production Rollout",
+          duration: "1-2 Weeks",
+          durationDays: [5, 10],
+          icon: "RocketIcon",
+          tasks: ["Phased rollout", "Monitor system"],
+          resources: ["IT Admin"],
+        },
+      ],
     },
     compliance: {
       frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "ISO 27001", "NIST", "FedRAMP"],
       certifications: ["SOC 2 Type II", "ISO 27001", "FedRAMP In-Process"],
-      automationLevel: 85,
-      auditReadiness: 92,
+      automationLevel: 90,
+      auditReadiness: 95,
     },
-    hiddenCosts: {
-      fteRequirement: 0.5,
-      commonIssues: ["Internet dependency", "Limited offline capabilities"],
+    hiddenCosts: { fteRequirement: 0.25, commonIssues: ["Internet dependency"] },
+    cyberInsuranceImpact: { premiumReduction: 25, coverageIncrease: 30 },
+    mitreAttackCoverage: {
+      "Initial Access": 90,
+      Execution: 70,
+      Persistence: 80,
+      "Privilege Escalation": 75,
+      "Defense Evasion": 85,
+      "Credential Access": 60,
+      Discovery: 95,
+      "Lateral Movement": 90,
+      Collection: 50,
+      "Command and Control": 70,
+      Exfiltration: 65,
+      Impact: 80,
     },
+    nistCsfAlignment: { Identify: 95, Protect: 90, Detect: 85, Respond: 80, Recover: 75 },
+    downtimeCostPerHour: 500,
   },
   cisco: {
     id: "cisco",
     name: "Cisco ISE",
     category: "enterprise",
-    description: "Industry-leading identity services engine with comprehensive policy management",
+    description:
+      "Industry-leading identity services engine with comprehensive policy management for large-scale deployments.",
     marketPosition: "leader",
     logoPath: "/cisco-logo.png",
+    marketShare: 35.2,
+    npsScore: 45,
+    strengths: ["Market Leader", "Deep Integration", "Feature Rich"],
+    idealFor: ["Large Enterprises", "Cisco-heavy shops", "Complex policy needs"],
     features: {
       core: {
         networkAccess: true,
@@ -189,14 +287,14 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
         cloudNative: false,
       },
       advanced: {
-        aiMl: false,
+        aiMl: "limited",
         zeroTrust: true,
-        automation: false,
+        automation: "limited",
         api: true,
         multiTenant: false,
         federation: true,
-        riskScoring: false,
-        behaviorAnalytics: false,
+        riskScoring: true,
+        behaviorAnalytics: "limited",
       },
       security: {
         threatDetection: true,
@@ -209,43 +307,107 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
     },
     pricing: {
       model: "per-device",
+      basePrice: 10,
       tiers: {
-        essentials: { name: "Essentials", price: 50, streetPrice: "35-45", features: ["Basic 802.1X", "MAB"] },
-        advantage: { name: "Advantage", price: 100, streetPrice: "75-95", features: ["Profiling", "BYOD"] },
-        premier: { name: "Premier", price: 175, streetPrice: "125-150", features: ["TACACS+", "pxGrid"] },
+        essentials: { name: "Essentials", price: 50, streetPrice: "35-45", features: [] },
+        advantage: { name: "Advantage", price: 100, streetPrice: "75-95", features: [] },
+        premier: { name: "Premier", price: 175, streetPrice: "125-150", features: [] },
       },
       hardware: {
-        sns3615: { name: "SNS-3615 (Small)", listPrice: 19995, capacity: "5,000 endpoints" },
-        sns3655: { name: "SNS-3655 (Medium)", listPrice: 59995, capacity: "15,000 endpoints" },
-        sns3695: { name: "SNS-3695 (Large)", listPrice: 119995, capacity: "30,000 endpoints" },
+        sns3615: { name: "SNS-3615", listPrice: 19995, capacity: "5k" },
+        sns3655: { name: "SNS-3655", listPrice: 59995, capacity: "15k" },
+        sns3695: { name: "SNS-3695", listPrice: 119995, capacity: "30k" },
       },
       professionalServices: { quickStart: 25000, advanced: 75000, migration: 100000 },
       supportCost: 0.22,
     },
     implementation: {
       deploymentTime: { pilot: "4-8 weeks", fullDeployment: "6-12 months" },
-      complexity: "high",
+      complexity: "very-high",
       hardwareRequired: true,
       professionalServicesRequired: true,
+      phases: [
+        {
+          name: "Planning & Design",
+          duration: "2-4 Weeks",
+          durationDays: [10, 20],
+          icon: "ClipboardList",
+          tasks: ["Extensive requirement gathering", "Architecture design"],
+          resources: ["Architect", "Project Manager", "2x Engineers"],
+        },
+        {
+          name: "Hardware Procurement & Setup",
+          duration: "4-6 Weeks",
+          durationDays: [20, 30],
+          icon: "Server",
+          tasks: ["Order hardware", "Racking & stacking", "OS install"],
+          resources: ["Data Center Team", "Network Engineer"],
+        },
+        {
+          name: "Integration & Setup",
+          duration: "4-8 Weeks",
+          durationDays: [20, 40],
+          icon: "Network",
+          tasks: ["Integrate with all systems", "Build policies from scratch"],
+          resources: ["Dedicated ISE Engineer", "SMEs"],
+        },
+        {
+          name: "Pilot Deployment",
+          duration: "6-12 Weeks",
+          durationDays: [30, 60],
+          icon: "UsersIcon",
+          tasks: ["Multiple pilot groups", "Extensive testing"],
+          resources: ["Project Team", "Helpdesk"],
+        },
+        {
+          name: "Production Rollout",
+          duration: "3-6 Months",
+          durationDays: [60, 120],
+          icon: "RocketIcon",
+          tasks: ["Site-by-site rollout", "Change management"],
+          resources: ["Full Project Team"],
+        },
+      ],
     },
     compliance: {
       frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "ISO 27001", "NIST", "Common Criteria"],
       certifications: ["FIPS 140-2", "Common Criteria", "ISO 27001"],
-      automationLevel: 35,
-      auditReadiness: 78,
+      automationLevel: 40,
+      auditReadiness: 80,
     },
     hiddenCosts: {
       fteRequirement: 2.5,
       commonIssues: ["Upgrade complexity", "High overhead", "Performance limitations"],
     },
+    cyberInsuranceImpact: { premiumReduction: 15, coverageIncrease: 10 },
+    mitreAttackCoverage: {
+      "Initial Access": 70,
+      Execution: 60,
+      Persistence: 75,
+      "Privilege Escalation": 70,
+      "Defense Evasion": 65,
+      "Credential Access": 70,
+      Discovery: 80,
+      "Lateral Movement": 75,
+      Collection: 60,
+      "Command and Control": 65,
+      Exfiltration: 60,
+      Impact: 70,
+    },
+    nistCsfAlignment: { Identify: 80, Protect: 85, Detect: 70, Respond: 65, Recover: 60 },
+    downtimeCostPerHour: 5000,
   },
   aruba: {
     id: "aruba",
     name: "Aruba ClearPass",
     category: "enterprise",
-    description: "Policy management platform with strong wireless integration and user experience focus",
+    description: "Policy management platform with strong wireless integration and user experience focus.",
     marketPosition: "challenger",
     logoPath: "/aruba-logo.png",
+    marketShare: 18.9,
+    npsScore: 55,
+    strengths: ["Wireless Integration", "Policy Flexibility", "Guest Access"],
+    idealFor: ["Aruba/HPE shops", "Universities", "Large public venues"],
     features: {
       core: {
         networkAccess: true,
@@ -272,7 +434,7 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       security: {
         threatDetection: true,
         incidentResponse: true,
-        forensics: true,
+        forensics: "limited",
         encryption: true,
         certificateManagement: true,
         vulnerabilityAssessment: false,
@@ -280,21 +442,54 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
     },
     pricing: {
       model: "per-device",
-      tiers: {
-        subscription: { name: "Subscription", price: 15, features: ["Full platform access"] },
-      },
+      basePrice: 8,
+      tiers: { subscription: { name: "Subscription", price: 15, features: [] } },
       hardware: {
-        c2000: { name: "C2000", listPrice: 24995, capacity: "5,000 endpoints" },
-        c3000: { name: "C3000", listPrice: 49995, capacity: "25,000 endpoints" },
+        c2000: { name: "C2000", listPrice: 24995, capacity: "5k" },
+        c3000: { name: "C3000", listPrice: 49995, capacity: "25k" },
       },
       professionalServices: { quickStart: 15000, advanced: 35000, migration: 60000 },
       supportCost: 0.18,
     },
     implementation: {
       deploymentTime: { pilot: "2-4 weeks", fullDeployment: "3-6 months" },
-      complexity: "medium",
+      complexity: "high",
       hardwareRequired: true,
       professionalServicesRequired: true,
+      phases: [
+        {
+          name: "Planning & Design",
+          duration: "1-3 Weeks",
+          durationDays: [5, 15],
+          icon: "ClipboardList",
+          tasks: ["Requirement gathering", "Architecture design"],
+          resources: ["Architect", "Engineer"],
+        },
+        {
+          name: "Hardware & Integration",
+          duration: "2-4 Weeks",
+          durationDays: [10, 20],
+          icon: "Server",
+          tasks: ["Setup appliances", "Integrate with IdP/MDM"],
+          resources: ["Engineer", "Admin"],
+        },
+        {
+          name: "Pilot Deployment",
+          duration: "3-6 Weeks",
+          durationDays: [15, 30],
+          icon: "UsersIcon",
+          tasks: ["Onboard pilot group", "Refine policies"],
+          resources: ["Engineer", "Helpdesk"],
+        },
+        {
+          name: "Production Rollout",
+          duration: "2-4 Months",
+          durationDays: [40, 80],
+          icon: "RocketIcon",
+          tasks: ["Phased rollout", "User training"],
+          resources: ["Project Team"],
+        },
+      ],
     },
     compliance: {
       frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "ISO 27001", "NIST"],
@@ -306,14 +501,36 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       fteRequirement: 2.0,
       commonIssues: ["Database maintenance", "Complex licensing", "Upgrade complexity"],
     },
+    cyberInsuranceImpact: { premiumReduction: 12, coverageIncrease: 10 },
+    mitreAttackCoverage: {
+      "Initial Access": 65,
+      Execution: 55,
+      Persistence: 70,
+      "Privilege Escalation": 65,
+      "Defense Evasion": 60,
+      "Credential Access": 65,
+      Discovery: 75,
+      "Lateral Movement": 70,
+      Collection: 55,
+      "Command and Control": 60,
+      Exfiltration: 55,
+      Impact: 65,
+    },
+    nistCsfAlignment: { Identify: 75, Protect: 80, Detect: 65, Respond: 60, Recover: 55 },
+    downtimeCostPerHour: 4500,
   },
-  meraki: {
-    id: "meraki",
-    name: "Cisco Meraki",
-    category: "mid-market",
-    description: "Cloud-managed networking with integrated security and simple deployment",
-    marketPosition: "challenger",
-    logoPath: "/meraki-logo.png",
+  fortinet: {
+    id: "fortinet",
+    name: "FortiNAC",
+    category: "enterprise",
+    description:
+      "Integrated security platform with network access control and threat protection within the Fortinet Security Fabric.",
+    marketPosition: "leader",
+    logoPath: "/fortinet-logo.png",
+    marketShare: 12.1,
+    npsScore: 50,
+    strengths: ["Security Fabric", "Broad Portfolio", "Good Value"],
+    idealFor: ["Fortinet-heavy shops", "Consolidated security", "OT environments"],
     features: {
       core: {
         networkAccess: true,
@@ -322,67 +539,120 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
         guestAccess: true,
         byod: true,
         iot: true,
-        compliance: false,
+        compliance: true,
         reporting: true,
         integration: true,
-        cloudNative: true,
+        cloudNative: false,
       },
       advanced: {
-        aiMl: false,
-        zeroTrust: false,
+        aiMl: true,
+        zeroTrust: true,
         automation: true,
         api: true,
         multiTenant: true,
-        federation: false,
-        riskScoring: false,
-        behaviorAnalytics: false,
+        federation: true,
+        riskScoring: true,
+        behaviorAnalytics: true,
       },
       security: {
         threatDetection: true,
-        incidentResponse: false,
-        forensics: false,
+        incidentResponse: true,
+        forensics: true,
         encryption: true,
-        certificateManagement: false,
-        vulnerabilityAssessment: false,
+        certificateManagement: true,
+        vulnerabilityAssessment: true,
       },
     },
     pricing: {
       model: "per-device",
-      tiers: {
-        // Meraki licensing is tied to hardware, so we model it as a single tier
-        enterprise: { name: "Enterprise", price: 150, features: ["Full dashboard access per AP"] },
-      },
+      basePrice: 6,
+      tiers: { subscription: { name: "Subscription", price: 10, features: [] } },
       hardware: {
-        mr36: { name: "MR36 AP", listPrice: 1295, capacity: "Wi-Fi 6 AP" },
-        ms120: { name: "MS120-8 Switch", listPrice: 649, capacity: "8-port Switch" },
+        nac300f: { name: "FortiNAC-300F", listPrice: 8000, capacity: "2k" },
+        nac700f: { name: "FortiNAC-700F", listPrice: 45000, capacity: "50k" },
       },
-      professionalServices: { quickStart: 10000, advanced: 22500, migration: 30000 },
-      supportCost: 0, // Included in license
+      professionalServices: { quickStart: 20000, advanced: 35000, migration: 60000 },
+      supportCost: 0.2,
     },
     implementation: {
-      deploymentTime: { pilot: "1-2 weeks", fullDeployment: "1-3 months" },
-      complexity: "low",
+      deploymentTime: { pilot: "3-5 weeks", fullDeployment: "3-6 months" },
+      complexity: "high",
       hardwareRequired: true,
-      professionalServicesRequired: false,
+      professionalServicesRequired: true,
+      phases: [
+        {
+          name: "Planning & Fabric Integration",
+          duration: "2-3 Weeks",
+          durationDays: [10, 15],
+          icon: "ClipboardList",
+          tasks: ["Design within Security Fabric", "Define policies"],
+          resources: ["Fortinet Specialist"],
+        },
+        {
+          name: "Appliance & Agent Deployment",
+          duration: "2-4 Weeks",
+          durationDays: [10, 20],
+          icon: "Server",
+          tasks: ["Setup appliances", "Deploy persistent agents"],
+          resources: ["Engineer", "Desktop Team"],
+        },
+        {
+          name: "Pilot Deployment",
+          duration: "4-6 Weeks",
+          durationDays: [20, 30],
+          icon: "UsersIcon",
+          tasks: ["Test on pilot network segment", "Validate policies"],
+          resources: ["Engineer"],
+        },
+        {
+          name: "Production Rollout",
+          duration: "2-4 Months",
+          durationDays: [40, 80],
+          icon: "RocketIcon",
+          tasks: ["Gradual rollout", "Monitor fabric integration"],
+          resources: ["Project Team"],
+        },
+      ],
     },
     compliance: {
-      frameworks: ["PCI-DSS", "GDPR", "HIPAA"],
-      certifications: ["SOC 2", "FedRAMP"],
-      automationLevel: 45,
-      auditReadiness: 65,
+      frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "ISO 27001", "NIST"],
+      certifications: ["FIPS 140-2", "SOC 2", "ISO 27001", "Common Criteria"],
+      automationLevel: 75,
+      auditReadiness: 88,
     },
     hiddenCosts: {
-      fteRequirement: 0.5,
-      commonIssues: ["Complete vendor lock-in", "Internet dependency", "Limited advanced features"],
+      fteRequirement: 1.5,
+      commonIssues: ["Multi-vendor complexity", "Performance at scale", "Database growth"],
     },
+    cyberInsuranceImpact: { premiumReduction: 10, coverageIncrease: 8 },
+    mitreAttackCoverage: {
+      "Initial Access": 75,
+      Execution: 65,
+      Persistence: 70,
+      "Privilege Escalation": 70,
+      "Defense Evasion": 70,
+      "Credential Access": 70,
+      Discovery: 80,
+      "Lateral Movement": 75,
+      Collection: 65,
+      "Command and Control": 70,
+      Exfiltration: 65,
+      Impact: 75,
+    },
+    nistCsfAlignment: { Identify: 80, Protect: 85, Detect: 75, Respond: 70, Recover: 65 },
+    downtimeCostPerHour: 4000,
   },
   forescout: {
     id: "forescout",
     name: "Forescout",
     category: "enterprise",
-    description: "Device visibility and compliance platform with strong IoT and OT security focus",
+    description: "Agentless device visibility and compliance platform with strong IoT and OT security focus.",
     marketPosition: "niche",
     logoPath: "/forescout-logo.png",
+    marketShare: 8.3,
+    npsScore: 30,
+    strengths: ["Agentless Visibility", "OT/ICS Security", "Device Classification"],
+    idealFor: ["Manufacturing", "Healthcare", "Critical infrastructure"],
     features: {
       core: {
         networkAccess: true,
@@ -417,21 +687,54 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
     },
     pricing: {
       model: "per-device",
-      tiers: {
-        subscription: { name: "Subscription", price: 16, features: ["Full platform access"] },
-      },
+      basePrice: 12,
+      tiers: { subscription: { name: "Subscription", price: 16, features: [] } },
       hardware: {
-        ct1000: { name: "CT-1000", listPrice: 4995, capacity: "1,000 devices" },
-        ct10000: { name: "CT-10000", listPrice: 29995, capacity: "10,000 devices" },
+        ct1000: { name: "CT-1000", listPrice: 4995, capacity: "1k" },
+        ct10000: { name: "CT-10000", listPrice: 29995, capacity: "10k" },
       },
       professionalServices: { quickStart: 40000, advanced: 112500, migration: 75000 },
       supportCost: 0.22,
     },
     implementation: {
       deploymentTime: { pilot: "6-8 weeks", fullDeployment: "4-8 months" },
-      complexity: "high",
+      complexity: "very-high",
       hardwareRequired: true,
       professionalServicesRequired: true,
+      phases: [
+        {
+          name: "Network Discovery & Mapping",
+          duration: "3-5 Weeks",
+          durationDays: [15, 25],
+          icon: "ClipboardList",
+          tasks: ["Deploy sensors", "Baseline network traffic"],
+          resources: ["Network Architect", "Forescout Specialist"],
+        },
+        {
+          name: "Policy Development",
+          duration: "4-6 Weeks",
+          durationDays: [20, 30],
+          icon: "FileText",
+          tasks: ["Create segmentation policies", "Define compliance rules"],
+          resources: ["Security Analyst"],
+        },
+        {
+          name: "Staged Enforcement",
+          duration: "2-3 Months",
+          durationDays: [40, 60],
+          icon: "ShieldCheck",
+          tasks: ["Enforce policies in monitor mode", "Address exceptions"],
+          resources: ["Engineer", "Helpdesk"],
+        },
+        {
+          name: "Full Production",
+          duration: "2-3 Months",
+          durationDays: [40, 60],
+          icon: "RocketIcon",
+          tasks: ["Move to full enforcement", "Operational handover"],
+          resources: ["Project Team", "SOC"],
+        },
+      ],
     },
     compliance: {
       frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "ISO 27001", "NIST", "NERC CIP"],
@@ -443,26 +746,47 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       fteRequirement: 2.0,
       commonIssues: ["Frequently glitchy", "Database corruption", "Performance degradation"],
     },
+    cyberInsuranceImpact: { premiumReduction: 8, coverageIncrease: 5 },
+    mitreAttackCoverage: {
+      "Initial Access": 85,
+      Execution: 50,
+      Persistence: 60,
+      "Privilege Escalation": 60,
+      "Defense Evasion": 70,
+      "Credential Access": 60,
+      Discovery: 90,
+      "Lateral Movement": 80,
+      Collection: 50,
+      "Command and Control": 55,
+      Exfiltration: 50,
+      Impact: 60,
+    },
+    nistCsfAlignment: { Identify: 90, Protect: 70, Detect: 75, Respond: 60, Recover: 50 },
+    downtimeCostPerHour: 6000,
   },
-  fortinet: {
-    id: "fortinet",
-    name: "Fortinet",
-    category: "enterprise",
-    description: "Integrated security platform with network access control and threat protection",
-    marketPosition: "leader",
-    logoPath: "/fortinet-logo.png",
+  microsoft: {
+    id: "microsoft",
+    name: "Microsoft",
+    category: "platform-add-on",
+    description: "NAC capabilities integrated into the Microsoft 365 Defender and Azure ecosystem.",
+    marketPosition: "challenger",
+    logoPath: "/microsoft-logo.png",
+    marketShare: 6.1,
+    npsScore: 60,
+    strengths: ["Ecosystem Integration", "Included in E5", "Identity-centric"],
+    idealFor: ["Microsoft-centric orgs", "Companies with M365 E5 licenses"],
     features: {
       core: {
-        networkAccess: true,
+        networkAccess: "limited",
         deviceProfiling: true,
-        policyEnforcement: true,
+        policyEnforcement: "limited",
         guestAccess: true,
         byod: true,
-        iot: true,
+        iot: "limited",
         compliance: true,
         reporting: true,
         integration: true,
-        cloudNative: false,
+        cloudNative: true,
       },
       advanced: {
         aiMl: true,
@@ -484,33 +808,896 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       },
     },
     pricing: {
-      model: "per-device",
-      tiers: {
-        subscription: { name: "Subscription", price: 10, features: ["Full platform access"] },
-      },
-      hardware: {
-        nac300f: { name: "FortiNAC-300F", listPrice: 8000, capacity: "2,000 devices" },
-        nac700f: { name: "FortiNAC-700F", listPrice: 45000, capacity: "50,000 devices" },
-      },
-      professionalServices: { quickStart: 20000, advanced: 35000, migration: 60000 },
-      supportCost: 0.2,
+      model: "per-user",
+      basePrice: 5, // Incremental cost over E3
+      tiers: { e5: { name: "M365 E5", price: 57, features: [] } },
+      professionalServices: { quickStart: 10000, advanced: 30000, migration: 50000 },
+      supportCost: 0,
     },
     implementation: {
-      deploymentTime: { pilot: "3-5 weeks", fullDeployment: "3-6 months" },
+      deploymentTime: { pilot: "2-3 weeks", fullDeployment: "2-4 months" },
       complexity: "medium",
-      hardwareRequired: true,
-      professionalServicesRequired: true,
+      hardwareRequired: false,
+      professionalServicesRequired: false,
+      phases: [
+        {
+          name: "Azure AD & Intune Setup",
+          duration: "1-2 Weeks",
+          durationDays: [5, 10],
+          icon: "ClipboardList",
+          tasks: ["Configure conditional access", "Setup Intune policies"],
+          resources: ["Azure Admin"],
+        },
+        {
+          name: "Device Enrollment",
+          duration: "2-4 Weeks",
+          durationDays: [10, 20],
+          icon: "UsersIcon",
+          tasks: ["Enroll corporate devices", "Setup BYOD profiles"],
+          resources: ["Desktop Team"],
+        },
+        {
+          name: "Policy Rollout",
+          duration: "1-2 Months",
+          durationDays: [20, 40],
+          icon: "RocketIcon",
+          tasks: ["Gradually apply policies", "Monitor sign-in logs"],
+          resources: ["Security Admin"],
+        },
+      ],
     },
     compliance: {
       frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "ISO 27001", "NIST"],
-      certifications: ["FIPS 140-2", "SOC 2", "ISO 27001", "Common Criteria"],
-      automationLevel: 75,
-      auditReadiness: 88,
+      certifications: ["SOC 2", "ISO 27001", "FedRAMP"],
+      automationLevel: 80,
+      auditReadiness: 90,
     },
     hiddenCosts: {
-      fteRequirement: 1.5,
-      commonIssues: ["Multi-vendor complexity", "Performance at scale", "Database growth"],
+      fteRequirement: 1.0,
+      commonIssues: ["Complex licensing", "Limited non-Windows support", "Requires high-tier license"],
     },
+    cyberInsuranceImpact: { premiumReduction: 18, coverageIncrease: 15 },
+    mitreAttackCoverage: {
+      "Initial Access": 80,
+      Execution: 75,
+      Persistence: 85,
+      "Privilege Escalation": 80,
+      "Defense Evasion": 75,
+      "Credential Access": 85,
+      Discovery: 70,
+      "Lateral Movement": 65,
+      Collection: 70,
+      "Command and Control": 75,
+      Exfiltration: 70,
+      Impact: 75,
+    },
+    nistCsfAlignment: { Identify: 85, Protect: 90, Detect: 80, Respond: 75, Recover: 70 },
+    downtimeCostPerHour: 3000,
+  },
+  // Add 7 more vendors
+  juniper: {
+    id: "juniper",
+    name: "Juniper Mist Access Assurance",
+    category: "enterprise",
+    description: "Cloud-native access control integrated with the Mist AI-driven networking platform.",
+    marketPosition: "visionary",
+    logoPath: "/juniper-logo.png",
+    marketShare: 4.2,
+    npsScore: 65,
+    strengths: ["AI-Driven", "Cloud-Native", "Mist Integration"],
+    idealFor: ["Juniper/Mist shops", "AI-ops focused teams"],
+    features: {
+      core: {
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: true,
+        byod: true,
+        iot: true,
+        compliance: "limited",
+        reporting: true,
+        integration: true,
+        cloudNative: true,
+      },
+      advanced: {
+        aiMl: true,
+        zeroTrust: true,
+        automation: true,
+        api: true,
+        multiTenant: true,
+        federation: true,
+        riskScoring: true,
+        behaviorAnalytics: true,
+      },
+      security: {
+        threatDetection: "limited",
+        incidentResponse: "limited",
+        forensics: false,
+        encryption: true,
+        certificateManagement: true,
+        vulnerabilityAssessment: false,
+      },
+    },
+    pricing: {
+      model: "per-user",
+      basePrice: 4.5,
+      tiers: { subscription: { name: "Access Assurance", price: 54, features: [] } },
+      professionalServices: { quickStart: 12000, advanced: 25000, migration: 40000 },
+      supportCost: 0,
+    },
+    implementation: {
+      deploymentTime: { pilot: "1-2 weeks", fullDeployment: "1-2 months" },
+      complexity: "low",
+      hardwareRequired: false,
+      professionalServicesRequired: false,
+      phases: [
+        {
+          name: "Mist Cloud Setup",
+          duration: "1-3 Days",
+          durationDays: [1, 3],
+          icon: "Cloud",
+          tasks: ["Org setup", "SSO config"],
+          resources: ["Mist Admin"],
+        },
+        {
+          name: "Policy Configuration",
+          duration: "1-2 Weeks",
+          durationDays: [5, 10],
+          icon: "FileText",
+          tasks: ["Define access policies", "Integrate with IdP"],
+          resources: ["Network Admin"],
+        },
+        {
+          name: "Rollout",
+          duration: "2-4 Weeks",
+          durationDays: [10, 20],
+          icon: "RocketIcon",
+          tasks: ["Apply to SSIDs", "Monitor client events"],
+          resources: ["Admin"],
+        },
+      ],
+    },
+    compliance: { frameworks: ["PCI-DSS", "GDPR"], certifications: ["SOC 2"], automationLevel: 85, auditReadiness: 75 },
+    hiddenCosts: { fteRequirement: 0.5, commonIssues: ["Best with full Juniper stack", "Newer product"] },
+    cyberInsuranceImpact: { premiumReduction: 20, coverageIncrease: 20 },
+    mitreAttackCoverage: {
+      "Initial Access": 85,
+      Execution: 60,
+      Persistence: 70,
+      "Privilege Escalation": 65,
+      "Defense Evasion": 75,
+      "Credential Access": 60,
+      Discovery: 85,
+      "Lateral Movement": 80,
+      Collection: 50,
+      "Command and Control": 60,
+      Exfiltration: 55,
+      Impact: 70,
+    },
+    nistCsfAlignment: { Identify: 85, Protect: 80, Detect: 75, Respond: 65, Recover: 60 },
+    downtimeCostPerHour: 2500,
+  },
+  extreme: {
+    id: "extreme",
+    name: "ExtremeControl",
+    category: "mid-market",
+    description: "Fabric-based NAC solution providing visibility and control over the enterprise network.",
+    marketPosition: "niche",
+    logoPath: "/extreme-logo.png",
+    marketShare: 3.8,
+    npsScore: 48,
+    strengths: ["Fabric Integration", "Granular Control", "Good for Education"],
+    idealFor: ["Education", "Mid-sized enterprises", "Extreme Networks shops"],
+    features: {
+      core: {
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: true,
+        byod: true,
+        iot: true,
+        compliance: true,
+        reporting: true,
+        integration: "limited",
+        cloudNative: false,
+      },
+      advanced: {
+        aiMl: false,
+        zeroTrust: "limited",
+        automation: "limited",
+        api: true,
+        multiTenant: false,
+        federation: false,
+        riskScoring: true,
+        behaviorAnalytics: false,
+      },
+      security: {
+        threatDetection: "limited",
+        incidentResponse: "limited",
+        forensics: false,
+        encryption: true,
+        certificateManagement: true,
+        vulnerabilityAssessment: "limited",
+      },
+    },
+    pricing: {
+      model: "per-device",
+      basePrice: 7,
+      tiers: { subscription: { name: "Subscription", price: 12, features: [] } },
+      hardware: { e1120: { name: "E1120 Appliance", listPrice: 15000, capacity: "2.5k" } },
+      professionalServices: { quickStart: 18000, advanced: 40000, migration: 55000 },
+      supportCost: 0.2,
+    },
+    implementation: {
+      deploymentTime: { pilot: "3-6 weeks", fullDeployment: "3-5 months" },
+      complexity: "medium",
+      hardwareRequired: true,
+      professionalServicesRequired: true,
+      phases: [
+        {
+          name: "Planning & Design",
+          duration: "2-3 Weeks",
+          durationDays: [10, 15],
+          icon: "ClipboardList",
+          tasks: ["Fabric planning", "Policy design"],
+          resources: ["Extreme Specialist"],
+        },
+        {
+          name: "Deployment",
+          duration: "1-2 Months",
+          durationDays: [20, 40],
+          icon: "Server",
+          tasks: ["Appliance setup", "Agent rollout"],
+          resources: ["Engineer"],
+        },
+        {
+          name: "Rollout",
+          duration: "1-2 Months",
+          durationDays: [20, 40],
+          icon: "RocketIcon",
+          tasks: ["Phased enforcement", "Tuning"],
+          resources: ["Admin"],
+        },
+      ],
+    },
+    compliance: { frameworks: ["HIPAA", "PCI-DSS"], certifications: [], automationLevel: 50, auditReadiness: 70 },
+    hiddenCosts: { fteRequirement: 1.75, commonIssues: ["Complex to manage", "Best with Extreme fabric"] },
+    cyberInsuranceImpact: { premiumReduction: 5, coverageIncrease: 5 },
+    mitreAttackCoverage: {
+      "Initial Access": 60,
+      Execution: 50,
+      Persistence: 65,
+      "Privilege Escalation": 60,
+      "Defense Evasion": 55,
+      "Credential Access": 60,
+      Discovery: 70,
+      "Lateral Movement": 65,
+      Collection: 50,
+      "Command and Control": 55,
+      Exfiltration: 50,
+      Impact: 60,
+    },
+    nistCsfAlignment: { Identify: 70, Protect: 75, Detect: 60, Respond: 55, Recover: 50 },
+    downtimeCostPerHour: 3500,
+  },
+  paloalto: {
+    id: "paloalto",
+    name: "Palo Alto Networks",
+    category: "platform-add-on",
+    description: "Zero Trust Network Access (ZTNA) as part of the broader SASE and firewall platform.",
+    marketPosition: "leader",
+    logoPath: "/paloalto-logo.png",
+    marketShare: 9.5,
+    npsScore: 62,
+    strengths: ["Best-in-class Firewall", "SASE Leader", "Threat Intelligence"],
+    idealFor: ["Palo Alto shops", "SASE/ZTNA deployments"],
+    features: {
+      core: {
+        networkAccess: "limited",
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: false,
+        byod: true,
+        iot: "limited",
+        compliance: "limited",
+        reporting: true,
+        integration: true,
+        cloudNative: true,
+      },
+      advanced: {
+        aiMl: true,
+        zeroTrust: true,
+        automation: true,
+        api: true,
+        multiTenant: false,
+        federation: true,
+        riskScoring: true,
+        behaviorAnalytics: true,
+      },
+      security: {
+        threatDetection: true,
+        incidentResponse: true,
+        forensics: true,
+        encryption: true,
+        certificateManagement: false,
+        vulnerabilityAssessment: true,
+      },
+    },
+    pricing: {
+      model: "per-user",
+      basePrice: 9,
+      tiers: { ztna: { name: "Prisma Access ZTNA", price: 108, features: [] } },
+      professionalServices: { quickStart: 20000, advanced: 50000, migration: 80000 },
+      supportCost: 0.2,
+    },
+    implementation: {
+      deploymentTime: { pilot: "2-4 weeks", fullDeployment: "2-4 months" },
+      complexity: "medium",
+      hardwareRequired: false,
+      professionalServicesRequired: true,
+      phases: [
+        {
+          name: "Prisma Access Setup",
+          duration: "1-2 Weeks",
+          durationDays: [5, 10],
+          icon: "Cloud",
+          tasks: ["Tenant config", "Connector deployment"],
+          resources: ["Cloud Security Engineer"],
+        },
+        {
+          name: "Policy Migration",
+          duration: "2-4 Weeks",
+          durationDays: [10, 20],
+          icon: "FileText",
+          tasks: ["Convert firewall rules to ZTNA policies"],
+          resources: ["PANW Specialist"],
+        },
+        {
+          name: "Client Rollout",
+          duration: "1-2 Months",
+          durationDays: [20, 40],
+          icon: "RocketIcon",
+          tasks: ["Deploy GlobalProtect client", "User onboarding"],
+          resources: ["Desktop Team", "Admin"],
+        },
+      ],
+    },
+    compliance: {
+      frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "NIST"],
+      certifications: ["SOC 2", "ISO 27001", "FedRAMP"],
+      automationLevel: 70,
+      auditReadiness: 85,
+    },
+    hiddenCosts: { fteRequirement: 1.5, commonIssues: ["Costly", "Complex", "Not a traditional NAC"] },
+    cyberInsuranceImpact: { premiumReduction: 15, coverageIncrease: 15 },
+    mitreAttackCoverage: {
+      "Initial Access": 90,
+      Execution: 80,
+      Persistence: 80,
+      "Privilege Escalation": 75,
+      "Defense Evasion": 80,
+      "Credential Access": 75,
+      Discovery: 70,
+      "Lateral Movement": 70,
+      Collection: 70,
+      "Command and Control": 85,
+      Exfiltration: 80,
+      Impact: 85,
+    },
+    nistCsfAlignment: { Identify: 75, Protect: 90, Detect: 85, Respond: 80, Recover: 75 },
+    downtimeCostPerHour: 7000,
+  },
+  checkpoint: {
+    id: "checkpoint",
+    name: "Check Point",
+    category: "platform-add-on",
+    description: "Access control capabilities integrated into Check Point's firewall and Harmony security suite.",
+    marketPosition: "leader",
+    logoPath: "/checkpoint-logo.png",
+    marketShare: 5.8,
+    npsScore: 52,
+    strengths: ["Unified Management", "Threat Prevention", "Strong Firewall"],
+    idealFor: ["Check Point shops", "Consolidating security vendors"],
+    features: {
+      core: {
+        networkAccess: "limited",
+        deviceProfiling: "limited",
+        policyEnforcement: true,
+        guestAccess: false,
+        byod: true,
+        iot: "limited",
+        compliance: "limited",
+        reporting: true,
+        integration: true,
+        cloudNative: false,
+      },
+      advanced: {
+        aiMl: true,
+        zeroTrust: true,
+        automation: true,
+        api: true,
+        multiTenant: false,
+        federation: true,
+        riskScoring: "limited",
+        behaviorAnalytics: "limited",
+      },
+      security: {
+        threatDetection: true,
+        incidentResponse: true,
+        forensics: true,
+        encryption: true,
+        certificateManagement: false,
+        vulnerabilityAssessment: true,
+      },
+    },
+    pricing: {
+      model: "per-user",
+      basePrice: 6,
+      tiers: { harmony: { name: "Harmony Connect", price: 72, features: [] } },
+      professionalServices: { quickStart: 18000, advanced: 45000, migration: 70000 },
+      supportCost: 0.21,
+    },
+    implementation: {
+      deploymentTime: { pilot: "3-5 weeks", fullDeployment: "3-5 months" },
+      complexity: "medium",
+      hardwareRequired: false,
+      professionalServicesRequired: true,
+      phases: [
+        {
+          name: "Gateway & Management Setup",
+          duration: "2-3 Weeks",
+          durationDays: [10, 15],
+          icon: "Server",
+          tasks: ["Configure security gateway", "Setup management server"],
+          resources: ["Check Point Engineer"],
+        },
+        {
+          name: "Policy Definition",
+          duration: "2-4 Weeks",
+          durationDays: [10, 20],
+          icon: "FileText",
+          tasks: ["Define access roles", "Create identity-aware policies"],
+          resources: ["Security Admin"],
+        },
+        {
+          name: "Rollout",
+          duration: "1-2 Months",
+          durationDays: [20, 40],
+          icon: "RocketIcon",
+          tasks: ["Deploy agents", "Enforce policies"],
+          resources: ["Admin"],
+        },
+      ],
+    },
+    compliance: {
+      frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "NIST"],
+      certifications: ["Common Criteria", "FIPS 140-2"],
+      automationLevel: 60,
+      auditReadiness: 80,
+    },
+    hiddenCosts: { fteRequirement: 1.8, commonIssues: ["Management complexity", "Not a dedicated NAC"] },
+    cyberInsuranceImpact: { premiumReduction: 10, coverageIncrease: 8 },
+    mitreAttackCoverage: {
+      "Initial Access": 80,
+      Execution: 70,
+      Persistence: 70,
+      "Privilege Escalation": 65,
+      "Defense Evasion": 70,
+      "Credential Access": 70,
+      Discovery: 65,
+      "Lateral Movement": 65,
+      Collection: 60,
+      "Command and Control": 75,
+      Exfiltration: 70,
+      Impact: 80,
+    },
+    nistCsfAlignment: { Identify: 70, Protect: 85, Detect: 80, Respond: 75, Recover: 70 },
+    downtimeCostPerHour: 6500,
+  },
+  crowdstrike: {
+    id: "crowdstrike",
+    name: "CrowdStrike Falcon",
+    category: "platform-add-on",
+    description: "Identity and endpoint protection platform with ZTNA capabilities, not a traditional NAC.",
+    marketPosition: "leader",
+    logoPath: "/crowdstrike-logo.png",
+    marketShare: 7.2,
+    npsScore: 70,
+    strengths: ["Leading EDR/XDR", "Threat Intelligence", "Cloud-Native"],
+    idealFor: ["Security-first orgs", "Endpoint-focused ZTNA"],
+    features: {
+      core: {
+        networkAccess: false,
+        deviceProfiling: true,
+        policyEnforcement: "limited",
+        guestAccess: false,
+        byod: "limited",
+        iot: false,
+        compliance: true,
+        reporting: true,
+        integration: true,
+        cloudNative: true,
+      },
+      advanced: {
+        aiMl: true,
+        zeroTrust: true,
+        automation: true,
+        api: true,
+        multiTenant: true,
+        federation: true,
+        riskScoring: true,
+        behaviorAnalytics: true,
+      },
+      security: {
+        threatDetection: true,
+        incidentResponse: true,
+        forensics: true,
+        encryption: true,
+        certificateManagement: false,
+        vulnerabilityAssessment: true,
+      },
+    },
+    pricing: {
+      model: "per-device",
+      basePrice: 15,
+      tiers: { complete: { name: "Falcon Complete", price: 180, features: [] } },
+      professionalServices: { quickStart: 15000, advanced: 30000, migration: 45000 },
+      supportCost: 0,
+    },
+    implementation: {
+      deploymentTime: { pilot: "1 week", fullDeployment: "1 month" },
+      complexity: "low",
+      hardwareRequired: false,
+      professionalServicesRequired: false,
+      phases: [
+        {
+          name: "Tenant & Policy Setup",
+          duration: "1-3 Days",
+          durationDays: [1, 3],
+          icon: "Cloud",
+          tasks: ["Configure cloud tenant", "Define ZTA policies"],
+          resources: ["Security Admin"],
+        },
+        {
+          name: "Agent Deployment",
+          duration: "1-2 Weeks",
+          durationDays: [5, 10],
+          icon: "UsersIcon",
+          tasks: ["Deploy Falcon agent", "Group devices"],
+          resources: ["Desktop Team"],
+        },
+        {
+          name: "Enforcement",
+          duration: "1-2 Weeks",
+          durationDays: [5, 10],
+          icon: "ShieldCheck",
+          tasks: ["Apply policies", "Monitor access"],
+          resources: ["SOC Analyst"],
+        },
+      ],
+    },
+    compliance: {
+      frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "NIST"],
+      certifications: ["SOC 2", "ISO 27001", "FedRAMP"],
+      automationLevel: 80,
+      auditReadiness: 90,
+    },
+    hiddenCosts: { fteRequirement: 1.0, commonIssues: ["Not a network NAC", "Focus on endpoint", "Cost"] },
+    cyberInsuranceImpact: { premiumReduction: 20, coverageIncrease: 25 },
+    mitreAttackCoverage: {
+      "Initial Access": 85,
+      Execution: 90,
+      Persistence: 90,
+      "Privilege Escalation": 85,
+      "Defense Evasion": 85,
+      "Credential Access": 80,
+      Discovery: 80,
+      "Lateral Movement": 75,
+      Collection: 75,
+      "Command and Control": 80,
+      Exfiltration: 75,
+      Impact: 90,
+    },
+    nistCsfAlignment: { Identify: 85, Protect: 85, Detect: 95, Respond: 90, Recover: 80 },
+    downtimeCostPerHour: 8000,
+  },
+  sentinelone: {
+    id: "sentinelone",
+    name: "SentinelOne Singularity",
+    category: "platform-add-on",
+    description: "AI-powered XDR platform providing endpoint security and identity verification.",
+    marketPosition: "leader",
+    logoPath: "/sentinelone-logo.png",
+    marketShare: 6.5,
+    npsScore: 68,
+    strengths: ["AI/Automation", "XDR Capabilities", "Ease of Use"],
+    idealFor: ["Automated SOCs", "Mid-market to Enterprise"],
+    features: {
+      core: {
+        networkAccess: false,
+        deviceProfiling: true,
+        policyEnforcement: "limited",
+        guestAccess: false,
+        byod: "limited",
+        iot: false,
+        compliance: true,
+        reporting: true,
+        integration: true,
+        cloudNative: true,
+      },
+      advanced: {
+        aiMl: true,
+        zeroTrust: true,
+        automation: true,
+        api: true,
+        multiTenant: true,
+        federation: true,
+        riskScoring: true,
+        behaviorAnalytics: true,
+      },
+      security: {
+        threatDetection: true,
+        incidentResponse: true,
+        forensics: true,
+        encryption: true,
+        certificateManagement: false,
+        vulnerabilityAssessment: true,
+      },
+    },
+    pricing: {
+      model: "per-device",
+      basePrice: 12,
+      tiers: { complete: { name: "Singularity Complete", price: 144, features: [] } },
+      professionalServices: { quickStart: 12000, advanced: 28000, migration: 40000 },
+      supportCost: 0,
+    },
+    implementation: {
+      deploymentTime: { pilot: "1 week", fullDeployment: "1 month" },
+      complexity: "low",
+      hardwareRequired: false,
+      professionalServicesRequired: false,
+      phases: [
+        {
+          name: "Cloud Setup",
+          duration: "1-2 Days",
+          durationDays: [1, 2],
+          icon: "Cloud",
+          tasks: ["Tenant provisioning", "Policy config"],
+          resources: ["Admin"],
+        },
+        {
+          name: "Agent Rollout",
+          duration: "1-2 Weeks",
+          durationDays: [5, 10],
+          icon: "UsersIcon",
+          tasks: ["Deploy agents via GPO/MDM", "Verify check-in"],
+          resources: ["Desktop Team"],
+        },
+        {
+          name: "Policy Tuning",
+          duration: "1-2 Weeks",
+          durationDays: [5, 10],
+          icon: "SlidersHorizontal",
+          tasks: ["Tune detection policies", "Set enforcement mode"],
+          resources: ["Security Analyst"],
+        },
+      ],
+    },
+    compliance: {
+      frameworks: ["SOX", "HIPAA", "PCI-DSS", "GDPR", "NIST"],
+      certifications: ["SOC 2", "ISO 27001", "FedRAMP"],
+      automationLevel: 85,
+      auditReadiness: 88,
+    },
+    hiddenCosts: { fteRequirement: 1.2, commonIssues: ["Not a network NAC", "Can be noisy if not tuned"] },
+    cyberInsuranceImpact: { premiumReduction: 18, coverageIncrease: 20 },
+    mitreAttackCoverage: {
+      "Initial Access": 80,
+      Execution: 90,
+      Persistence: 85,
+      "Privilege Escalation": 85,
+      "Defense Evasion": 80,
+      "Credential Access": 75,
+      Discovery: 80,
+      "Lateral Movement": 70,
+      Collection: 70,
+      "Command and Control": 75,
+      Exfiltration: 70,
+      Impact: 85,
+    },
+    nistCsfAlignment: { Identify: 80, Protect: 85, Detect: 90, Respond: 85, Recover: 75 },
+    downtimeCostPerHour: 7500,
+  },
+  meraki: {
+    id: "meraki",
+    name: "Cisco Meraki",
+    category: "mid-market",
+    description: "Cloud-managed networking with integrated security and simple deployment.",
+    marketPosition: "challenger",
+    logoPath: "/meraki-logo.png",
+    marketShare: 10.5,
+    npsScore: 65,
+    strengths: ["Simplicity", "Cloud Management", "All-in-one"],
+    idealFor: ["SMEs", "Distributed sites", "Lean IT teams"],
+    features: {
+      core: {
+        networkAccess: true,
+        deviceProfiling: true,
+        policyEnforcement: true,
+        guestAccess: true,
+        byod: true,
+        iot: "limited",
+        compliance: false,
+        reporting: true,
+        integration: "limited",
+        cloudNative: true,
+      },
+      advanced: {
+        aiMl: false,
+        zeroTrust: false,
+        automation: true,
+        api: true,
+        multiTenant: true,
+        federation: false,
+        riskScoring: false,
+        behaviorAnalytics: false,
+      },
+      security: {
+        threatDetection: "limited",
+        incidentResponse: false,
+        forensics: false,
+        encryption: true,
+        certificateManagement: false,
+        vulnerabilityAssessment: false,
+      },
+    },
+    pricing: {
+      model: "per-device",
+      basePrice: 12.5,
+      tiers: { enterprise: { name: "Enterprise License", price: 150, features: [] } },
+      hardware: {
+        mr36: { name: "MR36 AP", listPrice: 1295, capacity: "Wi-Fi 6 AP" },
+        ms120: { name: "MS120-8 Switch", listPrice: 649, capacity: "8-port Switch" },
+      },
+      professionalServices: { quickStart: 10000, advanced: 22500, migration: 30000 },
+      supportCost: 0,
+    },
+    implementation: {
+      deploymentTime: { pilot: "1-2 weeks", fullDeployment: "1-3 months" },
+      complexity: "low",
+      hardwareRequired: true,
+      professionalServicesRequired: false,
+      phases: [
+        {
+          name: "Hardware Deployment",
+          duration: "1-4 Weeks",
+          durationDays: [5, 20],
+          icon: "Server",
+          tasks: ["Ship hardware to sites", "Plug-and-play setup"],
+          resources: ["On-site staff"],
+        },
+        {
+          name: "Dashboard Configuration",
+          duration: "1-2 Weeks",
+          durationDays: [5, 10],
+          icon: "Cloud",
+          tasks: ["Configure networks", "Define group policies"],
+          resources: ["Network Admin"],
+        },
+        {
+          name: "Rollout",
+          duration: "1-2 Months",
+          durationDays: [20, 40],
+          icon: "RocketIcon",
+          tasks: ["Bring sites online", "Monitor dashboard"],
+          resources: ["Admin"],
+        },
+      ],
+    },
+    compliance: {
+      frameworks: ["PCI-DSS", "GDPR", "HIPAA"],
+      certifications: ["SOC 2", "FedRAMP"],
+      automationLevel: 45,
+      auditReadiness: 65,
+    },
+    hiddenCosts: {
+      fteRequirement: 0.5,
+      commonIssues: ["Complete vendor lock-in", "Internet dependency", "Limited advanced features"],
+    },
+    cyberInsuranceImpact: { premiumReduction: 5, coverageIncrease: 0 },
+    mitreAttackCoverage: {
+      "Initial Access": 50,
+      Execution: 40,
+      Persistence: 45,
+      "Privilege Escalation": 40,
+      "Defense Evasion": 50,
+      "Credential Access": 40,
+      Discovery: 60,
+      "Lateral Movement": 50,
+      Collection: 30,
+      "Command and Control": 40,
+      Exfiltration: 35,
+      Impact: 40,
+    },
+    nistCsfAlignment: { Identify: 60, Protect: 65, Detect: 50, Respond: 40, Recover: 30 },
+    downtimeCostPerHour: 2000,
+  },
+  "no-nac": {
+    id: "no-nac",
+    name: "No NAC / Baseline",
+    category: "baseline",
+    description: "Represents the current state of having no dedicated Network Access Control solution.",
+    marketPosition: "niche",
+    logoPath: "/no-nac-logo.png",
+    marketShare: 0,
+    npsScore: 0,
+    strengths: ["No cost"],
+    idealFor: ["Organizations with high risk tolerance"],
+    features: {
+      core: {
+        networkAccess: false,
+        deviceProfiling: false,
+        policyEnforcement: false,
+        guestAccess: "limited",
+        byod: false,
+        iot: false,
+        compliance: false,
+        reporting: false,
+        integration: false,
+        cloudNative: false,
+      },
+      advanced: {
+        aiMl: false,
+        zeroTrust: false,
+        automation: false,
+        api: false,
+        multiTenant: false,
+        federation: false,
+        riskScoring: false,
+        behaviorAnalytics: false,
+      },
+      security: {
+        threatDetection: false,
+        incidentResponse: false,
+        forensics: false,
+        encryption: false,
+        certificateManagement: false,
+        vulnerabilityAssessment: false,
+      },
+    },
+    pricing: {
+      model: "none",
+      basePrice: 0,
+      tiers: {},
+      professionalServices: { quickStart: 0, advanced: 0, migration: 0 },
+      supportCost: 0,
+    },
+    implementation: {
+      deploymentTime: { pilot: "N/A", fullDeployment: "N/A" },
+      complexity: "low",
+      hardwareRequired: false,
+      professionalServicesRequired: false,
+      phases: [],
+    },
+    compliance: { frameworks: [], certifications: [], automationLevel: 5, auditReadiness: 10 },
+    hiddenCosts: { fteRequirement: 0, commonIssues: ["High risk of breach", "No visibility", "Manual effort"] },
+    cyberInsuranceImpact: { premiumReduction: 0, coverageIncrease: 0 },
+    mitreAttackCoverage: {
+      "Initial Access": 5,
+      Execution: 5,
+      Persistence: 5,
+      "Privilege Escalation": 5,
+      "Defense Evasion": 5,
+      "Credential Access": 5,
+      Discovery: 10,
+      "Lateral Movement": 5,
+      Collection: 5,
+      "Command and Control": 5,
+      Exfiltration: 5,
+      Impact: 5,
+    },
+    nistCsfAlignment: { Identify: 10, Protect: 5, Detect: 5, Respond: 5, Recover: 5 },
+    downtimeCostPerHour: 10000,
   },
 }
 
@@ -520,10 +1707,6 @@ export const getVendorLogoPath = (vendorId: string): string => {
 
 export const getVendorsByCategory = (category: string): VendorData[] => {
   return Object.values(ComprehensiveVendorDatabase).filter((vendor) => vendor.category === category)
-}
-
-export const getVendorsByMarketPosition = (position: string): VendorData[] => {
-  return Object.values(ComprehensiveVendorDatabase).filter((vendor) => vendor.marketPosition === position)
 }
 
 export const searchVendors = (query: string): VendorData[] => {
@@ -537,106 +1720,26 @@ export const searchVendors = (query: string): VendorData[] => {
   )
 }
 
-// Compliance frameworks data
-export const complianceFrameworksData = {
-  sox: {
-    name: "Sarbanes-Oxley (SOX)",
-    description: "Financial reporting and internal controls",
-    industry: "Financial Services",
-    requirements: ["Access controls", "Audit trails", "Data integrity"],
-  },
-  hipaa: {
-    name: "HIPAA",
-    description: "Healthcare information privacy and security",
-    industry: "Healthcare",
-    requirements: ["Access controls", "Audit logs", "Encryption", "Risk assessments"],
-  },
-  "pci-dss": {
-    name: "PCI-DSS",
-    description: "Payment card industry data security",
-    industry: "Retail/Finance",
-    requirements: ["Network segmentation", "Access controls", "Monitoring", "Encryption"],
-  },
-  gdpr: {
-    name: "GDPR",
-    description: "General Data Protection Regulation",
-    industry: "All (EU)",
-    requirements: ["Data protection", "Privacy controls", "Breach notification", "Consent management"],
-  },
-  "iso-27001": {
-    name: "ISO 27001",
-    description: "Information security management systems",
-    industry: "All",
-    requirements: ["Risk management", "Security controls", "Continuous monitoring", "Documentation"],
-  },
-  nist: {
-    name: "NIST Cybersecurity Framework",
-    description: "Cybersecurity risk management framework",
-    industry: "All",
-    requirements: ["Identify", "Protect", "Detect", "Respond", "Recover"],
-  },
-  fedramp: {
-    name: "FedRAMP",
-    description: "Federal risk and authorization management program",
-    industry: "Government",
-    requirements: ["Security controls", "Continuous monitoring", "Incident response", "Documentation"],
-  },
-  "nerc-cip": {
-    name: "NERC CIP",
-    description: "Critical infrastructure protection for utilities",
-    industry: "Energy/Utilities",
-    requirements: ["Asset identification", "Security controls", "Personnel training", "Incident reporting"],
-  },
+export const industrySecurityMetricsData: Record<string, { averageBreachCost: number; breachProbability: number }> = {
+  healthcare: { averageBreachCost: 10930000, breachProbability: 0.29 },
+  financial: { averageBreachCost: 5900000, breachProbability: 0.19 },
+  technology: { averageBreachCost: 5400000, breachProbability: 0.22 },
+  energy: { averageBreachCost: 4780000, breachProbability: 0.16 },
+  government: { averageBreachCost: 3460000, breachProbability: 0.15 },
+  manufacturing: { averageBreachCost: 4470000, breachProbability: 0.18 },
+  retail: { averageBreachCost: 3280000, breachProbability: 0.24 },
+  education: { averageBreachCost: 3790000, breachProbability: 0.26 },
 }
 
-// Industry security metrics
-export const industrySecurityMetricsData = {
-  healthcare: {
-    averageBreachCost: 10930000,
-    breachProbability: 0.29,
-    complianceRequirements: ["HIPAA", "HITECH", "FDA"],
-    criticalAssets: ["Patient records", "Medical devices", "Research data"],
-  },
-  financial: {
-    averageBreachCost: 5720000,
-    breachProbability: 0.19,
-    complianceRequirements: ["SOX", "PCI-DSS", "GLBA", "FFIEC"],
-    criticalAssets: ["Customer data", "Transaction records", "Trading systems"],
-  },
-  government: {
-    averageBreachCost: 4740000,
-    breachProbability: 0.15,
-    complianceRequirements: ["FedRAMP", "FISMA", "NIST", "CJIS"],
-    criticalAssets: ["Citizen data", "Government systems", "Classified information"],
-  },
-  technology: {
-    averageBreachCost: 4880000,
-    breachProbability: 0.22,
-    complianceRequirements: ["SOC 2", "ISO 27001", "GDPR"],
-    criticalAssets: ["Source code", "Customer data", "Intellectual property"],
-  },
-  education: {
-    averageBreachCost: 3790000,
-    breachProbability: 0.26,
-    complianceRequirements: ["FERPA", "COPPA", "GDPR"],
-    criticalAssets: ["Student records", "Research data", "Financial information"],
-  },
-  manufacturing: {
-    averageBreachCost: 4470000,
-    breachProbability: 0.18,
-    complianceRequirements: ["ISO 27001", "NIST", "IEC 62443"],
-    criticalAssets: ["Production systems", "Design data", "Supply chain information"],
-  },
-  retail: {
-    averageBreachCost: 3280000,
-    breachProbability: 0.24,
-    complianceRequirements: ["PCI-DSS", "GDPR", "CCPA"],
-    criticalAssets: ["Customer data", "Payment information", "Inventory systems"],
-  },
-  energy: {
-    averageBreachCost: 6950000,
-    breachProbability: 0.16,
-    complianceRequirements: ["NERC CIP", "NIST", "IEC 62443"],
-    criticalAssets: ["SCADA systems", "Grid infrastructure", "Customer data"],
-  },
+export const COMPLIANCE_FRAMEWORKS = {
+  "pci-dss": "PCI-DSS",
+  hipaa: "HIPAA",
+  sox: "SOX",
+  gdpr: "GDPR",
+  "iso-27001": "ISO 27001",
+  nist: "NIST CSF",
+  fedramp: "FedRAMP",
+  "nerc-cip": "NERC-CIP",
 }
+
+export { MITRE_TACTICS, NIST_FUNCTIONS }

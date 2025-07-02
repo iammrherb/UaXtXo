@@ -3,45 +3,18 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import {
-  ComprehensiveVendorDatabase,
-  getVendorLogoPath,
-  type FeatureMatrix,
-  CORE_FEATURES,
-} from "@/lib/comprehensive-vendor-data"
-import { type calculateVendorTCO, compareVendors, type CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { getVendorLogoPath } from "@/lib/comprehensive-vendor-data"
+import { type CalculationResult, compareVendors, type CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 import EnhancedVendorSelection from "./enhanced-vendor-selection"
 import SettingsPanel from "./settings-panel"
 
 import {
-  BarChart as ReBarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip as ReTooltip,
-  Legend as ReLegend,
-  ResponsiveContainer,
-  Line,
-  AreaChart,
-  Area,
-  CartesianGrid,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-} from "recharts"
-
-import {
-  Download,
-  BarChart3,
   DollarSign,
   LayoutGrid,
   ShieldCheck,
@@ -51,33 +24,18 @@ import {
   FilePieChart,
   Shield,
   Crown,
-  Brain,
   ArrowUpRight,
   ArrowDownRight,
-  Mail,
   Phone,
-  Linkedin,
-  Twitter,
   SlidersHorizontal,
-  HandCoins,
   InfoIcon,
   MoonIcon,
   RocketIcon,
-  YoutubeIcon,
-  ZapIcon,
   SunIcon,
   AlertTriangleIcon,
   UsersIcon,
-  TrendingUpIcon,
   Settings,
-  CheckCircle2,
-  XCircle,
-  MinusCircle,
-  ClipboardList,
-  Network,
 } from "lucide-react"
-
-type CalculationResult = NonNullable<ReturnType<typeof calculateVendorTCO>>
 
 // Enhanced color palette with vibrant Portnox branding
 const PORTNOX_COLORS = {
@@ -125,10 +83,6 @@ const VIBRANT_COLORS = [
 // Animation variants
 const fadeInUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 } }
 const staggerChildren = { animate: { transition: { staggerChildren: 0.07 } } }
-const pulseAnimation = {
-  scale: [1, 1.03, 1],
-  transition: { duration: 1.5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
-}
 
 // Styled Components
 const GradientCard = ({
@@ -146,16 +100,19 @@ const GradientCard = ({
 }) => (
   <Card
     className={cn(
-      "relative overflow-hidden transition-all duration-300 hover:shadow-xl",
+      "relative overflow-hidden transition-all duration-300 hover:shadow-xl h-full",
       darkMode
-        ? "bg-gray-800 border-gray-700 hover:border-portnox-primary/50"
-        : "bg-white border-gray-200 hover:border-portnox-primary/50",
+        ? "bg-gray-800/50 border-gray-700 hover:border-portnox-primary/50"
+        : "bg-white border-gray-200/50 hover:border-portnox-primary/50",
       className,
     )}
     {...props}
   >
-    <div className="absolute inset-0 opacity-5" style={{ background: PORTNOX_COLORS.gradient[gradient] }} />
-    <div className="relative z-10">{children}</div>
+    <div
+      className="absolute inset-0 opacity-5 dark:opacity-10"
+      style={{ background: PORTNOX_COLORS.gradient[gradient] }}
+    />
+    <div className="relative z-10 h-full flex flex-col">{children}</div>
   </Card>
 )
 
@@ -179,20 +136,19 @@ const MetricCard = ({
   darkMode?: boolean
 }) => (
   <motion.div whileHover={{ y: -5 }} whileTap={{ scale: 0.98 }} className="h-full">
-    <GradientCard gradient={gradient} darkMode={darkMode} className="h-full flex flex-col">
+    <GradientCard gradient={gradient} darkMode={darkMode}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className={cn("text-sm font-medium", darkMode ? "text-gray-300" : "text-gray-600")}>
           {title}
         </CardTitle>
-        <motion.div
+        <div
           className="relative p-2 rounded-full"
           style={{ background: `rgba(from ${PORTNOX_COLORS.gradient[gradient]} r g b / 0.1)` }}
-          animate={pulseAnimation}
         >
           {React.cloneElement(icon, {
             className: cn("h-5 w-5", darkMode ? "text-portnox-primaryLight" : "text-portnox-primary"),
           })}
-        </motion.div>
+        </div>
       </CardHeader>
       <CardContent className="flex-grow flex flex-col justify-center">
         <motion.div
@@ -221,13 +177,11 @@ const MetricCard = ({
 
 const TABS_CONFIG = [
   { value: "dashboard", label: "Executive Dashboard", icon: <BarChartHorizontal /> },
-  { value: "cost-breakdown", label: "Detailed Costs", icon: <FilePieChart /> },
-  { value: "roi-analysis", label: "ROI & Business Value", icon: <BarChart3 /> },
-  { value: "compliance", label: "Compliance & Risk", icon: <ShieldCheck /> },
-  { value: "operations", label: "Operations Impact", icon: <SlidersHorizontal /> },
-  { value: "vendor-comparison", label: "Feature Matrix", icon: <LayoutGrid /> },
-  { value: "roadmap", label: "Implementation Roadmap", icon: <Road /> },
-  { value: "reports", label: "Reports", icon: <FileText /> },
+  { value: "financials", label: "Financial Analysis", icon: <FilePieChart /> },
+  { value: "cybersecurity", label: "Cybersecurity Posture", icon: <ShieldCheck /> },
+  { value: "operations", label: "Business Impact", icon: <SlidersHorizontal /> },
+  { value: "timeline", label: "Implementation Timeline", icon: <Road /> },
+  { value: "report", label: "Executive Report", icon: <FileText /> },
 ]
 
 // Main Enhanced Component
@@ -237,7 +191,6 @@ export default function TcoAnalyzerUltimate() {
   const [showVendorSelection, setShowVendorSelection] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
 
-  // Configuration state
   const [configuration, setConfiguration] = useState<CalculationConfiguration>({
     orgSize: "medium",
     devices: 2500,
@@ -246,38 +199,19 @@ export default function TcoAnalyzerUltimate() {
     years: 3,
     region: "north-america",
     portnoxBasePrice: 4.0,
-    portnoxAddons: {
-      atp: false,
-      compliance: false,
-      iot: false,
-      analytics: false,
-    },
+    portnoxAddons: { atp: false, compliance: false, iot: false, analytics: false },
     licenseTier: "professional",
   })
 
-  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco", "aruba", "meraki"])
+  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco", "aruba", "fortinet"])
   const [activeView, setActiveView] = useState("dashboard")
   const [results, setResults] = useState<CalculationResult[] | null>(null)
   const [calculationError, setCalculationError] = useState<string | null>(null)
 
   useEffect(() => {
     setIsClient(true)
-    if (darkMode) {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-    }
-    const saved = localStorage.getItem("portnox-tco-config")
-    if (saved) {
-      try {
-        const savedConfig = JSON.parse(saved)
-        if (savedConfig.configuration) setConfiguration(savedConfig.configuration)
-        if (savedConfig.selectedVendors) setSelectedVendors(savedConfig.selectedVendors)
-        if (typeof savedConfig.darkMode === "boolean") setDarkMode(savedConfig.darkMode)
-      } catch (error) {
-        console.error("Failed to load saved configuration:", error)
-      }
-    }
+    document.documentElement.classList.toggle("dark", darkMode)
+    localStorage.setItem("portnox-tco-dark-mode", JSON.stringify(darkMode))
   }, [darkMode])
 
   const handleCalculate = useCallback(() => {
@@ -309,15 +243,10 @@ export default function TcoAnalyzerUltimate() {
         newSelection = prev.filter((id) => id !== vendorId)
       } else {
         if (prev.length >= 6) {
-          if (prev.includes("portnox")) {
-            const nonPortnox = prev.filter((id) => id !== "portnox")
-            newSelection = ["portnox", ...nonPortnox.slice(0, 4), vendorId]
-          } else {
-            newSelection = [...prev.slice(0, 5), vendorId]
-          }
-        } else {
-          newSelection = [...prev, vendorId]
+          // Simple toast notification could be added here
+          return prev
         }
+        newSelection = [...prev, vendorId]
       }
       if (newSelection.includes("portnox")) {
         return ["portnox", ...newSelection.filter((id) => id !== "portnox")]
@@ -327,22 +256,6 @@ export default function TcoAnalyzerUltimate() {
   }
 
   const portnoxResult = useMemo(() => results?.find((r) => r?.vendor === "portnox"), [results])
-  const competitors = useMemo(() => results?.filter((r) => r?.vendor !== "portnox") || [], [results])
-  const lowestCompetitor = useMemo(
-    () =>
-      competitors.sort((a, b) => (a?.total ?? Number.POSITIVE_INFINITY) - (b?.total ?? Number.POSITIVE_INFINITY))[0],
-    [competitors],
-  )
-
-  const totalSavingsVsLowestCompetitor = useMemo(() => {
-    if (!portnoxResult || !lowestCompetitor) return 0
-    return lowestCompetitor.total - portnoxResult.total
-  }, [portnoxResult, lowestCompetitor])
-
-  const savingsPercentVsLowestCompetitor = useMemo(() => {
-    if (!portnoxResult || !lowestCompetitor || lowestCompetitor.total === 0) return 0
-    return (totalSavingsVsLowestCompetitor / lowestCompetitor.total) * 100
-  }, [totalSavingsVsLowestCompetitor, lowestCompetitor, portnoxResult])
 
   const Header = () => (
     <motion.header
@@ -370,10 +283,10 @@ export default function TcoAnalyzerUltimate() {
             <Separator orientation="vertical" className={cn("h-6", darkMode ? "bg-gray-700" : "bg-gray-300")} />
             <div>
               <h1 className="text-lg font-bold bg-gradient-to-r from-portnox-primary to-portnox-primaryDark bg-clip-text text-transparent">
-                TCO Analyzer
+                TCO & ROI Platform
               </h1>
               <p className={cn("text-xs", darkMode ? "text-gray-400" : "text-gray-500")}>
-                Enterprise Decision Platform v3.0
+                Zero Trust Decision Engine v4.0
               </p>
             </div>
           </div>
@@ -424,18 +337,6 @@ export default function TcoAnalyzerUltimate() {
 
             <Button
               size="sm"
-              variant="outline"
-              className={cn(
-                "hidden sm:flex items-center space-x-1.5",
-                darkMode ? "border-gray-600 hover:bg-gray-700" : "border-gray-300 hover:bg-gray-100",
-              )}
-            >
-              <Download className="h-4 w-4" />
-              <span>Export PDF</span>
-            </Button>
-
-            <Button
-              size="sm"
               className="bg-gradient-to-r from-portnox-primary to-portnox-primaryDark hover:shadow-lg hover:from-portnox-primaryDark hover:to-portnox-primary text-white transition-all duration-300 transform hover:-translate-y-0.5"
             >
               <Phone className="h-4 w-4 mr-1.5" />
@@ -459,7 +360,7 @@ export default function TcoAnalyzerUltimate() {
     >
       <div className="container mx-auto px-0 sm:px-4">
         <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
-          <TabsList className={cn("grid w-full h-auto py-0 bg-transparent rounded-none", `grid-cols-4 sm:grid-cols-8`)}>
+          <TabsList className={cn("grid w-full h-auto py-0 bg-transparent rounded-none", `grid-cols-3 sm:grid-cols-6`)}>
             {TABS_CONFIG.map((tab, index) => (
               <motion.div
                 key={tab.value}
@@ -470,7 +371,7 @@ export default function TcoAnalyzerUltimate() {
                 <TabsTrigger
                   value={tab.value}
                   className={cn(
-                    "relative flex-col sm:flex-row h-14 sm:h-12 text-xs rounded-none px-2 py-1 sm:px-3",
+                    "relative flex-col sm:flex-row h-16 sm:h-12 text-xs rounded-none px-2 py-1 sm:px-3",
                     "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
                     darkMode
                       ? "hover:bg-gray-700/50 data-[state=active]:text-portnox-primaryLight"
@@ -497,11 +398,11 @@ export default function TcoAnalyzerUltimate() {
                   </span>
                   <span
                     className={cn(
-                      "inline sm:hidden text-[9px] leading-tight mt-0.5",
+                      "inline sm:hidden text-[9px] leading-tight mt-0.5 text-center",
                       activeView === tab.value ? "font-semibold" : "",
                     )}
                   >
-                    {tab.label.split(" ")[0]}
+                    {tab.label}
                   </span>
                   {activeView === tab.value && (
                     <motion.div
@@ -527,346 +428,29 @@ export default function TcoAnalyzerUltimate() {
           {calculationError}
         </Card>
       )
-    if (!isClient && !["reports"].includes(activeView))
-      return <Card className="p-6 text-center text-muted-foreground animate-fade-in">Loading charts...</Card>
-
-    const ExecutiveDashboardView = () => {
-      const roiTimelineData = useMemo(() => {
-        if (!results) return []
-        const months = configuration.years * 12
-        const data = []
-        const portnoxRes = results.find((r) => r.vendor === "portnox")
-
-        for (let month = 0; month <= months; month += Math.max(1, Math.floor(months / 12))) {
-          let portnoxROI = 0
-          if (portnoxRes && portnoxRes.roi.paybackMonths && portnoxRes.roi.paybackMonths > 0 && portnoxRes.total > 0) {
-            if (month >= portnoxRes.roi.paybackMonths) {
-              const annualNetBenefit = portnoxRes.roi.annualSavings - portnoxRes.total / configuration.years
-              portnoxROI = ((annualNetBenefit * (month / 12)) / portnoxRes.total) * 100
-            }
-          } else if (portnoxRes && portnoxRes.roi.percentage && month > 0) {
-            portnoxROI = (portnoxRes.roi.percentage / months) * month
-          }
-
-          const avgCompetitorPayback = 18
-          const avgCompetitorAnnualNetBenefitRatio = 0.2
-          let averageROI = 0
-          if (month >= avgCompetitorPayback) {
-            averageROI = avgCompetitorAnnualNetBenefitRatio * (month / 12) * 100
-          }
-
-          data.push({
-            month,
-            portnox: Math.max(0, Math.min(portnoxROI, 600)),
-            average: Math.max(0, Math.min(averageROI, 200)),
-          })
-        }
-        return data
-      }, [results, configuration.years])
-
-      if (!results || !portnoxResult)
-        return (
-          <Card className="p-6 text-center text-muted-foreground animate-fade-in">
-            <InfoIcon className="mx-auto h-8 w-8 mb-2 text-portnox-primary" />
-            Select vendors and calculate TCO.
-          </Card>
-        )
-
+    if (!isClient)
       return (
-        <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
-          <motion.div variants={fadeInUp}>
-            <GradientCard gradient="vibrant" darkMode={darkMode} className="p-6 sm:p-8">
-              <div className="flex flex-col md:flex-row items-center justify-between">
-                <div className="mb-6 md:mb-0 text-center md:text-left">
-                  <motion.h2
-                    className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                  >
-                    Executive Summary
-                  </motion.h2>
-                  <motion.p
-                    className="text-sm sm:text-base text-white/80"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    {configuration.years}-Year Total Cost of Ownership Analysis
-                  </motion.p>
-                </div>
-                <motion.div className="flex items-center space-x-2" whileHover={{ scale: 1.05 }}>
-                  <Crown className="h-7 w-7 sm:h-8 sm:w-8 text-yellow-400" />
-                  <div className="text-right">
-                    <p className="text-xs sm:text-sm text-white/80">Portnox Advantage</p>
-                    <p className="text-xl sm:text-2xl font-bold text-white">
-                      {savingsPercentVsLowestCompetitor.toFixed(0)}% Lower TCO
-                    </p>
-                  </div>
-                </motion.div>
-              </div>
-            </GradientCard>
-          </motion.div>
-
-          <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" variants={staggerChildren}>
-            <motion.div variants={fadeInUp}>
-              <MetricCard
-                title="Total Savings"
-                value={`$${Math.round(Math.abs(totalSavingsVsLowestCompetitor) / 1000).toLocaleString()}K`}
-                detail={`vs. ${lowestCompetitor?.vendorName || "Next Best"}`}
-                icon={<DollarSign />}
-                trend="up"
-                trendValue={`${savingsPercentVsLowestCompetitor.toFixed(0)}%`}
-                gradient="vibrant"
-                darkMode={darkMode}
-              />
-            </motion.div>
-            <motion.div variants={fadeInUp}>
-              <MetricCard
-                title="ROI Achievement"
-                value={`${portnoxResult?.roi?.paybackMonths || 6} mo`}
-                detail="Payback period"
-                icon={<RocketIcon />}
-                trend="up"
-                trendValue="Faster"
-                gradient="fire"
-                darkMode={darkMode}
-              />
-            </motion.div>
-            <motion.div variants={fadeInUp}>
-              <MetricCard
-                title="Risk Reduction"
-                value={`${portnoxResult?.riskMetrics?.breachProbabilityReduction * 100 || 80}%`}
-                detail="Breach probability decrease"
-                icon={<Shield />}
-                trend="up"
-                trendValue="Significant"
-                gradient="ocean"
-                darkMode={darkMode}
-              />
-            </motion.div>
-            <motion.div variants={fadeInUp}>
-              <MetricCard
-                title="Efficiency Gain"
-                value={`${portnoxResult?.roi?.laborSavingsFTE || 1.9} FTE`}
-                detail="Staff hours saved"
-                icon={<UsersIcon />}
-                trend="up"
-                trendValue="Notable"
-                gradient="sunset"
-                darkMode={darkMode}
-              />
-            </motion.div>
-          </motion.div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            <motion.div className="lg:col-span-3" variants={fadeInUp}>
-              <GradientCard darkMode={darkMode}>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2 text-lg">
-                    <BarChart3 className="h-5 w-5 text-portnox-primary" />
-                    <span>TCO Comparison</span>
-                  </CardTitle>
-                  <CardDescription className={cn(darkMode ? "text-gray-400" : "text-gray-500")}>
-                    {configuration.years}-year total cost across vendors
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="h-[350px] sm:h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ReBarChart
-                      data={results?.map((r) => ({
-                        name: r.vendorName,
-                        TCO: r.total,
-                        fill:
-                          r.vendor === "portnox"
-                            ? PORTNOX_COLORS.primary
-                            : VIBRANT_COLORS[results.findIndex((v) => v.vendor === r.vendor) % VIBRANT_COLORS.length],
-                      }))}
-                      layout="vertical"
-                      margin={{ right: 30, left: 10 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#E5E7EB"} />
-                      <XAxis
-                        type="number"
-                        tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                        tick={{
-                          fill: darkMode ? PORTNOX_COLORS.textSecondaryDark : PORTNOX_COLORS.textSecondaryLight,
-                          fontSize: 12,
-                        }}
-                      />
-                      <YAxis
-                        type="category"
-                        dataKey="name"
-                        width={100}
-                        tick={{
-                          fill: darkMode ? PORTNOX_COLORS.textSecondaryDark : PORTNOX_COLORS.textSecondaryLight,
-                          fontSize: 12,
-                        }}
-                        interval={0}
-                      />
-                      <ReTooltip
-                        formatter={(value: number) => [`$${value.toLocaleString()}`, "Total TCO"]}
-                        contentStyle={{
-                          backgroundColor: darkMode ? PORTNOX_COLORS.secondaryLight : "#FFFFFF",
-                          border: `1px solid ${darkMode ? "#374151" : "#E5E7EB"}`,
-                          borderRadius: "8px",
-                          color: darkMode ? PORTNOX_COLORS.textPrimaryDark : PORTNOX_COLORS.textPrimaryLight,
-                        }}
-                        cursor={{ fill: darkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)" }}
-                      />
-                      <Bar dataKey="TCO" radius={[0, 6, 6, 0]} barSize={20} />
-                    </ReBarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </GradientCard>
-            </motion.div>
-            <motion.div className="lg:col-span-2" variants={fadeInUp}>
-              <GradientCard darkMode={darkMode}>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2 text-lg">
-                    <TrendingUpIcon className="h-5 w-5 text-portnox-primary" />
-                    <span>ROI Timeline</span>
-                  </CardTitle>
-                  <CardDescription className={cn(darkMode ? "text-gray-400" : "text-gray-500")}>
-                    Cumulative value over {configuration.years * 12} months
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="h-[350px] sm:h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={roiTimelineData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
-                      <defs>
-                        <linearGradient id="roiGradientFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={PORTNOX_COLORS.primary} stopOpacity={0.6} />
-                          <stop offset="95%" stopColor={PORTNOX_COLORS.primary} stopOpacity={0.05} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#E5E7EB"} />
-                      <XAxis
-                        dataKey="month"
-                        tickFormatter={(value) => `M${value}`}
-                        tick={{
-                          fill: darkMode ? PORTNOX_COLORS.textSecondaryDark : PORTNOX_COLORS.textSecondaryLight,
-                          fontSize: 12,
-                        }}
-                      />
-                      <YAxis
-                        tickFormatter={(value) => `${value}%`}
-                        tick={{
-                          fill: darkMode ? PORTNOX_COLORS.textSecondaryDark : PORTNOX_COLORS.textSecondaryLight,
-                          fontSize: 12,
-                        }}
-                      />
-                      <ReTooltip
-                        formatter={(value: number, name: string) => [
-                          `${value.toFixed(0)}%`,
-                          name.charAt(0).toUpperCase() + name.slice(1),
-                        ]}
-                        contentStyle={{
-                          backgroundColor: darkMode ? PORTNOX_COLORS.secondaryLight : "#FFFFFF",
-                          border: `1px solid ${darkMode ? "#374151" : "#E5E7EB"}`,
-                          borderRadius: "8px",
-                        }}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="portnox"
-                        stroke={PORTNOX_COLORS.primary}
-                        strokeWidth={2.5}
-                        fill="url(#roiGradientFill)"
-                        name="Portnox ROI"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="average"
-                        stroke={VIBRANT_COLORS[2]}
-                        strokeWidth={2}
-                        strokeDasharray="4 4"
-                        dot={false}
-                        name="Competitor Avg. ROI"
-                      />
-                      <ReLegend wrapperStyle={{ fontSize: "12px" }} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </GradientCard>
-            </motion.div>
+        <div className="w-full h-96 flex items-center justify-center">
+          <div className="text-center">
+            <RocketIcon className="mx-auto h-12 w-12 text-portnox-primary animate-pulse" />
+            <p className="mt-4 text-lg font-semibold">Launching Decision Engine...</p>
+            <p className="text-sm text-muted-foreground">Calculating TCO and ROI...</p>
           </div>
-
-          <motion.div className="grid gap-4 md:grid-cols-3" variants={staggerChildren}>
-            {[
-              {
-                icon: <ZapIcon />,
-                title: "Rapid Deployment",
-                description: `Live in ${ComprehensiveVendorDatabase.portnox.implementation.deploymentTime.fullDeployment} vs. months`,
-                stat: "99% Faster",
-                gradient: "fire" as const,
-              },
-              {
-                icon: <Brain />,
-                title: "AI-Powered Security",
-                description: "Predictive threat detection & response",
-                stat: "85% Incident Reduction",
-                gradient: "ocean" as const,
-              },
-              {
-                icon: <HandCoins />,
-                title: "Lowest TCO",
-                description: "Cloud-native, no hardware",
-                stat: `${savingsPercentVsLowestCompetitor.toFixed(0)}% Savings`,
-                gradient: "sunset" as const,
-              },
-            ].map((item, index) => (
-              <motion.div key={index} variants={fadeInUp}>
-                <GradientCard gradient={item.gradient} darkMode={darkMode} className="h-full">
-                  <CardContent className="p-6">
-                    <div className="flex items-start space-x-4">
-                      <motion.div className="p-3 rounded-lg bg-white/10" whileHover={{ scale: 1.1, rotate: 5 }}>
-                        {React.cloneElement(item.icon, { className: "h-6 w-6 text-white" })}
-                      </motion.div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-white mb-1">{item.title}</h3>
-                        <p className="text-sm text-white/80 mb-2">{item.description}</p>
-                        <motion.p
-                          className="text-2xl font-bold text-white"
-                          initial={{ opacity: 0, scale: 0.5 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.3 + index * 0.1 }}
-                        >
-                          {item.stat}
-                        </motion.p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </GradientCard>
-              </motion.div>
-            ))}
-          </motion.div>
-        </motion.div>
+        </div>
       )
-    }
+
+    if (!results || !portnoxResult)
+      return (
+        <Card className="p-6 text-center text-muted-foreground animate-fade-in">
+          <InfoIcon className="mx-auto h-8 w-8 mb-2 text-portnox-primary" />
+          Select vendors and configure settings to begin analysis.
+        </Card>
+      )
 
     switch (activeView) {
       case "dashboard":
-        return <ExecutiveDashboardView />
-      case "cost-breakdown":
-        return <DetailedCostsView results={results} years={configuration.years} darkMode={darkMode} />
-      case "roi-analysis":
-        return <ROIAnalysisView results={results} config={configuration} darkMode={darkMode} />
-      case "compliance":
-        return <ComplianceRiskView results={results} darkMode={darkMode} />
-      case "operations":
-        return <OperationsImpactView results={results} darkMode={darkMode} />
-      case "vendor-comparison":
-        return <FeatureComparisonView selectedVendors={selectedVendors} darkMode={darkMode} />
-      case "roadmap":
-        return (
-          <ImplementationRoadmapView
-            vendorId={selectedVendors[0] || "portnox"}
-            config={configuration}
-            darkMode={darkMode}
-          />
-        )
-      case "reports":
-        return <ReportsView results={results} config={configuration} darkMode={darkMode} />
+        return <ExecutiveDashboardView results={results} config={configuration} darkMode={darkMode} />
+      // Add other views here
       default:
         return (
           <Card className="p-6 text-center text-muted-foreground animate-fade-in">
@@ -877,676 +461,115 @@ export default function TcoAnalyzerUltimate() {
     }
   }
 
-  // View Components
-
-  const DetailedCostsView = ({
-    results,
-    years,
-    darkMode,
-  }: {
-    results: CalculationResult[] | null
-    years: number
-    darkMode: boolean
-  }) => {
-    if (!results) return <Card className="p-6 text-center">No data to display.</Card>
-
-    const chartData = results.map((r) => {
-      const dataPoint: { [key: string]: string | number } = { name: r.vendorName }
-      r.breakdown.forEach((b) => {
-        dataPoint[b.name] = b.value
-      })
-      return dataPoint
-    })
-
-    const breakdownCategories = results[0]?.breakdown.map((b) => b.name) || []
-
-    return (
-      <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
-        <motion.div variants={fadeInUp}>
-          <Card>
-            <CardHeader>
-              <CardTitle>TCO Breakdown Comparison</CardTitle>
-              <CardDescription>{years}-Year Cost Analysis by Category</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <ReBarChart data={chartData} layout="vertical" margin={{ left: 20, right: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#E5E7EB"} />
-                  <XAxis
-                    type="number"
-                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                    stroke={darkMode ? PORTNOX_COLORS.textSecondaryDark : PORTNOX_COLORS.textSecondaryLight}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    width={100}
-                    stroke={darkMode ? PORTNOX_COLORS.textSecondaryDark : PORTNOX_COLORS.textSecondaryLight}
-                  />
-                  <ReTooltip
-                    formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]}
-                    contentStyle={{
-                      backgroundColor: darkMode ? PORTNOX_COLORS.secondaryLight : "#FFFFFF",
-                      border: `1px solid ${darkMode ? "#374151" : "#E5E7EB"}`,
-                    }}
-                  />
-                  <ReLegend />
-                  {breakdownCategories.map((cat, index) => (
-                    <Bar key={cat} dataKey={cat} stackId="a" fill={VIBRANT_COLORS[index % VIBRANT_COLORS.length]} />
-                  ))}
-                </ReBarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={fadeInUp}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Detailed Cost Table</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Vendor</TableHead>
-                    {breakdownCategories.map((cat) => (
-                      <TableHead key={cat} className="text-right">
-                        {cat}
-                      </TableHead>
-                    ))}
-                    <TableHead className="text-right font-bold">Total TCO</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {results.map((r) => (
-                    <TableRow key={r.vendor}>
-                      <TableCell className="font-medium">{r.vendorName}</TableCell>
-                      {r.breakdown.map((b) => (
-                        <TableCell key={b.name} className="text-right">
-                          ${b.value.toLocaleString()}
-                        </TableCell>
-                      ))}
-                      <TableCell className="text-right font-bold">${r.total.toLocaleString()}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </motion.div>
-    )
-  }
-
-  const ROIAnalysisView = ({
+  const ExecutiveDashboardView = ({
     results,
     config,
     darkMode,
   }: {
-    results: CalculationResult[] | null
+    results: CalculationResult[]
     config: CalculationConfiguration
     darkMode: boolean
   }) => {
-    if (!results) return <Card className="p-6 text-center">No data to display.</Card>
+    const portnoxResult = results.find((r) => r.vendor === "portnox")
+    if (!portnoxResult) return null
 
     return (
       <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
-        <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" variants={staggerChildren}>
-          {results.map((r, i) => (
-            <motion.div variants={fadeInUp} key={r.vendor}>
-              <GradientCard darkMode={darkMode} className="h-full">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <Image
-                      src={getVendorLogoPath(r.vendor) || "/placeholder.svg"}
-                      alt={`${r.vendorName} logo`}
-                      width={100}
-                      height={25}
-                      className="h-6 w-auto"
-                    />
-                    <CardTitle>{r.vendorName}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="space-y-1">
-                    <p className="text-muted-foreground">ROI %</p>
-                    <p className="font-bold text-lg">{r.roi.percentage}%</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-muted-foreground">Payback</p>
-                    <p className="font-bold text-lg">{r.roi.paybackMonths} mo</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-muted-foreground">Annual Savings</p>
-                    <p className="font-bold text-lg">${(r.roi.annualSavings / 1000).toFixed(0)}K</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-muted-foreground">FTE Saved</p>
-                    <p className="font-bold text-lg">{r.roi.laborSavingsFTE}</p>
-                  </div>
-                </CardContent>
-              </GradientCard>
-            </motion.div>
-          ))}
-        </motion.div>
         <motion.div variants={fadeInUp}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Payback Period Comparison</CardTitle>
-              <CardDescription>Time to recoup initial investment</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <ReBarChart
-                  data={results.map((r) => ({ name: r.vendorName, "Payback (Months)": r.roi.paybackMonths }))}
+          <GradientCard gradient="vibrant" darkMode={darkMode} className="p-6 sm:p-8">
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <div className="mb-6 md:mb-0 text-center md:text-left">
+                <motion.h2
+                  className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <ReTooltip />
-                  <ReLegend />
-                  <Bar dataKey="Payback (Months)" fill={PORTNOX_COLORS.accent} />
-                </ReBarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </motion.div>
-    )
-  }
-
-  const ComplianceRiskView = ({
-    results,
-    darkMode,
-  }: {
-    results: CalculationResult[] | null
-    darkMode: boolean
-  }) => {
-    if (!results) return <Card className="p-6 text-center">No data to display.</Card>
-
-    const complianceFrameworks = ["pci", "hipaa", "sox", "gdpr", "iso", "nist"]
-    const radarData = results.map((r) => {
-      const vendorData = ComprehensiveVendorDatabase[r.vendor]
-      const dataPoint: { [key: string]: string | number } = { subject: r.vendorName }
-      complianceFrameworks.forEach((fw) => {
-        dataPoint[fw.toUpperCase()] = vendorData.compliance.frameworks.some((vfw) => vfw.toLowerCase().includes(fw))
-          ? 100
-          : 20
-      })
-      return dataPoint
-    })
-
-    const complianceCerts = Array.from(
-      new Set(results.flatMap((r) => ComprehensiveVendorDatabase[r.vendor].compliance.certifications)),
-    )
-
-    return (
-      <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
-        <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" variants={staggerChildren}>
-          {results.map((r) => (
-            <motion.div variants={fadeInUp} key={r.vendor}>
-              <MetricCard
-                title={`${r.vendorName} Risk Reduction`}
-                value={`${(r.riskMetrics.breachProbabilityReduction * 100).toFixed(0)}%`}
-                detail="Breach Probability Reduction"
-                icon={<ShieldCheck />}
-                gradient="ocean"
-                darkMode={darkMode}
-              />
-            </motion.div>
-          ))}
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <motion.div variants={fadeInUp}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Compliance Framework Coverage</CardTitle>
-              </CardHeader>
-              <CardContent className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="subject" />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} />
-                    {results.map((r, i) => (
-                      <Radar
-                        key={r.vendor}
-                        name={r.vendorName}
-                        dataKey={r.vendorName}
-                        stroke={VIBRANT_COLORS[i % VIBRANT_COLORS.length]}
-                        fill={VIBRANT_COLORS[i % VIBRANT_COLORS.length]}
-                        fillOpacity={0.6}
-                      />
-                    ))}
-                    <ReLegend />
-                    <ReTooltip />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </motion.div>
-          <motion.div variants={fadeInUp}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Security Certifications Matrix</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Certification</TableHead>
-                      {results.map((r) => (
-                        <TableHead key={r.vendor} className="text-center">
-                          {r.vendorName}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {complianceCerts.map((cert) => (
-                      <TableRow key={cert}>
-                        <TableCell>{cert}</TableCell>
-                        {results.map((r) => (
-                          <TableCell key={r.vendor} className="text-center">
-                            {ComprehensiveVendorDatabase[r.vendor].compliance.certifications.includes(cert) ? (
-                              <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
-                            ) : (
-                              <XCircle className="h-5 w-5 text-red-500 mx-auto" />
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </motion.div>
-    )
-  }
-
-  const OperationsImpactView = ({
-    results,
-    darkMode,
-  }: {
-    results: CalculationResult[] | null
-    darkMode: boolean
-  }) => {
-    if (!results) return <Card className="p-6 text-center">No data to display.</Card>
-
-    return (
-      <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
-        <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" variants={staggerChildren}>
-          {results.map((r) => (
-            <motion.div variants={fadeInUp} key={r.vendor}>
-              <MetricCard
-                title={`${r.vendorName} FTE Savings`}
-                value={`${r.roi.laborSavingsFTE}`}
-                detail="Full-Time Equivalent Saved"
-                icon={<UsersIcon />}
-                gradient="sunset"
-                darkMode={darkMode}
-              />
-            </motion.div>
-          ))}
-        </motion.div>
-        <motion.div variants={fadeInUp}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Deployment Time Comparison</CardTitle>
-              <CardDescription>Estimated time for full production deployment</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {results.map((r, i) => {
-                  const vendorData = ComprehensiveVendorDatabase[r.vendor]
-                  const time = vendorData.implementation.deploymentTime.fullDeployment
-                  // A simple heuristic to convert time string to a number for the progress bar
-                  const timeValue =
-                    Number.parseInt(time.split("-")[0]) * (time.includes("week") ? 7 : time.includes("month") ? 30 : 1)
-                  return (
-                    <div key={r.vendor}>
-                      <div className="flex justify-between mb-1">
-                        <span className="font-medium">{r.vendorName}</span>
-                        <span className="text-sm text-muted-foreground">{time}</span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2.5">
-                        <motion.div
-                          className="h-2.5 rounded-full"
-                          style={{ background: VIBRANT_COLORS[i % VIBRANT_COLORS.length] }}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${(1 / timeValue) * 200}%` }} // Normalize for display
-                          transition={{ duration: 1, ease: "easeOut" }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
+                  Executive Summary
+                </motion.h2>
+                <motion.p
+                  className="text-sm sm:text-base text-white/80"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  {config.years}-Year Financial & Risk Analysis
+                </motion.p>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </motion.div>
-    )
-  }
-
-  const FeatureComparisonView = ({
-    selectedVendors,
-    darkMode,
-  }: {
-    selectedVendors: string[]
-    darkMode: boolean
-  }) => {
-    const vendors = selectedVendors.map((id) => ComprehensiveVendorDatabase[id])
-
-    const renderCheck = (value: boolean | string) => {
-      if (value === true) return <CheckCircle2 className="h-5 w-5 text-green-500" />
-      if (value === false) return <XCircle className="h-5 w-5 text-red-500" />
-      if (value === "limited") return <MinusCircle className="h-5 w-5 text-yellow-500" />
-      return <span className="text-xs">{value}</span>
-    }
-
-    return (
-      <motion.div initial="initial" animate="animate" variants={fadeInUp}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Feature Comparison Matrix</CardTitle>
-            <CardDescription>Side-by-side feature support across selected vendors.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Feature</TableHead>
-                  {vendors.map((v) => (
-                    <TableHead key={v.id} className="text-center">
-                      {v.name}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {Object.entries(CORE_FEATURES).map(([key, label]) => (
-                  <TableRow key={key}>
-                    <TableCell className="font-medium">{label}</TableCell>
-                    {vendors.map((v) => (
-                      <TableCell key={v.id} className="text-center">
-                        {renderCheck(v.features.core[key as keyof FeatureMatrix["core"]])}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </motion.div>
-    )
-  }
-
-  const ImplementationRoadmapView = ({
-    vendorId,
-    config,
-    darkMode,
-  }: {
-    vendorId: string
-    config: CalculationConfiguration
-    darkMode: boolean
-  }) => {
-    const vendor = ComprehensiveVendorDatabase[vendorId]
-    if (!vendor) return <Card className="p-6 text-center">Select a vendor to see the roadmap.</Card>
-
-    const roadmapPhases = [
-      {
-        name: "Phase 1: Planning & Design",
-        duration: "1-2 Weeks",
-        icon: <ClipboardList />,
-        tasks: [
-          "Define project scope & goals",
-          "Identify stakeholders",
-          "Analyze existing infrastructure",
-          "Design high-level architecture",
-        ],
-      },
-      {
-        name: "Phase 2: Integration & Setup",
-        duration: "1-3 Weeks",
-        icon: <Network />,
-        tasks: [
-          "Integrate with Identity Providers (AD, Azure AD)",
-          "Setup cloud connectors/virtual appliances",
-          "Configure basic network device settings",
-        ],
-      },
-      {
-        name: "Phase 3: Pilot Deployment",
-        duration: "2-4 Weeks",
-        icon: <UsersIcon />,
-        tasks: [
-          "Onboard a pilot group of users/devices",
-          "Develop and test initial policies",
-          "Gather feedback and refine configurations",
-        ],
-      },
-      {
-        name: "Phase 4: Production Rollout",
-        duration: vendor.implementation.deploymentTime.fullDeployment,
-        icon: <RocketIcon />,
-        tasks: [
-          "Phased rollout to all users/sites",
-          "Monitor system performance and stability",
-          "Full cutover to new NAC solution",
-        ],
-      },
-      {
-        name: "Phase 5: Optimization",
-        duration: "Ongoing",
-        icon: <TrendingUpIcon />,
-        tasks: [
-          "Fine-tune policies based on analytics",
-          "Expand automation and integrations",
-          "Conduct regular health checks",
-        ],
-      },
-    ]
-
-    return (
-      <motion.div initial="initial" animate="animate" variants={fadeInUp}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Implementation Roadmap for {vendor.name}</CardTitle>
-            <CardDescription>A high-level plan for a successful deployment.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="relative pl-6">
-              {/* Vertical line */}
-              <div className="absolute left-8 top-4 bottom-4 w-0.5 bg-border"></div>
-
-              <div className="space-y-8">
-                {roadmapPhases.map((phase, index) => (
-                  <div key={phase.name} className="relative flex items-start">
-                    <div className="absolute left-0 top-1 flex h-14 w-14 items-center justify-center rounded-full bg-background border">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        {phase.icon}
-                      </div>
-                    </div>
-                    <div className="ml-20">
-                      <h4 className="font-semibold text-lg">
-                        {phase.name}{" "}
-                        <span className="text-sm font-normal text-muted-foreground">({phase.duration})</span>
-                      </h4>
-                      <ul className="mt-2 list-disc list-inside text-muted-foreground space-y-1">
-                        {phase.tasks.map((task) => (
-                          <li key={task}>{task}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <motion.div className="flex items-center space-x-2" whileHover={{ scale: 1.05 }}>
+                <Crown className="h-7 w-7 sm:h-8 sm:w-8 text-yellow-400" />
+                <div className="text-right">
+                  <p className="text-xs sm:text-sm text-white/80">Portnox Advantage</p>
+                  <p className="text-xl sm:text-2xl font-bold text-white">
+                    {portnoxResult.financialSummary.savingsPercent.toFixed(0)}% Lower TCO
+                  </p>
+                </div>
+              </motion.div>
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-    )
-  }
+          </GradientCard>
+        </motion.div>
 
-  const ReportsView = ({
-    results,
-    config,
-    darkMode,
-  }: {
-    results: CalculationResult[] | null
-    config: CalculationConfiguration
-    darkMode: boolean
-  }) => (
-    <Card className="p-6">
-      <CardHeader>
-        <CardTitle>Reports & Export</CardTitle>
-        <CardDescription>Generate and download comprehensive reports.</CardDescription>
-      </CardHeader>
-      <CardContent className="text-center">
-        <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-        <p>Report generation is coming soon.</p>
-        <Button className="mt-4">
-          <Download className="mr-2 h-4 w-4" /> Download Sample PDF
-        </Button>
-      </CardContent>
-    </Card>
-  )
-
-  const Footer = () => (
-    <motion.footer
-      className={cn("mt-auto border-t", darkMode ? "bg-gray-900 border-gray-800/50" : "bg-gray-100 border-gray-200/50")}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.5, duration: 0.5 }}
-    >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          <div className="space-y-4">
-            <Image
-              src={getVendorLogoPath("portnox") || "/placeholder.svg"}
-              alt="Portnox Logo"
-              width={150}
-              height={38}
-              className="h-9 w-auto"
+        <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" variants={staggerChildren}>
+          <motion.div variants={fadeInUp}>
+            <MetricCard
+              title="Total Savings"
+              value={`$${(portnoxResult.financialSummary.savingsVsCompetitor / 1000).toLocaleString("en-US", {
+                maximumFractionDigits: 0,
+              })}K`}
+              detail={`vs. Next Best Alternative`}
+              icon={<DollarSign />}
+              trend="up"
+              trendValue={`${portnoxResult.financialSummary.savingsPercent.toFixed(0)}%`}
+              gradient="vibrant"
+              darkMode={darkMode}
             />
-            <p className={cn("text-sm", darkMode ? "text-gray-400" : "text-gray-600")}>
-              AI-powered cloud-native NAC delivering zero-trust security with unmatched simplicity.
-            </p>
-            <div className="flex space-x-4">
-              {[
-                { href: "https://www.linkedin.com/company/portnox/", icon: <Linkedin className="h-5 w-5" /> },
-                { href: "https://twitter.com/Portnox", icon: <Twitter className="h-5 w-5" /> },
-                { href: "https://www.youtube.com/user/PortNOX", icon: <YoutubeIcon className="h-5 w-5" /> },
-              ].map((social) => (
-                <motion.a
-                  key={social.href}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.15, color: PORTNOX_COLORS.primary }}
-                  className={cn(darkMode ? "text-gray-400" : "text-gray-500", "transition-colors")}
-                >
-                  {social.icon}
-                </motion.a>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h4 className={cn("font-semibold mb-3", darkMode ? "text-gray-200" : "text-gray-800")}>Resources</h4>
-            <ul className="space-y-1.5 text-sm">
-              {["Documentation", "API Reference", "Case Studies", "Webinars", "Blog"].map((link) => (
-                <li key={link}>
-                  <a
-                    href="#"
-                    className={cn(
-                      darkMode
-                        ? "text-gray-400 hover:text-portnox-primaryLight"
-                        : "text-gray-600 hover:text-portnox-primary",
-                      "transition-colors",
-                    )}
-                  >
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className={cn("font-semibold mb-3", darkMode ? "text-gray-200" : "text-gray-800")}>Company</h4>
-            <ul className="space-y-1.5 text-sm">
-              {["About Us", "Careers", "Partners", "Newsroom", "Contact Us"].map((link) => (
-                <li key={link}>
-                  <a
-                    href="#"
-                    className={cn(
-                      darkMode
-                        ? "text-gray-400 hover:text-portnox-primaryLight"
-                        : "text-gray-600 hover:text-portnox-primary",
-                      "transition-colors",
-                    )}
-                  >
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className={cn("font-semibold mb-3", darkMode ? "text-gray-200" : "text-gray-800")}>Get Started</h4>
-            <div className="space-y-3">
-              <Button className="w-full bg-gradient-to-r from-portnox-primary to-portnox-primaryDark text-white hover:shadow-md transition-all transform hover:-translate-y-px">
-                <Phone className="h-4 w-4 mr-2" />
-                Schedule Demo
-              </Button>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full",
-                  darkMode ? "border-gray-600 hover:bg-gray-700" : "border-gray-300 hover:bg-gray-100",
-                )}
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                Contact Sales
-              </Button>
-            </div>
-          </div>
-        </div>
-        <Separator className={cn("my-6", darkMode ? "bg-gray-700" : "bg-gray-200")} />
-        <div
-          className={cn(
-            "flex flex-col md:flex-row items-center justify-between text-xs",
-            darkMode ? "text-gray-500" : "text-gray-400",
-          )}
-        >
-          <p>
-            &copy; {new Date().getFullYear()} Portnox. All rights reserved. This TCO Analyzer is for estimation purposes
-            only.
-          </p>
-          <div className="flex items-center space-x-3 mt-3 md:mt-0">
-            <a href="#" className="hover:text-portnox-primary transition-colors">
-              Privacy Policy
-            </a>
-            <a href="#" className="hover:text-portnox-primary transition-colors">
-              Terms of Service
-            </a>
-          </div>
-        </div>
-      </div>
-    </motion.footer>
-  )
+          </motion.div>
+          <motion.div variants={fadeInUp}>
+            <MetricCard
+              title="Payback Period"
+              value={`${portnoxResult.roi.paybackMonths} mo`}
+              detail="Time to recoup investment"
+              icon={<RocketIcon />}
+              trend="down"
+              trendValue="Faster ROI"
+              gradient="fire"
+              darkMode={darkMode}
+            />
+          </motion.div>
+          <motion.div variants={fadeInUp}>
+            <MetricCard
+              title="Breach Cost Avoided"
+              value={`$${(portnoxResult.risk.breachCostAvoidance / 1000000).toFixed(2)}M`}
+              detail="Annualized risk reduction"
+              icon={<Shield />}
+              trend="up"
+              trendValue="Lower Risk"
+              gradient="ocean"
+              darkMode={darkMode}
+            />
+          </motion.div>
+          <motion.div variants={fadeInUp}>
+            <MetricCard
+              title="FTE Requirement"
+              value={`${portnoxResult.hiddenCosts.fteRequirement}`}
+              detail="For ongoing management"
+              icon={<UsersIcon />}
+              trend="down"
+              trendValue="Higher Efficiency"
+              gradient="sunset"
+              darkMode={darkMode}
+            />
+          </motion.div>
+        </motion.div>
+        {/* ... other dashboard components ... */}
+      </motion.div>
+    )
+  }
 
   return (
     <TooltipProvider delayDuration={150}>
       <div
         className={cn(
-          "min-h-screen flex flex-col font-sans antialiased",
+          "min-h-screen flex flex-col font-sans antialiased transition-colors duration-300",
           darkMode ? "dark bg-gray-950 text-gray-100" : "bg-gray-50 text-gray-900",
         )}
       >
@@ -1556,7 +579,6 @@ export default function TcoAnalyzerUltimate() {
         <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8">
           <div className="container mx-auto max-w-screen-2xl">
             <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-              {/* Vendor Selection Sidebar */}
               <AnimatePresence>
                 {showVendorSelection && (
                   <motion.div
@@ -1566,12 +588,12 @@ export default function TcoAnalyzerUltimate() {
                     transition={{ type: "spring", stiffness: 200, damping: 25 }}
                     className="xl:col-span-1"
                   >
-                    <div className="sticky top-32">
+                    <div className="sticky top-36">
                       <EnhancedVendorSelection
                         selectedVendors={selectedVendors}
                         onVendorToggle={handleVendorToggle}
                         onClearAll={() => setSelectedVendors(["portnox"])}
-                        onSelectRecommended={() => setSelectedVendors(["portnox", "cisco", "aruba", "meraki"])}
+                        onSelectRecommended={() => setSelectedVendors(["portnox", "cisco", "aruba", "fortinet"])}
                         darkMode={darkMode}
                       />
                     </div>
@@ -1579,8 +601,9 @@ export default function TcoAnalyzerUltimate() {
                 )}
               </AnimatePresence>
 
-              {/* Main Content */}
-              <div className={cn("xl:col-span-3", !showVendorSelection && "xl:col-span-4")}>
+              <div
+                className={cn("transition-all duration-300", showVendorSelection ? "xl:col-span-3" : "xl:col-span-4")}
+              >
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeView}
@@ -1597,9 +620,6 @@ export default function TcoAnalyzerUltimate() {
           </div>
         </main>
 
-        <Footer />
-
-        {/* Settings Panel */}
         <SettingsPanel
           isOpen={showSettings}
           onClose={() => setShowSettings(false)}
