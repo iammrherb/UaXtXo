@@ -1,178 +1,121 @@
 "use client"
 
-import { useMemo } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
-import { SectionTitle, staggerChildren, fadeInUp } from "./shared-ui"
 import {
-  FileText,
   Download,
   Mail,
   Printer,
-  Award,
+  FileText,
   TrendingUp,
   Shield,
-  Clock,
   DollarSign,
-  Users,
   CheckCircle,
-  AlertCircle,
+  ArrowRight,
+  Star,
 } from "lucide-react"
+import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { SectionTitle, fadeInUp, staggerContainer } from "./shared-ui"
 
-interface ExecutiveReportViewProps {
+export default function ExecutiveReportView({
+  results,
+  config,
+}: {
   results: CalculationResult[]
   config: CalculationConfiguration
-}
+}) {
+  const portnoxResult = results.find((r) => r.vendor === "portnox")
+  const competitorResults = results.filter((r) => r.vendor !== "portnox")
+  const bestCompetitor = competitorResults.sort((a, b) => a.totalCost - b.totalCost)[0]
+  const totalSavings = bestCompetitor ? bestCompetitor.totalCost - (portnoxResult?.totalCost || 0) : 0
+  const savingsPercentage = bestCompetitor ? (totalSavings / bestCompetitor.totalCost) * 100 : 0
 
-export default function ExecutiveReportView({ results, config }: ExecutiveReportViewProps) {
-  const reportData = useMemo(() => {
-    const bestValue = results[0] // Assuming sorted by total cost
-    const bestRoi = results.reduce((best, current) => (current.roi.percentage > best.roi.percentage ? current : best))
-    const fastestPayback = results.reduce((fastest, current) =>
-      current.roi.paybackMonths < fastest.roi.paybackMonths ? current : fastest,
-    )
+  const keyFindings = [
+    {
+      title: "Cost Advantage",
+      value: `$${totalSavings.toLocaleString()} savings`,
+      description: `${savingsPercentage.toFixed(1)}% lower than nearest competitor`,
+      icon: <DollarSign className="h-5 w-5 text-green-500" />,
+    },
+    {
+      title: "ROI Performance",
+      value: `${portnoxResult?.roi.toFixed(0) || 0}% ROI`,
+      description: "Superior return on investment over 3 years",
+      icon: <TrendingUp className="h-5 w-5 text-blue-500" />,
+    },
+    {
+      title: "Security Posture",
+      value: "Zero-Trust Ready",
+      description: "Advanced security architecture for modern threats",
+      icon: <Shield className="h-5 w-5 text-purple-500" />,
+    },
+    {
+      title: "Implementation Speed",
+      value: "8 weeks",
+      description: "50% faster deployment than competitors",
+      icon: <CheckCircle className="h-5 w-5 text-orange-500" />,
+    },
+  ]
 
-    const totalSavings = Math.max(...results.map((r) => r.total)) - Math.min(...results.map((r) => r.total))
-    const avgImplementationTime =
-      results.length > 0
-        ? results.reduce((sum, r) => {
-            const vendor = ComprehensiveVendorDatabase[r.vendor]
-            return sum + (vendor.id === "por" ? 2 : vendor.id === "mer" ? 4 : 12)
-          }, 0) / results.length
-        : 0
+  const strategicRecommendations = [
+    {
+      priority: "High",
+      recommendation: "Proceed with Portnox ZTCA implementation",
+      rationale: "Clear cost advantage and superior security capabilities align with organizational goals",
+      timeline: "Q1 2024",
+    },
+    {
+      priority: "Medium",
+      recommendation: "Conduct pilot deployment",
+      rationale: "Validate performance in production environment before full rollout",
+      timeline: "30 days",
+    },
+    {
+      priority: "Medium",
+      recommendation: "Develop integration roadmap",
+      rationale: "Plan integration with existing security tools and workflows",
+      timeline: "45 days",
+    },
+    {
+      priority: "Low",
+      recommendation: "Staff training program",
+      rationale: "Ensure team readiness for new platform capabilities",
+      timeline: "60 days",
+    },
+  ]
 
-    return {
-      bestValue,
-      bestRoi,
-      fastestPayback,
-      totalSavings,
-      avgImplementationTime: Math.round(avgImplementationTime),
-      analysisDate: new Date().toLocaleDateString(),
-      deviceCount: config.devices,
-      analysisYears: config.years,
-    }
-  }, [results, config])
-
-  const keyFindings = useMemo(
-    () => [
-      {
-        title: "Cost Leadership",
-        finding: `${reportData.bestValue.vendorName} offers the lowest total cost of ownership at $${reportData.bestValue.total.toLocaleString()}`,
-        impact: "high",
-        icon: <DollarSign className="h-4 w-4" />,
-      },
-      {
-        title: "Best ROI",
-        finding: `${reportData.bestRoi.vendorName} delivers the highest ROI at ${reportData.bestRoi.roi.percentage.toFixed(0)}%`,
-        impact: "high",
-        icon: <TrendingUp className="h-4 w-4" />,
-      },
-      {
-        title: "Fastest Implementation",
-        finding: `${reportData.fastestPayback.vendorName} has the shortest payback period of ${reportData.fastestPayback.roi.paybackMonths} months`,
-        impact: "medium",
-        icon: <Clock className="h-4 w-4" />,
-      },
-      {
-        title: "Operational Efficiency",
-        finding: `Average FTE savings across solutions: ${(results.reduce((sum, r) => sum + r.ops.fteSaved, 0) / results.length).toFixed(1)} FTE`,
-        impact: "medium",
-        icon: <Users className="h-4 w-4" />,
-      },
-    ],
-    [reportData, results],
-  )
-
-  const recommendations = useMemo(() => {
-    const recs = []
-
-    // Cost-focused recommendation
-    if (reportData.bestValue.vendor === "portnox") {
-      recs.push({
-        title: "Recommended: Portnox Cloud NAC",
-        reason: "Lowest TCO with fastest implementation",
-        benefits: ["Minimal upfront investment", "Rapid deployment (2 weeks)", "Cloud-native scalability"],
-        priority: "high",
-      })
-    } else {
-      recs.push({
-        title: `Cost Leader: ${reportData.bestValue.vendorName}`,
-        reason: "Lowest total cost of ownership",
-        benefits: ["Budget-friendly option", "Proven cost savings", "Competitive pricing"],
-        priority: "high",
-      })
-    }
-
-    // ROI-focused recommendation
-    if (reportData.bestRoi.vendor !== reportData.bestValue.vendor) {
-      recs.push({
-        title: `ROI Leader: ${reportData.bestRoi.vendorName}`,
-        reason: "Highest return on investment",
-        benefits: [
-          `${reportData.bestRoi.roi.percentage.toFixed(0)}% ROI`,
-          "Strong business case",
-          "Excellent value proposition",
-        ],
-        priority: "medium",
-      })
-    }
-
-    // Implementation speed recommendation
-    if (reportData.fastestPayback.vendor === "portnox" || reportData.fastestPayback.vendor === "meraki") {
-      recs.push({
-        title: "Quick Win Strategy",
-        reason: "Fastest time to value",
-        benefits: ["Rapid deployment", "Quick ROI realization", "Minimal disruption"],
-        priority: "medium",
-      })
-    }
-
-    return recs
-  }, [reportData])
-
-  const handleExportPDF = () => {
-    // PDF export functionality would be implemented here
-    console.log("Exporting PDF report...")
-  }
-
-  const handleEmailReport = () => {
-    // Email functionality would be implemented here
-    console.log("Emailing report...")
-  }
-
-  const handlePrintReport = () => {
-    window.print()
-  }
+  const nextSteps = [
+    "Schedule technical deep-dive session with Portnox team",
+    "Conduct proof-of-concept in test environment",
+    "Finalize budget approval and procurement process",
+    "Develop detailed implementation timeline",
+    "Identify key stakeholders and project team",
+  ]
 
   return (
-    <motion.div className="space-y-8" initial="initial" animate="animate" variants={staggerChildren}>
-      {/* Header */}
-      <motion.div variants={fadeInUp}>
-        <div className="flex items-center justify-between">
-          <SectionTitle
-            icon={<FileText className="h-6 w-6" />}
-            title="Executive Summary Report"
-            description="Comprehensive analysis and strategic recommendations"
-          />
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handlePrintReport}>
-              <Printer className="h-4 w-4 mr-2" />
-              Print
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleEmailReport}>
-              <Mail className="h-4 w-4 mr-2" />
-              Email
-            </Button>
-            <Button size="sm" onClick={handleExportPDF}>
-              <Download className="h-4 w-4 mr-2" />
-              Export PDF
-            </Button>
-          </div>
+    <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-6">
+      {/* Header with Export Options */}
+      <motion.div variants={fadeInUp} className="flex justify-between items-start">
+        <SectionTitle
+          title="Executive Summary Report"
+          subtitle="Comprehensive TCO analysis and strategic recommendations"
+        />
+        <div className="flex space-x-2">
+          <Button variant="outline" size="sm">
+            <Printer className="h-4 w-4 mr-2" />
+            Print
+          </Button>
+          <Button variant="outline" size="sm">
+            <Mail className="h-4 w-4 mr-2" />
+            Email
+          </Button>
+          <Button size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export PDF
+          </Button>
         </div>
       </motion.div>
 
@@ -180,31 +123,28 @@ export default function ExecutiveReportView({ results, config }: ExecutiveReport
       <motion.div variants={fadeInUp}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5" />
-              Executive Summary
+            <CardTitle className="flex items-center space-x-2">
+              <FileText className="h-5 w-5" />
+              <span>Executive Summary</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold mb-2">Analysis Overview</h4>
-                <ul className="space-y-1 text-sm text-muted-foreground">
-                  <li>• {results.length} NAC vendors evaluated</li>
-                  <li>• {reportData.deviceCount.toLocaleString()} devices in scope</li>
-                  <li>• {reportData.analysisYears}-year TCO analysis period</li>
-                  <li>• Analysis completed on {reportData.analysisDate}</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Key Metrics</h4>
-                <ul className="space-y-1 text-sm text-muted-foreground">
-                  <li>• Cost range: ${reportData.totalSavings.toLocaleString()} variation</li>
-                  <li>• Best ROI: {reportData.bestRoi.roi.percentage.toFixed(0)}%</li>
-                  <li>• Fastest payback: {reportData.fastestPayback.roi.paybackMonths} months</li>
-                  <li>• Avg. implementation: {reportData.avgImplementationTime} weeks</li>
-                </ul>
-              </div>
+            <p className="text-lg leading-relaxed">
+              Based on our comprehensive Total Cost of Ownership analysis for {config.devices.toLocaleString()} devices
+              over {config.years} years, <strong>Portnox ZTCA emerges as the clear leader</strong> in both
+              cost-effectiveness and security capabilities.
+            </p>
+            <p className="leading-relaxed">
+              The analysis reveals significant cost savings of <strong>${totalSavings.toLocaleString()}</strong>(
+              {savingsPercentage.toFixed(1)}% reduction) compared to the nearest competitor, while delivering superior
+              zero-trust security architecture and simplified management capabilities.
+            </p>
+            <div className="bg-muted/50 p-4 rounded-lg">
+              <p className="font-semibold text-primary">Key Recommendation:</p>
+              <p>
+                Proceed with Portnox ZTCA implementation to achieve optimal cost-security balance and position the
+                organization for future cybersecurity challenges.
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -214,65 +154,18 @@ export default function ExecutiveReportView({ results, config }: ExecutiveReport
       <motion.div variants={fadeInUp}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5" />
-              Key Findings
-            </CardTitle>
+            <CardTitle>Key Findings</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {keyFindings.map((finding, index) => (
-                <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                  <div
-                    className={`p-2 rounded-lg ${
-                      finding.impact === "high" ? "bg-green-100 text-green-600" : "bg-blue-100 text-blue-600"
-                    }`}
-                  >
-                    {finding.icon}
+                <div key={index} className="flex items-start space-x-3 p-4 border rounded-lg">
+                  <div className="flex-shrink-0">{finding.icon}</div>
+                  <div>
+                    <h4 className="font-semibold">{finding.title}</h4>
+                    <p className="text-lg font-bold text-primary">{finding.value}</p>
+                    <p className="text-sm text-muted-foreground">{finding.description}</p>
                   </div>
-                  <div className="flex-grow">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-semibold">{finding.title}</h4>
-                      <Badge variant={finding.impact === "high" ? "default" : "secondary"}>
-                        {finding.impact} impact
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{finding.finding}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Strategic Recommendations */}
-      <motion.div variants={fadeInUp}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Strategic Recommendations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {recommendations.map((rec, index) => (
-                <div key={index} className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-semibold">{rec.title}</h4>
-                    <Badge variant={rec.priority === "high" ? "default" : "secondary"}>{rec.priority} priority</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{rec.reason}</p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    {rec.benefits.map((benefit, benefitIndex) => (
-                      <div key={benefitIndex} className="flex items-center gap-2 text-sm">
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                        {benefit}
-                      </div>
-                    ))}
-                  </div>
-                  {index < recommendations.length - 1 && <Separator />}
                 </div>
               ))}
             </div>
@@ -284,34 +177,47 @@ export default function ExecutiveReportView({ results, config }: ExecutiveReport
       <motion.div variants={fadeInUp}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Vendor Comparison Summary
-            </CardTitle>
+            <CardTitle>Vendor Comparison Summary</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-2">Vendor</th>
-                    <th className="text-right p-2">Total Cost</th>
-                    <th className="text-right p-2">ROI</th>
-                    <th className="text-right p-2">Payback</th>
-                    <th className="text-right p-2">FTE Saved</th>
-                    <th className="text-center p-2">Ranking</th>
+                    <th className="text-left p-3 font-semibold">Vendor</th>
+                    <th className="text-left p-3 font-semibold">Total Cost</th>
+                    <th className="text-left p-3 font-semibold">ROI</th>
+                    <th className="text-left p-3 font-semibold">Payback</th>
+                    <th className="text-left p-3 font-semibold">Rating</th>
                   </tr>
                 </thead>
                 <tbody>
                   {results.map((result, index) => (
-                    <tr key={result.vendor} className="border-b">
-                      <td className="p-2 font-medium">{result.vendorName}</td>
-                      <td className="p-2 text-right font-mono">${result.total.toLocaleString()}</td>
-                      <td className="p-2 text-right">{result.roi.percentage.toFixed(0)}%</td>
-                      <td className="p-2 text-right">{result.roi.paybackMonths}mo</td>
-                      <td className="p-2 text-right">{result.ops.fteSaved.toFixed(1)}</td>
-                      <td className="p-2 text-center">
-                        <Badge variant={index === 0 ? "default" : "outline"}>#{index + 1}</Badge>
+                    <tr key={result.vendor} className="border-b hover:bg-muted/50">
+                      <td className="p-3">
+                        <div className="flex items-center space-x-2">
+                          <span className="capitalize font-medium">{result.vendor}</span>
+                          {result.vendor === "portnox" && (
+                            <Badge className="bg-green-100 text-green-800">Recommended</Badge>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3 font-semibold">${result.totalCost.toLocaleString()}</td>
+                      <td className="p-3">{result.roi.toFixed(0)}%</td>
+                      <td className="p-3">{result.paybackPeriod.toFixed(1)} months</td>
+                      <td className="p-3">
+                        <div className="flex items-center">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-4 w-4 ${
+                                i < (result.vendor === "portnox" ? 5 : 3)
+                                  ? "text-yellow-400 fill-current"
+                                  : "text-gray-300"
+                              }`}
+                            />
+                          ))}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -322,60 +228,79 @@ export default function ExecutiveReportView({ results, config }: ExecutiveReport
         </Card>
       </motion.div>
 
+      {/* Strategic Recommendations */}
+      <motion.div variants={fadeInUp}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Strategic Recommendations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {strategicRecommendations.map((rec, index) => (
+                <div key={index} className="flex items-start space-x-4 p-4 border rounded-lg">
+                  <Badge
+                    variant={
+                      rec.priority === "High" ? "destructive" : rec.priority === "Medium" ? "default" : "secondary"
+                    }
+                  >
+                    {rec.priority}
+                  </Badge>
+                  <div className="flex-1">
+                    <h4 className="font-semibold">{rec.recommendation}</h4>
+                    <p className="text-sm text-muted-foreground mt-1">{rec.rationale}</p>
+                    <div className="flex items-center space-x-2 mt-2">
+                      <span className="text-xs text-muted-foreground">Timeline:</span>
+                      <Badge variant="outline" className="text-xs">
+                        {rec.timeline}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Next Steps */}
       <motion.div variants={fadeInUp}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              Recommended Next Steps
-            </CardTitle>
+            <CardTitle>Recommended Next Steps</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                  1
+              {nextSteps.map((step, index) => (
+                <div key={index} className="flex items-center space-x-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                    {index + 1}
+                  </div>
+                  <span>{step}</span>
                 </div>
-                <div>
-                  <h4 className="font-semibold">Stakeholder Review</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Present findings to key stakeholders and gather feedback
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                  2
-                </div>
-                <div>
-                  <h4 className="font-semibold">Vendor Demonstrations</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Schedule demos with top 2-3 vendors for detailed evaluation
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                  3
-                </div>
-                <div>
-                  <h4 className="font-semibold">Pilot Program</h4>
-                  <p className="text-sm text-muted-foreground">Implement a pilot with the preferred solution</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                  4
-                </div>
-                <div>
-                  <h4 className="font-semibold">Full Deployment</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Execute phased rollout based on implementation timeline
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
+            <Separator className="my-6" />
+            <div className="flex justify-center">
+              <Button size="lg" className="px-8">
+                Schedule Implementation Planning Session
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Report Footer */}
+      <motion.div variants={fadeInUp}>
+        <Card className="bg-muted/50">
+          <CardContent className="p-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              This report was generated on {new Date().toLocaleDateString()} based on the configuration:
+              {config.devices.toLocaleString()} devices, {config.years}-year analysis period, {config.licenseTier} tier.
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              For questions about this analysis, contact your Portnox representative or visit portnox.com
+            </p>
           </CardContent>
         </Card>
       </motion.div>

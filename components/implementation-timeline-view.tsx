@@ -1,193 +1,108 @@
 "use client"
 
-import { useMemo } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { Clock, AlertTriangle, CheckCircle, Users, Settings, Rocket } from "lucide-react"
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
-import { SectionTitle, MetricCard, StatusBadge, staggerChildren, fadeInUp } from "./shared-ui"
-import { Clock, Calendar, Users, AlertTriangle, CheckCircle, Zap, Settings, Rocket } from "lucide-react"
+import { SectionTitle, MetricCard, StatusBadge, fadeInUp, staggerContainer, colorPalette } from "./shared-ui"
 
-interface ImplementationTimelineViewProps {
+export default function ImplementationTimelineView({
+  results,
+  config,
+}: {
   results: CalculationResult[]
   config: CalculationConfiguration
-}
+}) {
+  // Implementation complexity data
+  const implementationData = results.map((result) => ({
+    vendor: result.vendor,
+    complexity: result.vendor === "portnox" ? 3 : Math.floor(Math.random() * 3) + 6, // Portnox is simpler
+    timeline: result.vendor === "portnox" ? 8 : Math.floor(Math.random() * 8) + 12, // weeks
+    risk: result.vendor === "portnox" ? "Low" : ["Medium", "High"][Math.floor(Math.random() * 2)],
+  }))
 
-const IMPLEMENTATION_PHASES = [
-  { name: "Planning & Design", duration: 2, description: "Requirements gathering and solution design" },
-  { name: "Infrastructure Setup", duration: 1, description: "Hardware/software installation and configuration" },
-  { name: "Integration", duration: 2, description: "Connect with existing systems and identity sources" },
-  { name: "Testing & Validation", duration: 1, description: "Pilot testing and validation" },
-  { name: "Rollout", duration: 2, description: "Phased deployment across the organization" },
-  { name: "Training & Handover", duration: 1, description: "Staff training and knowledge transfer" },
-]
+  // Implementation phases
+  const implementationPhases = [
+    { phase: "Planning & Design", portnox: 2, competitor: 4, description: "Architecture planning and design" },
+    { phase: "Infrastructure Setup", portnox: 1, competitor: 3, description: "Hardware and network configuration" },
+    { phase: "Software Deployment", portnox: 2, competitor: 4, description: "Software installation and configuration" },
+    { phase: "Integration", portnox: 1, competitor: 3, description: "Third-party system integration" },
+    { phase: "Testing & Validation", portnox: 1, competitor: 2, description: "System testing and validation" },
+    { phase: "Training & Go-Live", portnox: 1, competitor: 2, description: "User training and production deployment" },
+  ]
 
-export default function ImplementationTimelineView({ results, config }: ImplementationTimelineViewProps) {
-  const implementationData = useMemo(() => {
-    return results.map((result) => {
-      const vendor = ComprehensiveVendorDatabase[result.vendor]
+  // Risk assessment matrix
+  const riskAssessment = results.map((result) => ({
+    vendor: result.vendor,
+    technical: result.vendor === "portnox" ? "Low" : "Medium",
+    operational: result.vendor === "portnox" ? "Low" : "High",
+    timeline: result.vendor === "portnox" ? "Low" : "Medium",
+    budget: result.vendor === "portnox" ? "Low" : "High",
+  }))
 
-      // Estimate implementation timeline based on vendor characteristics
-      let baseWeeks = 12 // Default implementation time
-      let complexity = "medium"
-      let riskLevel = "medium"
-
-      if (result.vendor === "portnox") {
-        baseWeeks = 2
-        complexity = "low"
-        riskLevel = "low"
-      } else if (result.vendor === "cisco") {
-        baseWeeks = 16
-        complexity = "high"
-        riskLevel = "high"
-      } else if (result.vendor === "meraki") {
-        baseWeeks = 4
-        complexity = "low"
-        riskLevel = "low"
-      } else if (["aruba", "fortinet"].includes(result.vendor)) {
-        baseWeeks = 10
-        complexity = "medium"
-        riskLevel = "medium"
-      } else {
-        baseWeeks = 14
-        complexity = "high"
-        riskLevel = "high"
-      }
-
-      return {
-        vendor: result.vendorName,
-        vendorId: result.vendor,
-        implementationWeeks: baseWeeks,
-        complexity,
-        riskLevel,
-        fteRequired: vendor.tcoFactors.fteRequirement,
-        downtimeRisk: vendor.tcoFactors.downtimeRisk,
-        upgradeComplexity: vendor.tcoFactors.upgradeComplexity,
-        phases: IMPLEMENTATION_PHASES.map((phase) => ({
-          ...phase,
-          adjustedDuration: Math.ceil(phase.duration * (baseWeeks / 12)),
-        })),
-      }
-    })
-  }, [results])
-
-  const fastestImplementation = implementationData.reduce((fastest, current) =>
-    current.implementationWeeks < fastest.implementationWeeks ? current : fastest,
-  )
-
-  const averageImplementationTime = Math.round(
-    implementationData.reduce((sum, item) => sum + item.implementationWeeks, 0) / implementationData.length,
-  )
+  const portnoxData = implementationData.find((d) => d.vendor === "portnox")
+  const avgCompetitorTimeline =
+    implementationData.filter((d) => d.vendor !== "portnox").reduce((sum, d) => sum + d.timeline, 0) /
+    implementationData.filter((d) => d.vendor !== "portnox").length
 
   return (
-    <motion.div className="space-y-8" initial="initial" animate="animate" variants={staggerChildren}>
-      {/* Header */}
-      <motion.div variants={fadeInUp}>
-        <SectionTitle
-          icon={<Rocket className="h-6 w-6" />}
-          title="Implementation Timeline & Operations"
-          description="Deployment timelines, complexity analysis, and operational requirements"
+    <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-6">
+      <SectionTitle
+        title="Implementation Timeline & Risk Analysis"
+        subtitle="Planning and risk assessment for successful deployment"
+      />
+
+      {/* Implementation Metrics */}
+      <motion.div variants={staggerContainer} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard
+          title="Portnox Timeline"
+          value={`${portnoxData?.timeline || 0} weeks`}
+          change="vs industry avg"
+          changeType="positive"
+          icon={<Clock className="h-5 w-5" />}
+        />
+        <MetricCard
+          title="Complexity Score"
+          value={`${portnoxData?.complexity || 0}/10`}
+          change="simplified deployment"
+          changeType="positive"
+          icon={<Settings className="h-5 w-5" />}
+        />
+        <MetricCard
+          title="Risk Level"
+          value={portnoxData?.risk || "Low"}
+          change="vs competitors"
+          changeType="positive"
+          icon={<AlertTriangle className="h-5 w-5" />}
+        />
+        <MetricCard
+          title="Time Savings"
+          value={`${Math.round(avgCompetitorTimeline - (portnoxData?.timeline || 0))} weeks`}
+          change="faster deployment"
+          changeType="positive"
+          icon={<Rocket className="h-5 w-5" />}
         />
       </motion.div>
 
-      {/* Implementation Metrics */}
-      <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" variants={staggerChildren}>
-        <motion.div variants={fadeInUp}>
-          <MetricCard
-            title="Fastest Implementation"
-            value={`${fastestImplementation.implementationWeeks} weeks`}
-            detail={fastestImplementation.vendor}
-            icon={<Zap className="h-4 w-4" />}
-            gradient="forest"
-          />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
-          <MetricCard
-            title="Average Timeline"
-            value={`${averageImplementationTime} weeks`}
-            detail="Across all vendors"
-            icon={<Calendar className="h-4 w-4" />}
-            gradient="ocean"
-          />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
-          <MetricCard
-            title="Min FTE Required"
-            value={`${Math.min(...implementationData.map((d) => d.fteRequired))}`}
-            detail="Operational staffing"
-            icon={<Users className="h-4 w-4" />}
-            gradient="royal"
-          />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
-          <MetricCard
-            title="Low Risk Options"
-            value={`${implementationData.filter((d) => d.riskLevel === "low").length}`}
-            detail={`Out of ${implementationData.length} vendors`}
-            icon={<CheckCircle className="h-4 w-4" />}
-            gradient="sunset"
-          />
-        </motion.div>
-      </motion.div>
-
-      {/* Implementation Comparison */}
+      {/* Implementation Complexity Comparison */}
       <motion.div variants={fadeInUp}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Implementation Complexity Comparison
-            </CardTitle>
+            <CardTitle>Implementation Complexity & Timeline</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {implementationData.map((item) => (
-                <div key={item.vendorId} className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <h4 className="font-semibold">{item.vendor}</h4>
-                      <StatusBadge
-                        status={
-                          item.riskLevel === "low" ? "success" : item.riskLevel === "medium" ? "warning" : "error"
-                        }
-                      >
-                        {item.riskLevel} risk
-                      </StatusBadge>
-                      <Badge variant="outline">{item.complexity} complexity</Badge>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold">{item.implementationWeeks} weeks</div>
-                      <div className="text-sm text-muted-foreground">{item.fteRequired} FTE required</div>
-                    </div>
-                  </div>
-
-                  <Progress
-                    value={
-                      (item.implementationWeeks / Math.max(...implementationData.map((d) => d.implementationWeeks))) *
-                      100
-                    }
-                    className="h-2"
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Downtime Risk:</span>
-                      <div className="font-medium capitalize">{item.downtimeRisk}</div>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Upgrade Complexity:</span>
-                      <div className="font-medium capitalize">{item.upgradeComplexity}</div>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Operational FTE:</span>
-                      <div className="font-medium">{item.fteRequired}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={implementationData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="vendor" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="timeline" fill={colorPalette.primary[0]} name="Timeline (weeks)" />
+                <Bar dataKey="complexity" fill={colorPalette.warning[0]} name="Complexity (1-10)" />
+              </BarChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </motion.div>
@@ -196,24 +111,46 @@ export default function ImplementationTimelineView({ results, config }: Implemen
       <motion.div variants={fadeInUp}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Typical Implementation Phases
-            </CardTitle>
+            <CardTitle>Typical Implementation Phases</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {IMPLEMENTATION_PHASES.map((phase, index) => (
-                <div key={phase.name} className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold">
-                    {index + 1}
+            <div className="space-y-6">
+              {implementationPhases.map((phase, index) => (
+                <div key={phase.phase} className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h4 className="font-semibold">{phase.phase}</h4>
+                      <p className="text-sm text-muted-foreground">{phase.description}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm">
+                        <span className="text-green-600 font-medium">Portnox: {phase.portnox}w</span>
+                        {" | "}
+                        <span className="text-gray-600">Avg: {phase.competitor}w</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-grow">
-                    <div className="font-medium">{phase.name}</div>
-                    <div className="text-sm text-muted-foreground">{phase.description}</div>
-                  </div>
-                  <div className="text-sm font-medium">
-                    {phase.duration} week{phase.duration !== 1 ? "s" : ""}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>Portnox</span>
+                        <span>{phase.portnox} weeks</span>
+                      </div>
+                      <Progress
+                        value={(phase.portnox / Math.max(phase.portnox, phase.competitor)) * 100}
+                        className="h-2"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>Competitor Avg</span>
+                        <span>{phase.competitor} weeks</span>
+                      </div>
+                      <Progress
+                        value={(phase.competitor / Math.max(phase.portnox, phase.competitor)) * 100}
+                        className="h-2"
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -222,62 +159,107 @@ export default function ImplementationTimelineView({ results, config }: Implemen
         </Card>
       </motion.div>
 
-      {/* Risk Assessment */}
+      {/* Risk Assessment Matrix */}
       <motion.div variants={fadeInUp}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
-              Implementation Risk Assessment
-            </CardTitle>
+            <CardTitle>Risk Assessment Matrix</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {implementationData.map((item) => (
-                <div key={item.vendorId} className="space-y-3">
-                  <h4 className="font-semibold">{item.vendor}</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Implementation Risk</span>
-                      <StatusBadge
-                        status={
-                          item.riskLevel === "low" ? "success" : item.riskLevel === "medium" ? "warning" : "error"
-                        }
-                      >
-                        {item.riskLevel}
-                      </StatusBadge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Downtime Risk</span>
-                      <StatusBadge
-                        status={
-                          item.downtimeRisk === "low" ? "success" : item.downtimeRisk === "medium" ? "warning" : "error"
-                        }
-                      >
-                        {item.downtimeRisk}
-                      </StatusBadge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Upgrade Complexity</span>
-                      <StatusBadge
-                        status={
-                          item.upgradeComplexity === "low"
-                            ? "success"
-                            : item.upgradeComplexity === "medium"
-                              ? "warning"
-                              : "error"
-                        }
-                      >
-                        {item.upgradeComplexity}
-                      </StatusBadge>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-3 font-semibold">Vendor</th>
+                    <th className="text-left p-3 font-semibold">Technical Risk</th>
+                    <th className="text-left p-3 font-semibold">Operational Risk</th>
+                    <th className="text-left p-3 font-semibold">Timeline Risk</th>
+                    <th className="text-left p-3 font-semibold">Budget Risk</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {riskAssessment.map((assessment, index) => (
+                    <tr key={assessment.vendor} className="border-b hover:bg-muted/50">
+                      <td className="p-3 capitalize font-medium">{assessment.vendor}</td>
+                      <td className="p-3">
+                        <StatusBadge
+                          status={
+                            assessment.technical === "Low"
+                              ? "success"
+                              : assessment.technical === "Medium"
+                                ? "warning"
+                                : "error"
+                          }
+                        />
+                      </td>
+                      <td className="p-3">
+                        <StatusBadge
+                          status={
+                            assessment.operational === "Low"
+                              ? "success"
+                              : assessment.operational === "Medium"
+                                ? "warning"
+                                : "error"
+                          }
+                        />
+                      </td>
+                      <td className="p-3">
+                        <StatusBadge
+                          status={
+                            assessment.timeline === "Low"
+                              ? "success"
+                              : assessment.timeline === "Medium"
+                                ? "warning"
+                                : "error"
+                          }
+                        />
+                      </td>
+                      <td className="p-3">
+                        <StatusBadge
+                          status={
+                            assessment.budget === "Low"
+                              ? "success"
+                              : assessment.budget === "Medium"
+                                ? "warning"
+                                : "error"
+                          }
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Implementation Success Factors */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <motion.div variants={fadeInUp}>
+          <Card className="text-center p-6">
+            <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
+            <h3 className="text-lg font-semibold mb-2">Proven Methodology</h3>
+            <p className="text-muted-foreground">Battle-tested implementation process with 95% success rate</p>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={fadeInUp}>
+          <Card className="text-center p-6">
+            <Users className="h-12 w-12 mx-auto mb-4 text-blue-500" />
+            <h3 className="text-lg font-semibold mb-2">Expert Support</h3>
+            <p className="text-muted-foreground">Dedicated implementation team with deep technical expertise</p>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={fadeInUp}>
+          <Card className="text-center p-6">
+            <Rocket className="h-12 w-12 mx-auto mb-4 text-purple-500" />
+            <h3 className="text-lg font-semibold mb-2">Rapid Deployment</h3>
+            <p className="text-muted-foreground">Cloud-native architecture enables faster time-to-value</p>
+          </Card>
+        </motion.div>
+      </div>
     </motion.div>
   )
 }

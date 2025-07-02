@@ -1,148 +1,120 @@
 "use client"
 
-import { useMemo } from "react"
 import { motion } from "framer-motion"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
+import { DollarSign, TrendingDown, Calculator, PieChart } from "lucide-react"
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-import { SectionTitle, MetricCard, staggerChildren, fadeInUp, VIBRANT_COLORS, ComparisonTable } from "./shared-ui"
-import { DollarSign, TrendingDown, Calculator, PieChart, BarChart3, Wallet } from "lucide-react"
+import { SectionTitle, MetricCard, ComparisonTable, fadeInUp, staggerContainer, colorPalette } from "./shared-ui"
 
-interface FinancialAnalysisViewProps {
+export default function FinancialAnalysisView({
+  results,
+  config,
+}: {
   results: CalculationResult[]
   config: CalculationConfiguration
-}
+}) {
+  // Prepare data for charts
+  const costBreakdownData = results.map((result) => ({
+    vendor: result.vendor,
+    licensing: result.licensing,
+    implementation: result.implementation,
+    support: result.support,
+    training: result.training,
+    total: result.totalCost,
+  }))
 
-export default function FinancialAnalysisView({ results, config }: FinancialAnalysisViewProps) {
-  const costBreakdownData = useMemo(() => {
-    return results.map((result) => {
-      const breakdown = result.breakdown.reduce(
-        (acc, item) => {
-          acc[item.name] = item.value
-          return acc
-        },
-        {} as Record<string, number>,
-      )
-
-      return {
-        name: result.vendorName,
-        ...breakdown,
-        total: result.total,
-      }
-    })
-  }, [results])
-
-  const yearlyProjection = useMemo(() => {
-    const years = Array.from({ length: config.years }, (_, i) => i + 1)
-    return years.map((year) => {
-      const yearData: any = { year: `Year ${year}` }
-      results.forEach((result) => {
-        const annualCost = result.total / config.years
-        const cumulativeCost = annualCost * year
-        yearData[result.vendorName] = cumulativeCost
-      })
-      return yearData
-    })
-  }, [results, config.years])
-
-  const savingsComparison = useMemo(() => {
-    const baseline = Math.max(...results.map((r) => r.total))
-    return results.map((result) => ({
-      vendor: result.vendorName,
-      cost: result.total,
-      savings: baseline - result.total,
-      savingsPercent: (((baseline - result.total) / baseline) * 100).toFixed(1),
-    }))
-  }, [results])
-
-  const costCategories = useMemo(() => {
-    const categories = new Set<string>()
+  const yearlyProjectionData = Array.from({ length: config.years }, (_, yearIndex) => {
+    const yearData: any = { year: `Year ${yearIndex + 1}` }
     results.forEach((result) => {
-      result.breakdown.forEach((item) => categories.add(item.name))
+      const yearlyLicensing = result.licensing / config.years
+      const yearlySupport = result.support / config.years
+      const implementationCost = yearIndex === 0 ? result.implementation : 0
+      const trainingCost = yearIndex === 0 ? result.training : 0
+
+      yearData[result.vendor] = yearlyLicensing + yearlySupport + implementationCost + trainingCost
     })
-    return Array.from(categories)
-  }, [results])
+    return yearData
+  })
+
+  const portnoxResult = results.find((r) => r.vendor === "portnox")
+  const competitorResults = results.filter((r) => r.vendor !== "portnox")
+  const avgCompetitorCost = competitorResults.reduce((sum, r) => sum + r.totalCost, 0) / competitorResults.length
+  const totalSavings = avgCompetitorCost - (portnoxResult?.totalCost || 0)
+
+  // Cost comparison table data
+  const comparisonTableData = results.map((result) => ({
+    vendor: result.vendor,
+    licensing: result.licensing,
+    implementation: result.implementation,
+    support: result.support,
+    training: result.training,
+    total: result.totalCost,
+    savings: result.vendor === "portnox" ? 0 : result.totalCost - (portnoxResult?.totalCost || 0),
+  }))
+
+  const tableColumns = [
+    { key: "vendor", label: "Vendor", format: (value: string) => value.charAt(0).toUpperCase() + value.slice(1) },
+    { key: "licensing", label: "Licensing", format: (value: number) => `$${value.toLocaleString()}` },
+    { key: "implementation", label: "Implementation", format: (value: number) => `$${value.toLocaleString()}` },
+    { key: "support", label: "Support", format: (value: number) => `$${value.toLocaleString()}` },
+    { key: "training", label: "Training", format: (value: number) => `$${value.toLocaleString()}` },
+    { key: "total", label: "Total Cost", format: (value: number) => `$${value.toLocaleString()}` },
+    {
+      key: "savings",
+      label: "vs Portnox",
+      format: (value: number) => (value === 0 ? "Baseline" : `+$${value.toLocaleString()}`),
+    },
+  ]
 
   return (
-    <motion.div className="space-y-8" initial="initial" animate="animate" variants={staggerChildren}>
-      {/* Header */}
-      <motion.div variants={fadeInUp}>
-        <SectionTitle
-          icon={<Calculator className="h-6 w-6" />}
-          title="Financial Analysis"
-          description="Detailed cost breakdown and financial projections"
-        />
-      </motion.div>
+    <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-6">
+      <SectionTitle title="Financial Analysis" subtitle="Detailed cost breakdown and financial projections" />
 
       {/* Financial Metrics */}
-      <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" variants={staggerChildren}>
-        <motion.div variants={fadeInUp}>
-          <MetricCard
-            title="Lowest Total Cost"
-            value={`$${Math.min(...results.map((r) => r.total)).toLocaleString()}`}
-            detail={results.find((r) => r.total === Math.min(...results.map((r) => r.total)))?.vendorName}
-            icon={<DollarSign className="h-4 w-4" />}
-            gradient="forest"
-          />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
-          <MetricCard
-            title="Maximum Savings"
-            value={`$${Math.max(...savingsComparison.map((s) => s.savings)).toLocaleString()}`}
-            detail="vs. highest cost option"
-            icon={<TrendingDown className="h-4 w-4" />}
-            gradient="ocean"
-          />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
-          <MetricCard
-            title="Average Annual Cost"
-            value={`$${Math.round(results.reduce((sum, r) => sum + r.total, 0) / results.length / config.years).toLocaleString()}`}
-            detail="Across all vendors"
-            icon={<BarChart3 className="h-4 w-4" />}
-            gradient="royal"
-          />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
-          <MetricCard
-            title="Cost Range"
-            value={`${(((Math.max(...results.map((r) => r.total)) - Math.min(...results.map((r) => r.total))) / Math.min(...results.map((r) => r.total))) * 100).toFixed(0)}%`}
-            detail="Price variation"
-            icon={<Wallet className="h-4 w-4" />}
-            gradient="sunset"
-          />
-        </motion.div>
+      <motion.div variants={staggerContainer} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard
+          title="Portnox Total Cost"
+          value={`$${portnoxResult?.totalCost.toLocaleString() || 0}`}
+          icon={<DollarSign className="h-5 w-5" />}
+        />
+        <MetricCard
+          title="Average Competitor Cost"
+          value={`$${avgCompetitorCost.toLocaleString()}`}
+          icon={<Calculator className="h-5 w-5" />}
+        />
+        <MetricCard
+          title="Total Savings"
+          value={`$${totalSavings.toLocaleString()}`}
+          change={`${((totalSavings / avgCompetitorCost) * 100).toFixed(1)}%`}
+          changeType="positive"
+          icon={<TrendingDown className="h-5 w-5" />}
+        />
+        <MetricCard
+          title="Cost per Device"
+          value={`$${Math.round((portnoxResult?.totalCost || 0) / config.devices)}`}
+          icon={<PieChart className="h-5 w-5" />}
+        />
       </motion.div>
 
       {/* Cost Breakdown Chart */}
       <motion.div variants={fadeInUp}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Cost Breakdown by Category
-            </CardTitle>
+            <CardTitle>Cost Breakdown by Category</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={costBreakdownData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
+                <XAxis dataKey="vendor" />
                 <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                <Tooltip
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, ""]}
-                  labelFormatter={(label) => `Vendor: ${label}`}
-                />
-                {costCategories.map((category, index) => (
-                  <Bar
-                    key={category}
-                    dataKey={category}
-                    stackId="cost"
-                    fill={VIBRANT_COLORS[index % VIBRANT_COLORS.length]}
-                  />
-                ))}
+                <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                <Bar dataKey="licensing" stackId="a" fill={colorPalette.primary[0]} name="Licensing" />
+                <Bar dataKey="implementation" stackId="a" fill={colorPalette.primary[1]} name="Implementation" />
+                <Bar dataKey="support" stackId="a" fill={colorPalette.primary[2]} name="Support" />
+                <Bar dataKey="training" stackId="a" fill={colorPalette.primary[3]} name="Training" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -153,26 +125,22 @@ export default function FinancialAnalysisView({ results, config }: FinancialAnal
       <motion.div variants={fadeInUp}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingDown className="h-5 w-5" />
-              Cumulative Cost Projection
-            </CardTitle>
+            <CardTitle>Yearly Cost Projection</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={yearlyProjection}>
+              <AreaChart data={yearlyProjectionData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="year" />
                 <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
+                <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
                 {results.map((result, index) => (
                   <Area
                     key={result.vendor}
                     type="monotone"
-                    dataKey={result.vendorName}
-                    stackId="1"
-                    stroke={VIBRANT_COLORS[index % VIBRANT_COLORS.length]}
-                    fill={VIBRANT_COLORS[index % VIBRANT_COLORS.length]}
+                    dataKey={result.vendor}
+                    stroke={colorPalette.primary[index % colorPalette.primary.length]}
+                    fill={colorPalette.primary[index % colorPalette.primary.length]}
                     fillOpacity={0.6}
                   />
                 ))}
@@ -182,85 +150,64 @@ export default function FinancialAnalysisView({ results, config }: FinancialAnal
         </Card>
       </motion.div>
 
-      {/* Detailed Cost Table */}
+      {/* Detailed Cost Comparison Table */}
       <motion.div variants={fadeInUp}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PieChart className="h-5 w-5" />
-              Detailed Cost Comparison
-            </CardTitle>
+            <CardTitle>Detailed Cost Comparison</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Vendor</TableHead>
-                  <TableHead className="text-right">Total Cost</TableHead>
-                  <TableHead className="text-right">Annual Cost</TableHead>
-                  <TableHead className="text-right">Cost per Device</TableHead>
-                  <TableHead className="text-right">Savings vs. Highest</TableHead>
-                  <TableHead>Rank</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {results.map((result, index) => {
-                  const savings = savingsComparison.find((s) => s.vendor === result.vendorName)
-                  return (
-                    <TableRow key={result.vendor}>
-                      <TableCell className="font-medium">{result.vendorName}</TableCell>
-                      <TableCell className="text-right font-mono">${result.total.toLocaleString()}</TableCell>
-                      <TableCell className="text-right font-mono">
-                        ${Math.round(result.total / config.years).toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-right font-mono">
-                        ${Math.round(result.total / config.devices).toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {savings && savings.savings > 0 ? (
-                          <div className="text-green-600">
-                            ${savings.savings.toLocaleString()} ({savings.savingsPercent}%)
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={index === 0 ? "default" : "secondary"}>#{index + 1}</Badge>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
+            <ComparisonTable data={comparisonTableData} columns={tableColumns} highlightBest={true} />
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* Cost Breakdown Table */}
-      <motion.div variants={fadeInUp}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Cost Category Breakdown</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ComparisonTable
-              headers={results.map((r) => r.vendorName)}
-              data={costCategories.map((category) => ({
-                label: category,
-                values: results.reduce(
-                  (acc, result) => {
-                    const categoryItem = result.breakdown.find((item) => item.name === category)
-                    acc[result.vendorName] = categoryItem ? `$${categoryItem.value.toLocaleString()}` : "$0"
-                    return acc
-                  },
-                  {} as Record<string, string>,
-                ),
-              }))}
-            />
-          </CardContent>
-        </Card>
-      </motion.div>
+      {/* Cost Category Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div variants={fadeInUp}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Licensing Costs</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {results.map((result, index) => (
+                <div key={result.vendor} className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="capitalize font-medium">{result.vendor}</span>
+                    <span>${result.licensing.toLocaleString()}</span>
+                  </div>
+                  <Progress
+                    value={(result.licensing / Math.max(...results.map((r) => r.licensing))) * 100}
+                    className="h-2"
+                  />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={fadeInUp}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Implementation Costs</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {results.map((result, index) => (
+                <div key={result.vendor} className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="capitalize font-medium">{result.vendor}</span>
+                    <span>${result.implementation.toLocaleString()}</span>
+                  </div>
+                  <Progress
+                    value={(result.implementation / Math.max(...results.map((r) => r.implementation))) * 100}
+                    className="h-2"
+                  />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
     </motion.div>
   )
 }

@@ -259,7 +259,9 @@ export default function TcoAnalyzerUltimate() {
                   >
                     <div className="sticky top-32">
                       <EnhancedVendorSelection
-                        {...{ selectedVendors, handleVendorToggle, darkMode }}
+                        selectedVendors={selectedVendors}
+                        onVendorToggle={handleVendorToggle}
+                        darkMode={darkMode}
                         onClearAll={() => setSelectedVendors(["portnox"])}
                         onSelectRecommended={() => setSelectedVendors(["portnox", "cisco", "aruba", "forescout"])}
                       />
