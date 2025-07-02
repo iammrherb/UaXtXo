@@ -41,24 +41,6 @@ import {
 } from "lucide-react"
 import { useReactToPrint } from "react-to-print"
 
-// Enhanced color palette
-const PORTNOX_COLORS = {
-  primary: "#00D4AA",
-  primaryDark: "#00A88A",
-  primaryLight: "#33DDBB",
-  secondary: "#1B2951",
-  accent: "#FF6B35",
-  textDark: "#E0E0E0",
-  textLight: "#1F2937",
-  gradientVibrant: "linear-gradient(135deg, #00D4AA 0%, #3B82F6 50%, #8B5CF6 100%)",
-}
-
-const VIBRANT_COLORS = ["#00D4AA", "#3B82F6", "#FF6B35", "#8B5CF6", "#10B981", "#F59E0B", "#EC4899", "#6366F1"]
-
-// Animation variants
-const fadeInUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 } }
-const staggerChildren = { animate: { transition: { staggerChildren: 0.07 } } }
-
 // Main Component
 export default function TcoAnalyzerUltimate() {
   const [isClient, setIsClient] = useState(false)
@@ -163,7 +145,7 @@ export default function TcoAnalyzerUltimate() {
       return (
         <div className="w-full h-96 flex items-center justify-center">
           <div className="text-center">
-            <RocketIcon className="mx-auto h-12 w-12 text-portnox-primary animate-pulse" />
+            <RocketIcon className="mx-auto h-12 w-12 text-primary animate-pulse" />
             <p className="mt-4 text-lg font-semibold">Launching Decision Engine...</p>
             <p className="text-sm text-muted-foreground">Calculating TCO and ROI...</p>
           </div>
@@ -173,22 +155,22 @@ export default function TcoAnalyzerUltimate() {
     if (!results || results.length === 0)
       return (
         <Card className="p-6 text-center text-muted-foreground animate-fade-in">
-          <InfoIcon className="mx-auto h-8 w-8 mb-2 text-portnox-primary" />
+          <InfoIcon className="mx-auto h-8 w-8 mb-2 text-primary" />
           Select vendors and configure settings to begin analysis.
         </Card>
       )
 
     switch (activeView) {
       case "dashboard":
-        return <ExecutiveDashboardView results={results} config={configuration} darkMode={darkMode} />
+        return <ExecutiveDashboardView results={results} config={configuration} />
       case "financials":
-        return <FinancialAnalysisView results={results} config={configuration} darkMode={darkMode} />
+        return <FinancialAnalysisView results={results} config={configuration} />
       case "cybersecurity":
-        return <CybersecurityPostureView results={results} config={configuration} darkMode={darkMode} />
+        return <CybersecurityPostureView results={results} config={configuration} />
       case "operations":
-        return <BusinessImpactView results={results} config={configuration} darkMode={darkMode} />
+        return <BusinessImpactView results={results} config={configuration} />
       case "timeline":
-        return <ImplementationTimelineView results={results} config={configuration} darkMode={darkMode} />
+        return <ImplementationTimelineView results={results} config={configuration} />
       case "report":
         return (
           <ExecutiveReportView
@@ -209,7 +191,7 @@ export default function TcoAnalyzerUltimate() {
       <div
         className={cn(
           "min-h-screen flex flex-col font-sans antialiased transition-colors duration-300",
-          darkMode ? "dark bg-secondary text-textDark" : "bg-background text-textLight",
+          darkMode ? "dark bg-background text-foreground" : "bg-background text-foreground",
         )}
       >
         <Header
@@ -293,7 +275,7 @@ const Header = ({
   <motion.header
     className={cn(
       "sticky top-0 z-50 backdrop-blur-lg transition-all duration-300",
-      darkMode ? "bg-secondary/80 border-b border-border/50" : "bg-background/80 border-b border-border/50",
+      "bg-background/80 border-b border-border/50",
     )}
     initial={{ y: -80, opacity: 0 }}
     animate={{ y: 0, opacity: 1 }}
@@ -378,10 +360,7 @@ const Header = ({
 // Tab Navigation Component
 const TabNavigation = ({ tabs, activeView, setActiveView, darkMode }: any) => (
   <motion.nav
-    className={cn(
-      "sticky top-16 z-40 backdrop-blur-md",
-      darkMode ? "bg-secondary/70 border-b border-border/60" : "bg-background/70 border-b border-border/60",
-    )}
+    className={cn("sticky top-16 z-40 backdrop-blur-md", "bg-background/70 border-b border-border/60")}
     initial={{ opacity: 0, y: -20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: 0.2, type: "spring", stiffness: 150, damping: 20 }}
