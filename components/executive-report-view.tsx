@@ -27,11 +27,18 @@ export default function ExecutiveReportView({
   results: CalculationResult[]
   config: CalculationConfiguration
 }) {
-  const portnoxResult = results.find((r) => r.vendor === "portnox")
-  const competitorResults = results.filter((r) => r.vendor !== "portnox")
-  const bestCompetitor = competitorResults.sort((a, b) => a.totalCost - b.totalCost)[0]
-  const totalSavings = bestCompetitor ? bestCompetitor.totalCost - (portnoxResult?.totalCost || 0) : 0
-  const savingsPercentage = bestCompetitor ? (totalSavings / bestCompetitor.totalCost) * 100 : 0
+  // Safe data access with fallbacks
+  const portnoxResult = results?.find((r) => r?.vendor === "portnox")
+  const competitorResults = results?.filter((r) => r?.vendor !== "portnox") || []
+  const bestCompetitor = competitorResults.sort((a, b) => (a?.totalCost || 0) - (b?.totalCost || 0))[0]
+
+  const portnoxTotalCost = portnoxResult?.totalCost || 0
+  const bestCompetitorCost = bestCompetitor?.totalCost || 0
+  const totalSavings = bestCompetitorCost > portnoxTotalCost ? bestCompetitorCost - portnoxTotalCost : 0
+  const savingsPercentage = bestCompetitorCost > 0 ? (totalSavings / bestCompetitorCost) * 100 : 0
+
+  // Safe ROI access with fallback
+  const portnoxROI = typeof portnoxResult?.roi === "number" ? portnoxResult.roi : 0
 
   const keyFindings = [
     {
@@ -42,7 +49,7 @@ export default function ExecutiveReportView({
     },
     {
       title: "ROI Performance",
-      value: `${portnoxResult?.roi.toFixed(0) || 0}% ROI`,
+      value: `${portnoxROI.toFixed(0)}% ROI`,
       description: "Superior return on investment over 3 years",
       icon: <TrendingUp className="h-5 w-5 text-blue-500" />,
     },
@@ -95,6 +102,11 @@ export default function ExecutiveReportView({
     "Identify key stakeholders and project team",
   ]
 
+  // Safe config access with fallbacks
+  const deviceCount = config?.devices || 1000
+  const analysisYears = config?.years || 3
+  const licenseTier = config?.licenseTier || "standard"
+
   return (
     <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-6">
       {/* Header with Export Options */}
@@ -130,12 +142,12 @@ export default function ExecutiveReportView({
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-lg leading-relaxed">
-              Based on our comprehensive Total Cost of Ownership analysis for {config.devices.toLocaleString()} devices
-              over {config.years} years, <strong>Portnox ZTCA emerges as the clear leader</strong> in both
+              Based on our comprehensive Total Cost of Ownership analysis for {deviceCount.toLocaleString()} devices
+              over {analysisYears} years, <strong>Portnox ZTCA emerges as the clear leader</strong> in both
               cost-effectiveness and security capabilities.
             </p>
             <p className="leading-relaxed">
-              The analysis reveals significant cost savings of <strong>${totalSavings.toLocaleString()}</strong>(
+              The analysis reveals significant cost savings of <strong>${totalSavings.toLocaleString()}</strong> (
               {savingsPercentage.toFixed(1)}% reduction) compared to the nearest competitor, while delivering superior
               zero-trust security architecture and simplified management capabilities.
             </p>
@@ -192,35 +204,44 @@ export default function ExecutiveReportView({
                   </tr>
                 </thead>
                 <tbody>
-                  {results.map((result, index) => (
-                    <tr key={result.vendor} className="border-b hover:bg-muted/50">
-                      <td className="p-3">
-                        <div className="flex items-center space-x-2">
-                          <span className="capitalize font-medium">{result.vendor}</span>
-                          {result.vendor === "portnox" && (
-                            <Badge className="bg-green-100 text-green-800">Recommended</Badge>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-3 font-semibold">${result.totalCost.toLocaleString()}</td>
-                      <td className="p-3">{result.roi.toFixed(0)}%</td>
-                      <td className="p-3">{result.paybackPeriod.toFixed(1)} months</td>
-                      <td className="p-3">
-                        <div className="flex items-center">
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < (result.vendor === "portnox" ? 5 : 3)
-                                  ? "text-yellow-400 fill-current"
-                                  : "text-gray-300"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {results?.map((result, index) => {
+                    const safeResult = {
+                      vendor: result?.vendor || "unknown",
+                      totalCost: result?.totalCost || 0,
+                      roi: typeof result?.roi === "number" ? result.roi : 0,
+                      paybackPeriod: typeof result?.paybackPeriod === "number" ? result.paybackPeriod : 0,
+                    }
+
+                    return (
+                      <tr key={safeResult.vendor} className="border-b hover:bg-muted/50">
+                        <td className="p-3">
+                          <div className="flex items-center space-x-2">
+                            <span className="capitalize font-medium">{safeResult.vendor}</span>
+                            {safeResult.vendor === "portnox" && (
+                              <Badge className="bg-green-100 text-green-800">Recommended</Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-3 font-semibold">${safeResult.totalCost.toLocaleString()}</td>
+                        <td className="p-3">{safeResult.roi.toFixed(0)}%</td>
+                        <td className="p-3">{safeResult.paybackPeriod.toFixed(1)} months</td>
+                        <td className="p-3">
+                          <div className="flex items-center">
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${
+                                  i < (safeResult.vendor === "portnox" ? 5 : 3)
+                                    ? "text-yellow-400 fill-current"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  }) || []}
                 </tbody>
               </table>
             </div>
@@ -296,7 +317,7 @@ export default function ExecutiveReportView({
           <CardContent className="p-6 text-center">
             <p className="text-sm text-muted-foreground">
               This report was generated on {new Date().toLocaleDateString()} based on the configuration:
-              {config.devices.toLocaleString()} devices, {config.years}-year analysis period, {config.licenseTier} tier.
+              {deviceCount.toLocaleString()} devices, {analysisYears}-year analysis period, {licenseTier} tier.
             </p>
             <p className="text-xs text-muted-foreground mt-2">
               For questions about this analysis, contact your Portnox representative or visit portnox.com
