@@ -1,103 +1,103 @@
-"use client"
-
-import { motion } from "framer-motion"
+import type React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Info } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { ArrowUpRight, ArrowDownRight } from "lucide-react"
-import React from "react"
-
-export const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-}
-
-export const staggerChildren = {
-  animate: {
-    transition: {
-      staggerChildren: 0.07,
-    },
-  },
-}
-
-export const GradientCard = ({
-  children,
-  className,
-  ...props
-}: {
-  children: React.ReactNode
-  className?: string
-  [key: string]: any
-}) => (
-  <Card
-    className={cn(
-      "relative overflow-hidden transition-all duration-300 hover:shadow-xl bg-card border hover:border-primary/20",
-      className,
-    )}
-    {...props}
-  >
-    <div className="absolute inset-0 opacity-[0.03] bg-gradient-to-br from-primary to-primary/50" />
-    <div className="relative z-10">{children}</div>
-  </Card>
-)
-
-export const MetricCard = ({
-  title,
-  value,
-  detail,
-  icon,
-  trend,
-  trendValue,
-}: {
-  title: string
-  value: string
-  detail: string
-  icon: React.ReactElement
-  trend?: "up" | "down"
-  trendValue?: string
-}) => (
-  <motion.div whileHover={{ y: -5 }} whileTap={{ scale: 0.98 }} className="h-full">
-    <GradientCard className="h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        {React.cloneElement(icon, {
-          className: "h-5 w-5 text-muted-foreground",
-        })}
-      </CardHeader>
-      <CardContent className="flex-grow flex flex-col justify-center">
-        <div className="text-3xl font-bold text-card-foreground">{value}</div>
-        {trend && (
-          <div className={cn("flex items-center text-xs mt-1", trend === "up" ? "text-green-500" : "text-red-500")}>
-            {trend === "up" ? (
-              <ArrowUpRight className="h-3 w-3 mr-0.5" />
-            ) : (
-              <ArrowDownRight className="h-3 w-3 mr-0.5" />
-            )}
-            <span>{trendValue}</span>
-          </div>
-        )}
-        <p className="text-xs mt-1 text-muted-foreground">{detail}</p>
-      </CardContent>
-    </GradientCard>
-  </motion.div>
-)
 
 export const SectionTitle = ({
   title,
-  description,
-  icon,
+  tooltip,
+  children,
 }: {
   title: string
-  description: string
-  icon: React.ReactElement
+  tooltip?: string
+  children?: React.ReactNode
 }) => (
-  <div className="flex items-center space-x-3 mb-6">
-    <div className="p-2 bg-primary/10 rounded-lg">
-      {React.cloneElement(icon, { className: "h-6 w-6 text-primary" })}
+  <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center gap-2">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
+      {tooltip && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="h-4 w-4 text-gray-500 cursor-pointer" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-xs">{tooltip}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
     </div>
-    <div>
-      <h2 className="text-xl font-bold text-card-foreground">{title}</h2>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </div>
+    {children}
   </div>
 )
+
+export const DataCard = ({
+  title,
+  value,
+  change,
+  unit,
+  tooltip,
+  children,
+  className,
+}: {
+  title: string
+  value: string | number
+  change?: number
+  unit?: string
+  tooltip?: string
+  children?: React.ReactNode
+  className?: string
+}) => (
+  <Card className={cn("flex flex-col", className)}>
+    <CardHeader className="pb-2">
+      <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center justify-between">
+        <span>{title}</span>
+        {tooltip && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 text-gray-400 cursor-pointer" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">{tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </CardTitle>
+    </CardHeader>
+    <CardContent className="flex-grow flex flex-col justify-center">
+      {children ? (
+        children
+      ) : (
+        <>
+          <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {value}
+            {unit && <span className="text-sm font-normal ml-1">{unit}</span>}
+          </div>
+          {change !== undefined && (
+            <p className={cn("text-xs text-muted-foreground mt-1", change > 0 ? "text-green-600" : "text-red-600")}>
+              {change > 0 ? "+" : ""}
+              {change.toFixed(2)}% vs. average
+            </p>
+          )}
+        </>
+      )}
+    </CardContent>
+  </Card>
+)
+
+export const formatCurrency = (value: number, decimals = 0) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(value)
+}
+
+export const formatNumber = (value: number) => {
+  return new Intl.NumberFormat("en-US").format(value)
+}
