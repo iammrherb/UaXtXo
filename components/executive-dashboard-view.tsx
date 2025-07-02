@@ -12,6 +12,16 @@ interface ExecutiveDashboardViewProps {
   config: any
 }
 
+// Safe number helper function
+const safeNumber = (value: any, fallback = 0): number => {
+  if (typeof value === "number" && !isNaN(value) && isFinite(value)) return value
+  if (typeof value === "string") {
+    const parsed = Number.parseFloat(value)
+    return !isNaN(parsed) && isFinite(parsed) ? parsed : fallback
+  }
+  return fallback
+}
+
 export default function ExecutiveDashboardView({ results, config }: ExecutiveDashboardViewProps) {
   if (!results || results.length === 0) {
     return (
@@ -24,17 +34,18 @@ export default function ExecutiveDashboardView({ results, config }: ExecutiveDas
   }
 
   const formatCurrency = (value: number) => {
+    const safeValue = safeNumber(value, 0)
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(value)
+    }).format(safeValue)
   }
 
-  const bestROI = Math.max(...results.map((r) => r.roi?.percentage || 0))
-  const lowestTCO = Math.min(...results.map((r) => r.total || 0))
-  const fastestPayback = Math.min(...results.map((r) => r.roi?.paybackMonths || 999))
+  const bestROI = Math.max(...results.map((r) => safeNumber(r.roi?.percentage, 0)))
+  const lowestTCO = Math.min(...results.map((r) => safeNumber(r.total, 0)))
+  const fastestPayback = Math.min(...results.map((r) => safeNumber(r.roi?.paybackMonths, 999)))
 
   const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316", "#06B6D4"]
 
@@ -59,7 +70,7 @@ export default function ExecutiveDashboardView({ results, config }: ExecutiveDas
               <TrendingUp className="h-5 w-5 text-blue-600" />
               <div>
                 <p className="text-sm font-medium">Best ROI</p>
-                <p className="text-2xl font-bold">{Math.round(bestROI)}%</p>
+                <p className="text-2xl font-bold">{Math.round(safeNumber(bestROI, 0))}%</p>
               </div>
             </div>
           </CardContent>
@@ -70,7 +81,7 @@ export default function ExecutiveDashboardView({ results, config }: ExecutiveDas
               <Clock className="h-5 w-5 text-purple-600" />
               <div>
                 <p className="text-sm font-medium">Fastest Payback</p>
-                <p className="text-2xl font-bold">{fastestPayback} mo</p>
+                <p className="text-2xl font-bold">{safeNumber(fastestPayback, 0)} mo</p>
               </div>
             </div>
           </CardContent>
@@ -81,7 +92,7 @@ export default function ExecutiveDashboardView({ results, config }: ExecutiveDas
               <Users className="h-5 w-5 text-orange-600" />
               <div>
                 <p className="text-sm font-medium">Devices</p>
-                <p className="text-2xl font-bold">{config.devices?.toLocaleString() || "N/A"}</p>
+                <p className="text-2xl font-bold">{safeNumber(config?.devices, 0).toLocaleString()}</p>
               </div>
             </div>
           </CardContent>
@@ -95,11 +106,11 @@ export default function ExecutiveDashboardView({ results, config }: ExecutiveDas
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={results}>
+            <BarChart data={results.map((r) => ({ ...r, total: safeNumber(r.total, 0) }))}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="vendorName" />
-              <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-              <Tooltip formatter={(value) => [formatCurrency(Number(value)), "Total Cost"]} />
+              <YAxis tickFormatter={(value) => `$${(safeNumber(value, 0) / 1000).toFixed(0)}K`} />
+              <Tooltip formatter={(value) => [formatCurrency(safeNumber(value, 0)), "Total Cost"]} />
               <Bar dataKey="total" fill="#00D4AA" />
             </BarChart>
           </ResponsiveContainer>
@@ -114,12 +125,12 @@ export default function ExecutiveDashboardView({ results, config }: ExecutiveDas
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={results}>
+              <BarChart data={results.map((r) => ({ ...r, roiPercentage: safeNumber(r.roi?.percentage, 0) }))}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="vendorName" />
                 <YAxis />
-                <Tooltip formatter={(value) => [`${value}%`, "ROI"]} />
-                <Bar dataKey="roi.percentage" fill="#0EA5E9" />
+                <Tooltip formatter={(value) => [`${safeNumber(value, 0)}%`, "ROI"]} />
+                <Bar dataKey="roiPercentage" fill="#0EA5E9" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -131,15 +142,21 @@ export default function ExecutiveDashboardView({ results, config }: ExecutiveDas
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {results.slice(0, 3).map((result, index) => (
-                <div key={result.vendor} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">{result.vendorName}</span>
-                    <span className="text-sm text-muted-foreground">{formatCurrency(result.total)}</span>
+              {results.slice(0, 3).map((result, index) => {
+                const total = safeNumber(result.total, 0)
+                const maxTotal = Math.max(...results.map((r) => safeNumber(r.total, 0)))
+                const progressValue = maxTotal > 0 ? (total / maxTotal) * 100 : 0
+
+                return (
+                  <div key={result.vendor} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{result.vendorName}</span>
+                      <span className="text-sm text-muted-foreground">{formatCurrency(total)}</span>
+                    </div>
+                    <Progress value={safeNumber(progressValue, 0)} className="h-2" />
                   </div>
-                  <Progress value={(result.total / Math.max(...results.map((r) => r.total))) * 100} className="h-2" />
-                </div>
-              ))}
+                )
+              })}
             </div>
           </CardContent>
         </Card>
@@ -163,48 +180,41 @@ export default function ExecutiveDashboardView({ results, config }: ExecutiveDas
                 </tr>
               </thead>
               <tbody>
-                {results.map((result, index) => (
-                  <tr key={result.vendor} className="border-b">
-                    <td className="p-2">
-                      <div className="flex items-center space-x-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                        />
-                        <span className="font-medium">{result.vendorName}</span>
-                      </div>
-                    </td>
-                    <td className="text-right p-2">{formatCurrency(result.total)}</td>
-                    <td className="text-right p-2">
-                      <span
-                        className={cn(
-                          "font-medium",
-                          (result.roi?.percentage || 0) > 0 ? "text-green-600" : "text-red-600",
-                        )}
-                      >
-                        {Math.round(result.roi?.percentage || 0)}%
-                      </span>
-                    </td>
-                    <td className="text-right p-2">{result.roi?.paybackMonths || "N/A"} mo</td>
-                    <td className="text-center p-2">
-                      <Badge
-                        variant={
-                          (result.risk?.breachReduction || 0) > 0.5
-                            ? "default"
-                            : (result.risk?.breachReduction || 0) > 0.3
-                              ? "secondary"
-                              : "destructive"
-                        }
-                      >
-                        {(result.risk?.breachReduction || 0) > 0.5
-                          ? "Low"
-                          : (result.risk?.breachReduction || 0) > 0.3
-                            ? "Medium"
-                            : "High"}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
+                {results.map((result, index) => {
+                  const roiPercentage = safeNumber(result.roi?.percentage, 0)
+                  const paybackMonths = safeNumber(result.roi?.paybackMonths, 0)
+                  const breachReduction = safeNumber(result.risk?.breachReduction, 0)
+
+                  return (
+                    <tr key={result.vendor} className="border-b">
+                      <td className="p-2">
+                        <div className="flex items-center space-x-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                          />
+                          <span className="font-medium">{result.vendorName}</span>
+                        </div>
+                      </td>
+                      <td className="text-right p-2">{formatCurrency(safeNumber(result.total, 0))}</td>
+                      <td className="text-right p-2">
+                        <span className={cn("font-medium", roiPercentage > 0 ? "text-green-600" : "text-red-600")}>
+                          {Math.round(roiPercentage)}%
+                        </span>
+                      </td>
+                      <td className="text-right p-2">{paybackMonths > 0 ? `${paybackMonths} mo` : "N/A"}</td>
+                      <td className="text-center p-2">
+                        <Badge
+                          variant={
+                            breachReduction > 0.5 ? "default" : breachReduction > 0.3 ? "secondary" : "destructive"
+                          }
+                        >
+                          {breachReduction > 0.5 ? "Low" : breachReduction > 0.3 ? "Medium" : "High"}
+                        </Badge>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

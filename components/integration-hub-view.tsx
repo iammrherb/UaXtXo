@@ -240,6 +240,16 @@ interface IntegrationHubViewProps {
   config: any
 }
 
+// Safe number helper function
+const safeNumber = (value: any, fallback = 0): number => {
+  if (typeof value === "number" && !isNaN(value) && isFinite(value)) return value
+  if (typeof value === "string") {
+    const parsed = Number.parseFloat(value)
+    return !isNaN(parsed) && isFinite(parsed) ? parsed : fallback
+  }
+  return fallback
+}
+
 export default function IntegrationHubView({ selectedVendors, config }: IntegrationHubViewProps) {
   const [activeCategory, setActiveCategory] = useState("identity")
   const [searchTerm, setSearchTerm] = useState("")
@@ -256,7 +266,7 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
   const getVendorIntegrations = (vendorId: string) => {
     const vendor = ComprehensiveVendorDatabase[vendorId]
     if (!vendor) return { identity: [], mdm: [], siem: [], security: [] }
-    return vendor.integrations
+    return vendor.integrations || { identity: [], mdm: [], siem: [], security: [] }
   }
 
   // Calculate integration compatibility
@@ -264,18 +274,21 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
     const compatibility: Record<string, number> = {}
     selectedVendors.forEach((vendorId) => {
       const vendor = ComprehensiveVendorDatabase[vendorId]
-      if (vendor) {
+      if (vendor && vendor.integrations) {
         let score = 0
         let total = 0
         Object.entries(vendor.integrations).forEach(([category, integrations]) => {
-          integrations.forEach((integration) => {
-            total++
-            if (typeof integration.cost === "number" && integration.cost === 0) score++
-            else if (typeof integration.cost === "string" && integration.cost === "0") score++
-            else if (integration.cost === 0) score++
-          })
+          if (Array.isArray(integrations)) {
+            integrations.forEach((integration) => {
+              total++
+              const cost = safeNumber(integration.cost, 0)
+              if (cost === 0) score++
+            })
+          }
         })
         compatibility[vendorId] = total > 0 ? Math.round((score / total) * 100) : 0
+      } else {
+        compatibility[vendorId] = 0
       }
     })
     return compatibility
@@ -286,19 +299,18 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
     const costs: Record<string, number> = {}
     selectedVendors.forEach((vendorId) => {
       const vendor = ComprehensiveVendorDatabase[vendorId]
-      if (vendor) {
+      if (vendor && vendor.integrations) {
         let totalCost = 0
         Object.values(vendor.integrations).forEach((integrations) => {
-          integrations.forEach((integration) => {
-            if (typeof integration.cost === "number") {
-              totalCost += integration.cost
-            } else if (typeof integration.cost === "string") {
-              const cost = Number.parseInt(integration.cost.replace(/[^0-9]/g, "")) || 0
-              totalCost += cost
-            }
-          })
+          if (Array.isArray(integrations)) {
+            integrations.forEach((integration) => {
+              totalCost += safeNumber(integration.cost, 0)
+            })
+          }
         })
         costs[vendorId] = totalCost
+      } else {
+        costs[vendorId] = 0
       }
     })
     return costs
@@ -319,6 +331,8 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
         : integration.complexity === "medium"
           ? "text-yellow-600"
           : "text-red-600"
+
+    const popularityValue = safeNumber(integration.popularity, 0)
 
     return (
       <Card
@@ -375,14 +389,16 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Cost:</span>
               <span className="font-medium">
-                {integration.cost === 0 ? "Free" : `$${integration.cost.toLocaleString()}`}
+                {safeNumber(integration.cost, 0) === 0
+                  ? "Free"
+                  : `$${safeNumber(integration.cost, 0).toLocaleString()}`}
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Popularity:</span>
               <div className="flex items-center space-x-1">
-                <Progress value={integration.popularity} className="w-12 h-1" />
-                <span className="font-medium">{integration.popularity}%</span>
+                <Progress value={popularityValue} className="w-12 h-1" />
+                <span className="font-medium">{popularityValue}%</span>
               </div>
             </div>
           </div>
@@ -411,8 +427,8 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
       const vendor = ComprehensiveVendorDatabase[vendorId]
       return {
         name: vendor?.name || vendorId,
-        compatibility: compatibility[vendorId] || 0,
-        cost: integrationCosts[vendorId] || 0,
+        compatibility: safeNumber(compatibility[vendorId], 0),
+        cost: safeNumber(integrationCosts[vendorId], 0),
       }
     })
 
@@ -432,7 +448,7 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
               <YAxis />
               <Tooltip
                 formatter={(value, name) => [
-                  name === "compatibility" ? `${value}%` : `$${value.toLocaleString()}`,
+                  name === "compatibility" ? `${safeNumber(value, 0)}%` : `$${safeNumber(value, 0).toLocaleString()}`,
                   name === "compatibility" ? "Compatibility" : "Integration Cost",
                 ]}
               />
@@ -450,7 +466,10 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
       const selectedCategoryIntegrations = categoryIntegrations.filter((integration) =>
         selectedIntegrations.includes(integration.id),
       )
-      const totalCost = selectedCategoryIntegrations.reduce((sum, integration) => sum + integration.cost, 0)
+      const totalCost = selectedCategoryIntegrations.reduce(
+        (sum, integration) => sum + safeNumber(integration.cost, 0),
+        0,
+      )
       return {
         name: category.name,
         cost: totalCost,
@@ -479,13 +498,13 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="cost"
-                  label={({ name, cost }) => `${name}: $${cost.toLocaleString()}`}
+                  label={({ name, cost }) => `${name}: $${safeNumber(cost, 0).toLocaleString()}`}
                 >
                   {data.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, "Cost"]} />
+                <Tooltip formatter={(value) => [`$${safeNumber(value, 0).toLocaleString()}`, "Cost"]} />
               </PieChart>
             </ResponsiveContainer>
             <div className="space-y-3">
@@ -498,7 +517,7 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
                       <p className="text-xs text-muted-foreground">{item.count} integrations</p>
                     </div>
                   </div>
-                  <span className="font-semibold">${item.cost.toLocaleString()}</span>
+                  <span className="font-semibold">${safeNumber(item.cost, 0).toLocaleString()}</span>
                 </div>
               ))}
             </div>
@@ -507,6 +526,16 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
       </Card>
     )
   }
+
+  const avgCompatibility =
+    Object.values(compatibility).length > 0
+      ? Math.round(
+          Object.values(compatibility).reduce((sum, score) => sum + safeNumber(score, 0), 0) /
+            Object.values(compatibility).length,
+        )
+      : 0
+
+  const totalIntegrationCost = Object.values(integrationCosts).reduce((sum, cost) => sum + safeNumber(cost, 0), 0)
 
   return (
     <div className="space-y-6">
@@ -564,13 +593,7 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
               <TrendingUp className="h-5 w-5 text-blue-600" />
               <div>
                 <p className="text-sm font-medium">Avg Compatibility</p>
-                <p className="text-2xl font-bold">
-                  {Math.round(
-                    Object.values(compatibility).reduce((sum, score) => sum + score, 0) /
-                      Object.values(compatibility).length,
-                  ) || 0}
-                  %
-                </p>
+                <p className="text-2xl font-bold">{avgCompatibility}%</p>
               </div>
             </div>
           </CardContent>
@@ -581,12 +604,7 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
               <Database className="h-5 w-5 text-purple-600" />
               <div>
                 <p className="text-sm font-medium">Total Cost</p>
-                <p className="text-2xl font-bold">
-                  $
-                  {Object.values(integrationCosts)
-                    .reduce((sum, cost) => sum + cost, 0)
-                    .toLocaleString()}
-                </p>
+                <p className="text-2xl font-bold">${totalIntegrationCost.toLocaleString()}</p>
               </div>
             </div>
           </CardContent>

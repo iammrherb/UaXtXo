@@ -23,6 +23,16 @@ interface FinancialAnalysisViewProps {
   config: any
 }
 
+// Safe number helper function
+const safeNumber = (value: any, fallback = 0): number => {
+  if (typeof value === "number" && !isNaN(value) && isFinite(value)) return value
+  if (typeof value === "string") {
+    const parsed = Number.parseFloat(value)
+    return !isNaN(parsed) && isFinite(parsed) ? parsed : fallback
+  }
+  return fallback
+}
+
 export default function FinancialAnalysisView({ results, config }: FinancialAnalysisViewProps) {
   if (!results || results.length === 0) {
     return (
@@ -35,34 +45,36 @@ export default function FinancialAnalysisView({ results, config }: FinancialAnal
   }
 
   const formatCurrency = (value: number) => {
+    const safeValue = safeNumber(value, 0)
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(value)
+    }).format(safeValue)
   }
 
   const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316", "#06B6D4"]
 
-  // Calculate financial metrics
-  const totalInvestment = results.reduce((sum, r) => sum + (r.total || 0), 0)
-  const averageROI = results.reduce((sum, r) => sum + (r.roi?.percentage || 0), 0) / results.length
-  const totalSavings = results.reduce((sum, r) => sum + (r.roi?.annualSavings || 0) * (config.years || 3), 0)
+  // Calculate financial metrics with safe numbers
+  const totalInvestment = results.reduce((sum, r) => sum + safeNumber(r.total, 0), 0)
+  const averageROI = results.reduce((sum, r) => sum + safeNumber(r.roi?.percentage, 0), 0) / Math.max(results.length, 1)
+  const configYears = safeNumber(config?.years, 3)
+  const totalSavings = results.reduce((sum, r) => sum + safeNumber(r.roi?.annualSavings, 0) * configYears, 0)
 
   // Prepare cost breakdown data
   const costBreakdownData =
     results[0]?.breakdown?.map((item: any) => ({
       name: item.name,
-      value: item.value,
+      value: safeNumber(item.value, 0),
     })) || []
 
   // Prepare year-over-year projection
-  const projectionData = Array.from({ length: config.years || 3 }, (_, i) => ({
+  const projectionData = Array.from({ length: configYears }, (_, i) => ({
     year: `Year ${i + 1}`,
     ...results.reduce(
       (acc, result) => {
-        acc[result.vendorName] = (result.total || 0) / (config.years || 3)
+        acc[result.vendorName] = safeNumber(result.total, 0) / configYears
         return acc
       },
       {} as Record<string, number>,
@@ -90,7 +102,7 @@ export default function FinancialAnalysisView({ results, config }: FinancialAnal
               <TrendingUp className="h-5 w-5 text-blue-600" />
               <div>
                 <p className="text-sm font-medium">Average ROI</p>
-                <p className="text-2xl font-bold">{Math.round(averageROI)}%</p>
+                <p className="text-2xl font-bold">{Math.round(safeNumber(averageROI, 0))}%</p>
               </div>
             </div>
           </CardContent>
@@ -112,7 +124,7 @@ export default function FinancialAnalysisView({ results, config }: FinancialAnal
               <PieChartIcon className="h-5 w-5 text-orange-600" />
               <div>
                 <p className="text-sm font-medium">Analysis Period</p>
-                <p className="text-2xl font-bold">{config.years || 3} Years</p>
+                <p className="text-2xl font-bold">{configYears} Years</p>
               </div>
             </div>
           </CardContent>
@@ -127,11 +139,11 @@ export default function FinancialAnalysisView({ results, config }: FinancialAnal
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={results}>
+              <BarChart data={results.map((r) => ({ ...r, total: safeNumber(r.total, 0) }))}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="vendorName" />
-                <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                <Tooltip formatter={(value) => [formatCurrency(Number(value)), "Total Cost"]} />
+                <YAxis tickFormatter={(value) => `$${(safeNumber(value, 0) / 1000).toFixed(0)}K`} />
+                <Tooltip formatter={(value) => [formatCurrency(safeNumber(value, 0)), "Total Cost"]} />
                 <Bar dataKey="total" fill="#00D4AA" />
               </BarChart>
             </ResponsiveContainer>
@@ -146,19 +158,19 @@ export default function FinancialAnalysisView({ results, config }: FinancialAnal
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={costBreakdownData}
+                  data={costBreakdownData.filter((d) => safeNumber(d.value, 0) > 0)}
                   cx="50%"
                   cy="50%"
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name}: ${(safeNumber(percent, 0) * 100).toFixed(0)}%`}
                 >
                   {costBreakdownData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => [formatCurrency(Number(value)), "Cost"]} />
+                <Tooltip formatter={(value) => [formatCurrency(safeNumber(value, 0)), "Cost"]} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -175,8 +187,8 @@ export default function FinancialAnalysisView({ results, config }: FinancialAnal
             <AreaChart data={projectionData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="year" />
-              <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-              <Tooltip formatter={(value) => [formatCurrency(Number(value)), "Annual Cost"]} />
+              <YAxis tickFormatter={(value) => `$${(safeNumber(value, 0) / 1000).toFixed(0)}K`} />
+              <Tooltip formatter={(value) => [formatCurrency(safeNumber(value, 0)), "Annual Cost"]} />
               {results.map((result, index) => (
                 <Area
                   key={result.vendorName}
@@ -213,10 +225,16 @@ export default function FinancialAnalysisView({ results, config }: FinancialAnal
               </thead>
               <tbody>
                 {results.map((result, index) => {
-                  const initialCost =
-                    (result.breakdown?.find((b: any) => b.name === "Hardware")?.value || 0) +
-                    (result.breakdown?.find((b: any) => b.name === "Professional Services")?.value || 0)
-                  const annualOpEx = (result.total - initialCost) / (config.years || 3)
+                  const hardwareCost = safeNumber(result.breakdown?.find((b: any) => b.name === "Hardware")?.value, 0)
+                  const psCost = safeNumber(
+                    result.breakdown?.find((b: any) => b.name === "Professional Services")?.value,
+                    0,
+                  )
+                  const initialCost = hardwareCost + psCost
+                  const totalCost = safeNumber(result.total, 0)
+                  const annualOpEx = (totalCost - initialCost) / configYears
+                  const roiPercentage = safeNumber(result.roi?.percentage, 0)
+                  const paybackMonths = safeNumber(result.roi?.paybackMonths, 0)
 
                   return (
                     <tr key={result.vendor} className="border-b">
@@ -231,13 +249,13 @@ export default function FinancialAnalysisView({ results, config }: FinancialAnal
                       </td>
                       <td className="text-right p-2">{formatCurrency(initialCost)}</td>
                       <td className="text-right p-2">{formatCurrency(annualOpEx)}</td>
-                      <td className="text-right p-2 font-semibold">{formatCurrency(result.total)}</td>
+                      <td className="text-right p-2 font-semibold">{formatCurrency(totalCost)}</td>
                       <td className="text-right p-2">
-                        <Badge variant={result.roi?.percentage > 0 ? "default" : "destructive"}>
-                          {Math.round(result.roi?.percentage || 0)}%
+                        <Badge variant={roiPercentage > 0 ? "default" : "destructive"}>
+                          {Math.round(roiPercentage)}%
                         </Badge>
                       </td>
-                      <td className="text-right p-2">{result.roi?.paybackMonths || "N/A"} months</td>
+                      <td className="text-right p-2">{paybackMonths > 0 ? `${paybackMonths} months` : "N/A"}</td>
                     </tr>
                   )
                 })}

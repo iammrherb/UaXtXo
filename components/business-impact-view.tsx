@@ -26,6 +26,16 @@ interface BusinessImpactViewProps {
   config: any
 }
 
+// Safe number helper function
+const safeNumber = (value: any, fallback = 0): number => {
+  if (typeof value === "number" && !isNaN(value) && isFinite(value)) return value
+  if (typeof value === "string") {
+    const parsed = Number.parseFloat(value)
+    return !isNaN(parsed) && isFinite(parsed) ? parsed : fallback
+  }
+  return fallback
+}
+
 export default function BusinessImpactView({ results, config }: BusinessImpactViewProps) {
   if (!results || results.length === 0) {
     return (
@@ -38,28 +48,30 @@ export default function BusinessImpactView({ results, config }: BusinessImpactVi
   }
 
   const formatCurrency = (value: number) => {
+    const safeValue = safeNumber(value, 0)
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(value)
+    }).format(safeValue)
   }
 
   const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316", "#06B6D4"]
 
-  // Calculate business metrics
-  const totalFTESaved = results.reduce((sum, r) => sum + (r.ops?.fteSaved || 0), 0)
-  const totalAnnualSavings = results.reduce((sum, r) => sum + (r.roi?.annualSavings || 0), 0)
-  const averageRiskReduction = results.reduce((sum, r) => sum + (r.risk?.breachReduction || 0), 0) / results.length
+  // Calculate business metrics with safe numbers
+  const totalFTESaved = results.reduce((sum, r) => sum + safeNumber(r.ops?.fteSaved, 0), 0)
+  const totalAnnualSavings = results.reduce((sum, r) => sum + safeNumber(r.roi?.annualSavings, 0), 0)
+  const averageRiskReduction =
+    results.reduce((sum, r) => sum + safeNumber(r.risk?.breachReduction, 0), 0) / Math.max(results.length, 1)
 
   // Prepare business value data
   const businessValueData = results.map((result) => ({
     vendor: result.vendorName,
-    fteSaved: result.ops?.fteSaved || 0,
-    annualSavings: result.roi?.annualSavings || 0,
-    riskReduction: (result.risk?.breachReduction || 0) * 100,
-    roi: result.roi?.percentage || 0,
+    fteSaved: safeNumber(result.ops?.fteSaved, 0),
+    annualSavings: safeNumber(result.roi?.annualSavings, 0),
+    riskReduction: safeNumber(result.risk?.breachReduction, 0) * 100,
+    roi: safeNumber(result.roi?.percentage, 0),
   }))
 
   // Prepare radar chart data for business capabilities
@@ -68,7 +80,8 @@ export default function BusinessImpactView({ results, config }: BusinessImpactVi
       capability: "Cost Efficiency",
       ...results.reduce(
         (acc, result) => {
-          acc[result.vendorName] = Math.min(100, (result.roi?.percentage || 0) + 50)
+          const roiValue = safeNumber(result.roi?.percentage, 0)
+          acc[result.vendorName] = Math.min(100, Math.max(0, roiValue + 50))
           return acc
         },
         {} as Record<string, number>,
@@ -78,7 +91,7 @@ export default function BusinessImpactView({ results, config }: BusinessImpactVi
       capability: "Risk Reduction",
       ...results.reduce(
         (acc, result) => {
-          acc[result.vendorName] = (result.risk?.breachReduction || 0) * 100
+          acc[result.vendorName] = safeNumber(result.risk?.breachReduction, 0) * 100
           return acc
         },
         {} as Record<string, number>,
@@ -88,7 +101,7 @@ export default function BusinessImpactView({ results, config }: BusinessImpactVi
       capability: "Operational Efficiency",
       ...results.reduce(
         (acc, result) => {
-          acc[result.vendorName] = (result.ops?.fteSaved || 0) * 20
+          acc[result.vendorName] = Math.min(100, safeNumber(result.ops?.fteSaved, 0) * 20)
           return acc
         },
         {} as Record<string, number>,
@@ -98,9 +111,8 @@ export default function BusinessImpactView({ results, config }: BusinessImpactVi
       capability: "Implementation Speed",
       ...results.reduce(
         (acc, result) => {
-          // Assume faster implementation = higher score
-          const months = result.roi?.paybackMonths || 12
-          acc[result.vendorName] = Math.max(0, 100 - months * 5)
+          const months = safeNumber(result.roi?.paybackMonths, 12)
+          acc[result.vendorName] = Math.max(0, Math.min(100, 100 - months * 5))
           return acc
         },
         {} as Record<string, number>,
@@ -110,7 +122,6 @@ export default function BusinessImpactView({ results, config }: BusinessImpactVi
       capability: "Scalability",
       ...results.reduce(
         (acc, result) => {
-          // Higher for cloud-native solutions
           acc[result.vendorName] = result.vendor === "portnox" ? 95 : 70
           return acc
         },
@@ -227,8 +238,9 @@ export default function BusinessImpactView({ results, config }: BusinessImpactVi
                 month: i + 1,
                 ...results.reduce(
                   (acc, result) => {
-                    const monthlyROI = ((result.roi?.percentage || 0) / 36) * (i + 1)
-                    acc[result.vendorName] = monthlyROI
+                    const roiPercentage = safeNumber(result.roi?.percentage, 0)
+                    const monthlyROI = (roiPercentage / 36) * (i + 1)
+                    acc[result.vendorName] = safeNumber(monthlyROI, 0)
                     return acc
                   },
                   {} as Record<string, number>,
@@ -238,7 +250,7 @@ export default function BusinessImpactView({ results, config }: BusinessImpactVi
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip formatter={(value) => [`${Number(value).toFixed(1)}%`, "ROI"]} />
+              <Tooltip formatter={(value) => [`${safeNumber(value, 0).toFixed(1)}%`, "ROI"]} />
               {results.map((result, index) => (
                 <Line
                   key={result.vendorName}
@@ -260,46 +272,54 @@ export default function BusinessImpactView({ results, config }: BusinessImpactVi
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {results.map((result, index) => (
-              <div key={result.vendor} className="border rounded-lg p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                    <h3 className="font-semibold text-lg">{result.vendorName}</h3>
-                  </div>
-                  <Badge variant="outline">
-                    {result.roi?.percentage > 50
-                      ? "High Impact"
-                      : result.roi?.percentage > 20
-                        ? "Medium Impact"
-                        : "Low Impact"}
-                  </Badge>
-                </div>
+            {results.map((result, index) => {
+              const roiPercentage = safeNumber(result.roi?.percentage, 0)
+              const fteSaved = safeNumber(result.ops?.fteSaved, 0)
+              const annualOpsSaving = safeNumber(result.ops?.annualOpsSaving, 0)
+              const breachReduction = safeNumber(result.risk?.breachReduction, 0)
+              const paybackMonths = safeNumber(result.roi?.paybackMonths, 0)
+              const businessValueScore = Math.min(100, Math.max(0, roiPercentage + 50))
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Operational Savings</p>
-                    <p className="text-xl font-semibold">{formatCurrency(result.ops?.annualOpsSaving || 0)}/year</p>
-                    <p className="text-xs text-muted-foreground">{(result.ops?.fteSaved || 0).toFixed(1)} FTE saved</p>
+              return (
+                <div key={result.vendor} className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                      />
+                      <h3 className="font-semibold text-lg">{result.vendorName}</h3>
+                    </div>
+                    <Badge variant="outline">
+                      {roiPercentage > 50 ? "High Impact" : roiPercentage > 20 ? "Medium Impact" : "Low Impact"}
+                    </Badge>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Risk Mitigation</p>
-                    <p className="text-xl font-semibold">{Math.round((result.risk?.breachReduction || 0) * 100)}%</p>
-                    <p className="text-xs text-muted-foreground">Breach risk reduction</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Payback Period</p>
-                    <p className="text-xl font-semibold">{result.roi?.paybackMonths || "N/A"} months</p>
-                    <p className="text-xs text-muted-foreground">Time to break even</p>
-                  </div>
-                </div>
 
-                <div className="mt-4">
-                  <p className="text-sm text-muted-foreground mb-2">Business Value Score</p>
-                  <Progress value={Math.min(100, (result.roi?.percentage || 0) + 50)} className="h-2" />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Operational Savings</p>
+                      <p className="text-xl font-semibold">{formatCurrency(annualOpsSaving)}/year</p>
+                      <p className="text-xs text-muted-foreground">{fteSaved.toFixed(1)} FTE saved</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Risk Mitigation</p>
+                      <p className="text-xl font-semibold">{Math.round(breachReduction * 100)}%</p>
+                      <p className="text-xs text-muted-foreground">Breach risk reduction</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Payback Period</p>
+                      <p className="text-xl font-semibold">{paybackMonths > 0 ? `${paybackMonths} months` : "N/A"}</p>
+                      <p className="text-xs text-muted-foreground">Time to break even</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <p className="text-sm text-muted-foreground mb-2">Business Value Score</p>
+                    <Progress value={businessValueScore} className="h-2" />
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </CardContent>
       </Card>
