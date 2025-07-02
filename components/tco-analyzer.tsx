@@ -35,12 +35,12 @@ import CybersecurityPostureView from "./cybersecurity-posture-view"
 import FeatureMatrixView from "./feature-matrix-view"
 
 // Import data and utilities
-import { comprehensiveVendorData } from "@/lib/comprehensive-vendor-data"
+import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
 import { calculateEnhancedTCO } from "@/lib/enhanced-tco-calculator"
 
 export default function TCOAnalyzer() {
   const { theme, setTheme } = useTheme()
-  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco-ise"])
+  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco"])
   const [activeView, setActiveView] = useState("dashboard")
   const [calculationSettings, setCalculationSettings] = useState({
     timeHorizon: 5,
@@ -55,7 +55,7 @@ export default function TCOAnalyzer() {
   // Calculate TCO data for selected vendors
   const tcoResults = selectedVendors
     .map((vendorId) => {
-      const vendor = comprehensiveVendorData.find((v) => v.id === vendorId)
+      const vendor = ComprehensiveVendorDatabase[vendorId]
       if (!vendor) return null
 
       return {
@@ -65,12 +65,14 @@ export default function TCOAnalyzer() {
     })
     .filter(Boolean)
 
-  const handleVendorToggle = (vendorId: string, selected: boolean) => {
-    if (selected) {
-      setSelectedVendors((prev) => [...prev, vendorId])
-    } else {
-      setSelectedVendors((prev) => prev.filter((id) => id !== vendorId))
-    }
+  const handleVendorToggle = (vendorId: string) => {
+    setSelectedVendors((prev) => {
+      const isSelected = prev.includes(vendorId)
+      if (vendorId === "portnox" && isSelected && prev.length === 1) return prev
+      const newSelection = isSelected ? prev.filter((id) => id !== vendorId) : [...prev, vendorId]
+      if (newSelection.length > 6) newSelection.shift()
+      return newSelection
+    })
   }
 
   const handleSettingsChange = (newSettings: typeof calculationSettings) => {
@@ -78,7 +80,6 @@ export default function TCOAnalyzer() {
   }
 
   const exportToPDF = () => {
-    // PDF export functionality would be implemented here
     console.log("Exporting to PDF...")
   }
 
@@ -134,9 +135,11 @@ export default function TCOAnalyzer() {
               </CardHeader>
               <CardContent>
                 <EnhancedVendorSelection
-                  vendors={comprehensiveVendorData}
                   selectedVendors={selectedVendors}
                   onVendorToggle={handleVendorToggle}
+                  darkMode={theme === "dark"}
+                  onClearAll={() => setSelectedVendors(["portnox"])}
+                  onSelectRecommended={() => setSelectedVendors(["portnox", "cisco", "aruba", "forescout"])}
                 />
               </CardContent>
             </Card>
@@ -150,7 +153,28 @@ export default function TCOAnalyzer() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <SettingsPanel settings={calculationSettings} onSettingsChange={handleSettingsChange} />
+                <SettingsPanel
+                  isOpen={true}
+                  onClose={() => {}}
+                  configuration={{
+                    devices: calculationSettings.organizationSize,
+                    users: calculationSettings.organizationSize,
+                    years: calculationSettings.timeHorizon,
+                    licenseTier: "Enterprise",
+                    integrations: { mdm: true, siem: true, edr: false },
+                    professionalServices: "advanced",
+                    includeTraining: true,
+                  }}
+                  onConfigurationChange={(config) => {
+                    setCalculationSettings({
+                      ...calculationSettings,
+                      organizationSize: config.devices,
+                      timeHorizon: config.years,
+                    })
+                  }}
+                  darkMode={theme === "dark"}
+                  onDarkModeChange={(dark) => setTheme(dark ? "dark" : "light")}
+                />
               </CardContent>
             </Card>
 
@@ -211,31 +235,205 @@ export default function TCOAnalyzer() {
               </TabsList>
 
               <TabsContent value="dashboard" className="space-y-6">
-                <ExecutiveDashboardView tcoResults={tcoResults} settings={calculationSettings} />
+                <ExecutiveDashboardView
+                  results={tcoResults.map((r) => ({
+                    vendor: r?.vendor?.id || "",
+                    vendorName: r?.vendor?.name || "",
+                    total: r?.tco?.totalCost || 0,
+                    breakdown: Object.entries(r?.tco?.costCategories || {}).map(([name, value]) => ({ name, value })),
+                    roi: {
+                      percentage: r?.tco?.roi?.percentage || 0,
+                      paybackMonths: r?.tco?.roi?.paybackPeriod || 0,
+                      annualSavings: 0,
+                    },
+                    risk: {
+                      breachReduction: r?.tco?.riskMetrics?.breachProbabilityReduction || 0,
+                      annualizedRiskCost: 0,
+                    },
+                    ops: {
+                      fteSaved: 0,
+                      annualOpsSaving: 0,
+                    },
+                  }))}
+                  config={{
+                    devices: calculationSettings.organizationSize,
+                    users: calculationSettings.organizationSize,
+                    years: calculationSettings.timeHorizon,
+                    licenseTier: "Enterprise",
+                    integrations: { mdm: true, siem: true, edr: false },
+                    professionalServices: "advanced",
+                    includeTraining: true,
+                  }}
+                />
               </TabsContent>
 
               <TabsContent value="financial" className="space-y-6">
-                <FinancialAnalysisView tcoResults={tcoResults} settings={calculationSettings} />
+                <FinancialAnalysisView
+                  results={tcoResults.map((r) => ({
+                    vendor: r?.vendor?.id || "",
+                    vendorName: r?.vendor?.name || "",
+                    total: r?.tco?.totalCost || 0,
+                    breakdown: Object.entries(r?.tco?.costCategories || {}).map(([name, value]) => ({ name, value })),
+                    roi: {
+                      percentage: r?.tco?.roi?.percentage || 0,
+                      paybackMonths: r?.tco?.roi?.paybackPeriod || 0,
+                      annualSavings: 0,
+                    },
+                    risk: {
+                      breachReduction: r?.tco?.riskMetrics?.breachProbabilityReduction || 0,
+                      annualizedRiskCost: 0,
+                    },
+                    ops: {
+                      fteSaved: 0,
+                      annualOpsSaving: 0,
+                    },
+                  }))}
+                  config={{
+                    devices: calculationSettings.organizationSize,
+                    users: calculationSettings.organizationSize,
+                    years: calculationSettings.timeHorizon,
+                    licenseTier: "Enterprise",
+                    integrations: { mdm: true, siem: true, edr: false },
+                    professionalServices: "advanced",
+                    includeTraining: true,
+                  }}
+                />
               </TabsContent>
 
               <TabsContent value="business" className="space-y-6">
-                <BusinessImpactView tcoResults={tcoResults} settings={calculationSettings} />
+                <BusinessImpactView
+                  results={tcoResults.map((r) => ({
+                    vendor: r?.vendor?.id || "",
+                    vendorName: r?.vendor?.name || "",
+                    total: r?.tco?.totalCost || 0,
+                    breakdown: Object.entries(r?.tco?.costCategories || {}).map(([name, value]) => ({ name, value })),
+                    roi: {
+                      percentage: r?.tco?.roi?.percentage || 0,
+                      paybackMonths: r?.tco?.roi?.paybackPeriod || 0,
+                      annualSavings: 0,
+                    },
+                    risk: {
+                      breachReduction: r?.tco?.riskMetrics?.breachProbabilityReduction || 0,
+                      annualizedRiskCost: 0,
+                    },
+                    ops: {
+                      fteSaved: 0,
+                      annualOpsSaving: 0,
+                    },
+                  }))}
+                  config={{
+                    devices: calculationSettings.organizationSize,
+                    users: calculationSettings.organizationSize,
+                    years: calculationSettings.timeHorizon,
+                    licenseTier: "Enterprise",
+                    integrations: { mdm: true, siem: true, edr: false },
+                    professionalServices: "advanced",
+                    includeTraining: true,
+                  }}
+                />
               </TabsContent>
 
               <TabsContent value="timeline" className="space-y-6">
-                <ImplementationTimelineView tcoResults={tcoResults} settings={calculationSettings} />
+                <ImplementationTimelineView
+                  results={tcoResults.map((r) => ({
+                    vendor: r?.vendor?.id || "",
+                    vendorName: r?.vendor?.name || "",
+                    total: r?.tco?.totalCost || 0,
+                    breakdown: Object.entries(r?.tco?.costCategories || {}).map(([name, value]) => ({ name, value })),
+                    roi: {
+                      percentage: r?.tco?.roi?.percentage || 0,
+                      paybackMonths: r?.tco?.roi?.paybackPeriod || 0,
+                      annualSavings: 0,
+                    },
+                    risk: {
+                      breachReduction: r?.tco?.riskMetrics?.breachProbabilityReduction || 0,
+                      annualizedRiskCost: 0,
+                    },
+                    ops: {
+                      fteSaved: 0,
+                      annualOpsSaving: 0,
+                    },
+                  }))}
+                  config={{
+                    devices: calculationSettings.organizationSize,
+                    users: calculationSettings.organizationSize,
+                    years: calculationSettings.timeHorizon,
+                    licenseTier: "Enterprise",
+                    integrations: { mdm: true, siem: true, edr: false },
+                    professionalServices: "advanced",
+                    includeTraining: true,
+                  }}
+                />
               </TabsContent>
 
               <TabsContent value="security" className="space-y-6">
-                <CybersecurityPostureView tcoResults={tcoResults} settings={calculationSettings} />
+                <CybersecurityPostureView
+                  results={tcoResults.map((r) => ({
+                    vendor: r?.vendor?.id || "",
+                    vendorName: r?.vendor?.name || "",
+                    total: r?.tco?.totalCost || 0,
+                    breakdown: Object.entries(r?.tco?.costCategories || {}).map(([name, value]) => ({ name, value })),
+                    roi: {
+                      percentage: r?.tco?.roi?.percentage || 0,
+                      paybackMonths: r?.tco?.roi?.paybackPeriod || 0,
+                      annualSavings: 0,
+                    },
+                    risk: {
+                      breachReduction: r?.tco?.riskMetrics?.breachProbabilityReduction || 0,
+                      annualizedRiskCost: 0,
+                    },
+                    ops: {
+                      fteSaved: 0,
+                      annualOpsSaving: 0,
+                    },
+                  }))}
+                  config={{
+                    devices: calculationSettings.organizationSize,
+                    users: calculationSettings.organizationSize,
+                    years: calculationSettings.timeHorizon,
+                    licenseTier: "Enterprise",
+                    integrations: { mdm: true, siem: true, edr: false },
+                    professionalServices: "advanced",
+                    includeTraining: true,
+                  }}
+                />
               </TabsContent>
 
               <TabsContent value="features" className="space-y-6">
-                <FeatureMatrixView tcoResults={tcoResults} settings={calculationSettings} />
+                <FeatureMatrixView selectedVendors={selectedVendors} />
               </TabsContent>
 
               <TabsContent value="report" className="space-y-6">
-                <ExecutiveReportView tcoResults={tcoResults} settings={calculationSettings} />
+                <ExecutiveReportView
+                  results={tcoResults.map((r) => ({
+                    vendor: r?.vendor?.id || "",
+                    vendorName: r?.vendor?.name || "",
+                    total: r?.tco?.totalCost || 0,
+                    breakdown: Object.entries(r?.tco?.costCategories || {}).map(([name, value]) => ({ name, value })),
+                    roi: {
+                      percentage: r?.tco?.roi?.percentage || 0,
+                      paybackMonths: r?.tco?.roi?.paybackPeriod || 0,
+                      annualSavings: 0,
+                    },
+                    risk: {
+                      breachReduction: r?.tco?.riskMetrics?.breachProbabilityReduction || 0,
+                      annualizedRiskCost: 0,
+                    },
+                    ops: {
+                      fteSaved: 0,
+                      annualOpsSaving: 0,
+                    },
+                  }))}
+                  config={{
+                    devices: calculationSettings.organizationSize,
+                    users: calculationSettings.organizationSize,
+                    years: calculationSettings.timeHorizon,
+                    licenseTier: "Enterprise",
+                    integrations: { mdm: true, siem: true, edr: false },
+                    professionalServices: "advanced",
+                    includeTraining: true,
+                  }}
+                />
               </TabsContent>
             </Tabs>
           </div>

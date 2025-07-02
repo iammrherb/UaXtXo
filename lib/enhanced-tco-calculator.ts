@@ -34,6 +34,35 @@ export interface CalculationResult {
   }
 }
 
+export interface EnhancedTCOResult {
+  totalCost: number
+  yearlyBreakdown: Array<{
+    year: number
+    cost: number
+    savings: number
+    netCost: number
+  }>
+  costCategories: {
+    licensing: number
+    hardware: number
+    implementation: number
+    maintenance: number
+    training: number
+    operations: number
+  }
+  roi: {
+    percentage: number
+    paybackPeriod: number
+    npv: number
+    irr: number
+  }
+  riskMetrics: {
+    breachProbabilityReduction: number
+    complianceScore: number
+    securityPostureImprovement: number
+  }
+}
+
 function parseCost(cost: number | string): number {
   if (typeof cost === "number") return cost
   if (typeof cost === "string") {
@@ -44,6 +73,82 @@ function parseCost(cost: number | string): number {
     return Number.parseInt(cost.replace(/,/g, ""), 10) || 0
   }
   return 0
+}
+
+export function calculateEnhancedTCO(vendor: any, settings: any): EnhancedTCOResult {
+  const timeHorizon = settings.timeHorizon || 5
+  const organizationSize = settings.organizationSize || 1000
+  const discountRate = settings.discountRate || 0.08
+
+  // Base licensing costs
+  const annualLicenseCost = organizationSize * 50 // Base cost per user/device
+  const totalLicensing = annualLicenseCost * timeHorizon
+
+  // Hardware costs (if applicable)
+  const hardwareCost = vendor.deploymentModel === "on-premise" ? organizationSize * 10 : 0
+
+  // Implementation costs
+  const implementationCost = organizationSize * 25
+
+  // Annual maintenance (20% of licensing)
+  const annualMaintenance = annualLicenseCost * 0.2
+  const totalMaintenance = annualMaintenance * timeHorizon
+
+  // Training costs
+  const trainingCost = organizationSize * 5
+
+  // Operations costs (FTE)
+  const annualOperationsCost = 150000 * (vendor.complexity || 1)
+  const totalOperations = annualOperationsCost * timeHorizon
+
+  const totalCost =
+    totalLicensing + hardwareCost + implementationCost + totalMaintenance + trainingCost + totalOperations
+
+  // Calculate yearly breakdown
+  const yearlyBreakdown = Array.from({ length: timeHorizon }, (_, index) => {
+    const year = index + 1
+    const yearlyCost =
+      annualLicenseCost +
+      annualMaintenance +
+      (year === 1 ? implementationCost + hardwareCost + trainingCost : 0) +
+      annualOperationsCost
+    const savings = organizationSize * 20 * year // Increasing savings over time
+    return {
+      year,
+      cost: yearlyCost,
+      savings,
+      netCost: yearlyCost - savings,
+    }
+  })
+
+  // ROI calculations
+  const totalSavings = yearlyBreakdown.reduce((sum, year) => sum + year.savings, 0)
+  const roiPercentage = ((totalSavings - totalCost) / totalCost) * 100
+  const paybackPeriod = totalCost / (totalSavings / timeHorizon)
+
+  return {
+    totalCost,
+    yearlyBreakdown,
+    costCategories: {
+      licensing: totalLicensing,
+      hardware: hardwareCost,
+      implementation: implementationCost,
+      maintenance: totalMaintenance,
+      training: trainingCost,
+      operations: totalOperations,
+    },
+    roi: {
+      percentage: roiPercentage,
+      paybackPeriod,
+      npv: totalSavings - totalCost,
+      irr: 0.15, // Simplified IRR calculation
+    },
+    riskMetrics: {
+      breachProbabilityReduction: 0.6,
+      complianceScore: 85,
+      securityPostureImprovement: 40,
+    },
+  }
 }
 
 export function calculateVendorTCO(vendorId: string, config: CalculationConfiguration): CalculationResult | null {
