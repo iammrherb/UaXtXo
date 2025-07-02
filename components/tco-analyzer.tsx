@@ -22,7 +22,20 @@ import ExecutiveReportView from "./executive-report-view"
 // Import data and utilities
 import { calculateEnhancedTCO, type CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 import { comprehensiveVendorData } from "@/lib/comprehensive-vendor-data"
-import { staggerChildren, fadeInUp } from "./shared-ui"
+
+// Animation variants
+const staggerChildren = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+}
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+}
 
 export default function TCOAnalyzer() {
   const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco"])

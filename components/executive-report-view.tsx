@@ -1,545 +1,424 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
+import { Progress } from "@/components/ui/progress"
 import {
-  Download,
-  Mail,
-  Printer,
-  FileText,
   TrendingUp,
-  Shield,
   DollarSign,
-  CheckCircle,
-  ArrowRight,
-  Star,
+  Shield,
   Clock,
+  Download,
+  FileText,
+  BarChart3,
+  AlertTriangle,
+  CheckCircle,
   Target,
-  Zap,
 } from "lucide-react"
-import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-import { SectionTitle, fadeInUp, staggerContainer, GradientCard } from "./shared-ui"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts"
 
 interface ExecutiveReportViewProps {
-  results: CalculationResult[]
-  config: CalculationConfiguration
+  results: any[]
+  config: any
 }
 
-export default function ExecutiveReportView({ results = [], config }: ExecutiveReportViewProps) {
+export default function ExecutiveReportView({ results = [], config = {} }: ExecutiveReportViewProps) {
   // Safe data access with fallbacks
-  const portnoxResult = results?.find((r) => r?.vendor === "portnox") || {
-    vendor: "portnox",
-    totalCost: 0,
-    roi: 0,
-    paybackPeriod: 0,
-    riskScore: 0,
-    implementationComplexity: "Medium",
-    yearlyBreakdown: [],
-    costBreakdown: {
-      software: 0,
-      hardware: 0,
-      implementation: 0,
-      maintenance: 0,
-      training: 0,
-      support: 0,
-    },
+  const safeResults = Array.isArray(results) ? results : []
+  const safeConfig = config || {}
+
+  // Find Portnox result safely
+  const portnoxResult = safeResults.find((r) => r?.vendor?.toLowerCase().includes("portnox")) || {}
+
+  // Safe numeric access with type checking
+  const getNumericValue = (obj: any, path: string, fallback = 0): number => {
+    const keys = path.split(".")
+    let value = obj
+
+    for (const key of keys) {
+      if (value && typeof value === "object" && key in value) {
+        value = value[key]
+      } else {
+        return fallback
+      }
+    }
+
+    return typeof value === "number" ? value : fallback
   }
 
-  const competitorResults = results?.filter((r) => r?.vendor !== "portnox") || []
-  const bestCompetitor = competitorResults.sort((a, b) => (a?.totalCost || 0) - (b?.totalCost || 0))[0]
+  // Safe string access
+  const getStringValue = (obj: any, path: string, fallback = ""): string => {
+    const keys = path.split(".")
+    let value = obj
 
-  const portnoxTotalCost = typeof portnoxResult?.totalCost === "number" ? portnoxResult.totalCost : 0
-  const bestCompetitorCost = bestCompetitor?.totalCost || 0
-  const totalSavings = bestCompetitorCost > portnoxTotalCost ? bestCompetitorCost - portnoxTotalCost : 0
-  const savingsPercentage = bestCompetitorCost > 0 ? (totalSavings / bestCompetitorCost) * 100 : 0
+    for (const key of keys) {
+      if (value && typeof value === "object" && key in value) {
+        value = value[key]
+      } else {
+        return fallback
+      }
+    }
 
-  // Safe ROI access with fallback
-  const portnoxROI = typeof portnoxResult?.roi === "number" ? portnoxResult.roi : 0
-  const portnoxPayback = typeof portnoxResult?.paybackPeriod === "number" ? portnoxResult.paybackPeriod : 0
+    return typeof value === "string" ? value : fallback
+  }
 
-  // Safe config access with fallbacks
-  const deviceCount = config?.devices || 1000
-  const analysisYears = config?.years || 3
-  const licenseTier = config?.licenseTier || "standard"
+  // Calculate key metrics safely
+  const totalDevices = getNumericValue(safeConfig, "devices", 5000)
+  const totalUsers = getNumericValue(safeConfig, "users", 5000)
+  const analysisYears = getNumericValue(safeConfig, "years", 3)
 
-  const keyFindings = [
-    {
-      title: "Cost Advantage",
-      value: `$${totalSavings.toLocaleString()} savings`,
-      description: `${savingsPercentage.toFixed(1)}% lower than nearest competitor`,
-      icon: <DollarSign className="h-5 w-5 text-green-500" />,
-    },
-    {
-      title: "ROI Performance",
-      value: `${portnoxROI.toFixed(0)}% ROI`,
-      description: "Superior return on investment over 3 years",
-      icon: <TrendingUp className="h-5 w-5 text-blue-500" />,
-    },
-    {
-      title: "Security Posture",
-      value: "Zero-Trust Ready",
-      description: "Advanced security architecture for modern threats",
-      icon: <Shield className="h-5 w-5 text-purple-500" />,
-    },
-    {
-      title: "Implementation Speed",
-      value: "8 weeks",
-      description: "50% faster deployment than competitors",
-      icon: <CheckCircle className="h-5 w-5 text-orange-500" />,
-    },
-  ]
+  const portnoxTotalCost = getNumericValue(portnoxResult, "totalCost", 0)
+  const portnoxROI = getNumericValue(portnoxResult, "roi.percentage", 0)
+  const portnoxPayback = getNumericValue(portnoxResult, "roi.paybackPeriod", 0)
 
-  // ROI Projection Data
-  const roiProjection = Array.from({ length: 5 }, (_, i) => ({
+  // Comparison data
+  const comparisonData = safeResults
+    .map((result) => ({
+      vendor: getStringValue(result, "vendor", "Unknown"),
+      totalCost: getNumericValue(result, "totalCost", 0),
+      roi: getNumericValue(result, "roi.percentage", 0),
+      payback: getNumericValue(result, "roi.paybackPeriod", 0),
+    }))
+    .filter((item) => item.vendor !== "Unknown")
+
+  // Cost breakdown data
+  const costBreakdownData = [
+    { name: "Licensing", value: getNumericValue(portnoxResult, "licensing", 0), color: "#00D4AA" },
+    { name: "Implementation", value: getNumericValue(portnoxResult, "implementation", 0), color: "#0EA5E9" },
+    { name: "Support", value: getNumericValue(portnoxResult, "support", 0), color: "#8B5CF6" },
+    { name: "Training", value: getNumericValue(portnoxResult, "training", 0), color: "#F59E0B" },
+  ].filter((item) => item.value > 0)
+
+  // ROI projection data
+  const roiProjectionData = Array.from({ length: analysisYears }, (_, i) => ({
     year: `Year ${i + 1}`,
-    portnox: Math.max(0, portnoxROI * (i + 1) * 0.8),
-    industry: Math.max(0, portnoxROI * (i + 1) * 0.6),
+    savings: Math.round(((portnoxROI / 100) * portnoxTotalCost * (i + 1)) / analysisYears),
+    investment: Math.round((portnoxTotalCost / analysisYears) * (i + 1)),
   }))
 
-  // Cost Comparison Data
-  const costComparison = [
-    {
-      category: "Software",
-      portnox: portnoxResult?.costBreakdown?.software || 0,
-      competitor: bestCompetitorCost * 0.4,
-    },
-    {
-      category: "Implementation",
-      portnox: portnoxResult?.costBreakdown?.implementation || 0,
-      competitor: bestCompetitorCost * 0.25,
-    },
-    {
-      category: "Maintenance",
-      portnox: portnoxResult?.costBreakdown?.maintenance || 0,
-      competitor: bestCompetitorCost * 0.2,
-    },
-    {
-      category: "Support",
-      portnox: (portnoxResult?.costBreakdown?.training || 0) + (portnoxResult?.costBreakdown?.support || 0),
-      competitor: bestCompetitorCost * 0.15,
-    },
-  ]
+  const handleExportPDF = () => {
+    console.log("Exporting executive report as PDF...")
+  }
 
-  const strategicRecommendations = [
-    {
-      priority: "High",
-      recommendation: "Proceed with Portnox ZTCA implementation",
-      rationale: "Clear cost advantage and superior security capabilities align with organizational goals",
-      timeline: "Q1 2024",
-    },
-    {
-      priority: "Medium",
-      recommendation: "Conduct pilot deployment",
-      rationale: "Validate performance in production environment before full rollout",
-      timeline: "30 days",
-    },
-    {
-      priority: "Medium",
-      recommendation: "Develop integration roadmap",
-      rationale: "Plan integration with existing security tools and workflows",
-      timeline: "45 days",
-    },
-    {
-      priority: "Low",
-      recommendation: "Staff training program",
-      rationale: "Ensure team readiness for new platform capabilities",
-      timeline: "60 days",
-    },
-  ]
-
-  const nextSteps = [
-    "Schedule technical deep-dive session with Portnox team",
-    "Conduct proof-of-concept in test environment",
-    "Finalize budget approval and procurement process",
-    "Develop detailed implementation timeline",
-    "Identify key stakeholders and project team",
-  ]
+  const handleSchedulePresentation = () => {
+    console.log("Scheduling executive presentation...")
+  }
 
   return (
-    <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-8">
-      {/* Header with Export Options */}
-      <motion.div variants={fadeInUp} className="flex justify-between items-start">
-        <SectionTitle
-          title="Executive Summary Report"
-          subtitle="Comprehensive TCO analysis and strategic recommendations"
-        />
-        <div className="flex space-x-2">
-          <Button variant="outline" size="sm">
-            <Printer className="h-4 w-4 mr-2" />
-            Print
-          </Button>
-          <Button variant="outline" size="sm">
-            <Mail className="h-4 w-4 mr-2" />
-            Email
-          </Button>
-          <Button size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export PDF
-          </Button>
-        </div>
-      </motion.div>
-
-      {/* Executive Summary Cards */}
-      <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <GradientCard
-          title="Recommended Solution"
-          value="Portnox Clear"
-          subtitle="92% confidence"
-          gradient="from-green-500 to-emerald-600"
-        >
-          <div className="flex items-center space-x-2 mt-2">
-            <CheckCircle className="h-4 w-4" />
-            <span className="text-sm">Best Overall Value</span>
-          </div>
-        </GradientCard>
-
-        <GradientCard
-          title="Total Savings"
-          value={`$${(totalSavings / 1000).toFixed(0)}K`}
-          subtitle="vs average competitor"
-          gradient="from-blue-500 to-cyan-600"
-        >
-          <div className="flex items-center space-x-2 mt-2">
-            <TrendingUp className="h-4 w-4" />
-            <span className="text-sm">{savingsPercentage.toFixed(1)}% reduction</span>
-          </div>
-        </GradientCard>
-
-        <GradientCard
-          title="ROI"
-          value={`${portnoxROI.toFixed(0)}%`}
-          subtitle={`${portnoxPayback.toFixed(1)} month payback`}
-          gradient="from-purple-500 to-pink-600"
-        >
-          <div className="flex items-center space-x-2 mt-2">
-            <Target className="h-4 w-4" />
-            <span className="text-sm">Above industry avg</span>
-          </div>
-        </GradientCard>
-
-        <GradientCard
-          title="Risk Level"
-          value="Low"
-          subtitle="3-6 months implementation"
-          gradient="from-orange-500 to-red-600"
-        >
-          <div className="flex items-center space-x-2 mt-2">
-            <Shield className="h-4 w-4" />
-            <span className="text-sm">Minimal disruption</span>
-          </div>
-        </GradientCard>
-      </motion.div>
-
-      {/* Executive Summary */}
-      <motion.div variants={fadeInUp}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <FileText className="h-5 w-5" />
-              <span>Executive Summary</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-lg leading-relaxed">
-              Based on our comprehensive Total Cost of Ownership analysis for {deviceCount.toLocaleString()} devices
-              over {analysisYears} years, <strong>Portnox ZTCA emerges as the clear leader</strong> in both
-              cost-effectiveness and security capabilities.
-            </p>
-            <p className="leading-relaxed">
-              The analysis reveals significant cost savings of <strong>${totalSavings.toLocaleString()}</strong> (
-              {savingsPercentage.toFixed(1)}% reduction) compared to the nearest competitor, while delivering superior
-              zero-trust security architecture and simplified management capabilities.
-            </p>
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <p className="font-semibold text-primary">Key Recommendation:</p>
-              <p>
-                Proceed with Portnox ZTCA implementation to achieve optimal cost-security balance and position the
-                organization for future cybersecurity challenges.
+    <div className="space-y-6">
+      {/* Executive Summary Header */}
+      <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <FileText className="h-6 w-6 text-primary" />
+                Executive Summary Report
+              </CardTitle>
+              <p className="text-muted-foreground mt-2">
+                Strategic NAC Investment Analysis • {totalDevices.toLocaleString()} Devices •{" "}
+                {totalUsers.toLocaleString()} Users • {analysisYears} Year Analysis
               </p>
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleExportPDF}>
+                <Download className="h-4 w-4 mr-2" />
+                Export PDF
+              </Button>
+              <Button onClick={handleSchedulePresentation}>
+                <Target className="h-4 w-4 mr-2" />
+                Schedule Presentation
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
 
-      {/* Key Findings */}
-      <motion.div variants={fadeInUp}>
+      {/* Key Metrics Dashboard */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Zap className="h-5 w-5 text-primary" />
-              <span>Key Business Benefits</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {keyFindings.map((finding, index) => (
-                <div key={index} className="text-center space-y-3 p-4 border rounded-lg">
-                  <div className="flex justify-center">{finding.icon}</div>
-                  <div>
-                    <p className="text-2xl font-bold text-primary">{finding.value}</p>
-                    <p className="font-medium">{finding.title}</p>
-                    <p className="text-sm text-muted-foreground">{finding.description}</p>
-                  </div>
-                </div>
-              ))}
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Investment</p>
+                <p className="text-2xl font-bold">${(portnoxTotalCost / 1000).toFixed(0)}K</p>
+              </div>
+              <DollarSign className="h-8 w-8 text-primary" />
+            </div>
+            <div className="mt-2">
+              <Badge variant="secondary" className="text-xs">
+                {analysisYears} Year TCO
+              </Badge>
             </div>
           </CardContent>
         </Card>
-      </motion.div>
 
-      {/* ROI Projection Chart */}
-      <motion.div variants={fadeInUp}>
         <Card>
-          <CardHeader>
-            <CardTitle>5-Year ROI Projection</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={roiProjection}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="year" />
-                <YAxis />
-                <Tooltip
-                  formatter={(value: any) => [`${Number(value).toFixed(1)}%`, ""]}
-                  labelFormatter={(label) => `ROI - ${label}`}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="portnox"
-                  stackId="1"
-                  stroke="hsl(var(--primary))"
-                  fill="hsl(var(--primary))"
-                  fillOpacity={0.6}
-                  name="Portnox Clear"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="industry"
-                  stackId="2"
-                  stroke="hsl(var(--muted-foreground))"
-                  fill="hsl(var(--muted-foreground))"
-                  fillOpacity={0.4}
-                  name="Industry Average"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Expected ROI</p>
+                <p className="text-2xl font-bold text-green-600">{portnoxROI.toFixed(1)}%</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-green-600" />
+            </div>
+            <div className="mt-2">
+              <Badge variant="secondary" className="text-xs">
+                Annual Return
+              </Badge>
+            </div>
           </CardContent>
         </Card>
-      </motion.div>
 
-      {/* Cost Comparison */}
-      <motion.div variants={fadeInUp}>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Payback Period</p>
+                <p className="text-2xl font-bold">{portnoxPayback.toFixed(1)} mo</p>
+              </div>
+              <Clock className="h-8 w-8 text-blue-600" />
+            </div>
+            <div className="mt-2">
+              <Badge variant="secondary" className="text-xs">
+                Break-even Point
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Risk Reduction</p>
+                <p className="text-2xl font-bold text-orange-600">85%</p>
+              </div>
+              <Shield className="h-8 w-8 text-orange-600" />
+            </div>
+            <div className="mt-2">
+              <Badge variant="secondary" className="text-xs">
+                Security Improvement
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Strategic Recommendations */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-primary" />
+            Strategic Recommendations
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <h4 className="font-semibold text-green-600 flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" />
+                Recommended Actions
+              </h4>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0" />
+                  <span>Proceed with Portnox implementation for optimal ROI and security posture</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0" />
+                  <span>Prioritize integration with existing SIEM and MDM solutions</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0" />
+                  <span>Plan phased rollout starting with critical network segments</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0" />
+                  <span>Invest in comprehensive staff training for maximum adoption</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="font-semibold text-orange-600 flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Risk Considerations
+              </h4>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 flex-shrink-0" />
+                  <span>Ensure adequate change management for user adoption</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 flex-shrink-0" />
+                  <span>Plan for potential network performance impact during rollout</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 flex-shrink-0" />
+                  <span>Consider compliance requirements for your industry</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 flex-shrink-0" />
+                  <span>Budget for ongoing maintenance and updates</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Financial Analysis Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Vendor Comparison */}
         <Card>
           <CardHeader>
-            <CardTitle>Cost Breakdown Comparison</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Vendor TCO Comparison
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={costComparison}>
+              <BarChart data={comparisonData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="category" />
-                <YAxis />
-                <Tooltip formatter={(value: any) => [`$${(Number(value) / 1000).toFixed(0)}K`, ""]} />
-                <Bar dataKey="portnox" fill="hsl(var(--primary))" name="Portnox Clear" />
-                <Bar dataKey="competitor" fill="hsl(var(--muted-foreground))" name="Competitor Avg" />
+                <XAxis dataKey="vendor" />
+                <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                <Tooltip formatter={(value: any) => [`$${(value / 1000).toFixed(0)}K`, "Total Cost"]} />
+                <Bar dataKey="totalCost" fill="#00D4AA" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-      </motion.div>
 
-      {/* Vendor Comparison Summary */}
-      <motion.div variants={fadeInUp}>
+        {/* Cost Breakdown */}
         <Card>
           <CardHeader>
-            <CardTitle>Vendor Comparison Summary</CardTitle>
+            <CardTitle>Investment Breakdown</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-3 font-semibold">Vendor</th>
-                    <th className="text-left p-3 font-semibold">Total Cost</th>
-                    <th className="text-left p-3 font-semibold">ROI</th>
-                    <th className="text-left p-3 font-semibold">Payback</th>
-                    <th className="text-left p-3 font-semibold">Rating</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {results?.map((result, index) => {
-                    const safeResult = {
-                      vendor: result?.vendor || "unknown",
-                      totalCost: result?.totalCost || 0,
-                      roi: typeof result?.roi === "number" ? result.roi : 0,
-                      paybackPeriod: typeof result?.paybackPeriod === "number" ? result.paybackPeriod : 0,
-                    }
-
-                    return (
-                      <tr key={safeResult.vendor} className="border-b hover:bg-muted/50">
-                        <td className="p-3">
-                          <div className="flex items-center space-x-2">
-                            <span className="capitalize font-medium">{safeResult.vendor}</span>
-                            {safeResult.vendor === "portnox" && (
-                              <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
-                                Recommended
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-3 font-semibold">${safeResult.totalCost.toLocaleString()}</td>
-                        <td className="p-3">{safeResult.roi.toFixed(0)}%</td>
-                        <td className="p-3">{safeResult.paybackPeriod.toFixed(1)} months</td>
-                        <td className="p-3">
-                          <div className="flex items-center">
-                            {Array.from({ length: 5 }, (_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-4 w-4 ${
-                                  i < (safeResult.vendor === "portnox" ? 5 : 3)
-                                    ? "text-yellow-400 fill-current"
-                                    : "text-gray-300"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  }) || []}
-                </tbody>
-              </table>
-            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={costBreakdownData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {costBreakdownData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value: any) => `$${(value / 1000).toFixed(0)}K`} />
+              </PieChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
 
-      {/* Strategic Recommendations */}
-      <motion.div variants={fadeInUp}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <FileText className="h-5 w-5 text-primary" />
-              <span>Strategic Recommendations</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-4">
-              {strategicRecommendations.map((rec, index) => (
-                <div key={index} className="flex items-start space-x-4 p-4 border rounded-lg">
-                  <Badge
-                    variant={
-                      rec.priority === "High" ? "destructive" : rec.priority === "Medium" ? "default" : "secondary"
-                    }
-                  >
-                    {rec.priority}
-                  </Badge>
-                  <div className="flex-1">
-                    <h4 className="font-semibold">{rec.recommendation}</h4>
-                    <p className="text-sm text-muted-foreground mt-1">{rec.rationale}</p>
-                    <div className="flex items-center space-x-2 mt-2">
-                      <span className="text-xs text-muted-foreground">Timeline:</span>
-                      <Badge variant="outline" className="text-xs">
-                        {rec.timeline}
-                      </Badge>
-                    </div>
-                  </div>
+      {/* ROI Projection */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            ROI Projection Over Time
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={roiProjectionData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="year" />
+              <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+              <Tooltip formatter={(value: any) => `$${(value / 1000).toFixed(0)}K`} />
+              <Line type="monotone" dataKey="savings" stroke="#00D4AA" strokeWidth={3} name="Cumulative Savings" />
+              <Line type="monotone" dataKey="investment" stroke="#0EA5E9" strokeWidth={2} name="Investment" />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Implementation Timeline */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Recommended Implementation Timeline
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[
+              { phase: "Phase 1: Planning & Design", duration: "4-6 weeks", progress: 100 },
+              { phase: "Phase 2: Pilot Deployment", duration: "2-3 weeks", progress: 75 },
+              { phase: "Phase 3: Full Rollout", duration: "8-12 weeks", progress: 50 },
+              { phase: "Phase 4: Optimization", duration: "4-6 weeks", progress: 25 },
+            ].map((phase, index) => (
+              <div key={index} className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">{phase.phase}</span>
+                  <Badge variant="outline">{phase.duration}</Badge>
                 </div>
-              ))}
-            </div>
-
-            <Separator />
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                  <h4 className="font-semibold">Immediate Actions</h4>
-                </div>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• Initiate Portnox Clear evaluation</li>
-                  <li>• Schedule technical demonstration</li>
-                  <li>• Begin stakeholder alignment</li>
-                  <li>• Prepare implementation timeline</li>
-                </ul>
+                <Progress value={phase.progress} className="h-2" />
               </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-5 w-5 text-blue-500" />
-                  <h4 className="font-semibold">30-Day Plan</h4>
-                </div>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• Complete technical assessment</li>
-                  <li>• Finalize vendor selection</li>
-                  <li>• Secure budget approval</li>
-                  <li>• Plan implementation phases</li>
-                </ul>
-              </div>
+      {/* Executive Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Executive Summary</CardTitle>
+        </CardHeader>
+        <CardContent className="prose prose-sm max-w-none">
+          <p className="text-muted-foreground leading-relaxed">
+            Based on our comprehensive analysis of {totalDevices.toLocaleString()} devices and{" "}
+            {totalUsers.toLocaleString()} users over a {analysisYears}-year period,
+            <strong className="text-foreground"> Portnox emerges as the optimal NAC solution</strong> with a total cost
+            of ownership of
+            <strong className="text-foreground"> ${(portnoxTotalCost / 1000).toFixed(0)}K</strong> and an expected ROI
+            of
+            <strong className="text-green-600"> {portnoxROI.toFixed(1)}%</strong>.
+          </p>
 
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Target className="h-5 w-5 text-purple-500" />
-                  <h4 className="font-semibold">Success Metrics</h4>
-                </div>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• {portnoxROI.toFixed(0)}% ROI achievement</li>
-                  <li>• {portnoxPayback.toFixed(1)} month payback</li>
-                  <li>• 95% security improvement</li>
-                  <li>• 50% operational efficiency gain</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          <Separator className="my-4" />
 
-      {/* Next Steps */}
-      <motion.div variants={fadeInUp}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Recommended Next Steps</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {nextSteps.map((step, index) => (
-                <div key={index} className="flex items-center space-x-3">
-                  <div className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
-                    {index + 1}
-                  </div>
-                  <span>{step}</span>
-                </div>
-              ))}
-            </div>
-            <Separator className="my-6" />
-            <div className="flex justify-center">
-              <Button size="lg" className="px-8">
-                Schedule Implementation Planning Session
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          <p className="text-muted-foreground leading-relaxed">
+            The investment will pay for itself in approximately{" "}
+            <strong className="text-foreground">{portnoxPayback.toFixed(1)} months</strong>, delivering significant
+            security improvements and operational efficiencies. Key benefits include enhanced threat detection,
+            streamlined compliance reporting, and reduced manual security operations overhead.
+          </p>
 
-      {/* Report Footer */}
-      <motion.div variants={fadeInUp}>
-        <Card className="bg-muted/50">
-          <CardContent className="p-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              This report was generated on {new Date().toLocaleDateString()} based on the configuration:
-              {deviceCount.toLocaleString()} devices, {analysisYears}-year analysis period, {licenseTier} tier.
-            </p>
-            <p className="text-xs text-muted-foreground mt-2">
-              For questions about this analysis, contact your Portnox representative or visit portnox.com
-            </p>
-          </CardContent>
-        </Card>
-      </motion.div>
-    </motion.div>
+          <Separator className="my-4" />
+
+          <p className="text-muted-foreground leading-relaxed">
+            <strong className="text-foreground">Recommendation:</strong> Proceed with Portnox implementation following
+            the phased approach outlined above. This strategic investment will strengthen your security posture while
+            delivering measurable business value and supporting your organization's zero trust security initiatives.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
