@@ -1,146 +1,234 @@
 "use client"
 
-import { useMemo } from "react"
-import { motion } from "framer-motion"
-import {
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { Shield, AlertTriangle, CheckCircle, Lock } from "lucide-react"
 import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
-import { staggerChildren, fadeInUp, MetricCard } from "./shared-ui"
-import { CheckCircle2, ShieldCheck, XCircle } from "lucide-react"
 
-const VIBRANT_COLORS = ["#00D4AA", "#FF6B35", "#3B82F6", "#10B981", "#F59E0B", "#8B5CF6"]
+interface CybersecurityPostureViewProps {
+  results: any[]
+  config: any
+}
 
-export default function CybersecurityPostureView({
-  results,
-  config,
-}: {
-  results: CalculationResult[]
-  config: CalculationConfiguration
-}) {
-  const complianceFrameworks = ["PCI DSS", "HIPAA", "SOC2", "ISO 27001", "GDPR"]
-  const radarData = useMemo(() => {
-    const subjects = results.map((r) => r.vendorName)
-    return complianceFrameworks.map((framework) => {
-      const point: { [key: string]: string | number } = { subject: framework }
-      results.forEach((r) => {
-        const vendorData = ComprehensiveVendorDatabase[r.vendor]
-        point[r.vendorName] =
-          vendorData.featureSupport.compliance[framework] === "✓✓✓"
-            ? 100
-            : vendorData.featureSupport.compliance[framework] === "✓✓"
-              ? 75
-              : 50
-      })
-      return point
-    })
-  }, [results, complianceFrameworks])
+export default function CybersecurityPostureView({ results, config }: CybersecurityPostureViewProps) {
+  if (!results || results.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center text-muted-foreground">
+          <p>No security data available</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
-  const allCerts = useMemo(() => {
-    const certs = new Set<string>()
-    results.forEach((r) => {
-      const vendorData = ComprehensiveVendorDatabase[r.vendor]
-      Object.keys(vendorData.featureSupport.compliance).forEach((cert) => {
-        if (vendorData.featureSupport.compliance[cert] !== "✗") {
-          certs.add(cert)
+  const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316", "#06B6D4"]
+
+  // Calculate security scores
+  const getSecurityScore = (vendorId: string) => {
+    const vendor = ComprehensiveVendorDatabase[vendorId]
+    if (!vendor) return 0
+
+    const score = 0
+    const features = vendor.featureSupport
+
+    // Authentication capabilities (30%)
+    const authFeatures = Object.values(features.authentication)
+    const authScore = authFeatures.filter(f => f === "✓✓✓").length / authFeatures.length * 30
+
+    // Advanced features (40%)
+    const advancedFeatures = Object.values(features.advanced)
+    const advancedScore = advancedFeatures.filter(f => f === "✓✓✓").length / advancedFeatures.length * 40
+
+    // Compliance (30%)
+    const complianceFeatures = Object.values(features.compliance)
+    const complianceScore = complianceFeatures.filter(f => f === "✓✓✓").length / complianceFeatures.length * 30
+
+    return Math.round(authScore + advancedScore + complianceScore)
+  }
+
+  // Prepare security assessment data
+  const securityData = results.map((result) => {
+    const vendor = ComprehensiveVendorDatabase[result.vendor]
+    return {
+      vendor: result.vendorName,
+      securityScore: getSecurityScore(result.vendor),
+      riskReduction: (result.risk?.breachReduction || 0) * 100,
+      complianceScore: vendor ? Object.values(vendor.featureSupport.compliance).filter(f => f === "✓✓✓").length * 10 : 0,
+      zeroTrust: vendor?.featureSupport.advanced["Zero Trust"] === "✓✓✓" ? 100 : 
+                 vendor?.featureSupport.advanced["Zero Trust"] === "✓✓" ? 75 : 
+                 vendor?.featureSupport.advanced["Zero Trust"] === "✓" ? 50 : 0,
+    }
+  })
+
+  // Prepare radar chart data for security capabilities
+  const radarData = [
+    {
+      capability: "Authentication",
+      ...results.reduce((acc, result) => {
+        const vendor = ComprehensiveVendorDatabase[result.vendor]
+        if (vendor) {
+          const authFeatures = Object.values(vendor.featureSupport.authentication)
+          acc[result.vendorName] = authFeatures.filter(f => f === "✓✓✓").length / authFeatures.length * 100
         }
-      })
-    })
-    return Array.from(certs)
-  }, [results])
+        return acc
+      }, {} as Record<string, number>),
+    },
+    {
+      capability: "Network Security",
+      ...results.reduce((acc, result) => {
+        const vendor = ComprehensiveVendorDatabase[result.vendor]
+        if (vendor) {
+          const networkFeatures = Object.values(vendor.featureSupport.network)
+          acc[result.vendorName] = networkFeatures.filter(f => f === "✓✓✓").length / networkFeatures.length * 100
+        }
+        return acc
+      }, {} as Record<string, number>),
+    },
+    {
+      capability: "Advanced Security",
+      ...results.reduce((acc, result) => {
+        const vendor = ComprehensiveVendorDatabase[result.vendor]
+        if (vendor) {
+          const advancedFeatures = Object.values(vendor.featureSupport.advanced)
+          acc[result.vendorName] = advancedFeatures.filter(f => f === "✓✓✓").length / advancedFeatures.length * 100
+        }
+        return acc
+      }, {} as Record<string, number>),
+    },
+    {
+      capability: "Compliance",
+      ...results.reduce((acc, result) => {
+        const vendor = ComprehensiveVendorDatabase[result.vendor]
+        if (vendor) {
+          const complianceFeatures = Object.values(vendor.featureSupport.compliance)
+          acc[result.vendorName] = complianceFeatures.filter(f => f === "✓✓✓").length / complianceFeatures.length * 100
+        }
+        return acc
+      }, {} as Record<string, number>),
+    },
+    {
+      capability: "Zero Trust",
+      ...results.reduce((acc, result) => {
+        const vendor = ComprehensiveVendorDatabase[result.vendor]
+        if (vendor) {
+          const ztScore = vendor.featureSupport.advanced["Zero Trust"] === "✓✓✓" ? 100 : 
+                         vendor.featureSupport.advanced["Zero Trust"] === "✓✓" ? 75 : 
+                         vendor.featureSupport.advanced["Zero Trust"] === "✓" ? 50 : 0
+          acc[result.vendorName] = ztScore
+        }
+        return acc
+      }, {} as Record<string, number>),
+    },
+  ]
+
+  // Risk distribution data
+  const riskData = [
+    { name: "Low Risk", value: securityData.filter(d => d.riskReduction > 60).length, color: "#00D4AA" },
+    { name: "Medium Risk", value: securityData.filter(d => d.riskReduction > 30 && d.riskReduction <= 60).length, color: "#F97316" },
+    { name: "High Risk", value: securityData.filter(d => d.riskReduction <= 30).length, color: "#EF4444" },
+  ]
+
+  const averageSecurityScore = securityData.reduce((sum, d) => sum + d.securityScore, 0) / securityData.length
+  const averageRiskReduction = securityData.reduce((sum, d) => sum + d.riskReduction, 0) / securityData.length
 
   return (
-    <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
-      <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" variants={staggerChildren}>
-        {results.map((r) => (
-          <motion.div variants={fadeInUp} key={r.vendor}>
-            <MetricCard
-              title={`${r.vendorName} Risk Reduction`}
-              value={`${(r.risk.breachReduction * 100).toFixed(0)}%`}
-              detail="Breach Probability Reduction"
-              icon={<ShieldCheck />}
-            />
-          </motion.div>
-        ))}
-      </motion.div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <motion.div variants={fadeInUp}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Compliance Framework Coverage</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="subject" />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} />
-                  <Tooltip />
-                  <Legend />
-                  {results.map((r, i) => (
-                    <Radar
-                      key={r.vendor}
-                      name={r.vendorName}
-                      dataKey={r.vendorName}
-                      stroke={VIBRANT_COLORS[i % VIBRANT_COLORS.length]}
-                      fill={VIBRANT_COLORS[i % VIBRANT_COLORS.length]}
-                      fillOpacity={0.6}
-                    />
-                  ))}
-                </RadarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </motion.div>
-        <motion.div variants={fadeInUp}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Security Certifications Matrix</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Certification</TableHead>
-                    {results.map((r) => (
-                      <TableHead key={r.vendor} className="text-center">
-                        {r.vendorName}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {allCerts.map((cert) => (
-                    <TableRow key={cert}>
-                      <TableCell>{cert}</TableCell>
-                      {results.map((r) => (
-                        <TableCell key={r.vendor} className="text-center">
-                          {ComprehensiveVendorDatabase[r.vendor].featureSupport.compliance[cert] !== "✗" ? (
-                            <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
-                          ) : (
-                            <XCircle className="h-5 w-5 text-red-500 mx-auto" />
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </motion.div>
+    <div className="space-y-6">
+      {/* Security Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Shield className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm font-medium">Avg Security Score</p>
+                <p className="text-2xl font-bold">{Math.round(averageSecurityScore)}/100</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <AlertTriangle className="h-5 w-5 text-orange-600" />
+              <div>
+                <p className="text-sm font-medium">Risk Reduction</p>
+                <p className="text-2xl font-bold">{Math.round(averageRiskReduction)}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="text-sm font-medium">Compliance Ready</p>
+                <p className="text-2xl font-bold">{securityData.filter(d => d.complianceScore > 50).length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Lock className="h-5 w-5 text-purple-600" />
+              <div>
+                <p className="text-sm font-medium">Zero Trust Ready</p>
+                <p className="text-2xl font-bold">{securityData.filter(d => d.zeroTrust > 75).length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </motion.div>
-  )
-}
+
+      {/* Security Analysis Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Security Score Comparison</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={securityData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="vendor" />
+                <YAxis domain={[0, 100]} />
+                <Tooltip />
+                <Bar dataKey="securityScore" fill="#00D4AA" name="Security Score" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Risk Distribution</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={riskData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, value }) => `${name}: ${value}`}
+                >
+                  {riskData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Security Capabilities Radar */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Security Capabilities Assessment</CardTitle>
+        \

@@ -19,6 +19,7 @@ import BusinessImpactView from "./business-impact-view"
 import ImplementationTimelineView from "./implementation-timeline-view"
 import FeatureMatrixView from "./feature-matrix-view"
 import ExecutiveReportView from "./executive-report-view"
+import IntegrationHubView from "./integration-hub-view"
 
 import {
   LayoutGrid,
@@ -36,6 +37,7 @@ import {
   AlertTriangleIcon,
   Settings,
   TrendingUp,
+  Zap,
 } from "lucide-react"
 
 const TABS_CONFIG = [
@@ -43,6 +45,7 @@ const TABS_CONFIG = [
   { value: "financials", label: "Financials", icon: <FilePieChart /> },
   { value: "roi", label: "ROI & Value", icon: <TrendingUp /> },
   { value: "security", label: "Security & Risk", icon: <ShieldCheck /> },
+  { value: "integrations", label: "Integrations", icon: <Zap /> },
   { value: "operations", label: "Operations", icon: <SlidersHorizontal /> },
   { value: "features", label: "Features", icon: <LayoutGrid /> },
   { value: "implementation", label: "Implementation", icon: <Road /> },
@@ -139,8 +142,10 @@ export default function TcoAnalyzerUltimate() {
         return <BusinessImpactView results={results} config={configuration} />
       case "security":
         return <CybersecurityPostureView results={results} config={configuration} />
+      case "integrations":
+        return <IntegrationHubView selectedVendors={selectedVendors} config={configuration} />
       case "operations":
-        return <ImplementationTimelineView results={results} config={configuration} /> // Reusing for ops view
+        return <ImplementationTimelineView results={results} config={configuration} />
       case "features":
         return <FeatureMatrixView selectedVendors={selectedVendors} />
       case "implementation":
@@ -211,7 +216,7 @@ export default function TcoAnalyzerUltimate() {
     <nav className="sticky top-16 z-40 backdrop-blur-md bg-background/70 border-b">
       <div className="container mx-auto px-0 sm:px-4">
         <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
-          <TabsList className="grid w-full h-auto py-0 bg-transparent rounded-none grid-cols-4 sm:grid-cols-8">
+          <TabsList className="grid w-full h-auto py-0 bg-transparent rounded-none grid-cols-5 sm:grid-cols-9">
             {TABS_CONFIG.map((tab) => (
               <TabsTrigger
                 key={tab.value}

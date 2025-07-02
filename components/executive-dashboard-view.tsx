@@ -1,207 +1,215 @@
 "use client"
 
-import { useMemo } from "react"
-import { motion } from "framer-motion"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  CartesianGrid,
-} from "recharts"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-import { MetricCard, GradientCard, fadeInUp, staggerChildren } from "./shared-ui"
-import { DollarSign, RocketIcon, Shield, UsersIcon, TrendingUpIcon, BarChart3 } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { TrendingUp, DollarSign, Clock, Users } from "lucide-react"
+import { cn } from "@/lib/utils"
 
-const VIBRANT_COLORS = ["#00D4AA", "#FF6B35", "#3B82F6", "#10B981", "#F59E0B", "#8B5CF6"]
+interface ExecutiveDashboardViewProps {
+  results: any[]
+  config: any
+}
 
-export default function ExecutiveDashboardView({
-  results,
-  config,
-}: {
-  results: CalculationResult[]
-  config: CalculationConfiguration
-}) {
-  const portnoxResult = useMemo(() => results.find((r) => r.vendor === "portnox"), [results])
-  const competitors = useMemo(() => results.filter((r) => r.vendor !== "portnox"), [results])
-  const lowestCompetitor = useMemo(() => competitors.sort((a, b) => a.total - b.total)[0], [competitors])
-
-  const totalSavings = useMemo(() => {
-    if (!portnoxResult || !lowestCompetitor) return 0
-    return lowestCompetitor.total - portnoxResult.total
-  }, [portnoxResult, lowestCompetitor])
-
-  const savingsPercent = useMemo(() => {
-    if (!portnoxResult || !lowestCompetitor || lowestCompetitor.total === 0) return 0
-    return (totalSavings / lowestCompetitor.total) * 100
-  }, [totalSavings, lowestCompetitor, portnoxResult])
-
-  const roiTimelineData = useMemo(() => {
-    if (!portnoxResult) return []
-    const months = config.years * 12
-    const data = []
-    for (let month = 0; month <= months; month += Math.max(1, Math.floor(months / 12))) {
-      let portnoxROI = 0
-      if (portnoxResult.roi.paybackMonths > 0 && portnoxResult.total > 0) {
-        if (month >= portnoxResult.roi.paybackMonths) {
-          const annualNetBenefit = portnoxResult.roi.annualSavings - portnoxResult.total / config.years
-          portnoxROI = ((annualNetBenefit * (month / 12)) / portnoxResult.total) * 100
-        }
-      }
-      data.push({ month, portnox: Math.max(0, portnoxROI) })
-    }
-    return data
-  }, [portnoxResult, config.years])
-
-  if (!portnoxResult) {
-    return <Card className="p-6">Portnox data not available for comparison.</Card>
+export default function ExecutiveDashboardView({ results, config }: ExecutiveDashboardViewProps) {
+  if (!results || results.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center text-muted-foreground">
+          <p>No data available for dashboard view</p>
+        </CardContent>
+      </Card>
+    )
   }
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value)
+  }
+
+  const bestROI = Math.max(...results.map((r) => r.roi?.percentage || 0))
+  const lowestTCO = Math.min(...results.map((r) => r.total || 0))
+  const fastestPayback = Math.min(...results.map((r) => r.roi?.paybackMonths || 999))
+
+  const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316", "#06B6D4"]
+
   return (
-    <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
-      <motion.div variants={fadeInUp}>
-        <GradientCard className="p-6 sm:p-8">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="mb-6 md:mb-0 text-center md:text-left">
-              <h2 className="text-2xl sm:text-3xl font-bold text-card-foreground mb-1 sm:mb-2">Executive Summary</h2>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                {config.years}-Year Total Cost of Ownership Analysis
-              </p>
-            </div>
+    <div className="space-y-6">
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <div className="text-right">
-                <p className="text-xs sm:text-sm text-muted-foreground">Portnox Advantage</p>
-                <p className="text-xl sm:text-2xl font-bold text-primary">{savingsPercent.toFixed(0)}% Lower TCO</p>
+              <DollarSign className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm font-medium">Lowest TCO</p>
+                <p className="text-2xl font-bold">{formatCurrency(lowestTCO)}</p>
               </div>
             </div>
-          </div>
-        </GradientCard>
-      </motion.div>
-
-      <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" variants={staggerChildren}>
-        <motion.div variants={fadeInUp}>
-          <MetricCard
-            title="Total Savings"
-            value={`$${Math.round(Math.abs(totalSavings) / 1000).toLocaleString()}K`}
-            detail={`vs. ${lowestCompetitor?.vendorName || "Next Best"}`}
-            icon={<DollarSign />}
-            trend="up"
-            trendValue={`${savingsPercent.toFixed(0)}%`}
-          />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
-          <MetricCard
-            title="ROI Achievement"
-            value={`${portnoxResult.roi.paybackMonths} mo`}
-            detail="Payback period"
-            icon={<RocketIcon />}
-            trend="down"
-            trendValue="Faster"
-          />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
-          <MetricCard
-            title="Risk Reduction"
-            value={`${portnoxResult.risk.breachReduction * 100}%`}
-            detail="Breach probability decrease"
-            icon={<Shield />}
-            trend="up"
-            trendValue="Significant"
-          />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
-          <MetricCard
-            title="Efficiency Gain"
-            value={`${portnoxResult.ops.fteSaved} FTE`}
-            detail="Staff hours saved"
-            icon={<UsersIcon />}
-            trend="up"
-            trendValue="Notable"
-          />
-        </motion.div>
-      </motion.div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <motion.div className="lg:col-span-3" variants={fadeInUp}>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-lg">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                <span>TCO Comparison</span>
-              </CardTitle>
-              <CardDescription>{config.years}-year total cost across vendors</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={results.map((r) => ({ name: r.vendorName, TCO: r.total }))}
-                  layout="vertical"
-                  margin={{ right: 30, left: 10 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                  <YAxis type="category" dataKey="name" width={100} interval={0} />
-                  <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, "Total TCO"]} />
-                  <Bar dataKey="TCO" radius={[0, 6, 6, 0]} barSize={20}>
-                    {results.map((entry, index) => (
-                      <Bar
-                        key={`cell-${index}`}
-                        fill={
-                          entry.vendor === "portnox"
-                            ? VIBRANT_COLORS[0]
-                            : VIBRANT_COLORS[(index + 1) % VIBRANT_COLORS.length]
-                        }
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </motion.div>
-        <motion.div className="lg:col-span-2" variants={fadeInUp}>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-lg">
-                <TrendingUpIcon className="h-5 w-5 text-primary" />
-                <span>ROI Timeline</span>
-              </CardTitle>
-              <CardDescription>Cumulative value over {config.years * 12} months</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={roiTimelineData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
-                  <defs>
-                    <linearGradient id="roiGradientFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={VIBRANT_COLORS[0]} stopOpacity={0.6} />
-                      <stop offset="95%" stopColor={VIBRANT_COLORS[0]} stopOpacity={0.05} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" tickFormatter={(value) => `M${value}`} />
-                  <YAxis tickFormatter={(value) => `${value}%`} />
-                  <Tooltip formatter={(value: number) => [`${value.toFixed(0)}%`, "Portnox ROI"]} />
-                  <Area
-                    type="monotone"
-                    dataKey="portnox"
-                    stroke={VIBRANT_COLORS[0]}
-                    strokeWidth={2.5}
-                    fill="url(#roiGradientFill)"
-                    name="Portnox ROI"
-                  />
-                  <Legend wrapperStyle={{ fontSize: "12px" }} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </motion.div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="text-sm font-medium">Best ROI</p>
+                <p className="text-2xl font-bold">{Math.round(bestROI)}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Clock className="h-5 w-5 text-purple-600" />
+              <div>
+                <p className="text-sm font-medium">Fastest Payback</p>
+                <p className="text-2xl font-bold">{fastestPayback} mo</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Users className="h-5 w-5 text-orange-600" />
+              <div>
+                <p className="text-sm font-medium">Devices</p>
+                <p className="text-2xl font-bold">{config.devices?.toLocaleString() || "N/A"}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </motion.div>
+
+      {/* TCO Comparison Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Total Cost of Ownership Comparison</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={results}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="vendorName" />
+              <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+              <Tooltip formatter={(value) => [formatCurrency(Number(value)), "Total Cost"]} />
+              <Bar dataKey="total" fill="#00D4AA" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* ROI Analysis */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>ROI Comparison</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={results}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="vendorName" />
+                <YAxis />
+                <Tooltip formatter={(value) => [`${value}%`, "ROI"]} />
+                <Bar dataKey="roi.percentage" fill="#0EA5E9" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Cost Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {results.slice(0, 3).map((result, index) => (
+                <div key={result.vendor} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{result.vendorName}</span>
+                    <span className="text-sm text-muted-foreground">{formatCurrency(result.total)}</span>
+                  </div>
+                  <Progress value={(result.total / Math.max(...results.map((r) => r.total))) * 100} className="h-2" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Vendor Comparison Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Vendor Comparison Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-2">Vendor</th>
+                  <th className="text-right p-2">Total Cost</th>
+                  <th className="text-right p-2">ROI</th>
+                  <th className="text-right p-2">Payback</th>
+                  <th className="text-center p-2">Risk Level</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.map((result, index) => (
+                  <tr key={result.vendor} className="border-b">
+                    <td className="p-2">
+                      <div className="flex items-center space-x-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        />
+                        <span className="font-medium">{result.vendorName}</span>
+                      </div>
+                    </td>
+                    <td className="text-right p-2">{formatCurrency(result.total)}</td>
+                    <td className="text-right p-2">
+                      <span
+                        className={cn(
+                          "font-medium",
+                          (result.roi?.percentage || 0) > 0 ? "text-green-600" : "text-red-600",
+                        )}
+                      >
+                        {Math.round(result.roi?.percentage || 0)}%
+                      </span>
+                    </td>
+                    <td className="text-right p-2">{result.roi?.paybackMonths || "N/A"} mo</td>
+                    <td className="text-center p-2">
+                      <Badge
+                        variant={
+                          (result.risk?.breachReduction || 0) > 0.5
+                            ? "default"
+                            : (result.risk?.breachReduction || 0) > 0.3
+                              ? "secondary"
+                              : "destructive"
+                        }
+                      >
+                        {(result.risk?.breachReduction || 0) > 0.5
+                          ? "Low"
+                          : (result.risk?.breachReduction || 0) > 0.3
+                            ? "Medium"
+                            : "High"}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

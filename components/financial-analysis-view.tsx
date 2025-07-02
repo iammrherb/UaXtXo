@@ -1,145 +1,251 @@
 "use client"
 
-import { useMemo } from "react"
-import { motion } from "framer-motion"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import {
   BarChart,
   Bar,
   XAxis,
   YAxis,
+  CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
-  CartesianGrid, // CartesianGrid variable is declared here
+  Area,
+  AreaChart,
 } from "recharts"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-import { staggerChildren, fadeInUp } from "./shared-ui"
+import { TrendingUp, DollarSign, Calculator, PieChartIcon } from "lucide-react"
 
-const VIBRANT_COLORS = ["#00D4AA", "#FF6B35", "#3B82F6", "#10B981", "#F59E0B", "#8B5CF6"]
+interface FinancialAnalysisViewProps {
+  results: any[]
+  config: any
+}
 
-export default function FinancialAnalysisView({
-  results,
-  config,
-}: {
-  results: CalculationResult[]
-  config: CalculationConfiguration
-}) {
-  const chartData = useMemo(
-    () =>
-      results.map((r) => {
-        const dataPoint: { [key: string]: string | number } = { name: r.vendorName }
-        r.breakdown.forEach((b) => {
-          dataPoint[b.name] = b.value
-        })
-        return dataPoint
-      }),
-    [results],
-  )
+export default function FinancialAnalysisView({ results, config }: FinancialAnalysisViewProps) {
+  if (!results || results.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center text-muted-foreground">
+          <p>No financial data available</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
-  const breakdownCategories = useMemo(
-    () => Array.from(new Set(results.flatMap((r) => r.breakdown.map((b) => b.name)))),
-    [results],
-  )
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value)
+  }
 
-  const portnoxBreakdown = useMemo(() => {
-    const portnoxRes = results.find((r) => r.vendor === "portnox")
-    return portnoxRes ? portnoxRes.breakdown : []
-  }, [results])
+  const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316", "#06B6D4"]
+
+  // Calculate financial metrics
+  const totalInvestment = results.reduce((sum, r) => sum + (r.total || 0), 0)
+  const averageROI = results.reduce((sum, r) => sum + (r.roi?.percentage || 0), 0) / results.length
+  const totalSavings = results.reduce((sum, r) => sum + (r.roi?.annualSavings || 0) * (config.years || 3), 0)
+
+  // Prepare cost breakdown data
+  const costBreakdownData =
+    results[0]?.breakdown?.map((item: any) => ({
+      name: item.name,
+      value: item.value,
+    })) || []
+
+  // Prepare year-over-year projection
+  const projectionData = Array.from({ length: config.years || 3 }, (_, i) => ({
+    year: `Year ${i + 1}`,
+    ...results.reduce(
+      (acc, result) => {
+        acc[result.vendorName] = (result.total || 0) / (config.years || 3)
+        return acc
+      },
+      {} as Record<string, number>,
+    ),
+  }))
 
   return (
-    <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
-      <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-6" variants={fadeInUp}>
+    <div className="space-y-6">
+      {/* Financial Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <DollarSign className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm font-medium">Total Investment</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalInvestment)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="text-sm font-medium">Average ROI</p>
+                <p className="text-2xl font-bold">{Math.round(averageROI)}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Calculator className="h-5 w-5 text-purple-600" />
+              <div>
+                <p className="text-sm font-medium">Projected Savings</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalSavings)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <PieChartIcon className="h-5 w-5 text-orange-600" />
+              <div>
+                <p className="text-sm font-medium">Analysis Period</p>
+                <p className="text-2xl font-bold">{config.years || 3} Years</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Cost Comparison and Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>TCO Breakdown Comparison</CardTitle>
-            <CardDescription>{config.years}-Year Cost Analysis by Category</CardDescription>
+            <CardTitle>Total Cost Comparison</CardTitle>
           </CardHeader>
-          <CardContent className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" /> {/* CartesianGrid is now declared */}
-                <XAxis type="number" tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                <YAxis type="category" dataKey="name" width={100} />
-                <Tooltip formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]} />
-                <Legend />
-                {breakdownCategories.map((cat, index) => (
-                  <Bar key={cat} dataKey={cat} stackId="a" fill={VIBRANT_COLORS[index % VIBRANT_COLORS.length]} />
-                ))}
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={results}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="vendorName" />
+                <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                <Tooltip formatter={(value) => [formatCurrency(Number(value)), "Total Cost"]} />
+                <Bar dataKey="total" fill="#00D4AA" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader>
-            <CardTitle>Portnox Cost Distribution</CardTitle>
-            <CardDescription>Breakdown of Portnox's {config.years}-Year TCO</CardDescription>
+            <CardTitle>Cost Breakdown</CardTitle>
           </CardHeader>
-          <CardContent className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={portnoxBreakdown}
-                  dataKey="value"
-                  nameKey="name"
+                  data={costBreakdownData}
                   cx="50%"
                   cy="50%"
-                  outerRadius={120}
-                  label={(entry) =>
-                    `${entry.name} (${((entry.value / results.find((r) => r.vendor === "portnox")!.total) * 100).toFixed(0)}%)`
-                  }
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 >
-                  {portnoxBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={VIBRANT_COLORS[index % VIBRANT_COLORS.length]} />
+                  {costBreakdownData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
-                <Legend />
+                <Tooltip formatter={(value) => [formatCurrency(Number(value)), "Cost"]} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
 
-      <motion.div variants={fadeInUp}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Detailed Cost Table</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Vendor</TableHead>
-                  {breakdownCategories.map((cat) => (
-                    <TableHead key={cat} className="text-right">
-                      {cat}
-                    </TableHead>
-                  ))}
-                  <TableHead className="text-right font-bold">Total TCO</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {results.map((r) => (
-                  <TableRow key={r.vendor}>
-                    <TableCell className="font-medium">{r.vendorName}</TableCell>
-                    {breakdownCategories.map((cat) => (
-                      <TableCell key={cat} className="text-right">
-                        ${(r.breakdown.find((b) => b.name === cat)?.value || 0).toLocaleString()}
-                      </TableCell>
-                    ))}
-                    <TableCell className="text-right font-bold">${r.total.toLocaleString()}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </motion.div>
-    </motion.div>
+      {/* Year-over-Year Projection */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Annual Cost Projection</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={projectionData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="year" />
+              <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+              <Tooltip formatter={(value) => [formatCurrency(Number(value)), "Annual Cost"]} />
+              {results.map((result, index) => (
+                <Area
+                  key={result.vendorName}
+                  type="monotone"
+                  dataKey={result.vendorName}
+                  stackId="1"
+                  stroke={COLORS[index % COLORS.length]}
+                  fill={COLORS[index % COLORS.length]}
+                  fillOpacity={0.6}
+                />
+              ))}
+            </AreaChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Detailed Financial Breakdown */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Detailed Financial Analysis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-2">Vendor</th>
+                  <th className="text-right p-2">Initial Cost</th>
+                  <th className="text-right p-2">Annual OpEx</th>
+                  <th className="text-right p-2">3-Year Total</th>
+                  <th className="text-right p-2">ROI</th>
+                  <th className="text-right p-2">Payback Period</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.map((result, index) => {
+                  const initialCost =
+                    (result.breakdown?.find((b: any) => b.name === "Hardware")?.value || 0) +
+                    (result.breakdown?.find((b: any) => b.name === "Professional Services")?.value || 0)
+                  const annualOpEx = (result.total - initialCost) / (config.years || 3)
+
+                  return (
+                    <tr key={result.vendor} className="border-b">
+                      <td className="p-2">
+                        <div className="flex items-center space-x-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                          />
+                          <span className="font-medium">{result.vendorName}</span>
+                        </div>
+                      </td>
+                      <td className="text-right p-2">{formatCurrency(initialCost)}</td>
+                      <td className="text-right p-2">{formatCurrency(annualOpEx)}</td>
+                      <td className="text-right p-2 font-semibold">{formatCurrency(result.total)}</td>
+                      <td className="text-right p-2">
+                        <Badge variant={result.roi?.percentage > 0 ? "default" : "destructive"}>
+                          {Math.round(result.roi?.percentage || 0)}%
+                        </Badge>
+                      </td>
+                      <td className="text-right p-2">{result.roi?.paybackMonths || "N/A"} months</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

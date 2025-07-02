@@ -1,144 +1,308 @@
 "use client"
 
-import { useMemo } from "react"
-import { motion } from "framer-motion"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from "recharts"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-import { staggerChildren, fadeInUp, GradientCard } from "./shared-ui"
-import Image from "next/image"
-import { getVendorLogoPath } from "@/lib/comprehensive-vendor-data"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+} from "recharts"
+import { TrendingUp, Users, Shield, Target } from "lucide-react"
 
-const VIBRANT_COLORS = ["#00D4AA", "#FF6B35", "#3B82F6", "#10B981", "#F59E0B", "#8B5CF6"]
+interface BusinessImpactViewProps {
+  results: any[]
+  config: any
+}
 
-export default function BusinessImpactView({
-  results,
-  config,
-}: {
-  results: CalculationResult[]
-  config: CalculationConfiguration
-}) {
-  const roiData = useMemo(
-    () =>
-      results.map((r) => ({
-        name: r.vendorName,
-        "ROI (%)": r.roi.percentage,
-        "Payback (Months)": r.roi.paybackMonths,
-      })),
-    [results],
-  )
+export default function BusinessImpactView({ results, config }: BusinessImpactViewProps) {
+  if (!results || results.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center text-muted-foreground">
+          <p>No business impact data available</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value)
+  }
+
+  const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316", "#06B6D4"]
+
+  // Calculate business metrics
+  const totalFTESaved = results.reduce((sum, r) => sum + (r.ops?.fteSaved || 0), 0)
+  const totalAnnualSavings = results.reduce((sum, r) => sum + (r.roi?.annualSavings || 0), 0)
+  const averageRiskReduction = results.reduce((sum, r) => sum + (r.risk?.breachReduction || 0), 0) / results.length
+
+  // Prepare business value data
+  const businessValueData = results.map((result) => ({
+    vendor: result.vendorName,
+    fteSaved: result.ops?.fteSaved || 0,
+    annualSavings: result.roi?.annualSavings || 0,
+    riskReduction: (result.risk?.breachReduction || 0) * 100,
+    roi: result.roi?.percentage || 0,
+  }))
+
+  // Prepare radar chart data for business capabilities
+  const radarData = [
+    {
+      capability: "Cost Efficiency",
+      ...results.reduce(
+        (acc, result) => {
+          acc[result.vendorName] = Math.min(100, (result.roi?.percentage || 0) + 50)
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
+    },
+    {
+      capability: "Risk Reduction",
+      ...results.reduce(
+        (acc, result) => {
+          acc[result.vendorName] = (result.risk?.breachReduction || 0) * 100
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
+    },
+    {
+      capability: "Operational Efficiency",
+      ...results.reduce(
+        (acc, result) => {
+          acc[result.vendorName] = (result.ops?.fteSaved || 0) * 20
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
+    },
+    {
+      capability: "Implementation Speed",
+      ...results.reduce(
+        (acc, result) => {
+          // Assume faster implementation = higher score
+          const months = result.roi?.paybackMonths || 12
+          acc[result.vendorName] = Math.max(0, 100 - months * 5)
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
+    },
+    {
+      capability: "Scalability",
+      ...results.reduce(
+        (acc, result) => {
+          // Higher for cloud-native solutions
+          acc[result.vendorName] = result.vendor === "portnox" ? 95 : 70
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
+    },
+  ]
 
   return (
-    <motion.div className="space-y-6" initial="initial" animate="animate" variants={staggerChildren}>
-      <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" variants={staggerChildren}>
-        {results.map((r, i) => (
-          <motion.div variants={fadeInUp} key={r.vendor}>
-            <GradientCard className="h-full">
-              <CardHeader>
-                <div className="flex items-center space-x-3">
-                  <Image
-                    src={getVendorLogoPath(r.vendor) || "/placeholder.svg"}
-                    alt={`${r.vendorName} logo`}
-                    width={100}
-                    height={25}
-                    className="h-6 w-auto"
-                  />
-                  <CardTitle>{r.vendorName}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-4 text-sm">
-                <div className="space-y-1">
-                  <p className="text-muted-foreground">ROI %</p>
-                  <p className="font-bold text-lg">{r.roi.percentage.toFixed(0)}%</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-muted-foreground">Payback</p>
-                  <p className="font-bold text-lg">{r.roi.paybackMonths} mo</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-muted-foreground">Annual Savings</p>
-                  <p className="font-bold text-lg">${(r.roi.annualSavings / 1000).toFixed(0)}K</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-muted-foreground">FTE Saved</p>
-                  <p className="font-bold text-lg">{r.ops.fteSaved}</p>
-                </div>
-              </CardContent>
-            </GradientCard>
-          </motion.div>
-        ))}
-      </motion.div>
-      <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-6" variants={fadeInUp}>
+    <div className="space-y-6">
+      {/* Business Impact Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardHeader>
-            <CardTitle>ROI Comparison</CardTitle>
-            <CardDescription>Return on Investment over {config.years} years</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={roiData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis yAxisId="left" orientation="left" stroke={VIBRANT_COLORS[0]} />
-                <YAxis yAxisId="right" orientation="right" stroke={VIBRANT_COLORS[1]} />
-                <Tooltip />
-                <Legend />
-                <Bar yAxisId="left" dataKey="ROI (%)" fill={VIBRANT_COLORS[0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Users className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="text-sm font-medium">FTE Savings</p>
+                <p className="text-2xl font-bold">{totalFTESaved.toFixed(1)}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Payback Period Comparison</CardTitle>
-            <CardDescription>Time to recoup initial investment</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={roiData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="Payback (Months)" fill={VIBRANT_COLORS[1]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm font-medium">Annual Savings</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalAnnualSavings)}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      </motion.div>
-      <motion.div variants={fadeInUp}>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Shield className="h-5 w-5 text-purple-600" />
+              <div>
+                <p className="text-sm font-medium">Risk Reduction</p>
+                <p className="text-2xl font-bold">{Math.round(averageRiskReduction * 100)}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Target className="h-5 w-5 text-orange-600" />
+              <div>
+                <p className="text-sm font-medium">Business Value</p>
+                <p className="text-2xl font-bold">High</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Business Value Analysis */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Business Value Summary</CardTitle>
+            <CardTitle>Operational Efficiency Gains</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Vendor</TableHead>
-                  <TableHead className="text-right">3-Year ROI</TableHead>
-                  <TableHead className="text-right">Payback Period (Months)</TableHead>
-                  <TableHead className="text-right">Annual Net Savings</TableHead>
-                  <TableHead className="text-right">FTE Saved</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {results.map((r) => (
-                  <TableRow key={r.vendor}>
-                    <TableCell className="font-medium">{r.vendorName}</TableCell>
-                    <TableCell className="text-right">{r.roi.percentage.toFixed(0)}%</TableCell>
-                    <TableCell className="text-right">{r.roi.paybackMonths}</TableCell>
-                    <TableCell className="text-right">${r.roi.annualSavings.toLocaleString()}</TableCell>
-                    <TableCell className="text-right">{r.ops.fteSaved}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={businessValueData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="vendor" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="fteSaved" fill="#00D4AA" name="FTE Saved" />
+              </BarChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
-      </motion.div>
-    </motion.div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Business Capability Assessment</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <RadarChart data={radarData}>
+                <PolarGrid />
+                <PolarAngleAxis dataKey="capability" />
+                <PolarRadiusAxis angle={90} domain={[0, 100]} />
+                {results.map((result, index) => (
+                  <Radar
+                    key={result.vendorName}
+                    name={result.vendorName}
+                    dataKey={result.vendorName}
+                    stroke={COLORS[index % COLORS.length]}
+                    fill={COLORS[index % COLORS.length]}
+                    fillOpacity={0.1}
+                  />
+                ))}
+                <Tooltip />
+              </RadarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ROI Timeline */}
+      <Card>
+        <CardHeader>
+          <CardTitle>ROI Timeline Projection</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart
+              data={Array.from({ length: 36 }, (_, i) => ({
+                month: i + 1,
+                ...results.reduce(
+                  (acc, result) => {
+                    const monthlyROI = ((result.roi?.percentage || 0) / 36) * (i + 1)
+                    acc[result.vendorName] = monthlyROI
+                    return acc
+                  },
+                  {} as Record<string, number>,
+                ),
+              }))}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip formatter={(value) => [`${Number(value).toFixed(1)}%`, "ROI"]} />
+              {results.map((result, index) => (
+                <Line
+                  key={result.vendorName}
+                  type="monotone"
+                  dataKey={result.vendorName}
+                  stroke={COLORS[index % COLORS.length]}
+                  strokeWidth={2}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Business Impact Details */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Detailed Business Impact Analysis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {results.map((result, index) => (
+              <div key={result.vendor} className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                    <h3 className="font-semibold text-lg">{result.vendorName}</h3>
+                  </div>
+                  <Badge variant="outline">
+                    {result.roi?.percentage > 50
+                      ? "High Impact"
+                      : result.roi?.percentage > 20
+                        ? "Medium Impact"
+                        : "Low Impact"}
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Operational Savings</p>
+                    <p className="text-xl font-semibold">{formatCurrency(result.ops?.annualOpsSaving || 0)}/year</p>
+                    <p className="text-xs text-muted-foreground">{(result.ops?.fteSaved || 0).toFixed(1)} FTE saved</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Risk Mitigation</p>
+                    <p className="text-xl font-semibold">{Math.round((result.risk?.breachReduction || 0) * 100)}%</p>
+                    <p className="text-xs text-muted-foreground">Breach risk reduction</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Payback Period</p>
+                    <p className="text-xl font-semibold">{result.roi?.paybackMonths || "N/A"} months</p>
+                    <p className="text-xs text-muted-foreground">Time to break even</p>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <p className="text-sm text-muted-foreground mb-2">Business Value Score</p>
+                  <Progress value={Math.min(100, (result.roi?.percentage || 0) + 50)} className="h-2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
