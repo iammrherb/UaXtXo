@@ -22,40 +22,50 @@ import { DollarSign, TrendingUp, Shield, Clock, Users, Award, ArrowRight, Downlo
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 import { SectionTitle, MetricCard, GradientCard, fadeInUp, staggerContainer, colorPalette } from "./shared-ui"
 
-export default function ExecutiveDashboardView({
-  results,
-  config,
-}: {
+interface ExecutiveDashboardViewProps {
   results: CalculationResult[]
   config: CalculationConfiguration
-}) {
+}
+
+export default function ExecutiveDashboardView({ results, config }: ExecutiveDashboardViewProps) {
+  // Safely access data with fallbacks
+  const safeResults = results || []
+
   // Prepare chart data
-  const tcoComparisonData = results.map((result) => ({
-    vendor: result.vendor,
-    totalCost: result.totalCost,
+  const tcoComparisonData = safeResults.map((result) => ({
+    vendor: result.vendorName || result.vendor || "Unknown",
+    totalCost: result.total || 0,
     savings:
-      result.vendor === "portnox" ? 0 : result.totalCost - results.find((r) => r.vendor === "portnox")?.totalCost || 0,
+      result.vendor === "portnox"
+        ? 0
+        : (result.total || 0) - (safeResults.find((r) => r.vendor === "portnox")?.total || 0),
   }))
 
-  const costBreakdownData = results[0]
-    ? [
-        { name: "Licensing", value: results[0].licensing, color: colorPalette.primary[0] },
-        { name: "Implementation", value: results[0].implementation, color: colorPalette.primary[1] },
-        { name: "Support", value: results[0].support, color: colorPalette.primary[2] },
-        { name: "Training", value: results[0].training, color: colorPalette.primary[3] },
-      ]
+  const costBreakdownData = safeResults[0]
+    ? (safeResults[0].breakdown || []).map((item, index) => ({
+        name: item.name,
+        value: item.value,
+        color: colorPalette.primary[index % colorPalette.primary.length],
+      }))
     : []
 
-  const roiTimelineData = Array.from({ length: config.years }, (_, i) => ({
+  const roiTimelineData = Array.from({ length: config.years || 3 }, (_, i) => ({
     year: `Year ${i + 1}`,
-    portnox: results.find((r) => r.vendor === "portnox")?.roi || 0,
-    competitor: results.find((r) => r.vendor !== "portnox")?.roi || 0,
+    portnox: safeResults.find((r) => r.vendor === "portnox")?.roi?.percentage || 0,
+    competitor: safeResults.find((r) => r.vendor !== "portnox")?.roi?.percentage || 0,
   }))
 
-  const portnoxResult = results.find((r) => r.vendor === "portnox")
-  const bestCompetitor = results.filter((r) => r.vendor !== "portnox").sort((a, b) => a.totalCost - b.totalCost)[0]
-  const totalSavings = bestCompetitor ? bestCompetitor.totalCost - (portnoxResult?.totalCost || 0) : 0
-  const savingsPercentage = bestCompetitor ? (totalSavings / bestCompetitor.totalCost) * 100 : 0
+  const portnoxResult = safeResults.find((r) => r.vendor === "portnox")
+  const bestCompetitor = safeResults
+    .filter((r) => r.vendor !== "portnox")
+    .sort((a, b) => (a.total || 0) - (b.total || 0))[0]
+  const totalSavings = bestCompetitor ? (bestCompetitor.total || 0) - (portnoxResult?.total || 0) : 0
+  const savingsPercentage = bestCompetitor ? (totalSavings / (bestCompetitor.total || 1)) * 100 : 0
+
+  // Safe access to portnox result data
+  const portnoxROI = portnoxResult?.roi?.percentage || 0
+  const portnoxPayback = portnoxResult?.roi?.paybackMonths || 0
+  const portnoxTotal = portnoxResult?.total || 0
 
   return (
     <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-6">
@@ -63,7 +73,7 @@ export default function ExecutiveDashboardView({
       <motion.div variants={fadeInUp} className="flex justify-between items-start">
         <SectionTitle
           title="Executive Dashboard"
-          subtitle={`TCO Analysis for ${config.devices.toLocaleString()} devices over ${config.years} years`}
+          subtitle={`TCO Analysis for ${(config.devices || 0).toLocaleString()} devices over ${config.years || 3} years`}
         />
         <Button className="flex items-center space-x-2">
           <Download className="h-4 w-4" />
@@ -82,14 +92,14 @@ export default function ExecutiveDashboardView({
         />
         <MetricCard
           title="ROI"
-          value={`${portnoxResult?.roi.toFixed(0) || 0}%`}
+          value={`${portnoxROI.toFixed(0)}%`}
           change="vs industry avg"
           changeType="positive"
           icon={<TrendingUp className="h-5 w-5" />}
         />
         <MetricCard
           title="Payback Period"
-          value={`${portnoxResult?.paybackPeriod.toFixed(1) || 0} months`}
+          value={`${(portnoxPayback / 12).toFixed(1)} years`}
           change="faster than avg"
           changeType="positive"
           icon={<Clock className="h-5 w-5" />}
@@ -117,7 +127,7 @@ export default function ExecutiveDashboardView({
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="vendor" />
                   <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                  <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, "Total Cost"]} />
+                  <Tooltip formatter={(value) => [`$${Number(value).toLocaleString()}`, "Total Cost"]} />
                   <Bar dataKey="totalCost" fill={colorPalette.primary[0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -146,7 +156,7 @@ export default function ExecutiveDashboardView({
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                  <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
@@ -199,15 +209,15 @@ export default function ExecutiveDashboardView({
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>Total Cost:</span>
-                <span className="font-semibold">${portnoxResult?.totalCost.toLocaleString()}</span>
+                <span className="font-semibold">${portnoxTotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span>ROI:</span>
-                <span className="font-semibold">{portnoxResult?.roi.toFixed(0)}%</span>
+                <span className="font-semibold">{portnoxROI.toFixed(0)}%</span>
               </div>
               <div className="flex justify-between">
                 <span>Payback:</span>
-                <span className="font-semibold">{portnoxResult?.paybackPeriod.toFixed(1)} months</span>
+                <span className="font-semibold">{(portnoxPayback / 12).toFixed(1)} years</span>
               </div>
             </div>
             <Button className="w-full mt-4">
