@@ -46,7 +46,7 @@ function parseCost(cost: number | string): number {
   return 0
 }
 
-export function calculateVendorTCO(vendorId: string, config: CalculationConfiguration): CalculationResult | null {
+export function calculateTco(vendorId: string, config: CalculationConfiguration): CalculationResult | null {
   const vendor = ComprehensiveVendorDatabase[vendorId]
   if (!vendor) return null
 
@@ -126,7 +126,7 @@ export function calculateVendorTCO(vendorId: string, config: CalculationConfigur
 
 export function compareVendors(vendorIds: string[], config: CalculationConfiguration): CalculationResult[] {
   return vendorIds
-    .map((id) => calculateVendorTCO(id, config))
+    .map((id) => calculateTco(id, config))
     .filter((result): result is CalculationResult => result !== null)
     .sort((a, b) => a.total - b.total)
 }
