@@ -6,7 +6,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Calculator, BarChart3, TrendingUp, Shield, Clock, FileText, Settings, Download, Calendar } from "lucide-react"
+import {
+  Calculator,
+  BarChart3,
+  TrendingUp,
+  Shield,
+  Clock,
+  FileText,
+  Settings,
+  Download,
+  Calendar,
+  Building2,
+} from "lucide-react"
 
 // Import components
 import EnhancedVendorSelection from "./enhanced-vendor-selection"
@@ -18,6 +29,7 @@ import CybersecurityPostureView from "./cybersecurity-posture-view"
 import FeatureMatrixView from "./feature-matrix-view"
 import ImplementationTimelineView from "./implementation-timeline-view"
 import ExecutiveReportView from "./executive-report-view"
+import IndustryComplianceView from "./industry-compliance-view"
 
 // Import data and utilities
 import { calculateEnhancedTCO, type CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
@@ -97,6 +109,7 @@ export default function TCOAnalyzer() {
     { id: "financial", label: "Financial Analysis", icon: Calculator },
     { id: "business", label: "Business Impact", icon: TrendingUp },
     { id: "security", label: "Security Posture", icon: Shield },
+    { id: "compliance", label: "Industry Compliance", icon: Building2 },
     { id: "features", label: "Feature Matrix", icon: Settings },
     { id: "timeline", label: "Implementation", icon: Clock },
     { id: "report", label: "Executive Report", icon: FileText },
@@ -204,7 +217,7 @@ export default function TCOAnalyzer() {
           {/* Main Content */}
           <motion.div variants={fadeInUp} className="lg:col-span-3">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7">
+              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
                 {tabs.map((tab) => (
                   <TabsTrigger key={tab.id} value={tab.id} className="flex items-center space-x-2 text-xs">
                     <tab.icon className="h-4 w-4" />
@@ -234,6 +247,9 @@ export default function TCOAnalyzer() {
                     </TabsContent>
                     <TabsContent value="security">
                       <CybersecurityPostureView results={results} config={configuration} />
+                    </TabsContent>
+                    <TabsContent value="compliance">
+                      <IndustryComplianceView results={results} config={configuration} />
                     </TabsContent>
                     <TabsContent value="features">
                       <FeatureMatrixView selectedVendors={selectedVendors} />

@@ -155,7 +155,7 @@ export default function Home() {
       </section>
 
       {/* Main Application */}
-      <main className="relative">
+      <main className="min-h-screen bg-background">
         <TCOAnalyzer />
       </main>
 
