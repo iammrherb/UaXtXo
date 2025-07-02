@@ -1,444 +1,235 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
-import {
-  Calculator,
-  BarChart3,
-  TrendingUp,
-  FileText,
-  Settings,
-  Download,
-  Moon,
-  Sun,
-  Shield,
-  Grid3X3,
-  Building2,
-  Calendar,
-  Users,
-} from "lucide-react"
-import { useTheme } from "next-themes"
+import { Calculator, BarChart3, TrendingUp, Shield, Clock, FileText, Settings, Download, Calendar } from "lucide-react"
 
-// Import all view components (using default imports)
+// Import components
 import EnhancedVendorSelection from "./enhanced-vendor-selection"
 import SettingsPanel from "./settings-panel"
 import ExecutiveDashboardView from "./executive-dashboard-view"
 import FinancialAnalysisView from "./financial-analysis-view"
 import BusinessImpactView from "./business-impact-view"
-import ImplementationTimelineView from "./implementation-timeline-view"
-import ExecutiveReportView from "./executive-report-view"
 import CybersecurityPostureView from "./cybersecurity-posture-view"
 import FeatureMatrixView from "./feature-matrix-view"
+import ImplementationTimelineView from "./implementation-timeline-view"
+import ExecutiveReportView from "./executive-report-view"
 
 // Import data and utilities
-import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
 import { calculateEnhancedTCO } from "@/lib/enhanced-tco-calculator"
+import { comprehensiveVendorData } from "@/lib/comprehensive-vendor-data"
+import { staggerChildren, fadeInUp } from "./shared-ui"
 
-export default function TCOAnalyzer() {
-  const { theme, setTheme } = useTheme()
-  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco"])
-  const [activeView, setActiveView] = useState("dashboard")
+interface TCOAnalyzerProps {
+  isDarkMode: boolean
+  onToggleDarkMode: () => void
+}
+
+export default function TCOAnalyzer({ isDarkMode, onToggleDarkMode }: TCOAnalyzerProps) {
+  const [selectedVendors, setSelectedVendors] = useState<string[]>(["Portnox", "Cisco ISE"])
+  const [activeTab, setActiveTab] = useState("dashboard")
+  const [showSettings, setShowSettings] = useState(false)
   const [calculationSettings, setCalculationSettings] = useState({
-    timeHorizon: 5,
-    discountRate: 0.08,
-    inflationRate: 0.03,
     organizationSize: 1000,
-    securityRequirements: "high",
-    complianceNeeds: ["sox", "pci", "hipaa"],
-    deploymentModel: "hybrid",
+    industryType: "enterprise",
+    complianceRequirements: ["SOX", "HIPAA"],
+    currentSolution: "legacy",
+    implementationComplexity: "medium",
+    geographicScope: "multi-region",
   })
+  const [results, setResults] = useState<any[]>([])
+  const [isCalculating, setIsCalculating] = useState(false)
 
-  // Calculate TCO data for selected vendors
-  const tcoResults = selectedVendors
-    .map((vendorId) => {
-      const vendor = ComprehensiveVendorDatabase[vendorId]
-      if (!vendor) return null
+  // Calculate TCO when vendors or settings change
+  useEffect(() => {
+    if (selectedVendors.length > 0) {
+      setIsCalculating(true)
 
-      return {
-        vendor,
-        tco: calculateEnhancedTCO(vendor, calculationSettings),
-      }
-    })
-    .filter(Boolean)
+      // Simulate calculation delay
+      setTimeout(() => {
+        const calculatedResults = selectedVendors
+          .map((vendorName) => {
+            const vendorData = comprehensiveVendorData.find((v) => v.name === vendorName)
+            if (!vendorData) return null
 
-  const handleVendorToggle = (vendorId: string) => {
-    setSelectedVendors((prev) => {
-      const isSelected = prev.includes(vendorId)
-      if (vendorId === "portnox" && isSelected && prev.length === 1) return prev
-      const newSelection = isSelected ? prev.filter((id) => id !== vendorId) : [...prev, vendorId]
-      if (newSelection.length > 6) newSelection.shift()
-      return newSelection
-    })
+            return calculateEnhancedTCO(vendorData, calculationSettings)
+          })
+          .filter(Boolean)
+
+        setResults(calculatedResults)
+        setIsCalculating(false)
+      }, 1000)
+    }
+  }, [selectedVendors, calculationSettings])
+
+  const handleVendorToggle = (vendorName: string) => {
+    setSelectedVendors((prev) =>
+      prev.includes(vendorName) ? prev.filter((v) => v !== vendorName) : [...prev, vendorName],
+    )
   }
 
-  const handleSettingsChange = (newSettings: typeof calculationSettings) => {
-    setCalculationSettings(newSettings)
+  const handleExportReport = () => {
+    // Export functionality would be implemented here
+    console.log("Exporting report...")
   }
 
-  const exportToPDF = () => {
-    console.log("Exporting to PDF...")
+  const handleScheduleDemo = () => {
+    // Demo scheduling functionality would be implemented here
+    console.log("Scheduling demo...")
   }
+
+  const tabs = [
+    { id: "dashboard", label: "Executive Dashboard", icon: BarChart3 },
+    { id: "financial", label: "Financial Analysis", icon: Calculator },
+    { id: "business", label: "Business Impact", icon: TrendingUp },
+    { id: "security", label: "Security Posture", icon: Shield },
+    { id: "features", label: "Feature Matrix", icon: Settings },
+    { id: "timeline", label: "Implementation", icon: Clock },
+    { id: "report", label: "Executive Report", icon: FileText },
+  ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div initial="initial" animate="animate" variants={staggerChildren} className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
+      <motion.div variants={fadeInUp} className="border-b bg-card">
+        <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Calculator className="h-8 w-8 text-primary" />
-                <div>
-                  <h1 className="text-2xl font-bold">ZTCA Dashboard</h1>
-                  <p className="text-sm text-muted-foreground">Zero Trust Cost Analyzer</p>
-                </div>
-              </div>
-              <Badge variant="secondary" className="ml-4">
-                v2.0
-              </Badge>
+            <div className="space-y-1">
+              <h1 className="text-3xl font-bold tracking-tight">ZTCA Dashboard</h1>
+              <p className="text-muted-foreground">Zero Trust Cost Analyzer - Strategic NAC Investment Analysis</p>
             </div>
-
             <div className="flex items-center space-x-4">
-              <Button onClick={exportToPDF} variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export PDF
+              <Badge variant="outline" className="px-3 py-1">
+                {selectedVendors.length} Vendor{selectedVendors.length !== 1 ? "s" : ""} Selected
+              </Badge>
+              <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)}>
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
               </Button>
-
-              <div className="flex items-center space-x-2">
-                <Sun className="h-4 w-4" />
-                <Switch
-                  checked={theme === "dark"}
-                  onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
-                />
-                <Moon className="h-4 w-4" />
-              </div>
+              <Button variant="outline" size="sm" onClick={handleExportReport}>
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+              <Button size="sm" onClick={handleScheduleDemo}>
+                <Calendar className="h-4 w-4 mr-2" />
+                Schedule Demo
+              </Button>
             </div>
           </div>
         </div>
-      </header>
+      </motion.div>
 
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
+          <motion.div variants={fadeInUp} className="lg:col-span-1 space-y-6">
             {/* Vendor Selection */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Building2 className="h-5 w-5" />
-                  <span>Vendor Selection</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-4">Vendor Selection</h3>
                 <EnhancedVendorSelection
                   selectedVendors={selectedVendors}
                   onVendorToggle={handleVendorToggle}
-                  darkMode={theme === "dark"}
-                  onClearAll={() => setSelectedVendors(["portnox"])}
-                  onSelectRecommended={() => setSelectedVendors(["portnox", "cisco", "aruba", "forescout"])}
+                  availableVendors={comprehensiveVendorData.map((v) => v.name)}
                 />
               </CardContent>
             </Card>
 
             {/* Settings Panel */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="h-5 w-5" />
-                  <span>Settings</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SettingsPanel
-                  isOpen={true}
-                  onClose={() => {}}
-                  configuration={{
-                    devices: calculationSettings.organizationSize,
-                    users: calculationSettings.organizationSize,
-                    years: calculationSettings.timeHorizon,
-                    licenseTier: "Enterprise",
-                    integrations: { mdm: true, siem: true, edr: false },
-                    professionalServices: "advanced",
-                    includeTraining: true,
-                  }}
-                  onConfigurationChange={(config) => {
-                    setCalculationSettings({
-                      ...calculationSettings,
-                      organizationSize: config.devices,
-                      timeHorizon: config.years,
-                    })
-                  }}
-                  darkMode={theme === "dark"}
-                  onDarkModeChange={(dark) => setTheme(dark ? "dark" : "light")}
-                />
-              </CardContent>
-            </Card>
+            <AnimatePresence>
+              {showSettings && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <SettingsPanel settings={calculationSettings} onSettingsChange={setCalculationSettings} />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Quick Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Vendors Selected</span>
-                  <Badge variant="secondary">{selectedVendors.length}</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Time Horizon</span>
-                  <Badge variant="outline">{calculationSettings.timeHorizon} years</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Organization Size</span>
-                  <Badge variant="outline">{calculationSettings.organizationSize.toLocaleString()}</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+            {results.length > 0 && (
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-4">Quick Stats</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Best ROI</span>
+                      <span className="font-medium">{Math.round(Math.max(...results.map((r) => r?.roi || 0)))}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Lowest TCO</span>
+                      <span className="font-medium">
+                        ${Math.round(Math.min(...results.map((r) => r?.totalCost || 0)) / 1000)}K
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Fastest Payback</span>
+                      <span className="font-medium">
+                        {Math.round(Math.min(...results.map((r) => r?.paybackPeriod || 0)))} months
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </motion.div>
 
           {/* Main Content */}
-          <div className="lg:col-span-3">
-            <Tabs value={activeView} onValueChange={setActiveView} className="space-y-6">
-              <TabsList className="grid w-full grid-cols-7">
-                <TabsTrigger value="dashboard" className="flex items-center space-x-2">
-                  <BarChart3 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Dashboard</span>
-                </TabsTrigger>
-                <TabsTrigger value="financial" className="flex items-center space-x-2">
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="hidden sm:inline">Financial</span>
-                </TabsTrigger>
-                <TabsTrigger value="business" className="flex items-center space-x-2">
-                  <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">Business</span>
-                </TabsTrigger>
-                <TabsTrigger value="timeline" className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4" />
-                  <span className="hidden sm:inline">Timeline</span>
-                </TabsTrigger>
-                <TabsTrigger value="security" className="flex items-center space-x-2">
-                  <Shield className="h-4 w-4" />
-                  <span className="hidden sm:inline">Security</span>
-                </TabsTrigger>
-                <TabsTrigger value="features" className="flex items-center space-x-2">
-                  <Grid3X3 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Features</span>
-                </TabsTrigger>
-                <TabsTrigger value="report" className="flex items-center space-x-2">
-                  <FileText className="h-4 w-4" />
-                  <span className="hidden sm:inline">Report</span>
-                </TabsTrigger>
+          <motion.div variants={fadeInUp} className="lg:col-span-3">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7">
+                {tabs.map((tab) => (
+                  <TabsTrigger key={tab.id} value={tab.id} className="flex items-center space-x-2 text-xs">
+                    <tab.icon className="h-4 w-4" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </TabsTrigger>
+                ))}
               </TabsList>
 
-              <TabsContent value="dashboard" className="space-y-6">
-                <ExecutiveDashboardView
-                  results={tcoResults.map((r) => ({
-                    vendor: r?.vendor?.id || "",
-                    vendorName: r?.vendor?.name || "",
-                    total: r?.tco?.totalCost || 0,
-                    breakdown: Object.entries(r?.tco?.costCategories || {}).map(([name, value]) => ({ name, value })),
-                    roi: {
-                      percentage: r?.tco?.roi?.percentage || 0,
-                      paybackMonths: r?.tco?.roi?.paybackPeriod || 0,
-                      annualSavings: 0,
-                    },
-                    risk: {
-                      breachReduction: r?.tco?.riskMetrics?.breachProbabilityReduction || 0,
-                      annualizedRiskCost: 0,
-                    },
-                    ops: {
-                      fteSaved: 0,
-                      annualOpsSaving: 0,
-                    },
-                  }))}
-                  config={{
-                    devices: calculationSettings.organizationSize,
-                    users: calculationSettings.organizationSize,
-                    years: calculationSettings.timeHorizon,
-                    licenseTier: "Enterprise",
-                    integrations: { mdm: true, siem: true, edr: false },
-                    professionalServices: "advanced",
-                    includeTraining: true,
-                  }}
-                />
-              </TabsContent>
-
-              <TabsContent value="financial" className="space-y-6">
-                <FinancialAnalysisView
-                  results={tcoResults.map((r) => ({
-                    vendor: r?.vendor?.id || "",
-                    vendorName: r?.vendor?.name || "",
-                    total: r?.tco?.totalCost || 0,
-                    breakdown: Object.entries(r?.tco?.costCategories || {}).map(([name, value]) => ({ name, value })),
-                    roi: {
-                      percentage: r?.tco?.roi?.percentage || 0,
-                      paybackMonths: r?.tco?.roi?.paybackPeriod || 0,
-                      annualSavings: 0,
-                    },
-                    risk: {
-                      breachReduction: r?.tco?.riskMetrics?.breachProbabilityReduction || 0,
-                      annualizedRiskCost: 0,
-                    },
-                    ops: {
-                      fteSaved: 0,
-                      annualOpsSaving: 0,
-                    },
-                  }))}
-                  config={{
-                    devices: calculationSettings.organizationSize,
-                    users: calculationSettings.organizationSize,
-                    years: calculationSettings.timeHorizon,
-                    licenseTier: "Enterprise",
-                    integrations: { mdm: true, siem: true, edr: false },
-                    professionalServices: "advanced",
-                    includeTraining: true,
-                  }}
-                />
-              </TabsContent>
-
-              <TabsContent value="business" className="space-y-6">
-                <BusinessImpactView
-                  results={tcoResults.map((r) => ({
-                    vendor: r?.vendor?.id || "",
-                    vendorName: r?.vendor?.name || "",
-                    total: r?.tco?.totalCost || 0,
-                    breakdown: Object.entries(r?.tco?.costCategories || {}).map(([name, value]) => ({ name, value })),
-                    roi: {
-                      percentage: r?.tco?.roi?.percentage || 0,
-                      paybackMonths: r?.tco?.roi?.paybackPeriod || 0,
-                      annualSavings: 0,
-                    },
-                    risk: {
-                      breachReduction: r?.tco?.riskMetrics?.breachProbabilityReduction || 0,
-                      annualizedRiskCost: 0,
-                    },
-                    ops: {
-                      fteSaved: 0,
-                      annualOpsSaving: 0,
-                    },
-                  }))}
-                  config={{
-                    devices: calculationSettings.organizationSize,
-                    users: calculationSettings.organizationSize,
-                    years: calculationSettings.timeHorizon,
-                    licenseTier: "Enterprise",
-                    integrations: { mdm: true, siem: true, edr: false },
-                    professionalServices: "advanced",
-                    includeTraining: true,
-                  }}
-                />
-              </TabsContent>
-
-              <TabsContent value="timeline" className="space-y-6">
-                <ImplementationTimelineView
-                  results={tcoResults.map((r) => ({
-                    vendor: r?.vendor?.id || "",
-                    vendorName: r?.vendor?.name || "",
-                    total: r?.tco?.totalCost || 0,
-                    breakdown: Object.entries(r?.tco?.costCategories || {}).map(([name, value]) => ({ name, value })),
-                    roi: {
-                      percentage: r?.tco?.roi?.percentage || 0,
-                      paybackMonths: r?.tco?.roi?.paybackPeriod || 0,
-                      annualSavings: 0,
-                    },
-                    risk: {
-                      breachReduction: r?.tco?.riskMetrics?.breachProbabilityReduction || 0,
-                      annualizedRiskCost: 0,
-                    },
-                    ops: {
-                      fteSaved: 0,
-                      annualOpsSaving: 0,
-                    },
-                  }))}
-                  config={{
-                    devices: calculationSettings.organizationSize,
-                    users: calculationSettings.organizationSize,
-                    years: calculationSettings.timeHorizon,
-                    licenseTier: "Enterprise",
-                    integrations: { mdm: true, siem: true, edr: false },
-                    professionalServices: "advanced",
-                    includeTraining: true,
-                  }}
-                />
-              </TabsContent>
-
-              <TabsContent value="security" className="space-y-6">
-                <CybersecurityPostureView
-                  results={tcoResults.map((r) => ({
-                    vendor: r?.vendor?.id || "",
-                    vendorName: r?.vendor?.name || "",
-                    total: r?.tco?.totalCost || 0,
-                    breakdown: Object.entries(r?.tco?.costCategories || {}).map(([name, value]) => ({ name, value })),
-                    roi: {
-                      percentage: r?.tco?.roi?.percentage || 0,
-                      paybackMonths: r?.tco?.roi?.paybackPeriod || 0,
-                      annualSavings: 0,
-                    },
-                    risk: {
-                      breachReduction: r?.tco?.riskMetrics?.breachProbabilityReduction || 0,
-                      annualizedRiskCost: 0,
-                    },
-                    ops: {
-                      fteSaved: 0,
-                      annualOpsSaving: 0,
-                    },
-                  }))}
-                  config={{
-                    devices: calculationSettings.organizationSize,
-                    users: calculationSettings.organizationSize,
-                    years: calculationSettings.timeHorizon,
-                    licenseTier: "Enterprise",
-                    integrations: { mdm: true, siem: true, edr: false },
-                    professionalServices: "advanced",
-                    includeTraining: true,
-                  }}
-                />
-              </TabsContent>
-
-              <TabsContent value="features" className="space-y-6">
-                <FeatureMatrixView selectedVendors={selectedVendors} />
-              </TabsContent>
-
-              <TabsContent value="report" className="space-y-6">
-                <ExecutiveReportView
-                  results={tcoResults.map((r) => ({
-                    vendor: r?.vendor?.id || "",
-                    vendorName: r?.vendor?.name || "",
-                    total: r?.tco?.totalCost || 0,
-                    breakdown: Object.entries(r?.tco?.costCategories || {}).map(([name, value]) => ({ name, value })),
-                    roi: {
-                      percentage: r?.tco?.roi?.percentage || 0,
-                      paybackMonths: r?.tco?.roi?.paybackPeriod || 0,
-                      annualSavings: 0,
-                    },
-                    risk: {
-                      breachReduction: r?.tco?.riskMetrics?.breachProbabilityReduction || 0,
-                      annualizedRiskCost: 0,
-                    },
-                    ops: {
-                      fteSaved: 0,
-                      annualOpsSaving: 0,
-                    },
-                  }))}
-                  config={{
-                    devices: calculationSettings.organizationSize,
-                    users: calculationSettings.organizationSize,
-                    years: calculationSettings.timeHorizon,
-                    licenseTier: "Enterprise",
-                    integrations: { mdm: true, siem: true, edr: false },
-                    professionalServices: "advanced",
-                    includeTraining: true,
-                  }}
-                />
-              </TabsContent>
+              <div className="min-h-[600px]">
+                {isCalculating ? (
+                  <Card>
+                    <CardContent className="p-12 text-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
+                      <p className="text-muted-foreground">Calculating TCO analysis...</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <>
+                    <TabsContent value="dashboard">
+                      <ExecutiveDashboardView results={results} selectedVendors={selectedVendors} />
+                    </TabsContent>
+                    <TabsContent value="financial">
+                      <FinancialAnalysisView results={results} selectedVendors={selectedVendors} />
+                    </TabsContent>
+                    <TabsContent value="business">
+                      <BusinessImpactView results={results} selectedVendors={selectedVendors} />
+                    </TabsContent>
+                    <TabsContent value="security">
+                      <CybersecurityPostureView results={results} selectedVendors={selectedVendors} />
+                    </TabsContent>
+                    <TabsContent value="features">
+                      <FeatureMatrixView results={results} selectedVendors={selectedVendors} />
+                    </TabsContent>
+                    <TabsContent value="timeline">
+                      <ImplementationTimelineView results={results} selectedVendors={selectedVendors} />
+                    </TabsContent>
+                    <TabsContent value="report">
+                      <ExecutiveReportView results={results} selectedVendors={selectedVendors} />
+                    </TabsContent>
+                  </>
+                )}
+              </div>
             </Tabs>
-          </div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

@@ -2,360 +2,307 @@
 
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
 import {
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Area,
-  AreaChart,
+  LineChart,
+  Line,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
 } from "recharts"
-import { TrendingUp, Clock, Target, Zap, Shield, DollarSign, Award } from "lucide-react"
-import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { Users, Clock, Shield, Zap, Target, Award } from "lucide-react"
 import {
   SectionTitle,
   MetricCard,
   GradientCard,
   StatusBadge,
   ProgressRing,
+  staggerChildren,
   fadeInUp,
-  staggerContainer,
-  colorPalette,
 } from "./shared-ui"
 
 interface BusinessImpactViewProps {
-  results: CalculationResult[]
-  config: CalculationConfiguration
+  results: any
+  selectedVendors: string[]
 }
 
-export default function BusinessImpactView({ results, config }: BusinessImpactViewProps) {
-  const safeResults = results || []
+export default function BusinessImpactView({ results, selectedVendors }: BusinessImpactViewProps) {
+  // Safe data access with fallbacks
+  const portnoxResult = results?.find((r: any) => r?.vendor === "Portnox") || {}
+  const competitorResults = results?.filter((r: any) => r?.vendor !== "Portnox") || []
 
-  // Calculate business impact metrics
-  const portnoxResult = safeResults.find((r) => r.vendor === "portnox")
-  const avgCompetitorROI =
-    safeResults.filter((r) => r.vendor !== "portnox").reduce((sum, r) => sum + (r.roi?.percentage || 0), 0) /
-    Math.max(safeResults.length - 1, 1)
-
+  // Business impact metrics
   const businessMetrics = {
-    roiImprovement: (portnoxResult?.roi?.percentage || 0) - avgCompetitorROI,
-    paybackAcceleration: 24 - (portnoxResult?.roi?.paybackMonths || 24),
-    operationalEfficiency: 85,
-    riskReduction: (portnoxResult?.risk?.breachReduction || 0) * 100,
-    complianceScore: 92,
-    userProductivity: 78,
+    fteReduction: 2.5,
+    productivityGain: 35,
+    incidentReduction: 78,
+    complianceImprovement: 92,
+    timeToValue: 3, // months
+    userSatisfaction: 94,
   }
 
-  // ROI projection data
-  const roiProjectionData = Array.from({ length: config.years || 5 }, (_, i) => {
-    const year = i + 1
-    const portnoxROI = Math.min(100, 15 + year * 12)
-    const competitorROI = Math.min(80, 8 + year * 8)
-    return {
-      year: `Year ${year}`,
-      portnox: portnoxROI,
-      competitor: competitorROI,
-      savings: (portnoxROI - competitorROI) * 1000,
-    }
-  })
+  // ROI breakdown data
+  const roiBreakdownData = [
+    { category: "Staff Efficiency", value: 45, color: "#10B981" },
+    { category: "Incident Reduction", value: 30, color: "#3B82F6" },
+    { category: "Compliance Savings", value: 15, color: "#F59E0B" },
+    { category: "Infrastructure Optimization", value: 10, color: "#EF4444" },
+  ]
 
-  // Business value categories
-  const businessValueData = [
-    { category: "Cost Reduction", portnox: 95, competitor: 70 },
-    { category: "Security Posture", portnox: 92, competitor: 75 },
-    { category: "Operational Efficiency", portnox: 88, competitor: 65 },
-    { category: "Compliance", portnox: 94, competitor: 78 },
-    { category: "User Experience", portnox: 85, competitor: 60 },
-    { category: "Scalability", portnox: 90, competitor: 68 },
+  // Productivity impact over time
+  const productivityData = [
+    { month: "Month 1", baseline: 100, withPortnox: 105 },
+    { month: "Month 3", baseline: 100, withPortnox: 115 },
+    { month: "Month 6", baseline: 100, withPortnox: 125 },
+    { month: "Month 12", baseline: 100, withPortnox: 135 },
+    { month: "Month 18", baseline: 100, withPortnox: 140 },
+    { month: "Month 24", baseline: 100, withPortnox: 145 },
+  ]
+
+  // Risk mitigation radar
+  const riskMitigationData = [
+    { subject: "Data Breaches", current: 65, withPortnox: 95 },
+    { subject: "Compliance Violations", current: 70, withPortnox: 92 },
+    { subject: "Unauthorized Access", current: 60, withPortnox: 98 },
+    { subject: "Network Vulnerabilities", current: 55, withPortnox: 90 },
+    { subject: "Insider Threats", current: 45, withPortnox: 85 },
+    { subject: "Operational Disruption", current: 75, withPortnox: 95 },
   ]
 
   // Strategic impact assessment
   const strategicImpacts = [
     {
-      area: "Digital Transformation",
+      category: "Operational Excellence",
       impact: "High",
-      description: "Accelerates zero-trust adoption and cloud migration",
-      value: "$2.5M over 3 years",
+      description: "Streamlined network access management reduces manual overhead by 60%",
+      metrics: ["2.5 FTE reduction", "35% faster incident response", "78% fewer security incidents"],
     },
     {
-      area: "Risk Mitigation",
+      category: "Financial Performance",
       impact: "High",
-      description: "Reduces breach probability by 60% and compliance costs",
-      value: "$1.8M risk avoidance",
+      description: "Significant cost savings through automation and risk reduction",
+      metrics: [
+        `$${Math.round((portnoxResult?.totalSavings || 0) / 1000)}K total savings`,
+        `${Math.round(portnoxResult?.roi || 0)}% ROI`,
+        `${Math.round(portnoxResult?.paybackPeriod || 0)} month payback`,
+      ],
     },
     {
-      area: "Operational Excellence",
-      impact: "Medium",
-      description: "Streamlines IT operations and reduces manual processes",
-      value: "2.5 FTE savings",
-    },
-    {
-      area: "Innovation Enablement",
-      impact: "Medium",
-      description: "Frees up resources for strategic initiatives",
-      value: "25% faster deployment",
+      category: "Risk Management",
+      impact: "Critical",
+      description: "Comprehensive security posture improvement across all threat vectors",
+      metrics: ["85% risk reduction", "92% compliance improvement", "Zero-trust architecture"],
     },
   ]
 
   return (
-    <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-6">
-      {/* Header */}
-      <motion.div variants={fadeInUp}>
-        <SectionTitle
-          title="Business Impact Analysis"
-          subtitle="Strategic value assessment and ROI projections"
-          icon={<Target className="h-6 w-6" />}
-        />
-      </motion.div>
+    <motion.div initial="initial" animate="animate" variants={staggerChildren} className="space-y-8">
+      <SectionTitle
+        title="Business Impact Analysis"
+        subtitle="Comprehensive assessment of operational and strategic benefits"
+        icon={<Target className="h-6 w-6" />}
+      />
 
       {/* Key Business Metrics */}
-      <motion.div variants={staggerContainer} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
-          title="ROI Improvement"
-          value={`+${businessMetrics.roiImprovement.toFixed(1)}%`}
-          change="vs competitors"
+          title="FTE Reduction"
+          value={`${businessMetrics.fteReduction} FTE`}
+          change="Annual savings"
           changeType="positive"
-          icon={<TrendingUp className="h-5 w-5" />}
+          icon={<Users className="h-5 w-5" />}
         />
         <MetricCard
-          title="Payback Acceleration"
-          value={`${businessMetrics.paybackAcceleration} months`}
-          change="faster than average"
+          title="Productivity Gain"
+          value={`${businessMetrics.productivityGain}%`}
+          change="Team efficiency"
           changeType="positive"
-          icon={<Clock className="h-5 w-5" />}
+          icon={<Zap className="h-5 w-5" />}
         />
         <MetricCard
-          title="Risk Reduction"
-          value={`${businessMetrics.riskReduction.toFixed(0)}%`}
-          change="breach probability"
+          title="Incident Reduction"
+          value={`${businessMetrics.incidentReduction}%`}
+          change="Security incidents"
           changeType="positive"
           icon={<Shield className="h-5 w-5" />}
         />
         <MetricCard
-          title="Efficiency Gain"
-          value={`${businessMetrics.operationalEfficiency}%`}
-          change="operational improvement"
+          title="Time to Value"
+          value={`${businessMetrics.timeToValue} months`}
+          change="Implementation"
           changeType="positive"
-          icon={<Zap className="h-5 w-5" />}
+          icon={<Clock className="h-5 w-5" />}
         />
       </motion.div>
 
-      {/* ROI Projection and Business Value */}
+      {/* ROI Breakdown and Productivity Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* ROI Projection Over Time */}
-        <motion.div variants={fadeInUp}>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <TrendingUp className="h-5 w-5" />
-                <span>ROI Projection Timeline</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={roiProjectionData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="year" />
-                  <YAxis tickFormatter={(value) => `${value}%`} />
-                  <Tooltip
-                    formatter={(value, name) => [`${value}%`, name === "portnox" ? "Portnox ROI" : "Competitor ROI"]}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="portnox"
-                    stackId="1"
-                    stroke={colorPalette.success[0]}
-                    fill={colorPalette.success[0]}
-                    fillOpacity={0.6}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="competitor"
-                    stackId="2"
-                    stroke={colorPalette.neutral[0]}
-                    fill={colorPalette.neutral[0]}
-                    fillOpacity={0.6}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </motion.div>
+        {/* ROI Contribution Breakdown */}
+        <GradientCard title="ROI Contribution by Category" gradient="success">
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={roiBreakdownData} layout="horizontal">
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" tickFormatter={(value) => `${value}%`} />
+                <YAxis dataKey="category" type="category" width={120} />
+                <Tooltip
+                  formatter={(value: any) => [`${value}%`, "Contribution"]}
+                  labelStyle={{ color: "hsl(var(--foreground))" }}
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--background))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "6px",
+                  }}
+                />
+                <Bar dataKey="value" fill="#10B981" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </GradientCard>
 
-        {/* Business Value Radar */}
-        <motion.div variants={fadeInUp}>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Target className="h-5 w-5" />
-                <span>Business Value Comparison</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <RadarChart data={businessValueData}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="category" tick={{ fontSize: 12 }} />
-                  <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} />
-                  <Radar
-                    name="Portnox"
-                    dataKey="portnox"
-                    stroke={colorPalette.success[0]}
-                    fill={colorPalette.success[0]}
-                    fillOpacity={0.3}
-                    strokeWidth={2}
-                  />
-                  <Radar
-                    name="Competitor"
-                    dataKey="competitor"
-                    stroke={colorPalette.neutral[0]}
-                    fill={colorPalette.neutral[0]}
-                    fillOpacity={0.3}
-                    strokeWidth={2}
-                  />
-                  <Tooltip />
-                </RadarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </motion.div>
+        {/* Productivity Impact Over Time */}
+        <GradientCard title="Productivity Impact Timeline" gradient="primary">
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={productivityData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis tickFormatter={(value) => `${value}%`} />
+                <Tooltip
+                  formatter={(value: any, name: string) => [
+                    `${value}%`,
+                    name === "baseline" ? "Baseline" : "With Portnox",
+                  ]}
+                  labelStyle={{ color: "hsl(var(--foreground))" }}
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--background))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "6px",
+                  }}
+                />
+                <Line type="monotone" dataKey="baseline" stroke="#94A3B8" strokeDasharray="5 5" />
+                <Line type="monotone" dataKey="withPortnox" stroke="#3B82F6" strokeWidth={3} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </GradientCard>
       </div>
+
+      {/* Risk Mitigation Radar */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Shield className="h-5 w-5 text-green-500" />
+            <span>Risk Mitigation Assessment</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-96">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={riskMitigationData}>
+                <PolarGrid />
+                <PolarAngleAxis dataKey="subject" />
+                <PolarRadiusAxis angle={90} domain={[0, 100]} />
+                <Radar name="Current State" dataKey="current" stroke="#EF4444" fill="#EF4444" fillOpacity={0.2} />
+                <Radar name="With Portnox" dataKey="withPortnox" stroke="#10B981" fill="#10B981" fillOpacity={0.3} />
+                <Tooltip
+                  formatter={(value: any, name: string) => [
+                    `${value}%`,
+                    name === "current" ? "Current State" : "With Portnox",
+                  ]}
+                  labelStyle={{ color: "hsl(var(--foreground))" }}
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--background))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "6px",
+                  }}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Strategic Impact Assessment */}
-      <motion.div variants={fadeInUp}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Award className="h-5 w-5" />
-              <span>Strategic Impact Assessment</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {strategicImpacts.map((impact, index) => (
-                <div key={index} className="p-4 border rounded-lg space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-semibold">{impact.area}</h4>
-                    <StatusBadge
-                      status={impact.impact.toLowerCase() as "high" | "medium" | "low"}
-                      label={impact.impact}
-                    />
-                  </div>
-                  <p className="text-sm text-muted-foreground">{impact.description}</p>
-                  <div className="flex items-center space-x-2">
-                    <DollarSign className="h-4 w-4 text-green-600" />
-                    <span className="font-medium text-green-600">{impact.value}</span>
-                  </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Award className="h-5 w-5 text-purple-500" />
+            <span>Strategic Impact Assessment</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {strategicImpacts.map((impact, index) => (
+              <motion.div key={index} variants={fadeInUp} className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold">{impact.category}</h4>
+                  <StatusBadge
+                    status={impact.impact === "Critical" ? "high" : impact.impact === "High" ? "medium" : "low"}
+                    label={impact.impact}
+                  />
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+                <p className="text-sm text-muted-foreground">{impact.description}</p>
+                <div className="space-y-2">
+                  {impact.metrics.map((metric, metricIndex) => (
+                    <div key={metricIndex} className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-primary rounded-full" />
+                      <span className="text-sm">{metric}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Business Readiness Indicators */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div variants={fadeInUp}>
-          <GradientCard title="Operational Readiness" gradient="success">
-            <div className="space-y-4">
-              <ProgressRing value={businessMetrics.operationalEfficiency} size={100} />
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Process Automation</span>
-                  <span>92%</span>
-                </div>
-                <Progress value={92} className="h-2" />
-                <div className="flex justify-between text-sm">
-                  <span>Staff Training</span>
-                  <span>78%</span>
-                </div>
-                <Progress value={78} className="h-2" />
+      {/* Business Value Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Business Value Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="text-center space-y-2">
+              <ProgressRing value={businessMetrics.userSatisfaction} size={80} />
+              <div>
+                <p className="font-semibold">User Satisfaction</p>
+                <p className="text-sm text-muted-foreground">Post-implementation</p>
               </div>
             </div>
-          </GradientCard>
-        </motion.div>
-
-        <motion.div variants={fadeInUp}>
-          <GradientCard title="Compliance Score" gradient="primary">
-            <div className="space-y-4">
-              <ProgressRing value={businessMetrics.complianceScore} size={100} />
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>SOX Compliance</span>
-                  <span>95%</span>
-                </div>
-                <Progress value={95} className="h-2" />
-                <div className="flex justify-between text-sm">
-                  <span>GDPR Readiness</span>
-                  <span>89%</span>
-                </div>
-                <Progress value={89} className="h-2" />
+            <div className="text-center space-y-2">
+              <ProgressRing value={businessMetrics.complianceImprovement} size={80} />
+              <div>
+                <p className="font-semibold">Compliance Score</p>
+                <p className="text-sm text-muted-foreground">Regulatory alignment</p>
               </div>
             </div>
-          </GradientCard>
-        </motion.div>
-
-        <motion.div variants={fadeInUp}>
-          <GradientCard title="User Adoption" gradient="ocean">
-            <div className="space-y-4">
-              <ProgressRing value={businessMetrics.userProductivity} size={100} />
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>User Satisfaction</span>
-                  <span>84%</span>
-                </div>
-                <Progress value={84} className="h-2" />
-                <div className="flex justify-between text-sm">
-                  <span>Training Complete</span>
-                  <span>72%</span>
-                </div>
-                <Progress value={72} className="h-2" />
+            <div className="text-center space-y-2">
+              <ProgressRing value={85} size={80} />
+              <div>
+                <p className="font-semibold">Security Posture</p>
+                <p className="text-sm text-muted-foreground">Overall improvement</p>
               </div>
             </div>
-          </GradientCard>
-        </motion.div>
-      </div>
-
-      {/* Financial Impact Summary */}
-      <motion.div variants={fadeInUp}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <DollarSign className="h-5 w-5" />
-              <span>Financial Impact Summary</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-4 border rounded-lg">
-                <div className="text-3xl font-bold text-green-600 mb-2">
-                  ${((portnoxResult?.total || 0) * 0.3).toLocaleString()}
-                </div>
-                <div className="text-sm text-muted-foreground">Annual Cost Savings</div>
-              </div>
-              <div className="text-center p-4 border rounded-lg">
-                <div className="text-3xl font-bold text-blue-600 mb-2">
-                  {(portnoxResult?.roi?.percentage || 0).toFixed(0)}%
-                </div>
-                <div className="text-sm text-muted-foreground">3-Year ROI</div>
-              </div>
-              <div className="text-center p-4 border rounded-lg">
-                <div className="text-3xl font-bold text-purple-600 mb-2">
-                  {((portnoxResult?.roi?.paybackMonths || 24) / 12).toFixed(1)}
-                </div>
-                <div className="text-sm text-muted-foreground">Years to Payback</div>
+            <div className="text-center space-y-2">
+              <ProgressRing value={92} size={80} />
+              <div>
+                <p className="font-semibold">Operational Efficiency</p>
+                <p className="text-sm text-muted-foreground">Process optimization</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   )
 }
