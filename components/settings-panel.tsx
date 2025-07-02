@@ -1,127 +1,106 @@
 "use client"
 
-import type { CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet"
+import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Slider } from "@/components/ui/slider"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { motion } from "framer-motion"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import type { CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 
-interface SettingsPanelProps {
-  config: CalculationConfiguration
-  onConfigChange: (newConfig: Partial<CalculationConfiguration>) => void
-}
-
-export default function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
-  // Guard clause to prevent crash if config is not ready.
-  if (!config) {
-    return (
-      <Card className="w-full border-0 shadow-none">
-        <CardHeader>
-          <CardTitle>Loading Settings...</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="h-10 w-full bg-muted rounded-md animate-pulse" />
-            <div className="h-10 w-full bg-muted rounded-md animate-pulse" />
-            <div className="h-10 w-full bg-muted rounded-md animate-pulse" />
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const handleNumericChange = (key: keyof CalculationConfiguration, value: string) => {
-    const numValue = value === "" ? 0 : Number.parseInt(value, 10)
-    if (!isNaN(numValue)) {
-      onConfigChange({ [key]: numValue })
-    }
-  }
-
-  const handleSliderChange = (key: keyof CalculationConfiguration, value: number[]) => {
-    onConfigChange({ [key]: value[0] })
+export default function SettingsPanel({
+  isOpen,
+  onClose,
+  configuration,
+  onConfigurationChange,
+  darkMode,
+  onDarkModeChange,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  configuration: CalculationConfiguration
+  onConfigurationChange: (config: CalculationConfiguration) => void
+  darkMode: boolean
+  onDarkModeChange: (isDark: boolean) => void
+}) {
+  const handlechange = (key: keyof CalculationConfiguration, value: any) => {
+    onConfigurationChange({ ...configuration, [key]: value })
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-      <Card className="w-full border-0 bg-transparent shadow-none">
-        <CardHeader>
-          <CardTitle>Calculation Settings</CardTitle>
-          <CardDescription>Adjust the core inputs for the TCO model.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-8">
-          <div className="space-y-3">
-            <Label htmlFor="devices" className="font-medium">
-              Device Count
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Settings & Configuration</SheetTitle>
+          <SheetDescription>Adjust the parameters for the TCO calculation.</SheetDescription>
+        </SheetHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="devices" className="text-right">
+              Devices
             </Label>
             <Input
               id="devices"
               type="number"
-              value={config.devices}
-              onChange={(e) => handleNumericChange("devices", e.target.value)}
-              min="0"
-              className="bg-background"
+              value={configuration.devices}
+              onChange={(e) => handlechange("devices", Number.parseInt(e.target.value))}
+              className="col-span-3"
             />
           </div>
-
-          <div className="space-y-3">
-            <Label htmlFor="years" className="font-medium">
-              Analysis Period: <span className="text-primary font-bold">{config.years} Years</span>
-            </Label>
-            <Slider
-              id="years"
-              min={1}
-              max={5}
-              step={1}
-              value={[config.years]}
-              onValueChange={(val) => handleSliderChange("years", val)}
-            />
-          </div>
-
-          <div className="space-y-3">
-            <Label htmlFor="staffCount" className="font-medium">
-              IT/Security Staff Count
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="users" className="text-right">
+              Users
             </Label>
             <Input
-              id="staffCount"
+              id="users"
               type="number"
-              value={config.staffCount}
-              onChange={(e) => handleNumericChange("staffCount", e.target.value)}
-              min="0"
-              className="bg-background"
+              value={configuration.users}
+              onChange={(e) => handlechange("users", Number.parseInt(e.target.value))}
+              className="col-span-3"
             />
           </div>
-
-          <div className="space-y-3">
-            <Label htmlFor="hourlyRate" className="font-medium">
-              Avg. Staff Hourly Rate ($)
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="years" className="text-right">
+              Years
             </Label>
-            <Input
-              id="hourlyRate"
-              type="number"
-              value={config.hourlyRate}
-              onChange={(e) => handleNumericChange("hourlyRate", e.target.value)}
-              min="0"
-              className="bg-background"
-            />
+            <Select
+              value={String(configuration.years)}
+              onValueChange={(val) => handlechange("years", Number.parseInt(val))}
+            >
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select years" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1 Year</SelectItem>
+                <SelectItem value="3">3 Years</SelectItem>
+                <SelectItem value="5">5 Years</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-
-          <div className="space-y-3">
-            <Label htmlFor="breachCost" className="font-medium">
-              Avg. Cost of a Data Breach ($)
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="licenseTier" className="text-right">
+              License Tier
             </Label>
-            <Input
-              id="breachCost"
-              type="number"
-              value={config.breachCost}
-              onChange={(e) => handleNumericChange("breachCost", e.target.value)}
-              min="0"
-              step="10000"
-              className="bg-background"
-            />
+            <Select value={configuration.licenseTier} onValueChange={(val) => handlechange("licenseTier", val)}>
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select tier" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Essentials">Essentials</SelectItem>
+                <SelectItem value="Professional">Professional</SelectItem>
+                <SelectItem value="Enterprise">Enterprise</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+          <div className="flex items-center justify-between pt-4 border-t">
+            <Label htmlFor="dark-mode">Dark Mode</Label>
+            <Switch id="dark-mode" checked={darkMode} onCheckedChange={onDarkModeChange} />
+          </div>
+        </div>
+        <SheetFooter>
+          <Button onClick={onClose}>Done</Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   )
 }
