@@ -1,58 +1,62 @@
 "use client"
-
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
+import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent } from "@/components/ui/card"
+import { getVendorLogoPath } from "@/lib/comprehensive-vendor-data"
+import { type CalculationResult, compareVendors, type CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import {
-  Calculator,
-  BarChart3,
-  TrendingUp,
-  Shield,
-  Clock,
-  FileText,
-  Settings,
-  Download,
-  Calendar,
-  Building2,
-} from "lucide-react"
-
-// Import components
+import { Card } from "@/components/ui/card"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Separator } from "@/components/ui/separator"
+import { cn } from "@/lib/utils"
 import EnhancedVendorSelection from "./enhanced-vendor-selection"
 import SettingsPanel from "./settings-panel"
 import ExecutiveDashboardView from "./executive-dashboard-view"
 import FinancialAnalysisView from "./financial-analysis-view"
-import BusinessImpactView from "./business-impact-view"
 import CybersecurityPostureView from "./cybersecurity-posture-view"
-import FeatureMatrixView from "./feature-matrix-view"
+import BusinessImpactView from "./business-impact-view"
 import ImplementationTimelineView from "./implementation-timeline-view"
+import FeatureMatrixView from "./feature-matrix-view"
 import ExecutiveReportView from "./executive-report-view"
-import IndustryComplianceView from "./industry-compliance-view"
 
-// Import data and utilities
-import { calculateEnhancedTCO, type CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-import { comprehensiveVendorData } from "@/lib/comprehensive-vendor-data"
+import {
+  LayoutGrid,
+  ShieldCheck,
+  BarChartHorizontal,
+  FileText,
+  RouteIcon as Road,
+  FilePieChart,
+  Phone,
+  SlidersHorizontal,
+  InfoIcon,
+  MoonIcon,
+  RocketIcon,
+  SunIcon,
+  AlertTriangleIcon,
+  Settings,
+  TrendingUp,
+} from "lucide-react"
 
-// Animation variants
-const staggerChildren = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-}
+const TABS_CONFIG = [
+  { value: "dashboard", label: "Dashboard", icon: <BarChartHorizontal /> },
+  { value: "financials", label: "Financials", icon: <FilePieChart /> },
+  { value: "roi", label: "ROI & Value", icon: <TrendingUp /> },
+  { value: "security", label: "Security & Risk", icon: <ShieldCheck /> },
+  { value: "operations", label: "Operations", icon: <SlidersHorizontal /> },
+  { value: "features", label: "Features", icon: <LayoutGrid /> },
+  { value: "implementation", label: "Implementation", icon: <Road /> },
+  { value: "report", label: "Report", icon: <FileText /> },
+]
 
-const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-}
-
-export default function TCOAnalyzer() {
-  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco"])
-  const [activeTab, setActiveTab] = useState("dashboard")
+// Main Enhanced Component
+export default function TcoAnalyzerUltimate() {
+  const [isClient, setIsClient] = useState(false)
+  const [darkMode, setDarkMode] = useState(true)
+  const [showVendorSelection, setShowVendorSelection] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
+
+  // Configuration state
   const [configuration, setConfiguration] = useState<CalculationConfiguration>({
     devices: 5000,
     users: 5000,
@@ -62,211 +66,235 @@ export default function TCOAnalyzer() {
     professionalServices: "advanced",
     includeTraining: true,
   })
-  const [results, setResults] = useState<any[]>([])
-  const [isCalculating, setIsCalculating] = useState(false)
 
-  // Calculate TCO when vendors or settings change
+  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco", "aruba", "forescout"])
+  const [activeView, setActiveView] = useState("dashboard")
+  const [results, setResults] = useState<CalculationResult[] | null>(null)
+  const [calculationError, setCalculationError] = useState<string | null>(null)
+
   useEffect(() => {
-    if (selectedVendors.length > 0) {
-      setIsCalculating(true)
+    setIsClient(true)
+    document.documentElement.classList.toggle("dark", darkMode)
+  }, [darkMode])
 
-      setTimeout(() => {
-        const calculatedResults = selectedVendors
-          .map((vendorId) => {
-            const vendorData = comprehensiveVendorData.find((v) => v.id === vendorId)
-            if (!vendorData) return null
-
-            return calculateEnhancedTCO(vendorData, configuration)
-          })
-          .filter(Boolean)
-
-        setResults(calculatedResults)
-        setIsCalculating(false)
-      }, 1000)
+  const handleCalculate = useCallback(() => {
+    setCalculationError(null)
+    try {
+      const calculatedResults = compareVendors(selectedVendors, configuration)
+      setResults(calculatedResults)
+    } catch (error) {
+      console.error("Calculation error:", error)
+      setCalculationError("Failed to calculate TCO. Please check inputs.")
+      setResults(null)
     }
   }, [selectedVendors, configuration])
+
+  useEffect(() => {
+    if (selectedVendors.length > 0) {
+      handleCalculate()
+    } else {
+      setResults(null)
+    }
+  }, [handleCalculate, selectedVendors.length])
 
   const handleVendorToggle = (vendorId: string) => {
     setSelectedVendors((prev) => {
       const isSelected = prev.includes(vendorId)
       if (vendorId === "portnox" && isSelected && prev.length === 1) return prev
       const newSelection = isSelected ? prev.filter((id) => id !== vendorId) : [...prev, vendorId]
-      if (newSelection.length > 6) newSelection.shift()
+      if (newSelection.length > 6) newSelection.shift() // Limit to 6 vendors
       return newSelection
     })
   }
 
-  const handleExportReport = () => {
-    console.log("Exporting report...")
-  }
-
-  const handleScheduleDemo = () => {
-    console.log("Scheduling demo...")
-  }
-
-  const tabs = [
-    { id: "dashboard", label: "Executive Dashboard", icon: BarChart3 },
-    { id: "financial", label: "Financial Analysis", icon: Calculator },
-    { id: "business", label: "Business Impact", icon: TrendingUp },
-    { id: "security", label: "Security Posture", icon: Shield },
-    { id: "compliance", label: "Industry Compliance", icon: Building2 },
-    { id: "features", label: "Feature Matrix", icon: Settings },
-    { id: "timeline", label: "Implementation", icon: Clock },
-    { id: "report", label: "Executive Report", icon: FileText },
-  ]
-
-  return (
-    <motion.div initial="initial" animate="animate" variants={staggerChildren} className="min-h-screen bg-background">
-      {/* Header */}
-      <motion.div variants={fadeInUp} className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h1 className="text-3xl font-bold tracking-tight">ZTCA Dashboard</h1>
-              <p className="text-muted-foreground">Zero Trust Cost Analyzer - Strategic NAC Investment Analysis</p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="px-3 py-1">
-                {selectedVendors.length} Vendor{selectedVendors.length !== 1 ? "s" : ""} Selected
-              </Badge>
-              <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)}>
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleExportReport}>
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-              <Button size="sm" onClick={handleScheduleDemo}>
-                <Calendar className="h-4 w-4 mr-2" />
-                Schedule Demo
-              </Button>
-            </div>
-          </div>
+  const renderView = () => {
+    if (calculationError)
+      return (
+        <Card className="p-6 text-center text-destructive">
+          <AlertTriangleIcon className="mx-auto h-8 w-8 mb-2" />
+          {calculationError}
+        </Card>
+      )
+    if (!isClient)
+      return (
+        <div className="w-full h-96 flex items-center justify-center">
+          <RocketIcon className="mx-auto h-12 w-12 text-primary animate-pulse" />
+          <p className="mt-4">Launching...</p>
         </div>
-      </motion.div>
+      )
+    if (!results || results.length === 0)
+      return (
+        <Card className="p-6 text-center text-muted-foreground">
+          <InfoIcon className="mx-auto h-8 w-8 mb-2 text-primary" />
+          Select vendors to begin.
+        </Card>
+      )
 
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar */}
-          <motion.div variants={fadeInUp} className="lg:col-span-1 space-y-6">
-            {/* Vendor Selection */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-4">Vendor Selection</h3>
-                <EnhancedVendorSelection
-                  selectedVendors={selectedVendors}
-                  onVendorToggle={handleVendorToggle}
-                  darkMode={false}
-                  onClearAll={() => setSelectedVendors(["portnox"])}
-                  onSelectRecommended={() => setSelectedVendors(["portnox", "cisco", "aruba", "forescout"])}
-                />
-              </CardContent>
-            </Card>
+    switch (activeView) {
+      case "dashboard":
+        return <ExecutiveDashboardView results={results} config={configuration} />
+      case "financials":
+        return <FinancialAnalysisView results={results} config={configuration} />
+      case "roi":
+        return <BusinessImpactView results={results} config={configuration} />
+      case "security":
+        return <CybersecurityPostureView results={results} config={configuration} />
+      case "operations":
+        return <ImplementationTimelineView results={results} config={configuration} /> // Reusing for ops view
+      case "features":
+        return <FeatureMatrixView selectedVendors={selectedVendors} />
+      case "implementation":
+        return <ImplementationTimelineView results={results} config={configuration} />
+      case "report":
+        return <ExecutiveReportView results={results} config={configuration} />
+      default:
+        return <Card className="p-6">Not Implemented</Card>
+    }
+  }
 
-            {/* Settings Panel */}
-            <AnimatePresence>
-              {showSettings && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                >
-                  <SettingsPanel
-                    isOpen={true}
-                    onClose={() => setShowSettings(false)}
-                    configuration={configuration}
-                    onConfigurationChange={setConfiguration}
-                    darkMode={false}
-                    onDarkModeChange={() => {}}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Quick Stats */}
-            {results.length > 0 && (
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="font-semibold mb-4">Quick Stats</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Best ROI</span>
-                      <span className="font-medium">
-                        {Math.round(Math.max(...results.map((r) => r?.roi?.percentage || 0)))}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Lowest TCO</span>
-                      <span className="font-medium">
-                        ${Math.round(Math.min(...results.map((r) => r?.totalCost || 0)) / 1000)}K
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Fastest Payback</span>
-                      <span className="font-medium">
-                        {Math.round(Math.min(...results.map((r) => r?.roi?.paybackPeriod || 0)))} months
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </motion.div>
-
-          {/* Main Content */}
-          <motion.div variants={fadeInUp} className="lg:col-span-3">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
-                {tabs.map((tab) => (
-                  <TabsTrigger key={tab.id} value={tab.id} className="flex items-center space-x-2 text-xs">
-                    <tab.icon className="h-4 w-4" />
-                    <span className="hidden sm:inline">{tab.label}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-
-              <div className="min-h-[600px]">
-                {isCalculating ? (
-                  <Card>
-                    <CardContent className="p-12 text-center">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
-                      <p className="text-muted-foreground">Calculating TCO analysis...</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <>
-                    <TabsContent value="dashboard">
-                      <ExecutiveDashboardView results={results} config={configuration} />
-                    </TabsContent>
-                    <TabsContent value="financial">
-                      <FinancialAnalysisView results={results} config={configuration} />
-                    </TabsContent>
-                    <TabsContent value="business">
-                      <BusinessImpactView results={results} config={configuration} />
-                    </TabsContent>
-                    <TabsContent value="security">
-                      <CybersecurityPostureView results={results} config={configuration} />
-                    </TabsContent>
-                    <TabsContent value="compliance">
-                      <IndustryComplianceView results={results} config={configuration} />
-                    </TabsContent>
-                    <TabsContent value="features">
-                      <FeatureMatrixView selectedVendors={selectedVendors} />
-                    </TabsContent>
-                    <TabsContent value="timeline">
-                      <ImplementationTimelineView results={results} config={configuration} />
-                    </TabsContent>
-                    <TabsContent value="report">
-                      <ExecutiveReportView results={results} config={configuration} />
-                    </TabsContent>
-                  </>
-                )}
-              </div>
-            </Tabs>
-          </motion.div>
+  const Header = ({ showVendorSelection, setShowVendorSelection, darkMode, setDarkMode, setShowSettings }: any) => (
+    <header className="sticky top-0 z-50 backdrop-blur-lg bg-background/80 border-b">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+        <div className="flex items-center space-x-3">
+          <Image
+            src={getVendorLogoPath("portnox") || "/placeholder.svg"}
+            alt="Portnox Logo"
+            width={140}
+            height={35}
+            className="h-8 w-auto"
+          />
+          <Separator orientation="vertical" className="h-6" />
+          <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+            TCO Analyzer
+          </h1>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowVendorSelection(!showVendorSelection)}
+                className={cn(showVendorSelection && "bg-muted")}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Toggle Vendors</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={() => setDarkMode(!darkMode)}>
+                {darkMode ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Toggle Theme</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)}>
+                <Settings className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Configuration</TooltipContent>
+          </Tooltip>
+          <Button size="sm">
+            <Phone className="h-4 w-4 mr-2" />
+            Schedule Demo
+          </Button>
         </div>
       </div>
-    </motion.div>
+    </header>
+  )
+
+  const TabNavigation = ({ activeView, setActiveView }: any) => (
+    <nav className="sticky top-16 z-40 backdrop-blur-md bg-background/70 border-b">
+      <div className="container mx-auto px-0 sm:px-4">
+        <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
+          <TabsList className="grid w-full h-auto py-0 bg-transparent rounded-none grid-cols-4 sm:grid-cols-8">
+            {TABS_CONFIG.map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="relative flex-col sm:flex-row h-16 sm:h-12 text-xs rounded-none px-2 py-1 data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:bg-muted/50 data-[state=active]:text-primary group"
+              >
+                <div className="h-5 w-5 mb-0.5 sm:mr-1.5 sm:mb-0 transition-transform group-hover:scale-110">
+                  {tab.icon}
+                </div>
+                <span className="hidden sm:inline">{tab.label}</span>
+                {activeView === tab.value && (
+                  <motion.div
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                    layoutId="activeTabIndicator"
+                  />
+                )}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
+    </nav>
+  )
+
+  return (
+    <TooltipProvider>
+      <div
+        className={cn(
+          "min-h-screen flex flex-col font-sans",
+          darkMode ? "dark bg-gray-950 text-gray-100" : "bg-gray-50 text-gray-900",
+        )}
+      >
+        <Header {...{ showVendorSelection, setShowVendorSelection, darkMode, setDarkMode, setShowSettings }} />
+        <TabNavigation {...{ activeView, setActiveView }} />
+        <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8">
+          <div className="container mx-auto max-w-screen-2xl">
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+              <AnimatePresence>
+                {showVendorSelection && (
+                  <motion.div
+                    initial={{ x: -300, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -300, opacity: 0 }}
+                    className="xl:col-span-1"
+                  >
+                    <div className="sticky top-32">
+                      <EnhancedVendorSelection
+                        {...{ selectedVendors, handleVendorToggle, darkMode }}
+                        onClearAll={() => setSelectedVendors(["portnox"])}
+                        onSelectRecommended={() => setSelectedVendors(["portnox", "cisco", "aruba", "forescout"])}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <div
+                className={cn("transition-all duration-300", showVendorSelection ? "xl:col-span-3" : "xl:col-span-4")}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeView}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                  >
+                    {renderView()}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        </main>
+        <SettingsPanel
+          {...{
+            isOpen: showSettings,
+            onClose: () => setShowSettings(false),
+            configuration,
+            onConfigurationChange: setConfiguration,
+            darkMode,
+            onDarkModeChange: setDarkMode,
+          }}
+        />
+      </div>
+    </TooltipProvider>
   )
 }

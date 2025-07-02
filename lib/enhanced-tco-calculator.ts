@@ -1,130 +1,132 @@
-import type { VendorDetails } from "./comprehensive-vendor-data"
+import { ComprehensiveVendorDatabase } from "./comprehensive-vendor-data"
 
 export interface CalculationConfiguration {
   devices: number
   users: number
   years: number
-  licenseTier: string
+  licenseTier: "Essentials" | "Professional" | "Enterprise"
   integrations: {
     mdm: boolean
     siem: boolean
     edr: boolean
   }
-  professionalServices: "basic" | "advanced" | "premium"
+  professionalServices: "basic" | "advanced" | "migration"
   includeTraining: boolean
-}
-
-export interface TCOBreakdown {
-  licensing: number
-  hardware: number
-  professionalServices: number
-  training: number
-  maintenance: number
-  integration: number
-  operational: number
-}
-
-export interface ROIMetrics {
-  percentage: number
-  paybackPeriod: number
-  npv: number
-  irr: number
-}
-
-export interface RiskMetrics {
-  breachProbabilityReduction: number
-  complianceScore: number
-  operationalRisk: "low" | "medium" | "high"
 }
 
 export interface CalculationResult {
   vendor: string
   vendorName: string
-  totalCost: number
-  costCategories: TCOBreakdown
-  roi: ROIMetrics
-  riskMetrics: RiskMetrics
-  implementationTime: number
-  fteRequirement: number
+  total: number
+  breakdown: { name: string; value: number }[]
+  roi: {
+    percentage: number
+    paybackMonths: number
+    annualSavings: number
+  }
+  risk: {
+    breachReduction: number
+    annualizedRiskCost: number
+  }
+  ops: {
+    fteSaved: number
+    annualOpsSaving: number
+  }
 }
 
-export function calculateEnhancedTCO(vendor: VendorDetails, config: CalculationConfiguration): CalculationResult {
-  // Calculate licensing costs
-  const baseLicenseCost = vendor.licensing.base[0]?.listPrice || 50
-  const licensingCost =
-    typeof baseLicenseCost === "number"
-      ? baseLicenseCost * config.devices * config.years
-      : 50 * config.devices * config.years
-
-  // Calculate hardware costs
-  const hardwareCost = vendor.hardware.physical.length > 0 ? vendor.hardware.physical[0].listPrice || 0 : 0
-
-  // Calculate professional services
-  const psMultiplier =
-    config.professionalServices === "basic" ? 1 : config.professionalServices === "advanced" ? 1.5 : 2
-  const professionalServicesCost = (vendor.professionalServices.vendor[0]?.cost || 25000) * psMultiplier
-
-  // Calculate training costs
-  const trainingCost = config.includeTraining ? vendor.professionalServices.training[0]?.cost || 5000 : 0
-
-  // Calculate maintenance (20% of hardware + licensing annually)
-  const maintenanceCost = (hardwareCost + licensingCost) * 0.2 * config.years
-
-  // Calculate integration costs
-  const integrationCost = Object.values(config.integrations).filter(Boolean).length * 15000
-
-  // Calculate operational costs
-  const operationalCost = vendor.tcoFactors.fteRequirement * 150000 * config.years
-
-  const costCategories: TCOBreakdown = {
-    licensing: licensingCost,
-    hardware: hardwareCost,
-    professionalServices: professionalServicesCost,
-    training: trainingCost,
-    maintenance: maintenanceCost,
-    integration: integrationCost,
-    operational: operationalCost,
+function parseCost(cost: number | string): number {
+  if (typeof cost === "number") return cost
+  if (typeof cost === "string") {
+    if (cost.includes("-")) {
+      const parts = cost.split("-").map((s) => Number.parseInt(s.replace(/,/g, ""), 10))
+      return (parts[0] + parts[1]) / 2
+    }
+    return Number.parseInt(cost.replace(/,/g, ""), 10) || 0
   }
+  return 0
+}
 
-  const totalCost = Object.values(costCategories).reduce((sum, cost) => sum + cost, 0)
+export function calculateVendorTCO(vendorId: string, config: CalculationConfiguration): CalculationResult | null {
+  const vendor = ComprehensiveVendorDatabase[vendorId]
+  if (!vendor) return null
 
-  // Calculate ROI metrics
-  const annualSavings = 200000 // Estimated annual savings
-  const roi: ROIMetrics = {
-    percentage: ((annualSavings * config.years - totalCost) / totalCost) * 100,
-    paybackPeriod: (totalCost / annualSavings) * 12, // in months
-    npv: annualSavings * config.years - totalCost,
-    irr: 0.15, // Simplified IRR calculation
+  let total = 0
+  const breakdown: { name: string; value: number }[] = []
+
+  // Licensing Costs
+  const tier = vendor.licensing.base.find((t) => t.name === config.licenseTier) || vendor.licensing.base[0]
+  const licenseUnitCount = tier.unit === "user" ? config.users : config.devices
+  const licenseCost = parseCost(tier.listPrice) * licenseUnitCount * config.years
+  total += licenseCost
+  breakdown.push({ name: "Licensing", value: licenseCost })
+
+  // Hardware Costs
+  let hardwareCost = 0
+  if (vendor.hardware.physical.length > 0) {
+    const appliance =
+      vendor.hardware.physical.find((h) => Number.parseInt(h.capacity.replace(/,/g, "")) >= config.devices) ||
+      vendor.hardware.physical[vendor.hardware.physical.length - 1]
+    hardwareCost = parseCost(appliance.listPrice)
+  } else if (vendor.hardware.virtual.length > 0) {
+    const appliance =
+      vendor.hardware.virtual.find((h) => Number.parseInt(h.capacity.replace(/,/g, "")) >= config.devices) ||
+      vendor.hardware.virtual[vendor.hardware.virtual.length - 1]
+    hardwareCost = parseCost(appliance.listPrice)
   }
+  total += hardwareCost
+  if (hardwareCost > 0) breakdown.push({ name: "Hardware", value: hardwareCost })
 
-  // Calculate risk metrics
-  const riskMetrics: RiskMetrics = {
-    breachProbabilityReduction: vendor.category === "cloud-native" ? 0.7 : 0.5,
-    complianceScore: Object.keys(vendor.featureSupport.compliance).length * 10,
-    operationalRisk: vendor.tcoFactors.downtimeRisk,
+  // Professional Services
+  let psCost = 0
+  const psTier = vendor.professionalServices.vendor.find((p) =>
+    p.name.toLowerCase().includes(config.professionalServices),
+  )
+  if (psTier) {
+    psCost = parseCost(psTier.cost)
   }
+  total += psCost
+  if (psCost > 0) breakdown.push({ name: "Professional Services", value: psCost })
+
+  // Operational Costs (FTE)
+  const annualFteCost = vendor.tcoFactors.fteRequirement * 150000 // Avg FTE cost
+  const totalFteCost = annualFteCost * config.years
+  total += totalFteCost
+  breakdown.push({ name: "Operational Staff", value: totalFteCost })
+
+  // ROI Calculation
+  const fteSaved = 2.0 - vendor.tcoFactors.fteRequirement > 0 ? 2.0 - vendor.tcoFactors.fteRequirement : 0
+  const annualOpsSaving = fteSaved * 150000
+  const breachReduction = vendor.marketPosition === "leader" || vendor.marketPosition === "visionary" ? 0.6 : 0.4
+  const annualRiskSaving = 500000 * breachReduction // Assume baseline risk cost
+  const annualSavings = annualOpsSaving + annualRiskSaving
+  const totalSavings = annualSavings * config.years
+  const roiPercentage = total > 0 ? ((totalSavings - total) / total) * 100 : 0
+  const paybackMonths = annualSavings > 0 ? (total / annualSavings) * 12 : 999
 
   return {
-    vendor: vendor.id,
+    vendor: vendorId,
     vendorName: vendor.name,
-    totalCost,
-    costCategories,
-    roi,
-    riskMetrics,
-    implementationTime:
-      vendor.tcoFactors.upgradeComplexity === "low" ? 3 : vendor.tcoFactors.upgradeComplexity === "medium" ? 6 : 12,
-    fteRequirement: vendor.tcoFactors.fteRequirement,
+    total,
+    breakdown,
+    roi: {
+      percentage: roiPercentage,
+      paybackMonths: Math.round(paybackMonths),
+      annualSavings,
+    },
+    risk: {
+      breachReduction,
+      annualizedRiskCost: 500000 * (1 - breachReduction),
+    },
+    ops: {
+      fteSaved,
+      annualOpsSaving,
+    },
   }
 }
 
 export function compareVendors(vendorIds: string[], config: CalculationConfiguration): CalculationResult[] {
-  const { ComprehensiveVendorDatabase } = require("./comprehensive-vendor-data")
-
   return vendorIds
-    .map((id) => {
-      const vendor = ComprehensiveVendorDatabase[id]
-      if (!vendor) return null
-      return calculateEnhancedTCO(vendor, config)
-    })
-    .filter(Boolean) as CalculationResult[]
+    .map((id) => calculateVendorTCO(id, config))
+    .filter((result): result is CalculationResult => result !== null)
+    .sort((a, b) => a.total - b.total)
 }
