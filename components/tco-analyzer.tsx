@@ -1,302 +1,246 @@
 "use client"
-import { useState, useEffect, useCallback } from "react"
-import Image from "next/image"
-import { motion, AnimatePresence } from "framer-motion"
-import { getVendorLogoPath } from "@/lib/comprehensive-vendor-data"
-import { type CalculationResult, compareVendors, type CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Separator } from "@/components/ui/separator"
-import { cn } from "@/lib/utils"
-import EnhancedVendorSelection from "./enhanced-vendor-selection"
-import SettingsPanel from "./settings-panel"
-import ExecutiveDashboardView from "./executive-dashboard-view"
-import FinancialAnalysisView from "./financial-analysis-view"
-import CybersecurityPostureView from "./cybersecurity-posture-view"
-import BusinessImpactView from "./business-impact-view"
-import ImplementationTimelineView from "./implementation-timeline-view"
-import FeatureMatrixView from "./feature-matrix-view"
-import ExecutiveReportView from "./executive-report-view"
-
+import { Switch } from "@/components/ui/switch"
+import { Badge } from "@/components/ui/badge"
 import {
-  LayoutGrid,
-  ShieldCheck,
-  BarChartHorizontal,
-  FileText,
-  RouteIcon as Road,
-  FilePieChart,
-  Phone,
-  SlidersHorizontal,
-  InfoIcon,
-  MoonIcon,
-  RocketIcon,
-  SunIcon,
-  AlertTriangleIcon,
-  Settings,
+  Calculator,
+  BarChart3,
   TrendingUp,
+  FileText,
+  Settings,
+  Download,
+  Moon,
+  Sun,
+  Shield,
+  Grid3X3,
+  Building2,
+  Calendar,
+  Users,
 } from "lucide-react"
+import { useTheme } from "next-themes"
 
-const TABS_CONFIG = [
-  { value: "dashboard", label: "Dashboard", icon: <BarChartHorizontal /> },
-  { value: "financials", label: "Financials", icon: <FilePieChart /> },
-  { value: "roi", label: "ROI & Value", icon: <TrendingUp /> },
-  { value: "security", label: "Security & Risk", icon: <ShieldCheck /> },
-  { value: "operations", label: "Operations", icon: <SlidersHorizontal /> },
-  { value: "features", label: "Features", icon: <LayoutGrid /> },
-  { value: "implementation", label: "Implementation", icon: <Road /> },
-  { value: "report", label: "Report", icon: <FileText /> },
-]
+// Import all view components
+import { EnhancedVendorSelection } from "./enhanced-vendor-selection"
+import { SettingsPanel } from "./settings-panel"
+import { ExecutiveDashboardView } from "./executive-dashboard-view"
+import { FinancialAnalysisView } from "./financial-analysis-view"
+import { BusinessImpactView } from "./business-impact-view"
+import { ImplementationTimelineView } from "./implementation-timeline-view"
+import { ExecutiveReportView } from "./executive-report-view"
+import { CybersecurityPostureView } from "./cybersecurity-posture-view"
+import { FeatureMatrixView } from "./feature-matrix-view"
 
-// Main Enhanced Component
-export default function TcoAnalyzerUltimate() {
-  const [isClient, setIsClient] = useState(false)
-  const [darkMode, setDarkMode] = useState(true)
-  const [showVendorSelection, setShowVendorSelection] = useState(true)
-  const [showSettings, setShowSettings] = useState(false)
+// Import data and utilities
+import { comprehensiveVendorData } from "@/lib/comprehensive-vendor-data"
+import { calculateEnhancedTCO } from "@/lib/enhanced-tco-calculator"
 
-  // Configuration state
-  const [configuration, setConfiguration] = useState<CalculationConfiguration>({
-    devices: 5000,
-    users: 5000,
-    years: 3,
-    licenseTier: "Enterprise",
-    integrations: { mdm: true, siem: true, edr: false },
-    professionalServices: "advanced",
-    includeTraining: true,
+export function TCOAnalyzer() {
+  const { theme, setTheme } = useTheme()
+  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco-ise"])
+  const [activeView, setActiveView] = useState("dashboard")
+  const [calculationSettings, setCalculationSettings] = useState({
+    timeHorizon: 5,
+    discountRate: 0.08,
+    inflationRate: 0.03,
+    organizationSize: 1000,
+    securityRequirements: "high",
+    complianceNeeds: ["sox", "pci", "hipaa"],
+    deploymentModel: "hybrid",
   })
 
-  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco", "aruba", "forescout"])
-  const [activeView, setActiveView] = useState("dashboard")
-  const [results, setResults] = useState<CalculationResult[] | null>(null)
-  const [calculationError, setCalculationError] = useState<string | null>(null)
+  // Calculate TCO data for selected vendors
+  const tcoResults = selectedVendors
+    .map((vendorId) => {
+      const vendor = comprehensiveVendorData.find((v) => v.id === vendorId)
+      if (!vendor) return null
 
-  useEffect(() => {
-    setIsClient(true)
-    document.documentElement.classList.toggle("dark", darkMode)
-  }, [darkMode])
-
-  const handleCalculate = useCallback(() => {
-    setCalculationError(null)
-    try {
-      const calculatedResults = compareVendors(selectedVendors, configuration)
-      setResults(calculatedResults)
-    } catch (error) {
-      console.error("Calculation error:", error)
-      setCalculationError("Failed to calculate TCO. Please check inputs.")
-      setResults(null)
-    }
-  }, [selectedVendors, configuration])
-
-  useEffect(() => {
-    if (selectedVendors.length > 0) {
-      handleCalculate()
-    } else {
-      setResults(null)
-    }
-  }, [handleCalculate, selectedVendors.length])
-
-  const handleVendorToggle = (vendorId: string) => {
-    setSelectedVendors((prev) => {
-      const isSelected = prev.includes(vendorId)
-      if (vendorId === "portnox" && isSelected && prev.length === 1) return prev
-      const newSelection = isSelected ? prev.filter((id) => id !== vendorId) : [...prev, vendorId]
-      if (newSelection.length > 6) newSelection.shift() // Limit to 6 vendors
-      return newSelection
+      return {
+        vendor,
+        tco: calculateEnhancedTCO(vendor, calculationSettings),
+      }
     })
-  }
+    .filter(Boolean)
 
-  const renderView = () => {
-    if (calculationError)
-      return (
-        <Card className="p-6 text-center text-destructive">
-          <AlertTriangleIcon className="mx-auto h-8 w-8 mb-2" />
-          {calculationError}
-        </Card>
-      )
-    if (!isClient)
-      return (
-        <div className="w-full h-96 flex items-center justify-center">
-          <RocketIcon className="mx-auto h-12 w-12 text-primary animate-pulse" />
-          <p className="mt-4">Launching...</p>
-        </div>
-      )
-    if (!results || results.length === 0)
-      return (
-        <Card className="p-6 text-center text-muted-foreground">
-          <InfoIcon className="mx-auto h-8 w-8 mb-2 text-primary" />
-          Select vendors to begin.
-        </Card>
-      )
-
-    switch (activeView) {
-      case "dashboard":
-        return <ExecutiveDashboardView results={results} config={configuration} />
-      case "financials":
-        return <FinancialAnalysisView results={results} config={configuration} />
-      case "roi":
-        return <BusinessImpactView results={results} config={configuration} />
-      case "security":
-        return <CybersecurityPostureView results={results} config={configuration} />
-      case "operations":
-        return <ImplementationTimelineView results={results} config={configuration} /> // Reusing for ops view
-      case "features":
-        return <FeatureMatrixView selectedVendors={selectedVendors} />
-      case "implementation":
-        return <ImplementationTimelineView results={results} config={configuration} />
-      case "report":
-        return <ExecutiveReportView results={results} config={configuration} />
-      default:
-        return <Card className="p-6">Not Implemented</Card>
+  const handleVendorToggle = (vendorId: string, selected: boolean) => {
+    if (selected) {
+      setSelectedVendors((prev) => [...prev, vendorId])
+    } else {
+      setSelectedVendors((prev) => prev.filter((id) => id !== vendorId))
     }
   }
 
-  const Header = ({ showVendorSelection, setShowVendorSelection, darkMode, setDarkMode, setShowSettings }: any) => (
-    <header className="sticky top-0 z-50 backdrop-blur-lg bg-background/80 border-b">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-        <div className="flex items-center space-x-3">
-          <Image
-            src={getVendorLogoPath("portnox") || "/placeholder.svg"}
-            alt="Portnox Logo"
-            width={140}
-            height={35}
-            className="h-8 w-auto"
-          />
-          <Separator orientation="vertical" className="h-6" />
-          <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-            TCO Analyzer
-          </h1>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowVendorSelection(!showVendorSelection)}
-                className={cn(showVendorSelection && "bg-muted")}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Toggle Vendors</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={() => setDarkMode(!darkMode)}>
-                {darkMode ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Toggle Theme</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)}>
-                <Settings className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Configuration</TooltipContent>
-          </Tooltip>
-          <Button size="sm">
-            <Phone className="h-4 w-4 mr-2" />
-            Schedule Demo
-          </Button>
-        </div>
-      </div>
-    </header>
-  )
+  const handleSettingsChange = (newSettings: typeof calculationSettings) => {
+    setCalculationSettings(newSettings)
+  }
 
-  const TabNavigation = ({ activeView, setActiveView }: any) => (
-    <nav className="sticky top-16 z-40 backdrop-blur-md bg-background/70 border-b">
-      <div className="container mx-auto px-0 sm:px-4">
-        <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
-          <TabsList className="grid w-full h-auto py-0 bg-transparent rounded-none grid-cols-4 sm:grid-cols-8">
-            {TABS_CONFIG.map((tab) => (
-              <TabsTrigger
-                key={tab.value}
-                value={tab.value}
-                className="relative flex-col sm:flex-row h-16 sm:h-12 text-xs rounded-none px-2 py-1 data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:bg-muted/50 data-[state=active]:text-primary group"
-              >
-                <div className="h-5 w-5 mb-0.5 sm:mr-1.5 sm:mb-0 transition-transform group-hover:scale-110">
-                  {tab.icon}
-                </div>
-                <span className="hidden sm:inline">{tab.label}</span>
-                {activeView === tab.value && (
-                  <motion.div
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
-                    layoutId="activeTabIndicator"
-                  />
-                )}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-      </div>
-    </nav>
-  )
+  const exportToPDF = () => {
+    // PDF export functionality would be implemented here
+    console.log("Exporting to PDF...")
+  }
 
   return (
-    <TooltipProvider>
-      <div
-        className={cn(
-          "min-h-screen flex flex-col font-sans",
-          darkMode ? "dark bg-gray-950 text-gray-100" : "bg-gray-50 text-gray-900",
-        )}
-      >
-        <Header {...{ showVendorSelection, setShowVendorSelection, darkMode, setDarkMode, setShowSettings }} />
-        <TabNavigation {...{ activeView, setActiveView }} />
-        <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8">
-          <div className="container mx-auto max-w-screen-2xl">
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-              <AnimatePresence>
-                {showVendorSelection && (
-                  <motion.div
-                    initial={{ x: -300, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -300, opacity: 0 }}
-                    className="xl:col-span-1"
-                  >
-                    <div className="sticky top-32">
-                      <EnhancedVendorSelection
-                        selectedVendors={selectedVendors}
-                        onVendorToggle={handleVendorToggle}
-                        darkMode={darkMode}
-                        onClearAll={() => setSelectedVendors(["portnox"])}
-                        onSelectRecommended={() => setSelectedVendors(["portnox", "cisco", "aruba", "forescout"])}
-                      />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <div
-                className={cn("transition-all duration-300", showVendorSelection ? "xl:col-span-3" : "xl:col-span-4")}
-              >
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeView}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                  >
-                    {renderView()}
-                  </motion.div>
-                </AnimatePresence>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b bg-card">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Calculator className="h-8 w-8 text-primary" />
+                <div>
+                  <h1 className="text-2xl font-bold">ZTCA Dashboard</h1>
+                  <p className="text-sm text-muted-foreground">Zero Trust Cost Analyzer</p>
+                </div>
+              </div>
+              <Badge variant="secondary" className="ml-4">
+                v2.0
+              </Badge>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <Button onClick={exportToPDF} variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export PDF
+              </Button>
+
+              <div className="flex items-center space-x-2">
+                <Sun className="h-4 w-4" />
+                <Switch
+                  checked={theme === "dark"}
+                  onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+                />
+                <Moon className="h-4 w-4" />
               </div>
             </div>
           </div>
-        </main>
-        <SettingsPanel
-          {...{
-            isOpen: showSettings,
-            onClose: () => setShowSettings(false),
-            configuration,
-            onConfigurationChange: setConfiguration,
-            darkMode,
-            onDarkModeChange: setDarkMode,
-          }}
-        />
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Vendor Selection */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Building2 className="h-5 w-5" />
+                  <span>Vendor Selection</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <EnhancedVendorSelection
+                  vendors={comprehensiveVendorData}
+                  selectedVendors={selectedVendors}
+                  onVendorToggle={handleVendorToggle}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Settings Panel */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Settings className="h-5 w-5" />
+                  <span>Settings</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SettingsPanel settings={calculationSettings} onSettingsChange={handleSettingsChange} />
+              </CardContent>
+            </Card>
+
+            {/* Quick Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Stats</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Vendors Selected</span>
+                  <Badge variant="secondary">{selectedVendors.length}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Time Horizon</span>
+                  <Badge variant="outline">{calculationSettings.timeHorizon} years</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Organization Size</span>
+                  <Badge variant="outline">{calculationSettings.organizationSize.toLocaleString()}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            <Tabs value={activeView} onValueChange={setActiveView} className="space-y-6">
+              <TabsList className="grid w-full grid-cols-7">
+                <TabsTrigger value="dashboard" className="flex items-center space-x-2">
+                  <BarChart3 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Dashboard</span>
+                </TabsTrigger>
+                <TabsTrigger value="financial" className="flex items-center space-x-2">
+                  <TrendingUp className="h-4 w-4" />
+                  <span className="hidden sm:inline">Financial</span>
+                </TabsTrigger>
+                <TabsTrigger value="business" className="flex items-center space-x-2">
+                  <Users className="h-4 w-4" />
+                  <span className="hidden sm:inline">Business</span>
+                </TabsTrigger>
+                <TabsTrigger value="timeline" className="flex items-center space-x-2">
+                  <Calendar className="h-4 w-4" />
+                  <span className="hidden sm:inline">Timeline</span>
+                </TabsTrigger>
+                <TabsTrigger value="security" className="flex items-center space-x-2">
+                  <Shield className="h-4 w-4" />
+                  <span className="hidden sm:inline">Security</span>
+                </TabsTrigger>
+                <TabsTrigger value="features" className="flex items-center space-x-2">
+                  <Grid3X3 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Features</span>
+                </TabsTrigger>
+                <TabsTrigger value="report" className="flex items-center space-x-2">
+                  <FileText className="h-4 w-4" />
+                  <span className="hidden sm:inline">Report</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="dashboard" className="space-y-6">
+                <ExecutiveDashboardView tcoResults={tcoResults} settings={calculationSettings} />
+              </TabsContent>
+
+              <TabsContent value="financial" className="space-y-6">
+                <FinancialAnalysisView tcoResults={tcoResults} settings={calculationSettings} />
+              </TabsContent>
+
+              <TabsContent value="business" className="space-y-6">
+                <BusinessImpactView tcoResults={tcoResults} settings={calculationSettings} />
+              </TabsContent>
+
+              <TabsContent value="timeline" className="space-y-6">
+                <ImplementationTimelineView tcoResults={tcoResults} settings={calculationSettings} />
+              </TabsContent>
+
+              <TabsContent value="security" className="space-y-6">
+                <CybersecurityPostureView tcoResults={tcoResults} settings={calculationSettings} />
+              </TabsContent>
+
+              <TabsContent value="features" className="space-y-6">
+                <FeatureMatrixView tcoResults={tcoResults} settings={calculationSettings} />
+              </TabsContent>
+
+              <TabsContent value="report" className="space-y-6">
+                <ExecutiveReportView tcoResults={tcoResults} settings={calculationSettings} />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
       </div>
-    </TooltipProvider>
+    </div>
   )
 }
