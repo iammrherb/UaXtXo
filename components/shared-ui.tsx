@@ -1,10 +1,9 @@
 "use client"
 
 import type React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { TrendingUp, TrendingDown, Minus, CheckCircle, AlertCircle, XCircle } from "lucide-react"
 
 // Animation variants
 export const staggerChildren = {
@@ -33,7 +32,7 @@ export const fadeInUp = {
 export const slideInLeft = {
   initial: {
     opacity: 0,
-    x: -50,
+    x: -20,
   },
   animate: {
     opacity: 1,
@@ -45,6 +44,7 @@ export const slideInLeft = {
 }
 
 export const staggerContainer = {
+  initial: {},
   animate: {
     transition: {
       staggerChildren: 0.1,
@@ -52,52 +52,43 @@ export const staggerContainer = {
   },
 }
 
-// Color palette
-export const VIBRANT_COLORS = [
-  "#00D4AA", // Portnox primary
-  "#FF6B35", // Orange
-  "#3B82F6", // Blue
-  "#10B981", // Emerald
-  "#F59E0B", // Amber
-  "#8B5CF6", // Violet
-  "#EF4444", // Red
-  "#06B6D4", // Cyan
-]
+// Color palettes
+export const VIBRANT_COLORS = ["#00D4AA", "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8"]
 
-// Gradient definitions
 export const GRADIENTS = {
-  portnox: "from-[#00D4AA] to-[#00B894]",
-  ocean: "from-blue-500 to-cyan-500",
-  sunset: "from-orange-500 to-red-500",
-  forest: "from-green-500 to-emerald-500",
-  royal: "from-purple-500 to-indigo-500",
-  gold: "from-yellow-500 to-orange-500",
+  primary: "from-blue-500 to-purple-600",
+  success: "from-green-400 to-blue-500",
+  warning: "from-yellow-400 to-orange-500",
+  danger: "from-red-400 to-pink-500",
+  info: "from-cyan-400 to-blue-500",
+  forest: "from-green-600 to-teal-600",
+  ocean: "from-blue-600 to-cyan-600",
+  sunset: "from-orange-500 to-pink-500",
+  royal: "from-purple-600 to-indigo-600",
 }
 
 export const colorPalette = {
-  primary: ["#3b82f6", "#1d4ed8", "#1e40af", "#1e3a8a"],
-  success: ["#10b981", "#059669", "#047857", "#065f46"],
-  warning: ["#f59e0b", "#d97706", "#b45309", "#92400e"],
-  danger: ["#ef4444", "#dc2626", "#b91c1c", "#991b1b"],
-  neutral: ["#6b7280", "#4b5563", "#374151", "#1f2937"],
+  primary: ["#3B82F6", "#1D4ED8", "#1E40AF"],
+  success: ["#10B981", "#059669", "#047857"],
+  warning: ["#F59E0B", "#D97706", "#B45309"],
+  danger: ["#EF4444", "#DC2626", "#B91C1C"],
+  neutral: ["#6B7280", "#4B5563", "#374151"],
 }
 
 // Section Title Component
 interface SectionTitleProps {
-  icon?: React.ReactNode
   title: string
   subtitle?: string
-  description?: string
-  className?: string
+  icon?: React.ReactNode
 }
 
-export function SectionTitle({ icon, title, subtitle, description, className }: SectionTitleProps) {
+export function SectionTitle({ title, subtitle, icon }: SectionTitleProps) {
   return (
-    <div className={cn("flex items-start gap-3 mb-6", className)}>
-      {icon && <div className="flex-shrink-0 p-2 bg-primary/10 rounded-lg text-primary">{icon}</div>}
+    <div className="flex items-center space-x-3 mb-6">
+      {icon && <div className="text-primary">{icon}</div>}
       <div>
-        <h2 className="text-2xl font-bold text-foreground">{title}</h2>
-        {(subtitle || description) && <p className="text-muted-foreground mt-1">{subtitle || description}</p>}
+        <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+        {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
       </div>
     </div>
   )
@@ -106,187 +97,71 @@ export function SectionTitle({ icon, title, subtitle, description, className }: 
 // Metric Card Component
 interface MetricCardProps {
   title: string
-  value: string | number
-  detail?: string
-  change?: string | number
+  value: string
+  change?: string
   changeType?: "positive" | "negative" | "neutral"
   icon?: React.ReactNode
   gradient?: keyof typeof GRADIENTS
-  trend?: {
-    value: number
-    isPositive: boolean
-  }
-  className?: string
 }
 
-export function MetricCard({
-  title,
-  value,
-  detail,
-  change,
-  changeType = "neutral",
-  icon,
-  gradient = "portnox",
-  trend,
-  className,
-}: MetricCardProps) {
-  const getTrendIcon = () => {
-    if (trend) {
-      return trend.isPositive ? (
-        <TrendingUp className="h-4 w-4 text-green-500" />
-      ) : (
-        <TrendingDown className="h-4 w-4 text-red-500" />
-      )
-    }
-
-    switch (changeType) {
-      case "positive":
-        return <TrendingUp className="h-4 w-4 text-green-500" />
-      case "negative":
-        return <TrendingDown className="h-4 w-4 text-red-500" />
-      default:
-        return <Minus className="h-4 w-4 text-gray-500" />
-    }
-  }
-
+export function MetricCard({ title, value, change, changeType = "neutral", icon, gradient }: MetricCardProps) {
   return (
-    <Card className={cn("relative overflow-hidden", className)}>
-      <CardHeader className="pb-2">
+    <Card className={cn("relative overflow-hidden", gradient && `bg-gradient-to-br ${GRADIENTS[gradient]}`)}>
+      <CardContent className="p-6">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-          <div className="flex items-center space-x-2">
-            {icon && <div className="text-muted-foreground">{icon}</div>}
-            {(change || trend) && (
-              <div className="flex items-center space-x-1">
-                {getTrendIcon()}
-                <span
-                  className={cn(
-                    "text-sm font-medium",
-                    (changeType === "positive" || (trend && trend.isPositive)) && "text-green-500",
-                    (changeType === "negative" || (trend && !trend.isPositive)) && "text-red-500",
-                    changeType === "neutral" && "text-gray-500",
-                  )}
-                >
-                  {change || (trend && `${Math.abs(trend.value)}%`)}
-                </span>
-              </div>
+          <div>
+            <p className={cn("text-sm font-medium", gradient ? "text-white/80" : "text-muted-foreground")}>{title}</p>
+            <p className={cn("text-2xl font-bold", gradient ? "text-white" : "text-foreground")}>{value}</p>
+            {change && (
+              <p
+                className={cn(
+                  "text-xs",
+                  gradient ? "text-white/70" : "text-muted-foreground",
+                  changeType === "positive" && "text-green-600",
+                  changeType === "negative" && "text-red-600",
+                )}
+              >
+                {change}
+              </p>
             )}
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-1">
-          <div className="text-2xl font-bold">{value}</div>
-          {detail && <p className="text-xs text-muted-foreground">{detail}</p>}
+          {icon && <div className={cn("h-8 w-8", gradient ? "text-white/80" : "text-muted-foreground")}>{icon}</div>}
         </div>
       </CardContent>
-      <div className={cn("absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r", GRADIENTS[gradient])} />
     </Card>
   )
 }
 
 // Gradient Card Component
 interface GradientCardProps {
-  title?: string
   children: React.ReactNode
-  gradient?: keyof typeof GRADIENTS | "primary" | "success" | "warning" | "danger"
+  gradient: keyof typeof GRADIENTS
   className?: string
 }
 
-export function GradientCard({ title, children, gradient = "portnox", className }: GradientCardProps) {
-  const gradients = {
-    ...GRADIENTS,
-    primary: "from-blue-500 to-blue-600",
-    success: "from-green-500 to-green-600",
-    warning: "from-yellow-500 to-yellow-600",
-    danger: "from-red-500 to-red-600",
-  }
-
+export function GradientCard({ children, gradient, className }: GradientCardProps) {
   return (
-    <Card className={cn("relative overflow-hidden", className)}>
-      {title && (
-        <div className={cn("bg-gradient-to-r p-6 text-white", gradients[gradient])}>
-          <h3 className="text-lg font-semibold">{title}</h3>
-        </div>
-      )}
-      {!title && <div className={cn("absolute inset-0 bg-gradient-to-br opacity-5", gradients[gradient])} />}
-      <div className="relative">{title ? <CardContent className="p-6">{children}</CardContent> : children}</div>
-    </Card>
-  )
-}
-
-// Loading Skeleton Component
-export function LoadingSkeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse bg-muted rounded-md", className)} />
-}
-
-// Status Badge Component
-interface StatusBadgeProps {
-  status: "success" | "warning" | "error" | "info"
-  children?: React.ReactNode
-  className?: string
-}
-
-export function StatusBadge({ status, children, className }: StatusBadgeProps) {
-  const variants = {
-    success: {
-      icon: <CheckCircle className="h-4 w-4" />,
-      className: "bg-green-100 text-green-800 border-green-200",
-    },
-    warning: {
-      icon: <AlertCircle className="h-4 w-4" />,
-      className: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    },
-    error: {
-      icon: <XCircle className="h-4 w-4" />,
-      className: "bg-red-100 text-red-800 border-red-200",
-    },
-    info: {
-      icon: <AlertCircle className="h-4 w-4" />,
-      className: "bg-blue-100 text-blue-800 border-blue-200",
-    },
-  }
-
-  const variant = variants[status]
-
-  return (
-    <Badge className={cn("flex items-center space-x-1 border", variant.className, className)}>
-      {variant.icon}
-      <span className="capitalize">{children || status}</span>
-    </Badge>
+    <Card className={cn("relative overflow-hidden bg-gradient-to-br", GRADIENTS[gradient], className)}>{children}</Card>
   )
 }
 
 // Progress Ring Component
 interface ProgressRingProps {
-  progress?: number
-  value?: number
+  progress: number
   size?: number
   strokeWidth?: number
   color?: string
-  className?: string
 }
 
-export function ProgressRing({
-  progress,
-  value,
-  size = 60,
-  strokeWidth = 4,
-  color = "#3b82f6",
-  className,
-}: ProgressRingProps) {
-  const actualValue = progress || value || 0
+export function ProgressRing({ progress, size = 120, strokeWidth = 8, color = "#3B82F6" }: ProgressRingProps) {
   const radius = (size - strokeWidth) / 2
   const circumference = radius * 2 * Math.PI
   const strokeDasharray = `${circumference} ${circumference}`
-  const strokeDashoffset = circumference - (actualValue / 100) * circumference
+  const strokeDashoffset = circumference - (progress / 100) * circumference
 
   return (
-    <div
-      className={cn("relative inline-flex items-center justify-center", className)}
-      style={{ width: size, height: size }}
-    >
-      <svg className="transform -rotate-90" width={size} height={size}>
+    <div className="relative inline-flex items-center justify-center">
+      <svg width={size} height={size} className="transform -rotate-90">
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -306,64 +181,78 @@ export function ProgressRing({
           strokeDasharray={strokeDasharray}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
-          className="transition-all duration-1000 ease-out"
+          className="transition-all duration-300 ease-in-out"
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-sm font-semibold">{Math.round(actualValue)}%</span>
+        <span className="text-xl font-bold">{Math.round(progress)}%</span>
       </div>
     </div>
   )
 }
 
+// Status Badge Component
+interface StatusBadgeProps {
+  status: "excellent" | "good" | "fair" | "poor"
+  children: React.ReactNode
+}
+
+export function StatusBadge({ status, children }: StatusBadgeProps) {
+  const variants = {
+    excellent: "bg-green-100 text-green-800 border-green-200",
+    good: "bg-blue-100 text-blue-800 border-blue-200",
+    fair: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    poor: "bg-red-100 text-red-800 border-red-200",
+  }
+
+  return <Badge className={cn("border", variants[status])}>{children}</Badge>
+}
+
 // Comparison Table Component
 interface ComparisonTableProps {
   data: Array<{
-    label: string
-    values: Record<string, string | number | React.ReactNode>
+    vendor: string
+    metrics: Record<string, string | number>
   }>
-  headers: string[]
-  columns?: { key: string; label: string; format?: (value: any) => string }[]
   highlightBest?: boolean
-  className?: string
 }
 
-export function ComparisonTable({ data, headers, columns, highlightBest = true, className }: ComparisonTableProps) {
-  // Use either the new columns format or the legacy headers format
-  const tableColumns = columns || headers.map((header) => ({ key: header, label: header }))
-  const tableHeaders = columns ? columns.map((col) => col.label) : headers
+export function ComparisonTable({ data, highlightBest = true }: ComparisonTableProps) {
+  if (!data.length) return null
+
+  const metricKeys = Object.keys(data[0].metrics)
 
   return (
-    <div className={cn("overflow-x-auto", className)}>
+    <div className="overflow-x-auto">
       <table className="w-full border-collapse">
         <thead>
           <tr className="border-b">
-            <th className="text-left p-3 font-semibold">Feature</th>
-            {tableHeaders.map((header) => (
-              <th key={header} className="text-center p-3 font-semibold">
-                {header}
+            <th className="text-left p-3 font-semibold">Vendor</th>
+            {metricKeys.map((key) => (
+              <th key={key} className="text-left p-3 font-semibold capitalize">
+                {key.replace(/([A-Z])/g, " $1").trim()}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {data.map((row, index) => (
-            <tr key={index} className="border-b hover:bg-muted/50">
-              <td className="p-3 font-medium">{row.label}</td>
-              {(columns || headers).map((col) => {
-                const key = typeof col === "string" ? col : col.key
-                const format = typeof col === "object" ? col.format : undefined
-                const value = row.values[key]
-                return (
-                  <td key={key} className="p-3 text-center">
-                    {format ? format(value) : value}
-                  </td>
-                )
-              })}
+            <tr key={row.vendor} className={cn("border-b", index % 2 === 0 && "bg-muted/50")}>
+              <td className="p-3 font-medium">{row.vendor}</td>
+              {metricKeys.map((key) => (
+                <td key={key} className="p-3">
+                  {row.metrics[key]}
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   )
+}
+
+// Loading Skeleton Component
+export function LoadingSkeleton({ className }: { className?: string }) {
+  return <div className={cn("animate-pulse bg-muted rounded", className)} />
 }

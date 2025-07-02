@@ -23,22 +23,22 @@ import {
 } from "lucide-react"
 import { useTheme } from "next-themes"
 
-// Import all view components
-import { EnhancedVendorSelection } from "./enhanced-vendor-selection"
-import { SettingsPanel } from "./settings-panel"
-import { ExecutiveDashboardView } from "./executive-dashboard-view"
-import { FinancialAnalysisView } from "./financial-analysis-view"
-import { BusinessImpactView } from "./business-impact-view"
-import { ImplementationTimelineView } from "./implementation-timeline-view"
-import { ExecutiveReportView } from "./executive-report-view"
-import { CybersecurityPostureView } from "./cybersecurity-posture-view"
-import { FeatureMatrixView } from "./feature-matrix-view"
+// Import all view components (using default imports)
+import EnhancedVendorSelection from "./enhanced-vendor-selection"
+import SettingsPanel from "./settings-panel"
+import ExecutiveDashboardView from "./executive-dashboard-view"
+import FinancialAnalysisView from "./financial-analysis-view"
+import BusinessImpactView from "./business-impact-view"
+import ImplementationTimelineView from "./implementation-timeline-view"
+import ExecutiveReportView from "./executive-report-view"
+import CybersecurityPostureView from "./cybersecurity-posture-view"
+import FeatureMatrixView from "./feature-matrix-view"
 
 // Import data and utilities
 import { comprehensiveVendorData } from "@/lib/comprehensive-vendor-data"
 import { calculateEnhancedTCO } from "@/lib/enhanced-tco-calculator"
 
-export function TCOAnalyzer() {
+export default function TCOAnalyzer() {
   const { theme, setTheme } = useTheme()
   const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco-ise"])
   const [activeView, setActiveView] = useState("dashboard")
