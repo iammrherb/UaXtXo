@@ -1,6 +1,4 @@
 "use client"
-
-import type React from "react"
 import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
@@ -39,112 +37,6 @@ import {
   Settings,
   TrendingUp,
 } from "lucide-react"
-
-// Enhanced color palette with vibrant Portnox branding
-const PORTNOX_COLORS = {
-  primary: "#00D4AA",
-  primaryDark: "#00A88A",
-  primaryLight: "#33DDBB",
-  secondary: "#0A1628",
-  secondaryLight: "#1A2638",
-  accent: "#FF6B35",
-  success: "#10B981",
-  warning: "#F59E0B",
-  danger: "#EF4444",
-  info: "#3B82F6",
-  purple: "#8B5CF6",
-  pink: "#EC4899",
-  textPrimaryDark: "#E0E0E0",
-  textSecondaryDark: "#A0A0A0",
-  textPrimaryLight: "#1F2937",
-  textSecondaryLight: "#6B7280",
-  gradient: {
-    primary: "linear-gradient(135deg, #00D4AA 0%, #00A88A 100%)",
-    secondary: "linear-gradient(135deg, #0A1628 0%, #1A2638 100%)",
-    vibrant: "linear-gradient(135deg, #00D4AA 0%, #3B82F6 50%, #8B5CF6 100%)",
-    fire: "linear-gradient(135deg, #FF6B35 0%, #F59E0B 50%, #EF4444 100%)",
-    ocean: "linear-gradient(135deg, #00D4AA 0%, #06B6D4 50%, #3B82F6 100%)",
-    sunset: "linear-gradient(135deg, #FF6B35 0%, #EC4899 50%, #8B5CF6 100%)",
-  },
-}
-
-const VIBRANT_COLORS = [
-  PORTNOX_COLORS.primary,
-  PORTNOX_COLORS.accent,
-  PORTNOX_COLORS.info,
-  PORTNOX_COLORS.success,
-  PORTNOX_COLORS.warning,
-  PORTNOX_COLORS.purple,
-  PORTNOX_COLORS.pink,
-  "#06B6D4",
-  "#EF4444",
-  "#6366F1",
-  "#14B8A6",
-  "#F97316",
-]
-
-// Animation variants
-const fadeInUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 } }
-const staggerChildren = { animate: { transition: { staggerChildren: 0.07 } } }
-const pulseAnimation = {
-  scale: [1, 1.03, 1],
-  transition: { duration: 1.5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
-}
-
-// Styled Components
-const GradientCard = ({
-  children,
-  className,
-  gradient = "primary",
-  darkMode,
-  ...props
-}: {
-  children: React.ReactNode
-  className?: string
-  gradient?: keyof typeof PORTNOX_COLORS.gradient
-  darkMode?: boolean
-  [key: string]: any
-}) => (
-  <Card
-    className={cn(
-      "relative overflow-hidden transition-all duration-300 hover:shadow-xl",
-      darkMode
-        ? "bg-gray-800 border-gray-700 hover:border-portnox-primary/50"
-        : "bg-white border-gray-200 hover:border-portnox-primary/50",
-      className,
-    )}
-    {...props}
-  >
-    <div className="absolute inset-0 opacity-5" style={{ background: PORTNOX_COLORS.gradient[gradient] }} />
-    <div className="relative z-10">{children}</div>
-  </Card>
-)
-
-const MetricCard = ({
-  title,
-  value,
-  detail,
-  icon,
-  trend,
-  trendValue,
-  gradient = "primary",
-  darkMode,
-}: {
-  title: string
-  value: string
-  detail: string
-  icon: React.ReactElement
-  trend?: "up" | "down"
-  trendValue?: string
-  gradient?: keyof typeof PORTNOX_COLORS.gradient
-  darkMode?: boolean
-}) => (
-  <motion.div whileHover={{ y: -5 }} whileTap={{ scale: 0.98 }} className="h-full">
-    <GradientCard gradient={gradient} darkMode={darkMode} className="h-full flex flex-col">
-      {/* CardHeader, CardContent, etc. remain unchanged */}
-    </GradientCard>
-  </motion.div>
-)
 
 const TABS_CONFIG = [
   { value: "dashboard", label: "Dashboard", icon: <BarChartHorizontal /> },
@@ -259,8 +151,6 @@ export default function TcoAnalyzerUltimate() {
         return <Card className="p-6">Not Implemented</Card>
     }
   }
-
-  // View Components
 
   const Header = ({ showVendorSelection, setShowVendorSelection, darkMode, setDarkMode, setShowSettings }: any) => (
     <header className="sticky top-0 z-50 backdrop-blur-lg bg-background/80 border-b">
