@@ -20,26 +20,22 @@ import ImplementationTimelineView from "./implementation-timeline-view"
 import ExecutiveReportView from "./executive-report-view"
 
 // Import data and utilities
-import { calculateEnhancedTCO } from "@/lib/enhanced-tco-calculator"
+import { calculateEnhancedTCO, type CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 import { comprehensiveVendorData } from "@/lib/comprehensive-vendor-data"
 import { staggerChildren, fadeInUp } from "./shared-ui"
 
-interface TCOAnalyzerProps {
-  isDarkMode: boolean
-  onToggleDarkMode: () => void
-}
-
-export default function TCOAnalyzer({ isDarkMode, onToggleDarkMode }: TCOAnalyzerProps) {
-  const [selectedVendors, setSelectedVendors] = useState<string[]>(["Portnox", "Cisco ISE"])
+export default function TCOAnalyzer() {
+  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco"])
   const [activeTab, setActiveTab] = useState("dashboard")
   const [showSettings, setShowSettings] = useState(false)
-  const [calculationSettings, setCalculationSettings] = useState({
-    organizationSize: 1000,
-    industryType: "enterprise",
-    complianceRequirements: ["SOX", "HIPAA"],
-    currentSolution: "legacy",
-    implementationComplexity: "medium",
-    geographicScope: "multi-region",
+  const [configuration, setConfiguration] = useState<CalculationConfiguration>({
+    devices: 5000,
+    users: 5000,
+    years: 3,
+    licenseTier: "Enterprise",
+    integrations: { mdm: true, siem: true, edr: false },
+    professionalServices: "advanced",
+    includeTraining: true,
   })
   const [results, setResults] = useState<any[]>([])
   const [isCalculating, setIsCalculating] = useState(false)
@@ -49,14 +45,13 @@ export default function TCOAnalyzer({ isDarkMode, onToggleDarkMode }: TCOAnalyze
     if (selectedVendors.length > 0) {
       setIsCalculating(true)
 
-      // Simulate calculation delay
       setTimeout(() => {
         const calculatedResults = selectedVendors
-          .map((vendorName) => {
-            const vendorData = comprehensiveVendorData.find((v) => v.name === vendorName)
+          .map((vendorId) => {
+            const vendorData = comprehensiveVendorData.find((v) => v.id === vendorId)
             if (!vendorData) return null
 
-            return calculateEnhancedTCO(vendorData, calculationSettings)
+            return calculateEnhancedTCO(vendorData, configuration)
           })
           .filter(Boolean)
 
@@ -64,21 +59,23 @@ export default function TCOAnalyzer({ isDarkMode, onToggleDarkMode }: TCOAnalyze
         setIsCalculating(false)
       }, 1000)
     }
-  }, [selectedVendors, calculationSettings])
+  }, [selectedVendors, configuration])
 
-  const handleVendorToggle = (vendorName: string) => {
-    setSelectedVendors((prev) =>
-      prev.includes(vendorName) ? prev.filter((v) => v !== vendorName) : [...prev, vendorName],
-    )
+  const handleVendorToggle = (vendorId: string) => {
+    setSelectedVendors((prev) => {
+      const isSelected = prev.includes(vendorId)
+      if (vendorId === "portnox" && isSelected && prev.length === 1) return prev
+      const newSelection = isSelected ? prev.filter((id) => id !== vendorId) : [...prev, vendorId]
+      if (newSelection.length > 6) newSelection.shift()
+      return newSelection
+    })
   }
 
   const handleExportReport = () => {
-    // Export functionality would be implemented here
     console.log("Exporting report...")
   }
 
   const handleScheduleDemo = () => {
-    // Demo scheduling functionality would be implemented here
     console.log("Scheduling demo...")
   }
 
@@ -134,7 +131,9 @@ export default function TCOAnalyzer({ isDarkMode, onToggleDarkMode }: TCOAnalyze
                 <EnhancedVendorSelection
                   selectedVendors={selectedVendors}
                   onVendorToggle={handleVendorToggle}
-                  availableVendors={comprehensiveVendorData.map((v) => v.name)}
+                  darkMode={false}
+                  onClearAll={() => setSelectedVendors(["portnox"])}
+                  onSelectRecommended={() => setSelectedVendors(["portnox", "cisco", "aruba", "forescout"])}
                 />
               </CardContent>
             </Card>
@@ -147,7 +146,14 @@ export default function TCOAnalyzer({ isDarkMode, onToggleDarkMode }: TCOAnalyze
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                 >
-                  <SettingsPanel settings={calculationSettings} onSettingsChange={setCalculationSettings} />
+                  <SettingsPanel
+                    isOpen={true}
+                    onClose={() => setShowSettings(false)}
+                    configuration={configuration}
+                    onConfigurationChange={setConfiguration}
+                    darkMode={false}
+                    onDarkModeChange={() => {}}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -160,7 +166,9 @@ export default function TCOAnalyzer({ isDarkMode, onToggleDarkMode }: TCOAnalyze
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">Best ROI</span>
-                      <span className="font-medium">{Math.round(Math.max(...results.map((r) => r?.roi || 0)))}%</span>
+                      <span className="font-medium">
+                        {Math.round(Math.max(...results.map((r) => r?.roi?.percentage || 0)))}%
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">Lowest TCO</span>
@@ -171,7 +179,7 @@ export default function TCOAnalyzer({ isDarkMode, onToggleDarkMode }: TCOAnalyze
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">Fastest Payback</span>
                       <span className="font-medium">
-                        {Math.round(Math.min(...results.map((r) => r?.paybackPeriod || 0)))} months
+                        {Math.round(Math.min(...results.map((r) => r?.roi?.paybackPeriod || 0)))} months
                       </span>
                     </div>
                   </div>
@@ -203,25 +211,25 @@ export default function TCOAnalyzer({ isDarkMode, onToggleDarkMode }: TCOAnalyze
                 ) : (
                   <>
                     <TabsContent value="dashboard">
-                      <ExecutiveDashboardView results={results} selectedVendors={selectedVendors} />
+                      <ExecutiveDashboardView results={results} config={configuration} />
                     </TabsContent>
                     <TabsContent value="financial">
-                      <FinancialAnalysisView results={results} selectedVendors={selectedVendors} />
+                      <FinancialAnalysisView results={results} config={configuration} />
                     </TabsContent>
                     <TabsContent value="business">
-                      <BusinessImpactView results={results} selectedVendors={selectedVendors} />
+                      <BusinessImpactView results={results} config={configuration} />
                     </TabsContent>
                     <TabsContent value="security">
-                      <CybersecurityPostureView results={results} selectedVendors={selectedVendors} />
+                      <CybersecurityPostureView results={results} config={configuration} />
                     </TabsContent>
                     <TabsContent value="features">
-                      <FeatureMatrixView results={results} selectedVendors={selectedVendors} />
+                      <FeatureMatrixView selectedVendors={selectedVendors} />
                     </TabsContent>
                     <TabsContent value="timeline">
-                      <ImplementationTimelineView results={results} selectedVendors={selectedVendors} />
+                      <ImplementationTimelineView results={results} config={configuration} />
                     </TabsContent>
                     <TabsContent value="report">
-                      <ExecutiveReportView results={results} selectedVendors={selectedVendors} />
+                      <ExecutiveReportView results={results} config={configuration} />
                     </TabsContent>
                   </>
                 )}

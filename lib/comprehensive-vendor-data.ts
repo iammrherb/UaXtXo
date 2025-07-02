@@ -28,7 +28,7 @@ export interface VendorIntegration {
 }
 
 export interface VendorFeatureSupport {
-  [key: string]: "✓✓✓" | "✓✓" | "✓" | "✗" | string // Excellent, Good, Basic, No
+  [key: string]: "✓✓✓" | "✓✓" | "✓" | "✗" | string
 }
 
 export interface VendorDetails {
@@ -1208,6 +1208,9 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
   },
 }
 
+// Export the data as an array for easier iteration
+export const comprehensiveVendorData = Object.values(ComprehensiveVendorDatabase)
+
 export const getVendorLogoPath = (vendorId: string): string => {
   const logos: Record<string, string> = {
     cisco: "/cisco-logo.png",
@@ -1219,7 +1222,7 @@ export const getVendorLogoPath = (vendorId: string): string => {
     meraki: "/meraki-logo.png",
     microsoft: "/microsoft-logo.png",
     extreme: "/extreme-logo.png",
-    pulse: "/placeholder-logo.png", // Pulse Secure logo might not be available
+    pulse: "/placeholder-logo.png",
     foxpass: "/foxpass-logo.png",
     securew2: "/securew2-logo.png",
     packetfence: "/packetfence-logo.png",
