@@ -1244,3 +1244,7 @@ export const searchVendors = (query: string): VendorDetails[] => {
       (vendor.description && vendor.description.toLowerCase().includes(lowercaseQuery)),
   )
 }
+
+export const getAllVendors = (): VendorDetails[] => {
+  return Object.values(ComprehensiveVendorDatabase)
+}
