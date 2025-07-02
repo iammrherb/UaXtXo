@@ -143,9 +143,6 @@ importers:
       react-resizable-panels:
         specifier: latest
         version: 3.0.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      react-to-print:
-        specifier: latest
-        version: 3.1.1(react@19.0.0)
       recharts:
         specifier: latest
         version: 3.0.2(@types/react@19.0.0)(react-dom@19.0.0(react@19.0.0))(react-is@19.1.0)(react@19.0.0)(redux@5.0.1)
@@ -1666,11 +1663,6 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
-
-  react-to-print@3.1.1:
-    resolution: {integrity: sha512-N0MUMhpl8nkGri13BjP7zusj3B/j+1eMOTt8N8PYuhBYGzA4PqTXqcihJ9cZw996dvhV6mBdwafIQCg3Ap5bKg==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ~19
 
   react@19.0.0:
     resolution: {integrity: sha512-V8AVnmPIICiWpGfm6GLzCR/W5FXLchHop40W4nXBmdlEceh16rCN8O8LNWm5bh5XUX91fh7KpA+W0TgMKmgTpQ==}
@@ -3312,10 +3304,6 @@ snapshots:
       tslib: 2.8.1
     optionalDependencies:
       '@types/react': 19.0.0
-
-  react-to-print@3.1.1(react@19.0.0):
-    dependencies:
-      react: 19.0.0
 
   react@19.0.0: {}
 

@@ -1,251 +1,164 @@
-import { ComprehensiveVendorDatabase, type VendorData, industrySecurityMetricsData } from "./comprehensive-vendor-data"
+import { ComprehensiveVendorDatabase } from "./comprehensive-vendor-data"
 
 export interface CalculationConfiguration {
-  orgSize: string
   devices: number
   users: number
-  industry: keyof typeof industrySecurityMetricsData
   years: number
-  region: string
-  portnoxBasePrice: number
-  portnoxAddons: {
-    atp: boolean
-    compliance: boolean
-    iot: boolean
-    analytics: boolean
+  licenseTier: string // e.g., 'Premier', 'Enterprise'
+  integrations: {
+    mdm: boolean
+    siem: boolean
+    edr: boolean
   }
-  licenseTier: "essentials" | "professional" | "enterprise" | "advantage" | "premier" | "subscription"
+  professionalServices: "basic" | "advanced"
+  includeTraining: boolean
 }
 
-export interface CostBreakdown {
+export interface CostComponent {
   name: string
-  value: number
+  cost: number
   description: string
 }
 
-export interface ROIMetrics {
-  paybackMonths: number
-  percentage: number
-  netPresentValue: number
-  annualizedROI: number
-}
-
-export interface FinancialSummary {
-  totalSavings: number
-  savingsVsCompetitor: number
-  savingsPercent: number
-}
-
-export interface RiskAnalysis {
-  breachCostAvoidance: number
-  annualizedRiskReduction: number
-  insurancePremiumSavings: number
-  complianceFindingReduction: number // percentage
-}
-
 export interface CalculationResult {
-  vendor: string
+  vendorId: string
   vendorName: string
-  totalTCO: number
-  breakdown: CostBreakdown[]
-  roi: ROIMetrics
-  financialSummary: FinancialSummary
-  risk: RiskAnalysis
-  implementation: VendorData["implementation"]
-  compliance: VendorData["compliance"]
-  hiddenCosts: VendorData["hiddenCosts"]
-  nistCsfAlignment: VendorData["nistCsfAlignment"]
-  mitreAttackCoverage: VendorData["mitreAttackCoverage"]
-}
-
-const REGIONAL_MULTIPLIERS = {
-  "north-america": 1.0,
-  europe: 1.15,
-  "asia-pacific": 0.85,
-  "latin-america": 0.75,
-  "middle-east": 1.1,
-}
-
-const FTE_COST = 150000 // Average loaded cost for a skilled security engineer
-const DISCOUNT_RATE = 0.05 // For NPV calculation
-
-function calculateAnnualizedCost(vendor: VendorData, config: CalculationConfiguration): number {
-  const { devices, users, licenseTier } = config
-  const regionalMultiplier = REGIONAL_MULTIPLIERS[config.region as keyof typeof REGIONAL_MULTIPLIERS] || 1.0
-
-  // Software
-  const tier =
-    vendor.pricing.tiers[licenseTier] ||
-    Object.values(vendor.pricing.tiers)[1] ||
-    Object.values(vendor.pricing.tiers)[0]
-  const pricePerUnit = tier ? tier.price / 12 : vendor.pricing.basePrice // monthly price
-  const unitCount = vendor.pricing.model === "per-user" ? users : devices
-  const annualSoftwareCost = pricePerUnit * 12 * unitCount
-
-  // Support
-  const annualSupportCost = annualSoftwareCost * vendor.pricing.supportCost
-
-  // Operations
-  const annualOpsCost = vendor.hiddenCosts.fteRequirement * FTE_COST * regionalMultiplier
-
-  return annualSoftwareCost + annualSupportCost + annualOpsCost
-}
-
-function calculateUpfrontCosts(vendor: VendorData, config: CalculationConfiguration): number {
-  const { devices } = config
-  const regionalMultiplier = REGIONAL_MULTIPLIERS[config.region as keyof typeof REGIONAL_MULTIPLIERS] || 1.0
-
-  // Hardware
-  let hardwareCost = 0
-  if (vendor.implementation.hardwareRequired && vendor.pricing.hardware) {
-    const applianceCount = Math.ceil(devices / 10000) || 1
-    const midRangeAppliance = Object.values(vendor.pricing.hardware)[1] || Object.values(vendor.pricing.hardware)[0]
-    hardwareCost = applianceCount * midRangeAppliance.listPrice
+  totalTco: number
+  annualTco: number
+  costBreakdown: CostComponent[]
+  roi: {
+    paybackMonths: number
+    annualizedRoi: number
+    fteSavings: number
   }
-
-  // Implementation
-  const implementationCost = vendor.pricing.professionalServices.advanced * regionalMultiplier
-
-  return hardwareCost + implementationCost
+  riskReduction: number // Percentage
+  implementationTimeline: string // e.g., "1-2 weeks"
 }
 
-function calculateRiskAndValue(vendor: VendorData, config: CalculationConfiguration) {
-  const { industry } = config
-  const industryData = industrySecurityMetricsData[industry]
-  const baseline = ComprehensiveVendorDatabase["no-nac"]
-
-  // Breach Cost Avoidance
-  const baselineRisk = industryData.averageBreachCost * industryData.breachProbability
-  const vendorRiskReduction = (vendor.nistCsfAlignment.Protect + vendor.nistCsfAlignment.Detect) / 2 / 100
-  const vendorRisk = industryData.averageBreachCost * industryData.breachProbability * (1 - vendorRiskReduction)
-  const annualBreachCostAvoidance = baselineRisk - vendorRisk
-
-  // Insurance Savings
-  const baselinePremium = 500 * config.devices // Estimate
-  const annualInsurancePremiumSavings = baselinePremium * (vendor.cyberInsuranceImpact.premiumReduction / 100)
-
-  // Compliance Savings
-  const baselineAuditCost = 100000
-  const complianceFindingReduction = (vendor.compliance.auditReadiness - baseline.compliance.auditReadiness) / 100
-  const annualComplianceSavings = baselineAuditCost * 0.2 * complianceFindingReduction // 20% of audit cost is findings
-
-  // FTE Savings (Productivity)
-  const fteProductivityGain = (baseline.hiddenCosts.fteRequirement - vendor.hiddenCosts.fteRequirement) * FTE_COST
-
-  const totalAnnualValue =
-    annualBreachCostAvoidance + annualInsurancePremiumSavings + annualComplianceSavings + fteProductivityGain
-
-  return {
-    totalAnnualValue,
-    breachCostAvoidance: annualBreachCostAvoidance,
-    insurancePremiumSavings: annualInsurancePremiumSavings,
-    complianceFindingReduction,
-  }
-}
+const FTE_SALARY = 150000 // Average fully-loaded salary for a security engineer
 
 export function calculateVendorTCO(vendorId: string, config: CalculationConfiguration): CalculationResult | null {
   const vendor = ComprehensiveVendorDatabase[vendorId]
   if (!vendor) return null
 
-  const { years } = config
-  const annualCost = calculateAnnualizedCost(vendor, config)
-  const upfrontCost = calculateUpfrontCosts(vendor, config)
-  const { totalAnnualValue, breachCostAvoidance, insurancePremiumSavings, complianceFindingReduction } =
-    calculateRiskAndValue(vendor, config)
+  let totalCost = 0
+  const costBreakdown: CostComponent[] = []
 
-  const cashFlows: number[] = [-upfrontCost]
-  for (let i = 0; i < years; i++) {
-    cashFlows.push(totalAnnualValue - annualCost)
+  // 1. Licensing Costs
+  const tier =
+    vendor.licensing.base.find((t) => t.name.toLowerCase() === config.licenseTier.toLowerCase()) ||
+    vendor.licensing.base[vendor.licensing.base.length - 1]
+  const unitCount = tier.unit === "user" ? config.users : config.devices
+  const annualLicenseCost = tier.listPrice * unitCount
+  const totalLicenseCost = annualLicenseCost * config.years
+  totalCost += totalLicenseCost
+  costBreakdown.push({
+    name: "Software Licensing",
+    cost: totalLicenseCost,
+    description: `${config.years} years of ${tier.name} tier`,
+  })
+
+  // 2. Hardware Costs
+  let totalHardwareCost = 0
+  if (vendor.hardware.physical.length > 0) {
+    // Simple logic: pick an appliance that fits the device count
+    const suitableAppliance =
+      vendor.hardware.physical.find((h) => Number.parseInt(h.capacity.replace(/,/g, "")) >= config.devices) ||
+      vendor.hardware.physical[vendor.hardware.physical.length - 1]
+    const haMultiplier = vendor.id === "cisco" ? 2 : 1.5 // Cisco HA is often 2x
+    totalHardwareCost = (suitableAppliance?.listPrice || 0) * haMultiplier
   }
+  totalCost += totalHardwareCost
+  costBreakdown.push({
+    name: "Hardware & HA",
+    cost: totalHardwareCost,
+    description: "Initial hardware and high-availability setup",
+  })
 
-  // Financial Metrics
-  const netPresentValue = cashFlows.reduce((acc, val, i) => acc + val / Math.pow(1 + DISCOUNT_RATE, i), 0)
-  const totalTCO = upfrontCost + annualCost * years
-
-  let cumulativeCashFlow = -upfrontCost
-  let paybackMonths = -1
-  for (let i = 1; i <= years * 12; i++) {
-    cumulativeCashFlow += (totalAnnualValue - annualCost) / 12
-    if (cumulativeCashFlow > 0) {
-      paybackMonths = i
-      break
-    }
+  // 3. Professional Services
+  let psCost = 0
+  if (config.professionalServices === "advanced" && vendor.professionalServices.vendor.length > 1) {
+    psCost = Number(vendor.professionalServices.vendor[1].cost) || 0
+  } else {
+    psCost = Number(vendor.professionalServices.vendor[0]?.cost || 0)
   }
+  if (config.includeTraining) {
+    psCost += Number(vendor.professionalServices.training[0]?.cost || 0) * 2 // Assume 2 people trained
+  }
+  totalCost += psCost
+  costBreakdown.push({
+    name: "Implementation & Training",
+    cost: psCost,
+    description: `One-time ${config.professionalServices} services and training`,
+  })
 
-  const totalInvestment = upfrontCost + annualCost * years
-  const totalGain = totalAnnualValue * years
-  const roiPercentage = totalInvestment > 0 ? ((totalGain - totalInvestment) / totalInvestment) * 100 : 0
-  const annualizedROI = Math.pow(1 + roiPercentage / 100, 1 / years) - 1
+  // 4. Integration Costs
+  let integrationCost = 0
+  if (config.integrations.mdm) integrationCost += Number(vendor.integrations.mdm[0]?.cost || 0)
+  if (config.integrations.siem) integrationCost += Number(vendor.integrations.siem[0]?.cost || 0)
+  if (config.integrations.edr) integrationCost += Number(vendor.integrations.security[0]?.cost || 0)
+  totalCost += integrationCost
+  costBreakdown.push({
+    name: "Integrations",
+    cost: integrationCost,
+    description: "Cost for key 3rd-party integrations",
+  })
 
-  // Cost Breakdown
-  const softwareCost = (annualCost - vendor.hiddenCosts.fteRequirement * FTE_COST) * years
-  const opsCost = vendor.hiddenCosts.fteRequirement * FTE_COST * years
-  const breakdown: CostBreakdown[] = [
-    { name: "Software & Support", value: softwareCost, description: "Licensing, subscriptions, and maintenance" },
-    {
-      name: "Hardware",
-      value: upfrontCost - vendor.pricing.professionalServices.advanced,
-      description: "Physical or virtual appliances",
-    },
-    {
-      name: "Implementation",
-      value: vendor.pricing.professionalServices.advanced,
-      description: "Professional services for setup",
-    },
-    { name: "Operations", value: opsCost, description: "Staffing and management overhead" },
-  ]
+  // 5. Operational Costs (FTE)
+  const totalFteCost = vendor.tcoFactors.fteRequirement * FTE_SALARY * config.years
+  totalCost += totalFteCost
+  costBreakdown.push({
+    name: "Operational Staffing",
+    cost: totalFteCost,
+    description: `FTE requirement over ${config.years} years`,
+  })
+
+  // 6. Hidden Costs
+  const totalHiddenCost =
+    vendor.hiddenCosts.commonExpenses.reduce((acc, expense) => {
+      const costStr = String(expense.cost).split("-")[0].replace(/,/g, "")
+      const cost = Number(costStr) || 0
+      return acc + cost
+    }, 0) * config.years
+  totalCost += totalHiddenCost
+  costBreakdown.push({
+    name: "Common Hidden Costs",
+    cost: totalHiddenCost,
+    description: `Recurring hidden expenses over ${config.years} years`,
+  })
+
+  // ROI & Other Metrics
+  const baselineFte = 3.0 // Assume a "No NAC" baseline requires 3 FTEs
+  const fteSavings = (baselineFte - vendor.tcoFactors.fteRequirement) * FTE_SALARY * config.years
+  const totalBenefit = fteSavings // Simplified benefit model
+  const netBenefit = totalBenefit - totalCost
+  const paybackMonths = totalCost / (totalBenefit / config.years / 12)
+
+  // Simplified implementation timeline extraction
+  const timeline = vendor.professionalServices.vendor[0]?.name.includes("Quick") ? "1-3 Months" : "3-9 Months"
+  if (vendor.id === "portnox") {
+    // timeline = '1-2 Weeks'; // This level of detail is not in the new data structure, so I'll stick to a generic calculation
+  }
 
   return {
-    vendor: vendorId,
+    vendorId,
     vendorName: vendor.name,
-    totalTCO,
-    breakdown,
+    totalTco: Math.round(totalCost),
+    annualTco: Math.round(totalCost / config.years),
+    costBreakdown,
     roi: {
-      paybackMonths: paybackMonths > 0 ? paybackMonths : years * 12,
-      percentage: roiPercentage,
-      netPresentValue,
-      annualizedROI,
+      paybackMonths: paybackMonths > 0 && paybackMonths < 120 ? Math.round(paybackMonths) : 0,
+      annualizedRoi: totalCost > 0 ? (netBenefit / totalCost / config.years) * 100 : 0,
+      fteSavings: baselineFte - vendor.tcoFactors.fteRequirement,
     },
-    financialSummary: {
-      totalSavings: totalGain - totalInvestment,
-      savingsVsCompetitor: 0, // To be calculated in compareVendors
-      savingsPercent: 0, // To be calculated in compareVendors
-    },
-    risk: {
-      breachCostAvoidance,
-      annualizedRiskReduction: breachCostAvoidance,
-      insurancePremiumSavings,
-      complianceFindingReduction,
-    },
-    implementation: vendor.implementation,
-    compliance: vendor.compliance,
-    hiddenCosts: vendor.hiddenCosts,
-    nistCsfAlignment: vendor.nistCsfAlignment,
-    mitreAttackCoverage: vendor.mitreAttackCoverage,
+    riskReduction: vendor.featureSupport.advanced["Zero Trust"] === "✓✓✓" ? 0.35 : 0.15,
+    implementationTimeline: timeline,
   }
 }
 
 export function compareVendors(vendorIds: string[], config: CalculationConfiguration): CalculationResult[] {
-  const results = vendorIds
+  return vendorIds
     .map((id) => calculateVendorTCO(id, config))
     .filter((r): r is CalculationResult => r !== null)
-
-  const portnoxResult = results.find((r) => r.vendor === "portnox")
-  if (!portnoxResult) return results.sort((a, b) => a.totalTCO - b.totalTCO)
-
-  const competitors = results.filter((r) => r.vendor !== "portnox")
-  const lowestCompetitor = competitors.sort((a, b) => a.totalTCO - b.totalTCO)[0]
-
-  return results
-    .map((res) => {
-      if (res.vendor === "portnox" && lowestCompetitor) {
-        res.financialSummary.savingsVsCompetitor = lowestCompetitor.totalTCO - res.totalTCO
-        res.financialSummary.savingsPercent =
-          lowestCompetitor.totalTCO > 0
-            ? (res.financialSummary.savingsVsCompetitor / lowestCompetitor.totalTCO) * 100
-            : 0
-      }
-      return res
-    })
-    .sort((a, b) => a.totalTCO - b.totalTCO)
+    .sort((a, b) => a.totalTco - b.totalTco)
 }
