@@ -81,3 +81,23 @@ export const MetricCard = ({
     </GradientCard>
   </motion.div>
 )
+
+export const SectionTitle = ({
+  title,
+  description,
+  icon,
+}: {
+  title: string
+  description: string
+  icon: React.ReactElement
+}) => (
+  <div className="flex items-center space-x-3 mb-6">
+    <div className="p-2 bg-primary/10 rounded-lg">
+      {React.cloneElement(icon, { className: "h-6 w-6 text-primary" })}
+    </div>
+    <div>
+      <h2 className="text-xl font-bold text-card-foreground">{title}</h2>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  </div>
+)
