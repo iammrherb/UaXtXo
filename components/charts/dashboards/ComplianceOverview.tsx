@@ -1,172 +1,110 @@
 "use client"
 
+import type React from "react"
+import { useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { CheckCircle, AlertCircle, XCircle, Shield } from "lucide-react"
-import { useDashboardSettings } from "@/context/DashboardContext"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { ResponsiveContainer, Tooltip, PieChart, Pie, Cell } from "recharts"
+import { Shield } from "lucide-react"
+import { useDashboardContext } from "@/context/DashboardContext"
+import { useVendorData } from "@/hooks/useVendorData"
+import { useComplianceData } from "@/hooks/useComplianceData"
 
-export default function ComplianceOverview() {
-  const { settings } = useDashboardSettings()
+export const ComplianceOverview: React.FC = () => {
+  const { selectedIndustry } = useDashboardContext()
+  const { isLoadingAllVendors } = useVendorData()
+  const { vendorRiskAssessments, applicableStandards, isLoading: isLoadingCompliance } = useComplianceData()
 
-  const complianceStandards = [
-    {
-      name: "SOC 2 Type II",
-      status: "compliant",
-      coverage: 100,
-      description: "Security, availability, and confidentiality controls",
-    },
-    {
-      name: "ISO 27001",
-      status: "compliant",
-      coverage: 98,
-      description: "Information security management system",
-    },
-    {
-      name: "NIST Cybersecurity Framework",
-      status: "compliant",
-      coverage: 95,
-      description: "Comprehensive cybersecurity guidelines",
-    },
-    {
-      name: "GDPR",
-      status: "partial",
-      coverage: 85,
-      description: "General Data Protection Regulation",
-    },
-    {
-      name: "HIPAA",
-      status: settings.industry === "healthcare" ? "compliant" : "not-applicable",
-      coverage: settings.industry === "healthcare" ? 92 : 0,
-      description: "Health Insurance Portability and Accountability Act",
-    },
-    {
-      name: "PCI DSS",
-      status: settings.industry === "finance" || settings.industry === "retail" ? "compliant" : "partial",
-      coverage: settings.industry === "finance" || settings.industry === "retail" ? 90 : 70,
-      description: "Payment Card Industry Data Security Standard",
-    },
-  ]
+  const complianceData = useMemo(() => {
+    return Object.entries(vendorRiskAssessments).map(([vendorId, assessment]) => ({
+      vendorId,
+      vendorName: vendorId, // Placeholder, should be fetched
+      overallRiskScore: assessment.overallRiskScore,
+      riskLevel: assessment.riskLevel,
+      complianceGaps: assessment.complianceGaps.length,
+      averageCoverage: 100 - assessment.overallRiskScore, // Simplified
+      costRisk: assessment.costOfNonCompliance.total,
+    }))
+  }, [vendorRiskAssessments])
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "compliant":
-        return <CheckCircle className="h-4 w-4 text-green-600" />
-      case "partial":
-        return <AlertCircle className="h-4 w-4 text-yellow-600" />
-      case "non-compliant":
-        return <XCircle className="h-4 w-4 text-red-600" />
-      default:
-        return <div className="h-4 w-4 rounded-full bg-gray-300" />
-    }
+  const riskDistribution = useMemo(() => {
+    const distribution = complianceData.reduce(
+      (acc, vendor) => {
+        acc[vendor.riskLevel] = (acc[vendor.riskLevel] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>,
+    )
+    return Object.entries(distribution).map(([level, count]) => ({
+      name: level.charAt(0).toUpperCase() + level.slice(1),
+      value: count,
+      color:
+        level === "critical" ? "#ef4444" : level === "high" ? "#f97316" : level === "medium" ? "#eab308" : "#22c55e",
+    }))
+  }, [complianceData])
+
+  if (isLoadingAllVendors || isLoadingCompliance) {
+    return <div>Loading...</div>
   }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "compliant":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Compliant</Badge>
-      case "partial":
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Partial</Badge>
-      case "non-compliant":
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Non-Compliant</Badge>
-      default:
-        return <Badge variant="secondary">N/A</Badge>
-    }
-  }
-
-  const overallScore = Math.round(
-    complianceStandards.filter((std) => std.status !== "not-applicable").reduce((acc, std) => acc + std.coverage, 0) /
-      complianceStandards.filter((std) => std.status !== "not-applicable").length,
-  )
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Compliance Overview</h2>
-          <p className="text-gray-600">Regulatory compliance status for {settings.industry} industry</p>
-        </div>
-        <div className="text-center">
-          <div className="text-3xl font-bold text-portnox-blue">{overallScore}%</div>
-          <div className="text-sm text-gray-600">Overall Score</div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Compliance Standards */}
-        <div className="lg:col-span-2">
-          <Card>
+    <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
+      <CardHeader>
+        <CardTitle className="text-xl text-white">Compliance Overview</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <Alert className="bg-blue-900/20 border-blue-500/50">
+          <Shield className="h-4 w-4" />
+          <AlertDescription className="text-blue-100">
+            <strong>Industry Compliance Focus:</strong> Analysis tailored for{" "}
+            <Badge variant="outline" className="text-blue-300">
+              {selectedIndustry.replace("_", " ").toUpperCase()}
+            </Badge>
+          </AlertDescription>
+        </Alert>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-portnox-blue" />
-                Compliance Standards
-              </CardTitle>
+              <CardTitle className="text-xl text-white">Risk Level Distribution</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={riskDistribution}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    dataKey="value"
+                    label={({ name, value }) => `${name}: ${value}`}
+                  >
+                    {riskDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ backgroundColor: "rgba(30, 41, 59, 0.95)", borderColor: "#475569" }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+          <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-xl text-white">Applicable Standards</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {complianceStandards.map((standard, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(standard.status)}
-                        <span className="font-medium">{standard.name}</span>
-                      </div>
-                      {getStatusBadge(standard.status)}
-                    </div>
-                    {standard.status !== "not-applicable" && (
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">{standard.description}</span>
-                          <span className="font-medium">{standard.coverage}%</span>
-                        </div>
-                        <Progress value={standard.coverage} className="h-2" />
-                      </div>
-                    )}
+              <div className="space-y-2">
+                {applicableStandards.map((standard) => (
+                  <div key={standard.id} className="p-2 bg-slate-700/30 rounded-lg">
+                    <h4 className="font-semibold text-white">{standard.name}</h4>
+                    <p className="text-xs text-slate-400">{standard.description}</p>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
         </div>
-
-        {/* Compliance Summary */}
-        <div className="space-y-4">
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-            <CardHeader>
-              <CardTitle className="text-green-800">Compliant Standards</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-600">
-                {complianceStandards.filter((s) => s.status === "compliant").length}
-              </div>
-              <p className="text-sm text-green-700">Fully compliant with major standards</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
-            <CardHeader>
-              <CardTitle className="text-yellow-800">Partial Compliance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-yellow-600">
-                {complianceStandards.filter((s) => s.status === "partial").length}
-              </div>
-              <p className="text-sm text-yellow-700">Standards requiring attention</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-portnox-blue/10 to-portnox-teal/10 border-portnox-blue/20">
-            <CardHeader>
-              <CardTitle className="text-portnox-blue">Industry Focus</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-700 capitalize">
-                {settings.industry} industry compliance requirements are prioritized in this analysis.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

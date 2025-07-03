@@ -1,6 +1,6 @@
 "use client"
 
-import { Tooltip } from "@/components/ui/tooltip"
+import { Tooltip, TooltipProvider } from "@/components/ui/tooltip"
 
 import type React from "react"
 import type { NewVendorData } from "@/lib/vendors/data"
@@ -91,22 +91,24 @@ const ComplianceRiskTab: React.FC<ComplianceRiskTabProps> = ({ vendorData }) => 
           </div>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarChartData}>
-                <PolarGrid stroke="#475569" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: "#E2E8F0", fontSize: 12 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: "#94A3B8", fontSize: 10 }} />
-                <Radar name="Security Effectiveness" dataKey="A" stroke="#00D4AA" fill="#00D4AA" fillOpacity={0.6} />
-                <Radar name="Compliance Coverage" dataKey="B" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} />
-                <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "20px" }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "rgba(30, 41, 59, 0.95)",
-                    borderColor: "#475569",
-                    borderRadius: "0.75rem",
-                  }}
-                  labelStyle={{ fontWeight: "bold", color: "#E2E8F0" }}
-                />
-              </RadarChart>
+              <TooltipProvider>
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarChartData}>
+                  <PolarGrid stroke="#475569" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: "#E2E8F0", fontSize: 12 }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: "#94A3B8", fontSize: 10 }} />
+                  <Radar name="Security Effectiveness" dataKey="A" stroke="#00D4AA" fill="#00D4AA" fillOpacity={0.6} />
+                  <Radar name="Compliance Coverage" dataKey="B" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} />
+                  <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "20px" }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(30, 41, 59, 0.95)",
+                      borderColor: "#475569",
+                      borderRadius: "0.75rem",
+                    }}
+                    labelStyle={{ fontWeight: "bold", color: "#E2E8F0" }}
+                  />
+                </RadarChart>
+              </TooltipProvider>
             </ResponsiveContainer>
           </div>
         </CardContent>

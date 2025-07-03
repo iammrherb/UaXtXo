@@ -1,51 +1,50 @@
-import { useCallback } from 'react';
-import {
-  calculateFullTCOForVendor,
-  compareMultipleVendorsTCO,
-  type TCOResult
-} from '@/lib/calculators/tco';
-import type { VendorId } from '@/lib/vendors/data';
-import type { OrgSizeId, IndustryId } from '@/types/common';
+"use client"
 
-interface CalculateTcoParams {
-  vendorIds: VendorId[];
-  orgSizeId: OrgSizeId;
-  industryId: IndustryId;
-  projectionYears: number;
-}
+import { useMemo } from "react"
+import { useDashboardSettings } from "@/context/DashboardContext"
+import { compareMultipleVendorsTCO, type TCOResult } from "@/lib/calculators/tco"
+
+export type { TCOResult, TCOResultBreakdown } from "@/lib/calculators/tco"
 
 export function useTcoCalculator() {
-  // This hook primarily provides wrapped calculation functions.
-  // It doesn't manage its own state via useQuery directly for the calculation itself,
-  // as the calculation is synchronous based on data already "fetched" by other hooks.
-  // If calculations were very heavy or server-side, useMutation or useQuery might be used here.
+  const { settings } = useDashboardSettings()
+  const { selectedVendorIds, orgSizeKey, industry, projectionYears } = settings
 
-  const calculateAllSelectedVendorsTco = useCallback(
-    (params: CalculateTcoParams): TCOResult[] => {
-      if (!params.vendorIds || params.vendorIds.length === 0) {
-        return [];
-      }
-      // The compareMultipleVendorsTCO function already handles calling calculateFullTCOForVendor for each
-      // and sorts them.
-      return compareMultipleVendorsTCO(
-        params.vendorIds,
-        params.orgSizeId,
-        params.industryId,
-        params.projectionYears
-      );
-    },
-    [] // No dependencies, as the function itself is stable and relies on imported pure functions.
-  );
+  const tcoResults: TCOResult[] = useMemo(() => {
+    if (selectedVendorIds.length === 0) {
+      return []
+    }
+    try {
+      return compareMultipleVendorsTCO(selectedVendorIds, orgSizeKey, industry, projectionYears)
+    } catch (error) {
+      console.error("TCO Calculation Error:", error)
+      return []
+    }
+  }, [selectedVendorIds, orgSizeKey, industry, projectionYears])
 
-  const calculateSingleVendorTco = useCallback(
-    (vendorId: VendorId, orgSizeId: OrgSizeId, industryId: IndustryId, projectionYears: number): TCOResult | null => {
-        return calculateFullTCOForVendor(vendorId, orgSizeId, industryId, projectionYears);
-    },
-    []
-  );
+  const portnoxResult = useMemo(() => tcoResults.find((r) => r.vendorId === "portnox"), [tcoResults])
+
+  const averageCompetitorTCO = useMemo(() => {
+    const competitors = tcoResults.filter((r) => r.vendorId !== "portnox")
+    if (competitors.length === 0) return null
+    return competitors.reduce((acc, curr) => acc + curr.totalTCO, 0) / competitors.length
+  }, [tcoResults])
+
+  const { savings, savingsPercent } = useMemo(() => {
+    if (portnoxResult && averageCompetitorTCO && averageCompetitorTCO > 0) {
+      const savings = averageCompetitorTCO - portnoxResult.totalTCO
+      const savingsPercent = (savings / averageCompetitorTCO) * 100
+      return { savings, savingsPercent }
+    }
+    return { savings: 0, savingsPercent: 0 }
+  }, [portnoxResult, averageCompetitorTCO])
 
   return {
-    calculateAllSelectedVendorsTco,
-    calculateSingleVendorTco,
-  };
+    tcoResults,
+    portnoxResult,
+    averageCompetitorTCO,
+    savings,
+    savingsPercent,
+    isLoading: false, // In a real app, this would be true during async calculations
+  }
 }

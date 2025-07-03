@@ -1,1245 +1,1386 @@
-import type { OrgSizeId, IndustryId, ComplianceLevel } from "@/types/common"
+import type { IndustryId, OrgSizeId, ComplianceLevel } from "@/types/common"
 
-// --- DETAILED VENDOR DATA INTERFACES ---
+export type VendorId =
+  | "portnox"
+  | "cisco_ise"
+  | "aruba_clearpass"
+  | "fortinet_fortigate"
+  | "juniper_mist"
+  | "extreme_networks"
+  | "forescout"
+  | "microsoft_nps"
+  | "radiusaas"
+  | "securew2"
+  | "foxpass"
+  | "packetfence"
 
-export interface VendorCostDetail {
-  listPrice?: string | number
-  streetPrice?: string | number | [number, number]
-  description?: string
-  features?: string[]
-  limitations?: string[]
-  capacity?: string
-  useCase?: string
-  resources?: string
+export interface ComplianceSupport {
+  standardId: string
+  standardName: string
+  coverageLevel: ComplianceLevel
+  certificationStatus: "certified" | "in_progress" | "planned" | "not_applicable"
+  lastAuditDate?: string
+  nextAuditDate?: string
+  notes?: string
 }
 
-export interface VendorLicensingDetails {
-  modelDescription: string
-  licensingTiers: Record<string, VendorCostDetail> // e.g., Essentials, Advantage
-  modules: Record<string, VendorCostDetail> // e.g., OnGuard, Device Insight
-  highAvailability?: Record<string, VendorCostDetail>
-  notes?: string[]
-}
-
-export interface VendorHardwareDetails {
-  physical: Record<string, VendorCostDetail>
-  virtual: Record<string, VendorCostDetail>
-  cloud?: Record<string, VendorCostDetail>
-}
-
-export interface VendorIntegrationDetails {
-  category: string
-  integrations: Record<string, VendorCostDetail> // e.g., AirWatch, Splunk
-}
-
-export interface VendorFeatureScore {
-  score: number // 0-100 or a qualitative scale
-  details?: string
-  isPortnoxAdvantage?: boolean // Highlight Portnox strengths
-}
-
-export interface VendorPricingTier {
+export interface PricingTier {
   name: string
-  userRange?: [number, number | null] // e.g., [1, 100] for Small Business
-  orgSizeTarget?: OrgSizeId[]
-  pricePerUserPerMonth?: number
-  pricePerDevicePerMonth?: number
-  annualDiscountPercent?: number
-  includedFeatures: string[] // List of feature IDs/names
-}
-
-export interface VendorImplementationMetrics {
-  averageDeploymentTimeDays: number
-  complexityLevel: "low" | "medium" | "high" | "very_high"
-  requiresHardware?: boolean
-  cloudNative?: boolean
-  agentlessCapabilityPercent?: number // 0-100
-  professionalServicesCostFactor?: number // e.g., 0.1 of license cost
-}
-
-export interface VendorComplianceSupport {
-  standardId: string // ID of the compliance standard
-  coverageLevel: ComplianceLevel | string
-  automationPercent?: number // For Portnox, how much is automated
-  specificFeatureMappings?: string[] // Vendor features mapped to this standard
-  auditSupport?: VendorFeatureScore
-  details?: string
-}
-
-export interface VendorTCOFactors {
-  licensingCostPerYear?: number // Base or example
-  hardwareCostPerYear?: number // Amortized
-  personnelCostFactor?: number // FTEs or multiplier for typical org
-  trainingCostInitial?: number
-  supportCostFactor?: number // % of license or flat
-  hiddenCostFactor?: number // Abstracted
-}
-
-export interface VendorROIFactors {
-  avgPaybackPeriodMonths?: number
-  incidentReductionPercent?: number // Compared to baseline/no solution
-  complianceAutomationSavingsFactor?: number // e.g., time or cost saved
-  operationalEfficiencyGainPercent?: number
+  description: string
+  pricePerUser?: number
+  pricePerDevice?: number
+  minimumUsers?: number
+  maximumUsers?: number
+  features: string[]
+  supportLevel: "basic" | "standard" | "premium" | "enterprise"
 }
 
 export interface NewVendorData {
-  id: string
+  id: VendorId
   name: string
-  logoUrl?: string
-  shortDescription: string
-  detailedDescription?: string
-  vendorType:
-    | "Cloud-Native NAC"
-    | "Traditional NAC"
-    | "Firewall-based NAC"
-    | "Open Source"
-    | "Cloud RADIUS"
-    | "MDM-based NAC"
-    | "Ecosystem NAC"
+  vendorType: "Cloud NAC" | "Traditional NAC" | "Hybrid NAC" | "RADIUS-as-a-Service" | "Identity Platform"
+  description: string
+  logoUrl: string
+  website: string
 
-  portnoxSpecificMetrics?: {
-    riskBasedAuthCoverage: number
-    continuousMonitoringCoverage: number
-    automatedRemediationRate: number
-    is100PercentCloudNative: boolean
-    agentlessDeploymentPercent: number
+  // Core capabilities
+  strengths: string[]
+  weaknesses: string[]
+  keyFeatures: string[]
+
+  // Deployment & Architecture
+  deploymentOptions: ("cloud" | "on_premise" | "hybrid")[]
+  architectureType: "centralized" | "distributed" | "cloud_native" | "hybrid"
+  scalabilityRating: 1 | 2 | 3 | 4 | 5
+
+  // Industry fit
+  bestFitIndustries: IndustryId[]
+  recommendedOrgSizes: OrgSizeId[]
+
+  // Compliance & Security
+  complianceSupport?: ComplianceSupport[]
+  securityCertifications: string[]
+
+  // Pricing & TCO
+  pricingModel: "per_user" | "per_device" | "flat_rate" | "tiered" | "custom"
+  pricingTiers: PricingTier[]
+
+  // Implementation
+  implementationComplexity: "low" | "medium" | "high" | "very_high"
+  averageImplementationTime: number // in days
+  onboardingSupport: "self_service" | "guided" | "full_service" | "white_glove"
+
+  // Support & Maintenance
+  supportOptions: string[]
+  maintenanceRequirements: "minimal" | "moderate" | "high" | "very_high"
+
+  // Integration capabilities
+  integrationCapabilities: {
+    activeDirectory: boolean
+    ldap: boolean
+    saml: boolean
+    oauth: boolean
+    api: boolean
+    siem: boolean
+    mdm: boolean
   }
 
-  features: Record<string, Record<string, VendorFeatureScore | any>>
-  pricingModelDesc: string
-  pricingTiers?: VendorPricingTier[]
-  implementation: VendorImplementationMetrics
-  complianceSupport: VendorComplianceSupport[]
-  tcoFactors: VendorTCOFactors
-  roiFactors: VendorROIFactors
-  strengths?: string[]
-  weaknesses?: string[]
-  targetOrgSizes?: OrgSizeId[]
-  targetIndustries?: IndustryId[]
-  comparativeScores?: {
-    securityEffectiveness: number
-    easeOfDeployment: number
-    scalability: number
-    integrationCapabilities: number
-    totalCostOfOwnershipScore: number
-    complianceCoverageScore: number
+  // Performance metrics
+  performanceMetrics: {
+    maxConcurrentUsers: number
+    authenticationLatency: number // in ms
+    uptimeGuarantee: number // percentage
+    throughput: number // authentications per second
   }
 
-  // New detailed fields
-  licensingDetails?: VendorLicensingDetails
-  hardwareDetails?: VendorHardwareDetails
-  integrationDetails?: VendorIntegrationDetails[]
-  professionalServices?: Record<string, VendorCostDetail>
-  hiddenCosts?: {
-    category: string
-    items: Record<string, VendorCostDetail>
-  }[]
+  // Market position
+  marketShare: number // percentage
+  customerBase: number
+  yearFounded: number
+  lastUpdated: string
 }
 
-export const VENDOR_IDS_DEFINITIVE = [
+export const allVendorsData = new Map<VendorId, NewVendorData>([
+  [
+    "portnox",
+    {
+      id: "portnox",
+      name: "Portnox",
+      vendorType: "Cloud NAC",
+      description: "Cloud-native Network Access Control platform with AI-powered security and zero-trust architecture",
+      logoUrl: "/portnox-logo-color.png",
+      website: "https://www.portnox.com",
+
+      strengths: [
+        "Cloud-native architecture with rapid deployment",
+        "AI-powered threat detection and response",
+        "Comprehensive device visibility and profiling",
+        "Strong integration ecosystem",
+        "Excellent scalability and performance",
+      ],
+      weaknesses: [
+        "Newer player in the market",
+        "Limited on-premise deployment options",
+        "Pricing can be higher for smaller organizations",
+      ],
+      keyFeatures: [
+        "Zero-trust network access",
+        "AI-powered device profiling",
+        "Cloud-native architecture",
+        "Real-time threat detection",
+        "Automated policy enforcement",
+        "Comprehensive compliance reporting",
+      ],
+
+      deploymentOptions: ["cloud", "hybrid"],
+      architectureType: "cloud_native",
+      scalabilityRating: 5,
+
+      bestFitIndustries: ["healthcare", "financial_services", "technology", "education", "government"],
+      recommendedOrgSizes: ["medium", "large", "enterprise"],
+
+      complianceSupport: [
+        {
+          standardId: "hipaa",
+          standardName: "HIPAA",
+          coverageLevel: "Covered",
+          certificationStatus: "certified",
+          lastAuditDate: "2023-06-15",
+          nextAuditDate: "2024-06-15",
+        },
+        {
+          standardId: "pci_dss",
+          standardName: "PCI-DSS",
+          coverageLevel: "Covered",
+          certificationStatus: "certified",
+          lastAuditDate: "2023-08-20",
+          nextAuditDate: "2024-08-20",
+        },
+        {
+          standardId: "sox",
+          standardName: "SOX",
+          coverageLevel: "Covered",
+          certificationStatus: "certified",
+        },
+        {
+          standardId: "gdpr",
+          standardName: "GDPR",
+          coverageLevel: "Covered",
+          certificationStatus: "certified",
+        },
+      ],
+      securityCertifications: ["SOC 2 Type II", "ISO 27001", "FedRAMP Ready"],
+
+      pricingModel: "per_user",
+      pricingTiers: [
+        {
+          name: "Essential",
+          description: "Basic NAC functionality for small to medium organizations",
+          pricePerUser: 8,
+          minimumUsers: 100,
+          maximumUsers: 1000,
+          features: [
+            "Device discovery and profiling",
+            "Basic policy enforcement",
+            "Standard reporting",
+            "Email support",
+          ],
+          supportLevel: "standard",
+        },
+        {
+          name: "Professional",
+          description: "Advanced features with AI-powered security",
+          pricePerUser: 15,
+          minimumUsers: 500,
+          maximumUsers: 5000,
+          features: [
+            "All Essential features",
+            "AI-powered threat detection",
+            "Advanced analytics",
+            "API access",
+            "Phone support",
+          ],
+          supportLevel: "premium",
+        },
+        {
+          name: "Enterprise",
+          description: "Full-featured platform for large organizations",
+          pricePerUser: 25,
+          minimumUsers: 2000,
+          features: [
+            "All Professional features",
+            "Custom integrations",
+            "Dedicated support",
+            "Advanced compliance reporting",
+            "White-label options",
+          ],
+          supportLevel: "enterprise",
+        },
+      ],
+
+      implementationComplexity: "low",
+      averageImplementationTime: 30,
+      onboardingSupport: "full_service",
+
+      supportOptions: ["24/7 phone support", "Email support", "Live chat", "Knowledge base", "Community forum"],
+      maintenanceRequirements: "minimal",
+
+      integrationCapabilities: {
+        activeDirectory: true,
+        ldap: true,
+        saml: true,
+        oauth: true,
+        api: true,
+        siem: true,
+        mdm: true,
+      },
+
+      performanceMetrics: {
+        maxConcurrentUsers: 100000,
+        authenticationLatency: 50,
+        uptimeGuarantee: 99.9,
+        throughput: 10000,
+      },
+
+      marketShare: 8.5,
+      customerBase: 1200,
+      yearFounded: 2014,
+      lastUpdated: "2024-01-15",
+    },
+  ],
+  [
+    "cisco_ise",
+    {
+      id: "cisco_ise",
+      name: "Cisco Identity Services Engine (ISE)",
+      vendorType: "Traditional NAC",
+      description: "Enterprise-grade network access control and policy enforcement platform",
+      logoUrl: "/cisco-logo.png",
+      website: "https://www.cisco.com/c/en/us/products/security/identity-services-engine/",
+
+      strengths: [
+        "Market leader with extensive features",
+        "Strong integration with Cisco ecosystem",
+        "Comprehensive policy management",
+        "Mature platform with proven track record",
+        "Extensive partner ecosystem",
+      ],
+      weaknesses: [
+        "Complex deployment and management",
+        "High total cost of ownership",
+        "Steep learning curve",
+        "Resource-intensive infrastructure requirements",
+      ],
+      keyFeatures: [
+        "Centralized policy management",
+        "Device profiling and compliance",
+        "Guest access management",
+        "BYOD support",
+        "Threat-centric NAC",
+        "Extensive reporting and analytics",
+      ],
+
+      deploymentOptions: ["on_premise", "hybrid"],
+      architectureType: "centralized",
+      scalabilityRating: 4,
+
+      bestFitIndustries: ["financial_services", "government", "healthcare", "education", "manufacturing"],
+      recommendedOrgSizes: ["large", "enterprise"],
+
+      complianceSupport: [
+        {
+          standardId: "hipaa",
+          standardName: "HIPAA",
+          coverageLevel: "Covered",
+          certificationStatus: "certified",
+        },
+        {
+          standardId: "pci_dss",
+          standardName: "PCI-DSS",
+          coverageLevel: "Covered",
+          certificationStatus: "certified",
+        },
+        {
+          standardId: "fedramp",
+          standardName: "FedRAMP",
+          coverageLevel: "Covered",
+          certificationStatus: "certified",
+        },
+      ],
+      securityCertifications: ["Common Criteria", "FIPS 140-2", "FedRAMP"],
+
+      pricingModel: "tiered",
+      pricingTiers: [
+        {
+          name: "Base",
+          description: "Core NAC functionality",
+          features: ["Basic policy enforcement", "Device profiling", "Guest access", "Standard support"],
+          supportLevel: "standard",
+        },
+        {
+          name: "Plus",
+          description: "Advanced features and integrations",
+          features: [
+            "All Base features",
+            "Advanced threat detection",
+            "Mobile device management",
+            "Enhanced analytics",
+          ],
+          supportLevel: "premium",
+        },
+        {
+          name: "Apex",
+          description: "Full-featured enterprise platform",
+          features: ["All Plus features", "AI-powered insights", "Advanced compliance", "Premium support"],
+          supportLevel: "enterprise",
+        },
+      ],
+
+      implementationComplexity: "very_high",
+      averageImplementationTime: 180,
+      onboardingSupport: "full_service",
+
+      supportOptions: ["24/7 TAC support", "Professional services", "Training", "Documentation"],
+      maintenanceRequirements: "high",
+
+      integrationCapabilities: {
+        activeDirectory: true,
+        ldap: true,
+        saml: true,
+        oauth: true,
+        api: true,
+        siem: true,
+        mdm: true,
+      },
+
+      performanceMetrics: {
+        maxConcurrentUsers: 500000,
+        authenticationLatency: 100,
+        uptimeGuarantee: 99.5,
+        throughput: 50000,
+      },
+
+      marketShare: 35.2,
+      customerBase: 15000,
+      yearFounded: 2012,
+      lastUpdated: "2024-01-15",
+    },
+  ],
+  [
+    "aruba_clearpass",
+    {
+      id: "aruba_clearpass",
+      name: "Aruba ClearPass",
+      vendorType: "Traditional NAC",
+      description: "Policy management platform providing role and device-based network access control",
+      logoUrl: "/aruba-logo.png",
+      website: "https://www.arubanetworks.com/products/security/network-access-control/",
+
+      strengths: [
+        "Strong policy management capabilities",
+        "Excellent integration with Aruba infrastructure",
+        "Flexible deployment options",
+        "Good scalability",
+        "Comprehensive guest access features",
+      ],
+      weaknesses: [
+        "Complex initial configuration",
+        "Limited cloud-native features",
+        "Requires specialized expertise",
+        "Higher maintenance overhead",
+      ],
+      keyFeatures: [
+        "Policy-based access control",
+        "Device fingerprinting",
+        "Guest management",
+        "Certificate management",
+        "Threat detection",
+        "Compliance reporting",
+      ],
+
+      deploymentOptions: ["on_premise", "cloud", "hybrid"],
+      architectureType: "hybrid",
+      scalabilityRating: 4,
+
+      bestFitIndustries: ["education", "healthcare", "retail", "manufacturing", "government"],
+      recommendedOrgSizes: ["medium", "large", "enterprise"],
+
+      complianceSupport: [
+        {
+          standardId: "hipaa",
+          standardName: "HIPAA",
+          coverageLevel: "Covered",
+          certificationStatus: "certified",
+        },
+        {
+          standardId: "pci_dss",
+          standardName: "PCI-DSS",
+          coverageLevel: "Partial",
+          certificationStatus: "in_progress",
+        },
+      ],
+      securityCertifications: ["Common Criteria", "FIPS 140-2"],
+
+      pricingModel: "per_device",
+      pricingTiers: [
+        {
+          name: "ClearPass Base",
+          description: "Essential NAC functionality",
+          pricePerDevice: 12,
+          features: ["Basic policy enforcement", "Device profiling", "Guest access", "Standard reporting"],
+          supportLevel: "standard",
+        },
+        {
+          name: "ClearPass Pro",
+          description: "Advanced security and management",
+          pricePerDevice: 20,
+          features: [
+            "All Base features",
+            "Advanced threat protection",
+            "Mobile device management",
+            "Enhanced analytics",
+          ],
+          supportLevel: "premium",
+        },
+      ],
+
+      implementationComplexity: "high",
+      averageImplementationTime: 120,
+      onboardingSupport: "guided",
+
+      supportOptions: ["Technical support", "Professional services", "Training", "Community"],
+      maintenanceRequirements: "moderate",
+
+      integrationCapabilities: {
+        activeDirectory: true,
+        ldap: true,
+        saml: true,
+        oauth: false,
+        api: true,
+        siem: true,
+        mdm: true,
+      },
+
+      performanceMetrics: {
+        maxConcurrentUsers: 200000,
+        authenticationLatency: 80,
+        uptimeGuarantee: 99.7,
+        throughput: 25000,
+      },
+
+      marketShare: 18.7,
+      customerBase: 8500,
+      yearFounded: 2010,
+      lastUpdated: "2024-01-15",
+    },
+  ],
+  [
+    "fortinet_fortigate",
+    {
+      id: "fortinet_fortigate",
+      name: "Fortinet FortiGate NAC",
+      vendorType: "Traditional NAC",
+      description: "Integrated network access control as part of Fortinet's security fabric",
+      logoUrl: "/fortinet-logo.png",
+      website: "https://www.fortinet.com/products/network-access-control",
+
+      strengths: [
+        "Integrated security fabric approach",
+        "Strong threat intelligence integration",
+        "Cost-effective for existing Fortinet customers",
+        "Good performance and scalability",
+        "Comprehensive security features",
+      ],
+      weaknesses: [
+        "Limited standalone NAC features",
+        "Requires Fortinet ecosystem for full benefits",
+        "Complex multi-vendor environments",
+        "Learning curve for non-Fortinet users",
+      ],
+      keyFeatures: [
+        "Integrated security fabric",
+        "Threat intelligence integration",
+        "Device compliance checking",
+        "Network segmentation",
+        "Automated response",
+        "Centralized management",
+      ],
+
+      deploymentOptions: ["on_premise", "hybrid"],
+      architectureType: "distributed",
+      scalabilityRating: 4,
+
+      bestFitIndustries: ["manufacturing", "retail", "government", "financial_services"],
+      recommendedOrgSizes: ["medium", "large", "enterprise"],
+
+      complianceSupport: [
+        {
+          standardId: "pci_dss",
+          standardName: "PCI-DSS",
+          coverageLevel: "Covered",
+          certificationStatus: "certified",
+        },
+        {
+          standardId: "hipaa",
+          standardName: "HIPAA",
+          coverageLevel: "Partial",
+          certificationStatus: "in_progress",
+        },
+      ],
+      securityCertifications: ["Common Criteria", "ICSA Labs"],
+
+      pricingModel: "tiered",
+      pricingTiers: [
+        {
+          name: "FortiGate NAC Basic",
+          description: "Basic NAC functionality integrated with FortiGate",
+          features: ["Device discovery", "Basic policy enforcement", "Network segmentation", "Standard support"],
+          supportLevel: "standard",
+        },
+        {
+          name: "FortiGate NAC Advanced",
+          description: "Advanced NAC with threat intelligence",
+          features: ["All Basic features", "Threat intelligence integration", "Advanced analytics", "Premium support"],
+          supportLevel: "premium",
+        },
+      ],
+
+      implementationComplexity: "medium",
+      averageImplementationTime: 90,
+      onboardingSupport: "guided",
+
+      supportOptions: ["FortiCare support", "Professional services", "Training", "Documentation"],
+      maintenanceRequirements: "moderate",
+
+      integrationCapabilities: {
+        activeDirectory: true,
+        ldap: true,
+        saml: true,
+        oauth: false,
+        api: true,
+        siem: true,
+        mdm: false,
+      },
+
+      performanceMetrics: {
+        maxConcurrentUsers: 150000,
+        authenticationLatency: 90,
+        uptimeGuarantee: 99.5,
+        throughput: 20000,
+      },
+
+      marketShare: 12.3,
+      customerBase: 6200,
+      yearFounded: 2015,
+      lastUpdated: "2024-01-15",
+    },
+  ],
+  [
+    "juniper_mist",
+    {
+      id: "juniper_mist",
+      name: "Juniper Mist NAC",
+      vendorType: "Cloud NAC",
+      description: "AI-driven cloud-native network access control with automated operations",
+      logoUrl: "/juniper-logo.png",
+      website: "https://www.juniper.net/us/en/products/network-access-control/",
+
+      strengths: [
+        "AI-driven automation and insights",
+        "Cloud-native architecture",
+        "Excellent user experience",
+        "Strong wireless integration",
+        "Simplified management",
+      ],
+      weaknesses: [
+        "Newer to the NAC market",
+        "Limited on-premise options",
+        "Smaller ecosystem compared to competitors",
+        "Higher cost for some deployments",
+      ],
+      keyFeatures: [
+        "AI-driven operations",
+        "Cloud-native management",
+        "Automated policy enforcement",
+        "Real-time analytics",
+        "Wireless-first approach",
+        "Zero-touch provisioning",
+      ],
+
+      deploymentOptions: ["cloud", "hybrid"],
+      architectureType: "cloud_native",
+      scalabilityRating: 5,
+
+      bestFitIndustries: ["education", "retail", "healthcare", "technology"],
+      recommendedOrgSizes: ["medium", "large"],
+
+      complianceSupport: [
+        {
+          standardId: "gdpr",
+          standardName: "GDPR",
+          coverageLevel: "Covered",
+          certificationStatus: "certified",
+        },
+        {
+          standardId: "hipaa",
+          standardName: "HIPAA",
+          coverageLevel: "Partial",
+          certificationStatus: "planned",
+        },
+      ],
+      securityCertifications: ["SOC 2", "ISO 27001"],
+
+      pricingModel: "per_device",
+      pricingTiers: [
+        {
+          name: "Mist NAC Essentials",
+          description: "Basic cloud NAC functionality",
+          pricePerDevice: 10,
+          features: ["Cloud management", "Basic policy enforcement", "Device profiling", "Standard analytics"],
+          supportLevel: "standard",
+        },
+        {
+          name: "Mist NAC Premium",
+          description: "Advanced AI-driven NAC",
+          pricePerDevice: 18,
+          features: ["All Essentials features", "AI-driven insights", "Advanced automation", "Premium analytics"],
+          supportLevel: "premium",
+        },
+      ],
+
+      implementationComplexity: "low",
+      averageImplementationTime: 45,
+      onboardingSupport: "full_service",
+
+      supportOptions: ["Cloud support", "Professional services", "Training", "Community"],
+      maintenanceRequirements: "minimal",
+
+      integrationCapabilities: {
+        activeDirectory: true,
+        ldap: true,
+        saml: true,
+        oauth: true,
+        api: true,
+        siem: true,
+        mdm: true,
+      },
+
+      performanceMetrics: {
+        maxConcurrentUsers: 75000,
+        authenticationLatency: 60,
+        uptimeGuarantee: 99.9,
+        throughput: 15000,
+      },
+
+      marketShare: 5.8,
+      customerBase: 2800,
+      yearFounded: 2019,
+      lastUpdated: "2024-01-15",
+    },
+  ],
+  [
+    "extreme_networks",
+    {
+      id: "extreme_networks",
+      name: "Extreme Networks NAC",
+      vendorType: "Traditional NAC",
+      description: "Network access control integrated with Extreme's network infrastructure",
+      logoUrl: "/extreme-logo.png",
+      website: "https://www.extremenetworks.com/product/nac/",
+
+      strengths: [
+        "Strong integration with Extreme infrastructure",
+        "Good price-performance ratio",
+        "Flexible deployment options",
+        "Solid technical support",
+        "Growing feature set",
+      ],
+      weaknesses: [
+        "Smaller market presence",
+        "Limited third-party integrations",
+        "Less advanced analytics",
+        "Fewer compliance certifications",
+      ],
+      keyFeatures: [
+        "Policy-based access control",
+        "Device profiling",
+        "Guest management",
+        "Network segmentation",
+        "Compliance reporting",
+        "Integration with ExtremeCloud",
+      ],
+
+      deploymentOptions: ["on_premise", "cloud", "hybrid"],
+      architectureType: "hybrid",
+      scalabilityRating: 3,
+
+      bestFitIndustries: ["education", "government", "healthcare", "retail"],
+      recommendedOrgSizes: ["small", "medium", "large"],
+
+      complianceSupport: [
+        {
+          standardId: "hipaa",
+          standardName: "HIPAA",
+          coverageLevel: "Partial",
+          certificationStatus: "in_progress",
+        },
+      ],
+      securityCertifications: ["Common Criteria"],
+
+      pricingModel: "per_device",
+      pricingTiers: [
+        {
+          name: "NAC Basic",
+          description: "Essential network access control",
+          pricePerDevice: 8,
+          features: ["Basic policy enforcement", "Device discovery", "Guest access", "Standard reporting"],
+          supportLevel: "standard",
+        },
+        {
+          name: "NAC Advanced",
+          description: "Enhanced NAC with advanced features",
+          pricePerDevice: 14,
+          features: ["All Basic features", "Advanced profiling", "Enhanced analytics", "Premium support"],
+          supportLevel: "premium",
+        },
+      ],
+
+      implementationComplexity: "medium",
+      averageImplementationTime: 75,
+      onboardingSupport: "guided",
+
+      supportOptions: ["Technical support", "Professional services", "Training"],
+      maintenanceRequirements: "moderate",
+
+      integrationCapabilities: {
+        activeDirectory: true,
+        ldap: true,
+        saml: false,
+        oauth: false,
+        api: true,
+        siem: false,
+        mdm: false,
+      },
+
+      performanceMetrics: {
+        maxConcurrentUsers: 50000,
+        authenticationLatency: 120,
+        uptimeGuarantee: 99.0,
+        throughput: 8000,
+      },
+
+      marketShare: 3.2,
+      customerBase: 1500,
+      yearFounded: 2016,
+      lastUpdated: "2024-01-15",
+    },
+  ],
+  [
+    "forescout",
+    {
+      id: "forescout",
+      name: "Forescout Platform",
+      vendorType: "Hybrid NAC",
+      description: "Device visibility and control platform with network access control capabilities",
+      logoUrl: "/forescout-logo.png",
+      website: "https://www.forescout.com/",
+
+      strengths: [
+        "Excellent device visibility and discovery",
+        "Strong IoT and OT device support",
+        "Agentless architecture",
+        "Comprehensive threat detection",
+        "Good integration capabilities",
+      ],
+      weaknesses: [
+        "Complex pricing model",
+        "Steep learning curve",
+        "Resource-intensive deployment",
+        "Limited cloud-native features",
+      ],
+      keyFeatures: [
+        "Agentless device discovery",
+        "IoT/OT device support",
+        "Real-time compliance monitoring",
+        "Automated response",
+        "Threat hunting capabilities",
+        "Extensive integrations",
+      ],
+
+      deploymentOptions: ["on_premise", "hybrid"],
+      architectureType: "distributed",
+      scalabilityRating: 4,
+
+      bestFitIndustries: ["manufacturing", "energy_utilities", "healthcare", "government"],
+      recommendedOrgSizes: ["large", "enterprise"],
+
+      complianceSupport: [
+        {
+          standardId: "nerc_cip",
+          standardName: "NERC CIP",
+          coverageLevel: "Covered",
+          certificationStatus: "certified",
+        },
+        {
+          standardId: "hipaa",
+          standardName: "HIPAA",
+          coverageLevel: "Covered",
+          certificationStatus: "certified",
+        },
+      ],
+      securityCertifications: ["Common Criteria", "FIPS 140-2"],
+
+      pricingModel: "custom",
+      pricingTiers: [
+        {
+          name: "Foundation",
+          description: "Basic device visibility and control",
+          features: ["Device discovery", "Basic profiling", "Policy enforcement", "Standard reporting"],
+          supportLevel: "standard",
+        },
+        {
+          name: "Advanced",
+          description: "Enhanced security and compliance",
+          features: [
+            "All Foundation features",
+            "Advanced threat detection",
+            "Compliance automation",
+            "Enhanced integrations",
+          ],
+          supportLevel: "premium",
+        },
+      ],
+
+      implementationComplexity: "high",
+      averageImplementationTime: 150,
+      onboardingSupport: "full_service",
+
+      supportOptions: ["24/7 support", "Professional services", "Training", "Customer success"],
+      maintenanceRequirements: "high",
+
+      integrationCapabilities: {
+        activeDirectory: true,
+        ldap: true,
+        saml: true,
+        oauth: false,
+        api: true,
+        siem: true,
+        mdm: true,
+      },
+
+      performanceMetrics: {
+        maxConcurrentUsers: 300000,
+        authenticationLatency: 110,
+        uptimeGuarantee: 99.5,
+        throughput: 30000,
+      },
+
+      marketShare: 7.9,
+      customerBase: 3200,
+      yearFounded: 2000,
+      lastUpdated: "2024-01-15",
+    },
+  ],
+  [
+    "microsoft_nps",
+    {
+      id: "microsoft_nps",
+      name: "Microsoft Network Policy Server",
+      vendorType: "Traditional NAC",
+      description: "Windows Server role providing RADIUS server and NAP functionality",
+      logoUrl: "/microsoft-logo.png",
+      website: "https://docs.microsoft.com/en-us/windows-server/networking/technologies/nps/",
+
+      strengths: [
+        "Native Windows integration",
+        "Cost-effective for Windows environments",
+        "Good Active Directory integration",
+        "Familiar management interface",
+        "Included with Windows Server",
+      ],
+      weaknesses: [
+        "Limited advanced NAC features",
+        "Windows-centric approach",
+        "Basic reporting capabilities",
+        "Limited scalability",
+        "Minimal threat detection",
+      ],
+      keyFeatures: [
+        "RADIUS authentication",
+        "Network Access Protection (NAP)",
+        "Policy-based access control",
+        "Active Directory integration",
+        "Certificate-based authentication",
+        "Basic reporting",
+      ],
+
+      deploymentOptions: ["on_premise"],
+      architectureType: "centralized",
+      scalabilityRating: 2,
+
+      bestFitIndustries: ["government", "education", "small_business"],
+      recommendedOrgSizes: ["small", "medium"],
+
+      complianceSupport: [
+        {
+          standardId: "hipaa",
+          standardName: "HIPAA",
+          coverageLevel: "Partial",
+          certificationStatus: "not_applicable",
+        },
+      ],
+      securityCertifications: ["Common Criteria"],
+
+      pricingModel: "flat_rate",
+      pricingTiers: [
+        {
+          name: "Windows Server Standard",
+          description: "Included with Windows Server Standard edition",
+          features: ["RADIUS authentication", "NAP", "Basic policy enforcement", "Standard support"],
+          supportLevel: "standard",
+        },
+        {
+          name: "Windows Server Datacenter",
+          description: "Included with Windows Server Datacenter edition",
+          features: ["All Standard features", "Enhanced virtualization", "Premium support"],
+          supportLevel: "premium",
+        },
+      ],
+
+      implementationComplexity: "medium",
+      averageImplementationTime: 60,
+      onboardingSupport: "self_service",
+
+      supportOptions: ["Microsoft support", "Documentation", "Community forums"],
+      maintenanceRequirements: "moderate",
+
+      integrationCapabilities: {
+        activeDirectory: true,
+        ldap: true,
+        saml: false,
+        oauth: false,
+        api: false,
+        siem: false,
+        mdm: false,
+      },
+
+      performanceMetrics: {
+        maxConcurrentUsers: 10000,
+        authenticationLatency: 150,
+        uptimeGuarantee: 98.0,
+        throughput: 2000,
+      },
+
+      marketShare: 2.1,
+      customerBase: 10000,
+      yearFounded: 2008,
+      lastUpdated: "2024-01-15",
+    },
+  ],
+  [
+    "radiusaas",
+    {
+      id: "radiusaas",
+      name: "Radius-as-a-Service",
+      vendorType: "RADIUS-as-a-Service",
+      description: "Cloud-based RADIUS authentication service for secure network access",
+      logoUrl: "/radiusaas-logo.png",
+      website: "https://www.radiusaas.com/",
+
+      strengths: [
+        "Simplified RADIUS deployment",
+        "Cloud-native architecture",
+        "Cost-effective for small to medium businesses",
+        "Easy to manage",
+        "Good for Wi-Fi authentication",
+      ],
+      weaknesses: [
+        "Limited advanced NAC features",
+        "Focus on authentication, not policy",
+        "Fewer integrations",
+        "Limited scalability for large enterprises",
+      ],
+      keyFeatures: [
+        "Cloud-based RADIUS",
+        "Certificate-based authentication",
+        "User and device management",
+        "Integration with identity providers",
+        "Basic reporting",
+        "Simplified Wi-Fi security",
+      ],
+
+      deploymentOptions: ["cloud"],
+      architectureType: "cloud_native",
+      scalabilityRating: 3,
+
+      bestFitIndustries: ["education", "retail", "small_business", "hospitality"],
+      recommendedOrgSizes: ["small", "medium"],
+
+      complianceSupport: [
+        {
+          standardId: "pci_dss",
+          standardName: "PCI-DSS",
+          coverageLevel: "Partial",
+          certificationStatus: "in_progress",
+        },
+      ],
+      securityCertifications: ["SOC 2"],
+
+      pricingModel: "per_user",
+      pricingTiers: [
+        {
+          name: "Basic",
+          description: "Essential RADIUS authentication",
+          pricePerUser: 2,
+          features: ["Cloud RADIUS", "User management", "Basic reporting", "Email support"],
+          supportLevel: "basic",
+        },
+        {
+          name: "Pro",
+          description: "Advanced features and support",
+          pricePerUser: 4,
+          features: ["All Basic features", "Certificate management", "Advanced reporting", "Phone support"],
+          supportLevel: "standard",
+        },
+      ],
+
+      implementationComplexity: "low",
+      averageImplementationTime: 15,
+      onboardingSupport: "self_service",
+
+      supportOptions: ["Email support", "Phone support", "Knowledge base"],
+      maintenanceRequirements: "minimal",
+
+      integrationCapabilities: {
+        activeDirectory: true,
+        ldap: true,
+        saml: true,
+        oauth: false,
+        api: true,
+        siem: false,
+        mdm: false,
+      },
+
+      performanceMetrics: {
+        maxConcurrentUsers: 25000,
+        authenticationLatency: 70,
+        uptimeGuarantee: 99.9,
+        throughput: 5000,
+      },
+
+      marketShare: 1.5,
+      customerBase: 800,
+      yearFounded: 2018,
+      lastUpdated: "2024-01-15",
+    },
+  ],
+  [
+    "securew2",
+    {
+      id: "securew2",
+      name: "SecureW2",
+      vendorType: "Identity Platform",
+      description: "Cloud-based identity and access management with strong certificate support",
+      logoUrl: "/securew2-logo.png",
+      website: "https://www.securew2.com/",
+
+      strengths: [
+        "Excellent certificate management",
+        "Strong identity provider integration",
+        "Good for BYOD environments",
+        "Simplified onboarding",
+        "Cloud-native architecture",
+      ],
+      weaknesses: [
+        "Limited traditional NAC features",
+        "Focus on identity, not network policy",
+        "Fewer threat detection capabilities",
+        "Higher cost for some deployments",
+      ],
+      keyFeatures: [
+        "Certificate lifecycle management",
+        "Cloud RADIUS",
+        "Identity provider integration",
+        "BYOD onboarding",
+        "Passwordless authentication",
+        "Comprehensive reporting",
+      ],
+
+      deploymentOptions: ["cloud"],
+      architectureType: "cloud_native",
+      scalabilityRating: 4,
+
+      bestFitIndustries: ["education", "technology", "healthcare", "retail"],
+      recommendedOrgSizes: ["medium", "large"],
+
+      complianceSupport: [
+        {
+          standardId: "hipaa",
+          standardName: "HIPAA",
+          coverageLevel: "Partial",
+          certificationStatus: "in_progress",
+        },
+        {
+          standardId: "pci_dss",
+          standardName: "PCI-DSS",
+          coverageLevel: "Partial",
+          certificationStatus: "in_progress",
+        },
+      ],
+      securityCertifications: ["SOC 2", "ISO 27001"],
+
+      pricingModel: "per_user",
+      pricingTiers: [
+        {
+          name: "Standard",
+          description: "Core identity and access management",
+          pricePerUser: 5,
+          features: ["Cloud RADIUS", "Certificate management", "Basic reporting", "Standard support"],
+          supportLevel: "standard",
+        },
+        {
+          name: "Enterprise",
+          description: "Advanced features and integrations",
+          pricePerUser: 9,
+          features: ["All Standard features", "Advanced integrations", "Premium support", "Enhanced analytics"],
+          supportLevel: "premium",
+        },
+      ],
+
+      implementationComplexity: "low",
+      averageImplementationTime: 30,
+      onboardingSupport: "guided",
+
+      supportOptions: ["24/7 support", "Professional services", "Training", "Customer success"],
+      maintenanceRequirements: "minimal",
+
+      integrationCapabilities: {
+        activeDirectory: true,
+        ldap: true,
+        saml: true,
+        oauth: true,
+        api: true,
+        siem: true,
+        mdm: true,
+      },
+
+      performanceMetrics: {
+        maxConcurrentUsers: 50000,
+        authenticationLatency: 60,
+        uptimeGuarantee: 99.9,
+        throughput: 10000,
+      },
+
+      marketShare: 2.8,
+      customerBase: 1200,
+      yearFounded: 2012,
+      lastUpdated: "2024-01-15",
+    },
+  ],
+  [
+    "foxpass",
+    {
+      id: "foxpass",
+      name: "Foxpass",
+      vendorType: "RADIUS-as-a-Service",
+      description: "Cloud-based RADIUS and LDAP authentication with strong security features",
+      logoUrl: "/foxpass-logo.png",
+      website: "https://www.foxpass.com/",
+
+      strengths: [
+        "Simplified RADIUS and LDAP",
+        "Strong security focus",
+        "Good for cloud-first organizations",
+        "Easy to deploy and manage",
+        "Cost-effective",
+      ],
+      weaknesses: [
+        "Limited advanced NAC features",
+        "Fewer integrations than competitors",
+        "Limited scalability for very large enterprises",
+        "Basic reporting",
+      ],
+      keyFeatures: [
+        "Cloud RADIUS and LDAP",
+        "Certificate-based authentication",
+        "SSH key management",
+        "Integration with identity providers",
+        "Basic policy enforcement",
+        "Simplified security",
+      ],
+
+      deploymentOptions: ["cloud"],
+      architectureType: "cloud_native",
+      scalabilityRating: 3,
+
+      bestFitIndustries: ["technology", "small_business", "startups"],
+      recommendedOrgSizes: ["small", "medium"],
+
+      complianceSupport: [
+        {
+          standardId: "soc2",
+          standardName: "SOC 2",
+          coverageLevel: "Covered",
+          certificationStatus: "certified",
+        },
+      ],
+      securityCertifications: ["SOC 2"],
+
+      pricingModel: "per_user",
+      pricingTiers: [
+        {
+          name: "Basic",
+          description: "Essential RADIUS and LDAP",
+          pricePerUser: 3,
+          features: ["Cloud RADIUS", "Cloud LDAP", "Basic reporting", "Email support"],
+          supportLevel: "basic",
+        },
+        {
+          name: "Pro",
+          description: "Advanced features and support",
+          pricePerUser: 6,
+          features: ["All Basic features", "SSH key management", "Advanced reporting", "Phone support"],
+          supportLevel: "standard",
+        },
+      ],
+
+      implementationComplexity: "low",
+      averageImplementationTime: 10,
+      onboardingSupport: "self_service",
+
+      supportOptions: ["Email support", "Phone support", "Knowledge base"],
+      maintenanceRequirements: "minimal",
+
+      integrationCapabilities: {
+        activeDirectory: true,
+        ldap: true,
+        saml: true,
+        oauth: false,
+        api: true,
+        siem: false,
+        mdm: false,
+      },
+
+      performanceMetrics: {
+        maxConcurrentUsers: 15000,
+        authenticationLatency: 80,
+        uptimeGuarantee: 99.9,
+        throughput: 3000,
+      },
+
+      marketShare: 0.9,
+      customerBase: 500,
+      yearFounded: 2015,
+      lastUpdated: "2024-01-15",
+    },
+  ],
+  [
+    "packetfence",
+    {
+      id: "packetfence",
+      name: "PacketFence",
+      vendorType: "Traditional NAC",
+      description: "Open-source network access control solution with a wide range of features",
+      logoUrl: "/packetfence-logo.png",
+      website: "https://www.packetfence.org/",
+
+      strengths: [
+        "Open-source and free",
+        "Highly customizable",
+        "Strong community support",
+        "Wide range of features",
+        "Good for budget-conscious organizations",
+      ],
+      weaknesses: [
+        "Requires significant technical expertise",
+        "No official enterprise support",
+        "Complex deployment and management",
+        "Steep learning curve",
+        "Limited cloud-native features",
+      ],
+      keyFeatures: [
+        "Policy-based access control",
+        "Device profiling",
+        "Guest management",
+        "Network segmentation",
+        "Compliance checking",
+        "Extensive integrations",
+      ],
+
+      deploymentOptions: ["on_premise"],
+      architectureType: "centralized",
+      scalabilityRating: 3,
+
+      bestFitIndustries: ["education", "government", "non_profit"],
+      recommendedOrgSizes: ["small", "medium", "large"],
+
+      complianceSupport: [
+        {
+          standardId: "hipaa",
+          standardName: "HIPAA",
+          coverageLevel: "NotCovered",
+          certificationStatus: "not_applicable",
+        },
+      ],
+      securityCertifications: [],
+
+      pricingModel: "flat_rate",
+      pricingTiers: [
+        {
+          name: "Community Edition",
+          description: "Free and open-source",
+          features: ["All features", "Community support"],
+          supportLevel: "basic",
+        },
+      ],
+
+      implementationComplexity: "very_high",
+      averageImplementationTime: 200,
+      onboardingSupport: "self_service",
+
+      supportOptions: ["Community forums", "Mailing lists", "Documentation"],
+      maintenanceRequirements: "very_high",
+
+      integrationCapabilities: {
+        activeDirectory: true,
+        ldap: true,
+        saml: true,
+        oauth: false,
+        api: true,
+        siem: true,
+        mdm: true,
+      },
+
+      performanceMetrics: {
+        maxConcurrentUsers: 20000,
+        authenticationLatency: 150,
+        uptimeGuarantee: 95.0,
+        throughput: 4000,
+      },
+
+      marketShare: 0.5,
+      customerBase: 2000,
+      yearFounded: 2003,
+      lastUpdated: "2024-01-15",
+    },
+  ],
+])
+
+export const VENDOR_IDS_DEFINITIVE: readonly VendorId[] = [
   "portnox",
   "cisco_ise",
   "aruba_clearpass",
-  "fortinac",
+  "fortinet_fortigate",
+  "juniper_mist",
+  "extreme_networks",
   "forescout",
-  "packetfence",
-  "pulse_secure",
-  "extreme_control",
-  "juniper_mist_aa",
-  "arista_cue",
-  "microsoft_nps_intune",
+  "microsoft_nps",
+  "radiusaas",
   "securew2",
   "foxpass",
-  "cisco_meraki",
-  "radiusaas",
-] as const
+  "packetfence",
+]
 
-export type VendorId = (typeof VENDOR_IDS_DEFINITIVE)[number]
-
-export const allVendorsData: Map<VendorId, NewVendorData> = new Map()
-
-// --- DATA POPULATION ---
-
-// 1. PORTNOX
-allVendorsData.set("portnox", {
-  id: "portnox",
-  name: "Portnox CLEAR",
-  logoUrl: "/portnox-logo.png",
-  shortDescription: "AI-powered, cloud-native Zero Trust Network Access Control.",
-  vendorType: "Cloud-Native NAC",
-  portnoxSpecificMetrics: {
-    riskBasedAuthCoverage: 95,
-    continuousMonitoringCoverage: 98,
-    automatedRemediationRate: 92,
-    is100PercentCloudNative: true,
-    agentlessDeploymentPercent: 97,
-  },
-  features: {
-    Authentication: {
-      "802.1X": { score: 98 },
-      MAB: { score: 95 },
-      "Web Auth": { score: 90 },
-      "SAML 2.0": { score: 100 },
-      "OAuth 2.0": { score: 100 },
-      "TACACS+": { score: 95 },
-      "Cert-Based": { score: 100 },
-    },
-    DeviceSupport: {
-      Wired: { score: 100 },
-      Wireless: { score: 100 },
-      VPN: { score: 95 },
-      BYOD: { score: 100 },
-      IoT: { score: 95 },
-      OT: { score: 85 },
-      Guest: { score: 95 },
-      Mobile: { score: 100 },
-    },
-    Advanced: {
-      "Zero Trust": { score: 100 },
-      "AI/ML": { score: 98 },
-      "Cloud Native": { score: 100 },
-      "HA/DR": { score: 100 },
-      API: { score: 100 },
-      Automation: { score: 98 },
-    },
-    Compliance: {
-      PCI: { score: 95 },
-      HIPAA: { score: 95 },
-      SOC2: { score: 100 },
-      ISO27001: { score: 100 },
-      GDPR: { score: 95 },
-      Posture: { score: 90 },
-    },
-  },
-  pricingModelDesc:
-    "Per-device or per-user subscription with volume and multi-year discounts. All-inclusive pricing model eliminates hidden costs.",
-  licensingDetails: {
-    modelDescription:
-      "Simple, all-inclusive per-device subscription model. No hidden fees for hardware, support, or core features.",
-    licensingTiers: {
-      Essentials: {
-        listPrice: "$3/device/month",
-        features: ["Basic NAC", "Cloud RADIUS"],
-        support: "Business hours",
-        limitations: ["SLA: 99.5%"],
-      },
-      Professional: {
-        listPrice: "$4/device/month",
-        features: ["Advanced NAC", "Risk Scoring"],
-        support: "24x7",
-        limitations: ["SLA: 99.9%"],
-      },
-      Enterprise: {
-        listPrice: "$5/device/month",
-        features: ["Full platform, all modules"],
-        support: "24x7 + Dedicated CSM",
-        limitations: ["SLA: 99.95%"],
-      },
-    },
-    modules: {
-      "TACACS+ as a Service": { listPrice: "$200/admin/month", description: "Unlimited devices, HA included." },
-      "Risk Analytics": {
-        listPrice: "$1/device/month additional",
-        description: "ML-based risk scoring and behavioral analysis.",
-      },
-      "Privileged Access": {
-        listPrice: "$100/user/month",
-        description: "Password vault, session recording, JIT access.",
-      },
-    },
-    notes: ["No additional costs for software updates, security patches, scaling, or disaster recovery."],
-  },
-  implementation: {
-    averageDeploymentTimeDays: 7,
-    complexityLevel: "low",
-    requiresHardware: false,
-    cloudNative: true,
-    agentlessCapabilityPercent: 97,
-    professionalServicesCostFactor: 0.05,
-  },
-  complianceSupport: [
-    { standardId: "soc2", coverageLevel: "Certified Type II" },
-    { standardId: "iso27001", coverageLevel: "Certified" },
-    { standardId: "hipaa", coverageLevel: "Compliant", automationPercent: 80 },
-    { standardId: "pci_dss", coverageLevel: "Compliant", automationPercent: 75 },
-    { standardId: "gdpr", coverageLevel: "Compliant" },
-    { standardId: "ccpa", coverageLevel: "Compliant" },
-  ],
-  tcoFactors: {
-    personnelCostFactor: 0.25,
-    trainingCostInitial: 5000,
-    hardwareCostPerYear: 0,
-    supportCostFactor: 0,
-    hiddenCostFactor: 0,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 8,
-    incidentReductionPercent: 94,
-    complianceAutomationSavingsFactor: 0.92,
-    operationalEfficiencyGainPercent: 85,
-  },
-  strengths: [
-    "Fastest deployment (under 7 days)",
-    "100% cloud-native, zero hardware",
-    "AI-powered automation & risk scoring",
-    "Predictable, all-inclusive pricing",
-    "Comprehensive API and integrations",
-  ],
-  weaknesses: ["Requires stable internet connectivity for management", "Less brand recognition than legacy vendors"],
-  targetOrgSizes: ["small_business", "mid_market", "enterprise", "global_enterprise"],
-  targetIndustries: [
-    "healthcare",
-    "financial_services",
-    "technology",
-    "retail",
-    "manufacturing",
-    "education",
-    "government",
-  ],
-  comparativeScores: {
-    securityEffectiveness: 98,
-    easeOfDeployment: 99,
-    scalability: 98,
-    integrationCapabilities: 95,
-    totalCostOfOwnershipScore: 95,
-    complianceCoverageScore: 96,
-  },
-})
-
-// 2. CISCO ISE
-allVendorsData.set("cisco_ise", {
-  id: "cisco_ise",
-  name: "Cisco ISE",
-  logoUrl: "/cisco-logo.png",
-  shortDescription: "Traditional, on-premise Network Access Control solution.",
-  vendorType: "Traditional NAC",
-  features: {
-    Authentication: {
-      "802.1X": { score: 95 },
-      MAB: { score: 95 },
-      "Web Auth": { score: 85 },
-      "SAML 2.0": { score: 80 },
-      "OAuth 2.0": { score: 70 },
-      "TACACS+": { score: 95 },
-      "Cert-Based": { score: 90 },
-    },
-    DeviceSupport: {
-      Wired: { score: 95 },
-      Wireless: { score: 95 },
-      VPN: { score: 90 },
-      BYOD: { score: 85 },
-      IoT: { score: 80 },
-      OT: { score: 75 },
-      Guest: { score: 85 },
-      Mobile: { score: 85 },
-    },
-    Advanced: {
-      "Zero Trust": { score: 75 },
-      "AI/ML": { score: 60 },
-      "Cloud Native": { score: 10 },
-      "HA/DR": { score: 85 },
-      API: { score: 80 },
-      Automation: { score: 70 },
-    },
-    Compliance: {
-      PCI: { score: 85 },
-      HIPAA: { score: 85 },
-      SOC2: { score: 70 },
-      ISO27001: { score: 70 },
-      GDPR: { score: 75 },
-      Posture: { score: 90 },
-    },
-  },
-  pricingModelDesc:
-    "Complex model with perpetual licenses for appliances and endpoints, plus mandatory support contracts.",
-  licensingDetails: {
-    modelDescription:
-      "A complex, multi-layered licensing model requiring separate licenses for endpoints, device administration, and features, plus hardware/VM costs and mandatory support.",
-    licensingTiers: {
-      Essentials: {
-        listPrice: "$50/endpoint/year",
-        streetPrice: "$35-45",
-        features: ["Basic 802.1X, MAB, Guest (basic)"],
-        limitations: ["No profiling, no posture, no BYOD"],
-      },
-      Advantage: {
-        listPrice: "$100/endpoint/year",
-        streetPrice: "$75-95",
-        features: ["Profiling, BYOD, Guest (advanced), Basic posture"],
-        limitations: ["No TACACS+, No SXP, No pxGrid"],
-      },
-      Premier: {
-        listPrice: "$175/endpoint/year",
-        streetPrice: "$125-150",
-        features: ["Everything including TACACS+, pxGrid, SXP, Advanced posture"],
-        limitations: ["Required for Zero Trust"],
-      },
-    },
-    modules: {
-      "Device Admin (TACACS+)": { listPrice: "$15/device/year", description: "Standalone TACACS+ license." },
-      "AnyConnect Posture": { listPrice: "$5/endpoint/year", description: "Agent-based posture assessment." },
-      "Compliance Module": { listPrice: "$10/endpoint/year", description: "Adds compliance-specific checks." },
-    },
-  },
-  hardwareDetails: {
-    physical: {
-      "SNS-3615 (Small)": { listPrice: "$19,995", streetPrice: "$15k-17k", capacity: "5,000 endpoints" },
-      "SNS-3655 (Medium)": { listPrice: "$59,995", streetPrice: "$45k-50k", capacity: "15,000 endpoints" },
-      "SNS-3695 (Large)": { listPrice: "$119,995", streetPrice: "$95k-105k", capacity: "30,000 endpoints" },
-    },
-    virtual: {
-      "ISE-VM-K9 (Small)": { listPrice: "$8,000", capacity: "5,000 endpoints", resources: "16 vCPU, 16GB RAM" },
-      "ISE-VM-K9 (Medium)": { listPrice: "$15,000", capacity: "15,000 endpoints", resources: "16 vCPU, 64GB RAM" },
-      "ISE-VM-K9 (Large)": { listPrice: "$25,000", capacity: "50,000 endpoints", resources: "32 vCPU, 256GB RAM" },
-    },
-  },
-  implementation: {
-    averageDeploymentTimeDays: 120,
-    complexityLevel: "very_high",
-    requiresHardware: true,
-    cloudNative: false,
-    agentlessCapabilityPercent: 20,
-    professionalServicesCostFactor: 0.5,
-  },
-  complianceSupport: [
-    { standardId: "pci_dss", coverageLevel: "Covered", details: "15 templates available" },
-    { standardId: "hipaa", coverageLevel: "Covered", details: "12 templates available" },
-    { standardId: "soc2", coverageLevel: "Partial" },
-    { standardId: "common_criteria", coverageLevel: "Certified EAL2+" },
-    { standardId: "fips140_2", coverageLevel: "Level 1" },
-  ],
-  tcoFactors: {
-    personnelCostFactor: 2.5,
-    trainingCostInitial: 20000,
-    hardwareCostPerYear: 20000,
-    supportCostFactor: 0.22,
-    hiddenCostFactor: 0.2,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 36,
-    incidentReductionPercent: 65,
-    complianceAutomationSavingsFactor: 0.25,
-    operationalEfficiencyGainPercent: 30,
-  },
-  strengths: [
-    "Mature product",
-    "Large feature set (if licensed)",
-    "Deep Cisco ecosystem integration",
-    "Strong brand recognition",
-  ],
-  weaknesses: [
-    "Extremely complex to deploy & manage",
-    "Very high TCO with numerous hidden costs",
-    "Hardware-dependent, not cloud-native",
-    "Slow innovation cycle",
-  ],
-  targetOrgSizes: ["enterprise", "global_enterprise"],
-  targetIndustries: ["government", "financial_services", "large_enterprises_with_cisco_infra"],
-  comparativeScores: {
-    securityEffectiveness: 85,
-    easeOfDeployment: 20,
-    scalability: 90,
-    integrationCapabilities: 90,
-    totalCostOfOwnershipScore: 30,
-    complianceCoverageScore: 80,
-  },
-})
-
-// 3. ARUBA CLEARPASS
-allVendorsData.set("aruba_clearpass", {
-  id: "aruba_clearpass",
-  name: "Aruba ClearPass (HPE)",
-  logoUrl: "/aruba-logo.png",
-  shortDescription: "Comprehensive traditional NAC solution, strong in wired/wireless policy enforcement.",
-  vendorType: "Traditional NAC",
-  features: {
-    Authentication: {
-      "802.1X": { score: 90 },
-      MAB: { score: 90 },
-      "Web Auth": { score: 85 },
-      "SAML 2.0": { score: 80 },
-      "OAuth 2.0": { score: 65 },
-      "TACACS+": { score: 80 },
-      "Cert-Based": { score: 90 },
-    },
-    DeviceSupport: {
-      Wired: { score: 90 },
-      Wireless: { score: 95 },
-      VPN: { score: 80 },
-      BYOD: { score: 85 },
-      IoT: { score: 80 },
-      OT: { score: 70 },
-      Guest: { score: 90 },
-      Mobile: { score: 85 },
-    },
-    Advanced: {
-      "Zero Trust": { score: 65 },
-      "AI/ML": { score: 65 },
-      "Cloud Native": { score: 20 },
-      "HA/DR": { score: 80 },
-      API: { score: 80 },
-      Automation: { score: 75 },
-    },
-    Compliance: {
-      PCI: { score: 80 },
-      HIPAA: { score: 80 },
-      SOC2: { score: 65 },
-      ISO27001: { score: 65 },
-      GDPR: { score: 70 },
-      Posture: { score: 85 },
-    },
-  },
-  pricingModelDesc: "Perpetual or subscription licenses per endpoint, plus optional modules and mandatory support.",
-  licensingDetails: {
-    modelDescription:
-      "Perpetual or subscription licensing per endpoint, with costs decreasing at volume. Key features like posture and guest access require separate, costly modules.",
-    licensingTiers: {
-      "Perpetual (1k endpoints)": { listPrice: "$23,150", description: "Base license for 1,000 endpoints." },
-      "Subscription (1k endpoints, 3yr)": {
-        listPrice: "~$19,677",
-        description: "85% of perpetual for a 3-year subscription.",
-      },
-    },
-    modules: {
-      "OnGuard (Posture)": { listPrice: "$8,500 per 1,000 endpoints", description: "Required for posture compliance." },
-      "Guest Module": { listPrice: "$15,000 per 5,000 users", description: "Required for advanced guest management." },
-      "Device Insight": { listPrice: "$18,000 per 5,000 devices", description: "For enhanced device profiling." },
-    },
-  },
-  hardwareDetails: {
-    physical: {
-      C2000: { listPrice: "$24,995", streetPrice: "$20k-22k", capacity: "5,000 endpoints" },
-      C3000: { listPrice: "$49,995", streetPrice: "$42k-45k", capacity: "25,000 endpoints" },
-    },
-    virtual: {
-      "VM-5K": { listPrice: "$24,995", capacity: "5,000 endpoints" },
-      "VM-25K": { listPrice: "$49,995", capacity: "25,000 endpoints" },
-    },
-  },
-  implementation: {
-    averageDeploymentTimeDays: 90,
-    complexityLevel: "high",
-    requiresHardware: true,
-    cloudNative: false,
-    agentlessCapabilityPercent: 60,
-    professionalServicesCostFactor: 0.35,
-  },
-  complianceSupport: [
-    { standardId: "pci_dss", coverageLevel: "Covered", details: "Templates included" },
-    { standardId: "hipaa", coverageLevel: "Covered", details: "Templates included" },
-    { standardId: "common_criteria", coverageLevel: "Certified EAL2" },
-  ],
-  tcoFactors: {
-    personnelCostFactor: 1.5,
-    trainingCostInitial: 10000,
-    hardwareCostPerYear: 15000,
-    supportCostFactor: 0.2,
-    hiddenCostFactor: 25,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 30,
-    incidentReductionPercent: 55,
-    complianceAutomationSavingsFactor: 0.2,
-    operationalEfficiencyGainPercent: 35,
-  },
-  strengths: [
-    "Strong policy enforcement engine",
-    "Good for Aruba & HPE environments",
-    "Scalable for large deployments",
-  ],
-  weaknesses: [
-    "High complexity in configuration",
-    "Expensive with all modules",
-    "On-premise focus, lacks cloud agility",
-  ],
-  targetOrgSizes: ["mid_market", "enterprise", "global_enterprise"],
-  targetIndustries: ["education", "healthcare", "retail", "government"],
-  comparativeScores: {
-    securityEffectiveness: 82,
-    easeOfDeployment: 40,
-    scalability: 88,
-    integrationCapabilities: 78,
-    totalCostOfOwnershipScore: 50,
-    complianceCoverageScore: 72,
-  },
-})
-
-// 4. FORESCOUT
-allVendorsData.set("forescout", {
-  id: "forescout",
-  name: "Forescout Platform",
-  logoUrl: "/forescout-logo.png",
-  shortDescription: "Agentless device visibility and control platform, strong in OT/ICS environments.",
-  vendorType: "Traditional NAC",
-  features: {
-    Authentication: {
-      "802.1X": { score: 75 },
-      MAB: { score: 80 },
-      "Web Auth": { score: 70 },
-      "SAML 2.0": { score: 0 },
-      "OAuth 2.0": { score: 0 },
-      "TACACS+": { score: 0 },
-      "Cert-Based": { score: 70 },
-    },
-    DeviceSupport: {
-      Wired: { score: 90 },
-      Wireless: { score: 85 },
-      VPN: { score: 70 },
-      BYOD: { score: 75 },
-      IoT: { score: 98 },
-      OT: { score: 98 },
-      Guest: { score: 0 },
-      Mobile: { score: 70 },
-    },
-    Advanced: {
-      "Zero Trust": { score: 80 },
-      "AI/ML": { score: 80 },
-      "Cloud Native": { score: 15 },
-      "HA/DR": { score: 75 },
-      API: { score: 90 },
-      Automation: { score: 80 },
-    },
-    Compliance: {
-      PCI: { score: 75 },
-      HIPAA: { score: 75 },
-      SOC2: { score: 70 },
-      ISO27001: { score: 70 },
-      GDPR: { score: 75 },
-      Posture: { score: 90 },
-    },
-  },
-  pricingModelDesc:
-    "Perpetual or subscription licenses per device, with mandatory modules for control and segmentation.",
-  licensingDetails: {
-    modelDescription:
-      "Complex licensing based on perpetual or subscription per-device counts, with additional required modules (eyeControl, eyeSegment) for full functionality.",
-    licensingTiers: {
-      Perpetual: {
-        listPrice: "$35-55/device",
-        description: "One-time license fee, plus mandatory annual maintenance (20-25%).",
-      },
-      Subscription: {
-        listPrice: "$12-20/device/year",
-        description: "Annual subscription including support and updates.",
-      },
-    },
-    modules: {
-      "eyeSight (Visibility)": {
-        listPrice: "$3/device/year",
-        description: "Required for advanced device classification.",
-      },
-      "eyeControl (Policy)": {
-        listPrice: "$5/device/year",
-        description: "Required for policy enforcement and response actions.",
-      },
-      "eyeSegment (Segmentation)": {
-        listPrice: "$35,000 base + $10/device",
-        description: "Required for micro-segmentation.",
-      },
-      "eyeExtend (Integrations)": {
-        listPrice: "$15,000 per integration",
-        description: "Required to connect to third-party tools like SIEMs, EDR, etc.",
-      },
-    },
-  },
-  implementation: {
-    averageDeploymentTimeDays: 100,
-    complexityLevel: "high",
-    requiresHardware: true,
-    cloudNative: false,
-    agentlessCapabilityPercent: 95,
-    professionalServicesCostFactor: 0.3,
-  },
-  complianceSupport: [
-    { standardId: "nerc_cip", coverageLevel: "Covered", details: "Strong for OT visibility relevant to NERC CIP." },
-    { standardId: "iec62443", coverageLevel: "Covered" },
-    { standardId: "hipaa", coverageLevel: "Partial" },
-  ],
-  tcoFactors: {
-    personnelCostFactor: 2.0,
-    trainingCostInitial: 12000,
-    hardwareCostPerYear: 18000,
-    supportCostFactor: 0.2,
-    hiddenCostFactor: 22,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 32,
-    incidentReductionPercent: 65,
-    complianceAutomationSavingsFactor: 0.18,
-    operationalEfficiencyGainPercent: 45,
-  },
-  strengths: [
-    "Leading agentless device visibility and classification",
-    "Strong support for IoT, OT, and medical devices",
-    "Scalable architecture",
-    "Broad integration ecosystem",
-  ],
-  weaknesses: [
-    "Complex and costly to implement and manage",
-    "Core NAC features require expensive add-on modules",
-    "Primarily on-premise",
-    "Known to be 'glitchy'",
-  ],
-  targetOrgSizes: ["enterprise", "global_enterprise"],
-  targetIndustries: ["manufacturing", "healthcare", "energy_utilities", "government", "financial_services"],
-  comparativeScores: {
-    securityEffectiveness: 88,
-    easeOfDeployment: 45,
-    scalability: 90,
-    integrationCapabilities: 85,
-    totalCostOfOwnershipScore: 45,
-    complianceCoverageScore: 70,
-  },
-})
-
-// 5. FORTINAC
-allVendorsData.set("fortinac", {
-  id: "fortinac",
-  name: "FortiNAC (Fortinet)",
-  logoUrl: "/fortinet-logo.png",
-  shortDescription: "Network Access Control integrated into the Fortinet Security Fabric.",
-  vendorType: "Firewall-based NAC",
-  features: {
-    Authentication: {
-      "802.1X": { score: 85 },
-      MAB: { score: 85 },
-      "Web Auth": { score: 80 },
-      "SAML 2.0": { score: 60 },
-      "OAuth 2.0": { score: 0 },
-      "TACACS+": { score: 70 },
-      "Cert-Based": { score: 80 },
-    },
-    DeviceSupport: {
-      Wired: { score: 85 },
-      Wireless: { score: 85 },
-      VPN: { score: 80 },
-      BYOD: { score: 80 },
-      IoT: { score: 85 },
-      OT: { score: 80 },
-      Guest: { score: 80 },
-      Mobile: { score: 80 },
-    },
-    Advanced: {
-      "Zero Trust": { score: 70 },
-      "AI/ML": { score: 60 },
-      "Cloud Native": { score: 15 },
-      "HA/DR": { score: 75 },
-      API: { score: 75 },
-      Automation: { score: 70 },
-    },
-    Compliance: {
-      PCI: { score: 75 },
-      HIPAA: { score: 75 },
-      SOC2: { score: 65 },
-      ISO27001: { score: 65 },
-      GDPR: { score: 70 },
-      Posture: { score: 80 },
-    },
-  },
-  pricingModelDesc:
-    "Appliance-based (physical/virtual), with licenses per concurrent endpoint. Discounts for existing Fortinet customers.",
-  implementation: {
-    averageDeploymentTimeDays: 75,
-    complexityLevel: "medium",
-    requiresHardware: true,
-    cloudNative: false,
-    agentlessCapabilityPercent: 70,
-    professionalServicesCostFactor: 0.25,
-  },
-  complianceSupport: [
-    { standardId: "pci_dss", coverageLevel: "Partial" },
-    { standardId: "hipaa", coverageLevel: "Partial" },
-  ],
-  tcoFactors: {
-    personnelCostFactor: 1.0,
-    trainingCostInitial: 8000,
-    hardwareCostPerYear: 10000,
-    supportCostFactor: 0.2,
-    hiddenCostFactor: 20,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 28,
-    incidentReductionPercent: 60,
-    complianceAutomationSavingsFactor: 0.15,
-    operationalEfficiencyGainPercent: 40,
-  },
-  strengths: [
-    "Strong integration with Fortinet Security Fabric",
-    "Good IoT/OT device visibility",
-    "Centralized management for Fortinet shops",
-  ],
-  weaknesses: [
-    "Best value only when heavily invested in Fortinet",
-    "Less comprehensive than specialized NACs",
-    "Complex to integrate in non-Fortinet environments",
-  ],
-  targetOrgSizes: ["mid_market", "enterprise"],
-  targetIndustries: ["manufacturing", "healthcare", "government", "education"],
-  comparativeScores: {
-    securityEffectiveness: 85,
-    easeOfDeployment: 60,
-    scalability: 80,
-    integrationCapabilities: 90,
-    totalCostOfOwnershipScore: 60,
-    complianceCoverageScore: 68,
-  },
-})
-
-// ... Populating the rest of the vendors with abridged data for brevity ...
-
-allVendorsData.set("juniper_mist_aa", {
-  id: "juniper_mist_aa",
-  name: "Juniper Mist Access Assurance",
-  logoUrl: "/juniper-logo.png",
-  shortDescription: "Cloud-native, AI-driven access assurance service, part of the Mist AI platform.",
-  vendorType: "Cloud-Native NAC",
-  features: {},
-  pricingModelDesc: "Subscription-based, typically per access point or per user.",
-  implementation: {
-    averageDeploymentTimeDays: 20,
-    complexityLevel: "medium",
-    requiresHardware: false,
-    cloudNative: true,
-    agentlessCapabilityPercent: 85,
-    professionalServicesCostFactor: 0.15,
-  },
-  complianceSupport: [],
-  tcoFactors: {
-    personnelCostFactor: 0.4,
-    trainingCostInitial: 6000,
-    hardwareCostPerYear: 0,
-    supportCostFactor: 0,
-    hiddenCostFactor: 10,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 20,
-    incidentReductionPercent: 70,
-    complianceAutomationSavingsFactor: 0.25,
-    operationalEfficiencyGainPercent: 60,
-  },
-  strengths: [
-    "Cloud-native and AI-driven (Mist AI)",
-    "Simplified operations via cloud management",
-    "Strong integration with Juniper Mist ecosystem",
-  ],
-  weaknesses: [
-    "Best suited for organizations invested in the Juniper Mist platform",
-    "Full benefits realized with Juniper hardware",
-  ],
-  comparativeScores: {
-    securityEffectiveness: 87,
-    easeOfDeployment: 75,
-    scalability: 88,
-    integrationCapabilities: 80,
-    totalCostOfOwnershipScore: 70,
-    complianceCoverageScore: 70,
-  },
-})
-
-allVendorsData.set("microsoft_nps_intune", {
-  id: "microsoft_nps_intune",
-  name: "Microsoft (NPS/Intune)",
-  logoUrl: "/microsoft-logo.png",
-  shortDescription: "Leverages existing Microsoft infrastructure for network access control.",
-  vendorType: "Ecosystem NAC",
-  features: {},
-  pricingModelDesc: "Licensing is part of Microsoft 365/EMS SKUs (e.g., E3, E5).",
-  implementation: {
-    averageDeploymentTimeDays: 45,
-    complexityLevel: "medium",
-    requiresHardware: false,
-    cloudNative: true,
-    agentlessCapabilityPercent: 20,
-    professionalServicesCostFactor: 0.2,
-  },
-  complianceSupport: [],
-  tcoFactors: {
-    personnelCostFactor: 0.7,
-    trainingCostInitial: 5000,
-    hardwareCostPerYear: 2000,
-    supportCostFactor: 0,
-    hiddenCostFactor: 10,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 24,
-    incidentReductionPercent: 50,
-    complianceAutomationSavingsFactor: 0.15,
-    operationalEfficiencyGainPercent: 40,
-  },
-  strengths: [
-    "Leverages existing Microsoft investment",
-    "Strong conditional access policies",
-    "Good endpoint compliance via Intune",
-  ],
-  weaknesses: [
-    "Primarily focused on Windows endpoints",
-    "Limited support for non-managed devices",
-    "Not a dedicated, specialized NAC solution",
-  ],
-  comparativeScores: {
-    securityEffectiveness: 78,
-    easeOfDeployment: 65,
-    scalability: 80,
-    integrationCapabilities: 85,
-    totalCostOfOwnershipScore: 72,
-    complianceCoverageScore: 68,
-  },
-})
-
-allVendorsData.set("extreme_control", {
-  id: "extreme_control",
-  name: "ExtremeControl",
-  logoUrl: "/extreme-logo.png",
-  shortDescription: "Legacy hardware-based NAC solution.",
-  vendorType: "Traditional NAC",
-  features: {},
-  pricingModelDesc: "Perpetual, per-device licensing with mandatory hardware.",
-  implementation: {
-    averageDeploymentTimeDays: 85,
-    complexityLevel: "high",
-    requiresHardware: true,
-    cloudNative: false,
-    agentlessCapabilityPercent: 65,
-    professionalServicesCostFactor: 0.28,
-  },
-  complianceSupport: [],
-  tcoFactors: {
-    personnelCostFactor: 2.5,
-    trainingCostInitial: 7000,
-    hardwareCostPerYear: 8000,
-    supportCostFactor: 0.18,
-    hiddenCostFactor: 15,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 40,
-    incidentReductionPercent: 40,
-    complianceAutomationSavingsFactor: 0.1,
-    operationalEfficiencyGainPercent: 20,
-  },
-  strengths: ["Integration with Extreme Networks hardware"],
-  weaknesses: ["Legacy technology", "High operational overhead", "Limited features", "Poor TCO"],
-  comparativeScores: {
-    securityEffectiveness: 65,
-    easeOfDeployment: 35,
-    scalability: 70,
-    integrationCapabilities: 60,
-    totalCostOfOwnershipScore: 40,
-    complianceCoverageScore: 55,
-  },
-})
-
-allVendorsData.set("pulse_secure", {
-  id: "pulse_secure",
-  name: "Ivanti Policy Secure",
-  logoUrl: "/pulse-secure-logo.png",
-  shortDescription: "NAC solution focusing on secure access for remote and mobile users, integrated with VPN.",
-  vendorType: "Traditional NAC",
-  features: {},
-  pricingModelDesc: "Appliance-based with per-concurrent-user licensing.",
-  implementation: {
-    averageDeploymentTimeDays: 80,
-    complexityLevel: "high",
-    requiresHardware: true,
-    cloudNative: false,
-    agentlessCapabilityPercent: 50,
-    professionalServicesCostFactor: 0.3,
-  },
-  complianceSupport: [],
-  tcoFactors: {
-    personnelCostFactor: 1.5,
-    trainingCostInitial: 9000,
-    hardwareCostPerYear: 12000,
-    supportCostFactor: 0.2,
-    hiddenCostFactor: 18,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 34,
-    incidentReductionPercent: 50,
-    complianceAutomationSavingsFactor: 0.1,
-    operationalEfficiencyGainPercent: 30,
-  },
-  strengths: ["Strong remote access integration (VPN)", "Mature solution for endpoint compliance"],
-  weaknesses: ["Aging architecture", "Roadmap uncertainty under Ivanti", "Less focus on LAN NAC"],
-  comparativeScores: {
-    securityEffectiveness: 78,
-    easeOfDeployment: 50,
-    scalability: 80,
-    integrationCapabilities: 75,
-    totalCostOfOwnershipScore: 55,
-    complianceCoverageScore: 65,
-  },
-})
-
-allVendorsData.set("cisco_meraki", {
-  id: "cisco_meraki",
-  name: "Cisco Meraki",
-  logoUrl: "/meraki-logo.png",
-  shortDescription: "Cloud-managed IT solution with some NAC-like features.",
-  vendorType: "MDM-based NAC",
-  features: {},
-  pricingModelDesc: "Hardware purchase + per-device cloud management licenses.",
-  implementation: {
-    averageDeploymentTimeDays: 30,
-    complexityLevel: "low",
-    requiresHardware: true,
-    cloudNative: true,
-    agentlessCapabilityPercent: 10,
-    professionalServicesCostFactor: 0.1,
-  },
-  complianceSupport: [],
-  tcoFactors: {
-    personnelCostFactor: 0.3,
-    trainingCostInitial: 3000,
-    hardwareCostPerYear: 15000,
-    supportCostFactor: 0,
-    hiddenCostFactor: 8,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 28,
-    incidentReductionPercent: 45,
-    complianceAutomationSavingsFactor: 0.1,
-    operationalEfficiencyGainPercent: 50,
-  },
-  strengths: ["Extremely easy to deploy and manage", "Full-stack solution", "Good for distributed sites"],
-  weaknesses: ["NAC capabilities are basic", "Complete vendor lock-in", "Limited granularity in policy control"],
-  comparativeScores: {
-    securityEffectiveness: 72,
-    easeOfDeployment: 90,
-    scalability: 85,
-    integrationCapabilities: 70,
-    totalCostOfOwnershipScore: 65,
-    complianceCoverageScore: 60,
-  },
-})
-
-allVendorsData.set("foxpass", {
-  id: "foxpass",
-  name: "Foxpass",
-  logoUrl: "/foxpass-logo.png",
-  shortDescription: "Cloud-hosted RADIUS and LDAP solution for Wi-Fi, VPN, and server authentication.",
-  vendorType: "Cloud RADIUS",
-  features: {},
-  pricingModelDesc: "Simple per-user, per-month subscription.",
-  implementation: {
-    averageDeploymentTimeDays: 1,
-    complexityLevel: "low",
-    requiresHardware: false,
-    cloudNative: true,
-    agentlessCapabilityPercent: 95,
-    professionalServicesCostFactor: 0.05,
-  },
-  complianceSupport: [],
-  tcoFactors: {
-    personnelCostFactor: 0.1,
-    trainingCostInitial: 500,
-    hardwareCostPerYear: 0,
-    supportCostFactor: 0,
-    hiddenCostFactor: 2,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 12,
-    incidentReductionPercent: 30,
-    complianceAutomationSavingsFactor: 0.02,
-    operationalEfficiencyGainPercent: 20,
-  },
-  strengths: ["Simple and fast to set up", "Affordable pricing", "Developer-friendly"],
-  weaknesses: ["Not a full NAC", "Limited visibility", "Basic feature set"],
-  comparativeScores: {
-    securityEffectiveness: 70,
-    easeOfDeployment: 95,
-    scalability: 75,
-    integrationCapabilities: 65,
-    totalCostOfOwnershipScore: 85,
-    complianceCoverageScore: 30,
-  },
-})
-
-allVendorsData.set("securew2", {
-  id: "securew2",
-  name: "SecureW2",
-  logoUrl: "/securew2-logo.png",
-  shortDescription: "Cloud-based PKI and RADIUS solution for certificate-based EAP-TLS authentication.",
-  vendorType: "Cloud RADIUS",
-  features: {},
-  pricingModelDesc: "Subscription-based, per user per year.",
-  implementation: {
-    averageDeploymentTimeDays: 15,
-    complexityLevel: "low",
-    requiresHardware: false,
-    cloudNative: true,
-    agentlessCapabilityPercent: 90,
-    professionalServicesCostFactor: 0.1,
-  },
-  complianceSupport: [],
-  tcoFactors: {
-    personnelCostFactor: 0.2,
-    trainingCostInitial: 2000,
-    hardwareCostPerYear: 0,
-    supportCostFactor: 0,
-    hiddenCostFactor: 5,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 18,
-    incidentReductionPercent: 40,
-    complianceAutomationSavingsFactor: 0.05,
-    operationalEfficiencyGainPercent: 25,
-  },
-  strengths: [
-    "Robust EAP-TLS and certificate-based authentication",
-    "Simplified PKI management",
-    "Good for onboarding devices to secure Wi-Fi/VPN",
-  ],
-  weaknesses: ["Not a full NAC solution", "Primarily focused on authentication", "Limited device visibility"],
-  comparativeScores: {
-    securityEffectiveness: 80,
-    easeOfDeployment: 85,
-    scalability: 80,
-    integrationCapabilities: 75,
-    totalCostOfOwnershipScore: 78,
-    complianceCoverageScore: 50,
-  },
-})
-
-allVendorsData.set("radiusaas", {
-  id: "radiusaas",
-  name: "RADIUS-as-a-Service",
-  logoUrl: "/radiusaas-logo.png",
-  shortDescription: "Generic cloud-based RADIUS service for network authentication.",
-  vendorType: "Cloud RADIUS",
-  features: {},
-  pricingModelDesc: "Pay-per-user or per-authentication.",
-  implementation: {
-    averageDeploymentTimeDays: 1,
-    complexityLevel: "low",
-    requiresHardware: false,
-    cloudNative: true,
-    agentlessCapabilityPercent: 95,
-    professionalServicesCostFactor: 0,
-  },
-  complianceSupport: [],
-  tcoFactors: {
-    personnelCostFactor: 0.1,
-    trainingCostInitial: 0,
-    hardwareCostPerYear: 0,
-    supportCostFactor: 0,
-    hiddenCostFactor: 1,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 10,
-    incidentReductionPercent: 25,
-    complianceAutomationSavingsFactor: 0.01,
-    operationalEfficiencyGainPercent: 15,
-  },
-  strengths: ["Extremely simple", "Pay per use", "Quickest setup"],
-  weaknesses: ["Very limited features", "No NAC capabilities", "Authentication only"],
-  comparativeScores: {
-    securityEffectiveness: 60,
-    easeOfDeployment: 98,
-    scalability: 70,
-    integrationCapabilities: 50,
-    totalCostOfOwnershipScore: 90,
-    complianceCoverageScore: 20,
-  },
-})
-
-allVendorsData.set("packetfence", {
-  id: "packetfence",
-  name: "PacketFence",
-  logoUrl: "/packetfence-logo.png",
-  shortDescription: "Open-source Network Access Control (NAC) solution offering flexibility and extensive features.",
-  vendorType: "Open Source",
-  features: {},
-  pricingModelDesc: "Free (open-source), with optional commercial support contracts.",
-  implementation: {
-    averageDeploymentTimeDays: 150,
-    complexityLevel: "very_high",
-    requiresHardware: true,
-    cloudNative: false,
-    agentlessCapabilityPercent: 80,
-    professionalServicesCostFactor: 0,
-  },
-  complianceSupport: [],
-  tcoFactors: {
-    personnelCostFactor: 2.5,
-    trainingCostInitial: 5000,
-    hardwareCostPerYear: 5000,
-    supportCostFactor: 0,
-    hiddenCostFactor: 40,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 48,
-    incidentReductionPercent: 40,
-    complianceAutomationSavingsFactor: 0.05,
-    operationalEfficiencyGainPercent: 10,
-  },
-  strengths: ["No licensing costs", "Highly customizable and flexible", "Strong community support"],
-  weaknesses: [
-    "Very high complexity to implement and maintain",
-    "Requires significant in-house expertise (Perl)",
-    "UI is dated",
-  ],
-  comparativeScores: {
-    securityEffectiveness: 70,
-    easeOfDeployment: 10,
-    scalability: 75,
-    integrationCapabilities: 70,
-    totalCostOfOwnershipScore: 30,
-    complianceCoverageScore: 50,
-  },
-})
-
-allVendorsData.set("arista_cue", {
-  id: "arista_cue",
-  name: "Arista CUE (AGNI)",
-  logoUrl: "/arista-logo.png",
-  shortDescription: "Cloud-managed NAC service, part of Arista's Cognitive Unified Edge (CUE) and CloudVision.",
-  vendorType: "Cloud-Native NAC",
-  features: {},
-  pricingModelDesc: "Subscription-based, integrated with Arista CUE licensing.",
-  implementation: {
-    averageDeploymentTimeDays: 25,
-    complexityLevel: "medium",
-    requiresHardware: false,
-    cloudNative: true,
-    agentlessCapabilityPercent: 80,
-    professionalServicesCostFactor: 0.18,
-  },
-  complianceSupport: [],
-  tcoFactors: {
-    personnelCostFactor: 0.45,
-    trainingCostInitial: 6500,
-    hardwareCostPerYear: 0,
-    supportCostFactor: 0,
-    hiddenCostFactor: 12,
-  },
-  roiFactors: {
-    avgPaybackPeriodMonths: 22,
-    incidentReductionPercent: 65,
-    complianceAutomationSavingsFactor: 0.2,
-    operationalEfficiencyGainPercent: 55,
-  },
-  strengths: [
-    "Cloud-managed via CloudVision",
-    "Strong integration with Arista networking hardware",
-    "Leverages Arista's telemetry",
-  ],
-  weaknesses: [
-    "Primarily targeted at Arista network customers",
-    "NAC feature set may be evolving",
-    "Dependent on CloudVision",
-  ],
-  comparativeScores: {
-    securityEffectiveness: 80,
-    easeOfDeployment: 70,
-    scalability: 85,
-    integrationCapabilities: 78,
-    totalCostOfOwnershipScore: 68,
-    complianceCoverageScore: 66,
-  },
-})
-
-export const getVendorDataById = (id: VendorId): NewVendorData | undefined => {
+export function getVendorDataById(id: VendorId): NewVendorData | undefined {
   return allVendorsData.get(id)
 }
-
-console.log("New comprehensive vendor data module updated: All 15 vendors now have detailed data entries.")
