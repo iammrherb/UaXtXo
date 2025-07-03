@@ -430,7 +430,7 @@ export default function ExecutiveReportView({ results = [], config }: ExecutiveR
                   { phase: "Phase 4: Training & Go-Live", duration: "1-2 weeks", progress: 25 },
                 ].map((phase, index) => (
                   <div key={index} className="space-y-2">
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <span className="font-medium">{phase.phase}</span>
                       <Badge variant="outline">{phase.duration}</Badge>
                     </div>

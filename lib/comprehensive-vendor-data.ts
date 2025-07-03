@@ -725,49 +725,6 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
     featureSupport: {
       authentication: { "802.1X": "✓✓✓", MAB: "✓✓✓", "Web Auth": "✓✓", "SAML 2.0": "✓✓✓", "Cert-Based": "✓✓✓" },
       network: { Wired: "✓✓✓", Wireless: "✓✓✓", VPN: "✓✓", BYOD: "✓✓✓", IoT: "✓✓" },
-      advanced: { "Zero Trust": "✓✓✓", "AI/ML": "✓✓✓", "Cloud Native": "✓✓✓", API: "✓✓✓" },
-      compliance: { "PCI DSS": "✓✓", HIPAA: "✓✓", SOC2: "✓✓✓" },
-    },
-    professionalServices: {
-      vendor: [{ name: "Mist QuickStart", cost: "10000-25000" }],
-      partner: [],
-      training: [{ name: "Mist Master", cost: 1000 }],
-    },
-    hiddenCosts: {
-      licensingGotchas: ["AP-based licensing can be costly for dense deployments"],
-      performanceLimitations: [],
-      operationalOverhead: [],
-      commonExpenses: [],
-    },
-    tcoFactors: { fteRequirement: 0.5, downtimeRisk: "low", upgradeComplexity: "low" },
-  },
-  extreme: {
-    id: "extreme",
-    name: "ExtremeControl",
-    description: "On-premise NAC solution with granular policy control, part of the Extreme Fabric.",
-    category: "enterprise",
-    marketPosition: "niche",
-    licensing: {
-      base: [
-        { name: "Essentials", listPrice: 28, unit: "device", period: "year", features: ["Basic Control"] },
-        { name: "Professional", listPrice: 42, unit: "device", period: "year", features: ["Advanced Control"] },
-        { name: "Enterprise", listPrice: 55, unit: "device", period: "year", features: ["Fabric Integration"] },
-      ],
-      modules: [],
-    },
-    hardware: {
-      physical: [
-        { name: "Control Engine Appliance", listPrice: 15000, capacity: "2,000 devices", useCase: "Appliance" },
-      ],
-      virtual: [
-        { name: "Virtual Control Engine", listPrice: 10000, capacity: "2,000 devices", useCase: "VMware/Hyper-V" },
-      ],
-    },
-    highAvailability: { licensing: "Requires full HA license", cost: "1.5x base", failoverTime: "60-180 seconds" },
-    integrations: { identity: [], mdm: [], siem: [], security: [] },
-    featureSupport: {
-      authentication: { "802.1X": "✓✓✓", MAB: "✓✓✓", "Web Auth": "✓✓" },
-      network: { Wired: "✓✓✓", Wireless: "✓✓✓", BYOD: "✓✓", IoT: "✓" },
       advanced: { "Zero Trust": "✓", "Cloud Native": "✗", API: "✓" },
       compliance: { "PCI DSS": "✓✓", HIPAA: "✓✓" },
     },
@@ -1239,7 +1196,7 @@ export const getVendorLogoPath = (vendorId: string): string => {
     meraki: "/meraki-logo.png",
     microsoft: "/microsoft-logo.png",
     extreme: "/extreme-logo.png",
-    pulse: "/placeholder-logo.png",
+    pulse: "/pulse-logo.png",
     foxpass: "/foxpass-logo.png",
     securew2: "/securew2-logo.png",
     packetfence: "/packetfence-logo.png",

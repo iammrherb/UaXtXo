@@ -79,6 +79,8 @@ export default function TcoAnalyzerUltimate() {
     "fortinet",
     "microsoft",
     "securew2",
+    "foxpass",
+    "pulse",
   ])
   const [activeView, setActiveView] = useState("dashboard")
   const [results, setResults] = useState<CalculationResult[] | null>(null)
@@ -114,7 +116,7 @@ export default function TcoAnalyzerUltimate() {
       const isSelected = prev.includes(vendorId)
       if (vendorId === "portnox" && isSelected && prev.length === 1) return prev
       const newSelection = isSelected ? prev.filter((id) => id !== vendorId) : [...prev, vendorId]
-      if (newSelection.length > 8) newSelection.shift() // Increased limit to 8 vendors to accommodate new ones
+      if (newSelection.length > 8) newSelection.shift() // Increased limit to 8 vendors to accommodate more comparisons
       return newSelection
     })
   }
@@ -282,9 +284,9 @@ export default function TcoAnalyzerUltimate() {
                             "aruba",
                             "fortinet",
                             "microsoft",
-                            "juniper",
                             "securew2",
                             "foxpass",
+                            "pulse",
                           ])
                         }
                       />
