@@ -31,6 +31,17 @@ export interface VendorFeatureSupport {
   [key: string]: "✓✓✓" | "✓✓" | "✓" | "✗" | string // Excellent, Good, Basic, No
 }
 
+export interface ComplianceControl {
+  id: string
+  name: string
+  description: string
+}
+
+export interface ComplianceFramework {
+  name: string
+  controls: ComplianceControl[]
+}
+
 export interface VendorDetails {
   id: string
   name: string
@@ -80,6 +91,53 @@ export interface VendorDetails {
     downtimeRisk: "low" | "medium" | "high"
     upgradeComplexity: "low" | "medium" | "high"
   }
+  complianceMapping?: {
+    [framework: string]: string[] // Array of control IDs covered
+  }
+  cyberInsuranceFactor: number // e.g., 0.85 for a 15% premium reduction
+}
+
+export const ComplianceFrameworks: Record<string, ComplianceFramework> = {
+  pci_dss: {
+    name: "PCI DSS v4.0",
+    controls: [
+      { id: "pci1.2.3", name: "Network Segmentation", description: "Isolate cardholder data environment." },
+      { id: "pci2.2.2", name: "Secure Configurations", description: "Harden systems with secure configurations." },
+      { id: "pci7.2.1", name: "Least Privilege", description: "Restrict access based on need-to-know." },
+      { id: "pci8.2.1", name: "Unique IDs", description: "Assign unique identification to each user." },
+      { id: "pci11.1.1", name: "Wireless Scanning", description: "Test for unauthorized wireless access points." },
+    ],
+  },
+  hipaa: {
+    name: "HIPAA",
+    controls: [
+      { id: "hipaa164.312.a.1", name: "Access Control", description: "Implement policies to control access to ePHI." },
+      {
+        id: "hipaa164.312.b",
+        name: "Audit Controls",
+        description: "Record and examine activity in information systems.",
+      },
+      {
+        id: "hipaa164.312.c.1",
+        name: "Integrity",
+        description: "Protect ePHI from improper alteration or destruction.",
+      },
+      {
+        id: "hipaa164.308.a.1",
+        name: "Security Management Process",
+        description: "Implement risk analysis and management.",
+      },
+    ],
+  },
+  nist_csf: {
+    name: "NIST CSF v1.1",
+    controls: [
+      { id: "nist.pr.ac-1", name: "Access Control Policy", description: "Manage and control access to assets." },
+      { id: "nist.pr.ac-3", name: "Access Enforcement", description: "Enforce access control policies." },
+      { id: "nist.pr.ac-4", name: "Information Flow Control", description: "Control data flow between systems." },
+      { id: "nist.de.cm-8", name: "Vulnerability Scanning", description: "Detect vulnerabilities in the environment." },
+    ],
+  },
 }
 
 export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
@@ -200,6 +258,12 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
       commonExpenses: [{ name: "Internet Redundancy", cost: "3000-6000" }],
     },
     tcoFactors: { fteRequirement: 0.25, downtimeRisk: "low", upgradeComplexity: "low" },
+    complianceMapping: {
+      pci_dss: ["pci1.2.3", "pci2.2.2", "pci7.2.1", "pci8.2.1", "pci11.1.1"],
+      hipaa: ["hipaa164.312.a.1", "hipaa164.312.b", "hipaa164.312.c.1", "hipaa164.308.a.1"],
+      nist_csf: ["nist.pr.ac-1", "nist.pr.ac-3", "nist.pr.ac-4", "nist.de.cm-8"],
+    },
+    cyberInsuranceFactor: 0.75, // 25% reduction
   },
   cisco: {
     id: "cisco",
@@ -348,6 +412,12 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
       ],
     },
     tcoFactors: { fteRequirement: 2.5, downtimeRisk: "medium", upgradeComplexity: "high" },
+    complianceMapping: {
+      pci_dss: ["pci1.2.3", "pci2.2.2", "pci7.2.1", "pci8.2.1"],
+      hipaa: ["hipaa164.312.a.1", "hipaa164.312.b", "hipaa164.312.c.1"],
+      nist_csf: ["nist.pr.ac-1", "nist.pr.ac-3", "nist.de.cm-8"],
+    },
+    cyberInsuranceFactor: 0.85, // 15% reduction
   },
   aruba: {
     id: "aruba",
@@ -466,6 +536,12 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
       ],
     },
     tcoFactors: { fteRequirement: 2, downtimeRisk: "medium", upgradeComplexity: "medium" },
+    complianceMapping: {
+      pci_dss: ["pci1.2.3", "pci2.2.2", "pci8.2.1"],
+      hipaa: ["hipaa164.312.a.1", "hipaa164.312.b"],
+      nist_csf: ["nist.pr.ac-1", "nist.pr.ac-3"],
+    },
+    cyberInsuranceFactor: 0.88, // 12% reduction
   },
   forescout: {
     id: "forescout",
@@ -544,6 +620,12 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
       ],
     },
     tcoFactors: { fteRequirement: 2, downtimeRisk: "high", upgradeComplexity: "high" },
+    complianceMapping: {
+      pci_dss: ["pci1.2.3"],
+      hipaa: ["hipaa164.312.b"],
+      nist_csf: ["nist.de.cm-8"],
+    },
+    cyberInsuranceFactor: 0.9, // 10% reduction
   },
   fortinet: {
     id: "fortinet",
@@ -626,6 +708,12 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
       commonExpenses: [],
     },
     tcoFactors: { fteRequirement: 1.5, downtimeRisk: "medium", upgradeComplexity: "medium" },
+    complianceMapping: {
+      pci_dss: ["pci1.2.3", "pci2.2.2"],
+      hipaa: ["hipaa164.312.a.1"],
+      nist_csf: ["nist.pr.ac-1", "nist.pr.ac-3"],
+    },
+    cyberInsuranceFactor: 0.9, // 10% reduction
   },
   microsoft: {
     id: "microsoft",
@@ -692,6 +780,12 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
       commonExpenses: [{ name: "PKI Infrastructure", cost: "10000-30000" }],
     },
     tcoFactors: { fteRequirement: 1.0, downtimeRisk: "low", upgradeComplexity: "low" },
+    complianceMapping: {
+      pci_dss: ["pci8.2.1"],
+      hipaa: ["hipaa164.312.a.1", "hipaa164.308.a.1"],
+      nist_csf: ["nist.pr.ac-1"],
+    },
+    cyberInsuranceFactor: 0.92, // 8% reduction
   },
   juniper: {
     id: "juniper",
@@ -740,6 +834,12 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
       commonExpenses: [],
     },
     tcoFactors: { fteRequirement: 0.5, downtimeRisk: "low", upgradeComplexity: "low" },
+    complianceMapping: {
+      pci_dss: ["pci1.2.3", "pci8.2.1", "pci11.1.1"],
+      hipaa: ["hipaa164.312.a.1", "hipaa164.312.b"],
+      nist_csf: ["nist.pr.ac-1", "nist.pr.ac-3"],
+    },
+    cyberInsuranceFactor: 0.8, // 20% reduction
   },
   extreme: {
     id: "extreme",
@@ -783,6 +883,12 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
       commonExpenses: [],
     },
     tcoFactors: { fteRequirement: 1.8, downtimeRisk: "medium", upgradeComplexity: "medium" },
+    complianceMapping: {
+      pci_dss: ["pci1.2.3", "pci2.2.2"],
+      hipaa: ["hipaa164.312.a.1"],
+      nist_csf: ["nist.pr.ac-1"],
+    },
+    cyberInsuranceFactor: 0.92, // 8% reduction
   },
   packetfence: {
     id: "packetfence",
@@ -827,6 +933,148 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
       commonExpenses: [{ name: "Hardware/VM infrastructure", cost: "Varies" }],
     },
     tcoFactors: { fteRequirement: 2.5, downtimeRisk: "medium", upgradeComplexity: "high" },
+    complianceMapping: {
+      pci_dss: ["pci1.2.3", "pci2.2.2", "pci8.2.1"],
+      hipaa: ["hipaa164.312.a.1", "hipaa164.312.b"],
+      nist_csf: ["nist.pr.ac-1", "nist.pr.ac-3"],
+    },
+    cyberInsuranceFactor: 0.95, // 5% reduction
+  },
+  securew2: {
+    id: "securew2",
+    name: "SecureW2",
+    description: "Cloud-based PKI and RADIUS platform for passwordless Wi-Fi and network authentication.",
+    category: "cloud-native",
+    marketPosition: "niche",
+    licensing: {
+      base: [
+        { name: "Essentials", listPrice: 20, unit: "user", period: "year", features: ["Cloud RADIUS"] },
+        { name: "Professional", listPrice: 35, unit: "user", period: "year", features: ["PKI, Onboarding"] },
+        { name: "Enterprise", listPrice: 50, unit: "user", period: "year", features: ["Advanced Integrations"] },
+      ],
+      modules: [],
+    },
+    hardware: {
+      physical: [],
+      virtual: [],
+      cloud: [{ name: "Cloud Platform", listPrice: 0, capacity: "Elastic", useCase: "No hardware required" }],
+    },
+    highAvailability: { licensing: "Included in cloud subscription", cost: "0", failoverTime: "Automatic" },
+    integrations: {
+      identity: [{ name: "All major IDPs", cost: 0 }],
+      mdm: [{ name: "All major MDMs", cost: 0 }],
+      siem: [],
+      security: [],
+    },
+    featureSupport: {
+      authentication: { "802.1X": "✓✓✓", MAB: "✓", "Web Auth": "✓", "SAML 2.0": "✓✓✓", "Cert-Based": "✓✓✓" },
+      network: { Wired: "✓✓✓", Wireless: "✓✓✓", VPN: "✓✓", BYOD: "✓✓✓", IoT: "✓" },
+      advanced: { "Zero Trust": "✓✓", "Cloud Native": "✓✓✓", API: "✓✓" },
+      compliance: { "PCI DSS": "✓✓", HIPAA: "✓✓", SOC2: "✓✓✓" },
+    },
+    professionalServices: {
+      vendor: [{ name: "Onboarding Support", cost: "2500-7500" }],
+      partner: [],
+      training: [{ name: "Online Resources", cost: 0 }],
+    },
+    hiddenCosts: {
+      licensingGotchas: ["User-based licensing can be expensive for high user counts"],
+      performanceLimitations: [],
+      operationalOverhead: [],
+      commonExpenses: [],
+    },
+    tcoFactors: { fteRequirement: 0.75, downtimeRisk: "low", upgradeComplexity: "low" },
+    complianceMapping: {
+      pci_dss: ["pci8.2.1"],
+      hipaa: ["hipaa164.312.a.1"],
+      nist_csf: ["nist.pr.ac-1"],
+    },
+    cyberInsuranceFactor: 0.85, // 15% reduction
+  },
+  foxpass: {
+    id: "foxpass",
+    name: "Foxpass",
+    description: "Cloud-hosted RADIUS and LDAP, simplifying network and server access for modern IT.",
+    category: "cloud-native",
+    marketPosition: "niche",
+    licensing: {
+      base: [
+        { name: "Essentials", listPrice: 24, unit: "user", period: "year", features: ["RADIUS/LDAP"] },
+        { name: "Professional", listPrice: 36, unit: "user", period: "year", features: ["Server Access"] },
+        { name: "Enterprise", listPrice: 48, unit: "user", period: "year", features: ["Advanced Features"] },
+      ],
+      modules: [],
+    },
+    hardware: {
+      physical: [],
+      virtual: [],
+      cloud: [{ name: "Cloud Platform", listPrice: 0, capacity: "Elastic", useCase: "No hardware required" }],
+    },
+    highAvailability: { licensing: "Included in cloud subscription", cost: "0", failoverTime: "Automatic" },
+    integrations: {
+      identity: [{ name: "Google Workspace, O365", cost: 0 }],
+      mdm: [],
+      siem: [],
+      security: [],
+    },
+    featureSupport: {
+      authentication: { "802.1X": "✓✓✓", MAB: "✓", "Web Auth": "✗", "SAML 2.0": "✓", "Cert-Based": "✓✓" },
+      network: { Wired: "✓✓", Wireless: "✓✓", VPN: "✓✓", BYOD: "✓" },
+      advanced: { "Zero Trust": "✓", "Cloud Native": "✓✓✓", API: "✓✓" },
+      compliance: { SOC2: "✓✓✓" },
+    },
+    professionalServices: { vendor: [], partner: [], training: [] },
+    hiddenCosts: {
+      licensingGotchas: [],
+      performanceLimitations: [],
+      operationalOverhead: [],
+      commonExpenses: [],
+    },
+    tcoFactors: { fteRequirement: 0.5, downtimeRisk: "low", upgradeComplexity: "low" },
+    complianceMapping: {
+      pci_dss: ["pci8.2.1"],
+      hipaa: ["hipaa164.312.a.1"],
+      nist_csf: ["nist.pr.ac-1"],
+    },
+    cyberInsuranceFactor: 0.9, // 10% reduction
+  },
+  radiusaas: {
+    id: "radiusaas",
+    name: "Radius-as-a-Service",
+    description: "Generic cloud-hosted RADIUS service for basic network authentication.",
+    category: "cloud-native",
+    marketPosition: "niche",
+    licensing: {
+      base: [
+        { name: "Essentials", listPrice: 12, unit: "user", period: "year", features: ["Basic RADIUS"] },
+        { name: "Professional", listPrice: 24, unit: "user", period: "year", features: ["MFA Support"] },
+        { name: "Enterprise", listPrice: 36, unit: "user", period: "year", features: ["Directory Sync"] },
+      ],
+      modules: [],
+    },
+    hardware: {
+      physical: [],
+      virtual: [],
+      cloud: [{ name: "Cloud Platform", listPrice: 0, capacity: "Elastic", useCase: "No hardware required" }],
+    },
+    highAvailability: { licensing: "Included in cloud subscription", cost: "0", failoverTime: "Automatic" },
+    integrations: { identity: [], mdm: [], siem: [], security: [] },
+    featureSupport: {
+      authentication: { "802.1X": "✓✓", MAB: "✓", "Web Auth": "✗", "SAML 2.0": "✓", "Cert-Based": "✓" },
+      network: { Wired: "✓✓", Wireless: "✓✓", VPN: "✓" },
+      advanced: { "Cloud Native": "✓✓✓" },
+      compliance: {},
+    },
+    professionalServices: { vendor: [], partner: [], training: [] },
+    hiddenCosts: {
+      licensingGotchas: ["Feature sets are often very limited"],
+      performanceLimitations: [],
+      operationalOverhead: [],
+      commonExpenses: [],
+    },
+    tcoFactors: { fteRequirement: 0.4, downtimeRisk: "medium", upgradeComplexity: "low" },
+    complianceMapping: {},
+    cyberInsuranceFactor: 0.98, // 2% reduction
   },
 }
 
@@ -846,6 +1094,7 @@ export const getVendorLogoPath = (vendorId: string): string => {
     securew2: "/securew2-logo.png",
     packetfence: "/packetfence-logo.png",
     arista: "/arista-logo.png",
+    radiusaas: "/radiusaas-logo.png",
   }
   return logos[vendorId] || "/placeholder-logo.png"
 }
