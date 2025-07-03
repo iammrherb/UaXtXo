@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Separator } from "@/lib/utils"
+import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import EnhancedVendorSelection from "./enhanced-vendor-selection"
 import SettingsPanel from "./settings-panel"
@@ -21,7 +21,6 @@ import FeatureMatrixView from "./feature-matrix-view"
 import ExecutiveReportView from "./executive-report-view"
 import IntegrationHubView from "./integration-hub-view"
 import ComplianceRiskView from "./compliance-risk-view"
-import { RouteIcon } from "lucide-react" // Import RouteIcon here
 
 import {
   LayoutGrid,
@@ -51,7 +50,7 @@ const TABS_CONFIG = [
   { value: "integrations", label: "Integrations", icon: <Zap /> },
   { value: "operations", label: "Operations", icon: <SlidersHorizontal /> },
   { value: "features", label: "Features", icon: <LayoutGrid /> },
-  { value: "implementation", label: "Implementation", icon: <RouteIcon as={Road} /> },
+  { value: "implementation", label: "Implementation", icon: <Road /> },
   { value: "report", label: "Report", icon: <FileText /> },
 ]
 
@@ -62,16 +61,16 @@ export default function TcoAnalyzerUltimate() {
   const [showVendorSelection, setShowVendorSelection] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
 
-  // Configuration state
+  // Configuration state with updated defaults based on 500 devices
   const [configuration, setConfiguration] = useState<CalculationConfiguration>({
-    devices: 5000,
-    users: 5000,
+    devices: 500,
+    users: 500,
     years: 3,
     licenseTier: "Enterprise",
     integrations: { mdm: true, siem: true, edr: false },
     professionalServices: "advanced",
     includeTraining: true,
-    portnoxDeviceCost: 60,
+    portnoxDeviceCost: 20,
     avgFteCost: 150000,
   })
 
@@ -119,7 +118,7 @@ export default function TcoAnalyzerUltimate() {
       const isSelected = prev.includes(vendorId)
       if (vendorId === "portnox" && isSelected && prev.length === 1) return prev
       const newSelection = isSelected ? prev.filter((id) => id !== vendorId) : [...prev, vendorId]
-      if (newSelection.length > 8) newSelection.shift() // Increased limit to 8 vendors to accommodate more comparisons
+      if (newSelection.length > 10) newSelection.shift()
       return newSelection
     })
   }
@@ -232,7 +231,7 @@ export default function TcoAnalyzerUltimate() {
     <nav className="sticky top-16 z-40 backdrop-blur-md bg-background/70 border-b">
       <div className="container mx-auto px-0 sm:px-4">
         <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
-          <TabsList className="grid w-full h-auto py-0 bg-transparent rounded-none grid-cols-5 sm:grid-cols-9">
+          <TabsList className="grid w-full h-auto py-0 bg-transparent rounded-none grid-cols-5 sm:grid-cols-10">
             {TABS_CONFIG.map((tab) => (
               <TabsTrigger
                 key={tab.value}
