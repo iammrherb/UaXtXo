@@ -358,16 +358,23 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
     licensing: {
       base: [
         {
-          name: "Perpetual",
-          listPrice: 17.25,
+          name: "Essentials",
+          listPrice: 22,
           features: ["Base license for 5k endpoints"],
           unit: "endpoint",
           period: "year",
         },
         {
-          name: "Subscription",
-          listPrice: "35% of perpetual",
+          name: "Professional",
+          listPrice: 35,
           features: ["Full platform access"],
+          unit: "endpoint",
+          period: "year",
+        },
+        {
+          name: "Enterprise",
+          listPrice: 45,
+          features: ["Full platform access, OnGuard, OnConnect"],
           unit: "endpoint",
           period: "year",
         },
@@ -382,14 +389,14 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
     hardware: {
       physical: [
         {
-          name: "C2000",
+          name: "C2010",
           listPrice: 24995,
           streetPrice: "20000-22000",
           capacity: "5,000 endpoints",
           useCase: "Medium sites",
         },
         {
-          name: "C3000",
+          name: "C3010",
           listPrice: 49995,
           streetPrice: "42000-45000",
           capacity: "25,000 endpoints",
@@ -397,8 +404,8 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
         },
       ],
       virtual: [
-        { name: "VM-5K", listPrice: 24995, capacity: "5,000 endpoints", useCase: "Virtual Appliance" },
-        { name: "VM-25K", listPrice: 49995, capacity: "25,000 endpoints", useCase: "Virtual Appliance" },
+        { name: "CX-5K", listPrice: 24995, capacity: "5,000 endpoints", useCase: "Virtual Appliance" },
+        { name: "CX-25K", listPrice: 49995, capacity: "25,000 endpoints", useCase: "Virtual Appliance" },
       ],
     },
     highAvailability: {
@@ -468,8 +475,9 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
     marketPosition: "niche",
     licensing: {
       base: [
-        { name: "Perpetual", listPrice: "35-55", features: ["Base platform"], unit: "device", period: "year" },
-        { name: "Subscription", listPrice: "12-20", features: ["Base platform"], unit: "device", period: "year" },
+        { name: "Essentials", listPrice: 20, features: ["Base platform"], unit: "device", period: "year" },
+        { name: "Professional", listPrice: 35, features: ["Base platform"], unit: "device", period: "year" },
+        { name: "Enterprise", listPrice: 55, features: ["Base platform"], unit: "device", period: "year" },
       ],
       modules: [
         { name: "eyeSegment", listPrice: 10, features: ["Segmentation"], unit: "device", period: "year" },
@@ -546,9 +554,17 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
     licensing: {
       base: [
         {
-          name: "Base License",
+          name: "Essentials",
           listPrice: 25,
           streetPrice: "18-22",
+          features: ["Core NAC functionality"],
+          unit: "device",
+          period: "year",
+        },
+        {
+          name: "Professional",
+          listPrice: 32,
+          streetPrice: "25-30",
           features: ["Core NAC functionality"],
           unit: "device",
           period: "year",
@@ -619,8 +635,9 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
     marketPosition: "niche",
     licensing: {
       base: [
-        { name: "Windows Server CAL", listPrice: 40, features: ["NPS Role"], unit: "user", period: "year" },
-        { name: "Intune License", listPrice: 60, features: ["MDM, Conditional Access"], unit: "user", period: "year" },
+        { name: "Essentials", listPrice: 40, features: ["NPS Role"], unit: "user", period: "year" },
+        { name: "Professional", listPrice: 60, features: ["MDM, Conditional Access"], unit: "user", period: "year" },
+        { name: "Enterprise", listPrice: 72, features: ["Full M365 E5 features"], unit: "user", period: "year" },
       ],
       modules: [],
       tacacs: [],
@@ -676,50 +693,139 @@ export const ComprehensiveVendorDatabase: Record<string, VendorDetails> = {
     },
     tcoFactors: { fteRequirement: 1.0, downtimeRisk: "low", upgradeComplexity: "low" },
   },
-  // Add other vendors as placeholders
   juniper: {
     id: "juniper",
     name: "Juniper Access Assurance",
     description: "Cloud-native access control integrated with the Mist AI platform.",
     category: "cloud-native",
     marketPosition: "visionary",
-    licensing: { base: [], modules: [] },
-    hardware: { physical: [], virtual: [] },
-    highAvailability: { licensing: "", cost: "", failoverTime: "" },
-    integrations: { identity: [], mdm: [], siem: [], security: [] },
-    featureSupport: { authentication: {}, network: {}, advanced: {}, compliance: {} },
-    professionalServices: { vendor: [], partner: [], training: [] },
-    hiddenCosts: { licensingGotchas: [], performanceLimitations: [], operationalOverhead: [], commonExpenses: [] },
-    tcoFactors: { fteRequirement: 1, downtimeRisk: "low", upgradeComplexity: "low" },
+    licensing: {
+      base: [
+        { name: "Essentials", listPrice: 30, unit: "AP", period: "year", features: ["Base NAC"] },
+        { name: "Professional", listPrice: 45, unit: "AP", period: "year", features: ["Advanced NAC"] },
+        { name: "Enterprise", listPrice: 60, unit: "AP", period: "year", features: ["Full Mist AI suite"] },
+      ],
+      modules: [],
+    },
+    hardware: {
+      physical: [],
+      virtual: [],
+      cloud: [{ name: "Mist Cloud", listPrice: 0, capacity: "Elastic", useCase: "No hardware required" }],
+    },
+    highAvailability: { licensing: "Included in cloud subscription", cost: "0", failoverTime: "Automatic" },
+    integrations: {
+      identity: [
+        { name: "Azure AD", cost: 0 },
+        { name: "Okta", cost: 0 },
+      ],
+      mdm: [{ name: "Intune", cost: 0 }],
+      siem: [{ name: "Splunk", cost: 0 }],
+      security: [],
+    },
+    featureSupport: {
+      authentication: { "802.1X": "✓✓✓", MAB: "✓✓✓", "Web Auth": "✓✓", "SAML 2.0": "✓✓✓", "Cert-Based": "✓✓✓" },
+      network: { Wired: "✓✓✓", Wireless: "✓✓✓", VPN: "✓✓", BYOD: "✓✓✓", IoT: "✓✓" },
+      advanced: { "Zero Trust": "✓✓✓", "AI/ML": "✓✓✓", "Cloud Native": "✓✓✓", API: "✓✓✓" },
+      compliance: { "PCI DSS": "✓✓", HIPAA: "✓✓", SOC2: "✓✓✓" },
+    },
+    professionalServices: {
+      vendor: [{ name: "Mist QuickStart", cost: "10000-25000" }],
+      partner: [],
+      training: [{ name: "Mist Master", cost: 1000 }],
+    },
+    hiddenCosts: {
+      licensingGotchas: ["AP-based licensing can be costly for dense deployments"],
+      performanceLimitations: [],
+      operationalOverhead: [],
+      commonExpenses: [],
+    },
+    tcoFactors: { fteRequirement: 0.5, downtimeRisk: "low", upgradeComplexity: "low" },
   },
   extreme: {
     id: "extreme",
     name: "ExtremeControl",
-    description: "On-premise NAC solution with granular policy control.",
+    description: "On-premise NAC solution with granular policy control, part of the Extreme Fabric.",
     category: "enterprise",
     marketPosition: "niche",
-    licensing: { base: [], modules: [] },
-    hardware: { physical: [], virtual: [] },
-    highAvailability: { licensing: "", cost: "", failoverTime: "" },
+    licensing: {
+      base: [
+        { name: "Essentials", listPrice: 28, unit: "device", period: "year", features: ["Basic Control"] },
+        { name: "Professional", listPrice: 42, unit: "device", period: "year", features: ["Advanced Control"] },
+        { name: "Enterprise", listPrice: 55, unit: "device", period: "year", features: ["Fabric Integration"] },
+      ],
+      modules: [],
+    },
+    hardware: {
+      physical: [
+        { name: "Control Engine Appliance", listPrice: 15000, capacity: "2,000 devices", useCase: "Appliance" },
+      ],
+      virtual: [
+        { name: "Virtual Control Engine", listPrice: 10000, capacity: "2,000 devices", useCase: "VMware/Hyper-V" },
+      ],
+    },
+    highAvailability: { licensing: "Requires full HA license", cost: "1.5x base", failoverTime: "60-180 seconds" },
     integrations: { identity: [], mdm: [], siem: [], security: [] },
-    featureSupport: { authentication: {}, network: {}, advanced: {}, compliance: {} },
-    professionalServices: { vendor: [], partner: [], training: [] },
-    hiddenCosts: { licensingGotchas: [], performanceLimitations: [], operationalOverhead: [], commonExpenses: [] },
+    featureSupport: {
+      authentication: { "802.1X": "✓✓✓", MAB: "✓✓✓", "Web Auth": "✓✓" },
+      network: { Wired: "✓✓✓", Wireless: "✓✓✓", BYOD: "✓✓", IoT: "✓" },
+      advanced: { "Zero Trust": "✓", "Cloud Native": "✗", API: "✓" },
+      compliance: { "PCI DSS": "✓✓", HIPAA: "✓✓" },
+    },
+    professionalServices: {
+      vendor: [{ name: "Deployment Services", cost: "25000-50000" }],
+      partner: [],
+      training: [{ name: "ECS Course", cost: 3500 }],
+    },
+    hiddenCosts: {
+      licensingGotchas: ["Complex licensing structure"],
+      performanceLimitations: ["Scalability can be a challenge"],
+      operationalOverhead: ["Requires dedicated staff"],
+      commonExpenses: [],
+    },
     tcoFactors: { fteRequirement: 1.8, downtimeRisk: "medium", upgradeComplexity: "medium" },
   },
   packetfence: {
     id: "packetfence",
     name: "PacketFence",
-    description: "Leading open-source NAC solution with extensive feature set.",
+    description: "Leading open-source NAC solution with extensive feature set and strong community support.",
     category: "open-source",
     marketPosition: "niche",
-    licensing: { base: [], modules: [] },
-    hardware: { physical: [], virtual: [] },
-    highAvailability: { licensing: "", cost: "", failoverTime: "" },
-    integrations: { identity: [], mdm: [], siem: [], security: [] },
-    featureSupport: { authentication: {}, network: {}, advanced: {}, compliance: {} },
-    professionalServices: { vendor: [], partner: [], training: [] },
-    hiddenCosts: { licensingGotchas: [], performanceLimitations: [], operationalOverhead: [], commonExpenses: [] },
+    licensing: {
+      base: [
+        { name: "Essentials", listPrice: 0, unit: "device", period: "year", features: ["Community Support"] },
+        { name: "Professional", listPrice: 15, unit: "device", period: "year", features: ["Business Hours Support"] },
+        { name: "Enterprise", listPrice: 25, unit: "device", period: "year", features: ["24/7 Support"] },
+      ],
+      modules: [],
+    },
+    hardware: {
+      physical: [],
+      virtual: [{ name: "Self-hosted VM", listPrice: 0, capacity: "Depends on hardware", useCase: "Any hypervisor" }],
+    },
+    highAvailability: { licensing: "Included in support contract", cost: "0", failoverTime: "Varies with setup" },
+    integrations: {
+      identity: [{ name: "SAML, LDAP, RADIUS", cost: 0 }],
+      mdm: [{ name: "Various via API", cost: "Custom" }],
+      siem: [{ name: "Syslog forwarding", cost: 0 }],
+      security: [],
+    },
+    featureSupport: {
+      authentication: { "802.1X": "✓✓✓", MAB: "✓✓✓", "Web Auth": "✓✓✓", "SAML 2.0": "✓✓", "Cert-Based": "✓✓✓" },
+      network: { Wired: "✓✓✓", Wireless: "✓✓✓", VPN: "✓", BYOD: "✓✓✓", IoT: "✓✓✓", Guest: "✓✓✓" },
+      advanced: { "Zero Trust": "✓", "Cloud Native": "✗", API: "✓✓✓", Automation: "✓✓✓" },
+      compliance: { "PCI DSS": "✓✓", HIPAA: "✓✓" },
+    },
+    professionalServices: {
+      vendor: [{ name: "Implementation Support", cost: "20000-60000" }],
+      partner: [],
+      training: [{ name: "Admin Training", cost: 5000 }],
+    },
+    hiddenCosts: {
+      licensingGotchas: ["Support is per-device and can add up"],
+      performanceLimitations: ["Performance depends entirely on underlying hardware and tuning"],
+      operationalOverhead: ["Requires strong Linux/Network expertise"],
+      commonExpenses: [{ name: "Hardware/VM infrastructure", cost: "Varies" }],
+    },
     tcoFactors: { fteRequirement: 2.5, downtimeRisk: "medium", upgradeComplexity: "high" },
   },
 }

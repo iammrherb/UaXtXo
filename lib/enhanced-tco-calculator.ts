@@ -12,6 +12,8 @@ export interface CalculationConfiguration {
   }
   professionalServices: "basic" | "advanced" | "migration"
   includeTraining: boolean
+  portnoxDeviceCost: number
+  avgFteCost: number
 }
 
 export interface CalculationResult {
@@ -23,6 +25,7 @@ export interface CalculationResult {
     percentage: number
     paybackMonths: number
     annualSavings: number
+    yearlyRoi?: number[]
   }
   risk: {
     breachReduction: number
@@ -59,11 +62,17 @@ export function calculateVendorTCO(vendorId: string, config: CalculationConfigur
     console.warn(
       `No matching or default license tier found for vendor: ${vendor.name} and tier: ${config.licenseTier}. Skipping TCO calculation for this vendor.`,
     )
-    // If no licensing tier can be determined, we can't calculate a meaningful TCO.
     return null
   }
+
+  let listPrice = parseCost(tier.listPrice)
+  // Override Portnox cost if specified in config
+  if (vendorId === "portnox" && config.portnoxDeviceCost > 0) {
+    listPrice = config.portnoxDeviceCost
+  }
+
   const licenseUnitCount = tier.unit === "user" ? config.users : config.devices
-  const licenseCost = parseCost(tier.listPrice) * licenseUnitCount * config.years
+  const licenseCost = listPrice * licenseUnitCount * config.years
   total += licenseCost
   breakdown.push({ name: "Licensing", value: licenseCost })
 
@@ -95,14 +104,14 @@ export function calculateVendorTCO(vendorId: string, config: CalculationConfigur
   if (psCost > 0) breakdown.push({ name: "Professional Services", value: psCost })
 
   // Operational Costs (FTE)
-  const annualFteCost = vendor.tcoFactors.fteRequirement * 150000 // Avg FTE cost
+  const annualFteCost = vendor.tcoFactors.fteRequirement * config.avgFteCost
   const totalFteCost = annualFteCost * config.years
   total += totalFteCost
   breakdown.push({ name: "Operational Staff", value: totalFteCost })
 
   // ROI Calculation
   const fteSaved = 2.0 - vendor.tcoFactors.fteRequirement > 0 ? 2.0 - vendor.tcoFactors.fteRequirement : 0
-  const annualOpsSaving = fteSaved * 150000
+  const annualOpsSaving = fteSaved * config.avgFteCost
   const breachReduction = vendor.marketPosition === "leader" || vendor.marketPosition === "visionary" ? 0.6 : 0.4
   const annualRiskSaving = 500000 * breachReduction // Assume baseline risk cost
   const annualSavings = annualOpsSaving + annualRiskSaving

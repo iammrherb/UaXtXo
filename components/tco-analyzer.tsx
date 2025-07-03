@@ -68,6 +68,8 @@ export default function TcoAnalyzerUltimate() {
     integrations: { mdm: true, siem: true, edr: false },
     professionalServices: "advanced",
     includeTraining: true,
+    portnoxDeviceCost: 60,
+    avgFteCost: 150000,
   })
 
   const [selectedVendors, setSelectedVendors] = useState<string[]>([
@@ -76,6 +78,7 @@ export default function TcoAnalyzerUltimate() {
     "aruba",
     "fortinet",
     "microsoft",
+    "juniper",
   ])
   const [activeView, setActiveView] = useState("dashboard")
   const [results, setResults] = useState<CalculationResult[] | null>(null)
@@ -135,7 +138,7 @@ export default function TcoAnalyzerUltimate() {
       return (
         <Card className="p-6 text-center text-muted-foreground">
           <InfoIcon className="mx-auto h-8 w-8 mb-2 text-primary" />
-          Select vendors to begin.
+          Select vendors with complete data to begin analysis.
         </Card>
       )
 
@@ -273,7 +276,7 @@ export default function TcoAnalyzerUltimate() {
                         {...{ selectedVendors, handleVendorToggle, darkMode }}
                         onClearAll={() => setSelectedVendors(["portnox"])}
                         onSelectRecommended={() =>
-                          setSelectedVendors(["portnox", "cisco", "aruba", "fortinet", "microsoft"])
+                          setSelectedVendors(["portnox", "cisco", "aruba", "fortinet", "microsoft", "juniper"])
                         }
                       />
                     </div>
