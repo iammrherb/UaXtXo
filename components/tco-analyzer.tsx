@@ -70,7 +70,13 @@ export default function TcoAnalyzerUltimate() {
     includeTraining: true,
   })
 
-  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco", "aruba", "forescout"])
+  const [selectedVendors, setSelectedVendors] = useState<string[]>([
+    "portnox",
+    "cisco",
+    "aruba",
+    "fortinet",
+    "microsoft",
+  ])
   const [activeView, setActiveView] = useState("dashboard")
   const [results, setResults] = useState<CalculationResult[] | null>(null)
   const [calculationError, setCalculationError] = useState<string | null>(null)
@@ -266,7 +272,9 @@ export default function TcoAnalyzerUltimate() {
                       <EnhancedVendorSelection
                         {...{ selectedVendors, handleVendorToggle, darkMode }}
                         onClearAll={() => setSelectedVendors(["portnox"])}
-                        onSelectRecommended={() => setSelectedVendors(["portnox", "cisco", "aruba", "forescout"])}
+                        onSelectRecommended={() =>
+                          setSelectedVendors(["portnox", "cisco", "aruba", "fortinet", "microsoft"])
+                        }
                       />
                     </div>
                   </motion.div>
