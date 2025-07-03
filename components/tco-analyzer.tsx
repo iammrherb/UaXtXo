@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Separator } from "@/components/ui/separator"
+import { Separator } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import EnhancedVendorSelection from "./enhanced-vendor-selection"
 import SettingsPanel from "./settings-panel"
@@ -20,6 +20,8 @@ import ImplementationTimelineView from "./implementation-timeline-view"
 import FeatureMatrixView from "./feature-matrix-view"
 import ExecutiveReportView from "./executive-report-view"
 import IntegrationHubView from "./integration-hub-view"
+import ComplianceRiskView from "./compliance-risk-view"
+import { RouteIcon } from "lucide-react" // Import RouteIcon here
 
 import {
   LayoutGrid,
@@ -45,10 +47,11 @@ const TABS_CONFIG = [
   { value: "financials", label: "Financials", icon: <FilePieChart /> },
   { value: "roi", label: "ROI & Value", icon: <TrendingUp /> },
   { value: "security", label: "Security & Risk", icon: <ShieldCheck /> },
+  { value: "complianceRisk", label: "Compliance & Risk", icon: <ShieldCheck /> },
   { value: "integrations", label: "Integrations", icon: <Zap /> },
   { value: "operations", label: "Operations", icon: <SlidersHorizontal /> },
   { value: "features", label: "Features", icon: <LayoutGrid /> },
-  { value: "implementation", label: "Implementation", icon: <Road /> },
+  { value: "implementation", label: "Implementation", icon: <RouteIcon as={Road} /> },
   { value: "report", label: "Report", icon: <FileText /> },
 ]
 
@@ -153,6 +156,8 @@ export default function TcoAnalyzerUltimate() {
         return <BusinessImpactView results={results} config={configuration} />
       case "security":
         return <CybersecurityPostureView results={results} config={configuration} />
+      case "complianceRisk":
+        return <ComplianceRiskView results={results} config={configuration} />
       case "integrations":
         return <IntegrationHubView selectedVendors={selectedVendors} config={configuration} />
       case "operations":
