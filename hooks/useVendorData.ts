@@ -1,46 +1,48 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import { useState, useEffect } from "react"
 import type { NewVendorData, VendorId } from "@/lib/vendors/data"
 
-const fetchVendors = async (): Promise<NewVendorData[]> => {
-  const response = await fetch("/api/vendors")
-  if (!response.ok) {
-    throw new Error("Network response was not ok")
-  }
-  return response.json()
-}
-
 export function useVendorData() {
-  const {
-    data: vendors,
-    isLoading,
-    error,
-    isSuccess,
-  } = useQuery<NewVendorData[]>({
-    queryKey: ["vendors"],
-    queryFn: fetchVendors,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false,
-  })
+  const [vendors, setVendors] = useState<NewVendorData[]>([])
+  const [isLoadingAllVendors, setIsLoadingAllVendors] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const getVendor = (id: VendorId) => {
-    return vendors?.find((v) => v.id === id)
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        const response = await fetch("/api/vendors")
+        if (!response.ok) {
+          throw new Error("Failed to fetch vendors")
+        }
+        const data = await response.json()
+        setVendors(data.vendors || [])
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error")
+        console.error("Error fetching vendors:", err)
+      } finally {
+        setIsLoadingAllVendors(false)
+      }
+    }
+
+    fetchVendors()
+  }, [])
+
+  const getAllVendorIds = (): VendorId[] => {
+    return vendors.map((vendor) => vendor.id)
   }
 
-  const vendorOptions =
-    vendors?.map((v) => ({
-      value: v.id,
-      label: v.name,
-      logo: v.logoUrl,
-    })) || []
+  const getVendor = (id: VendorId): NewVendorData | undefined => {
+    return vendors.find((vendor) => vendor.id === id)
+  }
 
   return {
-    vendors: vendors || [],
-    vendorOptions,
+    vendors,
+    getAllVendorIds,
     getVendor,
-    isLoading,
+    isLoadingAllVendors,
     error,
-    isSuccess,
   }
 }
+
+export type { VendorId }

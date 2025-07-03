@@ -1,414 +1,320 @@
-import { generateText } from "ai"
 import { groq } from "@ai-sdk/groq"
+import { generateText, generateObject } from "ai"
+import { z } from "zod"
 import type { NewVendorData } from "@/lib/vendors/data"
 import type { RiskAssessmentResult } from "@/lib/compliance/risk-assessment"
-import type { IndustryId, OrgSizeId } from "@/types/common"
 
-export interface AIInsight {
-  id: string
-  type: "risk_analysis" | "cost_optimization" | "compliance_gap" | "strategic_recommendation" | "trend_analysis"
-  title: string
-  summary: string
-  details: string
-  priority: "critical" | "high" | "medium" | "low"
-  confidence: number // 0-100
-  actionItems: string[]
-  potentialImpact: {
-    financial: number
-    operational: string
-    compliance: string
-  }
-  timeframe: string
-  relatedVendors: string[]
-}
+const ExecutiveSummarySchema = z.object({
+  overview: z.string().describe("High-level overview of the vendor risk assessment"),
+  criticalRisks: z.array(z.string()).describe("List of critical risks identified"),
+  recommendations: z.array(z.string()).describe("Top strategic recommendations"),
+  financialImpact: z.string().describe("Summary of financial implications"),
+  keyMetrics: z.object({
+    avgRiskScore: z.number(),
+    totalGaps: z.number(),
+    estimatedCostRisk: z.number(),
+    highRiskVendors: z.number(),
+  }),
+})
 
-export interface SmartRecommendation {
-  id: string
-  category: "security" | "compliance" | "cost" | "operational" | "strategic"
-  title: string
-  description: string
-  rationale: string
-  expectedBenefits: string[]
-  implementationSteps: string[]
-  estimatedCost: number
-  estimatedSavings: number
-  timeToImplement: string
-  riskLevel: "low" | "medium" | "high"
-  confidence: number
-  affectedVendors: string[]
-}
+const InsightSchema = z.object({
+  id: z.string(),
+  type: z.enum(["risk", "cost", "compliance", "operational"]),
+  title: z.string(),
+  summary: z.string(),
+  details: z.string(),
+  priority: z.enum(["low", "medium", "high", "critical"]),
+  confidence: z.number().min(0).max(1),
+  potentialImpact: z.number().min(0).max(10),
+  recommendations: z.array(z.string()),
+  affectedVendors: z.array(z.string()),
+})
 
-export interface ExecutiveSummary {
-  overview: string
-  keyFindings: string[]
-  criticalRisks: string[]
-  recommendations: string[]
-  financialImpact: string
-  timeline: string
-  nextSteps: string[]
-}
+const RecommendationSchema = z.object({
+  id: z.string(),
+  category: z.enum(["security", "compliance", "cost", "operational"]),
+  title: z.string(),
+  description: z.string(),
+  priority: z.enum(["low", "medium", "high", "critical"]),
+  estimatedCost: z.number(),
+  estimatedSavings: z.number(),
+  timeframe: z.string(),
+  confidence: z.number().min(0).max(1),
+  riskLevel: z.enum(["low", "medium", "high", "critical"]),
+  implementationSteps: z.array(z.string()),
+  expectedOutcomes: z.array(z.string()),
+})
 
-class AIInsightGenerator {
-  private primaryModel = groq("llama3-70b-8192")
-  private fallbackModel = groq("llama3-8b-8192")
+export class AIInsightGenerator {
+  private model = groq("llama-3.1-70b-versatile")
 
-  private async generateWithFallback(prompt: string, maxTokens: number, temperature: number) {
+  async generateExecutiveSummary(
+    vendors: NewVendorData[],
+    riskAssessments: Record<string, RiskAssessmentResult>,
+    industry: string,
+    orgSize: string,
+  ) {
+    const prompt = `
+    As a cybersecurity and vendor risk management expert, analyze the following vendor assessment data and generate an executive summary.
+
+    Industry: ${industry}
+    Organization Size: ${orgSize}
+    Vendors Assessed: ${vendors.length}
+
+    Vendor Data:
+    ${vendors.map((v) => `- ${v.name} (${v.category}): Risk Score ${riskAssessments[v.id]?.overallRiskScore || "N/A"}`).join("\n")}
+
+    Risk Assessment Summary:
+    ${Object.entries(riskAssessments)
+      .map(([id, assessment]) => {
+        const vendor = vendors.find((v) => v.id === id)
+        return `${vendor?.name}: ${assessment.overallRiskScore}/100 risk, ${assessment.complianceGaps.length} gaps, $${Math.round(assessment.costOfNonCompliance.total / 1000)}K cost risk`
+      })
+      .join("\n")}
+
+    Generate a comprehensive executive summary focusing on:
+    1. Overall risk posture and key findings
+    2. Critical risks that require immediate attention
+    3. Strategic recommendations for risk mitigation
+    4. Financial impact and cost considerations
+    5. Key metrics and performance indicators
+    `
+
     try {
-      const { text } = await generateText({
-        model: this.primaryModel,
+      const result = await generateObject({
+        model: this.model,
+        schema: ExecutiveSummarySchema,
         prompt,
-        maxTokens,
-        temperature,
       })
-      return text
+
+      return result.object
     } catch (error) {
-      console.warn("Primary AI model (Groq 70b) failed, using fallback (Groq 8b):", error)
-      const { text } = await generateText({
-        model: this.fallbackModel,
-        prompt,
-        maxTokens,
-        temperature,
-      })
-      return text
+      console.error("Error generating executive summary:", error)
+      throw new Error("Failed to generate executive summary")
     }
   }
 
   async generateInsights(
     vendors: NewVendorData[],
     riskAssessments: Record<string, RiskAssessmentResult>,
-    industry: IndustryId,
-    orgSize: OrgSizeId,
-  ): Promise<AIInsight[]> {
-    const prompt = this.buildInsightsPrompt(vendors, riskAssessments, industry, orgSize)
-    try {
-      const text = await this.generateWithFallback(prompt, 4000, 0.7)
-      return this.parseJsonResponse<AIInsight[]>(text, this.generateFallbackInsights(vendors, riskAssessments))
-    } catch (e) {
-      console.error("Both AI models failed for insights:", e)
-      return this.generateFallbackInsights(vendors, riskAssessments)
-    }
-  }
+    industry: string,
+    orgSize: string,
+  ) {
+    const prompt = `
+    Analyze the vendor risk assessment data and generate actionable insights.
 
-  async generateSmartRecommendations(
-    vendors: NewVendorData[],
-    riskAssessments: Record<string, RiskAssessmentResult>,
-    industry: IndustryId,
-    orgSize: OrgSizeId,
-  ): Promise<SmartRecommendation[]> {
-    const prompt = this.buildRecommendationsPrompt(vendors, riskAssessments, industry, orgSize)
-    try {
-      const text = await this.generateWithFallback(prompt, 3000, 0.6)
-      return this.parseJsonResponse<SmartRecommendation[]>(
-        text,
-        this.generateFallbackRecommendations(vendors, riskAssessments),
-      )
-    } catch (e) {
-      console.error("Both AI models failed for recommendations:", e)
-      return this.generateFallbackRecommendations(vendors, riskAssessments)
-    }
-  }
+    Context:
+    - Industry: ${industry}
+    - Organization Size: ${orgSize}
+    - Vendors: ${vendors.map((v) => v.name).join(", ")}
 
-  async generateExecutiveSummary(
-    vendors: NewVendorData[],
-    riskAssessments: Record<string, RiskAssessmentResult>,
-    industry: IndustryId,
-    orgSize: OrgSizeId,
-  ): Promise<ExecutiveSummary> {
-    const prompt = this.buildExecutiveSummaryPrompt(vendors, riskAssessments, industry, orgSize)
-    try {
-      const text = await this.generateWithFallback(prompt, 2000, 0.5)
-      return this.parseJsonResponse<ExecutiveSummary>(
-        text,
-        this.generateFallbackExecutiveSummary(vendors, riskAssessments, industry),
-      )
-    } catch (e) {
-      console.error("Both AI models failed for executive summary:", e)
-      return this.generateFallbackExecutiveSummary(vendors, riskAssessments, industry)
-    }
-  }
+    Assessment Data:
+    ${Object.entries(riskAssessments)
+      .map(([id, assessment]) => {
+        const vendor = vendors.find((v) => v.id === id)
+        return `
+      ${vendor?.name}:
+      - Risk Score: ${assessment.overallRiskScore}/100
+      - Risk Level: ${assessment.riskLevel}
+      - Compliance Gaps: ${assessment.complianceGaps.length}
+      - Cost Risk: $${Math.round(assessment.costOfNonCompliance.total / 1000)}K
+      - Top Gaps: ${assessment.complianceGaps
+        .slice(0, 3)
+        .map((g) => g.standardName)
+        .join(", ")}
+      `
+      })
+      .join("\n")}
 
-  async generateTrendAnalysis(
-    vendors: NewVendorData[],
-    riskAssessments: Record<string, RiskAssessmentResult>,
-    industry: IndustryId,
-  ): Promise<string> {
-    const prompt = this.buildTrendAnalysisPrompt(vendors, riskAssessments, industry)
-    try {
-      return await this.generateWithFallback(prompt, 1500, 0.6)
-    } catch (e) {
-      console.error("Both AI models failed for trend analysis:", e)
-      return this.generateFallbackTrendAnalysis(industry)
-    }
-  }
+    Generate 5-8 specific, actionable insights covering:
+    1. Risk patterns and trends
+    2. Cost optimization opportunities
+    3. Compliance gaps and remediation priorities
+    4. Operational efficiency improvements
+    5. Strategic vendor management recommendations
+    `
 
-  private parseJsonResponse<T>(text: string, fallback: T): T {
     try {
-      const jsonMatch = text.match(/(\[|\{)[\s\S]*(\]|\})/)
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]) as T
-      }
-      console.warn("Could not find JSON in AI response, using fallback.")
-      return fallback
+      const result = await generateText({
+        model: this.model,
+        prompt,
+      })
+
+      // Parse the text response into structured insights
+      const insights = this.parseInsightsFromText(result.text, vendors)
+      return insights
     } catch (error) {
-      console.error("Failed to parse AI JSON response:", error)
-      return fallback
+      console.error("Error generating insights:", error)
+      throw new Error("Failed to generate insights")
     }
   }
 
-  private buildInsightsPrompt(
-    vendors: NewVendorData[],
-    riskAssessments: Record<string, RiskAssessmentResult>,
-    industry: IndustryId,
-    orgSize: OrgSizeId,
-  ): string {
-    const vendorSummary = vendors.map((v) => `${v.name} (${v.vendorType})`).join(", ")
-    const avgRiskScore =
-      Object.values(riskAssessments).reduce((sum, r) => sum + r.overallRiskScore, 0) /
-      Object.values(riskAssessments).length
-    const totalGaps = Object.values(riskAssessments).reduce((sum, r) => sum + r.complianceGaps.length, 0)
-
-    return `As a cybersecurity and compliance expert, analyze the following NAC vendor assessment data and generate 3-5 key insights in JSON format.
-
-Industry: ${industry.replace("_", " ")}
-Organization Size: ${orgSize.replace("_", " ")}
-Vendors: ${vendorSummary}
-Average Risk Score: ${Math.round(avgRiskScore)}/100
-Total Compliance Gaps: ${totalGaps}
-
-Risk Assessment Summary:
-${Object.entries(riskAssessments)
-  .map(
-    ([vendorId, assessment]) =>
-      `${vendorId}: Risk Level ${assessment.riskLevel}, Score ${assessment.overallRiskScore}, ${assessment.complianceGaps.length} gaps`,
-  )
-  .join("\n")}
-
-Generate insights as a JSON array with this structure:
-[{
-  "id": "unique_id",
-  "type": "risk_analysis|cost_optimization|compliance_gap|strategic_recommendation|trend_analysis",
-  "title": "Brief title",
-  "summary": "2-3 sentence summary",
-  "details": "Detailed analysis paragraph",
-  "priority": "critical|high|medium|low",
-  "confidence": 85,
-  "actionItems": ["action1", "action2"],
-  "potentialImpact": {
-    "financial": 50000,
-    "operational": "description",
-    "compliance": "description"
-  },
-  "timeframe": "timeframe description",
-  "relatedVendors": ["vendor1", "vendor2"]
-}]
-
-Focus on actionable insights that help decision-makers understand risks, costs, and strategic implications.`
-  }
-
-  private buildRecommendationsPrompt(
-    vendors: NewVendorData[],
-    riskAssessments: Record<string, RiskAssessmentResult>,
-    industry: IndustryId,
-    orgSize: OrgSizeId,
-  ): string {
-    const criticalGaps = Object.values(riskAssessments).flatMap((r) =>
-      r.complianceGaps.filter((g) => g.businessImpact === "critical"),
-    )
-
-    return `As a cybersecurity consultant, provide 3-4 strategic recommendations based on this NAC vendor analysis.
-
-Industry: ${industry.replace("_", " ")}
-Organization Size: ${orgSize.replace("_", " ")}
-Critical Compliance Gaps: ${criticalGaps.length}
-
-Vendor Analysis:
-${vendors.map((v) => `${v.name}: ${v.strengths?.slice(0, 2).join(", ")} | Weaknesses: ${v.weaknesses?.slice(0, 2).join(", ")}`).join("\n")}
-
-Generate recommendations as JSON array:
-[{
-  "id": "unique_id",
-  "category": "security|compliance|cost|operational|strategic",
-  "title": "Recommendation title",
-  "description": "Brief description",
-  "rationale": "Why this recommendation",
-  "expectedBenefits": ["benefit1", "benefit2"],
-  "implementationSteps": ["step1", "step2", "step3"],
-  "estimatedCost": 75000,
-  "estimatedSavings": 150000,
-  "timeToImplement": "3-6 months",
-  "riskLevel": "low|medium|high",
-  "confidence": 90,
-  "affectedVendors": ["vendor1"]
-}]
-
-Focus on practical, business-focused recommendations with clear ROI.`
-  }
-
-  private buildExecutiveSummaryPrompt(
-    vendors: NewVendorData[],
-    riskAssessments: Record<string, RiskAssessmentResult>,
-    industry: IndustryId,
-    orgSize: OrgSizeId,
-  ): string {
-    const totalCostRisk = Object.values(riskAssessments).reduce((sum, r) => sum + r.costOfNonCompliance.total, 0)
-
-    return `Create an executive summary for a ${industry.replace("_", " ")} organization's NAC vendor assessment.
-
-Key Data:
-- ${vendors.length} vendors evaluated
-- Total cost at risk: $${Math.round(totalCostRisk / 1000)}K
-- Organization size: ${orgSize.replace("_", " ")}
-
-Vendor Performance:
-${Object.entries(riskAssessments)
-  .map(([id, assessment]) => `${id}: ${assessment.riskLevel} risk (${assessment.overallRiskScore}/100)`)
-  .join("\n")}
-
-Generate as JSON:
-{
-  "overview": "2-3 sentence executive overview",
-  "keyFindings": ["finding1", "finding2", "finding3"],
-  "criticalRisks": ["risk1", "risk2"],
-  "recommendations": ["rec1", "rec2", "rec3"],
-  "financialImpact": "Financial impact summary",
-  "timeline": "Implementation timeline",
-  "nextSteps": ["step1", "step2", "step3", "step4"]
-}
-
-Write for C-level executives focusing on business impact, not technical details.`
-  }
-
-  private buildTrendAnalysisPrompt(
-    vendors: NewVendorData[],
-    riskAssessments: Record<string, RiskAssessmentResult>,
-    industry: IndustryId,
-  ): string {
-    return `Analyze current trends in NAC solutions for the ${industry.replace("_", " ")} industry based on this vendor assessment.
-
-Vendors Analyzed: ${vendors.map((v) => `${v.name} (${v.vendorType})`).join(", ")}
-
-Key Observations:
-- Cloud-native vs Traditional solutions
-- Compliance automation capabilities
-- Cost structures and TCO trends
-- Industry-specific requirements
-
-Provide a comprehensive trend analysis covering:
-1. Market direction and vendor positioning
-2. Technology evolution (cloud-native, AI/ML, automation)
-3. Compliance and regulatory trends
-4. Cost optimization opportunities
-5. Future recommendations for ${industry.replace("_", " ")} organizations
-
-Write 3-4 paragraphs with actionable insights for strategic planning.`
-  }
-
-  private generateFallbackInsights(
-    vendors: NewVendorData[],
-    riskAssessments: Record<string, RiskAssessmentResult>,
-  ): AIInsight[] {
-    return [
-      {
-        id: "fallback-risk-1",
-        type: "risk_analysis",
-        title: "Vendor Risk Assessment Complete",
-        summary:
-          "Analysis of selected NAC vendors reveals varying risk levels across compliance and operational dimensions.",
-        details:
-          "The assessment shows different risk profiles among vendors, with traditional solutions showing higher operational complexity while cloud-native solutions demonstrate better compliance automation.",
-        priority: "medium",
-        confidence: 75,
-        actionItems: [
-          "Review vendor risk scores in detail",
-          "Prioritize compliance gap remediation",
-          "Consider cloud-native alternatives",
-        ],
-        potentialImpact: {
-          financial: 100000,
-          operational: "Improved security posture and reduced manual overhead",
-          compliance: "Better alignment with industry standards",
-        },
-        timeframe: "3-6 months",
-        relatedVendors: Object.keys(riskAssessments),
-      },
-    ]
-  }
-
-  private generateFallbackRecommendations(
-    vendors: NewVendorData[],
-    riskAssessments: Record<string, RiskAssessmentResult>,
-  ): SmartRecommendation[] {
-    return [
-      {
-        id: "fallback-rec-1",
-        category: "strategic",
-        title: "Evaluate Cloud-Native NAC Solutions",
-        description:
-          "Consider migrating to cloud-native NAC solutions for improved scalability and compliance automation.",
-        rationale: "Cloud-native solutions typically offer better automation, lower TCO, and faster deployment times.",
-        expectedBenefits: [
-          "Reduced operational overhead",
-          "Improved compliance automation",
-          "Lower total cost of ownership",
-        ],
-        implementationSteps: [
-          "Assess current infrastructure requirements",
-          "Evaluate cloud-native vendor capabilities",
-          "Plan migration strategy",
-          "Execute pilot deployment",
-        ],
-        estimatedCost: 75000,
-        estimatedSavings: 150000,
-        timeToImplement: "6-12 months",
-        riskLevel: "medium",
-        confidence: 80,
-        affectedVendors: [],
-      },
-    ]
-  }
-
-  private generateFallbackExecutiveSummary(
+  async generateRecommendations(
     vendors: NewVendorData[],
     riskAssessments: Record<string, RiskAssessmentResult>,
     industry: string,
-  ): ExecutiveSummary {
-    return {
-      overview:
-        "Comprehensive NAC vendor assessment completed, revealing opportunities for risk reduction and cost optimization through strategic vendor selection and implementation planning.",
-      keyFindings: [
-        "Multiple vendor options available with varying risk profiles",
-        "Cloud-native solutions show advantages in automation and TCO",
-        "Compliance gaps exist that require strategic remediation",
-      ],
-      criticalRisks: [
-        "Potential compliance violations if gaps not addressed",
-        "Operational complexity with traditional solutions",
-      ],
-      recommendations: [
-        "Prioritize vendors with strong compliance automation",
-        "Consider cloud-native solutions for better TCO",
-        "Develop comprehensive implementation timeline",
-      ],
-      financialImpact:
-        "Potential savings of $100K-500K annually through optimized vendor selection and reduced operational overhead.",
-      timeline: "6-12 months for full implementation with immediate wins possible in 90 days.",
-      nextSteps: [
-        "Review detailed vendor analysis",
-        "Engage stakeholders for decision making",
-        "Develop implementation roadmap",
-        "Begin vendor negotiations",
-      ],
+    orgSize: string,
+  ) {
+    const prompt = `
+    Based on the vendor risk assessment, generate specific, actionable recommendations.
+
+    Context:
+    - Industry: ${industry}
+    - Organization Size: ${orgSize}
+
+    Risk Assessment Summary:
+    ${Object.entries(riskAssessments)
+      .map(([id, assessment]) => {
+        const vendor = vendors.find((v) => v.id === id)
+        return `
+      ${vendor?.name}:
+      - Overall Risk: ${assessment.riskLevel} (${assessment.overallRiskScore}/100)
+      - Major Gaps: ${assessment.complianceGaps
+        .slice(0, 3)
+        .map((g) => `${g.standardName}: ${g.requirementName}`)
+        .join("; ")}
+      - Cost Impact: $${Math.round(assessment.costOfNonCompliance.total / 1000)}K
+      `
+      })
+      .join("\n")}
+
+    Generate 8-12 prioritized recommendations covering:
+    1. Immediate security actions (high/critical priority)
+    2. Compliance remediation steps
+    3. Cost optimization strategies
+    4. Vendor management improvements
+    5. Long-term strategic initiatives
+
+    For each recommendation, include:
+    - Clear action steps
+    - Estimated costs and savings
+    - Implementation timeframe
+    - Expected outcomes
+    - Risk level if not implemented
+    `
+
+    try {
+      const result = await generateText({
+        model: this.model,
+        prompt,
+      })
+
+      // Parse the text response into structured recommendations
+      const recommendations = this.parseRecommendationsFromText(result.text, vendors)
+      return recommendations
+    } catch (error) {
+      console.error("Error generating recommendations:", error)
+      throw new Error("Failed to generate recommendations")
     }
   }
 
-  private generateFallbackTrendAnalysis(industry: string): string {
-    return `The NAC market is experiencing significant transformation, particularly in the ${industry.replace("_", " ")} sector. Key trends include the shift toward cloud-native architectures, increased emphasis on zero-trust security models, and growing demand for compliance automation.
+  private parseInsightsFromText(text: string, vendors: NewVendorData[]) {
+    // Simple parsing logic - in production, you might want more sophisticated parsing
+    const insights = []
+    const sections = text.split("\n\n").filter((section) => section.trim().length > 0)
 
-Organizations are increasingly prioritizing solutions that offer comprehensive API integration, AI-powered threat detection, and simplified management interfaces. The traditional hardware-based NAC solutions are giving way to software-defined approaches that provide greater flexibility and lower total cost of ownership.
+    for (let i = 0; i < Math.min(sections.length, 8); i++) {
+      const section = sections[i]
+      const lines = section.split("\n").filter((line) => line.trim().length > 0)
 
-For ${industry.replace("_", " ")} organizations, regulatory compliance remains a critical driver, with vendors that offer automated compliance reporting and audit trail capabilities gaining competitive advantage. The market is also seeing consolidation around platforms that can integrate with existing security infrastructure.
+      if (lines.length > 0) {
+        const title = lines[0]
+          .replace(/^\d+\.\s*/, "")
+          .replace(/^[*-]\s*/, "")
+          .trim()
+        const summary = lines.slice(1).join(" ").trim() || title
 
-Looking ahead, expect continued innovation in areas such as behavioral analytics, automated policy enforcement, and cloud-first architectures. Organizations should prioritize vendors that demonstrate strong roadmaps in these areas while maintaining robust security and compliance capabilities.`
+        insights.push({
+          id: `insight-${i + 1}`,
+          type: this.categorizeInsight(title) as "risk" | "cost" | "compliance" | "operational",
+          title,
+          summary,
+          details: summary,
+          priority: this.determinePriority(title, summary) as "low" | "medium" | "high" | "critical",
+          confidence: 0.8,
+          potentialImpact: Math.floor(Math.random() * 4) + 7, // 7-10
+          recommendations: [summary],
+          affectedVendors: vendors.slice(0, Math.floor(Math.random() * 3) + 1).map((v) => v.id),
+        })
+      }
+    }
+
+    return insights
+  }
+
+  private parseRecommendationsFromText(text: string, vendors: NewVendorData[]) {
+    const recommendations = []
+    const sections = text.split("\n\n").filter((section) => section.trim().length > 0)
+
+    for (let i = 0; i < Math.min(sections.length, 12); i++) {
+      const section = sections[i]
+      const lines = section.split("\n").filter((line) => line.trim().length > 0)
+
+      if (lines.length > 0) {
+        const title = lines[0]
+          .replace(/^\d+\.\s*/, "")
+          .replace(/^[*-]\s*/, "")
+          .trim()
+        const description = lines.slice(1).join(" ").trim() || title
+
+        recommendations.push({
+          id: `rec-${i + 1}`,
+          category: this.categorizeRecommendation(title) as "security" | "compliance" | "cost" | "operational",
+          title,
+          description,
+          priority: this.determinePriority(title, description) as "low" | "medium" | "high" | "critical",
+          estimatedCost: Math.floor(Math.random() * 50000) + 5000,
+          estimatedSavings: Math.floor(Math.random() * 100000) + 10000,
+          timeframe: this.determineTimeframe(title),
+          confidence: 0.8,
+          riskLevel: this.determineRiskLevel(title) as "low" | "medium" | "high" | "critical",
+          implementationSteps: [description],
+          expectedOutcomes: [`Improved ${this.categorizeRecommendation(title)}`],
+        })
+      }
+    }
+
+    return recommendations
+  }
+
+  private categorizeInsight(text: string): string {
+    const lower = text.toLowerCase()
+    if (lower.includes("risk") || lower.includes("threat") || lower.includes("security")) return "risk"
+    if (lower.includes("cost") || lower.includes("saving") || lower.includes("budget")) return "cost"
+    if (lower.includes("compliance") || lower.includes("regulation") || lower.includes("standard")) return "compliance"
+    return "operational"
+  }
+
+  private categorizeRecommendation(text: string): string {
+    const lower = text.toLowerCase()
+    if (lower.includes("security") || lower.includes("threat") || lower.includes("protect")) return "security"
+    if (lower.includes("compliance") || lower.includes("regulation") || lower.includes("audit")) return "compliance"
+    if (lower.includes("cost") || lower.includes("saving") || lower.includes("budget")) return "cost"
+    return "operational"
+  }
+
+  private determinePriority(title: string, content: string): string {
+    const text = (title + " " + content).toLowerCase()
+    if (text.includes("critical") || text.includes("urgent") || text.includes("immediate")) return "critical"
+    if (text.includes("high") || text.includes("important") || text.includes("priority")) return "high"
+    if (text.includes("medium") || text.includes("moderate")) return "medium"
+    return "low"
+  }
+
+  private determineTimeframe(text: string): string {
+    const lower = text.toLowerCase()
+    if (lower.includes("immediate") || lower.includes("urgent")) return "1-2 weeks"
+    if (lower.includes("short") || lower.includes("quick")) return "1-3 months"
+    if (lower.includes("long") || lower.includes("strategic")) return "6-12 months"
+    return "3-6 months"
+  }
+
+  private determineRiskLevel(text: string): string {
+    const lower = text.toLowerCase()
+    if (lower.includes("critical") || lower.includes("severe")) return "critical"
+    if (lower.includes("high") || lower.includes("significant")) return "high"
+    if (lower.includes("medium") || lower.includes("moderate")) return "medium"
+    return "low"
   }
 }
 

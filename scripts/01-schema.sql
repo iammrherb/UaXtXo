@@ -1,64 +1,58 @@
--- Enable pgcrypto for UUID generation if needed
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- Drop tables if they exist to ensure a clean slate
-DROP TABLE IF EXISTS vendors CASCADE;
-DROP TABLE IF EXISTS ai_executive_summaries CASCADE;
-DROP TABLE IF EXISTS ai_insights CASCADE;
-DROP TABLE IF EXISTS ai_recommendations CASCADE;
-DROP TABLE IF EXISTS ai_trend_analysis CASCADE;
-
--- Vendors Table: Stores all vendor-related information
-CREATE TABLE vendors (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    vendor_type TEXT NOT NULL,
-    logo_url TEXT,
-    description TEXT,
-    strengths TEXT[],
-    weaknesses TEXT[],
-    features JSONB,
-    pricing JSONB,
-    compliance JSONB,
-    tco_factors JSONB,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- Create vendors table
+CREATE TABLE IF NOT EXISTS vendors (
+  id VARCHAR(255) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  category VARCHAR(100) NOT NULL,
+  pricing_model VARCHAR(100) NOT NULL,
+  base_cost DECIMAL(10,2) DEFAULT 0,
+  per_user_cost DECIMAL(10,2) DEFAULT 0,
+  setup_cost DECIMAL(10,2) DEFAULT 0,
+  annual_discount DECIMAL(5,2) DEFAULT 0,
+  features JSONB DEFAULT '[]',
+  compliance_certifications JSONB DEFAULT '[]',
+  security_features JSONB DEFAULT '[]',
+  integration_capabilities JSONB DEFAULT '[]',
+  support_tiers JSONB DEFAULT '[]',
+  deployment_options JSONB DEFAULT '[]',
+  scalability_limits JSONB DEFAULT '{}',
+  vendor_lock_in_risk VARCHAR(50) DEFAULT 'medium',
+  market_position VARCHAR(50) DEFAULT 'established',
+  financial_stability VARCHAR(50) DEFAULT 'stable',
+  innovation_score INTEGER DEFAULT 7,
+  customer_satisfaction DECIMAL(3,1) DEFAULT 8.0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- AI Caching Tables
-CREATE TABLE ai_executive_summaries (
-    cache_key TEXT PRIMARY KEY,
-    summary JSONB NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- Create AI insights cache table
+CREATE TABLE IF NOT EXISTS ai_insights (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  vendor_ids JSONB NOT NULL,
+  industry VARCHAR(100) NOT NULL,
+  org_size VARCHAR(100) NOT NULL,
+  insight_type VARCHAR(100) NOT NULL,
+  content JSONB NOT NULL,
+  confidence_score DECIMAL(3,2) DEFAULT 0.8,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL '24 hours')
 );
 
-CREATE TABLE ai_insights (
-    cache_key TEXT PRIMARY KEY,
-    insights JSONB NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- Create reports table
+CREATE TABLE IF NOT EXISTS reports (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  template_data JSONB NOT NULL,
+  vendor_ids JSONB NOT NULL,
+  industry VARCHAR(100) NOT NULL,
+  org_size VARCHAR(100) NOT NULL,
+  created_by VARCHAR(255) DEFAULT 'system',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE ai_recommendations (
-    cache_key TEXT PRIMARY KEY,
-    recommendations JSONB NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE ai_trend_analysis (
-    cache_key TEXT PRIMARY KEY,
-    analysis TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Indexes for performance
-CREATE INDEX idx_vendors_type ON vendors(vendor_type);
-CREATE INDEX idx_summaries_created_at ON ai_executive_summaries(created_at);
-CREATE INDEX idx_insights_created_at ON ai_insights(created_at);
-CREATE INDEX idx_recommendations_created_at ON ai_recommendations(created_at);
-CREATE INDEX idx_trend_analysis_created_at ON ai_trend_analysis(created_at);
-
-COMMENT ON TABLE vendors IS 'Stores detailed information about each NAC vendor.';
-COMMENT ON TABLE ai_executive_summaries IS 'Caches generated AI executive summaries.';
-COMMENT ON TABLE ai_insights IS 'Caches generated AI insights.';
-COMMENT ON TABLE ai_recommendations IS 'Caches generated AI smart recommendations.';
-COMMENT ON TABLE ai_trend_analysis IS 'Caches generated AI trend analysis reports.';
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_vendors_category ON vendors(category);
+CREATE INDEX IF NOT EXISTS idx_ai_insights_lookup ON ai_insights(vendor_ids, industry, org_size, insight_type);
+CREATE INDEX IF NOT EXISTS idx_ai_insights_expires ON ai_insights(expires_at);
+CREATE INDEX IF NOT EXISTS idx_reports_vendor_ids ON reports USING GIN(vendor_ids);

@@ -1,62 +1,110 @@
 "use client"
 
-import { useMemo } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { useDashboardContext } from "@/context/DashboardContext"
-import { useVendorData } from "./useVendorData"
-import { useComplianceData } from "./useComplianceData"
-import { getOrGenerateAIAnalysis } from "@/app/actions/ai"
+import { useState, useCallback } from "react"
+import { generateAIInsights } from "@/app/actions/ai"
+import type { NewVendorData } from "@/lib/vendors/data"
+import type { RiskAssessmentResult } from "@/lib/compliance/risk-assessment"
 
-export function useAIInsights() {
-  const { selectedVendors, selectedIndustry, selectedOrgSize } = useDashboardContext()
-  const { vendors, isSuccess: vendorsLoaded } = useVendorData()
-  const { riskAssessments, isSuccess: complianceDataLoaded } = useComplianceData(
-    selectedVendors,
-    selectedIndustry,
-    selectedOrgSize,
+interface AIInsightData {
+  executiveSummary: {
+    overview: string
+    criticalRisks: string[]
+    recommendations: string[]
+    financialImpact: string
+    keyMetrics: {
+      avgRiskScore: number
+      totalGaps: number
+      estimatedCostRisk: number
+      highRiskVendors: number
+    }
+  }
+  insights: Array<{
+    id: string
+    type: "risk" | "cost" | "compliance" | "operational"
+    title: string
+    summary: string
+    details: string
+    priority: "low" | "medium" | "high" | "critical"
+    confidence: number
+    potentialImpact: number
+    recommendations: string[]
+    affectedVendors: string[]
+  }>
+  recommendations: Array<{
+    id: string
+    category: "security" | "compliance" | "cost" | "operational"
+    title: string
+    description: string
+    priority: "low" | "medium" | "high" | "critical"
+    estimatedCost: number
+    estimatedSavings: number
+    timeframe: string
+    confidence: number
+    riskLevel: "low" | "medium" | "high" | "critical"
+    implementationSteps: string[]
+    expectedOutcomes: string[]
+  }>
+  metadata: {
+    vendorCount: number
+    avgRiskScore: number
+    totalGaps: number
+    generatedAt: string
+  }
+}
+
+export function useAIInsights(
+  vendors: NewVendorData[],
+  riskAssessments: Record<string, RiskAssessmentResult>,
+  industry: string,
+  orgSize: string,
+) {
+  const [data, setData] = useState<AIInsightData | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isCached, setIsCached] = useState(false)
+
+  const generateInsights = useCallback(
+    async (forceRegenerate = false) => {
+      if (vendors.length === 0 || Object.keys(riskAssessments).length === 0) {
+        setError("No vendor or risk assessment data available")
+        return
+      }
+
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const result = await generateAIInsights(vendors, riskAssessments, industry, orgSize, forceRegenerate)
+
+        if (result.success) {
+          setData(result.data)
+          setIsCached(result.cached)
+        } else {
+          setError(result.error || "Failed to generate insights")
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error occurred")
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [vendors, riskAssessments, industry, orgSize],
   )
 
-  const selectedVendorData = useMemo(() => {
-    return vendors.filter((v) => selectedVendors.includes(v.id))
-  }, [vendors, selectedVendors])
-
-  const isEnabled = vendorsLoaded && complianceDataLoaded && selectedVendors.length > 0
-
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["aiAnalysis", selectedVendors, selectedIndustry, selectedOrgSize],
-    queryFn: () => getOrGenerateAIAnalysis(selectedVendorData, riskAssessments, selectedIndustry, selectedOrgSize),
-    enabled: isEnabled,
-    staleTime: 15 * 60 * 1000, // 15 minutes
-    refetchOnWindowFocus: false,
-  })
-
-  const hasInsights = data && (data.insights.length > 0 || data.recommendations.length > 0 || !!data.executiveSummary)
-
   return {
-    // State
+    // Data
+    executiveSummary: data?.executiveSummary || null,
     insights: data?.insights || [],
     recommendations: data?.recommendations || [],
-    executiveSummary: data?.executiveSummary || null,
-    trendAnalysis: data?.trendAnalysis || null,
-    isLoading,
-    error: error ? (error as Error).message : null,
-    lastGenerated: data?.fromCache ? "cached" : new Date().toISOString(),
+    metadata: data?.metadata || null,
 
-    // Derived state
-    hasInsights,
-    isCacheValid: data?.fromCache,
+    // State
+    isLoading,
+    error,
+    hasInsights: !!data,
+    isCached,
 
     // Actions
-    generateInsights: refetch,
-    refreshInsights: refetch,
-    clearInsights: () => {
-      console.warn("Clearing specific cache entries requires a dedicated server action. Refetching to get fresh data.")
-      refetch()
-    },
-    regenerateSpecific: async (type: "summary" | "insights" | "recommendations" | "trends") => {
-      console.warn(`Regenerating only '${type}' is not supported with the current caching strategy. Refetching all.`)
-      await refetch()
-    },
-    refetch,
+    generateInsights,
   }
 }
