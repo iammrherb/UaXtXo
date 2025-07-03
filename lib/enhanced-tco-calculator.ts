@@ -55,6 +55,13 @@ export function calculateVendorTCO(vendorId: string, config: CalculationConfigur
 
   // Licensing Costs
   const tier = vendor.licensing.base.find((t) => t.name === config.licenseTier) || vendor.licensing.base[0]
+  if (!tier) {
+    console.warn(
+      `No matching or default license tier found for vendor: ${vendor.name} and tier: ${config.licenseTier}. Skipping TCO calculation for this vendor.`,
+    )
+    // If no licensing tier can be determined, we can't calculate a meaningful TCO.
+    return null
+  }
   const licenseUnitCount = tier.unit === "user" ? config.users : config.devices
   const licenseCost = parseCost(tier.listPrice) * licenseUnitCount * config.years
   total += licenseCost
