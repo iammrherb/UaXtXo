@@ -30,18 +30,12 @@ export interface CalculationResult {
   risk: {
     breachReduction: number
     annualizedRiskCost: number
-    potentialBreachCost: number
-    mitigatedBreachCost: number
-    insurancePremiumReduction: number
   }
   ops: {
     fteSaved: number
     annualOpsSaving: number
   }
 }
-
-const BASE_BREACH_COST = 4_500_000
-const BASE_INSURANCE_PREMIUM = 100_000
 
 function parseCost(cost: number | string): number {
   if (typeof cost === "number") return cost
@@ -72,6 +66,7 @@ export function calculateVendorTCO(vendorId: string, config: CalculationConfigur
   }
 
   let listPrice = parseCost(tier.listPrice)
+  // Override Portnox cost if specified in config
   if (vendorId === "portnox" && config.portnoxDeviceCost > 0) {
     listPrice = config.portnoxDeviceCost
   }
@@ -114,13 +109,12 @@ export function calculateVendorTCO(vendorId: string, config: CalculationConfigur
   total += totalFteCost
   breakdown.push({ name: "Operational Staff", value: totalFteCost })
 
-  // ROI & Risk Calculation
+  // ROI Calculation
   const fteSaved = 2.0 - vendor.tcoFactors.fteRequirement > 0 ? 2.0 - vendor.tcoFactors.fteRequirement : 0
   const annualOpsSaving = fteSaved * config.avgFteCost
   const breachReduction = vendor.marketPosition === "leader" || vendor.marketPosition === "visionary" ? 0.6 : 0.4
-  const annualRiskSaving = BASE_BREACH_COST * breachReduction
-  const insurancePremiumReduction = BASE_INSURANCE_PREMIUM * (1 - vendor.cyberInsuranceFactor)
-  const annualSavings = annualOpsSaving + annualRiskSaving + insurancePremiumReduction
+  const annualRiskSaving = 500000 * breachReduction // Assume baseline risk cost
+  const annualSavings = annualOpsSaving + annualRiskSaving
   const totalSavings = annualSavings * config.years
   const roiPercentage = total > 0 ? ((totalSavings - total) / total) * 100 : 0
   const paybackMonths = annualSavings > 0 ? (total / annualSavings) * 12 : 999
@@ -137,10 +131,7 @@ export function calculateVendorTCO(vendorId: string, config: CalculationConfigur
     },
     risk: {
       breachReduction,
-      annualizedRiskCost: BASE_BREACH_COST * (1 - breachReduction),
-      potentialBreachCost: BASE_BREACH_COST,
-      mitigatedBreachCost: BASE_BREACH_COST * (1 - breachReduction),
-      insurancePremiumReduction,
+      annualizedRiskCost: 500000 * (1 - breachReduction),
     },
     ops: {
       fteSaved,
