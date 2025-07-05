@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { getAllVendors, getVendorLogoPath } from "@/lib/comprehensive-vendor-data"
+import { getAllVendors } from "@/lib/comprehensive-vendor-data"
 import { Search, Star, Cloud, Server, BinaryIcon as Hybrid, Info } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -29,38 +29,57 @@ export default function EnhancedVendorSelection({
   onSelectRecommended,
 }: EnhancedVendorSelectionProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterByDeployment, setFilterByDeployment] = useState<string>("all")
+  const [filterByCategory, setFilterByCategory] = useState<string>("all")
 
   const vendors = getAllVendors()
 
   const filteredVendors = vendors.filter((vendor) => {
     const matchesSearch =
       vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vendor.category.toLowerCase().includes(searchTerm.toLowerCase())
+      vendor.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vendor.description.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesDeployment =
-      filterByDeployment === "all" || vendor.deploymentModel.toLowerCase().includes(filterByDeployment.toLowerCase())
+    const matchesCategory = filterByCategory === "all" || vendor.category === filterByCategory
 
-    return matchesSearch && matchesDeployment
+    return matchesSearch && matchesCategory
   })
 
-  const getDeploymentIcon = (deploymentModel: string) => {
-    if (deploymentModel.includes("SaaS") || deploymentModel.includes("Cloud")) {
-      return <Cloud className="h-4 w-4" />
-    } else if (deploymentModel.includes("Hybrid")) {
-      return <Hybrid className="h-4 w-4" />
-    } else {
-      return <Server className="h-4 w-4" />
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "nac":
+        return <Server className="h-4 w-4" />
+      case "certificate":
+        return <Cloud className="h-4 w-4" />
+      case "vpn":
+        return <Hybrid className="h-4 w-4" />
+      default:
+        return <Server className="h-4 w-4" />
     }
   }
 
-  const getDeploymentColor = (deploymentModel: string) => {
-    if (deploymentModel.includes("SaaS") || deploymentModel.includes("Cloud")) {
-      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-    } else if (deploymentModel.includes("Hybrid")) {
-      return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
-    } else {
-      return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "nac":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+      case "certificate":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+      case "vpn":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+    }
+  }
+
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case "nac":
+        return "NAC"
+      case "certificate":
+        return "Certificate"
+      case "vpn":
+        return "VPN"
+      default:
+        return category.toUpperCase()
     }
   }
 
@@ -86,35 +105,35 @@ export default function EnhancedVendorSelection({
 
           <div className="flex flex-wrap gap-2">
             <Button
-              variant={filterByDeployment === "all" ? "default" : "outline"}
+              variant={filterByCategory === "all" ? "default" : "outline"}
               size="sm"
-              onClick={() => setFilterByDeployment("all")}
+              onClick={() => setFilterByCategory("all")}
             >
               All
             </Button>
             <Button
-              variant={filterByDeployment === "saas" ? "default" : "outline"}
+              variant={filterByCategory === "nac" ? "default" : "outline"}
               size="sm"
-              onClick={() => setFilterByDeployment("saas")}
-            >
-              <Cloud className="h-3 w-3 mr-1" />
-              Cloud
-            </Button>
-            <Button
-              variant={filterByDeployment === "hybrid" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilterByDeployment("hybrid")}
-            >
-              <Hybrid className="h-3 w-3 mr-1" />
-              Hybrid
-            </Button>
-            <Button
-              variant={filterByDeployment === "appliance" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilterByDeployment("appliance")}
+              onClick={() => setFilterByCategory("nac")}
             >
               <Server className="h-3 w-3 mr-1" />
-              On-Prem
+              NAC
+            </Button>
+            <Button
+              variant={filterByCategory === "certificate" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilterByCategory("certificate")}
+            >
+              <Cloud className="h-3 w-3 mr-1" />
+              Certificate
+            </Button>
+            <Button
+              variant={filterByCategory === "vpn" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilterByCategory("vpn")}
+            >
+              <Hybrid className="h-3 w-3 mr-1" />
+              VPN
             </Button>
           </div>
         </div>
@@ -153,7 +172,7 @@ export default function EnhancedVendorSelection({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-2 mb-2">
                     <Image
-                      src={getVendorLogoPath(vendor.id) || "/placeholder.svg"}
+                      src={vendor.logo || "/placeholder-logo.png"}
                       alt={`${vendor.name} logo`}
                       width={24}
                       height={24}
@@ -164,14 +183,14 @@ export default function EnhancedVendorSelection({
                         <h4 className="font-medium text-sm truncate">{vendor.name}</h4>
                         {isPortnox && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
                       </div>
-                      <p className="text-xs text-muted-foreground truncate">{vendor.category}</p>
+                      <p className="text-xs text-muted-foreground truncate">{vendor.description}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <Badge variant="secondary" className={cn("text-xs", getDeploymentColor(vendor.deploymentModel))}>
-                      {getDeploymentIcon(vendor.deploymentModel)}
-                      <span className="ml-1">{vendor.deploymentModel}</span>
+                    <Badge variant="secondary" className={cn("text-xs", getCategoryColor(vendor.category))}>
+                      {getCategoryIcon(vendor.category)}
+                      <span className="ml-1">{getCategoryLabel(vendor.category)}</span>
                     </Badge>
 
                     <TooltipProvider>
@@ -182,13 +201,21 @@ export default function EnhancedVendorSelection({
                         <TooltipContent side="left" className="max-w-xs">
                           <div className="space-y-1">
                             <p className="font-medium">{vendor.name}</p>
-                            <p className="text-xs">{vendor.category}</p>
+                            <p className="text-xs">{vendor.description}</p>
                             <Separator className="my-1" />
                             <p className="text-xs">
-                              Pricing: {vendor.pricing.model === "subscription" ? "Subscription" : "Perpetual"}
+                              Pricing:{" "}
+                              {vendor.pricing.model === "per_device"
+                                ? "Per Device"
+                                : vendor.pricing.model === "per_user"
+                                  ? "Per User"
+                                  : "Flat Rate"}
                             </p>
-                            <p className="text-xs">Base: ${vendor.pricing.basePrice}/device</p>
-                            <p className="text-xs">Min devices: {vendor.pricing.minimumDevices}</p>
+                            <p className="text-xs">
+                              Base: ${vendor.pricing.basePrice}
+                              {vendor.pricing.model !== "flat_rate" ? "/month" : ""}
+                            </p>
+                            <p className="text-xs">Complexity: {vendor.complexity}</p>
                           </div>
                         </TooltipContent>
                       </Tooltip>
@@ -199,20 +226,24 @@ export default function EnhancedVendorSelection({
                   <div className="mt-2 text-xs text-muted-foreground">
                     <span className="font-medium">${vendor.pricing.basePrice}</span>
                     <span className="ml-1">
-                      /device {vendor.pricing.model === "subscription" ? "/month" : "one-time"}
+                      {vendor.pricing.model === "per_device"
+                        ? "/device/month"
+                        : vendor.pricing.model === "per_user"
+                          ? "/user/month"
+                          : "flat rate"}
                     </span>
                   </div>
 
                   {/* Key Features Preview */}
                   <div className="mt-2 flex flex-wrap gap-1">
-                    {vendor.pricing.includedFeatures.slice(0, 2).map((feature, index) => (
+                    {vendor.features.slice(0, 2).map((feature, index) => (
                       <Badge key={index} variant="outline" className="text-xs px-1 py-0">
                         {feature}
                       </Badge>
                     ))}
-                    {vendor.pricing.includedFeatures.length > 2 && (
+                    {vendor.features.length > 2 && (
                       <Badge variant="outline" className="text-xs px-1 py-0">
-                        +{vendor.pricing.includedFeatures.length - 2} more
+                        +{vendor.features.length - 2} more
                       </Badge>
                     )}
                   </div>
