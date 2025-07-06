@@ -3,7 +3,8 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import { compareVendors, type calculateVendorTCO } from "@/lib/tco-calculator"
+import { compareMultipleVendorsTCO, type calculateFullTCOForVendor } from "@/src/lib/calculators/tco"
+import { VENDOR_DATA as VENDOR_DATA_IMPORT } from "@/src/lib/vendors/data"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -13,12 +14,12 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
-import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { MoreHorizontal, LineChartIcon } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
 
 import {
   Bar,
@@ -77,7 +78,7 @@ import {
   Lock,
 } from "lucide-react"
 
-type CalculationResult = NonNullable<ReturnType<typeof calculateVendorTCO>> & { id?: string }
+type CalculationResult = NonNullable<ReturnType<typeof calculateFullTCOForVendor>> & { id?: string }
 
 // Enhanced Modern Color Palette with Cutting-Edge Gradients
 const MODERN_COLORS = {
@@ -256,7 +257,7 @@ const EnhancedVendorSelectionPanel = ({
   setSearchTerm: (term: string) => void
   isCollapsed: boolean
 }) => {
-  const filteredVendors = Object.values(VENDOR_DATA).filter((vendor) =>
+  const filteredVendors = Object.values(VENDOR_DATA_IMPORT).filter((vendor) =>
     vendor.name.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
@@ -2630,18 +2631,29 @@ export default function TcoAnalyzerUltimate() {
   const handleCalculate = useCallback(() => {
     setCalculationError(null)
     try {
-      const calculatedResults = compareVendors(
+      const calculatedResults = compareMultipleVendorsTCO(
         selectedVendors,
-        orgSizeKey,
-        currentDeviceCount,
-        currentUsersCount,
-        industry,
-        projectionYears,
-        region,
-        portnoxBasePrice,
-        portnoxAddons,
+        {
+          devices: currentDeviceCount,
+          users: currentUsersCount,
+          industry: industry,
+          region: region,
+        },
+        {
+          years: projectionYears,
+        },
+        {
+          portnoxBasePrice: portnoxBasePrice,
+          portnoxAddons: portnoxAddons,
+        },
       )
-      setResults(calculatedResults as CalculationResult[])
+
+      setResults(
+        calculatedResults.map((result) => ({
+          ...result,
+          vendorName: VENDOR_DATA[result.vendor].name,
+        })) as CalculationResult[],
+      )
     } catch (error) {
       console.error("Calculation error:", error)
       setCalculationError("Failed to calculate TCO. Please check inputs.")

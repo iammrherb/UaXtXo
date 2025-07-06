@@ -1,11 +1,12 @@
-// src/app/(dashboard)/vendor-comparison/page.tsx
-"use client"; // Required because VendorComparisonView uses client hooks
+"use client"
+import ComprehensiveNACAnalysis from "@/components/ComprehensiveNACAnalysis"
 
-import React from "react";
-import VendorComparisonView from "@/components/dashboard/vendorcomp/VendorComparisonView"; // Adjust path if necessary
-
-export default function VendorComparisonPage() {
+const VendorComparisonPage = () => {
   return (
-    <VendorComparisonView />
-  );
+    <div className="container mx-auto py-10">
+      <ComprehensiveNACAnalysis />
+    </div>
+  )
 }
+
+export default VendorComparisonPage
