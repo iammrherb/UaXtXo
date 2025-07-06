@@ -707,7 +707,7 @@ const VENDOR_DATA = {
         "AI/ML Analytics": true,
         "Zero Trust": true,
         Microsegmentation: true,
-        "Threat Detection": true,
+        "Threat Detection": false,
         "Compliance Automation": false,
         "Multi-tenant": true,
         "IoT Security": true,
