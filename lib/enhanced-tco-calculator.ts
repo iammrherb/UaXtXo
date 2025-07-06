@@ -1,4 +1,7 @@
-import { vendorDatabase, type VendorData } from "./comprehensive-vendor-data"
+import {
+  enhancedVendorDatabase as vendorDatabase,
+  type EnhancedVendorData as VendorData,
+} from "./vendors/enhanced-vendor-data"
 
 export interface CalculationConfiguration {
   devices: number
@@ -52,33 +55,41 @@ function calculateTierPrice(vendor: VendorData, count: number): number {
 function calculateVendorTCO(vendorId: string, config: CalculationConfiguration): CalculationResult | null {
   const vendor = vendorDatabase[vendorId]
   if (!vendor) {
-    console.error(`Vendor ${vendorId} not found in database`)
+    console.warn(`Vendor ${vendorId} not found in enhanced database, skipping...`)
     return null
   }
 
-  // Calculate licensing costs
+  // Calculate licensing costs based on enhanced vendor data
   let licensingCost = 0
-  if (vendor.pricing.model === "per_device") {
-    licensingCost = calculateTierPrice(vendor, config.devices) * config.years
-  } else if (vendor.pricing.model === "per_user") {
-    licensingCost = calculateTierPrice(vendor, config.users) * config.years
-  } else if (vendor.pricing.model === "flat_rate") {
-    licensingCost = vendor.pricing.basePrice * 12 * config.years
+  if (vendor.pricing.licensing.model === "subscription") {
+    const tierPrice = vendor.pricing.licensing.subscriptionTiers?.enterprise || vendor.pricing.perDevice.base
+    licensingCost = getVolumePrice(vendor, config.devices) * config.years
+  } else if (vendor.pricing.licensing.model === "perpetual") {
+    licensingCost = getVolumePrice(vendor, config.devices)
+    // Add annual maintenance for years 2+
+    if (config.years > 1) {
+      licensingCost += (vendor.pricing.licensing.annualMaintenance || 0) * config.devices * (config.years - 1)
+    }
+  } else if (vendor.pricing.licensing.model === "freemium") {
+    licensingCost = vendor.pricing.licensing.subscriptionTiers?.professional
+      ? vendor.pricing.licensing.subscriptionTiers.professional * config.devices * config.years
+      : 0
   }
 
-  // Calculate other costs
-  const hardwareCost = 0 // Most modern solutions are cloud-based
-  const implementationCost = vendor.implementationCost || 0
-  const supportCost = (vendor.supportCost || 0) * config.years
-  const maintenanceCost = (vendor.maintenanceCost || 0) * config.years
-  const trainingCost = config.includeTraining ? vendor.trainingCost || 0 : 0
+  // Calculate other costs using enhanced data
+  const hardwareCost = calculateHardwareCost(vendor, config.devices)
+  const implementationCost = calculateImplementationCost(vendor, config.devices)
+  const supportCost = calculateSupportCost(vendor, config.devices) * config.years
+  const maintenanceCost =
+    vendor.operationalMetrics.operationalCosts.monthlyMaintenance * config.devices * 12 * config.years
+  const trainingCost = config.includeTraining ? vendor.pricing.professionalServices.training.virtual : 0
 
   const totalCost = licensingCost + hardwareCost + implementationCost + supportCost + maintenanceCost + trainingCost
 
-  // Calculate ROI (simplified calculation)
+  // Calculate ROI using enhanced security metrics
   const portnoxBaseline = vendorDatabase["portnox"]
-  const baselineCost = portnoxBaseline ? calculateTierPrice(portnoxBaseline, config.devices) * config.years : 0
-  const annualSavings = Math.max(0, (totalCost - baselineCost) / config.years)
+  const baselineCost = portnoxBaseline ? calculateBaseline(portnoxBaseline, config) : totalCost
+  const annualSavings = Math.max(0, (baselineCost - totalCost) / config.years)
   const roiPercentage = baselineCost > 0 ? ((baselineCost - totalCost) / totalCost) * 100 : 0
   const paybackMonths = annualSavings > 0 ? Math.ceil((totalCost - baselineCost) / (annualSavings / 12)) : 0
 
@@ -100,11 +111,74 @@ function calculateVendorTCO(vendorId: string, config: CalculationConfiguration):
       paybackMonths,
     },
     riskFactors: {
-      complexity: vendor.complexity,
-      implementationTime: implementationCost > 50000 ? 6 : implementationCost > 20000 ? 3 : 1,
-      fteRequirement: vendor.complexity === "high" ? 2 : vendor.complexity === "medium" ? 1 : 0.5,
+      complexity: vendor.implementation.complexity,
+      implementationTime: vendor.implementation.timeToValue.medium,
+      fteRequirement: vendor.operationalMetrics.staffingRequirements.administrators,
     },
   }
+}
+
+function getVolumePrice(vendor: VendorData, devices: number): number {
+  const discounts = vendor.pricing.perDevice.volumeDiscounts
+  if (devices >= 10000) return discounts[10000]
+  if (devices >= 5000) return discounts[5000]
+  if (devices >= 1000) return discounts[1000]
+  if (devices >= 500) return discounts[500]
+  return vendor.pricing.perDevice.base
+}
+
+function calculateHardwareCost(vendor: VendorData, devices: number): number {
+  if (!vendor.pricing.hardware.required) return 0
+
+  if (vendor.pricing.hardware.appliances) {
+    let cost = 0
+    let remainingDevices = devices
+
+    const sortedAppliances = [...vendor.pricing.hardware.appliances].sort((a, b) => b.capacity - a.capacity)
+
+    for (const appliance of sortedAppliances) {
+      if (remainingDevices >= appliance.capacity) {
+        const count = Math.floor(remainingDevices / appliance.capacity)
+        cost += count * appliance.cost
+        if (appliance.redundancy) cost += count * appliance.cost
+        remainingDevices = remainingDevices % appliance.capacity
+      }
+    }
+
+    if (remainingDevices > 0 && sortedAppliances.length > 0) {
+      const smallestAppliance = sortedAppliances[sortedAppliances.length - 1]
+      cost += smallestAppliance.cost
+      if (smallestAppliance.redundancy) cost += smallestAppliance.cost
+    }
+
+    return cost
+  }
+
+  return vendor.pricing.infrastructure.serverRequirements.cost
+}
+
+function calculateImplementationCost(vendor: VendorData, devices: number): number {
+  const { implementation } = vendor.pricing.professionalServices
+  if (devices <= 1000) return implementation.small
+  if (devices <= 5000) return implementation.medium
+  return implementation.large
+}
+
+function calculateSupportCost(vendor: VendorData, devices: number): number {
+  if (devices > 5000) return vendor.pricing.support.enterprise.cost
+  if (devices > 1000) return vendor.pricing.support.premium.cost
+  return vendor.pricing.support.basic.cost
+}
+
+function calculateBaseline(vendor: VendorData, config: CalculationConfiguration): number {
+  const licensingCost = getVolumePrice(vendor, config.devices) * config.years
+  const hardwareCost = calculateHardwareCost(vendor, config.devices)
+  const implementationCost = calculateImplementationCost(vendor, config.devices)
+  const supportCost = calculateSupportCost(vendor, config.devices) * config.years
+  const maintenanceCost =
+    vendor.operationalMetrics.operationalCosts.monthlyMaintenance * config.devices * 12 * config.years
+
+  return licensingCost + hardwareCost + implementationCost + supportCost + maintenanceCost
 }
 
 export function compareVendors(vendorIds: string[], config: CalculationConfiguration): CalculationResult[] {
