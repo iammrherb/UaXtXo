@@ -1,679 +1,619 @@
 "use client"
 
-import { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-  Shield,
-  DollarSign,
-  AlertTriangle,
-  CheckCircle,
-  Factory,
-  GraduationCap,
-  Heart,
-  Landmark,
-  ShoppingCart,
-  Info,
-} from "lucide-react"
-import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+} from "recharts"
+import { Building2, TrendingUp, Shield, Users, Globe, DollarSign, AlertTriangle, Target, Zap } from "lucide-react"
 
 interface IndustryAnalysisViewProps {
-  results: CalculationResult[]
-  config: CalculationConfiguration
+  results: any[]
+  config: any
 }
 
-// Industry-specific data and benchmarks
-const INDUSTRY_PROFILES = {
-  healthcare: {
+const INDUSTRY_SECTORS = [
+  {
     name: "Healthcare",
-    icon: <Heart className="h-5 w-5" />,
-    description: "Hospitals, clinics, and healthcare providers",
-    complianceRequirements: ["HIPAA", "HITECH", "SOC 2", "FDA 21 CFR Part 11"],
-    riskProfile: "Very High",
-    avgDevicesPerUser: 3.2,
-    avgBreachCost: 10930000,
-    regulatoryFines: 5500000,
-    budgetMultiplier: 1.4,
-    securityPriorities: ["Data Protection", "Access Control", "Audit Trails", "Device Management"],
-    commonThreats: ["Ransomware", "Data Theft", "Insider Threats", "Medical Device Compromise"],
-    benchmarks: {
-      securitySpend: 0.08, // 8% of IT budget
-      complianceSpend: 0.12, // 12% of IT budget
-      incidentResponse: 24, // hours
-      auditFrequency: 2, // per year
-    },
+    marketSize: 2.8,
+    growth: 12.5,
+    nacAdoption: 68,
+    avgDevices: 1200,
+    complianceReq: ["HIPAA", "SOC 2", "HITECH"],
+    challenges: ["Patient Privacy", "Medical Device Security", "Compliance"],
+    trends: ["Zero Trust", "IoMT Security", "Cloud Migration"],
   },
-  finance: {
+  {
     name: "Financial Services",
-    icon: <DollarSign className="h-5 w-5" />,
-    description: "Banks, credit unions, and financial institutions",
-    complianceRequirements: ["PCI DSS", "SOX", "GLBA", "FFIEC", "Basel III"],
-    riskProfile: "Critical",
-    avgDevicesPerUser: 2.8,
-    avgBreachCost: 5850000,
-    regulatoryFines: 8200000,
-    budgetMultiplier: 1.6,
-    securityPriorities: ["Transaction Security", "Fraud Prevention", "Identity Management", "Compliance Reporting"],
-    commonThreats: ["Financial Fraud", "APTs", "Insider Trading", "Payment Card Theft"],
-    benchmarks: {
-      securitySpend: 0.15, // 15% of IT budget
-      complianceSpend: 0.18, // 18% of IT budget
-      incidentResponse: 12, // hours
-      auditFrequency: 4, // per year
-    },
+    marketSize: 4.2,
+    growth: 15.8,
+    nacAdoption: 85,
+    avgDevices: 2500,
+    complianceReq: ["PCI DSS", "SOX", "GDPR", "FFIEC"],
+    challenges: ["Regulatory Compliance", "Fraud Prevention", "Data Protection"],
+    trends: ["AI/ML Security", "Open Banking", "Digital Transformation"],
   },
-  education: {
+  {
     name: "Education",
-    icon: <GraduationCap className="h-5 w-5" />,
-    description: "Schools, universities, and educational institutions",
-    complianceRequirements: ["FERPA", "COPPA", "CIPA", "State Privacy Laws"],
-    riskProfile: "Medium",
-    avgDevicesPerUser: 4.1,
-    avgBreachCost: 3790000,
-    regulatoryFines: 1200000,
-    budgetMultiplier: 0.7,
-    securityPriorities: ["Student Privacy", "BYOD Management", "Content Filtering", "Network Segmentation"],
-    commonThreats: ["Data Breaches", "Cyberbullying", "Malware", "Unauthorized Access"],
-    benchmarks: {
-      securitySpend: 0.05, // 5% of IT budget
-      complianceSpend: 0.08, // 8% of IT budget
-      incidentResponse: 48, // hours
-      auditFrequency: 1, // per year
-    },
+    marketSize: 1.9,
+    growth: 18.2,
+    nacAdoption: 45,
+    avgDevices: 800,
+    complianceReq: ["FERPA", "COPPA", "State Privacy Laws"],
+    challenges: ["BYOD Management", "Student Privacy", "Budget Constraints"],
+    trends: ["Remote Learning", "1:1 Device Programs", "Cloud Services"],
   },
-  government: {
-    name: "Government",
-    icon: <Landmark className="h-5 w-5" />,
-    description: "Federal, state, and local government agencies",
-    complianceRequirements: ["FISMA", "FedRAMP", "NIST 800-53", "CJIS", "IRS 1075"],
-    riskProfile: "Critical",
-    avgDevicesPerUser: 2.2,
-    avgBreachCost: 9040000,
-    regulatoryFines: 12000000,
-    budgetMultiplier: 1.3,
-    securityPriorities: ["National Security", "Citizen Privacy", "Critical Infrastructure", "Classified Data"],
-    commonThreats: ["Nation-State Attacks", "Espionage", "Data Theft", "Infrastructure Attacks"],
-    benchmarks: {
-      securitySpend: 0.12, // 12% of IT budget
-      complianceSpend: 0.2, // 20% of IT budget
-      incidentResponse: 8, // hours
-      auditFrequency: 3, // per year
-    },
-  },
-  manufacturing: {
+  {
     name: "Manufacturing",
-    icon: <Factory className="h-5 w-5" />,
-    description: "Industrial and manufacturing companies",
-    complianceRequirements: ["ISO 27001", "NIST CSF", "IEC 62443", "GDPR"],
-    riskProfile: "High",
-    avgDevicesPerUser: 5.3,
-    avgBreachCost: 4990000,
-    regulatoryFines: 2800000,
-    budgetMultiplier: 1.1,
-    securityPriorities: ["OT Security", "Supply Chain", "IP Protection", "Safety Systems"],
-    commonThreats: ["Industrial Espionage", "Ransomware", "Supply Chain Attacks", "OT Disruption"],
-    benchmarks: {
-      securitySpend: 0.06, // 6% of IT budget
-      complianceSpend: 0.09, // 9% of IT budget
-      incidentResponse: 36, // hours
-      auditFrequency: 2, // per year
-    },
+    marketSize: 3.5,
+    growth: 22.1,
+    nacAdoption: 52,
+    avgDevices: 1800,
+    complianceReq: ["ISO 27001", "NIST", "Industry Standards"],
+    challenges: ["OT/IT Convergence", "Legacy Systems", "Supply Chain"],
+    trends: ["Industry 4.0", "IIoT Security", "Smart Manufacturing"],
   },
-  retail: {
+  {
+    name: "Government",
+    marketSize: 2.1,
+    growth: 8.9,
+    nacAdoption: 78,
+    avgDevices: 1500,
+    complianceReq: ["FedRAMP", "FISMA", "NIST 800-53"],
+    challenges: ["Budget Cycles", "Legacy Infrastructure", "Security Clearance"],
+    trends: ["Zero Trust Architecture", "Cloud First", "Modernization"],
+  },
+  {
     name: "Retail",
-    icon: <ShoppingCart className="h-5 w-5" />,
-    description: "Retail stores and e-commerce companies",
-    complianceRequirements: ["PCI DSS", "GDPR", "CCPA", "State Breach Laws"],
-    riskProfile: "High",
-    avgDevicesPerUser: 3.7,
-    avgBreachCost: 3270000,
-    regulatoryFines: 1800000,
-    budgetMultiplier: 0.9,
-    securityPriorities: ["Payment Security", "Customer Data", "Point-of-Sale", "E-commerce Protection"],
-    commonThreats: ["Payment Card Theft", "E-commerce Attacks", "POS Malware", "Customer Data Theft"],
-    benchmarks: {
-      securitySpend: 0.04, // 4% of IT budget
-      complianceSpend: 0.07, // 7% of IT budget
-      incidentResponse: 72, // hours
-      auditFrequency: 2, // per year
-    },
+    marketSize: 1.6,
+    growth: 14.3,
+    nacAdoption: 38,
+    avgDevices: 600,
+    complianceReq: ["PCI DSS", "GDPR", "CCPA"],
+    challenges: ["Customer Data", "POS Security", "Seasonal Traffic"],
+    trends: ["Omnichannel", "Mobile Commerce", "Edge Computing"],
   },
-}
+]
 
-// Vendor suitability by industry
-const VENDOR_INDUSTRY_FIT = {
-  healthcare: {
-    portnox: { score: 95, strengths: ["HIPAA Compliance", "Zero Trust", "Device Classification"] },
-    cisco: { score: 90, strengths: ["Enterprise Scale", "Medical Device Support", "Compliance Tools"] },
-    aruba: { score: 88, strengths: ["Healthcare Workflows", "Mobile Support", "Policy Management"] },
-    fortinet: { score: 85, strengths: ["Security Fabric", "Threat Protection", "Compliance Reporting"] },
-    microsoft: { score: 82, strengths: ["Azure Integration", "Office 365", "Conditional Access"] },
+const REGIONAL_DATA = [
+  {
+    region: "North America",
+    marketShare: 42,
+    growth: 12.8,
+    avgTco: 285000,
+    topVendors: ["Cisco", "Aruba", "Fortinet"],
+    regulations: ["SOX", "HIPAA", "PCI DSS"],
   },
-  finance: {
-    cisco: { score: 95, strengths: ["Enterprise Security", "Compliance Tools", "Audit Capabilities"] },
-    portnox: { score: 92, strengths: ["Zero Trust", "Risk Analytics", "Cloud Native"] },
-    fortinet: { score: 90, strengths: ["Security Fabric", "Threat Intelligence", "Compliance"] },
-    aruba: { score: 85, strengths: ["Policy Management", "Network Visibility", "Access Control"] },
-    microsoft: { score: 83, strengths: ["Identity Integration", "Compliance Center", "Risk Management"] },
+  {
+    region: "Europe",
+    marketShare: 28,
+    growth: 15.2,
+    avgTco: 320000,
+    topVendors: ["Cisco", "Fortinet", "Microsoft"],
+    regulations: ["GDPR", "NIS2", "ISO 27001"],
   },
-  education: {
-    portnox: { score: 93, strengths: ["BYOD Support", "Easy Management", "Student Privacy"] },
-    aruba: { score: 90, strengths: ["Campus Networks", "BYOD", "Guest Access"] },
-    cisco: { score: 87, strengths: ["Network Infrastructure", "Content Filtering", "Scale"] },
-    microsoft: { score: 85, strengths: ["Education Licensing", "Office 365", "Teams Integration"] },
-    fortinet: { score: 80, strengths: ["Content Filtering", "Threat Protection", "Firewall Integration"] },
+  {
+    region: "Asia Pacific",
+    marketShare: 22,
+    growth: 24.5,
+    avgTco: 195000,
+    topVendors: ["Fortinet", "Aruba", "Local Vendors"],
+    regulations: ["Local Privacy Laws", "Industry Standards"],
   },
-  government: {
-    cisco: { score: 96, strengths: ["FedRAMP", "FIPS Compliance", "Government Contracts"] },
-    fortinet: { score: 92, strengths: ["Security Fabric", "Government Compliance", "Threat Intelligence"] },
-    portnox: { score: 88, strengths: ["Zero Trust", "Cloud Security", "Risk Analytics"] },
-    aruba: { score: 85, strengths: ["Policy Management", "Network Security", "Compliance Tools"] },
-    microsoft: { score: 90, strengths: ["Government Cloud", "Compliance", "Identity Management"] },
+  {
+    region: "Rest of World",
+    marketShare: 8,
+    growth: 18.7,
+    avgTco: 165000,
+    topVendors: ["Fortinet", "Open Source", "Local Solutions"],
+    regulations: ["Emerging Frameworks", "Basic Compliance"],
   },
-  manufacturing: {
-    fortinet: { score: 94, strengths: ["OT Security", "Industrial Protocols", "Security Fabric"] },
-    cisco: { score: 91, strengths: ["Industrial Networks", "OT Integration", "Scalability"] },
-    portnox: { score: 87, strengths: ["IoT Classification", "Zero Trust", "Cloud Management"] },
-    aruba: { score: 84, strengths: ["Industrial Wi-Fi", "Policy Management", "Network Visibility"] },
-    microsoft: { score: 78, strengths: ["Azure IoT", "Conditional Access", "Hybrid Cloud"] },
+]
+
+const MARKET_TRENDS = [
+  {
+    trend: "Zero Trust Adoption",
+    impact: 95,
+    timeline: "2024-2026",
+    description: "Shift from perimeter-based to identity-centric security",
+    drivers: ["Remote Work", "Cloud Migration", "Advanced Threats"],
   },
-  retail: {
-    portnox: { score: 91, strengths: ["PCI Compliance", "Guest Access", "Multi-location"] },
-    aruba: { score: 89, strengths: ["Retail Networks", "Guest Wi-Fi", "Location Services"] },
-    cisco: { score: 86, strengths: ["Branch Networks", "PCI Compliance", "Scalability"] },
-    fortinet: { score: 84, strengths: ["POS Security", "Threat Protection", "Branch Security"] },
-    microsoft: { score: 80, strengths: ["Retail Solutions", "Cloud Integration", "Analytics"] },
+  {
+    trend: "Cloud-Native NAC",
+    impact: 88,
+    timeline: "2023-2025",
+    description: "Migration from on-premises to cloud-delivered solutions",
+    drivers: ["Scalability", "Cost Reduction", "Simplified Management"],
   },
-}
+  {
+    trend: "AI/ML Integration",
+    impact: 82,
+    timeline: "2024-2027",
+    description: "Intelligent threat detection and automated response",
+    drivers: ["Advanced Threats", "Operational Efficiency", "Predictive Analytics"],
+  },
+  {
+    trend: "IoT Device Management",
+    impact: 78,
+    timeline: "2023-2026",
+    description: "Specialized controls for IoT and OT devices",
+    drivers: ["IoT Growth", "OT/IT Convergence", "Device Diversity"],
+  },
+  {
+    trend: "Compliance Automation",
+    impact: 75,
+    timeline: "2024-2025",
+    description: "Automated compliance reporting and enforcement",
+    drivers: ["Regulatory Pressure", "Audit Efficiency", "Risk Management"],
+  },
+]
+
+const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316", "#06B6D4"]
 
 export default function IndustryAnalysisView({ results, config }: IndustryAnalysisViewProps) {
-  const [selectedIndustry, setSelectedIndustry] = useState<string>("healthcare")
-  const [selectedMetric, setSelectedMetric] = useState<string>("suitability")
-
-  const industryProfile = INDUSTRY_PROFILES[selectedIndustry as keyof typeof INDUSTRY_PROFILES]
-  const vendorFit = VENDOR_INDUSTRY_FIT[selectedIndustry as keyof typeof VENDOR_INDUSTRY_FIT]
-
-  // Calculate industry-specific metrics
-  const industryMetrics = useMemo(() => {
-    const adjustedResults = results.map((result) => {
-      const fit = vendorFit[result.vendor as keyof typeof vendorFit]
-      const adjustedCost = result.totalCost * industryProfile.budgetMultiplier
-      const riskAdjustment = fit ? (100 - fit.score) / 100 : 0.5
-      const complianceCost = adjustedCost * industryProfile.benchmarks.complianceSpend
-
-      return {
-        ...result,
-        industryScore: fit?.score || 50,
-        adjustedCost,
-        complianceCost,
-        riskScore: Math.max(0, 100 - riskAdjustment * 50),
-        strengths: fit?.strengths || [],
-      }
-    })
-
-    return adjustedResults.sort((a, b) => b.industryScore - a.industryScore)
-  }, [results, selectedIndustry, industryProfile, vendorFit])
-
-  // Benchmark comparison data
-  const benchmarkData = Object.entries(INDUSTRY_PROFILES).map(([key, profile]) => ({
-    industry: profile.name,
-    securitySpend: profile.benchmarks.securitySpend * 100,
-    complianceSpend: profile.benchmarks.complianceSpend * 100,
-    breachCost: profile.avgBreachCost / 1000000,
-    riskLevel:
-      profile.riskProfile === "Critical"
-        ? 100
-        : profile.riskProfile === "Very High"
-          ? 85
-          : profile.riskProfile === "High"
-            ? 70
-            : 50,
-  }))
-
-  // Compliance requirements analysis
-  const complianceAnalysis = industryProfile.complianceRequirements.map((req) => ({
-    requirement: req,
-    coverage: Math.floor(Math.random() * 30 + 70), // Simulated coverage
-    gap: Math.floor(Math.random() * 20 + 5), // Simulated gap
-    priority: Math.random() > 0.5 ? "High" : Math.random() > 0.3 ? "Medium" : "Low",
-  }))
-
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D"]
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value)
+  }
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Industry Analysis</h2>
-          <p className="text-muted-foreground">Industry-specific security requirements and vendor suitability</p>
+          <p className="text-muted-foreground">Market trends, sector analysis, and regional insights</p>
         </div>
+        <Badge variant="outline" className="text-lg px-4 py-2">
+          Global NAC Market: $2.1B
+        </Badge>
       </div>
 
-      {/* Industry Selection */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {Object.entries(INDUSTRY_PROFILES).map(([key, profile]) => (
-          <Button
-            key={key}
-            variant={selectedIndustry === key ? "default" : "outline"}
-            onClick={() => setSelectedIndustry(key)}
-            className="h-auto p-4 flex flex-col items-center gap-2"
-          >
-            {profile.icon}
-            <span className="text-sm font-medium">{profile.name}</span>
-          </Button>
-        ))}
-      </div>
-
-      {/* Industry Overview */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {industryProfile.icon}
-            {industryProfile.name} Industry Profile
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div>
-              <h4 className="font-semibold mb-2">Risk Profile</h4>
-              <Badge
-                variant={
-                  industryProfile.riskProfile === "Critical"
-                    ? "destructive"
-                    : industryProfile.riskProfile === "Very High"
-                      ? "destructive"
-                      : industryProfile.riskProfile === "High"
-                        ? "default"
-                        : "secondary"
-                }
-              >
-                {industryProfile.riskProfile}
-              </Badge>
-              <p className="text-sm text-muted-foreground mt-2">{industryProfile.description}</p>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-2">Key Metrics</h4>
-              <div className="space-y-2 text-sm">
-                <div>Devices/User: {industryProfile.avgDevicesPerUser}</div>
-                <div>Avg Breach Cost: ${(industryProfile.avgBreachCost / 1000000).toFixed(1)}M</div>
-                <div>Budget Multiplier: {industryProfile.budgetMultiplier}x</div>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-2">Security Priorities</h4>
-              <div className="flex flex-wrap gap-1">
-                {industryProfile.securityPriorities.slice(0, 3).map((priority, idx) => (
-                  <Badge key={idx} variant="outline" className="text-xs">
-                    {priority}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-2">Compliance Requirements</h4>
-              <div className="flex flex-wrap gap-1">
-                {industryProfile.complianceRequirements.slice(0, 3).map((req, idx) => (
-                  <Badge key={idx} variant="secondary" className="text-xs">
-                    {req}
-                  </Badge>
-                ))}
-                {industryProfile.complianceRequirements.length > 3 && (
-                  <Badge variant="outline" className="text-xs">
-                    +{industryProfile.complianceRequirements.length - 3}
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Tabs defaultValue="suitability" className="space-y-6">
+      <Tabs defaultValue="sectors" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="suitability">Vendor Suitability</TabsTrigger>
-          <TabsTrigger value="benchmarks">Industry Benchmarks</TabsTrigger>
-          <TabsTrigger value="compliance">Compliance Analysis</TabsTrigger>
-          <TabsTrigger value="threats">Threat Landscape</TabsTrigger>
+          <TabsTrigger value="sectors">Industry Sectors</TabsTrigger>
+          <TabsTrigger value="regions">Regional Analysis</TabsTrigger>
+          <TabsTrigger value="trends">Market Trends</TabsTrigger>
+          <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="suitability" className="space-y-6">
+        <TabsContent value="sectors" className="space-y-6">
+          {/* Market Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Market Size</p>
+                    <p className="text-3xl font-bold">$2.1B</p>
+                    <p className="text-xs text-muted-foreground">Global NAC Market</p>
+                  </div>
+                  <Globe className="h-8 w-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Growth Rate</p>
+                    <p className="text-3xl font-bold">15.2%</p>
+                    <p className="text-xs text-muted-foreground">CAGR 2023-2028</p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Adoption Rate</p>
+                    <p className="text-3xl font-bold">62%</p>
+                    <p className="text-xs text-muted-foreground">Enterprise adoption</p>
+                  </div>
+                  <Target className="h-8 w-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Avg Investment</p>
+                    <p className="text-3xl font-bold">$245K</p>
+                    <p className="text-xs text-muted-foreground">Per deployment</p>
+                  </div>
+                  <DollarSign className="h-8 w-8 text-orange-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Industry Sectors Analysis */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Vendor Suitability Scores</CardTitle>
+                <CardTitle>Market Size by Industry</CardTitle>
               </CardHeader>
               <CardContent>
-                <ChartContainer
-                  config={{
-                    score: { label: "Suitability Score", color: "hsl(var(--chart-1))" },
-                  }}
-                  className="h-[300px]"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={industryMetrics}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="vendor" />
-                      <YAxis domain={[0, 100]} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="industryScore" fill="var(--color-score)" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={INDUSTRY_SECTORS}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [`$${value}B`, "Market Size"]} />
+                    <Bar dataKey="marketSize" fill="#00D4AA" />
+                  </BarChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Cost vs Suitability Analysis</CardTitle>
+                <CardTitle>NAC Adoption by Sector</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {industryMetrics.map((metric, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="font-medium capitalize">{metric.vendor}</span>
-                          <Badge variant="outline">{metric.industryScore}/100</Badge>
-                        </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={INDUSTRY_SECTORS}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="nacAdoption"
+                      label={({ name, value }) => `${name}: ${value}%`}
+                    >
+                      {INDUSTRY_SECTORS.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [`${value}%`, "Adoption Rate"]} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Detailed Sector Analysis */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Industry Sector Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {INDUSTRY_SECTORS.map((sector, index) => (
+                  <div key={sector.name} className="border rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        />
+                        <h3 className="text-lg font-semibold">{sector.name}</h3>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm">
+                        <Badge variant="outline">Market: ${sector.marketSize}B</Badge>
+                        <Badge variant="outline">Growth: {sector.growth}%</Badge>
+                        <Badge variant="outline">Adoption: {sector.nacAdoption}%</Badge>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <h4 className="font-medium mb-2 text-blue-600">Compliance Requirements</h4>
                         <div className="flex flex-wrap gap-1">
-                          {metric.strengths.slice(0, 2).map((strength, sIdx) => (
-                            <Badge key={sIdx} variant="secondary" className="text-xs">
-                              {strength}
+                          {sector.complianceReq.map((req, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs">
+                              {req}
                             </Badge>
                           ))}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-lg font-semibold">${(metric.adjustedCost / 1000).toFixed(0)}K</div>
-                        <div className="text-sm text-muted-foreground">3-year TCO</div>
+
+                      <div>
+                        <h4 className="font-medium mb-2 text-orange-600">Key Challenges</h4>
+                        <ul className="space-y-1 text-sm">
+                          {sector.challenges.map((challenge, idx) => (
+                            <li key={idx} className="flex items-center gap-2">
+                              <AlertTriangle className="h-3 w-3 text-orange-600" />
+                              {challenge}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div>
+                        <h4 className="font-medium mb-2 text-green-600">Emerging Trends</h4>
+                        <ul className="space-y-1 text-sm">
+                          {sector.trends.map((trend, idx) => (
+                            <li key={idx} className="flex items-center gap-2">
+                              <TrendingUp className="h-3 w-3 text-green-600" />
+                              {trend}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
 
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              Suitability scores are based on industry-specific requirements, compliance capabilities, and feature
-              alignment. Higher scores indicate better fit for {industryProfile.name.toLowerCase()} organizations.
-            </AlertDescription>
-          </Alert>
-        </TabsContent>
-
-        <TabsContent value="benchmarks" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Security & Compliance Spending</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    securitySpend: { label: "Security Spend (%)", color: "hsl(var(--chart-1))" },
-                    complianceSpend: { label: "Compliance Spend (%)", color: "hsl(var(--chart-2))" },
-                  }}
-                  className="h-[300px]"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={benchmarkData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="industry" angle={-45} textAnchor="end" height={80} />
-                      <YAxis />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="securitySpend" fill="var(--color-securitySpend)" name="Security Spend %" />
-                      <Bar dataKey="complianceSpend" fill="var(--color-complianceSpend)" name="Compliance Spend %" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Breach Cost by Industry</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    breachCost: { label: "Breach Cost ($M)", color: "hsl(var(--chart-3))" },
-                  }}
-                  className="h-[300px]"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={benchmarkData}
-                        dataKey="breachCost"
-                        nameKey="industry"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        label={({ name, value }) => `${name}: $${value}M`}
-                      >
-                        {benchmarkData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Industry Benchmarks - {industryProfile.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {(industryProfile.benchmarks.securitySpend * 100).toFixed(0)}%
-                  </div>
-                  <div className="text-sm text-muted-foreground">Security Spend</div>
-                  <div className="text-xs text-muted-foreground">of IT budget</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">
-                    {(industryProfile.benchmarks.complianceSpend * 100).toFixed(0)}%
-                  </div>
-                  <div className="text-sm text-muted-foreground">Compliance Spend</div>
-                  <div className="text-xs text-muted-foreground">of IT budget</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">
-                    {industryProfile.benchmarks.incidentResponse}h
-                  </div>
-                  <div className="text-sm text-muted-foreground">Response Time</div>
-                  <div className="text-xs text-muted-foreground">incident response</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">{industryProfile.benchmarks.auditFrequency}</div>
-                  <div className="text-sm text-muted-foreground">Audits/Year</div>
-                  <div className="text-xs text-muted-foreground">compliance audits</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="compliance" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Compliance Requirements Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {complianceAnalysis.map((item, idx) => (
-                  <div key={idx} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{item.requirement}</span>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant={
-                            item.priority === "High"
-                              ? "destructive"
-                              : item.priority === "Medium"
-                                ? "default"
-                                : "secondary"
-                          }
-                        >
-                          {item.priority}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">{item.coverage}% coverage</span>
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Average Devices: {sector.avgDevices.toLocaleString()}</span>
+                        <span>Market Growth: {sector.growth}% CAGR</span>
                       </div>
                     </div>
-                    <Progress value={item.coverage} className="h-2" />
-                    {item.gap > 10 && (
-                      <div className="text-sm text-orange-600">Gap: {item.gap}% - Requires attention</div>
-                    )}
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <TabsContent value="regions" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Compliance Readiness</CardTitle>
+                <CardTitle>Regional Market Share</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span>Overall Compliance Score</span>
-                    <span className="text-2xl font-bold text-green-600">87%</span>
-                  </div>
-                  <Progress value={87} className="h-3" />
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <CheckCircle className="h-4 w-4 text-green-600 inline mr-2" />
-                      Ready: {complianceAnalysis.filter((c) => c.coverage > 80).length}
-                    </div>
-                    <div>
-                      <AlertTriangle className="h-4 w-4 text-orange-600 inline mr-2" />
-                      Gaps: {complianceAnalysis.filter((c) => c.coverage < 80).length}
-                    </div>
-                  </div>
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={REGIONAL_DATA}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="marketShare"
+                      label={({ region, marketShare }) => `${region}: ${marketShare}%`}
+                    >
+                      {REGIONAL_DATA.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [`${value}%`, "Market Share"]} />
+                  </PieChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Regulatory Risk Assessment</CardTitle>
+                <CardTitle>Regional Growth Rates</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span>Potential Fine Exposure</span>
-                    <span className="text-2xl font-bold text-red-600">
-                      ${(industryProfile.regulatoryFines / 1000000).toFixed(1)}M
-                    </span>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Based on historical fines and current compliance gaps
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Risk Level</span>
-                      <span className="font-medium">{industryProfile.riskProfile}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Audit Frequency</span>
-                      <span className="font-medium">{industryProfile.benchmarks.auditFrequency}/year</span>
-                    </div>
-                  </div>
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={REGIONAL_DATA}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="region" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [`${value}%`, "Growth Rate"]} />
+                    <Bar dataKey="growth" fill="#0EA5E9" />
+                  </BarChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Regional Analysis Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {REGIONAL_DATA.map((region, index) => (
+                  <div key={region.region} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        />
+                        <h3 className="font-semibold">{region.region}</h3>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">{region.marketShare}% share</Badge>
+                        <Badge variant="outline">{region.growth}% growth</Badge>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium">Avg TCO: </span>
+                        <span>{formatCurrency(region.avgTco)}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Top Vendors: </span>
+                        <span>{region.topVendors.join(", ")}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Key Regulations: </span>
+                        <span>{region.regulations.join(", ")}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="trends" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Market Trends Impact Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={400}>
+                <RadarChart data={MARKET_TRENDS}>
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="trend" />
+                  <PolarRadiusAxis angle={90} domain={[0, 100]} />
+                  <Radar name="Impact Score" dataKey="impact" stroke="#00D4AA" fill="#00D4AA" fillOpacity={0.3} />
+                  <Tooltip />
+                </RadarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {MARKET_TRENDS.map((trend, index) => (
+              <Card key={trend.trend}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-orange-600" />
+                    {trend.trend}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">Impact Score</span>
+                        <span className="text-sm font-medium">{trend.impact}/100</span>
+                      </div>
+                      <Progress value={trend.impact} className="h-2" />
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">{trend.description}</p>
+                      <Badge variant="outline" className="text-xs">
+                        Timeline: {trend.timeline}
+                      </Badge>
+                    </div>
+
+                    <div>
+                      <h4 className="font-medium text-sm mb-2">Key Drivers</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {trend.drivers.map((driver, idx) => (
+                          <Badge key={idx} variant="secondary" className="text-xs">
+                            {driver}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </TabsContent>
 
-        <TabsContent value="threats" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <TabsContent value="benchmarks" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Industry-Specific Threats</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {industryProfile.commonThreats.map((threat, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
-                      <span className="font-medium">{threat}</span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">{Math.floor(Math.random() * 30 + 60)}% likely</Badge>
-                        <AlertTriangle className="h-4 w-4 text-orange-600" />
-                      </div>
-                    </div>
-                  ))}
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <Building2 className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                  <div className="text-2xl font-bold">1,250</div>
+                  <div className="text-sm text-muted-foreground">Avg Devices</div>
+                  <div className="text-xs text-muted-foreground mt-1">Per Enterprise</div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>Threat Impact Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-red-600">
-                      ${(industryProfile.avgBreachCost / 1000000).toFixed(1)}M
-                    </div>
-                    <div className="text-sm text-muted-foreground">Average breach cost</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <div className="font-medium">Direct Costs</div>
-                      <div className="text-muted-foreground">
-                        ${((industryProfile.avgBreachCost * 0.6) / 1000000).toFixed(1)}M
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-medium">Indirect Costs</div>
-                      <div className="text-muted-foreground">
-                        ${((industryProfile.avgBreachCost * 0.4) / 1000000).toFixed(1)}M
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-medium">Recovery Time</div>
-                      <div className="text-muted-foreground">
-                        {Math.floor(industryProfile.avgBreachCost / 100000)} days
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-medium">Reputation Impact</div>
-                      <div className="text-muted-foreground">12-24 months</div>
-                    </div>
-                  </div>
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <DollarSign className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                  <div className="text-2xl font-bold">$245K</div>
+                  <div className="text-sm text-muted-foreground">Avg TCO</div>
+                  <div className="text-xs text-muted-foreground mt-1">3-Year Total</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <Shield className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                  <div className="text-2xl font-bold">68%</div>
+                  <div className="text-sm text-muted-foreground">Risk Reduction</div>
+                  <div className="text-xs text-muted-foreground mt-1">Average Improvement</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <Users className="h-8 w-8 mx-auto mb-2 text-orange-600" />
+                  <div className="text-2xl font-bold">2.3</div>
+                  <div className="text-sm text-muted-foreground">FTE Saved</div>
+                  <div className="text-xs text-muted-foreground mt-1">Per 1000 Devices</div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          <Alert>
-            <Shield className="h-4 w-4" />
-            <AlertDescription>
-              {industryProfile.name} organizations face unique security challenges. The recommended security investment
-              is {(industryProfile.benchmarks.securitySpend * 100).toFixed(0)}% of IT budget to maintain adequate
-              protection against industry-specific threats.
-            </AlertDescription>
-          </Alert>
+          <Card>
+            <CardHeader>
+              <CardTitle>Industry Benchmarks by Sector</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-2">Industry</th>
+                      <th className="text-right p-2">Avg Devices</th>
+                      <th className="text-right p-2">Avg TCO</th>
+                      <th className="text-right p-2">Adoption Rate</th>
+                      <th className="text-right p-2">Growth Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {INDUSTRY_SECTORS.map((sector, index) => (
+                      <tr key={sector.name} className="border-b">
+                        <td className="p-2">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                            />
+                            {sector.name}
+                          </div>
+                        </td>
+                        <td className="text-right p-2">{sector.avgDevices.toLocaleString()}</td>
+                        <td className="text-right p-2">${(sector.marketSize * 100).toFixed(0)}K</td>
+                        <td className="text-right p-2">
+                          <Badge variant={sector.nacAdoption > 70 ? "default" : "secondary"}>
+                            {sector.nacAdoption}%
+                          </Badge>
+                        </td>
+                        <td className="text-right p-2">
+                          <Badge variant={sector.growth > 15 ? "default" : "outline"}>{sector.growth}%</Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
