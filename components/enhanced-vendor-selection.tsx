@@ -10,7 +10,18 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
 import { getVendorData, getVendorLogoPath } from "@/lib/comprehensive-vendor-data"
 import type { CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-import { Users, Shield, Zap, Star, TrendingUp, Calculator, ChevronDown, ChevronRight } from "lucide-react"
+import {
+  Users,
+  Shield,
+  Zap,
+  Star,
+  TrendingUp,
+  Calculator,
+  ChevronDown,
+  ChevronRight,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react"
 import Image from "next/image"
 
 interface VendorCategory {
@@ -176,30 +187,26 @@ const EnhancedVendorSelection: React.FC<VendorSelectionProps> = ({
   const isPrimary = (vendorId: string) => vendorId === "portnox"
 
   const toggleVendorExpansion = (vendorId: string) => {
-    setExpandedVendors(prev => 
-      prev.includes(vendorId) 
-        ? prev.filter(id => id !== vendorId)
-        : [...prev, vendorId]
-    )
+    setExpandedVendors((prev) => (prev.includes(vendorId) ? prev.filter((id) => id !== vendorId) : [...prev, vendorId]))
   }
 
   const toggleCategoryExpansion = (category: string) => {
-    setExpandedCategories(prev => 
-      prev.includes(category) 
-        ? prev.filter(cat => cat !== category)
-        : [...prev, category]
+    setExpandedCategories((prev) =>
+      prev.includes(category) ? prev.filter((cat) => cat !== category) : [...prev, category],
     )
   }
 
   const getVendorInfo = (vendorId: string) => {
-    return VENDOR_DETAILS[vendorId as keyof typeof VENDOR_DETAILS] || {
-      fullName: vendorId,
-      category: "Unknown",
-      marketPosition: "Unknown",
-      strengths: [],
-      weaknesses: [],
-      useCases: [],
-    }
+    return (
+      VENDOR_DETAILS[vendorId as keyof typeof VENDOR_DETAILS] || {
+        fullName: vendorId,
+        category: "Unknown",
+        marketPosition: "Unknown",
+        strengths: [],
+        weaknesses: [],
+        useCases: [],
+      }
+    )
   }
 
   const getVendorStats = (vendorId: string) => {
@@ -260,11 +267,7 @@ const EnhancedVendorSelection: React.FC<VendorSelectionProps> = ({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Checkbox 
-                  checked={isSelected} 
-                  onCheckedChange={() => onVendorToggle(vendorId)} 
-                  className="mt-1" 
-                />
+                <Checkbox checked={isSelected} onCheckedChange={() => onVendorToggle(vendorId)} className="mt-1" />
               </div>
             </div>
 
@@ -432,9 +435,7 @@ const EnhancedVendorSelection: React.FC<VendorSelectionProps> = ({
                             </Badge>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <div className="max-w-xs">
-                              {vendorInfo.integrations.slice(4).join(", ")}
-                            </div>
+                            <div className="max-w-xs">{vendorInfo.integrations.slice(4).join(", ")}</div>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -470,4 +471,87 @@ const EnhancedVendorSelection: React.FC<VendorSelectionProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols\
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-primary">{selectedVendors.length}</div>
+            <div className="text-sm text-muted-foreground">Vendors Selected</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600">{configuration.devices}</div>
+            <div className="text-sm text-muted-foreground">Devices</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-600">{configuration.users}</div>
+            <div className="text-sm text-muted-foreground">Users</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-purple-600">{configuration.years}</div>
+            <div className="text-sm text-muted-foreground">Years</div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {selectedVendors.length > 0 ? (
+              <>
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                Ready for analysis
+              </>
+            ) : (
+              <>
+                <AlertCircle className="h-4 w-4 text-orange-600" />
+                Select vendors to begin
+              </>
+            )}
+          </div>
+          <Button onClick={onCalculate} disabled={selectedVendors.length === 0} size="sm">
+            <Calculator className="h-4 w-4 mr-2" />
+            Calculate TCO
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+
+  return (
+    <div className="space-y-6">
+      <SelectionSummary />
+
+      <div className="space-y-6">
+        {Object.entries(VENDOR_CATEGORIES).map(([category, vendors]) => (
+          <Card key={category}>
+            <CardHeader className="pb-3">
+              <CardTitle
+                className="text-base flex items-center gap-2 cursor-pointer"
+                onClick={() => toggleCategoryExpansion(category)}
+              >
+                {expandedCategories.includes(category) ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+                {category}
+                <Badge variant="secondary" className="ml-auto">
+                  {vendors.filter((v) => selectedVendors.includes(v)).length}/{vendors.length} selected
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <Collapsible open={expandedCategories.includes(category)}>
+              <CollapsibleContent>
+                <CardContent>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {vendors.map((vendorId) => (
+                      <VendorCard key={vendorId} vendorId={vendorId} category={category} />
+                    ))}
+                  </div>
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export default EnhancedVendorSelection
