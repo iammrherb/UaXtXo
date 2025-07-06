@@ -1,7 +1,5 @@
 import type { NewVendorData, VendorId, VendorPricingTier } from "@/src/lib/vendors/data"
 import { getVendorDataById } from "@/src/lib/vendors/data"
-import type { Industry, IndustryId } from "@/src/lib/industries/data"
-import { getIndustryById } from "@/src/lib/industries/data"
 import type { OrgSizeId } from "@/src/types/common"
 
 // --- Configuration Data ---
@@ -178,13 +176,14 @@ export interface ROIMetrics {
   complianceAutomationSavingsAnnual: number
   operationalEfficiencyGainsAnnual: number
   totalAnnualizedBenefits: number
+  percentage?: number
+  paybackMonths?: number
 }
 
 function calculateROIMetrics(
   vendor: NewVendorData,
   totalTCO: number,
   orgSizeId: OrgSizeId,
-  industry: Industry | undefined, // Industry might influence baseline costs or risk factors
   projectionYears: number,
 ): ROIMetrics {
   const roiFactors = vendor.roiFactors // Factors specific to how this vendor impacts ROI
@@ -241,6 +240,9 @@ function calculateROIMetrics(
     complianceAutomationSavingsAnnual: Number.parseFloat(complianceAutomationSavingsAnnual.toFixed(2)),
     operationalEfficiencyGainsAnnual: Number.parseFloat(operationalEfficiencyGainsAnnual.toFixed(2)),
     totalAnnualizedBenefits: Number.parseFloat(totalAnnualizedBenefits.toFixed(2)),
+    // Add compatibility fields for the component
+    percentage: typeof annualizedROIPercent === "number" ? Number.parseFloat(annualizedROIPercent.toFixed(2)) : 0,
+    paybackMonths: typeof paybackPeriodMonths === "number" ? paybackPeriodMonths : 12,
   }
 }
 
@@ -256,24 +258,26 @@ export interface TCOResultBreakdown {
 
 export interface TCOResult {
   vendorId: VendorId
+  vendor: VendorId
   vendorName: string
   totalTCO: number
+  total: number
   annualTCO: number
   perDevicePerMonthTCO?: number
   breakdown: TCOResultBreakdown
   roiMetrics: ROIMetrics
+  roi?: ROIMetrics
+  licensing?: number
+  operations?: number
 }
 
 export function calculateFullTCOForVendor(
   vendorId: VendorId,
   orgSizeId: OrgSizeId,
-  industryId: IndustryId,
+  industryId: string,
   projectionYears: number,
-  // TODO: Add custom device/user counts for 'custom' org size if needed
-  // TODO: Add Portnox specific addon selections if they modify base price significantly
 ): TCOResult | null {
   const vendor = getVendorDataById(vendorId)
-  const industry = getIndustryById(industryId)
   const orgDetails = defaultOrgSizeDetails[orgSizeId]
 
   if (!vendor || !orgDetails) {
@@ -314,33 +318,62 @@ export function calculateFullTCOForVendor(
   const perDevicePerMonthTCO = numDevices > 0 ? annualTCO / (numDevices * 12) : undefined
 
   // Calculate ROI
-  const roiMetrics = calculateROIMetrics(vendor, totalTCO, orgSizeId, industry, projectionYears)
+  const roiMetrics = calculateROIMetrics(vendor, totalTCO, orgSizeId, projectionYears)
 
   return {
     vendorId,
+    vendor: vendorId,
     vendorName: vendor.name,
     totalTCO: Number.parseFloat(totalTCO.toFixed(2)),
+    total: Number.parseFloat(totalTCO.toFixed(2)),
     annualTCO: Number.parseFloat(annualTCO.toFixed(2)),
     perDevicePerMonthTCO: perDevicePerMonthTCO ? Number.parseFloat(perDevicePerMonthTCO.toFixed(2)) : undefined,
     breakdown: costs,
     roiMetrics,
+    roi: roiMetrics,
+    licensing: costs.software,
+    operations: costs.operational,
   }
 }
 
 // --- Comparison Function ---
 export function compareMultipleVendorsTCO(
   vendorIds: VendorId[],
-  orgSizeId: OrgSizeId,
-  industryId: IndustryId,
-  projectionYears: number,
+  orgConfig: {
+    devices: number
+    users: number
+    industry: string
+    region: string
+  },
+  analysisConfig: {
+    years: number
+  },
+  pricingConfig?: {
+    portnoxBasePrice: number
+    portnoxAddons: any
+  },
 ): TCOResult[] {
   const results: TCOResult[] = []
-  if (projectionYears <= 0) {
+
+  // Map the device/user counts to an org size
+  let orgSizeId: OrgSizeId = "mid_market"
+  if (orgConfig.devices <= 100) {
+    orgSizeId = "small_business"
+  } else if (orgConfig.devices <= 2500) {
+    orgSizeId = "mid_market"
+  } else if (orgConfig.devices <= 10000) {
+    orgSizeId = "enterprise"
+  } else {
+    orgSizeId = "global_enterprise"
+  }
+
+  if (analysisConfig.years <= 0) {
     console.error("Projection years must be positive for comparison.")
     return []
   }
+
   for (const vendorId of vendorIds) {
-    const result = calculateFullTCOForVendor(vendorId, orgSizeId, industryId, projectionYears)
+    const result = calculateFullTCOForVendor(vendorId, orgSizeId, orgConfig.industry, analysisConfig.years)
     if (result) {
       results.push(result)
     }

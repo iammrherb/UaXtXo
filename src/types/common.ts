@@ -1,25 +1,34 @@
-// src/types/common.ts
+export type OrgSizeId = "small_business" | "mid_market" | "enterprise" | "global_enterprise"
 
-export type OrgSizeId =
-  | "small_business"     // 1-100 users
-  | "mid_market"         // 100-1K users
-  | "enterprise"         // 1K-10K users
-  | "global_enterprise"; // 10K+ users
+export interface OrgSizeDetails {
+  devices: number
+  users: number
+  label: string
+}
 
-export type IndustryId =
-  | "healthcare"
-  | "financial_services"
-  | "government"
-  | "education"
-  | "retail"
-  | "manufacturing"
-  | "technology"
-  | "energy_utilities"
-  | "pharmaceuticals"
-  | "telecommunications"
-  | "legal_services"
-  | "insurance";
+export interface CalculationConfig {
+  orgSize: OrgSizeId
+  devices: number
+  users: number
+  industry: string
+  region: string
+  projectionYears: number
+}
 
-// Add other common types/enums here as needed
-// For example, a more structured way for ComplianceLevel could also be here
-export type ComplianceLevel = "NotCovered" | "Partial" | "Covered" | "Exceeds";
+export interface VendorComparisonResult {
+  vendorId: string
+  vendorName: string
+  totalTCO: number
+  breakdown: {
+    licensing: number
+    implementation: number
+    operations: number
+    support: number
+    hardware: number
+    hidden: number
+  }
+  roi: {
+    percentage: number
+    paybackMonths: number
+  }
+}
