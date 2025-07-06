@@ -5,7 +5,7 @@ import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { compareMultipleVendorsTCO, type calculateFullTCOForVendor } from "@/lib/calculators/tco"
 import { Button } from "@/components/ui/button"
-import { CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
@@ -2660,6 +2660,57 @@ export default function TcoAnalyzerUltimate() {
           </div>
         </div>
       </motion.div>
+    )
+  }
+
+  // Modern Gradient Card Component
+  const ModernGradientCard = ({
+    children,
+    darkMode,
+    gradient,
+    glow = true,
+  }: {
+    children: React.ReactNode
+    darkMode: boolean
+    gradient: string
+    glow?: boolean
+  }) => {
+    return (
+      <Card
+        className={cn(
+          "relative overflow-hidden rounded-3xl border shadow-xl transition-all duration-300",
+          darkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200",
+        )}
+      >
+        {/* Animated Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div
+            className="w-full h-full"
+            style={{
+              background: MODERN_COLORS.gradients[gradient],
+              backgroundSize: "400% 400%",
+              animation: "float 20s ease-in-out infinite",
+            }}
+          />
+        </div>
+
+        {/* Card Glow Effect */}
+        {glow && (
+          <motion.div
+            className="absolute inset-0 rounded-3xl"
+            animate={{
+              boxShadow: [
+                "0 0 20px rgba(20, 184, 166, 0.3)",
+                "0 0 40px rgba(20, 184, 166, 0.5)",
+                "0 0 20px rgba(20, 184, 166, 0.3)",
+              ],
+            }}
+            transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          />
+        )}
+
+        <CardContent className="relative z-10 p-6">{children}</CardContent>
+      </Card>
     )
   }
 
