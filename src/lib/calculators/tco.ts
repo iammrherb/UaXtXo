@@ -1,8 +1,8 @@
 import type { NewVendorData, VendorId, VendorPricingTier } from "@/src/lib/vendors/data"
 import { getVendorDataById } from "@/src/lib/vendors/data"
-import type { Industry, IndustryId } from "@/lib/industries/data"
-import { getIndustryById } from "@/lib/industries/data"
-import type { OrgSizeId } from "@/types/common"
+import type { Industry, IndustryId } from "@/src/lib/industries/data"
+import { getIndustryById } from "@/src/lib/industries/data"
+import type { OrgSizeId } from "@/src/types/common"
 
 // --- Configuration Data ---
 const staffCostsByRegion: Record<
