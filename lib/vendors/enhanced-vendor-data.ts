@@ -118,6 +118,28 @@ export interface SecurityMetrics {
   }[]
 }
 
+export interface OperationalMetrics {
+  adminEffort: number // hours per week per 1000 devices
+  automationLevel: number // 0-100
+  reportingCapabilities: "basic" | "advanced" | "enterprise"
+  apiAvailability: boolean
+  cloudManagement: boolean
+  maintenanceWindows: number // hours per month
+  upgradeComplexity: "low" | "medium" | "high" | "very high"
+  troubleshootingTime: number // average hours to resolve issues
+  staffingRequirements: {
+    administrators: number // per 10k devices
+    specialists: number // per 10k devices
+    trainingDays: number // annual training days required
+  }
+  operationalCosts: {
+    monthlyMaintenance: number // per device
+    incidentResponse: number // cost per incident
+    changeManagement: number // cost per change
+    monitoring: number // monthly cost
+  }
+}
+
 export interface EnhancedVendorData {
   id: string
   name: string
@@ -151,13 +173,7 @@ export interface EnhancedVendorData {
     }
   }
 
-  operationalMetrics: {
-    adminEffort: number // hours per week per 1000 devices
-    automationLevel: number // 0-100
-    reportingCapabilities: "basic" | "advanced" | "enterprise"
-    apiAvailability: boolean
-    cloudManagement: boolean
-  }
+  operationalMetrics: OperationalMetrics
 
   vendorStability: {
     yearsInBusiness: number
@@ -337,6 +353,20 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
       reportingCapabilities: "enterprise",
       apiAvailability: true,
       cloudManagement: true,
+      maintenanceWindows: 2,
+      upgradeComplexity: "low",
+      troubleshootingTime: 1,
+      staffingRequirements: {
+        administrators: 1,
+        specialists: 0.5,
+        trainingDays: 5,
+      },
+      operationalCosts: {
+        monthlyMaintenance: 2,
+        incidentResponse: 500,
+        changeManagement: 200,
+        monitoring: 1000,
+      },
     },
 
     vendorStability: {
@@ -383,12 +413,6 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           cost: 75,
           required: false,
         },
-        {
-          name: "Device Admin License",
-          description: "TACACS+ functionality",
-          cost: 35,
-          required: false,
-        },
       ],
       integrations: [
         {
@@ -396,12 +420,6 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           type: "native",
           cost: 25000,
           complexity: "high",
-        },
-        {
-          name: "StealthWatch",
-          type: "native",
-          cost: 0,
-          complexity: "medium",
         },
       ],
       support: {
@@ -450,17 +468,7 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
             cost: 95000,
             redundancy: true,
           },
-          {
-            name: "ISE-3695",
-            capacity: 30000,
-            cost: 195000,
-            redundancy: true,
-          },
         ],
-        virtualAppliance: {
-          cost: 0,
-          requirements: "16 vCPU, 64GB RAM, 600GB SSD",
-        },
       },
       infrastructure: {
         serverRequirements: {
@@ -469,7 +477,6 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           storage: "600GB SSD",
           cost: 15000,
         },
-        databaseLicense: 0,
         loadBalancer: 25000,
         backup: 10000,
       },
@@ -500,18 +507,13 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
       complianceMapping: [
         {
           framework: "NIST 800-53",
-          controls: ["AC-2", "AC-3", "AC-4", "AC-17", "IA-2", "IA-5"],
+          controls: ["AC-2", "AC-3", "AC-4", "AC-17", "IA-2"],
           coverage: 88,
         },
         {
           framework: "ISO 27001",
-          controls: ["A.9.1", "A.9.2", "A.9.4", "A.13.1"],
+          controls: ["A.9.1", "A.9.2", "A.9.4"],
           coverage: 85,
-        },
-        {
-          framework: "PCI-DSS",
-          controls: ["1.1", "1.2", "2.1", "7.1", "8.1"],
-          coverage: 87,
         },
       ],
     },
@@ -545,6 +547,20 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
       reportingCapabilities: "enterprise",
       apiAvailability: true,
       cloudManagement: false,
+      maintenanceWindows: 8,
+      upgradeComplexity: "very high",
+      troubleshootingTime: 6,
+      staffingRequirements: {
+        administrators: 3,
+        specialists: 2,
+        trainingDays: 20,
+      },
+      operationalCosts: {
+        monthlyMaintenance: 8,
+        incidentResponse: 2000,
+        changeManagement: 1500,
+        monitoring: 3000,
+      },
     },
 
     vendorStability: {
@@ -591,12 +607,6 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           cost: 15,
           required: false,
         },
-        {
-          name: "OnBoard",
-          description: "Device onboarding",
-          cost: 20,
-          required: false,
-        },
       ],
       integrations: [
         {
@@ -604,12 +614,6 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           type: "native",
           cost: 0,
           complexity: "low",
-        },
-        {
-          name: "Microsoft Intune",
-          type: "api",
-          cost: 0,
-          complexity: "medium",
         },
       ],
       support: {
@@ -658,17 +662,7 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
             cost: 45000,
             redundancy: true,
           },
-          {
-            name: "C3000",
-            capacity: 25000,
-            cost: 95000,
-            redundancy: true,
-          },
         ],
-        virtualAppliance: {
-          cost: 0,
-          requirements: "8 vCPU, 32GB RAM, 500GB Storage",
-        },
       },
       infrastructure: {
         serverRequirements: {
@@ -677,7 +671,6 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           storage: "500GB SSD",
           cost: 10000,
         },
-        databaseLicense: 0,
         loadBalancer: 15000,
         backup: 8000,
       },
@@ -716,11 +709,6 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           controls: ["A.9.1", "A.9.2", "A.9.4"],
           coverage: 82,
         },
-        {
-          framework: "HIPAA",
-          controls: ["164.308", "164.310", "164.312"],
-          coverage: 83,
-        },
       ],
     },
 
@@ -753,6 +741,20 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
       reportingCapabilities: "advanced",
       apiAvailability: true,
       cloudManagement: false,
+      maintenanceWindows: 6,
+      upgradeComplexity: "high",
+      troubleshootingTime: 4,
+      staffingRequirements: {
+        administrators: 2,
+        specialists: 1.5,
+        trainingDays: 15,
+      },
+      operationalCosts: {
+        monthlyMaintenance: 6,
+        incidentResponse: 1500,
+        changeManagement: 1000,
+        monitoring: 2500,
+      },
     },
 
     vendorStability: {
@@ -796,12 +798,6 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           cost: 18,
           required: false,
         },
-        {
-          name: "Premium Analytics",
-          description: "Enhanced reporting and analytics",
-          cost: 12,
-          required: false,
-        },
       ],
       integrations: [
         {
@@ -809,12 +805,6 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           type: "native",
           cost: 0,
           complexity: "low",
-        },
-        {
-          name: "ServiceNow",
-          type: "api",
-          cost: 0,
-          complexity: "medium",
         },
       ],
       support: {
@@ -926,6 +916,20 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
       reportingCapabilities: "enterprise",
       apiAvailability: true,
       cloudManagement: true,
+      maintenanceWindows: 3,
+      upgradeComplexity: "medium",
+      troubleshootingTime: 2,
+      staffingRequirements: {
+        administrators: 1.5,
+        specialists: 1,
+        trainingDays: 8,
+      },
+      operationalCosts: {
+        monthlyMaintenance: 3,
+        incidentResponse: 800,
+        changeManagement: 400,
+        monitoring: 1500,
+      },
     },
 
     vendorStability: {
@@ -933,6 +937,1207 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
       financialHealth: "excellent",
       marketShare: 12,
       customerBase: 15000,
+      acquisitionRisk: "low",
+    },
+  },
+
+  extreme: {
+    id: "extreme",
+    name: "Extreme Networks NAC",
+    category: "on-premise",
+    marketPosition: "niche",
+    deploymentModels: ["on-premise", "hybrid"],
+
+    pricing: {
+      perDevice: {
+        base: 88,
+        volumeDiscounts: {
+          500: 82,
+          1000: 76,
+          5000: 70,
+          10000: 62,
+        },
+      },
+      licensing: {
+        model: "perpetual",
+        perpetualCost: 88,
+        annualMaintenance: 18,
+      },
+      addOns: [
+        {
+          name: "Guest Access",
+          description: "Guest management portal",
+          cost: 20,
+          required: false,
+        },
+      ],
+      integrations: [
+        {
+          name: "ExtremeCloud IQ",
+          type: "native",
+          cost: 0,
+          complexity: "medium",
+        },
+      ],
+      support: {
+        basic: {
+          included: false,
+          cost: 7000,
+          coverage: "8x5 Support",
+        },
+        premium: {
+          cost: 16000,
+          coverage: "24x7 Support",
+          sla: "4 hour response",
+        },
+        enterprise: {
+          cost: 30000,
+          coverage: "24x7 Priority",
+          sla: "2 hour response",
+          dedicatedTAM: false,
+        },
+      },
+      professionalServices: {
+        implementation: {
+          small: 12000,
+          medium: 28000,
+          large: 75000,
+        },
+        training: {
+          onsite: 3500,
+          virtual: 2000,
+          certification: 1000,
+        },
+        customization: 280,
+      },
+      hardware: {
+        required: true,
+        appliances: [
+          {
+            name: "NAC-1000",
+            capacity: 1000,
+            cost: 12000,
+            redundancy: true,
+          },
+        ],
+      },
+      infrastructure: {
+        serverRequirements: {
+          cpu: "8+ cores",
+          ram: "32GB minimum",
+          storage: "400GB SSD",
+          cost: 8000,
+        },
+        backup: 6000,
+      },
+    },
+
+    security: {
+      zeroTrustScore: 75,
+      riskReduction: {
+        unauthorized_access: 78,
+        lateral_movement: 75,
+        data_breach: 72,
+        insider_threat: 70,
+        compliance_violation: 76,
+      },
+      breachCostSavings: {
+        average_breach_cost: 4450000,
+        reduction_percentage: 65,
+        insurance_discount: 12,
+      },
+      securityFeatures: {
+        mfa: true,
+        continuous_verification: false,
+        micro_segmentation: true,
+        behavior_analytics: false,
+        threat_intelligence: false,
+        automated_response: false,
+      },
+      complianceMapping: [
+        {
+          framework: "NIST 800-53",
+          controls: ["AC-2", "AC-3", "AC-4"],
+          coverage: 75,
+        },
+      ],
+    },
+
+    scalability: {
+      maxDevices: 25000,
+      performanceAtScale: "fair",
+      clusteringSupport: false,
+      multiSiteSupport: true,
+    },
+
+    implementation: {
+      timeToValue: {
+        poc: 14,
+        small: 30,
+        medium: 60,
+        large: 120,
+      },
+      complexity: "medium",
+      requiredExpertise: ["Extreme networking", "RADIUS"],
+      migrationFromExisting: {
+        effort: "medium",
+        downtime: 3,
+        dataLoss: false,
+      },
+    },
+
+    operationalMetrics: {
+      adminEffort: 12,
+      automationLevel: 55,
+      reportingCapabilities: "basic",
+      apiAvailability: true,
+      cloudManagement: true,
+      maintenanceWindows: 5,
+      upgradeComplexity: "medium",
+      troubleshootingTime: 3,
+      staffingRequirements: {
+        administrators: 2,
+        specialists: 1,
+        trainingDays: 10,
+      },
+      operationalCosts: {
+        monthlyMaintenance: 5,
+        incidentResponse: 1200,
+        changeManagement: 800,
+        monitoring: 2000,
+      },
+    },
+
+    vendorStability: {
+      yearsInBusiness: 35,
+      financialHealth: "good",
+      marketShare: 5,
+      customerBase: 8000,
+      acquisitionRisk: "medium",
+    },
+  },
+
+  arista: {
+    id: "arista",
+    name: "Arista CloudVision CUE",
+    category: "cloud-native",
+    marketPosition: "niche",
+    deploymentModels: ["cloud", "on-premise"],
+
+    pricing: {
+      perDevice: {
+        base: 78,
+        volumeDiscounts: {
+          500: 72,
+          1000: 66,
+          5000: 58,
+          10000: 50,
+        },
+      },
+      licensing: {
+        model: "subscription",
+        subscriptionTiers: {
+          basic: 65,
+          professional: 78,
+          enterprise: 92,
+        },
+      },
+      addOns: [
+        {
+          name: "Advanced Analytics",
+          description: "Enhanced network analytics",
+          cost: 15,
+          required: false,
+        },
+      ],
+      integrations: [
+        {
+          name: "CloudVision",
+          type: "native",
+          cost: 0,
+          complexity: "low",
+        },
+      ],
+      support: {
+        basic: {
+          included: true,
+          cost: 0,
+          coverage: "8x5 Support",
+        },
+        premium: {
+          cost: 10000,
+          coverage: "24x7 Support",
+          sla: "4 hour response",
+        },
+        enterprise: {
+          cost: 25000,
+          coverage: "24x7 Priority",
+          sla: "2 hour response",
+          dedicatedTAM: true,
+        },
+      },
+      professionalServices: {
+        implementation: {
+          small: 8000,
+          medium: 20000,
+          large: 50000,
+        },
+        training: {
+          onsite: 4000,
+          virtual: 2500,
+          certification: 1200,
+        },
+        customization: 300,
+      },
+      hardware: {
+        required: false,
+      },
+      infrastructure: {
+        serverRequirements: {
+          cpu: "N/A - Cloud Native",
+          ram: "N/A - Cloud Native",
+          storage: "N/A - Cloud Native",
+          cost: 0,
+        },
+      },
+    },
+
+    security: {
+      zeroTrustScore: 80,
+      riskReduction: {
+        unauthorized_access: 82,
+        lateral_movement: 78,
+        data_breach: 75,
+        insider_threat: 73,
+        compliance_violation: 79,
+      },
+      breachCostSavings: {
+        average_breach_cost: 4450000,
+        reduction_percentage: 68,
+        insurance_discount: 15,
+      },
+      securityFeatures: {
+        mfa: true,
+        continuous_verification: true,
+        micro_segmentation: true,
+        behavior_analytics: true,
+        threat_intelligence: false,
+        automated_response: true,
+      },
+      complianceMapping: [
+        {
+          framework: "NIST CSF",
+          controls: ["ID.AM", "PR.AC"],
+          coverage: 80,
+        },
+      ],
+    },
+
+    scalability: {
+      maxDevices: 75000,
+      performanceAtScale: "good",
+      clusteringSupport: true,
+      multiSiteSupport: true,
+    },
+
+    implementation: {
+      timeToValue: {
+        poc: 7,
+        small: 21,
+        medium: 45,
+        large: 90,
+      },
+      complexity: "medium",
+      requiredExpertise: ["Arista networking", "Cloud platforms"],
+      migrationFromExisting: {
+        effort: "medium",
+        downtime: 1,
+        dataLoss: false,
+      },
+    },
+
+    operationalMetrics: {
+      adminEffort: 10,
+      automationLevel: 75,
+      reportingCapabilities: "advanced",
+      apiAvailability: true,
+      cloudManagement: true,
+      maintenanceWindows: 4,
+      upgradeComplexity: "medium",
+      troubleshootingTime: 2.5,
+      staffingRequirements: {
+        administrators: 1.5,
+        specialists: 1,
+        trainingDays: 12,
+      },
+      operationalCosts: {
+        monthlyMaintenance: 4,
+        incidentResponse: 1000,
+        changeManagement: 600,
+        monitoring: 1800,
+      },
+    },
+
+    vendorStability: {
+      yearsInBusiness: 18,
+      financialHealth: "excellent",
+      marketShare: 3,
+      customerBase: 4000,
+      acquisitionRisk: "low",
+    },
+  },
+
+  pulse_secure: {
+    id: "pulse_secure",
+    name: "Pulse Secure NAC",
+    category: "on-premise",
+    marketPosition: "niche",
+    deploymentModels: ["on-premise", "hybrid"],
+
+    pricing: {
+      perDevice: {
+        base: 92,
+        volumeDiscounts: {
+          500: 86,
+          1000: 80,
+          5000: 72,
+          10000: 64,
+        },
+      },
+      licensing: {
+        model: "perpetual",
+        perpetualCost: 92,
+        annualMaintenance: 20,
+      },
+      addOns: [
+        {
+          name: "Mobile Device Management",
+          description: "MDM integration",
+          cost: 25,
+          required: false,
+        },
+      ],
+      integrations: [
+        {
+          name: "Pulse Connect Secure",
+          type: "native",
+          cost: 0,
+          complexity: "medium",
+        },
+      ],
+      support: {
+        basic: {
+          included: false,
+          cost: 9000,
+          coverage: "8x5 Support",
+        },
+        premium: {
+          cost: 20000,
+          coverage: "24x7 Support",
+          sla: "4 hour response",
+        },
+        enterprise: {
+          cost: 38000,
+          coverage: "24x7 Priority",
+          sla: "2 hour response",
+          dedicatedTAM: false,
+        },
+      },
+      professionalServices: {
+        implementation: {
+          small: 18000,
+          medium: 40000,
+          large: 95000,
+        },
+        training: {
+          onsite: 4500,
+          virtual: 2800,
+          certification: 1300,
+        },
+        customization: 320,
+      },
+      hardware: {
+        required: true,
+        appliances: [
+          {
+            name: "PSA-5000",
+            capacity: 2500,
+            cost: 18000,
+            redundancy: true,
+          },
+        ],
+      },
+      infrastructure: {
+        serverRequirements: {
+          cpu: "12+ cores",
+          ram: "48GB minimum",
+          storage: "500GB SSD",
+          cost: 12000,
+        },
+        backup: 8000,
+      },
+    },
+
+    security: {
+      zeroTrustScore: 78,
+      riskReduction: {
+        unauthorized_access: 80,
+        lateral_movement: 77,
+        data_breach: 74,
+        insider_threat: 72,
+        compliance_violation: 78,
+      },
+      breachCostSavings: {
+        average_breach_cost: 4450000,
+        reduction_percentage: 66,
+        insurance_discount: 14,
+      },
+      securityFeatures: {
+        mfa: true,
+        continuous_verification: false,
+        micro_segmentation: true,
+        behavior_analytics: false,
+        threat_intelligence: false,
+        automated_response: true,
+      },
+      complianceMapping: [
+        {
+          framework: "NIST 800-53",
+          controls: ["AC-2", "AC-3", "IA-2"],
+          coverage: 78,
+        },
+      ],
+    },
+
+    scalability: {
+      maxDevices: 50000,
+      performanceAtScale: "fair",
+      clusteringSupport: true,
+      multiSiteSupport: true,
+    },
+
+    implementation: {
+      timeToValue: {
+        poc: 21,
+        small: 45,
+        medium: 75,
+        large: 150,
+      },
+      complexity: "high",
+      requiredExpertise: ["Pulse Secure", "VPN technologies", "PKI"],
+      migrationFromExisting: {
+        effort: "high",
+        downtime: 6,
+        dataLoss: false,
+      },
+    },
+
+    operationalMetrics: {
+      adminEffort: 16,
+      automationLevel: 50,
+      reportingCapabilities: "basic",
+      apiAvailability: false,
+      cloudManagement: false,
+      maintenanceWindows: 7,
+      upgradeComplexity: "high",
+      troubleshootingTime: 5,
+      staffingRequirements: {
+        administrators: 2.5,
+        specialists: 1.5,
+        trainingDays: 18,
+      },
+      operationalCosts: {
+        monthlyMaintenance: 7,
+        incidentResponse: 1800,
+        changeManagement: 1200,
+        monitoring: 2800,
+      },
+    },
+
+    vendorStability: {
+      yearsInBusiness: 22,
+      financialHealth: "fair",
+      marketShare: 4,
+      customerBase: 6000,
+      acquisitionRisk: "high",
+    },
+  },
+
+  microsoft_nps: {
+    id: "microsoft_nps",
+    name: "Microsoft NPS",
+    category: "legacy",
+    marketPosition: "niche",
+    deploymentModels: ["on-premise"],
+
+    pricing: {
+      perDevice: {
+        base: 25,
+        volumeDiscounts: {
+          500: 25,
+          1000: 25,
+          5000: 25,
+          10000: 25,
+        },
+      },
+      licensing: {
+        model: "freemium",
+        perpetualCost: 0,
+      },
+      addOns: [
+        {
+          name: "Windows Server CAL",
+          description: "Client Access License",
+          cost: 38,
+          required: true,
+        },
+      ],
+      integrations: [
+        {
+          name: "Active Directory",
+          type: "native",
+          cost: 0,
+          complexity: "low",
+        },
+      ],
+      support: {
+        basic: {
+          included: false,
+          cost: 5000,
+          coverage: "8x5 Support",
+        },
+        premium: {
+          cost: 12000,
+          coverage: "24x7 Support",
+          sla: "8 hour response",
+        },
+        enterprise: {
+          cost: 25000,
+          coverage: "24x7 Priority",
+          sla: "4 hour response",
+          dedicatedTAM: false,
+        },
+      },
+      professionalServices: {
+        implementation: {
+          small: 5000,
+          medium: 15000,
+          large: 35000,
+        },
+        training: {
+          onsite: 2000,
+          virtual: 1200,
+          certification: 800,
+        },
+        customization: 150,
+      },
+      hardware: {
+        required: true,
+      },
+      infrastructure: {
+        serverRequirements: {
+          cpu: "4+ cores",
+          ram: "16GB minimum",
+          storage: "200GB SSD",
+          cost: 5000,
+        },
+        backup: 3000,
+      },
+    },
+
+    security: {
+      zeroTrustScore: 45,
+      riskReduction: {
+        unauthorized_access: 50,
+        lateral_movement: 45,
+        data_breach: 40,
+        insider_threat: 35,
+        compliance_violation: 48,
+      },
+      breachCostSavings: {
+        average_breach_cost: 4450000,
+        reduction_percentage: 35,
+        insurance_discount: 5,
+      },
+      securityFeatures: {
+        mfa: false,
+        continuous_verification: false,
+        micro_segmentation: false,
+        behavior_analytics: false,
+        threat_intelligence: false,
+        automated_response: false,
+      },
+      complianceMapping: [
+        {
+          framework: "NIST 800-53",
+          controls: ["AC-2", "IA-2"],
+          coverage: 45,
+        },
+      ],
+    },
+
+    scalability: {
+      maxDevices: 10000,
+      performanceAtScale: "poor",
+      clusteringSupport: false,
+      multiSiteSupport: false,
+    },
+
+    implementation: {
+      timeToValue: {
+        poc: 7,
+        small: 14,
+        medium: 30,
+        large: 60,
+      },
+      complexity: "medium",
+      requiredExpertise: ["Windows Server", "Active Directory", "RADIUS"],
+      migrationFromExisting: {
+        effort: "low",
+        downtime: 2,
+        dataLoss: false,
+      },
+    },
+
+    operationalMetrics: {
+      adminEffort: 25,
+      automationLevel: 20,
+      reportingCapabilities: "basic",
+      apiAvailability: false,
+      cloudManagement: false,
+      maintenanceWindows: 12,
+      upgradeComplexity: "medium",
+      troubleshootingTime: 8,
+      staffingRequirements: {
+        administrators: 3,
+        specialists: 2,
+        trainingDays: 10,
+      },
+      operationalCosts: {
+        monthlyMaintenance: 10,
+        incidentResponse: 2500,
+        changeManagement: 1800,
+        monitoring: 3500,
+      },
+    },
+
+    vendorStability: {
+      yearsInBusiness: 48,
+      financialHealth: "excellent",
+      marketShare: 15,
+      customerBase: 100000,
+      acquisitionRisk: "low",
+    },
+  },
+
+  foxpass: {
+    id: "foxpass",
+    name: "Foxpass",
+    category: "cloud-native",
+    marketPosition: "niche",
+    deploymentModels: ["cloud"],
+
+    pricing: {
+      perDevice: {
+        base: 45,
+        volumeDiscounts: {
+          500: 42,
+          1000: 38,
+          5000: 34,
+          10000: 30,
+        },
+      },
+      licensing: {
+        model: "subscription",
+        subscriptionTiers: {
+          basic: 35,
+          professional: 45,
+          enterprise: 55,
+        },
+      },
+      addOns: [
+        {
+          name: "LDAP Sync",
+          description: "LDAP directory synchronization",
+          cost: 8,
+          required: false,
+        },
+      ],
+      integrations: [
+        {
+          name: "Google Workspace",
+          type: "native",
+          cost: 0,
+          complexity: "low",
+        },
+      ],
+      support: {
+        basic: {
+          included: true,
+          cost: 0,
+          coverage: "8x5 Email",
+        },
+        premium: {
+          cost: 3000,
+          coverage: "24x7 Email",
+          sla: "8 hour response",
+        },
+        enterprise: {
+          cost: 8000,
+          coverage: "24x7 Phone/Email",
+          sla: "4 hour response",
+          dedicatedTAM: false,
+        },
+      },
+      professionalServices: {
+        implementation: {
+          small: 0,
+          medium: 2000,
+          large: 8000,
+        },
+        training: {
+          onsite: 1500,
+          virtual: 800,
+          certification: 400,
+        },
+        customization: 200,
+      },
+      hardware: {
+        required: false,
+      },
+      infrastructure: {
+        serverRequirements: {
+          cpu: "N/A - Cloud Native",
+          ram: "N/A - Cloud Native",
+          storage: "N/A - Cloud Native",
+          cost: 0,
+        },
+      },
+    },
+
+    security: {
+      zeroTrustScore: 70,
+      riskReduction: {
+        unauthorized_access: 72,
+        lateral_movement: 68,
+        data_breach: 65,
+        insider_threat: 62,
+        compliance_violation: 70,
+      },
+      breachCostSavings: {
+        average_breach_cost: 4450000,
+        reduction_percentage: 55,
+        insurance_discount: 10,
+      },
+      securityFeatures: {
+        mfa: true,
+        continuous_verification: false,
+        micro_segmentation: false,
+        behavior_analytics: false,
+        threat_intelligence: false,
+        automated_response: false,
+      },
+      complianceMapping: [
+        {
+          framework: "SOC 2",
+          controls: ["CC6.1", "CC6.6"],
+          coverage: 70,
+        },
+      ],
+    },
+
+    scalability: {
+      maxDevices: 15000,
+      performanceAtScale: "good",
+      clusteringSupport: false,
+      multiSiteSupport: true,
+    },
+
+    implementation: {
+      timeToValue: {
+        poc: 1,
+        small: 3,
+        medium: 7,
+        large: 14,
+      },
+      complexity: "low",
+      requiredExpertise: ["Basic networking", "Cloud services"],
+      migrationFromExisting: {
+        effort: "low",
+        downtime: 0,
+        dataLoss: false,
+      },
+    },
+
+    operationalMetrics: {
+      adminEffort: 6,
+      automationLevel: 80,
+      reportingCapabilities: "basic",
+      apiAvailability: true,
+      cloudManagement: true,
+      maintenanceWindows: 1,
+      upgradeComplexity: "low",
+      troubleshootingTime: 1.5,
+      staffingRequirements: {
+        administrators: 1,
+        specialists: 0.5,
+        trainingDays: 3,
+      },
+      operationalCosts: {
+        monthlyMaintenance: 1,
+        incidentResponse: 400,
+        changeManagement: 200,
+        monitoring: 800,
+      },
+    },
+
+    vendorStability: {
+      yearsInBusiness: 8,
+      financialHealth: "good",
+      marketShare: 1,
+      customerBase: 2000,
+      acquisitionRisk: "medium",
+    },
+  },
+
+  securew2: {
+    id: "securew2",
+    name: "SecureW2",
+    category: "cloud-native",
+    marketPosition: "niche",
+    deploymentModels: ["cloud"],
+
+    pricing: {
+      perDevice: {
+        base: 52,
+        volumeDiscounts: {
+          500: 48,
+          1000: 44,
+          5000: 38,
+          10000: 32,
+        },
+      },
+      licensing: {
+        model: "subscription",
+        subscriptionTiers: {
+          basic: 40,
+          professional: 52,
+          enterprise: 64,
+        },
+      },
+      addOns: [
+        {
+          name: "Certificate Management",
+          description: "Advanced certificate lifecycle management",
+          cost: 12,
+          required: false,
+        },
+      ],
+      integrations: [
+        {
+          name: "Microsoft AD",
+          type: "native",
+          cost: 0,
+          complexity: "low",
+        },
+      ],
+      support: {
+        basic: {
+          included: true,
+          cost: 0,
+          coverage: "8x5 Email/Chat",
+        },
+        premium: {
+          cost: 4000,
+          coverage: "24x7 Email",
+          sla: "6 hour response",
+        },
+        enterprise: {
+          cost: 12000,
+          coverage: "24x7 Phone/Email",
+          sla: "2 hour response",
+          dedicatedTAM: false,
+        },
+      },
+      professionalServices: {
+        implementation: {
+          small: 0,
+          medium: 3000,
+          large: 12000,
+        },
+        training: {
+          onsite: 2000,
+          virtual: 1200,
+          certification: 600,
+        },
+        customization: 220,
+      },
+      hardware: {
+        required: false,
+      },
+      infrastructure: {
+        serverRequirements: {
+          cpu: "N/A - Cloud Native",
+          ram: "N/A - Cloud Native",
+          storage: "N/A - Cloud Native",
+          cost: 0,
+        },
+      },
+    },
+
+    security: {
+      zeroTrustScore: 72,
+      riskReduction: {
+        unauthorized_access: 74,
+        lateral_movement: 70,
+        data_breach: 68,
+        insider_threat: 65,
+        compliance_violation: 72,
+      },
+      breachCostSavings: {
+        average_breach_cost: 4450000,
+        reduction_percentage: 58,
+        insurance_discount: 12,
+      },
+      securityFeatures: {
+        mfa: true,
+        continuous_verification: false,
+        micro_segmentation: false,
+        behavior_analytics: false,
+        threat_intelligence: false,
+        automated_response: true,
+      },
+      complianceMapping: [
+        {
+          framework: "NIST 800-53",
+          controls: ["AC-2", "AC-3", "IA-5"],
+          coverage: 72,
+        },
+      ],
+    },
+
+    scalability: {
+      maxDevices: 20000,
+      performanceAtScale: "good",
+      clusteringSupport: false,
+      multiSiteSupport: true,
+    },
+
+    implementation: {
+      timeToValue: {
+        poc: 2,
+        small: 5,
+        medium: 10,
+        large: 21,
+      },
+      complexity: "low",
+      requiredExpertise: ["PKI basics", "WiFi security"],
+      migrationFromExisting: {
+        effort: "low",
+        downtime: 0,
+        dataLoss: false,
+      },
+    },
+
+    operationalMetrics: {
+      adminEffort: 7,
+      automationLevel: 75,
+      reportingCapabilities: "basic",
+      apiAvailability: true,
+      cloudManagement: true,
+      maintenanceWindows: 2,
+      upgradeComplexity: "low",
+      troubleshootingTime: 2,
+      staffingRequirements: {
+        administrators: 1,
+        specialists: 0.5,
+        trainingDays: 5,
+      },
+      operationalCosts: {
+        monthlyMaintenance: 2,
+        incidentResponse: 600,
+        changeManagement: 300,
+        monitoring: 1000,
+      },
+    },
+
+    vendorStability: {
+      yearsInBusiness: 12,
+      financialHealth: "good",
+      marketShare: 2,
+      customerBase: 3000,
+      acquisitionRisk: "medium",
+    },
+  },
+
+  packetfence: {
+    id: "packetfence",
+    name: "PacketFence",
+    category: "on-premise",
+    marketPosition: "niche",
+    deploymentModels: ["on-premise"],
+
+    pricing: {
+      perDevice: {
+        base: 35,
+        volumeDiscounts: {
+          500: 32,
+          1000: 28,
+          5000: 24,
+          10000: 20,
+        },
+      },
+      licensing: {
+        model: "freemium",
+        perpetualCost: 0,
+        subscriptionTiers: {
+          basic: 0,
+          professional: 35,
+          enterprise: 50,
+        },
+      },
+      addOns: [
+        {
+          name: "Enterprise Support",
+          description: "Commercial support package",
+          cost: 15,
+          required: false,
+        },
+      ],
+      integrations: [
+        {
+          name: "LDAP/AD",
+          type: "native",
+          cost: 0,
+          complexity: "medium",
+        },
+      ],
+      support: {
+        basic: {
+          included: false,
+          cost: 0,
+          coverage: "Community",
+        },
+        premium: {
+          cost: 8000,
+          coverage: "8x5 Support",
+          sla: "24 hour response",
+        },
+        enterprise: {
+          cost: 18000,
+          coverage: "24x7 Support",
+          sla: "8 hour response",
+          dedicatedTAM: false,
+        },
+      },
+      professionalServices: {
+        implementation: {
+          small: 8000,
+          medium: 20000,
+          large: 50000,
+        },
+        training: {
+          onsite: 3000,
+          virtual: 1800,
+          certification: 800,
+        },
+        customization: 180,
+      },
+      hardware: {
+        required: true,
+      },
+      infrastructure: {
+        serverRequirements: {
+          cpu: "8+ cores",
+          ram: "32GB minimum",
+          storage: "500GB SSD",
+          cost: 8000,
+        },
+        backup: 4000,
+      },
+    },
+
+    security: {
+      zeroTrustScore: 65,
+      riskReduction: {
+        unauthorized_access: 68,
+        lateral_movement: 65,
+        data_breach: 62,
+        insider_threat: 58,
+        compliance_violation: 66,
+      },
+      breachCostSavings: {
+        average_breach_cost: 4450000,
+        reduction_percentage: 50,
+        insurance_discount: 8,
+      },
+      securityFeatures: {
+        mfa: false,
+        continuous_verification: false,
+        micro_segmentation: true,
+        behavior_analytics: false,
+        threat_intelligence: false,
+        automated_response: true,
+      },
+      complianceMapping: [
+        {
+          framework: "NIST 800-53",
+          controls: ["AC-2", "AC-3"],
+          coverage: 65,
+        },
+      ],
+    },
+
+    scalability: {
+      maxDevices: 30000,
+      performanceAtScale: "fair",
+      clusteringSupport: true,
+      multiSiteSupport: true,
+    },
+
+    implementation: {
+      timeToValue: {
+        poc: 14,
+        small: 30,
+        medium: 60,
+        large: 120,
+      },
+      complexity: "high",
+      requiredExpertise: ["Linux administration", "Perl", "Network security"],
+      migrationFromExisting: {
+        effort: "high",
+        downtime: 4,
+        dataLoss: false,
+      },
+    },
+
+    operationalMetrics: {
+      adminEffort: 18,
+      automationLevel: 45,
+      reportingCapabilities: "basic",
+      apiAvailability: true,
+      cloudManagement: false,
+      maintenanceWindows: 8,
+      upgradeComplexity: "high",
+      troubleshootingTime: 6,
+      staffingRequirements: {
+        administrators: 3,
+        specialists: 2,
+        trainingDays: 15,
+      },
+      operationalCosts: {
+        monthlyMaintenance: 8,
+        incidentResponse: 2000,
+        changeManagement: 1500,
+        monitoring: 2500,
+      },
+    },
+
+    vendorStability: {
+      yearsInBusiness: 18,
+      financialHealth: "fair",
+      marketShare: 2,
+      customerBase: 5000,
       acquisitionRisk: "low",
     },
   },
@@ -975,12 +2180,6 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           cost: 30,
           required: false,
         },
-        {
-          name: "eyeSight",
-          description: "Asset inventory",
-          cost: 15,
-          required: false,
-        },
       ],
       integrations: [
         {
@@ -988,12 +2187,6 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           type: "native",
           cost: 0,
           complexity: "low",
-        },
-        {
-          name: "Splunk",
-          type: "api",
-          cost: 0,
-          complexity: "medium",
         },
       ],
       support: {
@@ -1036,23 +2229,7 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
             cost: 25000,
             redundancy: true,
           },
-          {
-            name: "CT-1000",
-            capacity: 25000,
-            cost: 75000,
-            redundancy: true,
-          },
-          {
-            name: "CT-5000",
-            capacity: 100000,
-            cost: 150000,
-            redundancy: true,
-          },
         ],
-        virtualAppliance: {
-          cost: 0,
-          requirements: "16 vCPU, 64GB RAM, 1TB Storage",
-        },
       },
       infrastructure: {
         serverRequirements: {
@@ -1061,8 +2238,6 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           storage: "1TB SSD",
           cost: 20000,
         },
-        databaseLicense: 15000,
-        loadBalancer: 20000,
         backup: 12000,
       },
     },
@@ -1094,11 +2269,6 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           framework: "NIST CSF",
           controls: ["ID.AM", "PR.AC", "DE.CM"],
           coverage: 82,
-        },
-        {
-          framework: "IEC 62443",
-          controls: ["SR-1", "SR-2", "SR-3"],
-          coverage: 85,
         },
       ],
     },
@@ -1132,6 +2302,20 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
       reportingCapabilities: "advanced",
       apiAvailability: true,
       cloudManagement: true,
+      maintenanceWindows: 6,
+      upgradeComplexity: "high",
+      troubleshootingTime: 4,
+      staffingRequirements: {
+        administrators: 2.5,
+        specialists: 2,
+        trainingDays: 16,
+      },
+      operationalCosts: {
+        monthlyMaintenance: 7,
+        incidentResponse: 1600,
+        changeManagement: 1200,
+        monitoring: 2800,
+      },
     },
 
     vendorStability: {
@@ -1140,6 +2324,176 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
       marketShare: 15,
       customerBase: 20000,
       acquisitionRisk: "medium",
+    },
+  },
+
+  meraki: {
+    id: "meraki",
+    name: "Cisco Meraki Access Control",
+    category: "cloud-native",
+    marketPosition: "challenger",
+    deploymentModels: ["cloud"],
+
+    pricing: {
+      perDevice: {
+        base: 68,
+        volumeDiscounts: {
+          500: 64,
+          1000: 58,
+          5000: 52,
+          10000: 46,
+        },
+      },
+      licensing: {
+        model: "subscription",
+        subscriptionTiers: {
+          basic: 55,
+          professional: 68,
+          enterprise: 82,
+        },
+      },
+      addOns: [
+        {
+          name: "Advanced Security",
+          description: "Enhanced security features",
+          cost: 15,
+          required: false,
+        },
+      ],
+      integrations: [
+        {
+          name: "Meraki Dashboard",
+          type: "native",
+          cost: 0,
+          complexity: "low",
+        },
+      ],
+      support: {
+        basic: {
+          included: true,
+          cost: 0,
+          coverage: "8x5 Support",
+        },
+        premium: {
+          cost: 6000,
+          coverage: "24x7 Support",
+          sla: "4 hour response",
+        },
+        enterprise: {
+          cost: 18000,
+          coverage: "24x7 Priority",
+          sla: "2 hour response",
+          dedicatedTAM: true,
+        },
+      },
+      professionalServices: {
+        implementation: {
+          small: 3000,
+          medium: 10000,
+          large: 25000,
+        },
+        training: {
+          onsite: 3000,
+          virtual: 1800,
+          certification: 900,
+        },
+        customization: 260,
+      },
+      hardware: {
+        required: false,
+      },
+      infrastructure: {
+        serverRequirements: {
+          cpu: "N/A - Cloud Native",
+          ram: "N/A - Cloud Native",
+          storage: "N/A - Cloud Native",
+          cost: 0,
+        },
+      },
+    },
+
+    security: {
+      zeroTrustScore: 76,
+      riskReduction: {
+        unauthorized_access: 78,
+        lateral_movement: 75,
+        data_breach: 72,
+        insider_threat: 70,
+        compliance_violation: 76,
+      },
+      breachCostSavings: {
+        average_breach_cost: 4450000,
+        reduction_percentage: 62,
+        insurance_discount: 13,
+      },
+      securityFeatures: {
+        mfa: true,
+        continuous_verification: false,
+        micro_segmentation: true,
+        behavior_analytics: false,
+        threat_intelligence: false,
+        automated_response: true,
+      },
+      complianceMapping: [
+        {
+          framework: "NIST 800-53",
+          controls: ["AC-2", "AC-3", "AC-4"],
+          coverage: 76,
+        },
+      ],
+    },
+
+    scalability: {
+      maxDevices: 40000,
+      performanceAtScale: "good",
+      clusteringSupport: false,
+      multiSiteSupport: true,
+    },
+
+    implementation: {
+      timeToValue: {
+        poc: 3,
+        small: 10,
+        medium: 21,
+        large: 45,
+      },
+      complexity: "low",
+      requiredExpertise: ["Meraki dashboard", "Cloud networking"],
+      migrationFromExisting: {
+        effort: "low",
+        downtime: 0,
+        dataLoss: false,
+      },
+    },
+
+    operationalMetrics: {
+      adminEffort: 9,
+      automationLevel: 70,
+      reportingCapabilities: "advanced",
+      apiAvailability: true,
+      cloudManagement: true,
+      maintenanceWindows: 3,
+      upgradeComplexity: "low",
+      troubleshootingTime: 2,
+      staffingRequirements: {
+        administrators: 1.5,
+        specialists: 0.5,
+        trainingDays: 6,
+      },
+      operationalCosts: {
+        monthlyMaintenance: 3,
+        incidentResponse: 700,
+        changeManagement: 400,
+        monitoring: 1200,
+      },
+    },
+
+    vendorStability: {
+      yearsInBusiness: 18,
+      financialHealth: "excellent",
+      marketShare: 10,
+      customerBase: 25000,
+      acquisitionRisk: "low",
     },
   },
 }
