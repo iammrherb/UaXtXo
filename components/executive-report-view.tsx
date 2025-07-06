@@ -94,11 +94,11 @@ export default function ExecutiveReportView({ results = [], config }: ExecutiveR
   const portnoxPayback = safeNumber(portnoxResult?.roi?.paybackMonths)
 
   const costBreakdownData = portnoxResult
-    ? portnoxResult.breakdown
-        .map((item, index) => ({
-          ...item,
-          value: safeNumber(item.value),
-          color: ["#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"][index % 5],
+    ? Object.entries(portnoxResult.breakdown)
+        .map(([key, value], index) => ({
+          name: key.charAt(0).toUpperCase() + key.slice(1),
+          value: safeNumber(value),
+          color: ["#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#84cc16"][index % 7],
         }))
         .filter((item) => item.value > 0)
     : []
