@@ -5,23 +5,24 @@ import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { vendorDatabase, getVendorLogoPath, type VendorData } from "@/lib/comprehensive-vendor-data"
+import { Input } from "@/components/ui/input"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+import { getAllVendors, getVendorLogoPath } from "@/lib/comprehensive-vendor-data"
 import {
   Search,
+  Filter,
+  CheckCircle2,
+  Circle,
   Star,
-  Zap,
-  Building,
+  Shield,
   Cloud,
   Server,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  Trash2,
+  Wifi,
+  X,
   RotateCcw,
+  Sparkles,
 } from "lucide-react"
 
 interface EnhancedVendorSelectionProps {
@@ -32,27 +33,43 @@ interface EnhancedVendorSelectionProps {
   onSelectRecommended: () => void
 }
 
-const VENDOR_CATEGORIES = {
-  enterprise: {
-    label: "Enterprise Solutions",
-    icon: <Building className="h-4 w-4" />,
-    vendors: ["portnox", "cisco", "aruba", "fortinet", "microsoft"],
-  },
-  cloud: {
-    label: "Cloud-First",
-    icon: <Cloud className="h-4 w-4" />,
-    vendors: ["securew2", "foxpass", "radiusaas"],
-  },
-  specialized: {
-    label: "Specialized",
-    icon: <Zap className="h-4 w-4" />,
-    vendors: ["pulse", "packetfence", "forescout"],
-  },
-  alternative: {
-    label: "Alternatives",
-    icon: <Server className="h-4 w-4" />,
-    vendors: ["no-nac"],
-  },
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case "nac":
+      return <Shield className="h-4 w-4" />
+    case "certificate":
+      return <Server className="h-4 w-4" />
+    case "vpn":
+      return <Wifi className="h-4 w-4" />
+    default:
+      return <Cloud className="h-4 w-4" />
+  }
+}
+
+const getCategoryColor = (category: string) => {
+  switch (category) {
+    case "nac":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+    case "certificate":
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+    case "vpn":
+      return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+    default:
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+  }
+}
+
+const getCategoryLabel = (category: string) => {
+  switch (category) {
+    case "nac":
+      return "Network Access Control"
+    case "certificate":
+      return "Certificate Management"
+    case "vpn":
+      return "VPN & Remote Access"
+    default:
+      return "Other"
+  }
 }
 
 export default function EnhancedVendorSelection({
@@ -63,217 +80,252 @@ export default function EnhancedVendorSelection({
   onSelectRecommended,
 }: EnhancedVendorSelectionProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [activeCategory, setActiveCategory] = useState("all")
+  const [categoryFilter, setCategoryFilter] = useState<string>("all")
+  const [showFilters, setShowFilters] = useState(false)
+
+  const vendors = getAllVendors()
 
   const filteredVendors = useMemo(() => {
-    let vendors = Object.entries(vendorDatabase)
+    return vendors.filter((vendor) => {
+      const matchesSearch =
+        vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        vendor.description.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesCategory = categoryFilter === "all" || vendor.category === categoryFilter
+      return matchesSearch && matchesCategory
+    })
+  }, [vendors, searchTerm, categoryFilter])
 
-    // Filter by category
-    if (activeCategory !== "all") {
-      const categoryVendors = VENDOR_CATEGORIES[activeCategory as keyof typeof VENDOR_CATEGORIES]?.vendors || []
-      vendors = vendors.filter(([id]) => categoryVendors.includes(id))
-    }
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(vendors.map((v) => v.category)))
+    return cats.map((cat) => ({
+      value: cat,
+      label: getCategoryLabel(cat),
+      count: vendors.filter((v) => v.category === cat).length,
+    }))
+  }, [vendors])
 
-    // Filter by search term
-    if (searchTerm) {
-      vendors = vendors.filter(
-        ([id, vendor]) =>
-          vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          vendor.description.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
-    }
-
-    return vendors
-  }, [searchTerm, activeCategory])
-
-  const getRiskColor = (riskScore: number) => {
-    if (riskScore <= 3) return "text-green-600"
-    if (riskScore <= 6) return "text-yellow-600"
-    return "text-red-600"
-  }
-
-  const getRiskIcon = (riskScore: number) => {
-    if (riskScore <= 3) return <CheckCircle className="h-4 w-4" />
-    if (riskScore <= 6) return <AlertTriangle className="h-4 w-4" />
-    return <XCircle className="h-4 w-4" />
-  }
-
-  const VendorCard = ({ vendorId, vendor }: { vendorId: string; vendor: VendorData }) => {
-    const isSelected = selectedVendors.includes(vendorId)
-    const isPortnox = vendorId === "portnox"
-
-    return (
-      <motion.div
-        layout
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
-        <Card
-          className={cn(
-            "cursor-pointer transition-all duration-200 hover:shadow-lg",
-            isSelected && "ring-2 ring-primary shadow-lg",
-            isPortnox && "border-primary/50 bg-primary/5",
-          )}
-          onClick={() => handleVendorToggle(vendorId)}
-        >
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="relative">
-                  <Image
-                    src={getVendorLogoPath(vendorId) || "/placeholder.svg"}
-                    alt={`${vendor.name} logo`}
-                    width={40}
-                    height={40}
-                    className="rounded-lg object-contain"
-                  />
-                  {isPortnox && (
-                    <div className="absolute -top-1 -right-1">
-                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <CardTitle className="text-sm font-semibold">{vendor.name}</CardTitle>
-                  <p className="text-xs text-muted-foreground">{vendor.category}</p>
-                </div>
-              </div>
-              {isSelected && <CheckCircle className="h-5 w-5 text-primary" />}
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{vendor.description}</p>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">Risk Score</span>
-                <div className={cn("flex items-center space-x-1", getRiskColor(vendor.riskScore))}>
-                  {getRiskIcon(vendor.riskScore)}
-                  <span className="text-xs font-semibold">{vendor.riskScore}/10</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">Complexity</span>
-                <Badge variant="outline" className="text-xs">
-                  {vendor.complexity}
-                </Badge>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">Scalability</span>
-                <div className="flex">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Star
-                      key={i}
-                      className={cn(
-                        "h-3 w-3",
-                        i <= (vendor.scalability === "high" ? 5 : vendor.scalability === "medium" ? 3 : 1)
-                          ? "text-yellow-400 fill-current"
-                          : "text-gray-300",
-                      )}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">Satisfaction</span>
-                <div className="flex items-center space-x-1">
-                  <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                  <span className="text-xs font-semibold">{vendor.customerSatisfaction}/5</span>
-                </div>
-              </div>
-            </div>
-
-            {vendor.pricing && (
-              <div className="mt-3 pt-3 border-t">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium">Starting at</span>
-                  <span className="text-xs font-bold text-primary">
-                    ${vendor.pricing.basePrice}/{vendor.pricing.model.replace("_", " ")}
-                  </span>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-    )
-  }
+  const selectedCount = selectedVendors.length
+  const maxSelections = 10
 
   return (
-    <Card className="h-fit">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Vendor Selection</CardTitle>
-          <Badge variant="secondary">{selectedVendors.length} selected</Badge>
-        </div>
-
-        <div className="space-y-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search vendors..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+    <TooltipProvider>
+      <Card className="h-fit">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              Vendor Selection
+            </CardTitle>
+            <Badge variant="secondary" className="text-xs">
+              {selectedCount}/{maxSelections}
+            </Badge>
           </div>
 
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onClearAll}
-              className="flex items-center space-x-1 bg-transparent"
-            >
-              <Trash2 className="h-3 w-3" />
-              <span>Clear</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onSelectRecommended}
-              className="flex items-center space-x-1 bg-transparent"
-            >
-              <RotateCcw className="h-3 w-3" />
-              <span>Recommended</span>
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search vendors..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
 
-      <CardContent>
-        <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="all" className="text-xs">
-              All
-            </TabsTrigger>
-            <TabsTrigger value="enterprise" className="text-xs">
-              Enterprise
-            </TabsTrigger>
-          </TabsList>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-1"
+              >
+                <Filter className="h-3 w-3" />
+                Filters
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClearAll}
+                className="flex items-center gap-1 bg-transparent"
+              >
+                <X className="h-3 w-3" />
+                Clear
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onSelectRecommended}
+                className="flex items-center gap-1 bg-transparent"
+              >
+                <Sparkles className="h-3 w-3" />
+                Recommended
+              </Button>
+            </div>
 
-          <div className="space-y-3 max-h-[600px] overflow-y-auto">
             <AnimatePresence>
-              {filteredVendors.map(([vendorId, vendor]) => (
-                <VendorCard key={vendorId} vendorId={vendorId} vendor={vendor} />
-              ))}
+              {showFilters && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="space-y-2 pt-2 border-t">
+                    <p className="text-sm font-medium text-muted-foreground">Category</p>
+                    <div className="flex flex-wrap gap-1">
+                      <Button
+                        variant={categoryFilter === "all" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCategoryFilter("all")}
+                        className="text-xs h-7"
+                      >
+                        All ({vendors.length})
+                      </Button>
+                      {categories.map((category) => (
+                        <Button
+                          key={category.value}
+                          variant={categoryFilter === category.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCategoryFilter(category.value)}
+                          className="text-xs h-7 flex items-center gap-1"
+                        >
+                          {getCategoryIcon(category.value)}
+                          {category.label} ({category.count})
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
+        </CardHeader>
 
-          {filteredVendors.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No vendors found</p>
+        <CardContent className="pt-0">
+          <div className="space-y-2 max-h-[600px] overflow-y-auto">
+            <AnimatePresence>
+              {filteredVendors.map((vendor) => {
+                const isSelected = selectedVendors.includes(vendor.id)
+                const isPortnox = vendor.id === "portnox"
+
+                return (
+                  <motion.div
+                    key={vendor.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className={cn(
+                      "group relative rounded-lg border p-3 cursor-pointer transition-all duration-200",
+                      isSelected
+                        ? "border-primary bg-primary/5 shadow-sm"
+                        : "border-border hover:border-primary/50 hover:bg-muted/50",
+                      isPortnox && "ring-2 ring-primary/20",
+                    )}
+                    onClick={() => handleVendorToggle(vendor.id)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="relative">
+                        <div className="w-10 h-10 rounded-lg bg-white dark:bg-gray-800 border flex items-center justify-center overflow-hidden">
+                          <Image
+                            src={getVendorLogoPath(vendor.id) || "/placeholder.svg"}
+                            alt={`${vendor.name} logo`}
+                            width={32}
+                            height={32}
+                            className="object-contain"
+                          />
+                        </div>
+                        <div className="absolute -top-1 -right-1">
+                          {isSelected ? (
+                            <CheckCircle2 className="h-4 w-4 text-primary bg-background rounded-full" />
+                          ) : (
+                            <Circle className="h-4 w-4 text-muted-foreground bg-background rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-medium text-sm truncate">{vendor.name}</h3>
+                          {isPortnox && (
+                            <Badge variant="default" className="text-xs px-1.5 py-0">
+                              <Star className="h-3 w-3 mr-1" />
+                              Recommended
+                            </Badge>
+                          )}
+                        </div>
+
+                        <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{vendor.description}</p>
+
+                        <div className="flex items-center justify-between">
+                          <Badge variant="secondary" className={cn("text-xs", getCategoryColor(vendor.category))}>
+                            {getCategoryIcon(vendor.category)}
+                            <span className="ml-1">{getCategoryLabel(vendor.category)}</span>
+                          </Badge>
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="text-xs font-medium text-primary">
+                                ${vendor.pricing.basePrice}
+                                {vendor.pricing.model === "per_device" && "/device"}
+                                {vendor.pricing.model === "per_user" && "/user"}
+                                {vendor.pricing.model === "flat_rate" && "/month"}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <div className="text-xs">
+                                <p className="font-medium">{vendor.name} Pricing</p>
+                                <p>Model: {vendor.pricing.model.replace("_", " ")}</p>
+                                <p>Base Price: ${vendor.pricing.basePrice}</p>
+                                {vendor.pricing.tiers && <p>Volume discounts available</p>}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </AnimatePresence>
+
+            {filteredVendors.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No vendors found matching your criteria</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchTerm("")
+                    setCategoryFilter("all")
+                  }}
+                  className="mt-2"
+                >
+                  <RotateCcw className="h-3 w-3 mr-1" />
+                  Reset filters
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {selectedCount > 0 && (
+            <div className="mt-4 pt-4 border-t">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>
+                  {selectedCount} vendor{selectedCount !== 1 ? "s" : ""} selected
+                </span>
+                <span>Max {maxSelections} vendors</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-1.5 mt-2">
+                <div
+                  className="bg-primary h-1.5 rounded-full transition-all duration-300"
+                  style={{ width: `${(selectedCount / maxSelections) * 100}%` }}
+                />
+              </div>
             </div>
           )}
-        </Tabs>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   )
 }
