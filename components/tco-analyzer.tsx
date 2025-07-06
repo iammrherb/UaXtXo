@@ -76,21 +76,16 @@ export default function TcoAnalyzerUltimate() {
     avgFteCost: 150000,
   })
 
-  // Updated to include all required vendors with Portnox as primary
+  // Updated to use the correct vendor IDs from the database
   const [selectedVendors, setSelectedVendors] = useState<string[]>([
     "portnox",
-    "cisco_ise",
-    "aruba_clearpass",
-    "juniper_mist",
-    "extreme",
-    "arista",
-    "pulse_secure",
-    "microsoft_nps",
-    "foxpass",
+    "cisco",
+    "aruba",
+    "fortinet",
+    "microsoft",
     "securew2",
-    "packetfence",
-    "forescout",
-    "meraki",
+    "foxpass",
+    "pulse",
   ])
   const [activeView, setActiveView] = useState("dashboard")
   const [results, setResults] = useState<CalculationResult[] | null>(null)
