@@ -1,127 +1,59 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
-import type { IndustryId, OrgSizeId } from "@/types/common"
+import { createContext, useContext, useState, type ReactNode } from "react"
 
 interface DashboardSettings {
-  selectedVendors: string[]
-  industry: IndustryId
-  orgSize: OrgSizeId
-  baseVendor: string
+  orgSize: string
+  industry: string
+  region: string
   comparisonYears: number
+  selectedVendors: string[]
+  analysisType: "basic" | "advanced"
+  currency: string
+  theme: "light" | "dark"
 }
 
-interface DashboardContextType extends DashboardSettings {
-  // Setters
-  setSelectedVendors: (vendors: string[]) => void
-  setIndustry: (industry: IndustryId) => void
-  setOrgSize: (orgSize: OrgSizeId) => void
-  setBaseVendor: (vendor: string) => void
-  setComparisonYears: (years: number) => void
-
-  // Computed values
-  selectedIndustry: IndustryId
-  selectedOrgSize: OrgSizeId
-
-  // Actions
-  addVendor: (vendorId: string) => void
-  removeVendor: (vendorId: string) => void
-  toggleVendor: (vendorId: string) => void
+interface DashboardContextType {
+  settings: DashboardSettings
+  updateSettings: (updates: Partial<DashboardSettings>) => void
   resetSettings: () => void
 }
 
 const defaultSettings: DashboardSettings = {
-  selectedVendors: ["portnox"],
-  industry: "technology",
   orgSize: "medium",
-  baseVendor: "portnox",
+  industry: "technology",
+  region: "north-america",
   comparisonYears: 3,
+  selectedVendors: ["portnox", "cisco", "aruba"],
+  analysisType: "basic",
+  currency: "USD",
+  theme: "light",
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined)
 
-interface DashboardProviderProps {
-  children: ReactNode
-}
-
-export function DashboardProvider({ children }: DashboardProviderProps) {
+export function DashboardProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<DashboardSettings>(defaultSettings)
 
-  const setSelectedVendors = useCallback((vendors: string[]) => {
-    setSettings((prev) => ({ ...prev, selectedVendors: vendors }))
-  }, [])
+  const updateSettings = (updates: Partial<DashboardSettings>) => {
+    setSettings((prev) => ({ ...prev, ...updates }))
+  }
 
-  const setIndustry = useCallback((industry: IndustryId) => {
-    setSettings((prev) => ({ ...prev, industry }))
-  }, [])
-
-  const setOrgSize = useCallback((orgSize: OrgSizeId) => {
-    setSettings((prev) => ({ ...prev, orgSize }))
-  }, [])
-
-  const setBaseVendor = useCallback((vendor: string) => {
-    setSettings((prev) => ({ ...prev, baseVendor: vendor }))
-  }, [])
-
-  const setComparisonYears = useCallback((years: number) => {
-    setSettings((prev) => ({ ...prev, comparisonYears: years }))
-  }, [])
-
-  const addVendor = useCallback((vendorId: string) => {
-    setSettings((prev) => ({
-      ...prev,
-      selectedVendors: prev.selectedVendors.includes(vendorId)
-        ? prev.selectedVendors
-        : [...prev.selectedVendors, vendorId],
-    }))
-  }, [])
-
-  const removeVendor = useCallback((vendorId: string) => {
-    setSettings((prev) => ({
-      ...prev,
-      selectedVendors: prev.selectedVendors.filter((id) => id !== vendorId),
-    }))
-  }, [])
-
-  const toggleVendor = useCallback((vendorId: string) => {
-    setSettings((prev) => ({
-      ...prev,
-      selectedVendors: prev.selectedVendors.includes(vendorId)
-        ? prev.selectedVendors.filter((id) => id !== vendorId)
-        : [...prev.selectedVendors, vendorId],
-    }))
-  }, [])
-
-  const resetSettings = useCallback(() => {
+  const resetSettings = () => {
     setSettings(defaultSettings)
-  }, [])
-
-  const contextValue: DashboardContextType = {
-    ...settings,
-    selectedIndustry: settings.industry,
-    selectedOrgSize: settings.orgSize,
-    setSelectedVendors,
-    setIndustry,
-    setOrgSize,
-    setBaseVendor,
-    setComparisonYears,
-    addVendor,
-    removeVendor,
-    toggleVendor,
-    resetSettings,
   }
 
-  return <DashboardContext.Provider value={contextValue}>{children}</DashboardContext.Provider>
-}
-
-export function useDashboardContext(): DashboardContextType {
-  const context = useContext(DashboardContext)
-  if (context === undefined) {
-    throw new Error("useDashboardContext must be used within a DashboardProvider")
-  }
-  return context
+  return (
+    <DashboardContext.Provider value={{ settings, updateSettings, resetSettings }}>
+      {children}
+    </DashboardContext.Provider>
+  )
 }
 
 export function useDashboardSettings() {
-  return useDashboardContext()
+  const context = useContext(DashboardContext)
+  if (context === undefined) {
+    throw new Error("useDashboardSettings must be used within a DashboardProvider")
+  }
+  return context
 }

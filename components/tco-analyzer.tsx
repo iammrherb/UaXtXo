@@ -371,15 +371,15 @@ const EnhancedVendorSelectionPanel = ({
             </motion.div>
           )}
 
-          <CardHeader className="p-3 pb-1">
+          <CardHeader className="p-4 pb-2">
             <div className="flex items-center justify-between mb-3">
               <motion.div className="relative" whileHover={modernAnimations.rotateHover}>
                 <Image
                   src={vendor.logo || "/placeholder.svg"}
                   alt={vendor.name}
-                  width={60}
-                  height={18}
-                  className="h-4 object-contain filter brightness-110"
+                  width={80}
+                  height={24}
+                  className="h-6 object-contain filter brightness-110"
                 />
               </motion.div>
 
@@ -395,19 +395,19 @@ const EnhancedVendorSelectionPanel = ({
               )}
             </div>
 
-            <CardTitle className="text-sm font-bold leading-tight">{vendor.name}</CardTitle>
+            <CardTitle className="text-base font-bold leading-tight">{vendor.name}</CardTitle>
 
             <p className="text-xs text-muted-foreground mt-1">{vendor.category}</p>
           </CardHeader>
 
-          <CardContent className="p-3 pt-0 space-y-2">
+          <CardContent className="p-4 pt-0 space-y-3">
             {/* Market Share Indicator */}
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted-foreground">Market Share</span>
                 <span className="font-semibold">{vendor.marketShare}%</span>
               </div>
-              <div className="w-full bg-muted/30 rounded-full h-1 overflow-hidden">
+              <div className="w-full bg-muted/30 rounded-full h-1.5 overflow-hidden">
                 <motion.div
                   className="h-full rounded-full"
                   style={{
@@ -444,7 +444,7 @@ const EnhancedVendorSelectionPanel = ({
                       key={feature}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="px-1.5 py-0.5 text-xs rounded-full bg-primary/20 text-primary font-medium"
+                      className="px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary font-medium"
                     >
                       {feature}
                     </motion.span>
@@ -475,13 +475,13 @@ const EnhancedVendorSelectionPanel = ({
           </CardContent>
 
           {/* Floating Icons for Special Features */}
-          <div className="absolute top-3 left-3 flex flex-col gap-1">
+          <div className="absolute top-4 left-4 flex flex-col gap-1">
             {vendor.features?.advanced?.["AI/ML Analytics"] && (
               <motion.div
                 animate={modernAnimations.float}
-                className="w-4 h-4 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center"
+                className="w-5 h-5 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center"
               >
-                <Cpu className="w-2 h-2 text-white" />
+                <Cpu className="w-2.5 h-2.5 text-white" />
               </motion.div>
             )}
             {vendor.implementation?.cloudNative && (
@@ -490,17 +490,17 @@ const EnhancedVendorSelectionPanel = ({
                   ...modernAnimations.float,
                   transition: { ...modernAnimations.float.transition, delay: 0.5 },
                 }}
-                className="w-4 h-4 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400 flex items-center justify-center"
+                className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400 flex items-center justify-center"
               >
-                <Globe className="w-2 h-2 text-white" />
+                <Globe className="w-2.5 h-2.5 text-white" />
               </motion.div>
             )}
             {vendor.features?.advanced?.["Zero Trust"] && (
               <motion.div
                 animate={{ ...modernAnimations.float, transition: { ...modernAnimations.float.transition, delay: 1 } }}
-                className="w-4 h-4 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 flex items-center justify-center"
+                className="w-5 h-5 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 flex items-center justify-center"
               >
-                <Lock className="w-2 h-2 text-white" />
+                <Lock className="w-2.5 h-2.5 text-white" />
               </motion.div>
             )}
           </div>
@@ -511,7 +511,7 @@ const EnhancedVendorSelectionPanel = ({
 
   return (
     <motion.div
-      animate={{ width: isCollapsed ? 0 : 280 }}
+      animate={{ width: isCollapsed ? 0 : 400 }}
       transition={{ duration: 0.4, ease: "easeInOut" }}
       className={cn(
         "border-r flex flex-col flex-shrink-0 overflow-hidden relative",
@@ -533,11 +533,11 @@ const EnhancedVendorSelectionPanel = ({
         />
       </div>
 
-      <div className="w-[280px] flex flex-col h-full relative z-10">
+      <div className="w-[400px] flex flex-col h-full relative z-10">
         {/* Enhanced Header */}
         <motion.div
           className={cn(
-            "p-4 border-b backdrop-blur-xl",
+            "p-6 border-b backdrop-blur-xl",
             darkMode ? "border-slate-800/50 bg-slate-900/50" : "border-slate-200/50 bg-white/50",
           )}
           initial={{ opacity: 0, y: -20 }}
@@ -580,7 +580,7 @@ const EnhancedVendorSelectionPanel = ({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={cn(
-                "pl-8 pr-4 border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl h-8 text-sm",
+                "pl-10 pr-4 border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl",
                 "focus:ring-2 focus:ring-emerald-500/50 transition-all duration-300",
                 darkMode ? "text-white placeholder:text-slate-400" : "text-slate-900 placeholder:text-slate-500",
               )}
@@ -610,7 +610,7 @@ const EnhancedVendorSelectionPanel = ({
                 whileHover={modernAnimations.scaleHover}
                 whileTap={{ scale: 0.95 }}
                 className={cn(
-                  "px-2 py-1 text-xs font-medium rounded-full transition-all duration-300",
+                  "px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-300",
                   filter === "All"
                     ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg"
                     : darkMode
@@ -627,7 +627,7 @@ const EnhancedVendorSelectionPanel = ({
         {/* Enhanced Vendor Grid */}
         <ScrollArea className="flex-1">
           <motion.div
-            className="p-3 grid grid-cols-1 gap-3"
+            className="p-6 grid grid-cols-1 gap-6"
             variants={modernAnimations.staggerContainer}
             initial="hidden"
             animate="visible"
@@ -643,7 +643,7 @@ const EnhancedVendorSelectionPanel = ({
         {/* Enhanced Footer */}
         <motion.div
           className={cn(
-            "p-3 border-t backdrop-blur-xl",
+            "p-4 border-t backdrop-blur-xl",
             darkMode ? "border-slate-800/50 bg-slate-900/50" : "border-slate-200/50 bg-white/50",
           )}
           initial={{ opacity: 0, y: 20 }}
@@ -2894,8 +2894,8 @@ export default function TcoAnalyzerUltimate() {
           ? "bg-gradient-to-r from-slate-900/80 via-slate-800/80 to-slate-900/80 border-slate-800/30"
           : "bg-gradient-to-r from-white/80 via-slate-50/80 to-white/80 border-slate-200/30",
       )}
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
       transition={{ type: "spring", stiffness: 200, damping: 25, delay: 0.1 }}
     >
       <div className="container mx-auto px-4">

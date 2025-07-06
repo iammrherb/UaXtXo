@@ -1,12 +1,11 @@
-"use client"
+// src/app/(dashboard)/tco-analysis/page.tsx
+"use client"; // Required because TcoAnalysisView uses client hooks
 
-import { DashboardProvider } from "@/context/DashboardContext"
-import TcoAnalyzer from "@/components/tco-analyzer"
+import React from "react";
+import TcoAnalysisView from "@/components/dashboard/tco/TcoAnalysisView"; // Adjust path if necessary
 
-export default function TcoAnalysisPage() {
+export default function TCOAnalysisPage() {
   return (
-    <DashboardProvider>
-      <TcoAnalyzer />
-    </DashboardProvider>
-  )
+    <TcoAnalysisView />
+  );
 }

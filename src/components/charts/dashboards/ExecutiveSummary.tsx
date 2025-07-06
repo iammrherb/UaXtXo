@@ -1,576 +1,276 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Progress } from "@/components/ui/progress"
-import { Separator } from "@/components/ui/separator"
-import { Skeleton } from "@/components/ui/skeleton"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Area,
-  AreaChart,
-} from "recharts"
-import {
-  TrendingUp,
-  AlertTriangle,
-  DollarSign,
-  Brain,
-  Sparkles,
-  ChevronRight,
-  RefreshCw,
-  ShieldCheck,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { useDashboardContext } from "@/context/DashboardContext"
-import { useAIInsights } from "@/hooks/useAIInsights"
-import { useTcoCalculator } from "@/hooks/useTcoCalculator"
-import { useComplianceData } from "@/hooks/useComplianceData"
-import { formatCurrency } from "@/lib/utils"
-import type { NewVendorData } from "@/lib/vendors/data"
-import type { RiskAssessmentResult } from "@/lib/compliance/risk-assessment"
+import React, { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // Assuming shadcn/ui Card
+import { Badge } from '@/components/ui/badge'; // Assuming shadcn/ui Badge
+import { ArrowUpRight, ArrowDownRight, DollarSign, Zap, ShieldCheck, CheckCircle, BarChart3, Users, Clock, TrendingUp, Award } from 'lucide-react';
+import { useVendorData, VendorId } from '@/hooks/useVendorData';
+import { useTcoCalculator, TCOResult } from '@/hooks/useTcoCalculator';
+import type { OrgSizeId, IndustryId } from '@/types/common';
+import { NewVendorData } from '@/lib/vendors/data';
+import { cn } from '@/lib/utils'; // Assuming this utility exists
 
-interface ExecutiveSummaryProps {
-  vendors: NewVendorData[]
-  riskAssessments: Record<string, RiskAssessmentResult>
-  className?: string
+// Re-usable Metric Card component (can be moved to a shared UI location later)
+interface MetricCardProps {
+  title: string;
+  value: string | number;
+  description?: string;
+  icon?: React.ElementType;
+  trend?: "up" | "down" | "neutral";
+  trendText?: string;
+  unit?: string;
+  variant?: "default" | "primary" | "highlight";
+  isLoading?: boolean;
 }
 
-export const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({ vendors, riskAssessments, className }) => {
-  const { selectedVendors, industry, orgSize, baseVendor } = useDashboardContext()
-  const [activeTab, setActiveTab] = useState("overview")
-
-  // AI Insights Integration
-  const {
-    executiveSummary,
-    insights,
-    recommendations,
-    isLoading: aiLoading,
-    hasInsights,
-    generateInsights,
-  } = useAIInsights(vendors, riskAssessments, industry, orgSize)
-
-  // TCO and Compliance Data Integration
-  const { vendorTco, isLoading: isLoadingTco } = useTcoCalculator()
-  const { vendorRiskAssessments, isLoading: isLoadingCompliance } = useComplianceData()
-
-  const isLoading = isLoadingTco || isLoadingCompliance
-
-  const baseTco = vendorTco[baseVendor]
-  const baseRisk = vendorRiskAssessments[baseVendor]
-
-  const averageCompetitorTco =
-    selectedVendors.filter((v) => v !== baseVendor).reduce((acc, v) => acc + (vendorTco[v]?.totalCost || 0), 0) /
-      (selectedVendors.length - 1 || 1) || 0
-
-  const averageCompetitorRisk =
-    selectedVendors
-      .filter((v) => v !== baseVendor)
-      .reduce((acc, v) => acc + (vendorRiskAssessments[v]?.overallRiskScore || 0), 0) /
-      (selectedVendors.length - 1 || 1) || 0
-
-  const tcoSavings = averageCompetitorTco - (baseTco?.totalCost || 0)
-  const riskReduction = averageCompetitorRisk - (baseRisk?.overallRiskScore || 0)
-
-  const summaryData = [
-    {
-      title: "TCO Savings",
-      value: formatCurrency(tcoSavings),
-      description: `vs. competitor average`,
-      icon: DollarSign,
-      color: "text-green-500",
-    },
-    {
-      title: "Risk Reduction",
-      value: `${riskReduction.toFixed(1)} pts`,
-      description: `Lower risk score`,
-      icon: ShieldCheck,
-      color: "text-blue-500",
-    },
-    {
-      title: "ROI",
-      value: `${baseTco?.roi.toFixed(1) || 0}%`,
-      description: `Over ${baseTco?.years} years`,
-      icon: TrendingUp,
-      color: "text-purple-500",
-    },
-    {
-      title: "Top Compliance Gap",
-      value: baseRisk?.complianceGaps[0]?.standardName || "N/A",
-      description: "Area for improvement",
-      icon: AlertTriangle,
-      color: "text-yellow-500",
-    },
-  ]
-
-  if (isLoading) {
-    return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
-          <Card key={i}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <Skeleton className="h-5 w-24" />
-              <Skeleton className="h-6 w-6" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-32" />
-              <Skeleton className="h-4 w-24 mt-1" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    )
-  }
-
-  // Calculate key metrics
-  const totalVendors = vendors.length
-  const assessedVendors = Object.keys(riskAssessments).length
-  const avgRiskScore =
-    assessedVendors > 0
-      ? Object.values(riskAssessments).reduce((sum, assessment) => sum + assessment.overallRiskScore, 0) /
-        assessedVendors
-      : 0
-
-  const riskDistribution = Object.values(riskAssessments).reduce(
-    (acc, assessment) => {
-      acc[assessment.riskLevel] = (acc[assessment.riskLevel] || 0) + 1
-      return acc
-    },
-    {} as Record<string, number>,
-  )
-
-  const totalComplianceGaps = Object.values(riskAssessments).reduce(
-    (sum, assessment) => sum + assessment.complianceGaps.length,
-    0,
-  )
-
-  const totalCostRisk = Object.values(riskAssessments).reduce(
-    (sum, assessment) => sum + assessment.costOfNonCompliance.total,
-    0,
-  )
-
-  const criticalInsights = insights.filter((i) => i.priority === "critical").length
-  const highPriorityItems = insights.filter((i) => i.priority === "high" || i.priority === "critical").length
-
-  // Chart data
-  const riskChartData = Object.entries(riskDistribution).map(([level, count]) => ({
-    level: level.charAt(0).toUpperCase() + level.slice(1),
-    count,
-    color: level === "critical" ? "#ef4444" : level === "high" ? "#f97316" : level === "medium" ? "#eab308" : "#22c55e",
-  }))
-
-  const vendorRiskData = vendors
-    .map((vendor) => {
-      const assessment = riskAssessments[vendor.id]
-      return {
-        name: vendor.name.length > 10 ? vendor.name.substring(0, 10) + "..." : vendor.name,
-        riskScore: assessment?.overallRiskScore || 0,
-        complianceGaps: assessment?.complianceGaps.length || 0,
-        costRisk: assessment?.costOfNonCompliance.total || 0,
-      }
-    })
-    .sort((a, b) => b.riskScore - a.riskScore)
-
-  const trendData = [
-    { month: "Jan", riskScore: 65, complianceGaps: 12 },
-    { month: "Feb", riskScore: 68, complianceGaps: 15 },
-    { month: "Mar", riskScore: 62, complianceGaps: 10 },
-    { month: "Apr", riskScore: 58, complianceGaps: 8 },
-    { month: "May", riskScore: 55, complianceGaps: 6 },
-    {
-      month: "Jun",
-      riskScore: Math.round(avgRiskScore),
-      complianceGaps: Math.round(totalComplianceGaps / totalVendors),
-    },
-  ]
+const GlassMetricCard: React.FC<MetricCardProps> = ({ title, value, description, icon: Icon, trend, trendText, unit, variant, isLoading }) => {
+  const TrendIcon = trend === "up" ? ArrowUpRight : trend === "down" ? ArrowDownRight : null;
 
   return (
-    <div className={cn("space-y-6", className)}>
-      {/* Header with AI Integration */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Executive Summary</h2>
-          <p className="text-slate-400">Comprehensive overview of your vendor risk landscape</p>
+    <motion.div
+      className={cn(
+        "rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg shadow-xl p-6 transition-all duration-300 hover:bg-white/10",
+        variant === "primary" && "bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border-cyan-400/30",
+        variant === "highlight" && "bg-portnox-primary/10 border-portnox-primary/30"
+      )}
+      whileHover={{ y: -5 }}
+    >
+      {isLoading ? (
+        <div className="h-36 animate-pulse space-y-3">
+          <div className="h-4 bg-slate-700/50 rounded w-3/4"></div>
+          <div className="h-10 bg-slate-600/50 rounded w-1/2"></div>
+          <div className="h-4 bg-slate-700/50 rounded w-full"></div>
         </div>
-        <div className="flex items-center gap-3">
-          {hasInsights && (
-            <Badge variant="outline" className="text-green-400 border-green-400">
-              <Brain className="w-3 h-3 mr-1" />
-              AI Enhanced
-            </Badge>
+      ) : (
+        <>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-slate-300 group-hover:text-white">{title}</h3>
+            {Icon && <Icon className="h-6 w-6 text-portnox-primary-light" />}
+          </div>
+          <p className="text-3xl font-bold text-white mb-1">
+            {value}
+            {unit && <span className="text-xl ml-1 text-slate-400">{unit}</span>}
+          </p>
+          {description && <p className="text-xs text-slate-400 mb-3">{description}</p>}
+          {trend && TrendIcon && trendText && (
+            <div className={cn("flex items-center text-xs",
+              trend === "up" ? "text-emerald-400" : trend === "down" ? "text-red-400" : "text-slate-400"
+            )}>
+              <TrendIcon className="h-4 w-4 mr-1" />
+              {trendText}
+            </div>
           )}
-          <Button
-            onClick={() => generateInsights(true)}
-            disabled={aiLoading}
-            size="sm"
-            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-          >
-            {aiLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-            {aiLoading ? "Generating..." : "AI Insights"}
-          </Button>
+        </>
+      )}
+    </motion.div>
+  );
+};
+
+
+import { useDashboardSettings } from '@/context/DashboardContext'; // Import the context hook
+
+export interface ExecutiveSummaryProps {
+  // Props are now optional as they will come from context primarily
+  primaryVendorId?: VendorId;
+  competitorVendorIds?: VendorId[];
+}
+
+const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
+  primaryVendorId = "portnox", // Default primary vendor
+  // Default competitor for summary can be dynamic or a fixed example
+  competitorVendorIds: initialCompetitorIds = ["cisco_ise"],
+}) => {
+  const { selectedOrgSize, selectedIndustry, comparisonYears } = useDashboardSettings();
+  const { getVendor, vendorsMap, isLoadingAllVendors } = useVendorData(); // Use vendorsMap for easier iteration
+  const { calculateSingleVendorTco } = useTcoCalculator();
+
+  // Use a state for competitor IDs if we want to change them dynamically within this component,
+  // or receive them as props if controlled from outside.
+  const [competitorIdsForSummary] = useState(initialCompetitorIds);
+
+
+  // isLoading will now depend on vendor data and calculations
+  const [isCalculating, setIsCalculating] = useState(true);
+  const [summaryData, setSummaryData] = useState<any>(null);
+
+  const portnoxData = useMemo(() => getVendor(primaryVendorId), [getVendor, primaryVendorId]);
+
+  const portnoxTcoResult = useMemo(() => {
+    if (!portnoxData || !selectedOrgSize || !selectedIndustry || !comparisonYears) return null;
+    return calculateSingleVendorTco(primaryVendorId, selectedOrgSize, selectedIndustry, comparisonYears);
+  }, [primaryVendorId, selectedOrgSize, selectedIndustry, comparisonYears, portnoxData, calculateSingleVendorTco]);
+
+  const competitorTcoResults = useMemo(() => {
+    if (competitorIdsForSummary.length === 0 || !selectedOrgSize || !selectedIndustry || !comparisonYears || !vendorsMap) return [];
+    return competitorIdsForSummary.map(id => {
+      const competitorData = vendorsMap.get(id); // Use vendorsMap from hook
+      if (!competitorData) return null;
+      return calculateSingleVendorTco(id, selectedOrgSize, selectedIndustry, comparisonYears);
+    }).filter(Boolean) as TCOResult[];
+  }, [competitorIdsForSummary, selectedOrgSize, selectedIndustry, comparisonYears, vendorsMap, calculateSingleVendorTco]);
+
+
+  useMemo(() => {
+    if (isLoadingAllVendors) {
+      setIsCalculating(true);
+      return;
+    }
+    setIsCalculating(true); // Start calculation
+    if (portnoxTcoResult && portnoxData) {
+      let tcoReductionPercent = 0;
+      let traditionalNacDeploymentTime = 120;
+      let competitorName = 'Traditional NAC Baseline';
+
+      if (competitorTcoResults.length > 0 && competitorTcoResults[0]) {
+        const mainCompetitor = competitorTcoResults[0];
+        competitorName = mainCompetitor.vendorName;
+        const mainCompetitorTco = mainCompetitor.totalTCO;
+        if (mainCompetitorTco > 0) {
+          tcoReductionPercent = ((mainCompetitorTco - portnoxTcoResult.totalTCO) / mainCompetitorTco) * 100;
+        }
+        const compData = vendorsMap?.get(mainCompetitor.vendorId);
+        traditionalNacDeploymentTime = compData?.implementation.averageDeploymentTimeDays || 120;
+      } else {
+        // Fallback: ZTCA spec mentions "67% TCO Reduction with Portnox vs traditional NAC"
+        // To achieve this, traditional NAC TCO must be approx. 3x Portnox TCO.
+        // (P_TCO / (P_TCO / (1-0.67))) - 1 = -0.67
+        // So, Traditional_TCO = Portnox_TCO / (1 - 0.67)
+        const assumedTraditionalTCO = portnoxTcoResult.totalTCO / (1 - 0.67);
+        if (assumedTraditionalTCO > 0) {
+             tcoReductionPercent = ((assumedTraditionalTCO - portnoxTcoResult.totalTCO) / assumedTraditionalTCO) * 100;
+        }
+      }
+
+      setSummaryData({
+        portnoxName: portnoxData.name,
+        tcoReductionPercent: parseFloat(tcoReductionPercent.toFixed(0)),
+        competitorNameForTco: competitorName,
+        complianceCoverage: portnoxData.comparativeScores?.complianceCoverageScore || 95,
+        roiPaybackMonths: portnoxTcoResult.roiMetrics.paybackPeriodMonths,
+        riskReductionPercent: portnoxData.roiFactors.incidentReductionPercent || 98,
+        deploymentTimeDays: portnoxData.implementation.averageDeploymentTimeDays,
+        traditionalNacDeploymentTimeDays: traditionalNacDeploymentTime,
+        portnoxSpecificMetrics: portnoxData.portnoxSpecificMetrics,
+      });
+      setIsCalculating(false);
+    } else if (!isLoadingAllVendors) { // if not loading vendors and still no data
+      setIsCalculating(false); // stop calculating if data is missing
+      setSummaryData(null); // Clear summary data
+    }
+  }, [portnoxTcoResult, competitorTcoResults, portnoxData, vendorsMap, isLoadingAllVendors]);
+
+
+  const isLoading = isCalculating || isLoadingAllVendors; // Combined loading state
+
+  const fadeInUp = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.5, ease: "easeOut" }
+  };
+
+  return (
+    <motion.div variants={fadeInUp} initial="initial" animate="animate" className="space-y-8">
+      <div className="text-center">
+        <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 mb-4">
+          Executive Intelligence Summary
+        </h1>
+        <p className="text-lg text-slate-300 max-w-3xl mx-auto">
+          Key performance indicators for {summaryData?.portnoxName || "Portnox"} compared to industry baselines and traditional solutions,
+          highlighting strategic advantages in cost, security, and operational efficiency.
+        </p>
+      </div>
+
+      {/* Main KPI Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <GlassMetricCard
+          title="TCO Reduction"
+          value={summaryData?.tcoReductionPercent || 0}
+          unit="%"
+          description={`vs. Traditional NAC / ${competitorTcoResults.length > 0 ? competitorTcoResults[0].vendorName : 'Baseline'}`}
+          icon={DollarSign}
+          trend="up"
+          trendText="Significant Savings"
+          variant="primary"
+          isLoading={isLoading}
+        />
+        <GlassMetricCard
+          title="Compliance Coverage"
+          value={summaryData?.complianceCoverage || 0}
+          unit="%"
+          description="Across key industry standards"
+          icon={ShieldCheck}
+          trend="up"
+          trendText="Comprehensive Adherence"
+          isLoading={isLoading}
+        />
+        <GlassMetricCard
+          title="ROI Payback Period"
+          value={summaryData?.roiPaybackMonths || "N/A"}
+          unit={typeof summaryData?.roiPaybackMonths === 'number' ? "Months" : ""}
+          description="Time to realize positive return"
+          icon={TrendingUp}
+          trend="neutral" // Payback is a point in time
+          isLoading={isLoading}
+        />
+        <GlassMetricCard
+          title="Security Risk Reduction"
+          value={summaryData?.riskReductionPercent || 0}
+          unit="%"
+          description="Decrease in security breach probability"
+          icon={CheckCircle}
+          trend="up"
+          trendText="Enhanced Security Posture"
+          variant="highlight"
+          isLoading={isLoading}
+        />
+        <GlassMetricCard
+          title="Deployment Time"
+          value={summaryData?.deploymentTimeDays || 0}
+          unit="Days"
+          description={`vs. ${summaryData?.traditionalNacDeploymentTimeDays || '120+'} Days (Traditional)`}
+          icon={Zap}
+          trend="up" // Faster is better, framing as positive trend
+          trendText="Rapid Implementation"
+          isLoading={isLoading}
+        />
+         <GlassMetricCard
+          title="Automated Remediation"
+          value={summaryData?.portnoxSpecificMetrics?.automatedRemediationRate || 0}
+          unit="%"
+          description="Of policy violations & threats"
+          icon={Award} // Using Award as a stand-in for a more specific automation icon
+          trend="up"
+          trendText="Proactive Security"
+          isLoading={isLoading}
+        />
+      </div>
+
+      {/* TODO: Add more sections like:
+          - Small charts summarizing TCO comparison (mini bar chart)
+          - Key Portnox differentiators list
+          - Call to action to dive deeper into other tabs
+      */}
+       <div className="mt-12 p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-xl">
+        <h3 className="text-2xl font-bold text-white mb-4 text-center">Portnox Platform Highlights</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+          {[
+            { label: "Risk-Based Auth", value: `${summaryData?.portnoxSpecificMetrics?.riskBasedAuthenticationCoverage || 0}%`, icon: Users },
+            { label: "Continuous Monitoring", value: `${summaryData?.portnoxSpecificMetrics?.continuousMonitoringCoverage || 0}%`, icon: Clock },
+            { label: "Cloud-Native Arch.", value: summaryData?.portnoxSpecificMetrics?.is100PercentCloudNative ? "100%" : "N/A", icon: Zap },
+            { label: "Agentless Deployment", value: `${summaryData?.portnoxSpecificMetrics?.agentlessDeploymentPercent || 0}%`, icon: BarChart3 },
+          ].map(item => (
+            <div key={item.label} className="p-4 bg-white/5 rounded-lg">
+              <item.icon className="h-8 w-8 text-portnox-primary-light mx-auto mb-2" />
+              <p className="text-sm text-slate-300">{item.label}</p>
+              <p className="text-xl font-semibold text-white">{item.value}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {summaryData.map((item) => (
-          <motion.div
-            key={item.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{item.title}</CardTitle>
-                <item.icon className={`h-4 w-4 text-muted-foreground ${item.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{item.value}</div>
-                <p className="text-xs text-muted-foreground">{item.description}</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+    </motion.div>
+  );
+};
 
-      {/* AI Executive Summary Integration */}
-      {executiveSummary && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <Card className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-purple-700/50">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Brain className="w-5 h-5 text-purple-400" />
-                AI-Generated Executive Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h4 className="font-semibold text-white mb-2">Key Findings</h4>
-                <p className="text-slate-300 leading-relaxed">{executiveSummary.overview}</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h5 className="font-medium text-white mb-2">Critical Risks</h5>
-                  <ul className="space-y-1">
-                    {executiveSummary.criticalRisks.slice(0, 3).map((risk, index) => (
-                      <li key={index} className="flex items-start gap-2 text-slate-300 text-sm">
-                        <div className="w-1.5 h-1.5 bg-red-400 rounded-full mt-2 flex-shrink-0" />
-                        {risk}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <h5 className="font-medium text-white mb-2">Top Recommendations</h5>
-                  <ul className="space-y-1">
-                    {executiveSummary.recommendations.slice(0, 3).map((rec, index) => (
-                      <li key={index} className="flex items-start gap-2 text-slate-300 text-sm">
-                        <div className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 flex-shrink-0" />
-                        {rec}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t border-slate-700">
-                <div className="text-sm text-slate-400">Financial Impact: {executiveSummary.financialImpact}</div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-purple-400 hover:text-purple-300"
-                  onClick={() => window.open("/ai-insights", "_blank")}
-                >
-                  View Full Analysis
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* AI Insights Summary */}
-      {hasInsights && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-        >
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white">AI Insights Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Placeholder for AI Insights Summary content */}
-              <p className="text-slate-400 text-center py-8">AI Insights Summary content goes here</p>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* Detailed Analysis Tabs */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.6 }}
-      >
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-slate-800">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-slate-700">
-              Risk Overview
-            </TabsTrigger>
-            <TabsTrigger value="vendors" className="data-[state=active]:bg-slate-700">
-              Vendor Analysis
-            </TabsTrigger>
-            <TabsTrigger value="trends" className="data-[state=active]:bg-slate-700">
-              Risk Trends
-            </TabsTrigger>
-            <TabsTrigger value="compliance" className="data-[state=active]:bg-slate-700">
-              Compliance Status
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Risk Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={riskChartData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        dataKey="count"
-                        label={({ level, count }) => `${level}: ${count}`}
-                      >
-                        {riskChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "#1e293b",
-                          border: "1px solid #475569",
-                          borderRadius: "8px",
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Key Risk Indicators</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-slate-300">Overall Risk Level</span>
-                      <span className="text-white">{Math.round(avgRiskScore)}/100</span>
-                    </div>
-                    <Progress value={avgRiskScore} className="h-2" />
-                  </div>
-
-                  <Separator className="bg-slate-700" />
-
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-300 text-sm">Critical Risk Vendors</span>
-                      <Badge variant="destructive">{riskDistribution.critical || 0}</Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-300 text-sm">High Risk Vendors</span>
-                      <Badge variant="outline" className="border-orange-500 text-orange-400">
-                        {riskDistribution.high || 0}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-300 text-sm">Total Compliance Gaps</span>
-                      <Badge variant="outline">{totalComplianceGaps}</Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-300 text-sm">Estimated Cost Risk</span>
-                      <Badge variant="outline" className="border-green-500 text-green-400">
-                        ${Math.round(totalCostRisk / 1000)}K
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="vendors" className="mt-6">
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardHeader>
-                <CardTitle className="text-white">Vendor Risk Comparison</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={vendorRiskData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} angle={-45} textAnchor="end" height={80} />
-                    <YAxis stroke="#9ca3af" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#1e293b",
-                        border: "1px solid #475569",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Bar dataKey="riskScore" fill="#f97316" name="Risk Score" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="trends" className="mt-6">
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardHeader>
-                <CardTitle className="text-white">Risk Trend Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={400}>
-                  <AreaChart data={trendData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis dataKey="month" stroke="#9ca3af" />
-                    <YAxis stroke="#9ca3af" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#1e293b",
-                        border: "1px solid #475569",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="riskScore"
-                      stroke="#f97316"
-                      fill="#f97316"
-                      fillOpacity={0.3}
-                      name="Risk Score"
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="complianceGaps"
-                      stroke="#ef4444"
-                      fill="#ef4444"
-                      fillOpacity={0.3}
-                      name="Compliance Gaps"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="compliance" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Compliance Status Overview</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {Object.values(riskAssessments).length > 0 ? (
-                    Object.values(riskAssessments)[0]
-                      .complianceGaps.reduce(
-                        (acc, gap) => {
-                          const existing = acc.find((item) => item.standard === gap.standardName)
-                          if (existing) {
-                            existing.gaps += 1
-                            existing.totalRisk += gap.riskScore
-                          } else {
-                            acc.push({
-                              standard: gap.standardName,
-                              gaps: 1,
-                              totalRisk: gap.riskScore,
-                            })
-                          }
-                          return acc
-                        },
-                        [] as Array<{ standard: string; gaps: number; totalRisk: number }>,
-                      )
-                      .slice(0, 5)
-                      .map((item, index) => (
-                        <div key={index} className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-300 text-sm">{item.standard}</span>
-                            <Badge variant="outline" className="text-red-400 border-red-400">
-                              {item.gaps} gaps
-                            </Badge>
-                          </div>
-                          <Progress value={(item.totalRisk / item.gaps) * 10} className="h-2" />
-                        </div>
-                      ))
-                  ) : (
-                    <p className="text-slate-400 text-center py-8">No compliance data available</p>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Remediation Priority</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {Object.values(riskAssessments)
-                      .flatMap((assessment) => assessment.complianceGaps)
-                      .sort((a, b) => b.riskScore - a.riskScore)
-                      .slice(0, 5)
-                      .map((gap, index) => (
-                        <div key={index} className="p-3 bg-slate-700/50 rounded-lg">
-                          <div className="flex justify-between items-start mb-2">
-                            <h4 className="text-white text-sm font-medium">{gap.requirementName}</h4>
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                gap.riskScore >= 8
-                                  ? "border-red-400 text-red-400"
-                                  : gap.riskScore >= 6
-                                    ? "border-orange-400 text-orange-400"
-                                    : "border-yellow-400 text-yellow-400",
-                              )}
-                            >
-                              Risk: {gap.riskScore}/10
-                            </Badge>
-                          </div>
-                          <p className="text-slate-400 text-xs">{gap.standardName}</p>
-                        </div>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </motion.div>
-    </div>
-  )
-}
+export default ExecutiveSummary;

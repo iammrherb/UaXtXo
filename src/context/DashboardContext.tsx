@@ -1,54 +1,43 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useState, useMemo, type ReactNode } from "react"
-import type { IndustryId, OrgSizeId } from "@/types/common"
-import type { VendorId } from "@/lib/vendors/data"
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import type { OrgSizeId, IndustryId } from '@/types/common';
 
 interface DashboardContextType {
-  selectedIndustry: IndustryId
-  setSelectedIndustry: (industry: IndustryId) => void
-  selectedOrgSize: OrgSizeId
-  setSelectedOrgSize: (orgSize: OrgSizeId) => void
-  comparisonYears: number
-  setComparisonYears: (years: number) => void
-  selectedVendors: VendorId[]
-  setSelectedVendors: (vendors: VendorId[]) => void
-  baseVendor: VendorId
-  setBaseVendor: (vendor: VendorId) => void
+  selectedOrgSize: OrgSizeId;
+  setSelectedOrgSize: (orgSize: OrgSizeId) => void;
+  selectedIndustry: IndustryId;
+  setSelectedIndustry: (industry: IndustryId) => void;
+  comparisonYears: number;
+  setComparisonYears: (years: number) => void;
+  // Add other global settings as needed, e.g., selected competitor vendors for comparison
 }
 
-const DashboardContext = createContext<DashboardContextType | undefined>(undefined)
+const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
 
-export function DashboardProvider({ children }: { children: ReactNode }) {
-  const [selectedIndustry, setSelectedIndustry] = useState<IndustryId>("technology")
-  const [selectedOrgSize, setSelectedOrgSize] = useState<OrgSizeId>("medium")
-  const [comparisonYears, setComparisonYears] = useState<number>(3)
-  const [selectedVendors, setSelectedVendors] = useState<VendorId[]>(["portnox", "cisco_ise", "aruba_clearpass"])
-  const [baseVendor, setBaseVendor] = useState<VendorId>("portnox")
+export const DashboardProvider = ({ children }: { children: ReactNode }) => {
+  const [selectedOrgSize, setSelectedOrgSize] = useState<OrgSizeId>("mid_market");
+  const [selectedIndustry, setSelectedIndustry] = useState<IndustryId>("technology");
+  const [comparisonYears, setComparisonYears] = useState<number>(3);
 
-  const value = useMemo(
-    () => ({
-      selectedIndustry,
-      setSelectedIndustry,
+  return (
+    <DashboardContext.Provider value={{
       selectedOrgSize,
       setSelectedOrgSize,
+      selectedIndustry,
+      setSelectedIndustry,
       comparisonYears,
       setComparisonYears,
-      selectedVendors,
-      setSelectedVendors,
-      baseVendor,
-      setBaseVendor,
-    }),
-    [selectedIndustry, selectedOrgSize, comparisonYears, selectedVendors, baseVendor],
-  )
+    }}>
+      {children}
+    </DashboardContext.Provider>
+  );
+};
 
-  return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>
-}
-
-export function useDashboardContext() {
-  const context = useContext(DashboardContext)
+export const useDashboardSettings = (): DashboardContextType => {
+  const context = useContext(DashboardContext);
   if (context === undefined) {
-    throw new Error("useDashboardContext must be used within a DashboardProvider")
+    throw new Error('useDashboardSettings must be used within a DashboardProvider');
   }
-  return context
-}
+  return context;
+};

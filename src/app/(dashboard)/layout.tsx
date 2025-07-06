@@ -1,204 +1,88 @@
-"use client"
+import React from "react";
+import { Inter } from "next/font/google";
+import { ThemeProvider } from "@/components/theme-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
+import { DashboardProvider } from "@/context/DashboardContext";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { ConfigurationBar } from "@/components/layout/ConfigurationBar"; // Import the actual component
 
-import type React from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { ConfigurationBar } from "@/components/layout/ConfigurationBar"
-import { DashboardProvider } from "@/context/DashboardContext"
-import { QueryProvider } from "@/components/providers/query-provider"
-import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/toaster"
-import { BarChart3, Shield, Users, TrendingUp, FileText, Brain, Settings, Home, ChevronRight } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { LayoutDashboard, ShieldCheck, DollarSign, BarChart3, Briefcase } from "lucide-react";
 
-const navigation = [
-  {
-    name: "Overview",
-    href: "/overview",
-    icon: Home,
-    description: "Dashboard overview and key metrics",
-  },
-  {
-    name: "TCO Analysis",
-    href: "/tco-analysis",
-    icon: BarChart3,
-    description: "Total cost of ownership analysis",
-  },
-  {
-    name: "Vendor Comparison",
-    href: "/vendor-comparison",
-    icon: Users,
-    description: "Compare vendors side by side",
-  },
-  {
-    name: "Compliance Risk",
-    href: "/compliance-risk",
-    icon: Shield,
-    description: "Compliance risk assessment",
-  },
-  {
-    name: "Portnox Platform",
-    href: "/portnox",
-    icon: TrendingUp,
-    description: "Portnox-specific analysis",
-  },
-  {
-    name: "AI Insights",
-    href: "/ai-insights",
-    icon: Brain,
-    description: "AI-powered insights and recommendations",
-    badge: "New",
-  },
-  {
-    name: "Report Builder",
-    href: "/report-builder",
-    icon: FileText,
-    description: "Custom report builder",
-  },
-]
+const inter = Inter({ subsets: ["latin"] });
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+}
+
+const navItems: NavItem[] = [
+  { href: "/", label: "Overview", icon: LayoutDashboard },
+  { href: "/compliance", label: "Compliance", icon: ShieldCheck },
+  { href: "/tco-analysis", label: "TCO Analysis", icon: DollarSign },
+  { href: "/vendor-comparison", label: "Vendor Comparison", icon: BarChart3 },
+  { href: "/portnox", label: "Portnox Platform", icon: Briefcase },
+];
 
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const pathname = usePathname()
-
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-      <QueryProvider>
-        <DashboardProvider>
-          <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-            {/* Header */}
-            <header className="border-b border-slate-700 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-50">
-              <div className="max-w-7xl mx-auto px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Link href="/" className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                        <BarChart3 className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h1 className="text-xl font-bold text-white">Portnox TCO Analyzer</h1>
-                        <p className="text-xs text-slate-400">Vendor Risk Assessment Platform</p>
-                      </div>
-                    </Link>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <Badge variant="outline" className="text-slate-300">
-                      Enterprise Edition
-                    </Badge>
-                    <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
-                      <Settings className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </header>
-
-            {/* Configuration Bar */}
-            <ConfigurationBar />
-
-            <div className="max-w-7xl mx-auto px-6 py-6">
-              <div className="flex gap-6">
+    <html lang="en" suppressHydrationWarning>
+      <body className={cn(inter.className, "flex flex-col min-h-screen bg-gray-950 text-slate-100")}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <QueryProvider>
+            <DashboardProvider>
+              <div className="flex flex-1 h-screen overflow-hidden">
                 {/* Sidebar Navigation */}
-                <aside className="w-64 flex-shrink-0">
-                  <div className="sticky top-32">
-                    <nav className="space-y-2">
-                      {navigation.map((item) => {
-                        const isActive =
-                          pathname === item.href || (item.href !== "/overview" && pathname.startsWith(item.href))
-
-                        return (
-                          <motion.div key={item.name} whileHover={{ x: 4 }} transition={{ duration: 0.2 }}>
-                            <Link
-                              href={item.href}
-                              className={cn(
-                                "group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                                isActive
-                                  ? "bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-white border border-blue-500/30"
-                                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
-                              )}
-                            >
-                              <item.icon
-                                className={cn(
-                                  "w-4 h-4 transition-colors",
-                                  isActive ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300",
-                                )}
-                              />
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <span>{item.name}</span>
-                                  {item.badge && (
-                                    <Badge
-                                      variant="secondary"
-                                      className="text-xs px-1.5 py-0.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0"
-                                    >
-                                      {item.badge}
-                                    </Badge>
-                                  )}
-                                </div>
-                                <p className="text-xs text-slate-500 group-hover:text-slate-400 mt-0.5">
-                                  {item.description}
-                                </p>
-                              </div>
-                              {isActive && <ChevronRight className="w-3 h-3 text-blue-400" />}
-                            </Link>
-                          </motion.div>
-                        )
-                      })}
-                    </nav>
-
-                    <Separator className="my-6 bg-slate-700" />
-
-                    {/* Quick Actions */}
-                    <div className="space-y-3">
-                      <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Quick Actions</h3>
-                      <div className="space-y-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start text-slate-400 hover:text-white hover:bg-slate-800/50"
-                          onClick={() => window.open("/ai-insights", "_blank")}
-                        >
-                          <Brain className="w-4 h-4 mr-2" />
-                          Generate AI Report
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start text-slate-400 hover:text-white hover:bg-slate-800/50"
-                        >
-                          <FileText className="w-4 h-4 mr-2" />
-                          Export Analysis
-                        </Button>
-                      </div>
-                    </div>
+                <aside className="w-60 p-4 space-y-4 sticky top-0 h-full overflow-y-auto flex-shrink-0
+                                 bg-slate-900/80 dark:bg-gray-950/80 backdrop-blur-xl border-r border-slate-700/50 dark:border-gray-800/50
+                                 shadow-2xl">
+                  <div className="text-3xl font-extrabold text-center py-5 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500">
+                    ZTCA
                   </div>
+                  <nav className="flex flex-col space-y-1.5">
+                    {navItems.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={`/(dashboard)${item.href}`}
+                        className={cn(
+                          "flex items-center px-3 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ease-in-out group",
+                          "text-slate-400 hover:text-white hover:bg-slate-700/60 dark:text-gray-400 dark:hover:text-slate-100 dark:hover:bg-gray-800/70",
+                          // TODO: Add active state styling here using usePathname from next/navigation
+                          // Example: pathname === `/(dashboard)${item.href}` ? "bg-slate-700/80 text-white" : ""
+                        )}
+                      >
+                        <item.icon className="w-5 h-5 mr-3 flex-shrink-0 text-slate-500 group-hover:text-cyan-400 transition-colors duration-200" />
+                        {item.label}
+                      </Link>
+                    ))}
+                  </nav>
                 </aside>
 
-                {/* Main Content */}
-                <main className="flex-1 min-w-0">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {children}
-                  </motion.div>
-                </main>
-              </div>
-            </div>
+                {/* Main Content Area with its own scroll */}
+                <div className="flex-1 flex flex-col overflow-y-auto">
+                  {/* Configuration Bar - Sticky at the top of this scrolling div */}
+                  <ConfigurationBar />
 
-            <Toaster />
-          </div>
-        </DashboardProvider>
-      </QueryProvider>
-    </ThemeProvider>
-  )
+                  <main className="flex-1 p-4 md:p-6 lg:p-8 bg-gradient-to-br from-slate-900 via-gray-950 to-black">
+                    {/* Content for each page will be rendered here */}
+                    {children}
+                  </main>
+                </div>
+              </div>
+            </DashboardProvider>
+          </QueryProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
 }
