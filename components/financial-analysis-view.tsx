@@ -57,24 +57,27 @@ export default function FinancialAnalysisView({ results, config }: FinancialAnal
   const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316", "#06B6D4"]
 
   // Calculate financial metrics with safe numbers
-  const totalInvestment = results.reduce((sum, r) => sum + safeNumber(r.total, 0), 0)
+  const totalInvestment = results.reduce((sum, r) => sum + safeNumber(r.totalCost, 0), 0)
   const averageROI = results.reduce((sum, r) => sum + safeNumber(r.roi?.percentage, 0), 0) / Math.max(results.length, 1)
   const configYears = safeNumber(config?.years, 3)
   const totalSavings = results.reduce((sum, r) => sum + safeNumber(r.roi?.annualSavings, 0) * configYears, 0)
 
-  // Prepare cost breakdown data
-  const costBreakdownData =
-    results[0]?.breakdown?.map((item: any) => ({
-      name: item.name,
-      value: safeNumber(item.value, 0),
-    })) || []
+  // Prepare cost breakdown data - convert breakdown object to array
+  const costBreakdownData = results[0]?.breakdown
+    ? Object.entries(results[0].breakdown)
+        .filter(([key, value]) => safeNumber(value, 0) > 0)
+        .map(([key, value]) => ({
+          name: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, " $1"),
+          value: safeNumber(value, 0),
+        }))
+    : []
 
   // Prepare year-over-year projection
   const projectionData = Array.from({ length: configYears }, (_, i) => ({
     year: `Year ${i + 1}`,
     ...results.reduce(
       (acc, result) => {
-        acc[result.vendorName] = safeNumber(result.total, 0) / configYears
+        acc[result.vendorName] = safeNumber(result.totalCost, 0) / configYears
         return acc
       },
       {} as Record<string, number>,
@@ -139,12 +142,12 @@ export default function FinancialAnalysisView({ results, config }: FinancialAnal
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={results.map((r) => ({ ...r, total: safeNumber(r.total, 0) }))}>
+              <BarChart data={results.map((r) => ({ ...r, totalCost: safeNumber(r.totalCost, 0) }))}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="vendorName" />
                 <YAxis tickFormatter={(value) => `$${(safeNumber(value, 0) / 1000).toFixed(0)}K`} />
                 <Tooltip formatter={(value) => [formatCurrency(safeNumber(value, 0)), "Total Cost"]} />
-                <Bar dataKey="total" fill="#00D4AA" />
+                <Bar dataKey="totalCost" fill="#00D4AA" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -158,7 +161,7 @@ export default function FinancialAnalysisView({ results, config }: FinancialAnal
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={costBreakdownData.filter((d) => safeNumber(d.value, 0) > 0)}
+                  data={costBreakdownData}
                   cx="50%"
                   cy="50%"
                   outerRadius={80}
@@ -225,19 +228,17 @@ export default function FinancialAnalysisView({ results, config }: FinancialAnal
               </thead>
               <tbody>
                 {results.map((result, index) => {
-                  const hardwareCost = safeNumber(result.breakdown?.find((b: any) => b.name === "Hardware")?.value, 0)
-                  const psCost = safeNumber(
-                    result.breakdown?.find((b: any) => b.name === "Professional Services")?.value,
-                    0,
-                  )
-                  const initialCost = hardwareCost + psCost
-                  const totalCost = safeNumber(result.total, 0)
+                  const breakdown = result.breakdown || {}
+                  const hardwareCost = safeNumber(breakdown.hardware, 0)
+                  const implementationCost = safeNumber(breakdown.implementation, 0)
+                  const initialCost = hardwareCost + implementationCost
+                  const totalCost = safeNumber(result.totalCost, 0)
                   const annualOpEx = (totalCost - initialCost) / configYears
                   const roiPercentage = safeNumber(result.roi?.percentage, 0)
                   const paybackMonths = safeNumber(result.roi?.paybackMonths, 0)
 
                   return (
-                    <tr key={result.vendor} className="border-b">
+                    <tr key={result.vendorId} className="border-b">
                       <td className="p-2">
                         <div className="flex items-center space-x-2">
                           <div

@@ -7,9 +7,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "ZTCA TCO Calculator - Portnox",
-  description: "Zero Trust Cybersecurity Architecture Total Cost of Ownership Calculator",
-  keywords: ["Zero Trust", "NAC", "Network Access Control", "TCO", "Cybersecurity", "Portnox"],
+  title: "Portnox TCO Calculator",
+  description: "Total Cost of Ownership Calculator for Network Access Control Solutions",
     generator: 'v0.dev'
 }
 

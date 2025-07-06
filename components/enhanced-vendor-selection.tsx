@@ -5,27 +5,21 @@ import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Separator } from "@/components/ui/separator"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { getAllVendors, getVendorLogoPath, type VendorData } from "@/lib/comprehensive-vendor-data"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { vendorDatabase, getVendorLogoPath, type VendorData } from "@/lib/comprehensive-vendor-data"
 import { cn } from "@/lib/utils"
 import {
   Search,
-  Filter,
   Star,
-  TrendingUp,
-  Shield,
-  Server,
-  Smartphone,
-  Wifi,
-  Lock,
+  Zap,
   Building,
-  CheckCircle2,
-  Info,
+  Cloud,
+  Server,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
   Trash2,
   RotateCcw,
 } from "lucide-react"
@@ -38,87 +32,27 @@ interface EnhancedVendorSelectionProps {
   onSelectRecommended: () => void
 }
 
-const getCategoryIcon = (category: VendorData["category"]) => {
-  switch (category) {
-    case "nac":
-      return <Shield className="h-4 w-4" />
-    case "certificate":
-      return <Lock className="h-4 w-4" />
-    case "vpn":
-      return <Wifi className="h-4 w-4" />
-    case "endpoint":
-      return <Smartphone className="h-4 w-4" />
-    case "siem":
-      return <Server className="h-4 w-4" />
-    case "firewall":
-      return <Shield className="h-4 w-4" />
-    default:
-      return <Building className="h-4 w-4" />
-  }
-}
-
-const getCategoryColor = (category: VendorData["category"]) => {
-  switch (category) {
-    case "nac":
-      return "bg-blue-500/10 text-blue-600 border-blue-200"
-    case "certificate":
-      return "bg-green-500/10 text-green-600 border-green-200"
-    case "vpn":
-      return "bg-purple-500/10 text-purple-600 border-purple-200"
-    case "endpoint":
-      return "bg-orange-500/10 text-orange-600 border-orange-200"
-    case "siem":
-      return "bg-red-500/10 text-red-600 border-red-200"
-    case "firewall":
-      return "bg-yellow-500/10 text-yellow-600 border-yellow-200"
-    default:
-      return "bg-gray-500/10 text-gray-600 border-gray-200"
-  }
-}
-
-const getCategoryLabel = (category: VendorData["category"]) => {
-  switch (category) {
-    case "nac":
-      return "Network Access Control"
-    case "certificate":
-      return "Certificate Management"
-    case "vpn":
-      return "VPN & Remote Access"
-    case "endpoint":
-      return "Endpoint Security"
-    case "siem":
-      return "SIEM & Analytics"
-    case "firewall":
-      return "Firewall & Network Security"
-    default:
-      return "Other"
-  }
-}
-
-const getComplexityColor = (complexity: string) => {
-  switch (complexity) {
-    case "low":
-      return "text-green-600"
-    case "medium":
-      return "text-yellow-600"
-    case "high":
-      return "text-red-600"
-    default:
-      return "text-gray-600"
-  }
-}
-
-const getScalabilityIcon = (scalability: string) => {
-  switch (scalability) {
-    case "high":
-      return <TrendingUp className="h-3 w-3 text-green-600" />
-    case "medium":
-      return <TrendingUp className="h-3 w-3 text-yellow-600" />
-    case "low":
-      return <TrendingUp className="h-3 w-3 text-red-600" />
-    default:
-      return <TrendingUp className="h-3 w-3 text-gray-600" />
-  }
+const VENDOR_CATEGORIES = {
+  enterprise: {
+    label: "Enterprise Solutions",
+    icon: <Building className="h-4 w-4" />,
+    vendors: ["portnox", "cisco", "aruba", "fortinet", "microsoft"],
+  },
+  cloud: {
+    label: "Cloud-First",
+    icon: <Cloud className="h-4 w-4" />,
+    vendors: ["securew2", "foxpass", "radiusaas"],
+  },
+  specialized: {
+    label: "Specialized",
+    icon: <Zap className="h-4 w-4" />,
+    vendors: ["pulse", "packetfence", "forescout"],
+  },
+  alternative: {
+    label: "Alternatives",
+    icon: <Server className="h-4 w-4" />,
+    vendors: ["no-nac"],
+  },
 }
 
 export default function EnhancedVendorSelection({
@@ -129,43 +63,44 @@ export default function EnhancedVendorSelection({
   onSelectRecommended,
 }: EnhancedVendorSelectionProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState<string>("all")
-  const [showFilters, setShowFilters] = useState(false)
-  const [sortBy, setSortBy] = useState<"name" | "price" | "satisfaction" | "marketShare">("name")
+  const [activeCategory, setActiveCategory] = useState("all")
 
-  const vendors = getAllVendors()
+  const filteredVendors = useMemo(() => {
+    let vendors = Object.entries(vendorDatabase)
 
-  const filteredAndSortedVendors = useMemo(() => {
-    const filtered = vendors.filter((vendor) => {
-      const matchesSearch =
-        vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vendor.description.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesCategory = categoryFilter === "all" || vendor.category === categoryFilter
-      return matchesSearch && matchesCategory
-    })
+    // Filter by category
+    if (activeCategory !== "all") {
+      const categoryVendors = VENDOR_CATEGORIES[activeCategory as keyof typeof VENDOR_CATEGORIES]?.vendors || []
+      vendors = vendors.filter(([id]) => categoryVendors.includes(id))
+    }
 
-    // Sort vendors
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "price":
-          return a.pricing.basePrice - b.pricing.basePrice
-        case "satisfaction":
-          return b.customerSatisfaction - a.customerSatisfaction
-        case "marketShare":
-          return b.marketShare - a.marketShare
-        default:
-          return a.name.localeCompare(b.name)
-      }
-    })
+    // Filter by search term
+    if (searchTerm) {
+      vendors = vendors.filter(
+        ([id, vendor]) =>
+          vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          vendor.description.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    }
 
-    return filtered
-  }, [vendors, searchTerm, categoryFilter, sortBy])
+    return vendors
+  }, [searchTerm, activeCategory])
 
-  const categories = Array.from(new Set(vendors.map((v) => v.category)))
+  const getRiskColor = (riskScore: number) => {
+    if (riskScore <= 3) return "text-green-600"
+    if (riskScore <= 6) return "text-yellow-600"
+    return "text-red-600"
+  }
 
-  const VendorCard = ({ vendor }: { vendor: VendorData }) => {
-    const isSelected = selectedVendors.includes(vendor.id)
-    const isPortnox = vendor.id === "portnox"
+  const getRiskIcon = (riskScore: number) => {
+    if (riskScore <= 3) return <CheckCircle className="h-4 w-4" />
+    if (riskScore <= 6) return <AlertTriangle className="h-4 w-4" />
+    return <XCircle className="h-4 w-4" />
+  }
+
+  const VendorCard = ({ vendorId, vendor }: { vendorId: string; vendor: VendorData }) => {
+    const isSelected = selectedVendors.includes(vendorId)
+    const isPortnox = vendorId === "portnox"
 
     return (
       <motion.div
@@ -174,7 +109,7 @@ export default function EnhancedVendorSelection({
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
         whileHover={{ scale: 1.02 }}
-        className="relative"
+        whileTap={{ scale: 0.98 }}
       >
         <Card
           className={cn(
@@ -182,14 +117,14 @@ export default function EnhancedVendorSelection({
             isSelected && "ring-2 ring-primary shadow-lg",
             isPortnox && "border-primary/50 bg-primary/5",
           )}
-          onClick={() => handleVendorToggle(vendor.id)}
+          onClick={() => handleVendorToggle(vendorId)}
         >
           <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
+            <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="relative">
                   <Image
-                    src={getVendorLogoPath(vendor.id) || "/placeholder.svg"}
+                    src={getVendorLogoPath(vendorId) || "/placeholder.svg"}
                     alt={`${vendor.name} logo`}
                     width={40}
                     height={40}
@@ -197,112 +132,70 @@ export default function EnhancedVendorSelection({
                   />
                   {isPortnox && (
                     <div className="absolute -top-1 -right-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
                     </div>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="text-sm font-semibold truncate">{vendor.name}</CardTitle>
-                  <Badge variant="outline" className={cn("text-xs mt-1", getCategoryColor(vendor.category))}>
-                    {getCategoryIcon(vendor.category)}
-                    <span className="ml-1">{getCategoryLabel(vendor.category)}</span>
-                  </Badge>
+                <div>
+                  <CardTitle className="text-sm font-semibold">{vendor.name}</CardTitle>
+                  <p className="text-xs text-muted-foreground">{vendor.category}</p>
                 </div>
               </div>
-              <Checkbox checked={isSelected} onChange={() => handleVendorToggle(vendor.id)} className="mt-1" />
+              {isSelected && <CheckCircle className="h-5 w-5 text-primary" />}
             </div>
           </CardHeader>
-
-          <CardContent className="pt-0 space-y-3">
-            <p className="text-xs text-muted-foreground line-clamp-2">{vendor.description}</p>
+          <CardContent className="pt-0">
+            <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{vendor.description}</p>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Pricing:</span>
-                <span className="font-medium">
-                  ${vendor.pricing.basePrice}
-                  {vendor.pricing.model === "per_device" && "/device"}
-                  {vendor.pricing.model === "per_user" && "/user"}
-                  {vendor.pricing.model === "flat_rate" && "/month"}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Satisfaction:</span>
-                <div className="flex items-center space-x-1">
-                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                  <span className="font-medium">{vendor.customerSatisfaction.toFixed(1)}</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium">Risk Score</span>
+                <div className={cn("flex items-center space-x-1", getRiskColor(vendor.riskScore))}>
+                  {getRiskIcon(vendor.riskScore)}
+                  <span className="text-xs font-semibold">{vendor.riskScore}/10</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Complexity:</span>
-                <span className={cn("font-medium capitalize", getComplexityColor(vendor.complexity))}>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium">Complexity</span>
+                <Badge variant="outline" className="text-xs">
                   {vendor.complexity}
-                </span>
+                </Badge>
               </div>
 
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Scalability:</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium">Scalability</span>
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Star
+                      key={i}
+                      className={cn(
+                        "h-3 w-3",
+                        i <= (vendor.scalability === "high" ? 5 : vendor.scalability === "medium" ? 3 : 1)
+                          ? "text-yellow-400 fill-current"
+                          : "text-gray-300",
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium">Satisfaction</span>
                 <div className="flex items-center space-x-1">
-                  {getScalabilityIcon(vendor.scalability)}
-                  <span className="font-medium capitalize">{vendor.scalability}</span>
+                  <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                  <span className="text-xs font-semibold">{vendor.customerSatisfaction}/5</span>
                 </div>
               </div>
             </div>
 
-            <Separator />
-
-            <div className="space-y-1">
-              <div className="text-xs text-muted-foreground">Key Features:</div>
-              <div className="flex flex-wrap gap-1">
-                {vendor.features.slice(0, 3).map((feature, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs px-1.5 py-0.5">
-                    {feature}
-                  </Badge>
-                ))}
-                {vendor.features.length > 3 && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                          +{vendor.features.length - 3}
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="space-y-1">
-                          {vendor.features.slice(3).map((feature, index) => (
-                            <div key={index} className="text-xs">
-                              {feature}
-                            </div>
-                          ))}
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
-            </div>
-
-            {vendor.complianceFeatures.length > 0 && (
-              <div className="space-y-1">
-                <div className="text-xs text-muted-foreground">Compliance:</div>
-                <div className="flex flex-wrap gap-1">
-                  {vendor.complianceFeatures.slice(0, 2).map((compliance, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="text-xs px-1.5 py-0.5 text-green-600 border-green-200"
-                    >
-                      <CheckCircle2 className="h-2 w-2 mr-1" />
-                      {compliance}
-                    </Badge>
-                  ))}
-                  {vendor.complianceFeatures.length > 2 && (
-                    <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                      +{vendor.complianceFeatures.length - 2}
-                    </Badge>
-                  )}
+            {vendor.pricing && (
+              <div className="mt-3 pt-3 border-t">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium">Starting at</span>
+                  <span className="text-xs font-bold text-primary">
+                    ${vendor.pricing.basePrice}/{vendor.pricing.model.replace("_", " ")}
+                  </span>
                 </div>
               </div>
             )}
@@ -313,145 +206,74 @@ export default function EnhancedVendorSelection({
   }
 
   return (
-    <TooltipProvider>
-      <Card className="h-full">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold">Vendor Selection</CardTitle>
-            <Badge variant="secondary" className="text-xs">
-              {selectedVendors.length} selected
-            </Badge>
+    <Card className="h-fit">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">Vendor Selection</CardTitle>
+          <Badge variant="secondary">{selectedVendors.length} selected</Badge>
+        </div>
+
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search vendors..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
 
-          <div className="space-y-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search vendors..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClearAll}
+              className="flex items-center space-x-1 bg-transparent"
+            >
+              <Trash2 className="h-3 w-3" />
+              <span>Clear</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onSelectRecommended}
+              className="flex items-center space-x-1 bg-transparent"
+            >
+              <RotateCcw className="h-3 w-3" />
+              <span>Recommended</span>
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
 
-            <div className="flex items-center justify-between">
-              <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="text-xs">
-                <Filter className="h-3 w-3 mr-1" />
-                Filters
-              </Button>
+      <CardContent>
+        <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="all" className="text-xs">
+              All
+            </TabsTrigger>
+            <TabsTrigger value="enterprise" className="text-xs">
+              Enterprise
+            </TabsTrigger>
+          </TabsList>
 
-              <div className="flex space-x-1">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onSelectRecommended}
-                        className="text-xs bg-transparent"
-                      >
-                        <Star className="h-3 w-3 mr-1" />
-                        Recommended
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Select recommended vendors for comparison</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" size="sm" onClick={onClearAll} className="text-xs bg-transparent">
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        Clear
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Clear all selections (except Portnox)</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            </div>
-
+          <div className="space-y-3 max-h-[600px] overflow-y-auto">
             <AnimatePresence>
-              {showFilters && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="space-y-3 overflow-hidden"
-                >
-                  <Separator />
-
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium">Category:</label>
-                    <select
-                      value={categoryFilter}
-                      onChange={(e) => setCategoryFilter(e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-background"
-                    >
-                      <option value="all">All Categories</option>
-                      {categories.map((category) => (
-                        <option key={category} value={category}>
-                          {getCategoryLabel(category)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium">Sort by:</label>
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value as any)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-background"
-                    >
-                      <option value="name">Name</option>
-                      <option value="price">Price</option>
-                      <option value="satisfaction">Customer Satisfaction</option>
-                      <option value="marketShare">Market Share</option>
-                    </select>
-                  </div>
-                </motion.div>
-              )}
+              {filteredVendors.map(([vendorId, vendor]) => (
+                <VendorCard key={vendorId} vendorId={vendorId} vendor={vendor} />
+              ))}
             </AnimatePresence>
           </div>
-        </CardHeader>
 
-        <CardContent className="pt-0">
-          <ScrollArea className="h-[600px] pr-4">
-            <div className="space-y-3">
-              <AnimatePresence>
-                {filteredAndSortedVendors.map((vendor) => (
-                  <VendorCard key={vendor.id} vendor={vendor} />
-                ))}
-              </AnimatePresence>
-
-              {filteredAndSortedVendors.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Info className="h-8 w-8 mx-auto mb-2" />
-                  <p className="text-sm">No vendors match your criteria</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSearchTerm("")
-                      setCategoryFilter("all")
-                    }}
-                    className="mt-2 text-xs"
-                  >
-                    <RotateCcw className="h-3 w-3 mr-1" />
-                    Reset Filters
-                  </Button>
-                </div>
-              )}
+          {filteredVendors.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">No vendors found</p>
             </div>
-          </ScrollArea>
-        </CardContent>
-      </Card>
-    </TooltipProvider>
+          )}
+        </Tabs>
+      </CardContent>
+    </Card>
   )
 }
