@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "ZTCA TCO Calculator - Portnox",
   description: "Zero Trust Cybersecurity Architecture Total Cost of Ownership Calculator",
-  keywords: ["Zero Trust", "Network Access Control", "TCO", "Cybersecurity", "Portnox"],
+  keywords: ["Zero Trust", "NAC", "Network Access Control", "TCO", "Cybersecurity", "Portnox"],
     generator: 'v0.dev'
 }
 
@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {children}
         </ThemeProvider>
       </body>
