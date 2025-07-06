@@ -23,6 +23,22 @@ interface SettingsPanelProps {
   onDarkModeChange: (darkMode: boolean) => void
 }
 
+const defaultConfig = {
+  devices: 5000,
+  users: 5000,
+  years: 3,
+  licenseTier: "Professional" as const,
+  professionalServices: "basic" as const,
+  includeTraining: true,
+  integrations: {
+    mdm: false,
+    siem: false,
+    edr: false,
+  },
+  portnoxDeviceCost: 60,
+  avgFteCost: 150000,
+}
+
 export default function SettingsPanel({
   isOpen,
   onClose,
@@ -31,10 +47,10 @@ export default function SettingsPanel({
   darkMode,
   onDarkModeChange,
 }: SettingsPanelProps) {
-  const [localConfig, setLocalConfig] = useState({ ...configuration })
+  const [localConfig, setLocalConfig] = useState({ ...defaultConfig, ...configuration })
 
   useEffect(() => {
-    setLocalConfig({ ...configuration })
+    setLocalConfig({ ...defaultConfig, ...configuration })
   }, [configuration])
 
   const handleInputChange = (e: any) => {
@@ -198,7 +214,7 @@ export default function SettingsPanel({
                     <Label htmlFor="mdm">MDM Integration</Label>
                     <Switch
                       id="mdm"
-                      checked={localConfig.integrations.mdm}
+                      checked={localConfig.integrations?.mdm || false}
                       onCheckedChange={(checked) =>
                         updateConfig({
                           integrations: { ...localConfig.integrations, mdm: checked },
@@ -210,7 +226,7 @@ export default function SettingsPanel({
                     <Label htmlFor="siem">SIEM Integration</Label>
                     <Switch
                       id="siem"
-                      checked={localConfig.integrations.siem}
+                      checked={localConfig.integrations?.siem || false}
                       onCheckedChange={(checked) =>
                         updateConfig({
                           integrations: { ...localConfig.integrations, siem: checked },
@@ -222,7 +238,7 @@ export default function SettingsPanel({
                     <Label htmlFor="edr">EDR Integration</Label>
                     <Switch
                       id="edr"
-                      checked={localConfig.integrations.edr}
+                      checked={localConfig.integrations?.edr || false}
                       onCheckedChange={(checked) =>
                         updateConfig({
                           integrations: { ...localConfig.integrations, edr: checked },
