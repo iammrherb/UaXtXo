@@ -1,9 +1,5 @@
-import TcoAnalyzerUltimate from "@/components/tco-analyzer"
+import TCOAnalyzer from "@/components/tco-analyzer"
 
-export default function HomePage() {
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <TcoAnalyzerUltimate />
-    </div>
-  )
+export default function Home() {
+  return <TCOAnalyzer />
 }
