@@ -171,12 +171,12 @@ export interface EnhancedVendorData {
 // Enhanced vendor database with comprehensive data
 export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
   portnox: {
-    id: 'portnox',
-    name: 'Portnox CLEAR',
-    category: 'cloud-native',
-    marketPosition: 'visionary',
-    deploymentModels: ['cloud'],
-    
+    id: "portnox",
+    name: "Portnox CLEAR",
+    category: "cloud-native",
+    marketPosition: "visionary",
+    deploymentModels: ["cloud"],
+
     pricing: {
       perDevice: {
         base: 60,
@@ -184,89 +184,89 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           500: 54,
           1000: 48,
           5000: 42,
-          10000: 36
-        }
+          10000: 36,
+        },
       },
       licensing: {
-        model: 'subscription',
+        model: "subscription",
         subscriptionTiers: {
           basic: 45,
           professional: 60,
-          enterprise: 75
-        }
+          enterprise: 75,
+        },
       },
       addOns: [
         {
-          name: 'Risk-Based Access Control',
-          description: 'Advanced risk scoring and adaptive authentication',
+          name: "Risk-Based Access Control",
+          description: "Advanced risk scoring and adaptive authentication",
           cost: 12,
-          required: false
+          required: false,
         },
         {
-          name: 'Advanced Threat Detection',
-          description: 'ML-based anomaly detection',
+          name: "Advanced Threat Detection",
+          description: "ML-based anomaly detection",
           cost: 15,
-          required: false
-        }
+          required: false,
+        },
       ],
       integrations: [
         {
-          name: 'SIEM Integration',
-          type: 'native',
+          name: "SIEM Integration",
+          type: "native",
           cost: 0,
-          complexity: 'low'
+          complexity: "low",
         },
         {
-          name: 'MDM Integration',
-          type: 'api',
+          name: "MDM Integration",
+          type: "api",
           cost: 0,
-          complexity: 'low'
-        }
+          complexity: "low",
+        },
       ],
       support: {
         basic: {
           included: true,
           cost: 0,
-          coverage: '8x5 Email/Chat'
+          coverage: "8x5 Email/Chat",
         },
         premium: {
           cost: 5000,
-          coverage: '24x7 Phone/Email',
-          sla: '4 hour response'
+          coverage: "24x7 Phone/Email",
+          sla: "4 hour response",
         },
         enterprise: {
           cost: 15000,
-          coverage: '24x7 All channels',
-          sla: '1 hour response',
-          dedicatedTAM: true
-        }
+          coverage: "24x7 All channels",
+          sla: "1 hour response",
+          dedicatedTAM: true,
+        },
       },
       professionalServices: {
         implementation: {
           small: 0,
           medium: 5000,
-          large: 15000
+          large: 15000,
         },
         training: {
           onsite: 2500,
           virtual: 1500,
-          certification: 500
+          certification: 500,
         },
-        customization: 250
+        customization: 250,
       },
       hardware: {
-        required: false
+        required: false,
       },
       infrastructure: {
         serverRequirements: {
-          cpu: 'N/A - Cloud Native',
-          ram: 'N/A - Cloud Native',
-          storage: 'N/A - Cloud Native',
-          cost: 0
-        }
-      }
+          cpu: "N/A - Cloud Native",
+          ram: "N/A - Cloud Native",
+          storage: "N/A - Cloud Native",
+          cost: 0,
+        },
+      },
     },
-    
+
     security: {
       zeroTrustScore: 95,
       riskReduction: {
@@ -274,12 +274,12 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
         lateral_movement: 89,
         data_breach: 87,
         insider_threat: 85,
-        compliance_violation: 90
+        compliance_violation: 90,
       },
       breachCostSavings: {
         average_breach_cost: 4450000,
         reduction_percentage: 85,
-        insurance_discount: 25
+        insurance_discount: 25,
       },
       securityFeatures: {
         mfa: true,
@@ -287,74 +287,74 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
         micro_segmentation: true,
         behavior_analytics: true,
         threat_intelligence: true,
-        automated_response: true
+        automated_response: true,
       },
       complianceMapping: [
         {
-          framework: 'NIST 800-53',
-          controls: ['AC-2', 'AC-3', 'AC-4', 'AC-17', 'IA-2', 'IA-5'],
-          coverage: 92
+          framework: "NIST 800-53",
+          controls: ["AC-2", "AC-3", "AC-4", "AC-17", "IA-2", "IA-5"],
+          coverage: 92,
         },
         {
-          framework: 'ISO 27001',
-          controls: ['A.9.1', 'A.9.2', 'A.9.4', 'A.13.1'],
-          coverage: 88
+          framework: "ISO 27001",
+          controls: ["A.9.1", "A.9.2", "A.9.4", "A.13.1"],
+          coverage: 88,
         },
         {
-          framework: 'PCI-DSS',
-          controls: ['1.1', '1.2', '2.1', '7.1', '8.1'],
-          coverage: 90
-        }
-      ]
+          framework: "PCI-DSS",
+          controls: ["1.1", "1.2", "2.1", "7.1", "8.1"],
+          coverage: 90,
+        },
+      ],
     },
-    
+
     scalability: {
       maxDevices: 100000,
-      performanceAtScale: 'excellent',
+      performanceAtScale: "excellent",
       clusteringSupport: true,
-      multiSiteSupport: true
+      multiSiteSupport: true,
     },
-    
+
     implementation: {
       timeToValue: {
         poc: 1,
         small: 7,
         medium: 14,
-        large: 30
+        large: 30,
       },
-      complexity: 'low',
-      requiredExpertise: ['Basic networking', 'Cloud services'],
+      complexity: "low",
+      requiredExpertise: ["Basic networking", "Cloud services"],
       migrationFromExisting: {
-        effort: 'low',
+        effort: "low",
         downtime: 0,
-        dataLoss: false
-      }
+        dataLoss: false,
+      },
     },
-    
+
     operationalMetrics: {
       adminEffort: 5,
       automationLevel: 90,
-      reportingCapabilities: 'enterprise',
+      reportingCapabilities: "enterprise",
       apiAvailability: true,
-      cloudManagement: true
+      cloudManagement: true,
     },
-    
+
     vendorStability: {
       yearsInBusiness: 15,
-      financialHealth: 'excellent',
+      financialHealth: "excellent",
       marketShare: 8,
       customerBase: 5000,
-      acquisitionRisk: 'low'
-    }
+      acquisitionRisk: "low",
+    },
   },
-  
+
   cisco_ise: {
-    id: 'cisco_ise',
-    name: 'Cisco ISE',
-    category: 'on-premise',
-    marketPosition: 'leader',
-    deploymentModels: ['on-premise', 'hybrid'],
-    
+    id: "cisco_ise",
+    name: "Cisco ISE",
+    category: "on-premise",
+    marketPosition: "leader",
+    deploymentModels: ["on-premise", "hybrid"],
+
     pricing: {
       perDevice: {
         base: 125,
@@ -362,119 +362,119 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           500: 118,
           1000: 110,
           5000: 98,
-          10000: 85
-        }
+          10000: 85,
+        },
       },
       licensing: {
-        model: 'perpetual',
+        model: "perpetual",
         perpetualCost: 125,
-        annualMaintenance: 22
+        annualMaintenance: 22,
       },
       addOns: [
         {
-          name: 'Plus License',
-          description: 'Profiling, BYOD, Guest',
+          name: "Plus License",
+          description: "Profiling, BYOD, Guest",
           cost: 50,
-          required: true
+          required: true,
         },
         {
-          name: 'Apex License',
-          description: 'pxGrid, TC-NAC, Device Admin',
+          name: "Apex License",
+          description: "pxGrid, TC-NAC, Device Admin",
           cost: 75,
-          required: false
+          required: false,
         },
         {
-          name: 'Device Admin License',
-          description: 'TACACS+ functionality',
+          name: "Device Admin License",
+          description: "TACACS+ functionality",
           cost: 35,
-          required: false
-        }
+          required: false,
+        },
       ],
       integrations: [
         {
-          name: 'Cisco DNA Center',
-          type: 'native',
+          name: "Cisco DNA Center",
+          type: "native",
           cost: 25000,
-          complexity: 'high'
+          complexity: "high",
         },
         {
-          name: 'StealthWatch',
-          type: 'native',
+          name: "StealthWatch",
+          type: "native",
           cost: 0,
-          complexity: 'medium'
-        }
+          complexity: "medium",
+        },
       ],
       support: {
         basic: {
           included: false,
           cost: 12000,
-          coverage: '8x5 TAC'
+          coverage: "8x5 TAC",
         },
         premium: {
           cost: 25000,
-          coverage: '24x7 TAC',
-          sla: '2 hour response'
+          coverage: "24x7 TAC",
+          sla: "2 hour response",
         },
         enterprise: {
           cost: 50000,
-          coverage: '24x7 Priority TAC',
-          sla: '30 min response',
-          dedicatedTAM: true
-        }
+          coverage: "24x7 Priority TAC",
+          sla: "30 min response",
+          dedicatedTAM: true,
+        },
       },
       professionalServices: {
         implementation: {
           small: 25000,
           medium: 50000,
-          large: 150000
+          large: 150000,
         },
         training: {
           onsite: 5000,
           virtual: 3000,
-          certification: 1500
+          certification: 1500,
         },
-        customization: 350
+        customization: 350,
       },
       hardware: {
         required: true,
         appliances: [
           {
-            name: 'ISE-3515',
+            name: "ISE-3515",
             capacity: 2000,
             cost: 35000,
-            redundancy: true
+            redundancy: true,
           },
           {
-            name: 'ISE-3595',
+            name: "ISE-3595",
             capacity: 10000,
             cost: 95000,
-            redundancy: true
+            redundancy: true,
           },
           {
-            name: 'ISE-3695',
+            name: "ISE-3695",
             capacity: 30000,
             cost: 195000,
-            redundancy: true
-          }
+            redundancy: true,
+          },
         ],
         virtualAppliance: {
           cost: 0,
-          requirements: '16 vCPU, 64GB RAM, 600GB SSD'
-        }
+          requirements: "16 vCPU, 64GB RAM, 600GB SSD",
+        },
       },
       infrastructure: {
         serverRequirements: {
-          cpu: '16+ cores',
-          ram: '64GB minimum',
-          storage: '600GB SSD',
-          cost: 15000
+          cpu: "16+ cores",
+          ram: "64GB minimum",
+          storage: "600GB SSD",
+          cost: 15000,
         },
         databaseLicense: 0,
         loadBalancer: 25000,
-        backup: 10000
-      }
+        backup: 10000,
+      },
     },
-    
+
     security: {
       zeroTrustScore: 85,
       riskReduction: {
@@ -482,12 +482,12 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
         lateral_movement: 85,
         data_breach: 82,
         insider_threat: 80,
-        compliance_violation: 87
+        compliance_violation: 87,
       },
       breachCostSavings: {
         average_breach_cost: 4450000,
         reduction_percentage: 75,
-        insurance_discount: 20
+        insurance_discount: 20,
       },
       securityFeatures: {
         mfa: true,
@@ -495,74 +495,74 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
         micro_segmentation: true,
         behavior_analytics: false,
         threat_intelligence: true,
-        automated_response: true
+        automated_response: true,
       },
       complianceMapping: [
         {
-          framework: 'NIST 800-53',
-          controls: ['AC-2', 'AC-3', 'AC-4', 'AC-17', 'IA-2', 'IA-5'],
-          coverage: 88
+          framework: "NIST 800-53",
+          controls: ["AC-2", "AC-3", "AC-4", "AC-17", "IA-2", "IA-5"],
+          coverage: 88,
         },
         {
-          framework: 'ISO 27001',
-          controls: ['A.9.1', 'A.9.2', 'A.9.4', 'A.13.1'],
-          coverage: 85
+          framework: "ISO 27001",
+          controls: ["A.9.1", "A.9.2", "A.9.4", "A.13.1"],
+          coverage: 85,
         },
         {
-          framework: 'PCI-DSS',
-          controls: ['1.1', '1.2', '2.1', '7.1', '8.1'],
-          coverage: 87
-        }
-      ]
+          framework: "PCI-DSS",
+          controls: ["1.1", "1.2", "2.1", "7.1", "8.1"],
+          coverage: 87,
+        },
+      ],
     },
-    
+
     scalability: {
       maxDevices: 500000,
-      performanceAtScale: 'good',
+      performanceAtScale: "good",
       clusteringSupport: true,
-      multiSiteSupport: true
+      multiSiteSupport: true,
     },
-    
+
     implementation: {
       timeToValue: {
         poc: 30,
         small: 60,
         medium: 90,
-        large: 180
+        large: 180,
       },
-      complexity: 'very high',
-      requiredExpertise: ['Cisco networking', 'ISE certification', 'PKI', 'RADIUS/TACACS+'],
+      complexity: "very high",
+      requiredExpertise: ["Cisco networking", "ISE certification", "PKI", "RADIUS/TACACS+"],
       migrationFromExisting: {
-        effort: 'high',
+        effort: "high",
         downtime: 8,
-        dataLoss: false
-      }
+        dataLoss: false,
+      },
     },
-    
+
     operationalMetrics: {
       adminEffort: 20,
       automationLevel: 60,
-      reportingCapabilities: 'enterprise',
+      reportingCapabilities: "enterprise",
       apiAvailability: true,
-      cloudManagement: false
+      cloudManagement: false,
     },
-    
+
     vendorStability: {
       yearsInBusiness: 40,
-      financialHealth: 'excellent',
+      financialHealth: "excellent",
       marketShare: 35,
       customerBase: 50000,
-      acquisitionRisk: 'low'
-    }
+      acquisitionRisk: "low",
+    },
   },
-  
+
   aruba_clearpass: {
-    id: 'aruba_clearpass',
-    name: 'Aruba ClearPass',
-    category: 'hybrid',
-    marketPosition: 'leader',
-    deploymentModels: ['on-premise', 'hybrid'],
-    
+    id: "aruba_clearpass",
+    name: "Aruba ClearPass",
+    category: "hybrid",
+    marketPosition: "leader",
+    deploymentModels: ["on-premise", "hybrid"],
+
     pricing: {
       perDevice: {
         base: 95,
@@ -570,119 +570,119 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           500: 89,
           1000: 82,
           5000: 75,
-          10000: 68
-        }
+          10000: 68,
+        },
       },
       licensing: {
-        model: 'perpetual',
+        model: "perpetual",
         perpetualCost: 95,
-        annualMaintenance: 19
+        annualMaintenance: 19,
       },
       addOns: [
         {
-          name: 'OnGuard',
-          description: 'Endpoint compliance',
+          name: "OnGuard",
+          description: "Endpoint compliance",
           cost: 25,
-          required: false
+          required: false,
         },
         {
-          name: 'Guest Module',
-          description: 'Guest management',
+          name: "Guest Module",
+          description: "Guest management",
           cost: 15,
-          required: false
+          required: false,
         },
         {
-          name: 'OnBoard',
-          description: 'Device onboarding',
+          name: "OnBoard",
+          description: "Device onboarding",
           cost: 20,
-          required: false
-        }
+          required: false,
+        },
       ],
       integrations: [
         {
-          name: 'Aruba Central',
-          type: 'native',
+          name: "Aruba Central",
+          type: "native",
           cost: 0,
-          complexity: 'low'
+          complexity: "low",
         },
         {
-          name: 'Microsoft Intune',
-          type: 'api',
+          name: "Microsoft Intune",
+          type: "api",
           cost: 0,
-          complexity: 'medium'
-        }
+          complexity: "medium",
+        },
       ],
       support: {
         basic: {
           included: false,
           cost: 8000,
-          coverage: '8x5 Support'
+          coverage: "8x5 Support",
         },
         premium: {
           cost: 18000,
-          coverage: '24x7 Support',
-          sla: '4 hour response'
+          coverage: "24x7 Support",
+          sla: "4 hour response",
         },
         enterprise: {
           cost: 35000,
-          coverage: '24x7 Priority',
-          sla: '1 hour response',
-          dedicatedTAM: true
-        }
+          coverage: "24x7 Priority",
+          sla: "1 hour response",
+          dedicatedTAM: true,
+        },
       },
       professionalServices: {
         implementation: {
           small: 15000,
           medium: 35000,
-          large: 100000
+          large: 100000,
         },
         training: {
           onsite: 4000,
           virtual: 2500,
-          certification: 1200
+          certification: 1200,
         },
-        customization: 300
+        customization: 300,
       },
       hardware: {
         required: true,
         appliances: [
           {
-            name: 'C1000',
+            name: "C1000",
             capacity: 1000,
             cost: 15000,
-            redundancy: true
+            redundancy: true,
           },
           {
-            name: 'C2000',
+            name: "C2000",
             capacity: 5000,
             cost: 45000,
-            redundancy: true
+            redundancy: true,
           },
           {
-            name: 'C3000',
+            name: "C3000",
             capacity: 25000,
             cost: 95000,
-            redundancy: true
-          }
+            redundancy: true,
+          },
         ],
         virtualAppliance: {
           cost: 0,
-          requirements: '8 vCPU, 32GB RAM, 500GB Storage'
-        }
+          requirements: "8 vCPU, 32GB RAM, 500GB Storage",
+        },
       },
       infrastructure: {
         serverRequirements: {
-          cpu: '8+ cores',
-          ram: '32GB minimum',
-          storage: '500GB SSD',
-          cost: 10000
+          cpu: "8+ cores",
+          ram: "32GB minimum",
+          storage: "500GB SSD",
+          cost: 10000,
         },
         databaseLicense: 0,
         loadBalancer: 15000,
-        backup: 8000
-      }
+        backup: 8000,
+      },
     },
-    
+
     security: {
       zeroTrustScore: 82,
       riskReduction: {
@@ -690,12 +690,12 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
         lateral_movement: 82,
         data_breach: 80,
         insider_threat: 78,
-        compliance_violation: 84
+        compliance_violation: 84,
       },
       breachCostSavings: {
         average_breach_cost: 4450000,
         reduction_percentage: 72,
-        insurance_discount: 18
+        insurance_discount: 18,
       },
       securityFeatures: {
         mfa: true,
@@ -703,74 +703,74 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
         micro_segmentation: true,
         behavior_analytics: false,
         threat_intelligence: false,
-        automated_response: true
+        automated_response: true,
       },
       complianceMapping: [
         {
-          framework: 'NIST 800-53',
-          controls: ['AC-2', 'AC-3', 'AC-4', 'AC-17', 'IA-2'],
-          coverage: 85
+          framework: "NIST 800-53",
+          controls: ["AC-2", "AC-3", "AC-4", "AC-17", "IA-2"],
+          coverage: 85,
         },
         {
-          framework: 'ISO 27001',
-          controls: ['A.9.1', 'A.9.2', 'A.9.4'],
-          coverage: 82
+          framework: "ISO 27001",
+          controls: ["A.9.1", "A.9.2", "A.9.4"],
+          coverage: 82,
         },
         {
-          framework: 'HIPAA',
-          controls: ['164.308', '164.310', '164.312'],
-          coverage: 83
-        }
-      ]
+          framework: "HIPAA",
+          controls: ["164.308", "164.310", "164.312"],
+          coverage: 83,
+        },
+      ],
     },
-    
+
     scalability: {
       maxDevices: 100000,
-      performanceAtScale: 'good',
+      performanceAtScale: "good",
       clusteringSupport: true,
-      multiSiteSupport: true
+      multiSiteSupport: true,
     },
-    
+
     implementation: {
       timeToValue: {
         poc: 21,
         small: 45,
         medium: 75,
-        large: 150
+        large: 150,
       },
-      complexity: 'high',
-      requiredExpertise: ['Aruba networking', 'RADIUS', 'PKI basics'],
+      complexity: "high",
+      requiredExpertise: ["Aruba networking", "RADIUS", "PKI basics"],
       migrationFromExisting: {
-        effort: 'medium',
+        effort: "medium",
         downtime: 4,
-        dataLoss: false
-      }
+        dataLoss: false,
+      },
     },
-    
+
     operationalMetrics: {
       adminEffort: 15,
       automationLevel: 65,
-      reportingCapabilities: 'advanced',
+      reportingCapabilities: "advanced",
       apiAvailability: true,
-      cloudManagement: false
+      cloudManagement: false,
     },
-    
+
     vendorStability: {
       yearsInBusiness: 20,
-      financialHealth: 'excellent',
+      financialHealth: "excellent",
       marketShare: 22,
       customerBase: 30000,
-      acquisitionRisk: 'low'
-    }
+      acquisitionRisk: "low",
+    },
   },
-  
+
   juniper_mist: {
-    id: 'juniper_mist',
-    name: 'Juniper Mist Access Assurance',
-    category: 'cloud-native',
-    marketPosition: 'challenger',
-    deploymentModels: ['cloud'],
-    
+    id: "juniper_mist",
+    name: "Juniper Mist Access Assurance",
+    category: "cloud-native",
+    marketPosition: "challenger",
+    deploymentModels: ["cloud"],
+
     pricing: {
       perDevice: {
         base: 72,
@@ -778,89 +778,89 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           500: 68,
           1000: 62,
           5000: 56,
-          10000: 48
-        }
+          10000: 48,
+        },
       },
       licensing: {
-        model: 'subscription',
+        model: "subscription",
         subscriptionTiers: {
           basic: 60,
           professional: 72,
-          enterprise: 84
-        }
+          enterprise: 84,
+        },
       },
       addOns: [
         {
-          name: 'AI-Driven Insights',
-          description: 'Advanced AI/ML analytics',
+          name: "AI-Driven Insights",
+          description: "Advanced AI/ML analytics",
           cost: 18,
-          required: false
+          required: false,
         },
         {
-          name: 'Premium Analytics',
-          description: 'Enhanced reporting and analytics',
+          name: "Premium Analytics",
+          description: "Enhanced reporting and analytics",
           cost: 12,
-          required: false
-        }
+          required: false,
+        },
       ],
       integrations: [
         {
-          name: 'Marvis AI',
-          type: 'native',
+          name: "Marvis AI",
+          type: "native",
           cost: 0,
-          complexity: 'low'
+          complexity: "low",
         },
         {
-          name: 'ServiceNow',
-          type: 'api',
+          name: "ServiceNow",
+          type: "api",
           cost: 0,
-          complexity: 'medium'
-        }
+          complexity: "medium",
+        },
       ],
       support: {
         basic: {
           included: true,
           cost: 0,
-          coverage: '8x5 Support'
+          coverage: "8x5 Support",
         },
         premium: {
           cost: 8000,
-          coverage: '24x7 Support',
-          sla: '2 hour response'
+          coverage: "24x7 Support",
+          sla: "2 hour response",
         },
         enterprise: {
           cost: 20000,
-          coverage: '24x7 Priority',
-          sla: '1 hour response',
-          dedicatedTAM: true
-        }
+          coverage: "24x7 Priority",
+          sla: "1 hour response",
+          dedicatedTAM: true,
+        },
       },
       professionalServices: {
         implementation: {
           small: 5000,
           medium: 15000,
-          large: 40000
+          large: 40000,
         },
         training: {
           onsite: 3500,
           virtual: 2000,
-          certification: 800
+          certification: 800,
         },
-        customization: 275
+        customization: 275,
       },
       hardware: {
-        required: false
+        required: false,
       },
       infrastructure: {
         serverRequirements: {
-          cpu: 'N/A - Cloud Native',
-          ram: 'N/A - Cloud Native',
-          storage: 'N/A - Cloud Native',
-          cost: 0
-        }
-      }
+          cpu: "N/A - Cloud Native",
+          ram: "N/A - Cloud Native",
+          storage: "N/A - Cloud Native",
+          cost: 0,
+        },
+      },
     },
-    
+
     security: {
       zeroTrustScore: 88,
       riskReduction: {
@@ -868,12 +868,12 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
         lateral_movement: 85,
         data_breach: 83,
         insider_threat: 82,
-        compliance_violation: 86
+        compliance_violation: 86,
       },
       breachCostSavings: {
         average_breach_cost: 4450000,
         reduction_percentage: 78,
-        insurance_discount: 20
+        insurance_discount: 20,
       },
       securityFeatures: {
         mfa: true,
@@ -881,69 +881,69 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
         micro_segmentation: true,
         behavior_analytics: true,
         threat_intelligence: true,
-        automated_response: true
+        automated_response: true,
       },
       complianceMapping: [
         {
-          framework: 'SOC 2',
-          controls: ['CC6.1', 'CC6.6', 'CC6.7', 'CC7.2'],
-          coverage: 87
+          framework: "SOC 2",
+          controls: ["CC6.1", "CC6.6", "CC6.7", "CC7.2"],
+          coverage: 87,
         },
         {
-          framework: 'ISO 27001',
-          controls: ['A.9.1', 'A.9.2', 'A.9.4', 'A.12.4'],
-          coverage: 85
-        }
-      ]
+          framework: "ISO 27001",
+          controls: ["A.9.1", "A.9.2", "A.9.4", "A.12.4"],
+          coverage: 85,
+        },
+      ],
     },
-    
+
     scalability: {
       maxDevices: 50000,
-      performanceAtScale: 'excellent',
+      performanceAtScale: "excellent",
       clusteringSupport: true,
-      multiSiteSupport: true
+      multiSiteSupport: true,
     },
-    
+
     implementation: {
       timeToValue: {
         poc: 3,
         small: 14,
         medium: 30,
-        large: 60
+        large: 60,
       },
-      complexity: 'medium',
-      requiredExpertise: ['Cloud networking', 'AI/ML basics'],
+      complexity: "medium",
+      requiredExpertise: ["Cloud networking", "AI/ML basics"],
       migrationFromExisting: {
-        effort: 'medium',
+        effort: "medium",
         downtime: 0,
-        dataLoss: false
-      }
+        dataLoss: false,
+      },
     },
-    
+
     operationalMetrics: {
       adminEffort: 8,
       automationLevel: 85,
-      reportingCapabilities: 'enterprise',
+      reportingCapabilities: "enterprise",
       apiAvailability: true,
-      cloudManagement: true
+      cloudManagement: true,
     },
-    
+
     vendorStability: {
       yearsInBusiness: 25,
-      financialHealth: 'excellent',
+      financialHealth: "excellent",
       marketShare: 12,
       customerBase: 15000,
-      acquisitionRisk: 'low'
-    }
+      acquisitionRisk: "low",
+    },
   },
-  
+
   forescout: {
-    id: 'forescout',
-    name: 'Forescout',
-    category: 'hybrid',
-    marketPosition: 'leader',
-    deploymentModels: ['on-premise', 'cloud', 'hybrid'],
-    
+    id: "forescout",
+    name: "Forescout",
+    category: "hybrid",
+    marketPosition: "leader",
+    deploymentModels: ["on-premise", "cloud", "hybrid"],
+
     pricing: {
       perDevice: {
         base: 85,
@@ -951,122 +951,122 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
           500: 80,
           1000: 74,
           5000: 68,
-          10000: 60
-        }
+          10000: 60,
+        },
       },
       licensing: {
-        model: 'subscription',
+        model: "subscription",
         subscriptionTiers: {
           basic: 70,
           professional: 85,
-          enterprise: 100
-        }
+          enterprise: 100,
+        },
       },
       addOns: [
         {
-          name: 'eyeExtend',
-          description: 'OT/IoT visibility',
+          name: "eyeExtend",
+          description: "OT/IoT visibility",
           cost: 20,
-          required: false
+          required: false,
         },
         {
-          name: 'eyeInspect',
-          description: 'OT security',
+          name: "eyeInspect",
+          description: "OT security",
           cost: 30,
-          required: false
+          required: false,
         },
         {
-          name: 'eyeSight',
-          description: 'Asset inventory',
+          name: "eyeSight",
+          description: "Asset inventory",
           cost: 15,
-          required: false
-        }
+          required: false,
+        },
       ],
       integrations: [
         {
-          name: 'ServiceNow',
-          type: 'native',
+          name: "ServiceNow",
+          type: "native",
           cost: 0,
-          complexity: 'low'
+          complexity: "low",
         },
         {
-          name: 'Splunk',
-          type: 'api',
+          name: "Splunk",
+          type: "api",
           cost: 0,
-          complexity: 'medium'
-        }
+          complexity: "medium",
+        },
       ],
       support: {
         basic: {
           included: false,
           cost: 10000,
-          coverage: '8x5 Support'
+          coverage: "8x5 Support",
         },
         premium: {
           cost: 22000,
-          coverage: '24x7 Support',
-          sla: '4 hour response'
+          coverage: "24x7 Support",
+          sla: "4 hour response",
         },
         enterprise: {
           cost: 40000,
-          coverage: '24x7 Priority',
-          sla: '1 hour response',
-          dedicatedTAM: true
-        }
+          coverage: "24x7 Priority",
+          sla: "1 hour response",
+          dedicatedTAM: true,
+        },
       },
       professionalServices: {
         implementation: {
           small: 20000,
           medium: 45000,
-          large: 120000
+          large: 120000,
         },
         training: {
           onsite: 4500,
           virtual: 2500,
-          certification: 1000
+          certification: 1000,
         },
-        customization: 325
+        customization: 325,
       },
       hardware: {
         required: true,
         appliances: [
           {
-            name: 'CT-R',
+            name: "CT-R",
             capacity: 5000,
             cost: 25000,
-            redundancy: true
+            redundancy: true,
           },
           {
-            name: 'CT-1000',
+            name: "CT-1000",
             capacity: 25000,
             cost: 75000,
-            redundancy: true
+            redundancy: true,
           },
           {
-            name: 'CT-5000',
+            name: "CT-5000",
             capacity: 100000,
             cost: 150000,
-            redundancy: true
-          }
+            redundancy: true,
+          },
         ],
         virtualAppliance: {
           cost: 0,
-          requirements: '16 vCPU, 64GB RAM, 1TB Storage'
-        }
+          requirements: "16 vCPU, 64GB RAM, 1TB Storage",
+        },
       },
       infrastructure: {
         serverRequirements: {
-          cpu: '16+ cores',
-          ram: '64GB minimum',
-          storage: '1TB SSD',
-          cost: 20000
+          cpu: "16+ cores",
+          ram: "64GB minimum",
+          storage: "1TB SSD",
+          cost: 20000,
         },
         databaseLicense: 15000,
         loadBalancer: 20000,
-        backup: 12000
-      }
+        backup: 12000,
+      },
     },
-    
+
     security: {
       zeroTrustScore: 80,
       riskReduction: {
@@ -1074,12 +1074,12 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
         lateral_movement: 80,
         data_breach: 78,
         insider_threat: 75,
-        compliance_violation: 82
+        compliance_violation: 82,
       },
       breachCostSavings: {
         average_breach_cost: 4450000,
         reduction_percentage: 70,
-        insurance_discount: 15
+        insurance_discount: 15,
       },
       securityFeatures: {
         mfa: false,
@@ -1087,56 +1087,269 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
         micro_segmentation: true,
         behavior_analytics: false,
         threat_intelligence: true,
-        automated_response: true
+        automated_response: true,
       },
       complianceMapping: [
         {
-          framework: 'NIST CSF',
-          controls: ['ID.AM', 'PR.AC', 'DE.CM'],
-          coverage: 82
+          framework: "NIST CSF",
+          controls: ["ID.AM", "PR.AC", "DE.CM"],
+          coverage: 82,
         },
         {
-          framework: 'IEC 62443',
-          controls: ['SR-1', 'SR-2', 'SR-3'],
-          coverage: 85
-        }
-      ]
+          framework: "IEC 62443",
+          controls: ["SR-1", "SR-2", "SR-3"],
+          coverage: 85,
+        },
+      ],
     },
-    
+
     scalability: {
       maxDevices: 1000000,
-      performanceAtScale: 'good',
+      performanceAtScale: "good",
       clusteringSupport: true,
-      multiSiteSupport: true
+      multiSiteSupport: true,
     },
-    
+
     implementation: {
       timeToValue: {
         poc: 14,
         small: 45,
         medium: 90,
-        large: 180
+        large: 180,
       },
-      complexity: 'high',
-      requiredExpertise: ['Network architecture', 'Security operations', 'OT/IoT'],
+      complexity: "high",
+      requiredExpertise: ["Network architecture", "Security operations", "OT/IoT"],
       migrationFromExisting: {
-        effort: 'high',
+        effort: "high",
         downtime: 2,
-        dataLoss: false
-      }
+        dataLoss: false,
+      },
     },
-    
+
     operationalMetrics: {
       adminEffort: 18,
       automationLevel: 70,
-      reportingCapabilities: 'advanced',
+      reportingCapabilities: "advanced",
       apiAvailability: true,
-      cloudManagement: true
+      cloudManagement: true,
     },
-    
+
     vendorStability: {
       yearsInBusiness: 20,
-      financialHealth: 'good',
+      financialHealth: "good",
       marketShare: 15,
       customerBase: 20000,
-      acquisitionRisk
+      acquisitionRisk: "medium",
+    },
+  },
+}
+
+// TCO calculation functions
+export function calculateTotalCostOfOwnership(
+  vendor: EnhancedVendorData,
+  devices: number,
+  years: number,
+  includeExistingMigration = false,
+): {
+  year1: number
+  year2: number
+  year3: number
+  year5: number
+  breakdown: {
+    software: number[]
+    hardware: number[]
+    implementation: number[]
+    operations: number[]
+    support: number[]
+    training: number[]
+  }
+} {
+  const breakdown = {
+    software: [] as number[],
+    hardware: [] as number[],
+    implementation: [] as number[],
+    operations: [] as number[],
+    support: [] as number[],
+    training: [] as number[],
+  }
+
+  // Calculate per-year costs
+  for (let year = 1; year <= years; year++) {
+    // Software costs
+    let softwareCost = 0
+    if (vendor.pricing.licensing.model === "subscription") {
+      const tierPrice = vendor.pricing.subscriptionTiers?.enterprise || vendor.pricing.perDevice.base
+      softwareCost = getVolumePrice(vendor, devices) * devices
+    } else if (year === 1) {
+      softwareCost = getVolumePrice(vendor, devices) * devices
+    } else {
+      softwareCost = (vendor.pricing.licensing.annualMaintenance || 0) * devices
+    }
+
+    // Add required add-ons
+    vendor.pricing.addOns
+      .filter((addon) => addon.required)
+      .forEach((addon) => {
+        softwareCost += addon.cost * devices
+      })
+
+    breakdown.software.push(softwareCost)
+
+    // Hardware costs (first year only)
+    if (year === 1 && vendor.pricing.hardware.required) {
+      const hardwareCost = calculateHardwareCost(vendor, devices)
+      breakdown.hardware.push(hardwareCost)
+    } else {
+      breakdown.hardware.push(0)
+    }
+
+    // Implementation costs (first year only)
+    if (year === 1) {
+      const implCost = calculateImplementationCost(vendor, devices)
+      breakdown.implementation.push(implCost)
+    } else {
+      breakdown.implementation.push(0)
+    }
+
+    // Operations costs
+    const opsCost = calculateOperationalCost(vendor, devices)
+    breakdown.operations.push(opsCost)
+
+    // Support costs
+    const supportCost = devices > 1000 ? vendor.pricing.support.enterprise.cost : vendor.pricing.support.premium.cost
+    breakdown.support.push(supportCost)
+
+    // Training costs (first year and every 2 years)
+    if (year === 1 || year % 2 === 0) {
+      const trainingCost = vendor.pricing.professionalServices.training.virtual * 5 // 5 people
+      breakdown.training.push(trainingCost)
+    } else {
+      breakdown.training.push(0)
+    }
+  }
+
+  // Calculate totals
+  const calculateYearTotal = (upToYear: number) => {
+    let total = 0
+    for (let year = 1; year <= upToYear; year++) {
+      if (year <= breakdown.software.length) {
+        total += breakdown.software[year - 1]
+        total += breakdown.hardware[year - 1]
+        total += breakdown.implementation[year - 1]
+        total += breakdown.operations[year - 1]
+        total += breakdown.support[year - 1]
+        total += breakdown.training[year - 1]
+      }
+    }
+    return total
+  }
+
+  return {
+    year1: calculateYearTotal(1),
+    year2: calculateYearTotal(2),
+    year3: calculateYearTotal(3),
+    year5: calculateYearTotal(5),
+    breakdown,
+  }
+}
+
+function getVolumePrice(vendor: EnhancedVendorData, devices: number): number {
+  const discounts = vendor.pricing.perDevice.volumeDiscounts
+  if (devices >= 10000) return discounts[10000]
+  if (devices >= 5000) return discounts[5000]
+  if (devices >= 1000) return discounts[1000]
+  if (devices >= 500) return discounts[500]
+  return vendor.pricing.perDevice.base
+}
+
+function calculateHardwareCost(vendor: EnhancedVendorData, devices: number): number {
+  if (!vendor.pricing.hardware.required) return 0
+
+  if (vendor.pricing.hardware.appliances) {
+    // Find appropriate appliance(s)
+    let remainingDevices = devices
+    let cost = 0
+
+    // Sort appliances by capacity (descending)
+    const sortedAppliances = [...vendor.pricing.hardware.appliances].sort((a, b) => b.capacity - a.capacity)
+
+    for (const appliance of sortedAppliances) {
+      if (remainingDevices >= appliance.capacity) {
+        const count = Math.floor(remainingDevices / appliance.capacity)
+        cost += count * appliance.cost
+        // Add redundancy
+        if (appliance.redundancy) {
+          cost += count * appliance.cost
+        }
+        remainingDevices = remainingDevices % appliance.capacity
+      }
+    }
+
+    // Handle remaining devices with smallest appliance
+    if (remainingDevices > 0) {
+      const smallestAppliance = sortedAppliances[sortedAppliances.length - 1]
+      cost += smallestAppliance.cost
+      if (smallestAppliance.redundancy) {
+        cost += smallestAppliance.cost
+      }
+    }
+
+    return cost
+  }
+
+  return vendor.pricing.infrastructure.serverRequirements.cost * Math.ceil(devices / 5000)
+}
+
+function calculateImplementationCost(vendor: EnhancedVendorData, devices: number): number {
+  const { implementation } = vendor.pricing.professionalServices
+
+  if (devices <= 1000) return implementation.small
+  if (devices <= 5000) return implementation.medium
+  return implementation.large
+}
+
+function calculateOperationalCost(vendor: EnhancedVendorData, devices: number): number {
+  // Calculate admin hours per year
+  const hoursPerWeek = vendor.operationalMetrics.adminEffort * (devices / 1000)
+  const annualHours = hoursPerWeek * 52
+  const hourlyRate = 75 // Average IT admin hourly rate
+
+  return annualHours * hourlyRate
+}
+
+// Helper function to calculate ROI
+export function calculateROI(
+  vendor: EnhancedVendorData,
+  tco: ReturnType<typeof calculateTotalCostOfOwnership>,
+  devices: number,
+): {
+  breachRiskReduction: number
+  operationalSavings: number
+  complianceSavings: number
+  totalSavings: number
+  paybackPeriod: number
+} {
+  const annualBreachRiskReduction =
+    ((vendor.security.breachCostSavings.average_breach_cost * vendor.security.breachCostSavings.reduction_percentage) /
+      100) *
+    0.1 // 10% annual breach probability
+
+  const annualOperationalSavings = ((100 - vendor.operationalMetrics.adminEffort) * 1000 * devices) / 1000
+
+  const annualComplianceSavings = vendor.security.breachCostSavings.insurance_discount * 10000
+
+  const totalAnnualSavings = annualBreachRiskReduction + annualOperationalSavings + annualComplianceSavings
+
+  const paybackPeriod = tco.year1 / totalAnnualSavings
+
+  return {
+    breachRiskReduction: annualBreachRiskReduction,
+    operationalSavings: annualOperationalSavings,
+    complianceSavings: annualComplianceSavings,
+    totalSavings: totalAnnualSavings,
+    paybackPeriod: Math.round(paybackPeriod * 10) / 10,
+  }
+}
+
+// Export the comprehensive vendor database
+export const ComprehensiveVendorDatabase = enhancedVendorDatabase
