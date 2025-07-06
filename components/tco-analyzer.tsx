@@ -3,9 +3,9 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import { compareVendors, type calculateVendorTCO } from "@/lib/tco-calculator"
+import { compareMultipleVendorsTCO, type calculateFullTCOForVendor } from "@/lib/calculators/tco"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
@@ -15,7 +15,6 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
-import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { MoreHorizontal, LineChartIcon } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -53,7 +52,6 @@ import {
   MoonIcon,
   SunIcon,
   TrendingUpIcon,
-  Filter,
   Settings,
   Search,
   X,
@@ -67,17 +65,12 @@ import {
   Activity,
   TrendingUp,
   Maximize2,
-  Minimize2,
-  Star,
   Award,
   Target,
   Sparkles,
-  Cpu,
-  Globe,
-  Lock,
 } from "lucide-react"
 
-type CalculationResult = NonNullable<ReturnType<typeof calculateVendorTCO>> & { id?: string }
+type CalculationResult = NonNullable<ReturnType<typeof calculateFullTCOForVendor>> & { id?: string }
 
 // Enhanced Modern Color Palette with Cutting-Edge Gradients
 const MODERN_COLORS = {
@@ -238,719 +231,6 @@ const modernAnimations = {
     rotate: [0, 5, -5, 0],
     transition: { duration: 0.5 },
   },
-}
-
-// Enhanced Vendor Selection Panel Component
-const EnhancedVendorSelectionPanel = ({
-  selectedVendors,
-  onVendorToggle,
-  darkMode,
-  searchTerm,
-  setSearchTerm,
-  isCollapsed,
-}: {
-  selectedVendors: string[]
-  onVendorToggle: (vendorId: string) => void
-  darkMode: boolean
-  searchTerm: string
-  setSearchTerm: (term: string) => void
-  isCollapsed: boolean
-}) => {
-  const filteredVendors = Object.values(VENDOR_DATA).filter((vendor) =>
-    vendor.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
-
-  const [hoveredVendor, setHoveredVendor] = useState<string | null>(null)
-
-  // Enhanced Difficulty Badge with modern styling
-  const ModernDifficultyBadge = ({ level }: { level: number }) => {
-    const configs = {
-      1: { label: "Very Low", gradient: MODERN_COLORS.gradients.success, icon: "🟢" },
-      2: { label: "Low", gradient: MODERN_COLORS.gradients.info, icon: "🔵" },
-      3: { label: "Medium", gradient: MODERN_COLORS.gradients.warning, icon: "🟡" },
-      4: { label: "High", gradient: MODERN_COLORS.gradients.danger, icon: "🟠" },
-      5: { label: "Very High", gradient: "linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%)", icon: "🔴" },
-    }
-
-    const config = configs[level] || configs[3]
-
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger>
-            <motion.div
-              className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium text-white"
-              style={{ background: config.gradient }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <span className="text-xs">{config.icon}</span>
-              <span>{level}/5</span>
-            </motion.div>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="bg-slate-900 border-slate-700">
-            <p className="text-white">Implementation Difficulty: {config.label}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    )
-  }
-
-  // Enhanced Vendor Card with modern glass morphism
-  const ModernVendorCard = ({ vendor }: { vendor: any }) => {
-    const isSelected = selectedVendors.includes(vendor.id)
-    const isHovered = hoveredVendor === vendor.id
-    const isPortnox = vendor.id === "portnox"
-
-    return (
-      <motion.div
-        layout
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        whileHover={{ y: -8, scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onHoverStart={() => setHoveredVendor(vendor.id)}
-        onHoverEnd={() => setHoveredVendor(null)}
-        className="relative group"
-      >
-        {/* Background Gradient */}
-        <div
-          className={cn(
-            "absolute inset-0 rounded-2xl opacity-20 transition-opacity duration-300",
-            isSelected && "opacity-40",
-            isHovered && "opacity-60",
-          )}
-          style={{
-            background: isPortnox
-              ? MODERN_COLORS.gradients.portnox
-              : vendor.id === "cisco"
-                ? MODERN_COLORS.gradients.cisco
-                : vendor.id === "aruba"
-                  ? MODERN_COLORS.gradients.aruba
-                  : vendor.id === "microsoft"
-                    ? MODERN_COLORS.gradients.microsoft
-                    : MODERN_COLORS.gradients.hologram,
-          }}
-        />
-
-        {/* Glow Effect */}
-        {isSelected && (
-          <motion.div
-            className="absolute inset-0 rounded-2xl"
-            animate={modernAnimations.glowPulse}
-            style={{
-              background: `linear-gradient(135deg, ${MODERN_COLORS.primary[400]}20 0%, ${MODERN_COLORS.primary[600]}40 100%)`,
-              filter: "blur(8px)",
-            }}
-          />
-        )}
-
-        <Card
-          onClick={() => onVendorToggle(vendor.id)}
-          className={cn(
-            "relative cursor-pointer transition-all duration-300 h-full border-0 overflow-hidden",
-            "backdrop-blur-xl bg-white/10 dark:bg-black/20",
-            isSelected && "ring-2 ring-primary/50 shadow-2xl",
-            darkMode ? "hover:bg-white/20" : "hover:bg-black/5",
-          )}
-        >
-          {/* Selection Indicator */}
-          {isSelected && (
-            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-2 right-2 z-10">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 flex items-center justify-center">
-                <motion.div initial={{ rotate: -90 }} animate={{ rotate: 0 }} transition={{ delay: 0.1 }}>
-                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-
-          <CardHeader className="p-4 pb-2">
-            <div className="flex items-center justify-between mb-3">
-              <motion.div className="relative" whileHover={modernAnimations.rotateHover}>
-                <Image
-                  src={vendor.logo || "/placeholder.svg"}
-                  alt={vendor.name}
-                  width={80}
-                  height={24}
-                  className="h-6 object-contain filter brightness-110"
-                />
-              </motion.div>
-
-              {isPortnox && (
-                <motion.div
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  className="flex items-center gap-1"
-                >
-                  <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                  <span className="text-xs font-bold text-yellow-400">BEST</span>
-                </motion.div>
-              )}
-            </div>
-
-            <CardTitle className="text-base font-bold leading-tight">{vendor.name}</CardTitle>
-
-            <p className="text-xs text-muted-foreground mt-1">{vendor.category}</p>
-          </CardHeader>
-
-          <CardContent className="p-4 pt-0 space-y-3">
-            {/* Market Share Indicator */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">Market Share</span>
-                <span className="font-semibold">{vendor.marketShare}%</span>
-              </div>
-              <div className="w-full bg-muted/30 rounded-full h-1.5 overflow-hidden">
-                <motion.div
-                  className="h-full rounded-full"
-                  style={{
-                    background: isPortnox ? MODERN_COLORS.gradients.portnox : MODERN_COLORS.gradients.info,
-                  }}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min(vendor.marketShare * 2.5, 100)}%` }}
-                  transition={{ duration: 1, delay: 0.2 }}
-                />
-              </div>
-            </div>
-
-            {/* Price and Difficulty */}
-            <div className="flex justify-between items-center">
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">Price</span>
-                <span className="font-bold text-sm">{vendor.priceIndicator}</span>
-              </div>
-              <div className="flex flex-col items-end">
-                <span className="text-xs text-muted-foreground mb-1">Difficulty</span>
-                <ModernDifficultyBadge level={vendor.difficulty} />
-              </div>
-            </div>
-
-            {/* Key Features Preview */}
-            <div className="space-y-2">
-              <span className="text-xs text-muted-foreground">Key Features</span>
-              <div className="flex flex-wrap gap-1">
-                {Object.entries(vendor.features?.advanced || {})
-                  .filter(([_, enabled]) => enabled)
-                  .slice(0, 3)
-                  .map(([feature, _]) => (
-                    <motion.span
-                      key={feature}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary font-medium"
-                    >
-                      {feature}
-                    </motion.span>
-                  ))}
-              </div>
-            </div>
-
-            {/* Hover Actions */}
-            <AnimatePresence>
-              {isHovered && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="flex gap-2 pt-2"
-                >
-                  <Button size="sm" variant="outline" className="flex-1 h-7 text-xs bg-transparent">
-                    <InfoIcon className="w-3 h-3 mr-1" />
-                    Details
-                  </Button>
-                  <Button size="sm" variant="outline" className="flex-1 h-7 text-xs bg-transparent">
-                    <BarChart3 className="w-3 h-3 mr-1" />
-                    Compare
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </CardContent>
-
-          {/* Floating Icons for Special Features */}
-          <div className="absolute top-4 left-4 flex flex-col gap-1">
-            {vendor.features?.advanced?.["AI/ML Analytics"] && (
-              <motion.div
-                animate={modernAnimations.float}
-                className="w-5 h-5 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center"
-              >
-                <Cpu className="w-2.5 h-2.5 text-white" />
-              </motion.div>
-            )}
-            {vendor.implementation?.cloudNative && (
-              <motion.div
-                animate={{
-                  ...modernAnimations.float,
-                  transition: { ...modernAnimations.float.transition, delay: 0.5 },
-                }}
-                className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400 flex items-center justify-center"
-              >
-                <Globe className="w-2.5 h-2.5 text-white" />
-              </motion.div>
-            )}
-            {vendor.features?.advanced?.["Zero Trust"] && (
-              <motion.div
-                animate={{ ...modernAnimations.float, transition: { ...modernAnimations.float.transition, delay: 1 } }}
-                className="w-5 h-5 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 flex items-center justify-center"
-              >
-                <Lock className="w-2.5 h-2.5 text-white" />
-              </motion.div>
-            )}
-          </div>
-        </Card>
-      </motion.div>
-    )
-  }
-
-  return (
-    <motion.div
-      animate={{ width: isCollapsed ? 0 : 400 }}
-      transition={{ duration: 0.4, ease: "easeInOut" }}
-      className={cn(
-        "border-r flex flex-col flex-shrink-0 overflow-hidden relative",
-        darkMode
-          ? "bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-slate-800/50"
-          : "bg-gradient-to-b from-slate-50 via-white to-slate-50 border-slate-200/50",
-      )}
-    >
-      {/* Animated Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div
-          className="w-full h-full"
-          style={{
-            backgroundImage: `radial-gradient(circle at 25% 25%, ${MODERN_COLORS.primary[500]}40 0%, transparent 50%), 
-                             radial-gradient(circle at 75% 75%, ${MODERN_COLORS.purple[500]}40 0%, transparent 50%)`,
-            backgroundSize: "100px 100px",
-            animation: "float 20s ease-in-out infinite",
-          }}
-        />
-      </div>
-
-      <div className="w-[400px] flex flex-col h-full relative z-10">
-        {/* Enhanced Header */}
-        <motion.div
-          className={cn(
-            "p-6 border-b backdrop-blur-xl",
-            darkMode ? "border-slate-800/50 bg-slate-900/50" : "border-slate-200/50 bg-white/50",
-          )}
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <motion.div
-              className="p-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500"
-              whileHover={modernAnimations.scaleHover}
-            >
-              <Filter className="h-5 w-5 text-white" />
-            </motion.div>
-            <div className="flex-1">
-              <h3 className="font-bold text-lg bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                Vendor Selection
-              </h3>
-              <p className="text-xs text-muted-foreground">Choose your comparison vendors</p>
-            </div>
-            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3 }}>
-              <Badge
-                variant="secondary"
-                className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-              >
-                {selectedVendors.length} selected
-              </Badge>
-            </motion.div>
-          </div>
-
-          {/* Enhanced Search */}
-          <div className="relative">
-            <motion.div
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10"
-              animate={{ rotate: searchTerm ? 360 : 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Search className="h-4 w-4 text-muted-foreground" />
-            </motion.div>
-            <Input
-              placeholder="Search vendors..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={cn(
-                "pl-10 pr-4 border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl",
-                "focus:ring-2 focus:ring-emerald-500/50 transition-all duration-300",
-                darkMode ? "text-white placeholder:text-slate-400" : "text-slate-900 placeholder:text-slate-500",
-              )}
-            />
-            {searchTerm && (
-              <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </motion.button>
-            )}
-          </div>
-
-          {/* Quick Filters */}
-          <div className="flex gap-2 mt-4">
-            {["All", "Cloud", "Traditional", "AI-Powered"].map((filter, index) => (
-              <motion.button
-                key={filter}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={modernAnimations.scaleHover}
-                whileTap={{ scale: 0.95 }}
-                className={cn(
-                  "px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-300",
-                  filter === "All"
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg"
-                    : darkMode
-                      ? "bg-slate-800/50 text-slate-300 hover:bg-slate-700/50"
-                      : "bg-slate-100/50 text-slate-600 hover:bg-slate-200/50",
-                )}
-              >
-                {filter}
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Enhanced Vendor Grid */}
-        <ScrollArea className="flex-1">
-          <motion.div
-            className="p-6 grid grid-cols-1 gap-6"
-            variants={modernAnimations.staggerContainer}
-            initial="hidden"
-            animate="visible"
-          >
-            {filteredVendors.map((vendor, index) => (
-              <motion.div key={vendor.id} variants={modernAnimations.slideInUp} transition={{ delay: index * 0.1 }}>
-                <ModernVendorCard vendor={vendor} />
-              </motion.div>
-            ))}
-          </motion.div>
-        </ScrollArea>
-
-        {/* Enhanced Footer */}
-        <motion.div
-          className={cn(
-            "p-4 border-t backdrop-blur-xl",
-            darkMode ? "border-slate-800/50 bg-slate-900/50" : "border-slate-200/50 bg-white/50",
-          )}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{filteredVendors.length} vendors available</span>
-            <motion.button
-              whileHover={modernAnimations.scaleHover}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-1 text-emerald-600 hover:text-emerald-500"
-            >
-              <Sparkles className="w-3 h-3" />
-              Get Recommendations
-            </motion.button>
-          </div>
-        </motion.div>
-      </div>
-    </motion.div>
-  )
-}
-
-// Enhanced Styled Components with Modern Design
-const ModernGradientCard = ({
-  children,
-  className,
-  gradient = "hologram",
-  darkMode,
-  glow = false,
-  ...props
-}: {
-  children: React.ReactNode
-  className?: string
-  gradient?: keyof typeof MODERN_COLORS.gradients
-  darkMode?: boolean
-  glow?: boolean
-  [key: string]: any
-}) => (
-  <motion.div
-    className={cn(
-      "relative overflow-hidden transition-all duration-500 border-0 rounded-3xl",
-      "backdrop-blur-xl bg-white/5 dark:bg-black/10",
-      "hover:shadow-2xl hover:shadow-primary/20",
-      className,
-    )}
-    whileHover={{ y: -8, scale: 1.02 }}
-    animate={glow ? modernAnimations.glowPulse : {}}
-    {...props}
-  >
-    {/* Animated Background */}
-    <div className="absolute inset-0 opacity-10" style={{ background: MODERN_COLORS.gradients[gradient] }} />
-
-    {/* Mesh Gradient Overlay */}
-    <div className="absolute inset-0 opacity-20">
-      <div
-        className="w-full h-full"
-        style={{
-          backgroundImage: `radial-gradient(circle at 20% 80%, ${MODERN_COLORS.primary[400]}40 0%, transparent 50%), 
-                           radial-gradient(circle at 80% 20%, ${MODERN_COLORS.purple[400]}40 0%, transparent 50%),
-                           radial-gradient(circle at 40% 40%, ${MODERN_COLORS.blue[400]}40 0%, transparent 50%)`,
-        }}
-      />
-    </div>
-
-    {/* Glass Border */}
-    <div className="absolute inset-0 rounded-3xl border border-white/20 dark:border-white/10" />
-
-    <div className="relative z-10">{children}</div>
-  </motion.div>
-)
-
-// Enhanced KPI Card with Modern Styling
-const ModernKPICard = ({
-  title,
-  value,
-  subtitle,
-  icon: Icon,
-  trend,
-  trendValue,
-  color = "primary",
-  darkMode,
-  sparklineData,
-  interactive = true,
-  size = "default",
-}: {
-  title: string
-  value: string | number
-  subtitle?: string
-  icon: React.ElementType
-  trend?: "up" | "down" | "neutral"
-  trendValue?: string
-  color?: string
-  darkMode?: boolean
-  sparklineData?: any[]
-  interactive?: boolean
-  size?: "small" | "default" | "large"
-}) => {
-  const [isHovered, setIsHovered] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
-
-  const colorMap = {
-    primary: MODERN_COLORS.gradients.portnox,
-    success: MODERN_COLORS.gradients.success,
-    warning: MODERN_COLORS.gradients.warning,
-    danger: MODERN_COLORS.gradients.danger,
-    info: MODERN_COLORS.gradients.info,
-    purple: MODERN_COLORS.gradients.hologram,
-    cyan: MODERN_COLORS.gradients.aurora,
-    pink: MODERN_COLORS.gradients.sunset,
-  }
-
-  const selectedGradient = colorMap[color] || MODERN_COLORS.gradients.portnox
-  const TrendIcon = trend === "up" ? ArrowUpRight : trend === "down" ? ArrowDownRight : Activity
-
-  return (
-    <motion.div
-      className={cn(
-        "relative overflow-hidden rounded-3xl border-0 transition-all duration-500",
-        "backdrop-blur-xl bg-white/5 dark:bg-black/10",
-        size === "small" && "p-4",
-        size === "default" && "p-6",
-        size === "large" && "p-8",
-      )}
-      whileHover={{ y: -12, scale: 1.03 }}
-      whileTap={{ scale: 0.98 }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      onClick={() => interactive && setIsExpanded(!isExpanded)}
-      style={{ cursor: interactive ? "pointer" : "default" }}
-    >
-      {/* Animated Background Gradient */}
-      <motion.div
-        className="absolute inset-0 opacity-20"
-        style={{ background: selectedGradient }}
-        animate={{
-          opacity: isHovered ? 0.3 : 0.1,
-          scale: isHovered ? 1.1 : 1,
-        }}
-        transition={{ duration: 0.5 }}
-      />
-
-      {/* Mesh Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div
-          className="w-full h-full"
-          style={{
-            backgroundImage: `radial-gradient(circle at 25% 25%, ${MODERN_COLORS.primary[400]}60 0%, transparent 50%)`,
-            backgroundSize: "50px 50px",
-          }}
-        />
-      </div>
-
-      {/* Glass Border */}
-      <motion.div
-        className="absolute inset-0 rounded-3xl border"
-        style={{ borderColor: "rgba(255, 255, 255, 0.2)" }}
-        animate={{
-          borderColor: isHovered ? "rgba(20, 184, 166, 0.5)" : "rgba(255, 255, 255, 0.2)",
-          boxShadow: isHovered ? "0 0 40px rgba(20, 184, 166, 0.3)" : "0 0 0px rgba(20, 184, 166, 0)",
-        }}
-        transition={{ duration: 0.3 }}
-      />
-
-      <div className="relative z-10">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <motion.div
-              className="p-4 rounded-2xl relative"
-              style={{ background: selectedGradient }}
-              animate={isHovered ? modernAnimations.float : {}}
-            >
-              <Icon className="h-6 w-6 text-white" />
-
-              {/* Icon Glow */}
-              <motion.div
-                className="absolute inset-0 rounded-2xl"
-                style={{ background: selectedGradient }}
-                animate={{
-                  scale: isHovered ? [1, 1.2, 1] : 1,
-                  opacity: isHovered ? [0.5, 0.8, 0.5] : 0,
-                }}
-                transition={{ duration: 1, repeat: isHovered ? Number.POSITIVE_INFINITY : 0 }}
-              />
-            </motion.div>
-
-            <div>
-              <h3 className={cn("text-sm font-semibold", darkMode ? "text-slate-200" : "text-slate-700")}>{title}</h3>
-              {subtitle && (
-                <p className={cn("text-xs mt-1", darkMode ? "text-slate-400" : "text-slate-500")}>{subtitle}</p>
-              )}
-            </div>
-          </div>
-
-          {interactive && (
-            <motion.button
-              className={cn("p-2 rounded-xl transition-colors", darkMode ? "hover:bg-white/10" : "hover:bg-black/5")}
-              whileHover={modernAnimations.scaleHover}
-              whileTap={{ scale: 0.9 }}
-            >
-              {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-            </motion.button>
-          )}
-        </div>
-
-        {/* Value Display */}
-        <motion.div
-          className={cn("text-4xl font-bold mb-4", darkMode ? "text-white" : "text-slate-900")}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
-          <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">{value}</span>
-        </motion.div>
-
-        {/* Trend Indicator */}
-        {trend && trendValue && (
-          <motion.div
-            className="flex items-center space-x-3 mb-4"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div
-              className={cn(
-                "p-2 rounded-xl",
-                trend === "up" ? "bg-emerald-500/20" : trend === "down" ? "bg-red-500/20" : "bg-slate-500/20",
-              )}
-            >
-              <TrendIcon
-                className={cn(
-                  "h-4 w-4",
-                  trend === "up" ? "text-emerald-400" : trend === "down" ? "text-red-400" : "text-slate-400",
-                )}
-              />
-            </div>
-            <span
-              className={cn(
-                "text-sm font-semibold",
-                trend === "up" ? "text-emerald-400" : trend === "down" ? "text-red-400" : "text-slate-400",
-              )}
-            >
-              {trendValue}
-            </span>
-          </motion.div>
-        )}
-
-        {/* Sparkline Chart */}
-        {sparklineData && sparklineData.length > 0 && (
-          <motion.div
-            className="h-16 -mx-2 -mb-2 mt-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={sparklineData}>
-                <defs>
-                  <linearGradient id={`sparkline-${color}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#14b8a6"
-                  strokeWidth={3}
-                  fill={`url(#sparkline-${color})`}
-                  dot={false}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </motion.div>
-        )}
-
-        {/* Expanded Content */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.4 }}
-              className="mt-6 pt-6 border-t border-white/10"
-            >
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Previous Period:</span>
-                  <span className="text-slate-200 font-semibold">$2.1M</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Growth Rate:</span>
-                  <span className="text-emerald-400 font-semibold">+23.5%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Benchmark:</span>
-                  <span className="text-slate-200 font-semibold">Industry Avg</span>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.div>
-  )
 }
 
 // Organization size configurations
@@ -1255,7 +535,6 @@ const VENDOR_DATA = {
         TACACS: false,
         "Guest Portal": true,
         PKI: true,
-        RADIUS: true,
       },
       advanced: {
         "AI/ML Analytics": false,
@@ -1480,7 +759,7 @@ const VENDOR_DATA = {
       },
       advanced: {
         "AI/ML Analytics": false,
-        "Zero Trust": true,
+        "Zero Trust": false,
         Microsegmentation: false,
         "Threat Detection": true,
         "Compliance Automation": true,
@@ -1544,7 +823,7 @@ const VENDOR_DATA = {
         "Threat Detection": false,
         "Compliance Automation": false,
         "Multi-tenant": false,
-        "IoT Security": true,
+        "IoT Security": false,
       },
     },
     implementation: {
@@ -1565,222 +844,6 @@ const VENDOR_DATA = {
     },
     strengths: ["No licensing costs", "Highly customizable", "Community support", "Full source access"],
     weaknesses: ["Very complex setup", "Requires expertise", "Limited enterprise support", "High operational overhead"],
-  },
-  foxpass: {
-    id: "foxpass",
-    name: "Foxpass",
-    category: "Cloud RADIUS",
-    marketShare: 1.8,
-    logo: "/foxpass-logo.png",
-    description: "Cloud-hosted RADIUS and LDAP for Wi-Fi and VPN",
-    priceIndicator: "$",
-    difficulty: 1,
-    features: {
-      core: {
-        "802.1X": true,
-        "Risk-Based Auth": false,
-        "Device Profiling": false,
-        "Policy Automation": false,
-        "Cloud Management": true,
-        "API Integration": true,
-        "Real-time Monitoring": false,
-        "Automated Remediation": false,
-        SSO: true,
-        TACACS: false,
-        "Guest Portal": false,
-        PKI: false,
-        RADIUS: true,
-      },
-      advanced: {
-        "AI/ML Analytics": false,
-        "Zero Trust": false,
-        Microsegmentation: false,
-        "Threat Detection": false,
-        "Compliance Automation": false,
-        "Multi-tenant": true,
-        "IoT Security": false,
-      },
-    },
-    implementation: {
-      deploymentTime: { poc: 8, fullDeployment: 120, fullScale: 120 },
-      complexity: "Low",
-      requiresHardware: false,
-      cloudNative: true,
-    },
-    pricing: {
-      model: "Per user/month",
-      startingPrice: 2.5,
-      enterprise: 3.2,
-    },
-    roi: {
-      breachRiskReduction: 0.35,
-      operationalEfficiency: 0.4,
-      complianceAutomation: 0.2,
-    },
-    strengths: ["Very simple setup", "Cloud RADIUS/LDAP", "Affordable", "Quick deployment"],
-    weaknesses: ["Limited NAC features", "Basic functionality", "No device profiling", "Authentication only"],
-  },
-  securew2: {
-    id: "securew2",
-    name: "SecureW2",
-    category: "Certificate-based",
-    marketShare: 2.3,
-    logo: "/securew2-logo.png",
-    description: "Cloud-based PKI and certificate management for secure Wi-Fi",
-    priceIndicator: "$$",
-    difficulty: 2,
-    features: {
-      core: {
-        "802.1X": true,
-        "Risk-Based Auth": false,
-        "Device Profiling": false,
-        "Policy Automation": false,
-        "Cloud Management": true,
-        "API Integration": true,
-        "Real-time Monitoring": false,
-        "Automated Remediation": false,
-        SSO: true,
-        TACACS: false,
-        "Guest Portal": false,
-        PKI: true,
-        RADIUS: true,
-      },
-      advanced: {
-        "AI/ML Analytics": false,
-        "Zero Trust": false,
-        Microsegmentation: false,
-        "Threat Detection": false,
-        "Compliance Automation": false,
-        "Multi-tenant": true,
-        "IoT Security": false,
-      },
-    },
-    implementation: {
-      deploymentTime: { poc: 24, fullDeployment: 360, fullScale: 360 },
-      complexity: "Low",
-      requiresHardware: false,
-      cloudNative: true,
-    },
-    pricing: {
-      model: "Per user/year",
-      startingPrice: 3.8,
-      enterprise: 4.5,
-    },
-    roi: {
-      breachRiskReduction: 0.4,
-      operationalEfficiency: 0.45,
-      complianceAutomation: 0.3,
-    },
-    strengths: ["Strong certificate management", "EAP-TLS focus", "Cloud PKI", "Easy certificate deployment"],
-    weaknesses: ["Limited to authentication", "No device visibility", "Certificate-only approach", "Narrow use case"],
-  },
-  radiusaas: {
-    id: "radiusaas",
-    name: "RADIUS-as-a-Service",
-    category: "Cloud RADIUS",
-    marketShare: 1.2,
-    logo: "/radiusaas-logo.png",
-    description: "Cloud-based RADIUS service for network authentication",
-    priceIndicator: "$",
-    difficulty: 1,
-    features: {
-      core: {
-        "802.1X": true,
-        "Risk-Based Auth": false,
-        "Device Profiling": false,
-        "Policy Automation": false,
-        "Cloud Management": true,
-        "API Integration": false,
-        "Real-time Monitoring": false,
-        "Automated Remediation": false,
-        SSO: false,
-        TACACS: false,
-        "Guest Portal": false,
-        PKI: false,
-        RADIUS: true,
-      },
-      advanced: {
-        "AI/ML Analytics": false,
-        "Zero Trust": false,
-        Microsegmentation: false,
-        "Threat Detection": false,
-        "Compliance Automation": false,
-        "Multi-tenant": false,
-        "IoT Security": false,
-      },
-    },
-    implementation: {
-      deploymentTime: { poc: 4, fullDeployment: 48, fullScale: 48 },
-      complexity: "Low",
-      requiresHardware: false,
-      cloudNative: true,
-    },
-    pricing: {
-      model: "Per authentication",
-      startingPrice: 1.8,
-      enterprise: 2.2,
-    },
-    roi: {
-      breachRiskReduction: 0.25,
-      operationalEfficiency: 0.3,
-      complianceAutomation: 0.15,
-    },
-    strengths: ["Simple RADIUS service", "Pay per use", "Quick setup", "Basic authentication"],
-    weaknesses: ["Very limited features", "No NAC capabilities", "Authentication only", "Minimal management"],
-  },
-  arista: {
-    id: "arista",
-    name: "Arista AGNI",
-    category: "Cloud-Native NAC",
-    marketShare: 2.5,
-    logo: "/arista-logo.png",
-    description: "Cloud-native NAC service integrated with Arista's CloudVision.",
-    priceIndicator: "$$$",
-    difficulty: 3,
-    features: {
-      core: {
-        "802.1X": true,
-        "Risk-Based Auth": true,
-        "Device Profiling": true,
-        "Policy Automation": true,
-        "Cloud Management": true,
-        "API Integration": true,
-        "Real-time Monitoring": true,
-        "Automated Remediation": false,
-        SSO: true,
-        TACACS: true,
-        "Guest Portal": true,
-        PKI: true,
-        RADIUS: true,
-      },
-      advanced: {
-        "AI/ML Analytics": true,
-        "Zero Trust": true,
-        Microsegmentation: true,
-        "Threat Detection": true,
-        "Compliance Automation": false,
-        "Multi-tenant": true,
-        "IoT Security": true,
-      },
-    },
-    implementation: {
-      deploymentTime: { poc: 60, fullDeployment: 960, fullScale: 960 },
-      complexity: "Medium",
-      requiresHardware: false,
-      cloudNative: true,
-    },
-    pricing: {
-      model: "Subscription per device",
-      startingPrice: 6.0,
-      enterprise: 7.5,
-    },
-    roi: {
-      breachRiskReduction: 0.72,
-      operationalEfficiency: 0.68,
-      complianceAutomation: 0.6,
-    },
-    strengths: ["Deep integration with Arista ecosystem", "CloudVision management", "Strong for data center & campus"],
-    weaknesses: ["Best value within Arista environments", "Newer entrant in NAC space"],
   },
 }
 
@@ -2630,34 +1693,14 @@ export default function TcoAnalyzerUltimate() {
   const handleCalculate = useCallback(() => {
     setCalculationError(null)
     try {
-      const calculatedResults = compareVendors(
-        selectedVendors,
-        orgSizeKey,
-        currentDeviceCount,
-        currentUsersCount,
-        industry,
-        projectionYears,
-        region,
-        portnoxBasePrice,
-        portnoxAddons,
-      )
+      const calculatedResults = compareMultipleVendorsTCO(selectedVendors, orgSizeKey, industry, projectionYears)
       setResults(calculatedResults as CalculationResult[])
     } catch (error) {
       console.error("Calculation error:", error)
       setCalculationError("Failed to calculate TCO. Please check inputs.")
       setResults(null)
     }
-  }, [
-    selectedVendors,
-    orgSizeKey,
-    currentDeviceCount,
-    currentUsersCount,
-    industry,
-    projectionYears,
-    region,
-    portnoxBasePrice,
-    portnoxAddons,
-  ])
+  }, [selectedVendors, orgSizeKey, industry, projectionYears])
 
   useEffect(() => {
     if (selectedVendors.length > 0) {
@@ -2690,22 +1733,24 @@ export default function TcoAnalyzerUltimate() {
     })
   }
 
-  const portnoxResult = useMemo(() => results?.find((r) => r?.vendor === "portnox"), [results])
-  const competitors = useMemo(() => results?.filter((r) => r?.vendor !== "portnox") || [], [results])
+  const portnoxResult = useMemo(() => results?.find((r) => r?.vendorId === "portnox"), [results])
+  const competitors = useMemo(() => results?.filter((r) => r?.vendorId !== "portnox") || [], [results])
   const lowestCompetitor = useMemo(
     () =>
-      competitors.sort((a, b) => (a?.total ?? Number.POSITIVE_INFINITY) - (b?.total ?? Number.POSITIVE_INFINITY))[0],
+      competitors.sort(
+        (a, b) => (a?.totalTCO ?? Number.POSITIVE_INFINITY) - (b?.totalTCO ?? Number.POSITIVE_INFINITY),
+      )[0],
     [competitors],
   )
 
   const totalSavingsVsLowestCompetitor = useMemo(() => {
     if (!portnoxResult || !lowestCompetitor) return 0
-    return lowestCompetitor.total - portnoxResult.total
+    return lowestCompetitor.totalTCO - portnoxResult.totalTCO
   }, [portnoxResult, lowestCompetitor])
 
   const savingsPercentVsLowestCompetitor = useMemo(() => {
-    if (!portnoxResult || !lowestCompetitor || lowestCompetitor.total === 0) return 0
-    return (totalSavingsVsLowestCompetitor / lowestCompetitor.total) * 100
+    if (!portnoxResult || !lowestCompetitor || lowestCompetitor.totalTCO === 0) return 0
+    return (totalSavingsVsLowestCompetitor / lowestCompetitor.totalTCO) * 100
   }, [totalSavingsVsLowestCompetitor, lowestCompetitor, portnoxResult])
 
   // Enhanced Header Component
@@ -2921,7 +1966,7 @@ export default function TcoAnalyzerUltimate() {
                         : "text-emerald-600"
                       : darkMode
                         ? "text-slate-400 hover:text-slate-200"
-                        : "text-slate-500 hover:text-slate-700",
+                        : "text-slate-600 hover:text-slate-800",
                   )}
                 >
                   {/* Tab Background */}
@@ -3054,30 +2099,30 @@ export default function TcoAnalyzerUltimate() {
     const kpiData = useMemo(() => {
       if (!results || results.length === 0) return []
 
-      const portnoxData = results.find((r) => r.vendor === "portnox")
-      const competitorData = results.filter((r) => r.vendor !== "portnox")
-      const avgCompetitorCost = competitorData.reduce((sum, r) => sum + r.total, 0) / competitorData.length
+      const portnoxData = results.find((r) => r?.vendorId === "portnox")
+      const competitorData = results.filter((r) => r?.vendorId !== "portnox")
+      const avgCompetitorCost = competitorData.reduce((sum, r) => sum + r.totalTCO, 0) / competitorData.length
 
       return [
         {
           title: "Total Savings",
-          value: formatCurrency(avgCompetitorCost - (portnoxData?.total || 0), true),
+          value: formatCurrency(avgCompetitorCost - (portnoxData?.totalTCO || 0), true),
           subtitle: "vs. Average Competitor",
           icon: DollarSign,
           trend: "up",
-          trendValue: `${(((avgCompetitorCost - (portnoxData?.total || 0)) / avgCompetitorCost) * 100).toFixed(1)}%`,
+          trendValue: `${(((avgCompetitorCost - (portnoxData?.totalTCO || 0)) / avgCompetitorCost) * 100).toFixed(1)}%`,
           color: "success",
-          sparklineData: generateTimeSeriesData(avgCompetitorCost - (portnoxData?.total || 0), 12, "up"),
+          sparklineData: generateTimeSeriesData(avgCompetitorCost - (portnoxData?.totalTCO || 0), 12, "up"),
         },
         {
           title: "ROI",
-          value: `${portnoxData?.roi?.percentage?.toFixed(1) || 0}%`,
-          subtitle: `${portnoxData?.roi?.paybackMonths || 0} month payback`,
+          value: `${portnoxData?.roiMetrics?.annualizedROIPercent?.toFixed(1) || 0}%`,
+          subtitle: `${portnoxData?.roiMetrics?.paybackPeriodMonths || 0} month payback`,
           icon: TrendingUp,
           trend: "up",
           trendValue: "+23.5%",
           color: "primary",
-          sparklineData: generateTimeSeriesData(portnoxData?.roi?.percentage || 0, 12, "up"),
+          sparklineData: generateTimeSeriesData(Number(portnoxData?.roiMetrics?.annualizedROIPercent) || 0, 12, "up"),
         },
         {
           title: "Risk Reduction",
@@ -3163,11 +2208,11 @@ export default function TcoAnalyzerUltimate() {
                       <ComposedChart
                         data={results.map((r) => ({
                           vendor: r.vendorName,
-                          total: r.total,
-                          licensing: r.licensing,
-                          implementation: r.implementation,
-                          operations: r.operations,
-                          roi: r.roi?.percentage || 0,
+                          total: r.totalTCO,
+                          licensing: r.breakdown.software,
+                          implementation: r.breakdown.implementation,
+                          operations: r.breakdown.operational,
+                          roi: r.roiMetrics?.annualizedROIPercent || 0,
                         }))}
                       >
                         <defs>
@@ -3412,7 +2457,9 @@ export default function TcoAnalyzerUltimate() {
 
                   <div className="grid grid-cols-2 gap-4 text-center">
                     <div>
-                      <div className="text-lg font-bold text-blue-400">{portnoxResult?.roi?.paybackMonths || 0}</div>
+                      <div className="text-lg font-bold text-blue-400">
+                        {portnoxResult?.roiMetrics?.paybackPeriodMonths || 0}
+                      </div>
                       <div className="text-xs text-muted-foreground">Months Payback</div>
                     </div>
                     <div>
@@ -3435,6 +2482,183 @@ export default function TcoAnalyzerUltimate() {
             </ModernGradientCard>
           </motion.div>
         </motion.div>
+      </motion.div>
+    )
+  }
+
+  // Enhanced Vendor Selection Panel
+  const EnhancedVendorSelectionPanel = ({
+    selectedVendors,
+    onVendorToggle,
+    darkMode,
+    searchTerm,
+    setSearchTerm,
+    isCollapsed,
+  }: {
+    selectedVendors: string[]
+    onVendorToggle: (vendorId: string) => void
+    darkMode: boolean
+    searchTerm: string
+    setSearchTerm: (term: string) => void
+    isCollapsed: boolean
+  }) => {
+    const filteredVendors = useMemo(() => {
+      return Object.values(VENDOR_DATA).filter((vendor) => vendor.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    }, [searchTerm])
+
+    return (
+      <motion.aside
+        className={cn(
+          "fixed left-0 top-0 z-30 h-full w-72 overflow-y-auto transition-all duration-300 border-r",
+          darkMode ? "bg-slate-900 border-slate-800 text-slate-300" : "bg-white border-slate-200 text-slate-700",
+        )}
+        style={{ width: isCollapsed ? "0rem" : "18rem" }}
+      >
+        <div className="p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <Input
+              type="search"
+              placeholder="Search vendors..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={cn(
+                "pl-10 pr-3 py-2 rounded-xl border-0 bg-white/5 dark:bg-black/20 backdrop-blur-xl",
+                darkMode ? "text-white placeholder:text-slate-400" : "text-slate-900 placeholder:text-slate-500",
+              )}
+            />
+          </div>
+        </div>
+
+        <Separator className={darkMode ? "bg-slate-700" : "bg-slate-200"} />
+
+        <ScrollArea className="h-[calc(100vh-8rem)]">
+          <div className="p-4 space-y-3">
+            {filteredVendors.map((vendor) => (
+              <motion.div
+                key={vendor.id}
+                className={cn(
+                  "flex items-center justify-between p-3 rounded-xl transition-all duration-300",
+                  selectedVendors.includes(vendor.id)
+                    ? "bg-emerald-500/10 dark:bg-emerald-500/20"
+                    : "hover:bg-slate-100 dark:hover:bg-slate-800",
+                )}
+                whileHover={modernAnimations.scaleHover}
+                whileTap={{ scale: 0.95 }}
+              >
+                <div className="flex items-center space-x-3">
+                  <Image
+                    src={vendor.logo || "/placeholder.svg"}
+                    alt={vendor.name}
+                    width={32}
+                    height={32}
+                    className="rounded-full"
+                  />
+                  <span className="text-sm font-medium">{vendor.name}</span>
+                </div>
+                <Switch
+                  checked={selectedVendors.includes(vendor.id)}
+                  onCheckedChange={() => onVendorToggle(vendor.id)}
+                  disabled={vendor.id === "portnox" && selectedVendors.length === 1}
+                  className="data-[state=checked]:bg-emerald-500"
+                />
+              </motion.div>
+            ))}
+          </div>
+        </ScrollArea>
+      </motion.aside>
+    )
+  }
+
+  // Modern KPI Card Component
+  const ModernKPICard = ({
+    title,
+    value,
+    subtitle,
+    icon: Icon,
+    trend,
+    trendValue,
+    color,
+    sparklineData,
+    darkMode,
+    size = "default",
+    interactive = false,
+  }: {
+    title: string
+    value: string
+    subtitle: string
+    icon: any
+    trend: "up" | "down" | "stable"
+    trendValue: string
+    color: "primary" | "success" | "warning" | "danger" | "purple" | "cyan"
+    sparklineData: any[]
+    darkMode: boolean
+    size?: "small" | "default"
+    interactive?: boolean
+  }) => {
+    const [isHovered, setIsHovered] = useState(false)
+
+    const cardStyle = cn(
+      "relative overflow-hidden rounded-2xl border shadow-md transition-all duration-300",
+      darkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200",
+      interactive && "cursor-pointer hover:shadow-lg",
+      interactive && isHovered && "transform scale-105",
+    )
+
+    const headerStyle = cn("flex items-center justify-between p-4", darkMode ? "text-slate-300" : "text-slate-700")
+
+    const titleStyle = cn("text-sm font-medium", darkMode ? "text-slate-300" : "text-slate-700")
+
+    const valueStyle = cn(
+      "text-2xl font-bold tracking-tight",
+      darkMode ? "text-white" : "text-slate-900",
+      color === "primary" && "text-emerald-400",
+      color === "success" && "text-green-400",
+      color === "warning" && "text-yellow-400",
+      color === "danger" && "text-red-400",
+      color === "purple" && "text-purple-400",
+      color === "cyan" && "text-cyan-400",
+    )
+
+    const trendStyle = cn(
+      "flex items-center space-x-1 text-xs font-medium",
+      trend === "up" && "text-green-500",
+      trend === "down" && "text-red-500",
+      trend === "stable" && "text-slate-500",
+    )
+
+    const sparklineStyle = {
+      width: "100%",
+      height: size === "small" ? 40 : 60,
+    }
+
+    return (
+      <motion.div
+        className={cardStyle}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        whileTap={{ scale: 0.95 }}
+      >
+        <div className={headerStyle}>
+          <div>
+            <div className={titleStyle}>{title}</div>
+            <div className={valueStyle}>{value}</div>
+            <div className="text-xs text-muted-foreground">{subtitle}</div>
+          </div>
+          <Icon className="h-6 w-6" />
+        </div>
+        <ResponsiveContainer width="100%" height={sparklineStyle.height}>
+          <AreaChart data={sparklineData}>
+            <Area type="monotone" dataKey="value" stroke="#8884d8" fill="#8884d8" />
+          </AreaChart>
+        </ResponsiveContainer>
+        <div className="p-4">
+          <div className={trendStyle}>
+            {trend === "up" && <ArrowUpRight className="h-4 w-4" />}
+            {trend === "down" && <ArrowDownRight className="h-4 w-4" />}
+            <span>{trendValue}</span>
+          </div>
+        </div>
       </motion.div>
     )
   }
@@ -3656,7 +2880,6 @@ export default function TcoAnalyzerUltimate() {
           portnoxBasePrice={portnoxBasePrice}
           setPortnoxBasePrice={setPortnoxBasePrice}
           portnoxAddons={portnoxAddons}
-          setPortnoxAddons={setPortnoxAddons}
           darkMode={darkMode}
         />
       </TooltipProvider>
