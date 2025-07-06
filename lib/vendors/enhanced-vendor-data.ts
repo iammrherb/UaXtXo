@@ -1178,7 +1178,7 @@ export function calculateTotalCostOfOwnership(
     // Software costs
     let softwareCost = 0
     if (vendor.pricing.licensing.model === "subscription") {
-      const tierPrice = vendor.pricing.subscriptionTiers?.enterprise || vendor.pricing.perDevice.base
+      const tierPrice = vendor.pricing.licensing.subscriptionTiers?.enterprise || vendor.pricing.perDevice.base
       softwareCost = getVolumePrice(vendor, devices) * devices
     } else if (year === 1) {
       softwareCost = getVolumePrice(vendor, devices) * devices
