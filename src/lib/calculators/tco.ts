@@ -1,352 +1,222 @@
-import type { NewVendorData, VendorId, VendorPricingTier } from "@/src/lib/vendors/data"
-import { getVendorDataById } from "@/src/lib/vendors/data"
-import type { Industry, IndustryId } from "@/src/lib/industries/data"
-import { getIndustryById } from "@/src/lib/industries/data"
-import type { OrgSizeId } from "@/src/types/common"
+import { VENDOR_DATA } from "../vendors/data"
 
-// --- Configuration Data ---
-const staffCostsByRegion: Record<
-  string,
-  { itAdminAvgSalary: number; securityAnalystAvgSalary: number; networkEngineerAvgSalary: number }
-> = {
-  "north-america": { itAdminAvgSalary: 125000, securityAnalystAvgSalary: 145000, networkEngineerAvgSalary: 135000 },
-  europe: { itAdminAvgSalary: 95000, securityAnalystAvgSalary: 115000, networkEngineerAvgSalary: 105000 },
-  "asia-pacific": { itAdminAvgSalary: 65000, securityAnalystAvgSalary: 85000, networkEngineerAvgSalary: 75000 },
-  // Add other regions as needed
-}
-
-// Added baseline costs for ROI calculations
-const defaultOrgSizeDetails: Record<
-  OrgSizeId,
-  {
-    deviceCount: number
-    userCount: number
-    itStaffCount: number
-    avgAnnualBreachCostBaseline: number // Average annual cost of a security breach without an advanced NAC solution
-    manualComplianceCostBaseline: number // Annual cost of manual compliance efforts
-    operationalInefficiencyCostBaseline: number // Annual cost due to operational inefficiencies addressable by NAC
-  }
-> = {
-  small_business: {
-    deviceCount: 50,
-    userCount: 50,
-    itStaffCount: 1,
-    avgAnnualBreachCostBaseline: 50000,
-    manualComplianceCostBaseline: 20000,
-    operationalInefficiencyCostBaseline: 15000,
-  },
-  mid_market: {
-    deviceCount: 500,
-    userCount: 500,
-    itStaffCount: 5,
-    avgAnnualBreachCostBaseline: 250000,
-    manualComplianceCostBaseline: 100000,
-    operationalInefficiencyCostBaseline: 75000,
-  },
-  enterprise: {
-    deviceCount: 5000,
-    userCount: 5000,
-    itStaffCount: 25,
-    avgAnnualBreachCostBaseline: 1000000,
-    manualComplianceCostBaseline: 400000,
-    operationalInefficiencyCostBaseline: 300000,
-  },
-  global_enterprise: {
-    deviceCount: 25000,
-    userCount: 25000,
-    itStaffCount: 100,
-    avgAnnualBreachCostBaseline: 5000000,
-    manualComplianceCostBaseline: 1500000,
-    operationalInefficiencyCostBaseline: 1000000,
-  },
-}
-
-// --- Cost Calculation Functions ---
-function calculateLicensingCost(
-  vendor: NewVendorData,
-  orgSize: OrgSizeId,
-  numDevices: number,
-  numUsers: number,
-  years: number,
-): number {
-  if (vendor.pricingTiers && vendor.pricingTiers.length > 0) {
-    let tier: VendorPricingTier | undefined = vendor.pricingTiers.find((t) => t.orgSizeTarget?.includes(orgSize))
-    if (!tier)
-      tier = vendor.pricingTiers.find(
-        (t) => t.userRange && numUsers >= t.userRange[0] && (t.userRange[1] === null || numUsers <= t.userRange[1]),
-      )
-    if (!tier && vendor.pricingTiers.length > 0) tier = vendor.pricingTiers[0]
-
-    if (tier) {
-      let unitPriceAnnual = 0
-      let units = 0
-      if (tier.pricePerDevicePerMonth !== undefined) {
-        unitPriceAnnual = tier.pricePerDevicePerMonth * 12
-        units = numDevices
-      } else if (tier.pricePerUserPerMonth !== undefined) {
-        unitPriceAnnual = tier.pricePerUserPerMonth * 12
-        units = numUsers
-      }
-      if (tier.annualDiscountPercent) {
-        // Assuming this discount is for annual prepay vs monthly
-        unitPriceAnnual *= 1 - tier.annualDiscountPercent / 100
-      }
-      // Further multi-year discounts could be baked into vendor.tcoFactors.licensingCostPerYear if not in tiers
-      if (units > 0 && unitPriceAnnual > 0) return unitPriceAnnual * units * years
-    }
-  }
-  // Fallback: tcoFactors.licensingCostPerYear is assumed to be an annual cost for a 'typical' setup for this vendor
-  // This might need scaling logic if it's not a flat rate regardless of size.
-  // For now, assume it's a representative annual figure for the vendor's target segment.
-  return (vendor.tcoFactors.licensingCostPerYear || 0) * years
-}
-
-function calculateHardwareCost(vendor: NewVendorData, years: number): number {
-  // tcoFactors.hardwareCostPerYear should be the amortized annual cost of required hardware.
-  return (vendor.tcoFactors.hardwareCostPerYear || 0) * years
-}
-
-function calculateImplementationCost(vendor: NewVendorData, annualSoftwareCost: number): number {
-  const implMetrics = vendor.implementation
-  let psCost = 0
-
-  // If professionalServicesCostFactor is a percentage (e.g., 0.1 for 10%) of the first year's software cost
-  if (
-    implMetrics.professionalServicesCostFactor &&
-    implMetrics.professionalServicesCostFactor > 0 &&
-    implMetrics.professionalServicesCostFactor <= 1
-  ) {
-    psCost = annualSoftwareCost * implMetrics.professionalServicesCostFactor
-  }
-  // Else if it's a fixed sum (typically larger numbers like 5000, 10000)
-  else if (implMetrics.professionalServicesCostFactor && implMetrics.professionalServicesCostFactor > 1) {
-    psCost = implMetrics.professionalServicesCostFactor
-  }
-  // Fallback based on complexity if no factor is provided
-  else {
-    if (implMetrics.complexityLevel === "very_high") psCost = 50000
-    else if (implMetrics.complexityLevel === "high") psCost = 25000
-    else if (implMetrics.complexityLevel === "medium") psCost = 10000
-    else psCost = 5000 // low complexity
-  }
-  return (vendor.tcoFactors.trainingCostInitial || 0) + psCost
-}
-
-function calculateOperationalCost(
-  vendor: NewVendorData,
-  orgItStaffCount: number,
-  region: string,
-  years: number,
-): number {
-  const regionalCost = staffCostsByRegion[region] || staffCostsByRegion["north-america"]
-  // Using a blended average salary for simplicity. Could be more granular.
-  const avgSalary =
-    (regionalCost.itAdminAvgSalary + regionalCost.securityAnalystAvgSalary + regionalCost.networkEngineerAvgSalary) / 3
-  // personnelCostFactor is assumed to be the number of FTEs required to manage this solution.
-  return (vendor.tcoFactors.personnelCostFactor || 0.5) * avgSalary * years
-}
-
-function calculateSupportCost(vendor: NewVendorData, annualSoftwareCost: number, years: number): number {
-  // For SaaS like Portnox, support is often included.
-  if (vendor.id === "portnox" && vendor.vendorType === "Cloud-Native NAC") return 0
-  // supportCostFactor is an annual percentage of the annual software cost.
-  return annualSoftwareCost * (vendor.tcoFactors.supportCostFactor || 0.2) * years
-}
-
-function calculateHiddenCosts(vendor: NewVendorData, orgDeviceCount: number, years: number): number {
-  // hiddenCostFactor is an estimated annual cost per device, potentially influenced by complexity.
-  // This is an abstract value. A more detailed model might break this down.
-  let complexityMultiplier = 1
-  if (vendor.implementation.complexityLevel === "very_high") complexityMultiplier = 3
-  else if (vendor.implementation.complexityLevel === "high") complexityMultiplier = 2
-  else if (vendor.implementation.complexityLevel === "medium") complexityMultiplier = 1.5
-
-  // If hiddenCostFactor is provided in data, assume it's an annual sum or per device.
-  // If it's a small number (e.g. < 100), assume per device. If large, assume total annual.
-  // For this example, let's assume it's a per-device factor or use a default.
-  const perDeviceHiddenCost =
-    vendor.tcoFactors.hiddenCostFactor !== undefined ? vendor.tcoFactors.hiddenCostFactor : 5 * complexityMultiplier
-  return perDeviceHiddenCost * orgDeviceCount * years
-}
-
-// --- ROI Metrics Calculation ---
-export interface ROIMetrics {
-  totalProjectedSavingsOverYears: number
-  paybackPeriodMonths: number | string
-  annualizedROIPercent: number | string
-  incidentReductionSavingsAnnual: number
-  complianceAutomationSavingsAnnual: number
-  operationalEfficiencyGainsAnnual: number
-  totalAnnualizedBenefits: number
-}
-
-function calculateROIMetrics(
-  vendor: NewVendorData,
-  totalTCO: number,
-  orgSizeId: OrgSizeId,
-  industry: Industry | undefined, // Industry might influence baseline costs or risk factors
-  projectionYears: number,
-): ROIMetrics {
-  const roiFactors = vendor.roiFactors // Factors specific to how this vendor impacts ROI
-  const orgDetails = defaultOrgSizeDetails[orgSizeId] // Baseline costs for this org size
-  const annualTCO = projectionYears > 0 ? totalTCO / projectionYears : 0
-
-  // Savings from reducing security incidents
-  const incidentReductionSavingsAnnual =
-    (orgDetails.avgAnnualBreachCostBaseline || 0) * ((roiFactors.incidentReductionPercent || 0) / 100)
-
-  // Savings from automating compliance tasks
-  // Assuming complianceAutomationSavingsFactor is the percentage of manual costs saved
-  const complianceAutomationSavingsAnnual =
-    (orgDetails.manualComplianceCostBaseline || 0) * (roiFactors.complianceAutomationSavingsFactor || 0)
-
-  // Gains from improved operational efficiency
-  // Assuming operationalEfficiencyGainPercent is the percentage of inefficiency costs recovered
-  const operationalEfficiencyGainsAnnual =
-    (orgDetails.operationalInefficiencyCostBaseline || 0) * ((roiFactors.operationalEfficiencyGainPercent || 0) / 100)
-
-  const totalAnnualizedBenefits =
-    incidentReductionSavingsAnnual + complianceAutomationSavingsAnnual + operationalEfficiencyGainsAnnual
-  const netAnnualBenefit = totalAnnualizedBenefits - annualTCO
-  const totalProjectedSavingsOverYears = netAnnualBenefit * projectionYears
-
-  let paybackPeriodMonths: number | string = "N/A"
-  if (netAnnualBenefit > 0) {
-    if (totalTCO === 0 && netAnnualBenefit > 0)
-      paybackPeriodMonths = "Immediate" // Should only happen if TCO is 0
-    else if (totalTCO > 0) paybackPeriodMonths = (totalTCO / netAnnualBenefit) * 12
-    else paybackPeriodMonths = "Immediate" // e.g. free tool with benefits, or TCO is negative (benefit itself)
-  } else if (vendor.id === "portnox" && roiFactors.avgPaybackPeriodMonths) {
-    // Fallback to vendor stated payback ONLY for Portnox if calculated is not favorable, as per ZTCA emphasis
-    paybackPeriodMonths = roiFactors.avgPaybackPeriodMonths
-  }
-
-  let annualizedROIPercent: number | string = "N/A"
-  if (totalTCO > 0) {
-    // ROI = (Net Benefit / Total Cost) * 100. Annualized: (Annual Net Benefit / Annual Cost) * 100
-    annualizedROIPercent = (netAnnualBenefit / annualTCO) * 100
-  } else if (netAnnualBenefit > 0) {
-    // If TCO is zero or negative (a net gain from the start), ROI is effectively infinite or very high
-    annualizedROIPercent = "Infinite"
-  }
-
-  return {
-    totalProjectedSavingsOverYears,
-    paybackPeriodMonths,
-    annualizedROIPercent:
-      typeof annualizedROIPercent === "number"
-        ? Number.parseFloat(annualizedROIPercent.toFixed(2))
-        : annualizedROIPercent,
-    incidentReductionSavingsAnnual: Number.parseFloat(incidentReductionSavingsAnnual.toFixed(2)),
-    complianceAutomationSavingsAnnual: Number.parseFloat(complianceAutomationSavingsAnnual.toFixed(2)),
-    operationalEfficiencyGainsAnnual: Number.parseFloat(operationalEfficiencyGainsAnnual.toFixed(2)),
-    totalAnnualizedBenefits: Number.parseFloat(totalAnnualizedBenefits.toFixed(2)),
-  }
-}
-
-// --- Main TCO Calculation Function ---
-export interface TCOResultBreakdown {
+// Types for TCO calculation
+export interface TCOBreakdown {
   software: number
   hardware: number
   implementation: number
   operational: number
+  training: number
+  maintenance: number
   support: number
-  hidden: number
+}
+
+export interface ROIMetrics {
+  totalSavings: number
+  annualizedROIPercent: number
+  paybackPeriodMonths: number
+  netPresentValue: number
 }
 
 export interface TCOResult {
-  vendorId: VendorId
+  vendorId: string
   vendorName: string
   totalTCO: number
-  annualTCO: number
-  perDevicePerMonthTCO?: number
-  breakdown: TCOResultBreakdown
+  breakdown: TCOBreakdown
   roiMetrics: ROIMetrics
+  total: number
+  roi?: {
+    percentage: number
+    paybackMonths: number
+  }
+}
+
+// Organization size configurations
+const ORG_SIZE_CONFIGS = {
+  startup: { devices: 100, users: 50, multiplier: 0.8 },
+  smb: { devices: 500, users: 250, multiplier: 0.9 },
+  medium: { devices: 2500, users: 1500, multiplier: 1.0 },
+  enterprise: { devices: 10000, users: 7500, multiplier: 1.2 },
+  xlarge: { devices: 50000, users: 35000, multiplier: 1.5 },
+  custom: { devices: 2500, users: 1500, multiplier: 1.0 },
+}
+
+// Industry multipliers
+const INDUSTRY_MULTIPLIERS = {
+  technology: 1.0,
+  healthcare: 1.3,
+  financial: 1.4,
+  manufacturing: 1.1,
+  education: 0.8,
+  government: 1.2,
+  retail: 1.0,
+  energy: 1.3,
+  media: 1.0,
+  other: 1.0,
+}
+
+// Regional cost multipliers
+const REGIONAL_MULTIPLIERS = {
+  "north-america": 1.0,
+  europe: 1.1,
+  "asia-pacific": 0.8,
+  "latin-america": 0.7,
+  "middle-east-africa": 0.9,
 }
 
 export function calculateFullTCOForVendor(
-  vendorId: VendorId,
-  orgSizeId: OrgSizeId,
-  industryId: IndustryId,
-  projectionYears: number,
-  // TODO: Add custom device/user counts for 'custom' org size if needed
-  // TODO: Add Portnox specific addon selections if they modify base price significantly
+  vendorId: string,
+  orgSize = "medium",
+  industry = "technology",
+  years = 5,
 ): TCOResult | null {
-  const vendor = getVendorDataById(vendorId)
-  const industry = getIndustryById(industryId)
-  const orgDetails = defaultOrgSizeDetails[orgSizeId]
+  const vendor = VENDOR_DATA[vendorId]
+  if (!vendor) return null
 
-  if (!vendor || !orgDetails) {
-    console.error(`Error: Missing data for vendor '${vendorId}' or org size '${orgSizeId}'`)
-    return null
-  }
-  if (projectionYears <= 0) {
-    console.error(`Error: projectionYears must be positive for vendor '${vendorId}'. Received: ${projectionYears}`)
-    return null
-  }
+  const orgConfig = ORG_SIZE_CONFIGS[orgSize] || ORG_SIZE_CONFIGS.medium
+  const industryMultiplier = INDUSTRY_MULTIPLIERS[industry] || 1.0
+  const regionalMultiplier = REGIONAL_MULTIPLIERS["north-america"] || 1.0
 
-  const numDevices = orgDetails.deviceCount
-  const numUsers = orgDetails.userCount
-  const itStaffCount = orgDetails.itStaffCount
-  const region = "north-america" // Make this configurable through UI later
+  const devices = orgConfig.devices
+  const users = orgConfig.users
+  const baseMultiplier = orgConfig.multiplier * industryMultiplier * regionalMultiplier
 
-  // Calculate costs
-  const softwareCost = calculateLicensingCost(vendor, orgSizeId, numDevices, numUsers, projectionYears)
-  const annualSoftwareCost = softwareCost / projectionYears
+  // Calculate software costs
+  const monthlyLicenseCost = devices * (vendor.pricing?.startingPrice || 5.0)
+  const annualSoftwareCost = monthlyLicenseCost * 12 * baseMultiplier
+  const totalSoftwareCost = annualSoftwareCost * years
 
-  const hardwareCost = calculateHardwareCost(vendor, projectionYears)
-  const implementationCost = calculateImplementationCost(vendor, annualSoftwareCost) // One-time cost, pass annual for %-based PS
-  const operationalCost = calculateOperationalCost(vendor, itStaffCount, region, projectionYears)
-  const supportCost = calculateSupportCost(vendor, annualSoftwareCost, projectionYears)
-  const hiddenCost = calculateHiddenCosts(vendor, numDevices, projectionYears)
-
-  const costs: TCOResultBreakdown = {
-    software: Number.parseFloat(softwareCost.toFixed(2)),
-    hardware: Number.parseFloat(hardwareCost.toFixed(2)),
-    implementation: Number.parseFloat(implementationCost.toFixed(2)),
-    operational: Number.parseFloat(operationalCost.toFixed(2)),
-    support: Number.parseFloat(supportCost.toFixed(2)),
-    hidden: Number.parseFloat(hiddenCost.toFixed(2)),
+  // Calculate hardware costs
+  let hardwareCost = 0
+  if (vendor.implementation?.requiresHardware) {
+    const applianceCost = Math.ceil(devices / 1000) * 25000 // $25k per 1000 devices
+    const networkUpgrades = devices * 50 // $50 per device for network upgrades
+    hardwareCost = (applianceCost + networkUpgrades) * baseMultiplier
   }
 
-  const totalTCO = Object.values(costs).reduce((sum, cost) => sum + (cost || 0), 0)
-  const annualTCO = totalTCO / projectionYears
-  const perDevicePerMonthTCO = numDevices > 0 ? annualTCO / (numDevices * 12) : undefined
+  // Calculate implementation costs
+  const deploymentHours = vendor.implementation?.deploymentTime?.fullDeployment || 720
+  const consultingRate = 200 // $200/hour
+  const implementationCost = deploymentHours * consultingRate * baseMultiplier
 
-  // Calculate ROI
-  const roiMetrics = calculateROIMetrics(vendor, totalTCO, orgSizeId, industry, projectionYears)
+  // Calculate operational costs
+  const annualOperationalCost = devices * 2 * baseMultiplier // $2 per device per year
+  const totalOperationalCost = annualOperationalCost * years
+
+  // Calculate training costs
+  const trainingCost = users * 50 * baseMultiplier // $50 per user training
+
+  // Calculate maintenance costs (percentage of hardware + software)
+  const annualMaintenanceCost = (hardwareCost * 0.15 + annualSoftwareCost * 0.1) * baseMultiplier
+  const totalMaintenanceCost = annualMaintenanceCost * years
+
+  // Calculate support costs
+  const annualSupportCost = devices * 10 * baseMultiplier // $10 per device per year
+  const totalSupportCost = annualSupportCost * years
+
+  const breakdown: TCOBreakdown = {
+    software: totalSoftwareCost,
+    hardware: hardwareCost,
+    implementation: implementationCost,
+    operational: totalOperationalCost,
+    training: trainingCost,
+    maintenance: totalMaintenanceCost,
+    support: totalSupportCost,
+  }
+
+  const totalTCO = Object.values(breakdown).reduce((sum, cost) => sum + cost, 0)
+
+  // Calculate ROI metrics
+  const annualSavings = calculateAnnualSavings(vendor, devices, users)
+  const totalSavings = annualSavings * years
+  const netPresentValue = calculateNPV(annualSavings, totalTCO, years, 0.08)
+  const paybackPeriodMonths = totalTCO / (annualSavings / 12)
+  const annualizedROIPercent = (((totalSavings - totalTCO) / totalTCO) * 100) / years
+
+  const roiMetrics: ROIMetrics = {
+    totalSavings,
+    annualizedROIPercent,
+    paybackPeriodMonths,
+    netPresentValue,
+  }
 
   return {
     vendorId,
     vendorName: vendor.name,
-    totalTCO: Number.parseFloat(totalTCO.toFixed(2)),
-    annualTCO: Number.parseFloat(annualTCO.toFixed(2)),
-    perDevicePerMonthTCO: perDevicePerMonthTCO ? Number.parseFloat(perDevicePerMonthTCO.toFixed(2)) : undefined,
-    breakdown: costs,
+    totalTCO,
+    breakdown,
     roiMetrics,
+    total: totalTCO,
+    roi: {
+      percentage: annualizedROIPercent,
+      paybackMonths: paybackPeriodMonths,
+    },
   }
 }
 
-// --- Comparison Function ---
 export function compareMultipleVendorsTCO(
-  vendorIds: VendorId[],
-  orgSizeId: OrgSizeId,
-  industryId: IndustryId,
-  projectionYears: number,
+  vendorIds: string[],
+  orgSize = "medium",
+  industry = "technology",
+  years = 5,
 ): TCOResult[] {
   const results: TCOResult[] = []
-  if (projectionYears <= 0) {
-    console.error("Projection years must be positive for comparison.")
-    return []
-  }
+
   for (const vendorId of vendorIds) {
-    const result = calculateFullTCOForVendor(vendorId, orgSizeId, industryId, projectionYears)
+    const result = calculateFullTCOForVendor(vendorId, orgSize, industry, years)
     if (result) {
       results.push(result)
     }
   }
-  results.sort((a, b) => a.totalTCO - b.totalTCO)
-  return results
+
+  return results.sort((a, b) => a.totalTCO - b.totalTCO)
 }
 
-console.log("New TCO Calculator module updated with ROI calculations and refined TCO flow (v2).")
+function calculateAnnualSavings(vendor: any, devices: number, users: number): number {
+  // Calculate savings based on vendor capabilities
+  let savings = 0
+
+  // Operational efficiency savings
+  if (vendor.roi?.operationalEfficiency) {
+    savings += devices * 100 * vendor.roi.operationalEfficiency // $100 per device base savings
+  }
+
+  // Security incident reduction savings
+  if (vendor.roi?.breachRiskReduction) {
+    const avgBreachCost = 4500000 // $4.5M average breach cost
+    const breachProbability = 0.05 // 5% annual probability
+    savings += avgBreachCost * breachProbability * vendor.roi.breachRiskReduction
+  }
+
+  // Compliance automation savings
+  if (vendor.roi?.complianceAutomation) {
+    savings += users * 50 * vendor.roi.complianceAutomation // $50 per user compliance savings
+  }
+
+  return savings
+}
+
+function calculateNPV(annualSavings: number, initialCost: number, years: number, discountRate: number): number {
+  let npv = -initialCost
+
+  for (let year = 1; year <= years; year++) {
+    npv += annualSavings / Math.pow(1 + discountRate, year)
+  }
+
+  return npv
+}
+
+// Export additional utility functions
+export function formatCurrency(amount: number, compact = false): string {
+  if (compact) {
+    if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`
+    if (amount >= 1000) return `$${(amount / 1000).toFixed(0)}K`
+    return `$${amount.toFixed(0)}`
+  }
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount)
+}
+
+export function calculateSavingsPercentage(portnoxTCO: number, competitorTCO: number): number {
+  if (competitorTCO === 0) return 0
+  return ((competitorTCO - portnoxTCO) / competitorTCO) * 100
+}

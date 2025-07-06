@@ -1081,4 +1081,261 @@ const SettingsPanel = ({
                             className="space-y-3"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{
+                            transition={{ delay: 0.3 }}
+                          >
+                            <Label
+                              className={cn("text-sm font-semibold", darkMode ? "text-slate-300" : "text-slate-700")}
+                            >
+                              Industry
+                            </Label>
+                            <select
+                              value={industry}
+                              onChange={(e) => setIndustry(e.target.value)}
+                              className={cn(
+                                "w-full border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl",
+                                darkMode
+                                  ? "text-white placeholder:text-slate-400"
+                                  : "text-slate-900 placeholder:text-slate-500",
+                              )}
+                            >
+                              {industryOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                            <p className={cn("text-xs", darkMode ? "text-slate-400" : "text-slate-500")}>
+                              Select the primary industry of your organization
+                            </p>
+                          </motion.div>
+
+                          <motion.div
+                            className="space-y-3"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 }}
+                          >
+                            <Label
+                              className={cn("text-sm font-semibold", darkMode ? "text-slate-300" : "text-slate-700")}
+                            >
+                              Region
+                            </Label>
+                            <select
+                              value={region}
+                              onChange={(e) => setRegion(e.target.value)}
+                              className={cn(
+                                "w-full border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl",
+                                darkMode
+                                  ? "text-white placeholder:text-slate-400"
+                                  : "text-slate-900 placeholder:text-slate-500",
+                              )}
+                            >
+                              {regionOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                            <p className={cn("text-xs", darkMode ? "text-slate-400" : "text-slate-500")}>
+                              Select the primary operating region
+                            </p>
+                          </motion.div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === "pricing" && (
+                    <div className="space-y-8">
+                      <div>
+                        <h3 className={cn("text-xl font-bold mb-6", darkMode ? "text-white" : "text-slate-900")}>
+                          Pricing Configuration
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <motion.div
+                            className="space-y-3"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                          >
+                            <Label
+                              className={cn("text-sm font-semibold", darkMode ? "text-slate-300" : "text-slate-700")}
+                            >
+                              Portnox Base Price
+                            </Label>
+                            <Input
+                              type="number"
+                              value={portnoxBasePrice}
+                              onChange={(e) => setPortnoxBasePrice(Number(e.target.value))}
+                              className={cn(
+                                "border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl",
+                                darkMode
+                                  ? "text-white placeholder:text-slate-400"
+                                  : "text-slate-900 placeholder:text-slate-500",
+                              )}
+                            />
+                            <p className={cn("text-xs", darkMode ? "text-slate-400" : "text-slate-500")}>
+                              Base price per device/user for Portnox CLEAR
+                            </p>
+                          </motion.div>
+
+                          <motion.div
+                            className="space-y-3"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            <Label
+                              className={cn("text-sm font-semibold", darkMode ? "text-slate-300" : "text-slate-700")}
+                            >
+                              Portnox Addons
+                            </Label>
+                            {/* Addon selection component here */}
+                            <p className={cn("text-xs", darkMode ? "text-slate-400" : "text-slate-500")}>
+                              Select additional addons for Portnox CLEAR
+                            </p>
+                          </motion.div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === "preferences" && (
+                    <div className="space-y-8">
+                      <div>
+                        <h3 className={cn("text-xl font-bold mb-6", darkMode ? "text-white" : "text-slate-900")}>
+                          Preferences
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <motion.div
+                            className="space-y-3"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                          >
+                            <Label
+                              className={cn("text-sm font-semibold", darkMode ? "text-slate-300" : "text-slate-700")}
+                            >
+                              Projection Years
+                            </Label>
+                            <Input
+                              type="number"
+                              value={projectionYears}
+                              onChange={(e) => setProjectionYears(Number(e.target.value))}
+                              className={cn(
+                                "border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl",
+                                darkMode
+                                  ? "text-white placeholder:text-slate-400"
+                                  : "text-slate-900 placeholder:text-slate-500",
+                              )}
+                            />
+                            <p className={cn("text-xs", darkMode ? "text-slate-400" : "text-slate-500")}>
+                              Number of years to project TCO
+                            </p>
+                          </motion.div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === "advanced" && (
+                    <div className="space-y-8">
+                      <div>
+                        <h3 className={cn("text-xl font-bold mb-6", darkMode ? "text-white" : "text-slate-900")}>
+                          Advanced Settings
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <motion.div
+                            className="space-y-3"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                          >
+                            <Label
+                              className={cn("text-sm font-semibold", darkMode ? "text-slate-300" : "text-slate-700")}
+                            >
+                              Advanced Setting 1
+                            </Label>
+                            <Input
+                              type="text"
+                              placeholder="Advanced Setting 1"
+                              className={cn(
+                                "border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl",
+                                darkMode
+                                  ? "text-white placeholder:text-slate-400"
+                                  : "text-slate-900 placeholder:text-slate-500",
+                              )}
+                            />
+                            <p className={cn("text-xs", darkMode ? "text-slate-400" : "text-slate-500")}>
+                              Description of advanced setting 1
+                            </p>
+                          </motion.div>
+
+                          <motion.div
+                            className="space-y-3"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            <Label
+                              className={cn("text-sm font-semibold", darkMode ? "text-slate-300" : "text-slate-700")}
+                            >
+                              Advanced Setting 2
+                            </Label>
+                            <Input
+                              type="text"
+                              placeholder="Advanced Setting 2"
+                              className={cn(
+                                "border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl",
+                                darkMode
+                                  ? "text-white placeholder:text-slate-400"
+                                  : "text-slate-900 placeholder:text-slate-500",
+                              )}
+                            />
+                            <p className={cn("text-xs", darkMode ? "text-slate-400" : "text-slate-500")}>
+                              Description of advanced setting 2
+                            </p>
+                          </motion.div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </ScrollArea>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+// Make sure the component is properly exported as default at the end of the file
+export default function TcoAnalyzerUltimate() {
+  return (
+    <SettingsPanel
+      isOpen={true}
+      onClose={() => {}}
+      orgSizeKey={"startup"}
+      setOrgSizeKey={() => {}}
+      customDevices={100}
+      setCustomDevices={() => {}}
+      customUsers={50}
+      setCustomUsers={() => {}}
+      industry={"technology"}
+      setIndustry={() => {}}
+      region={"north-america"}
+      setRegion={() => {}}
+      projectionYears={3}
+      setProjectionYears={() => {}}
+      portnoxBasePrice={3.5}
+      setPortnoxBasePrice={() => {}}
+      portnoxAddons={{}}
+      setPortnoxAddons={() => {}}
+      darkMode={false}
+    />
+  )
+}
