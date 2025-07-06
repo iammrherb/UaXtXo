@@ -21,6 +21,7 @@ import FeatureMatrixView from "./feature-matrix-view"
 import ExecutiveReportView from "./executive-report-view"
 import IntegrationHubView from "./integration-hub-view"
 import ComplianceRiskView from "./compliance-risk-view"
+import SecurityRiskAssessmentView from "./security-risk-assessment-view"
 
 import {
   LayoutGrid,
@@ -40,11 +41,13 @@ import {
   Zap,
 } from "lucide-react"
 
+// Update the TABS_CONFIG to include the new risk assessment tab
 const TABS_CONFIG = [
   { value: "dashboard", label: "Dashboard", icon: <BarChartHorizontal /> },
   { value: "financials", label: "Financials", icon: <FilePieChart /> },
   { value: "roi", label: "ROI & Value", icon: <TrendingUp /> },
   { value: "security", label: "Security & Risk", icon: <ShieldCheck /> },
+  { value: "riskAssessment", label: "Risk Assessment", icon: <AlertTriangleIcon /> },
   { value: "complianceRisk", label: "Compliance & Risk", icon: <ShieldCheck /> },
   { value: "integrations", label: "Integrations", icon: <Zap /> },
   { value: "operations", label: "Operations", icon: <Settings2 /> },
@@ -161,6 +164,8 @@ export default function TcoAnalyzerUltimate() {
         return <BusinessImpactView results={results} config={configuration} />
       case "security":
         return <CybersecurityPostureView results={results} config={configuration} />
+      case "riskAssessment":
+        return <SecurityRiskAssessmentView results={results} config={configuration} />
       case "complianceRisk":
         return <ComplianceRiskView results={results} config={configuration} />
       case "integrations":
