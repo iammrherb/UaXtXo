@@ -6,21 +6,52 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
-import { Users, DollarSign, AlertTriangle, CheckCircle, Zap, Target, BarChart3 } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts"
+import {
+  Users,
+  Clock,
+  DollarSign,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle,
+  Settings,
+  Zap,
+  Target,
+  Activity,
+} from "lucide-react"
 import { enhancedVendorDatabase } from "@/lib/vendors/enhanced-vendor-data"
 
 interface OperationalAnalysisViewProps {
-  selectedVendors: string[]
-  devices: number
-  users: number
+  selectedVendors?: string[]
+  config?: {
+    devices?: number
+    users?: number
+    locations?: number
+    industry?: string
+    currentStaffing?: number
+  }
+  results?: any[]
 }
 
-const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316", "#06B6D4"]
-
-export default function OperationalAnalysisView({ selectedVendors, devices, users }: OperationalAnalysisViewProps) {
-  const [timeframe, setTimeframe] = useState<"monthly" | "quarterly" | "annual">("annual")
+export default function OperationalAnalysisView({
+  selectedVendors = [],
+  config = {},
+  results = [],
+}: OperationalAnalysisViewProps) {
+  const [selectedVendor, setSelectedVendor] = useState<string>(selectedVendors[0] || "")
+  const [timeframe, setTimeframe] = useState<"monthly" | "quarterly" | "yearly">("monthly")
 
   // Calculate operational metrics for each vendor
   const operationalData = useMemo(() => {
@@ -29,197 +60,198 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
         const vendor = enhancedVendorDatabase[vendorId]
         if (!vendor) return null
 
-        const metrics = vendor.operationalMetrics
-        const devicesInThousands = devices / 1000
+        const devices = config.devices || 1000
+        const users = config.users || 500
+        const locations = config.locations || 1
+        const currentStaffing = config.currentStaffing || 5
 
-        // Calculate staffing requirements
-        const requiredAdmins = Math.ceil((metrics.staffingRequirements.administrators * devices) / 10000)
-        const requiredSpecialists = Math.ceil((metrics.staffingRequirements.specialists * devices) / 10000)
-        const totalStaff = requiredAdmins + requiredSpecialists
+        // Calculate efficiency metrics
+        const automationLevel = vendor.automation?.level || 0.6
+        const managementEfficiency = vendor.management?.efficiency || 0.7
+        const supportRequirement = vendor.support?.hoursPerMonth || 40
 
-        // Calculate operational costs
-        const monthlyMaintenanceCost = metrics.operationalCosts.monthlyMaintenance * devices
-        const annualOperationalCost =
-          monthlyMaintenanceCost * 12 +
-          metrics.operationalCosts.monitoring * 12 +
-          metrics.operationalCosts.incidentResponse * 12 + // Assume 1 incident per month
-          metrics.operationalCosts.changeManagement * 24 // Assume 2 changes per month
+        // Staffing analysis
+        const requiredStaff = Math.ceil(devices / 1000) + Math.ceil(locations / 5)
+        const staffingGap = Math.max(0, requiredStaff - currentStaffing)
+        const staffingEfficiency = Math.min(100, (currentStaffing / requiredStaff) * 100)
 
-        // Calculate efficiency scores
-        const efficiencyScore = Math.round(
-          metrics.automationLevel * 0.4 +
-            (100 - metrics.adminEffort) * 0.3 +
-            (10 - metrics.troubleshootingTime) * 10 * 0.2 +
-            (metrics.upgradeComplexity === "low"
-              ? 100
-              : metrics.upgradeComplexity === "medium"
-                ? 75
-                : metrics.upgradeComplexity === "high"
-                  ? 50
-                  : 25) *
-              0.1,
-        )
+        // Cost analysis
+        const monthlyCosts = {
+          licensing: (vendor.pricing?.monthly || 0) * devices,
+          support: supportRequirement * 150, // $150/hour
+          training: 5000 / 12, // Amortized training costs
+          maintenance: (vendor.pricing?.monthly || 0) * devices * 0.2,
+        }
+
+        const totalMonthlyCost = Object.values(monthlyCosts).reduce((sum, cost) => sum + cost, 0)
+
+        // Maturity assessment
+        const maturityScore = {
+          automation: automationLevel * 100,
+          integration: (vendor.integrations?.length || 0) * 10,
+          scalability: vendor.scalability?.score || 70,
+          reliability: vendor.reliability?.uptime || 99,
+        }
+
+        const overallMaturity = Object.values(maturityScore).reduce((sum, score) => sum + score, 0) / 4
 
         return {
           vendorId,
           vendorName: vendor.name,
           category: vendor.category,
-
-          // Staffing metrics
-          requiredAdmins,
-          requiredSpecialists,
-          totalStaff,
-          trainingDaysPerYear: metrics.staffingRequirements.trainingDays,
-
-          // Time metrics
-          adminEffortHours: metrics.adminEffort * devicesInThousands * 52, // Weekly hours * 52 weeks
-          troubleshootingTime: metrics.troubleshootingTime,
-          maintenanceWindows: metrics.maintenanceWindows,
-
-          // Cost metrics
-          monthlyMaintenanceCost,
-          annualOperationalCost,
-          costPerDevice: annualOperationalCost / devices,
-
-          // Efficiency metrics
-          automationLevel: metrics.automationLevel,
-          efficiencyScore,
-          upgradeComplexity: metrics.upgradeComplexity,
-
-          // Capabilities
-          apiAvailability: metrics.apiAvailability,
-          cloudManagement: metrics.cloudManagement,
-          reportingCapabilities: metrics.reportingCapabilities,
+          efficiency: {
+            automation: automationLevel * 100,
+            management: managementEfficiency * 100,
+            deviceRatio: devices / currentStaffing,
+            responseTime: vendor.support?.responseTime || 24,
+          },
+          staffing: {
+            current: currentStaffing,
+            required: requiredStaff,
+            gap: staffingGap,
+            efficiency: staffingEfficiency,
+            skillsRequired: vendor.skills?.required || [],
+          },
+          costs: {
+            monthly: monthlyCosts,
+            total: totalMonthlyCost,
+            perDevice: totalMonthlyCost / devices,
+            perUser: totalMonthlyCost / users,
+          },
+          maturity: {
+            scores: maturityScore,
+            overall: overallMaturity,
+            recommendations: generateMaturityRecommendations(maturityScore),
+          },
+          kpis: {
+            uptime: vendor.reliability?.uptime || 99,
+            incidentReduction: automationLevel * 80,
+            timeToResolution: Math.max(1, 24 - automationLevel * 20),
+            userSatisfaction: 70 + managementEfficiency * 25,
+          },
         }
       })
       .filter(Boolean)
-  }, [selectedVendors, devices])
+  }, [selectedVendors, config])
 
-  // Calculate comparative metrics
-  const comparativeMetrics = useMemo(() => {
-    if (operationalData.length === 0) return null
+  const selectedVendorData = operationalData.find((v) => v?.vendorId === selectedVendor) || operationalData[0]
 
-    const avgEfficiency =
-      operationalData.reduce((sum, vendor) => sum + vendor.efficiencyScore, 0) / operationalData.length
-    const avgCostPerDevice =
-      operationalData.reduce((sum, vendor) => sum + vendor.costPerDevice, 0) / operationalData.length
-    const avgStaffing = operationalData.reduce((sum, vendor) => sum + vendor.totalStaff, 0) / operationalData.length
-
-    return {
-      avgEfficiency: Math.round(avgEfficiency),
-      avgCostPerDevice: Math.round(avgCostPerDevice),
-      avgStaffing: Math.round(avgStaffing),
-      bestEfficiency: Math.max(...operationalData.map((v) => v.efficiencyScore)),
-      lowestCost: Math.min(...operationalData.map((v) => v.costPerDevice)),
-      minStaffing: Math.min(...operationalData.map((v) => v.totalStaff)),
+  // Generate maturity recommendations
+  function generateMaturityRecommendations(scores: any) {
+    const recommendations = []
+    if (scores.automation < 70) {
+      recommendations.push("Implement additional automation workflows")
     }
-  }, [operationalData])
+    if (scores.integration < 50) {
+      recommendations.push("Expand integration capabilities")
+    }
+    if (scores.scalability < 80) {
+      recommendations.push("Plan for scalability improvements")
+    }
+    if (scores.reliability < 95) {
+      recommendations.push("Enhance reliability and monitoring")
+    }
+    return recommendations
+  }
 
   // Prepare chart data
-  const efficiencyComparisonData = operationalData.map((vendor) => ({
-    vendor: vendor.vendorName,
-    efficiency: vendor.efficiencyScore,
-    automation: vendor.automationLevel,
-    adminEffort: 100 - (vendor.adminEffortHours / (40 * 52)) * 100, // Convert to efficiency percentage
-  }))
+  const efficiencyTrendData = useMemo(() => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+    return months.map((month, index) => ({
+      month,
+      automation: selectedVendorData?.efficiency.automation + index * 2,
+      management: selectedVendorData?.efficiency.management + index * 1.5,
+      incidents: Math.max(0, 50 - index * 8),
+    }))
+  }, [selectedVendorData])
 
-  const costAnalysisData = operationalData.map((vendor) => ({
-    vendor: vendor.vendorName,
-    annualCost: vendor.annualOperationalCost,
-    costPerDevice: vendor.costPerDevice,
-    maintenanceCost: vendor.monthlyMaintenanceCost * 12,
-  }))
+  const costBreakdownData = useMemo(() => {
+    if (!selectedVendorData) return []
+    return Object.entries(selectedVendorData.costs.monthly).map(([category, amount]) => ({
+      category: category.charAt(0).toUpperCase() + category.slice(1),
+      amount,
+      percentage: (amount / selectedVendorData.costs.total) * 100,
+    }))
+  }, [selectedVendorData])
 
-  const staffingComparisonData = operationalData.map((vendor) => ({
-    vendor: vendor.vendorName,
-    admins: vendor.requiredAdmins,
-    specialists: vendor.requiredSpecialists,
-    total: vendor.totalStaff,
-    trainingDays: vendor.trainingDaysPerYear,
-  }))
+  const maturityRadarData = useMemo(() => {
+    if (!selectedVendorData) return []
+    return Object.entries(selectedVendorData.maturity.scores).map(([category, score]) => ({
+      category: category.charAt(0).toUpperCase() + category.slice(1),
+      score,
+      fullMark: 100,
+    }))
+  }, [selectedVendorData])
 
-  // Operational maturity radar data
-  const maturityRadarData = [
-    {
-      capability: "Automation",
-      ...operationalData.reduce(
-        (acc, vendor) => {
-          acc[vendor.vendorName] = vendor.automationLevel
-          return acc
-        },
-        {} as Record<string, number>,
-      ),
-    },
-    {
-      capability: "Efficiency",
-      ...operationalData.reduce(
-        (acc, vendor) => {
-          acc[vendor.vendorName] = vendor.efficiencyScore
-          return acc
-        },
-        {} as Record<string, number>,
-      ),
-    },
-    {
-      capability: "Cloud Readiness",
-      ...operationalData.reduce(
-        (acc, vendor) => {
-          acc[vendor.vendorName] = vendor.cloudManagement ? 100 : 50
-          return acc
-        },
-        {} as Record<string, number>,
-      ),
-    },
-    {
-      capability: "API Integration",
-      ...operationalData.reduce(
-        (acc, vendor) => {
-          acc[vendor.vendorName] = vendor.apiAvailability ? 100 : 0
-          return acc
-        },
-        {} as Record<string, number>,
-      ),
-    },
-    {
-      capability: "Reporting",
-      ...operationalData.reduce(
-        (acc, vendor) => {
-          acc[vendor.vendorName] =
-            vendor.reportingCapabilities === "enterprise" ? 100 : vendor.reportingCapabilities === "advanced" ? 75 : 50
-          return acc
-        },
-        {} as Record<string, number>,
-      ),
-    },
-  ]
+  const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316"]
+
+  if (selectedVendors.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>Please select at least one vendor to view operational analysis.</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
+
+  if (!selectedVendorData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>No operational data available for selected vendors.</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Operational Analysis & Impact Assessment</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Operational Analysis</h2>
           <p className="text-muted-foreground">
-            Comprehensive analysis of operational efficiency, costs, and resource requirements
+            Comprehensive operational efficiency and resource optimization analysis
           </p>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Export Analysis
-          </Button>
+        <div className="flex items-center space-x-4">
+          <Select value={selectedVendor} onValueChange={setSelectedVendor}>
+            <SelectTrigger className="w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {operationalData.map((vendor) => (
+                <SelectItem key={vendor?.vendorId} value={vendor?.vendorId || ""}>
+                  {vendor?.vendorName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={timeframe} onValueChange={(value: any) => setTimeframe(value)}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="monthly">Monthly</SelectItem>
+              <SelectItem value="quarterly">Quarterly</SelectItem>
+              <SelectItem value="yearly">Yearly</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Key Metrics Overview */}
+      {/* KPI Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Target className="h-5 w-5 text-green-500" />
+              <Activity className="h-5 w-5 text-green-500" />
               <div>
-                <p className="text-sm font-medium">Avg Efficiency Score</p>
-                <p className="text-2xl font-bold">{comparativeMetrics?.avgEfficiency || 0}/100</p>
+                <p className="text-sm font-medium">System Uptime</p>
+                <p className="text-2xl font-bold">{selectedVendorData.kpis.uptime}%</p>
               </div>
             </div>
           </CardContent>
@@ -227,10 +259,10 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <DollarSign className="h-5 w-5 text-blue-500" />
+              <Zap className="h-5 w-5 text-blue-500" />
               <div>
-                <p className="text-sm font-medium">Avg Cost/Device</p>
-                <p className="text-2xl font-bold">${comparativeMetrics?.avgCostPerDevice || 0}</p>
+                <p className="text-sm font-medium">Automation Level</p>
+                <p className="text-2xl font-bold">{Math.round(selectedVendorData.efficiency.automation)}%</p>
               </div>
             </div>
           </CardContent>
@@ -238,10 +270,10 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-purple-500" />
+              <Clock className="h-5 w-5 text-purple-500" />
               <div>
-                <p className="text-sm font-medium">Avg Staffing Need</p>
-                <p className="text-2xl font-bold">{comparativeMetrics?.avgStaffing || 0} FTE</p>
+                <p className="text-sm font-medium">Avg Resolution</p>
+                <p className="text-2xl font-bold">{selectedVendorData.kpis.timeToResolution}h</p>
               </div>
             </div>
           </CardContent>
@@ -249,10 +281,10 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Zap className="h-5 w-5 text-orange-500" />
+              <DollarSign className="h-5 w-5 text-orange-500" />
               <div>
-                <p className="text-sm font-medium">Best Automation</p>
-                <p className="text-2xl font-bold">{Math.max(...operationalData.map((v) => v.automationLevel))}%</p>
+                <p className="text-sm font-medium">Cost per Device</p>
+                <p className="text-2xl font-bold">${Math.round(selectedVendorData.costs.perDevice)}</p>
               </div>
             </div>
           </CardContent>
@@ -260,371 +292,401 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
       </div>
 
       <Tabs defaultValue="efficiency" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="efficiency">Efficiency Analysis</TabsTrigger>
-          <TabsTrigger value="staffing">Staffing Impact</TabsTrigger>
-          <TabsTrigger value="costs">Operational Costs</TabsTrigger>
-          <TabsTrigger value="maintenance">Maintenance & Support</TabsTrigger>
-          <TabsTrigger value="maturity">Operational Maturity</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="efficiency">Efficiency Metrics</TabsTrigger>
+          <TabsTrigger value="staffing">Staffing Analysis</TabsTrigger>
+          <TabsTrigger value="costs">Cost Breakdown</TabsTrigger>
+          <TabsTrigger value="maturity">Maturity Assessment</TabsTrigger>
         </TabsList>
 
         <TabsContent value="efficiency" className="space-y-6">
-          {/* Efficiency Comparison */}
+          {/* Efficiency Trends */}
           <Card>
             <CardHeader>
-              <CardTitle>Operational Efficiency Comparison</CardTitle>
+              <CardTitle>Operational Efficiency Trends</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={efficiencyComparisonData}>
+                <LineChart data={efficiencyTrendData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="vendor" />
+                  <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="efficiency" fill="#00D4AA" name="Overall Efficiency" />
-                  <Bar dataKey="automation" fill="#0EA5E9" name="Automation Level" />
-                </BarChart>
+                  <Line type="monotone" dataKey="automation" stroke="#00D4AA" name="Automation %" />
+                  <Line type="monotone" dataKey="management" stroke="#0EA5E9" name="Management Efficiency %" />
+                  <Line type="monotone" dataKey="incidents" stroke="#EF4444" name="Monthly Incidents" />
+                </LineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
-          {/* Detailed Efficiency Metrics */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {operationalData.slice(0, 6).map((vendor, index) => (
-              <Card key={vendor.vendorId}>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    {vendor.vendorName}
-                    <Badge
-                      variant={
-                        vendor.efficiencyScore > 80
-                          ? "default"
-                          : vendor.efficiencyScore > 60
-                            ? "secondary"
-                            : "destructive"
-                      }
-                    >
-                      {vendor.efficiencyScore}/100
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Automation Level</span>
-                        <span>{vendor.automationLevel}%</span>
-                      </div>
-                      <Progress value={vendor.automationLevel} className="h-2" />
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Admin Effort (hrs/week)</span>
-                        <span>{Math.round(vendor.adminEffortHours / 52)}</span>
-                      </div>
-                      <Progress value={Math.max(0, 100 - (vendor.adminEffortHours / 52 / 40) * 100)} className="h-2" />
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Troubleshooting Time</span>
-                        <span>{vendor.troubleshootingTime} hrs</span>
-                      </div>
-                      <Progress value={Math.max(0, 100 - vendor.troubleshootingTime * 10)} className="h-2" />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="flex items-center space-x-2">
-                        {vendor.apiAvailability ? (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <AlertTriangle className="h-4 w-4 text-red-500" />
-                        )}
-                        <span>API Available</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {vendor.cloudManagement ? (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <AlertTriangle className="h-4 w-4 text-red-500" />
-                        )}
-                        <span>Cloud Managed</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="staffing" className="space-y-6">
-          {/* Staffing Requirements */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Staffing Requirements Comparison</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={staffingComparisonData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="vendor" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="admins" stackId="staff" fill="#0EA5E9" name="Administrators" />
-                  <Bar dataKey="specialists" stackId="staff" fill="#8B5CF6" name="Specialists" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Staffing Impact Analysis */}
+          {/* Current Efficiency Metrics */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Skills Gap Analysis</CardTitle>
+                <CardTitle>Automation Metrics</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {operationalData.slice(0, 5).map((vendor) => {
-                    const currentStaff = 3 // Assume current staffing
-                    const gap = Math.max(0, vendor.totalStaff - currentStaff)
-
-                    return (
-                      <div key={vendor.vendorId} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold">{vendor.vendorName}</h4>
-                          <Badge variant={gap === 0 ? "default" : gap <= 2 ? "secondary" : "destructive"}>
-                            {gap === 0 ? "Adequate" : `+${gap} needed`}
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Required Staff:</span>
-                            <div className="font-medium">{vendor.totalStaff} FTE</div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Training Days/Year:</span>
-                            <div className="font-medium">{vendor.trainingDaysPerYear} days</div>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Policy Automation</span>
+                    <span>{Math.round(selectedVendorData.efficiency.automation)}%</span>
+                  </div>
+                  <Progress value={selectedVendorData.efficiency.automation} className="h-2" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Incident Response</span>
+                    <span>{Math.round(selectedVendorData.kpis.incidentReduction)}%</span>
+                  </div>
+                  <Progress value={selectedVendorData.kpis.incidentReduction} className="h-2" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>User Satisfaction</span>
+                    <span>{Math.round(selectedVendorData.kpis.userSatisfaction)}%</span>
+                  </div>
+                  <Progress value={selectedVendorData.kpis.userSatisfaction} className="h-2" />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Training & Development Requirements</CardTitle>
+                <CardTitle>Performance Indicators</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie
-                      data={operationalData.slice(0, 5).map((vendor, index) => ({
-                        name: vendor.vendorName,
-                        value: vendor.trainingDaysPerYear,
-                        color: COLORS[index % COLORS.length],
-                      }))}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      dataKey="value"
-                      label={({ name, value }) => `${name}: ${value}d`}
-                    >
-                      {operationalData.slice(0, 5).map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span>Devices per Admin</span>
+                  <Badge variant="secondary">{Math.round(selectedVendorData.efficiency.deviceRatio)}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Response Time</span>
+                  <Badge variant="secondary">{selectedVendorData.efficiency.responseTime}h</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>System Uptime</span>
+                  <Badge variant="secondary">{selectedVendorData.kpis.uptime}%</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Management Efficiency</span>
+                  <Badge variant="secondary">{Math.round(selectedVendorData.efficiency.management)}%</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="staffing" className="space-y-6">
+          {/* Staffing Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Users className="h-5 w-5 text-blue-500" />
+                  <div>
+                    <p className="text-sm font-medium">Current Staff</p>
+                    <p className="text-2xl font-bold">{selectedVendorData.staffing.current}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Target className="h-5 w-5 text-green-500" />
+                  <div>
+                    <p className="text-sm font-medium">Required Staff</p>
+                    <p className="text-2xl font-bold">{selectedVendorData.staffing.required}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5 text-purple-500" />
+                  <div>
+                    <p className="text-sm font-medium">Efficiency</p>
+                    <p className="text-2xl font-bold">{Math.round(selectedVendorData.staffing.efficiency)}%</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Staffing Recommendations */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Staffing Recommendations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Alert>
-                <Users className="h-4 w-4" />
-                <AlertDescription>
-                  Based on the analysis, cloud-native solutions like Portnox require 60-70% fewer staff resources
-                  compared to traditional on-premise solutions. Consider vendor solutions with high automation levels to
-                  minimize operational overhead.
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
+          {/* Staffing Analysis */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Staffing Requirements</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Current Capacity</span>
+                      <span>{Math.round(selectedVendorData.staffing.efficiency)}%</span>
+                    </div>
+                    <Progress value={selectedVendorData.staffing.efficiency} className="h-2" />
+                  </div>
+                  {selectedVendorData.staffing.gap > 0 && (
+                    <Alert>
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        Staffing gap of {selectedVendorData.staffing.gap} personnel identified. Consider hiring or
+                        training additional staff.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  {selectedVendorData.staffing.gap === 0 && (
+                    <Alert>
+                      <CheckCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        Current staffing levels are adequate for the selected solution.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Skills Requirements</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {selectedVendorData.staffing.skillsRequired.length > 0 ? (
+                    selectedVendorData.staffing.skillsRequired.map((skill: string, index: number) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <span className="text-sm">{skill}</span>
+                        <Badge variant="outline">Required</Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Network Administration</span>
+                        <Badge variant="outline">Required</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Security Management</span>
+                        <Badge variant="outline">Required</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Policy Configuration</span>
+                        <Badge variant="outline">Preferred</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Troubleshooting</span>
+                        <Badge variant="outline">Required</Badge>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="costs" className="space-y-6">
-          {/* Cost Analysis */}
+          {/* Cost Breakdown Chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Annual Operational Cost Comparison</CardTitle>
+              <CardTitle>Monthly Cost Breakdown</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={costAnalysisData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="vendor" />
-                  <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
-                  <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
-                  <Bar dataKey="annualCost" fill="#00D4AA" name="Total Annual Cost" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Cost Breakdown */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {operationalData.slice(0, 6).map((vendor) => (
-              <Card key={vendor.vendorId}>
-                <CardHeader>
-                  <CardTitle>{vendor.vendorName} - Cost Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Monthly Maintenance</span>
-                      <span>${vendor.monthlyMaintenanceCost.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Annual Operational</span>
-                      <span>${vendor.annualOperationalCost.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between font-semibold">
-                      <span>Cost per Device</span>
-                      <span>${vendor.costPerDevice.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="maintenance" className="space-y-6">
-          {/* Maintenance Requirements */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {operationalData.slice(0, 6).map((vendor) => (
-              <Card key={vendor.vendorId}>
-                <CardHeader>
-                  <CardTitle>{vendor.vendorName} - Maintenance Profile</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Maintenance Windows/Month</span>
-                        <span>{vendor.maintenanceWindows}</span>
-                      </div>
-                      <Progress value={(vendor.maintenanceWindows / 8) * 100} className="h-2" />
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Upgrade Complexity</span>
-                        <span className="capitalize">{vendor.upgradeComplexity}</span>
-                      </div>
-                      <Progress
-                        value={
-                          vendor.upgradeComplexity === "low" ? 25 : vendor.upgradeComplexity === "medium" ? 50 : 75
-                        }
-                        className="h-2"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={costBreakdownData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ category, percentage }) => `${category} (${percentage.toFixed(1)}%)`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="amount"
+                    >
+                      {costBreakdownData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="space-y-4">
+                  {costBreakdownData.map((item, index) => (
+                    <div key={item.category} className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        {vendor.cloudManagement ? (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <AlertTriangle className="h-4 w-4 text-red-500" />
-                        )}
-                        <span>Cloud Updates</span>
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        />
+                        <span>{item.category}</span>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        {vendor.automationLevel > 70 ? (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <AlertTriangle className="h-4 w-4 text-red-500" />
-                        )}
-                        <span>Auto Patching</span>
-                      </div>
+                      <span className="font-semibold">${item.amount.toLocaleString()}</span>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="maturity" className="space-y-6">
-          {/* Operational Maturity Assessment */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Operational Maturity Assessment</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {maturityRadarData.map((capability) => (
-                  <div key={capability.capability}>
-                    <h4 className="font-semibold mb-3">{capability.capability}</h4>
-                    <div className="space-y-2">
-                      {operationalData.map((vendor) => {
-                        const score = capability[vendor.vendorName] || 0
-                        return (
-                          <div key={vendor.vendorId}>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span>{vendor.vendorName}</span>
-                              <span>{score}%</span>
-                            </div>
-                            <Progress value={score} className="h-2" />
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Maturity Recommendations */}
+          {/* Cost Analysis */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Cost Efficiency Metrics</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span>Cost per Device</span>
+                  <Badge variant="secondary">${selectedVendorData.costs.perDevice.toFixed(2)}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Cost per User</span>
+                  <Badge variant="secondary">${selectedVendorData.costs.perUser.toFixed(2)}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Total Monthly Cost</span>
+                  <Badge variant="secondary">${selectedVendorData.costs.total.toLocaleString()}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Annual Cost</span>
+                  <Badge variant="secondary">${(selectedVendorData.costs.total * 12).toLocaleString()}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Cost Optimization</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Alert>
+                  <TrendingUp className="h-4 w-4" />
+                  <AlertDescription>Automation features can reduce operational costs by up to 30%</AlertDescription>
+                </Alert>
+                <Alert>
+                  <Settings className="h-4 w-4" />
+                  <AlertDescription>Consider volume discounts for licensing costs</AlertDescription>
+                </Alert>
+                <Alert>
+                  <Users className="h-4 w-4" />
+                  <AlertDescription>Training investment can improve staff efficiency by 25%</AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="maturity" className="space-y-6">
+          {/* Maturity Overview */}
           <Card>
             <CardHeader>
-              <CardTitle>Maturity Recommendations</CardTitle>
+              <CardTitle>Operational Maturity Assessment</CardTitle>
+              <div className="flex items-center space-x-2">
+                <span className="text-2xl font-bold">{Math.round(selectedVendorData.maturity.overall)}</span>
+                <span className="text-muted-foreground">/ 100</span>
+                <Badge
+                  variant={
+                    selectedVendorData.maturity.overall >= 80
+                      ? "default"
+                      : selectedVendorData.maturity.overall >= 60
+                        ? "secondary"
+                        : "destructive"
+                  }
+                >
+                  {selectedVendorData.maturity.overall >= 80
+                    ? "Advanced"
+                    : selectedVendorData.maturity.overall >= 60
+                      ? "Intermediate"
+                      : "Basic"}
+                </Badge>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <Alert>
-                  <Target className="h-4 w-4" />
-                  <AlertDescription>
-                    Focus on vendors with high automation levels (80%+) to reduce operational overhead and improve
-                    efficiency.
-                  </AlertDescription>
-                </Alert>
-                <Alert>
-                  <CheckCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Cloud-managed solutions provide better scalability and reduced maintenance burden for growing
-                    organizations.
-                  </AlertDescription>
-                </Alert>
-                <Alert>
-                  <Zap className="h-4 w-4" />
-                  <AlertDescription>
-                    API availability is crucial for integration with existing security tools and automation workflows.
-                  </AlertDescription>
-                </Alert>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  {Object.entries(selectedVendorData.maturity.scores).map(([category, score]) => (
+                    <div key={category}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="capitalize">{category}</span>
+                        <span>{Math.round(score as number)}/100</span>
+                      </div>
+                      <Progress value={score as number} className="h-2" />
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-3">Improvement Recommendations</h4>
+                  <div className="space-y-2">
+                    {selectedVendorData.maturity.recommendations.map((rec: string, index: number) => (
+                      <Alert key={index}>
+                        <Target className="h-4 w-4" />
+                        <AlertDescription>{rec}</AlertDescription>
+                      </Alert>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Maturity Roadmap */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Maturity Roadmap</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card className="border-2 border-green-200">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg">Phase 1: Foundation</CardTitle>
+                      <Badge variant="secondary">0-6 months</Badge>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-sm space-y-1">
+                        <li>• Basic policy implementation</li>
+                        <li>• Staff training programs</li>
+                        <li>• Initial automation setup</li>
+                        <li>• Monitoring establishment</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-2 border-blue-200">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg">Phase 2: Enhancement</CardTitle>
+                      <Badge variant="secondary">6-12 months</Badge>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-sm space-y-1">
+                        <li>• Advanced automation</li>
+                        <li>• Integration expansion</li>
+                        <li>• Performance optimization</li>
+                        <li>• Process refinement</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-2 border-purple-200">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg">Phase 3: Optimization</CardTitle>
+                      <Badge variant="secondary">12+ months</Badge>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-sm space-y-1">
+                        <li>• AI-driven insights</li>
+                        <li>• Predictive analytics</li>
+                        <li>• Full automation</li>
+                        <li>• Continuous improvement</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </CardContent>
           </Card>

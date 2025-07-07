@@ -28,20 +28,6 @@ export default function ImplementationTimelineView({
 }: ImplementationTimelineViewProps) {
   const [selectedVendor, setSelectedVendor] = useState<string>(selectedVendors[0] || "")
 
-  // Early return if no vendors selected
-  if (selectedVendors.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Alert>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            Please select at least one vendor to view implementation timeline analysis.
-          </AlertDescription>
-        </Alert>
-      </div>
-    )
-  }
-
   // Calculate implementation data for each vendor
   const implementationData = useMemo(() => {
     return selectedVendors
@@ -101,6 +87,20 @@ export default function ImplementationTimelineView({
       })
       .filter(Boolean)
   }, [selectedVendors, config])
+
+  // Early return if no vendors selected
+  if (selectedVendors.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Please select at least one vendor to view implementation timeline analysis.
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
 
   const selectedVendorData = implementationData.find((v) => v?.vendorId === selectedVendor) || implementationData[0]
 
@@ -259,7 +259,7 @@ export default function ImplementationTimelineView({
               <Card key={phase}>
                 <CardHeader>
                   <CardTitle className="capitalize">{phase} Phase</CardTitle>
-                  <Badge variant="secondary">{weeks} weeks}</Badge>
+                  <Badge variant="secondary">{weeks} weeks</Badge>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
