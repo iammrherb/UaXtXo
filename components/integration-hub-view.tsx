@@ -233,6 +233,58 @@ const AVAILABLE_INTEGRATIONS = {
       popularity: 73,
     },
   ],
+  network: [
+    {
+      id: "cisco-dna",
+      name: "Cisco DNA Center",
+      vendor: "Cisco",
+      type: "REST API",
+      complexity: "high",
+      cost: 20000,
+      setupTime: "10-15 hours",
+      features: ["Network Automation", "Policy Management", "Analytics"],
+      status: "available",
+      popularity: 80,
+    },
+    {
+      id: "aruba-central",
+      name: "Aruba Central",
+      vendor: "Aruba",
+      type: "REST API",
+      complexity: "medium",
+      cost: 8000,
+      setupTime: "6-8 hours",
+      features: ["Cloud Management", "AI Insights", "Zero Trust"],
+      status: "available",
+      popularity: 75,
+    },
+  ],
+  cloud: [
+    {
+      id: "aws-iam",
+      name: "AWS IAM",
+      vendor: "Amazon",
+      type: "REST API",
+      complexity: "medium",
+      cost: 0,
+      setupTime: "4-6 hours",
+      features: ["Identity Management", "Policy Engine", "Federation"],
+      status: "available",
+      popularity: 90,
+    },
+    {
+      id: "azure-ad-cloud",
+      name: "Azure AD Cloud",
+      vendor: "Microsoft",
+      type: "Graph API",
+      complexity: "low",
+      cost: 0,
+      setupTime: "2-4 hours",
+      features: ["Cloud Identity", "Conditional Access", "B2B/B2C"],
+      status: "available",
+      popularity: 88,
+    },
+  ],
 }
 
 interface IntegrationHubViewProps {
@@ -250,8 +302,18 @@ const safeNumber = (value: any, fallback = 0): number => {
   return fallback
 }
 
+// Safe array helper function
+const safeArray = (value: any): any[] => {
+  return Array.isArray(value) ? value : []
+}
+
+// Safe object helper function
+const safeObject = (value: any): Record<string, any> => {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {}
+}
+
 export { IntegrationHubView }
-export default function IntegrationHubView({ selectedVendors, config }: IntegrationHubViewProps) {
+export default function IntegrationHubView({ selectedVendors = [], config = {} }: IntegrationHubViewProps) {
   const [activeCategory, setActiveCategory] = useState("identity")
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedIntegrations, setSelectedIntegrations] = useState<string[]>([
@@ -263,68 +325,90 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
   const [showConfigDialog, setShowConfigDialog] = useState(false)
   const [selectedIntegration, setSelectedIntegration] = useState<any>(null)
 
-  // Get vendor-specific integration data
+  // Get vendor-specific integration data with safe fallbacks
   const getVendorIntegrations = (vendorId: string) => {
     const vendor = ComprehensiveVendorDatabase[vendorId]
-    if (!vendor) return { identity: [], mdm: [], siem: [], security: [] }
-    return vendor.integrations || { identity: [], mdm: [], siem: [], security: [] }
+    if (!vendor) return { identity: [], mdm: [], siem: [], security: [], network: [], cloud: [] }
+
+    const integrations = safeObject(vendor.integrations)
+    return {
+      identity: safeArray(integrations.identity),
+      mdm: safeArray(integrations.mdm),
+      siem: safeArray(integrations.siem),
+      security: safeArray(integrations.security),
+      network: safeArray(integrations.network),
+      cloud: safeArray(integrations.cloud),
+    }
   }
 
-  // Calculate integration compatibility
+  // Calculate integration compatibility with proper error handling
   const calculateCompatibility = () => {
     const compatibility: Record<string, number> = {}
-    selectedVendors.forEach((vendorId) => {
+
+    safeArray(selectedVendors).forEach((vendorId) => {
       const vendor = ComprehensiveVendorDatabase[vendorId]
-      if (vendor && vendor.integrations) {
-        let score = 0
-        let total = 0
-        Object.entries(vendor.integrations).forEach(([category, integrations]) => {
-          if (Array.isArray(integrations)) {
-            integrations.forEach((integration) => {
-              total++
-              const cost = safeNumber(integration.cost, 0)
-              if (cost === 0) score++
-            })
-          }
-        })
-        compatibility[vendorId] = total > 0 ? Math.round((score / total) * 100) : 0
-      } else {
+      if (!vendor) {
         compatibility[vendorId] = 0
+        return
       }
+
+      const integrations = safeObject(vendor.integrations)
+      let score = 0
+      let total = 0
+
+      // Safely iterate through integration categories
+      Object.entries(integrations).forEach(([category, categoryIntegrations]) => {
+        const integrationList = safeArray(categoryIntegrations)
+        integrationList.forEach((integration) => {
+          total++
+          const cost = safeNumber(integration?.cost, 0)
+          if (cost === 0) score++
+        })
+      })
+
+      compatibility[vendorId] = total > 0 ? Math.round((score / total) * 100) : 0
     })
+
     return compatibility
   }
 
-  // Get integration cost analysis
+  // Get integration cost analysis with safe calculations
   const getIntegrationCosts = () => {
     const costs: Record<string, number> = {}
-    selectedVendors.forEach((vendorId) => {
+
+    safeArray(selectedVendors).forEach((vendorId) => {
       const vendor = ComprehensiveVendorDatabase[vendorId]
-      if (vendor && vendor.integrations) {
-        let totalCost = 0
-        Object.values(vendor.integrations).forEach((integrations) => {
-          if (Array.isArray(integrations)) {
-            integrations.forEach((integration) => {
-              totalCost += safeNumber(integration.cost, 0)
-            })
-          }
-        })
-        costs[vendorId] = totalCost
-      } else {
+      if (!vendor) {
         costs[vendorId] = 0
+        return
       }
+
+      const integrations = safeObject(vendor.integrations)
+      let totalCost = 0
+
+      Object.values(integrations).forEach((categoryIntegrations) => {
+        const integrationList = safeArray(categoryIntegrations)
+        integrationList.forEach((integration) => {
+          totalCost += safeNumber(integration?.cost, 0)
+        })
+      })
+
+      costs[vendorId] = totalCost
     })
+
     return costs
   }
 
   const compatibility = calculateCompatibility()
   const integrationCosts = getIntegrationCosts()
 
-  const filteredIntegrations = AVAILABLE_INTEGRATIONS[activeCategory as keyof typeof AVAILABLE_INTEGRATIONS]?.filter(
-    (integration) => integration.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  const filteredIntegrations = safeArray(
+    AVAILABLE_INTEGRATIONS[activeCategory as keyof typeof AVAILABLE_INTEGRATIONS],
+  ).filter((integration) => integration?.name?.toLowerCase().includes(searchTerm.toLowerCase()))
 
   const IntegrationCard = ({ integration }: { integration: any }) => {
+    if (!integration) return null
+
     const isSelected = selectedIntegrations.includes(integration.id)
     const complexityColor =
       integration.complexity === "low"
@@ -334,6 +418,7 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
           : "text-red-600"
 
     const popularityValue = safeNumber(integration.popularity, 0)
+    const features = safeArray(integration.features)
 
     return (
       <Card
@@ -353,12 +438,12 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
               <div
                 className={cn(
                   "w-3 h-3 rounded-full",
-                  INTEGRATION_CATEGORIES[activeCategory as keyof typeof INTEGRATION_CATEGORIES].color,
+                  INTEGRATION_CATEGORIES[activeCategory as keyof typeof INTEGRATION_CATEGORIES]?.color || "bg-gray-500",
                 )}
               />
               <div>
-                <h4 className="font-semibold text-sm">{integration.name}</h4>
-                <p className="text-xs text-muted-foreground">{integration.vendor}</p>
+                <h4 className="font-semibold text-sm">{integration.name || "Unknown Integration"}</h4>
+                <p className="text-xs text-muted-foreground">{integration.vendor || "Unknown Vendor"}</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -381,11 +466,13 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Complexity:</span>
-              <span className={cn("font-medium capitalize", complexityColor)}>{integration.complexity}</span>
+              <span className={cn("font-medium capitalize", complexityColor)}>
+                {integration.complexity || "unknown"}
+              </span>
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Setup Time:</span>
-              <span className="font-medium">{integration.setupTime}</span>
+              <span className="font-medium">{integration.setupTime || "N/A"}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Cost:</span>
@@ -406,14 +493,14 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
 
           <div className="mt-3">
             <div className="flex flex-wrap gap-1">
-              {integration.features.slice(0, 3).map((feature: string) => (
+              {features.slice(0, 3).map((feature: string) => (
                 <Badge key={feature} variant="secondary" className="text-xs">
                   {feature}
                 </Badge>
               ))}
-              {integration.features.length > 3 && (
+              {features.length > 3 && (
                 <Badge variant="outline" className="text-xs">
-                  +{integration.features.length - 3} more
+                  +{features.length - 3} more
                 </Badge>
               )}
             </div>
@@ -424,7 +511,7 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
   }
 
   const VendorCompatibilityChart = () => {
-    const data = selectedVendors.map((vendorId) => {
+    const data = safeArray(selectedVendors).map((vendorId) => {
       const vendor = ComprehensiveVendorDatabase[vendorId]
       return {
         name: vendor?.name || vendorId,
@@ -463,12 +550,12 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
 
   const IntegrationCostBreakdown = () => {
     const data = Object.entries(INTEGRATION_CATEGORIES).map(([key, category]) => {
-      const categoryIntegrations = AVAILABLE_INTEGRATIONS[key as keyof typeof AVAILABLE_INTEGRATIONS] || []
+      const categoryIntegrations = safeArray(AVAILABLE_INTEGRATIONS[key as keyof typeof AVAILABLE_INTEGRATIONS])
       const selectedCategoryIntegrations = categoryIntegrations.filter((integration) =>
-        selectedIntegrations.includes(integration.id),
+        selectedIntegrations.includes(integration?.id),
       )
       const totalCost = selectedCategoryIntegrations.reduce(
-        (sum, integration) => sum + safeNumber(integration.cost, 0),
+        (sum, integration) => sum + safeNumber(integration?.cost, 0),
         0,
       )
       return {
@@ -652,8 +739,8 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
                   <p className="text-sm text-muted-foreground">{category.description}</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredIntegrations?.map((integration) => (
-                    <IntegrationCard key={integration.id} integration={integration} />
+                  {filteredIntegrations.map((integration) => (
+                    <IntegrationCard key={integration?.id || Math.random()} integration={integration} />
                   ))}
                 </div>
               </TabsContent>
@@ -666,7 +753,7 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
       <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Configure Integration: {selectedIntegration?.name}</DialogTitle>
+            <DialogTitle>Configure Integration: {selectedIntegration?.name || "Unknown"}</DialogTitle>
             <DialogDescription>Set up and configure the integration parameters</DialogDescription>
           </DialogHeader>
           {selectedIntegration && (
@@ -674,17 +761,17 @@ export default function IntegrationHubView({ selectedVendors, config }: Integrat
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Integration Type</Label>
-                  <Input value={selectedIntegration.type} disabled />
+                  <Input value={selectedIntegration.type || "N/A"} disabled />
                 </div>
                 <div>
                   <Label>Complexity Level</Label>
-                  <Input value={selectedIntegration.complexity} disabled className="capitalize" />
+                  <Input value={selectedIntegration.complexity || "unknown"} disabled className="capitalize" />
                 </div>
               </div>
               <div>
                 <Label>Features</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedIntegration.features.map((feature: string) => (
+                  {safeArray(selectedIntegration.features).map((feature: string) => (
                     <Badge key={feature} variant="secondary">
                       {feature}
                     </Badge>
