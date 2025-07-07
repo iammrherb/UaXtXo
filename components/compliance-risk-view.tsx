@@ -23,7 +23,7 @@ interface ComplianceRiskViewProps {
   config: any
 }
 
-export default function ComplianceRiskView({ results, config }: ComplianceRiskViewProps) {
+export function ComplianceRiskView({ results, config }: ComplianceRiskViewProps) {
   const complianceFrameworks = [
     { id: "nist-csf", name: "NIST Cybersecurity Framework", critical: true },
     { id: "pci-dss", name: "PCI DSS", critical: true },
@@ -78,7 +78,7 @@ export default function ComplianceRiskView({ results, config }: ComplianceRiskVi
           <p className="text-muted-foreground">Comprehensive assessment of security posture and compliance coverage</p>
         </div>
         <Badge variant="outline" className="text-lg px-4 py-2">
-          {config.devices} Devices
+          {config.deviceCount} Devices
         </Badge>
       </div>
 
@@ -311,7 +311,7 @@ export default function ComplianceRiskView({ results, config }: ComplianceRiskVi
                   <div className="p-4 bg-muted rounded-lg">
                     <div className="text-lg font-semibold">Current Annual Premium</div>
                     <div className="text-2xl font-bold text-primary">$75,000</div>
-                    <div className="text-sm text-muted-foreground">Based on {config.devices} devices</div>
+                    <div className="text-sm text-muted-foreground">Based on {config.deviceCount} devices</div>
                   </div>
 
                   <div className="space-y-3">
@@ -390,3 +390,5 @@ export default function ComplianceRiskView({ results, config }: ComplianceRiskVi
     </div>
   )
 }
+
+export default ComplianceRiskView
