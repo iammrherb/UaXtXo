@@ -18,6 +18,7 @@ import {
   DollarSign,
   Clock,
   Target,
+  Activity,
 } from "lucide-react"
 
 // Import all view components as default exports
@@ -35,6 +36,7 @@ import SecurityRiskAssessmentView from "@/components/security-risk-assessment-vi
 import IndustryAnalysisView from "@/components/industry-analysis-view"
 import MigrationPlanningView from "@/components/migration-planning-view"
 import ExecutiveReportView from "@/components/executive-report-view"
+import InteractiveDashboard from "@/components/interactive-dashboard"
 
 // Import calculation functions
 import {
@@ -48,7 +50,7 @@ import {
 } from "@/lib/enhanced-tco-calculator"
 
 export default function ZTCAIntegratedDashboard() {
-  const [activeTab, setActiveTab] = useState("executive-dashboard")
+  const [activeTab, setActiveTab] = useState("interactive-dashboard")
   const [showSettings, setShowSettings] = useState(false)
 
   // Configuration state
@@ -220,7 +222,11 @@ export default function ZTCAIntegratedDashboard() {
 
         {/* Main Analysis Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-13">
+          <TabsList className="grid w-full grid-cols-7 lg:grid-cols-14">
+            <TabsTrigger value="interactive-dashboard" className="flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              Interactive
+            </TabsTrigger>
             <TabsTrigger value="executive-dashboard" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Executive
@@ -274,6 +280,10 @@ export default function ZTCAIntegratedDashboard() {
               Report
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="interactive-dashboard">
+            <InteractiveDashboard initialConfig={config} onConfigChange={handleConfigChange} />
+          </TabsContent>
 
           <TabsContent value="executive-dashboard">
             <ExecutiveDashboardView

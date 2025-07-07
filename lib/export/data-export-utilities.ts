@@ -1,6 +1,6 @@
-import { COMPREHENSIVE_VENDOR_DATA, INDUSTRIES } from "../vendors/comprehensive-vendor-data"
-import type { DetailedCostBreakdown } from "../calculators/comprehensive-tco-calculator"
-import { ChartCaptureService, type CapturedChart, resizeChartForPDF } from "./chart-capture-utilities"
+import { ChartCaptureService, type CapturedChart } from "./chart-capture-utilities"
+import jsPDF from "jspdf"
+import * as XLSX from "xlsx"
 
 // Export formats
 export enum ExportFormat {
@@ -12,904 +12,464 @@ export enum ExportFormat {
   WORD = "docx",
 }
 
-// Export data structure
-export interface ExportData {
-  metadata: {
-    generatedAt: Date
-    generatedBy: string
-    version: string
-    title: string
-    description: string
-  }
-  configuration: {
-    industry: string
-    deviceCount: number
-    timeframe: number
-    vendors: string[]
-    deploymentModel: string
-  }
-  analysis: {
-    tcoComparison: Record<string, DetailedCostBreakdown>
-    roiAnalysis: any
-    riskAssessment: any
-    complianceMapping: any
-    migrationPlan?: any
-  }
-  recommendations: {
-    executive: string[]
-    technical: string[]
-    financial: string[]
-  }
-  charts?: CapturedChart[]
+// Export configuration interface
+export interface ExportConfiguration {
+  includeCharts: boolean
+  includeDetailedBreakdown: boolean
+  includeRecommendations: boolean
+  includeComplianceAnalysis: boolean
+  format: "pdf" | "excel" | "csv"
+  chartQuality: "high" | "medium" | "low"
 }
 
-// PDF generation interface
-export interface PDFReportData {
-  title: string
-  subtitle: string
-  executiveSummary: {
-    recommendation: string
-    keyMetrics: Array<{ label: string; value: string; color?: string }>
-    highlights: string[]
+// Export data structure
+export interface ExportData {
+  summary: {
+    totalVendors: number
+    recommendedVendor: string
+    totalSavings: number
+    averagePayback: number
+    industryFocus: string
+    analysisDate: string
   }
-  financialAnalysis: {
-    totalInvestment: number
-    totalBenefits: number
-    roi: number
-    paybackMonths: number
-    costBreakdown: Array<{ category: string; amount: number; percentage: number }>
-  }
-  riskAssessment: {
-    currentRisk: number
-    projectedRisk: number
-    riskReduction: number
-    complianceScore: number
-  }
-  vendorComparison: Array<{
-    vendor: string
+  vendors: Array<{
+    name: string
     totalCost: number
-    payback: number
-    riskScore: number
-    recommended: boolean
+    year1Cost: number
+    year3Cost: number
+    year5Cost: number
+    roi: number
+    paybackPeriod: number
+    securityScore: number
+    complianceScore: number
+    implementationTime: number
   }>
-  implementation: {
-    timeline: Array<{ phase: string; duration: string; tasks: string[] }>
-    resources: Array<{ role: string; allocation: string }>
-  }
   charts: CapturedChart[]
+  recommendations: string[]
+  complianceAnalysis: {
+    frameworks: string[]
+    coverageScore: number
+    automationLevel: number
+    riskReduction: number
+  }
 }
 
 // Main export utility class
-export class NACAnalysisExporter {
-  private data: ExportData
-  private chartService: ChartCaptureService
+export class DataExportService {
+  private static instance: DataExportService
+  private chartCaptureService: ChartCaptureService
 
-  constructor(data: Partial<ExportData>) {
-    this.chartService = ChartCaptureService.getInstance()
-    this.data = {
-      metadata: {
-        generatedAt: new Date(),
-        generatedBy: "Portnox TCO Analyzer",
-        version: "1.0.0",
-        title: "NAC Vendor Analysis Report",
-        description: "Comprehensive analysis of Network Access Control solutions",
-        ...data.metadata,
-      },
-      configuration: data.configuration || {
-        industry: "HEALTHCARE",
-        deviceCount: 500,
-        timeframe: 3,
-        vendors: ["PORTNOX", "CISCO_ISE", "ARUBA_CLEARPASS"],
-        deploymentModel: "CLOUD",
-      },
-      analysis: data.analysis || {
-        tcoComparison: {},
-        roiAnalysis: {},
-        riskAssessment: {},
-        complianceMapping: {},
-      },
-      recommendations: data.recommendations || {
-        executive: [],
-        technical: [],
-        financial: [],
-      },
-      charts: data.charts || [],
-    }
+  constructor() {
+    this.chartCaptureService = ChartCaptureService.getInstance()
   }
 
-  // Capture charts before generating PDF
-  async captureChartsForPDF(): Promise<void> {
-    try {
-      // Wait for charts to be fully rendered
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      const chartElements = [
-        { selector: '[data-chart="tco-comparison"]', id: "tco-comparison" },
-        { selector: '[data-chart="cost-breakdown"]', id: "cost-breakdown" },
-        { selector: '[data-chart="savings-analysis"]', id: "savings-analysis" },
-        { selector: '[data-chart="vendor-comparison"]', id: "vendor-comparison" },
-        { selector: '[data-chart="roi-analysis"]', id: "roi-analysis" },
-        { selector: '[data-chart="risk-assessment"]', id: "risk-assessment" },
-      ]
-
-      const capturedCharts: CapturedChart[] = []
-
-      for (const { selector, id } of chartElements) {
-        const element = document.querySelector(selector) as HTMLElement
-        if (element) {
-          try {
-            const chart = await this.chartService.captureChart(element, id, {
-              width: 800,
-              height: 400,
-              scale: 2,
-              backgroundColor: "#ffffff",
-            })
-            capturedCharts.push(chart)
-          } catch (error) {
-            console.warn(`Failed to capture chart ${id}:`, error)
-          }
-        }
-      }
-
-      this.data.charts = capturedCharts
-    } catch (error) {
-      console.error("Failed to capture charts for PDF:", error)
-      this.data.charts = []
+  static getInstance(): DataExportService {
+    if (!DataExportService.instance) {
+      DataExportService.instance = new DataExportService()
     }
+    return DataExportService.instance
   }
 
-  // Generate PDF report data
-  generatePDFReportData(): PDFReportData {
-    const portnoxData = this.data.analysis.tcoComparison["PORTNOX"]
-    const competitorAvg = this.calculateCompetitorAverage()
-    const savings = competitorAvg - (portnoxData?.totalCost || 0)
-    const percentSavings = Math.round((savings / Math.max(competitorAvg, 1)) * 100)
-
-    return {
-      title: "Executive NAC Analysis Report",
-      subtitle: `${INDUSTRIES[this.data.configuration.industry]?.name || "Healthcare"} | ${this.data.configuration.deviceCount} Devices | ${this.data.configuration.timeframe}-Year Analysis`,
-      executiveSummary: {
-        recommendation: "Portnox CLEAR",
-        keyMetrics: [
-          { label: "Cost Savings", value: `${percentSavings}%`, color: "#10b981" },
-          { label: "ROI", value: `${portnoxData?.roi || 5506}%`, color: "#3b82f6" },
-          {
-            label: "Payback Period",
-            value: `${Math.round((portnoxData?.paybackPeriod || 195) / 30)} mo`,
-            color: "#f59e0b",
-          },
-          { label: "Risk Reduction", value: "92%", color: "#ef4444" },
-        ],
-        highlights: [
-          "Fastest payback in industry at 0.3 months",
-          "95% faster deployment than traditional NAC",
-          "92% reduction in security breach risk",
-          "Zero infrastructure investment required",
-          "$4.9M annual risk mitigation value",
-        ],
-      },
-      financialAnalysis: {
-        totalInvestment: portnoxData?.totalCost || 230000,
-        totalBenefits: (portnoxData?.totalCost || 230000) * 25,
-        roi: portnoxData?.roi || 5506,
-        paybackMonths: Math.round((portnoxData?.paybackPeriod || 195) / 30),
-        costBreakdown: [
-          { category: "Software Licensing", amount: 120000, percentage: 52 },
-          { category: "Implementation", amount: 25000, percentage: 11 },
-          { category: "Training", amount: 15000, percentage: 6 },
-          { category: "Support", amount: 35000, percentage: 15 },
-          { category: "Infrastructure", amount: 35000, percentage: 15 },
-        ],
-      },
-      riskAssessment: {
-        currentRisk: 28,
-        projectedRisk: 4,
-        riskReduction: 86,
-        complianceScore: 92,
-      },
-      vendorComparison: Object.entries(this.data.analysis.tcoComparison).map(([vendor, data]) => ({
-        vendor: COMPREHENSIVE_VENDOR_DATA[vendor]?.name || vendor,
-        totalCost: data.totalCost,
-        payback: Math.round(data.paybackPeriod / 30),
-        riskScore: this.calculateRiskScore(vendor),
-        recommended: vendor === "PORTNOX",
-      })),
-      implementation: {
-        timeline: [
-          {
-            phase: "Planning & Design",
-            duration: "1 week",
-            tasks: ["Requirements gathering", "Architecture design", "Policy mapping"],
-          },
-          {
-            phase: "Pilot Deployment",
-            duration: "1 week",
-            tasks: ["Test group selection", "Configuration", "Validation"],
-          },
-          {
-            phase: "Production Rollout",
-            duration: "2-4 weeks",
-            tasks: ["Phased deployment", "User training", "Monitoring"],
-          },
-          {
-            phase: "Optimization",
-            duration: "1 week",
-            tasks: ["Performance tuning", "Policy refinement", "Documentation"],
-          },
-        ],
-        resources: [
-          { role: "Project Manager", allocation: "1.0 FTE" },
-          { role: "Network Engineer", allocation: "0.5 FTE" },
-          { role: "Security Analyst", allocation: "0.5 FTE" },
-          { role: "Portnox Professional Services", allocation: "Included" },
-        ],
-      },
-      charts: this.data.charts || [],
-    }
-  }
-
-  // Generate PDF using jsPDF with chart integration
-  async generatePDF(): Promise<Blob> {
-    // Capture charts first
-    await this.captureChartsForPDF()
-
-    // Dynamic import to avoid SSR issues
-    const { jsPDF } = await import("jspdf")
-    const doc = new jsPDF()
-    const reportData = this.generatePDFReportData()
-
-    // PDF styling constants
-    const colors = {
-      primary: [16, 185, 129], // Green
-      secondary: [59, 130, 246], // Blue
-      accent: [245, 158, 11], // Orange
-      text: [31, 41, 55], // Gray-800
-      lightGray: [243, 244, 246], // Gray-100
-    }
-
-    let yPosition = 20
-
-    // Helper function to add images to PDF
-    const addChartImage = (chartId: string, x: number, y: number, width: number, height: number): number => {
-      const chart = reportData.charts.find((c) => c.id === chartId)
-      if (chart) {
-        try {
-          const resized = resizeChartForPDF(chart, width, height)
-          doc.addImage(resized.dataUrl, "PNG", x, y, resized.width, resized.height)
-          return y + resized.height + 10
-        } catch (error) {
-          console.warn(`Failed to add chart ${chartId} to PDF:`, error)
-          return y
-        }
-      }
-      return y
-    }
-
-    // Helper function to add text with word wrapping
-    const addWrappedText = (text: string, x: number, y: number, maxWidth: number, fontSize = 10) => {
-      doc.setFontSize(fontSize)
-      const lines = doc.splitTextToSize(text, maxWidth)
-      doc.text(lines, x, y)
-      return y + lines.length * fontSize * 0.4
-    }
-
-    // Header
-    doc.setFillColor(...colors.primary)
-    doc.rect(0, 0, 210, 40, "F")
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(24)
-    doc.setFont("helvetica", "bold")
-    doc.text(reportData.title, 20, 25)
-    doc.setFontSize(12)
-    doc.setFont("helvetica", "normal")
-    doc.text(reportData.subtitle, 20, 35)
-
-    yPosition = 50
-
-    // Executive Summary Section
-    doc.setTextColor(...colors.text)
-    doc.setFontSize(18)
-    doc.setFont("helvetica", "bold")
-    doc.text("Executive Summary", 20, yPosition)
-    yPosition += 10
-
-    // Recommendation box
-    doc.setFillColor(...colors.lightGray)
-    doc.rect(20, yPosition, 170, 20, "F")
-    doc.setFontSize(14)
-    doc.setFont("helvetica", "bold")
-    doc.setTextColor(...colors.primary)
-    doc.text(`Recommended Solution: ${reportData.executiveSummary.recommendation}`, 25, yPosition + 12)
-    yPosition += 30
-
-    // Key metrics in a grid
-    doc.setFontSize(12)
-    doc.setFont("helvetica", "normal")
-    doc.setTextColor(...colors.text)
-    const metricsPerRow = 2
-    const metricWidth = 80
-    const metricHeight = 25
-
-    reportData.executiveSummary.keyMetrics.forEach((metric, index) => {
-      const row = Math.floor(index / metricsPerRow)
-      const col = index % metricsPerRow
-      const x = 20 + col * (metricWidth + 10)
-      const y = yPosition + row * (metricHeight + 5)
-
-      // Metric box
-      doc.setFillColor(245, 245, 245)
-      doc.rect(x, y, metricWidth, metricHeight, "F")
-      doc.setDrawColor(200, 200, 200)
-      doc.rect(x, y, metricWidth, metricHeight, "S")
-
-      // Metric value
-      doc.setFontSize(16)
-      doc.setFont("helvetica", "bold")
-      doc.setTextColor(16, 185, 129) // Green color for values
-      doc.text(metric.value, x + 5, y + 12)
-
-      // Metric label
-      doc.setFontSize(10)
-      doc.setFont("helvetica", "normal")
-      doc.setTextColor(...colors.text)
-      doc.text(metric.label, x + 5, y + 20)
+  async exportToPDF(data: ExportData, config: ExportConfiguration): Promise<void> {
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
     })
 
-    yPosition += Math.ceil(reportData.executiveSummary.keyMetrics.length / metricsPerRow) * (metricHeight + 5) + 15
+    let yPosition = 20
+    const pageHeight = pdf.internal.pageSize.height
+    const pageWidth = pdf.internal.pageSize.width
+    const margin = 20
 
-    // Key highlights
-    doc.setFontSize(14)
-    doc.setFont("helvetica", "bold")
-    doc.text("Key Business Drivers:", 20, yPosition)
+    // Helper function to check if we need a new page
+    const checkPageBreak = (requiredHeight: number) => {
+      if (yPosition + requiredHeight > pageHeight - margin) {
+        pdf.addPage()
+        yPosition = 20
+      }
+    }
+
+    // Title Page
+    pdf.setFontSize(24)
+    pdf.setFont("helvetica", "bold")
+    pdf.text("NAC Vendor Analysis Report", margin, yPosition)
+    yPosition += 15
+
+    pdf.setFontSize(12)
+    pdf.setFont("helvetica", "normal")
+    pdf.text(`Generated on: ${data.summary.analysisDate}`, margin, yPosition)
+    yPosition += 10
+    pdf.text(`Industry Focus: ${data.summary.industryFocus}`, margin, yPosition)
+    yPosition += 20
+
+    // Executive Summary
+    checkPageBreak(40)
+    pdf.setFontSize(16)
+    pdf.setFont("helvetica", "bold")
+    pdf.text("Executive Summary", margin, yPosition)
+    yPosition += 10
+
+    pdf.setFontSize(10)
+    pdf.setFont("helvetica", "normal")
+
+    // Summary metrics in a box
+    pdf.setDrawColor(0, 123, 255)
+    pdf.setFillColor(240, 248, 255)
+    pdf.rect(margin, yPosition, pageWidth - 2 * margin, 30, "FD")
+
+    yPosition += 8
+    pdf.text(`Recommended Vendor: ${data.summary.recommendedVendor}`, margin + 5, yPosition)
+    yPosition += 6
+    pdf.text(`Total Projected Savings: $${data.summary.totalSavings.toLocaleString()}`, margin + 5, yPosition)
+    yPosition += 6
+    pdf.text(`Average Payback Period: ${data.summary.averagePayback.toFixed(1)} months`, margin + 5, yPosition)
+    yPosition += 6
+    pdf.text(`Vendors Analyzed: ${data.summary.totalVendors}`, margin + 5, yPosition)
+    yPosition += 20
+
+    // Charts Section
+    if (config.includeCharts && data.charts.length > 0) {
+      checkPageBreak(60)
+      pdf.setFontSize(16)
+      pdf.setFont("helvetica", "bold")
+      pdf.text("Financial Analysis Charts", margin, yPosition)
+      yPosition += 15
+
+      for (const chart of data.charts) {
+        checkPageBreak(80)
+
+        try {
+          // Calculate chart dimensions for PDF
+          const maxWidth = pageWidth - 2 * margin
+          const maxHeight = 60
+          const aspectRatio = chart.width / chart.height
+
+          let chartWidth = Math.min(maxWidth, chart.width * 0.1)
+          let chartHeight = chartWidth / aspectRatio
+
+          if (chartHeight > maxHeight) {
+            chartHeight = maxHeight
+            chartWidth = chartHeight * aspectRatio
+          }
+
+          // Center the chart
+          const xPosition = (pageWidth - chartWidth) / 2
+
+          pdf.addImage(chart.dataUrl, "PNG", xPosition, yPosition, chartWidth, chartHeight)
+          yPosition += chartHeight + 10
+
+          // Add chart caption
+          pdf.setFontSize(9)
+          pdf.setFont("helvetica", "italic")
+          pdf.text(`Chart: ${chart.id}`, margin, yPosition)
+          yPosition += 10
+        } catch (error) {
+          console.error(`Failed to add chart ${chart.id} to PDF:`, error)
+        }
+      }
+    }
+
+    // Vendor Comparison Table
+    checkPageBreak(80)
+    pdf.setFontSize(16)
+    pdf.setFont("helvetica", "bold")
+    pdf.text("Vendor Comparison", margin, yPosition)
+    yPosition += 15
+
+    // Table headers
+    pdf.setFontSize(8)
+    pdf.setFont("helvetica", "bold")
+    const colWidths = [40, 25, 25, 25, 25, 25, 25]
+    const headers = ["Vendor", "Total Cost", "Year 1", "Year 3", "ROI", "Payback", "Security"]
+
+    let xPos = margin
+    headers.forEach((header, index) => {
+      pdf.text(header, xPos, yPosition)
+      xPos += colWidths[index]
+    })
     yPosition += 8
 
-    doc.setFontSize(10)
-    doc.setFont("helvetica", "normal")
-    reportData.executiveSummary.highlights.forEach((highlight) => {
-      doc.text("• " + highlight, 25, yPosition)
+    // Table data
+    pdf.setFont("helvetica", "normal")
+    data.vendors.forEach((vendor) => {
+      checkPageBreak(8)
+      xPos = margin
+      const rowData = [
+        vendor.name,
+        `$${(vendor.totalCost / 1000).toFixed(0)}k`,
+        `$${(vendor.year1Cost / 1000).toFixed(0)}k`,
+        `$${(vendor.year3Cost / 1000).toFixed(0)}k`,
+        `$${(vendor.roi / 1000).toFixed(0)}k`,
+        `${vendor.paybackPeriod.toFixed(1)}m`,
+        `${vendor.securityScore}%`,
+      ]
+
+      rowData.forEach((data, index) => {
+        pdf.text(data, xPos, yPosition)
+        xPos += colWidths[index]
+      })
       yPosition += 6
     })
 
-    yPosition += 10
+    // Recommendations Section
+    if (config.includeRecommendations && data.recommendations.length > 0) {
+      checkPageBreak(40)
+      pdf.setFontSize(16)
+      pdf.setFont("helvetica", "bold")
+      pdf.text("Recommendations", margin, yPosition)
+      yPosition += 15
 
-    // Financial Analysis Section
-    if (yPosition > 250) {
-      doc.addPage()
-      yPosition = 20
-    }
-
-    doc.setFontSize(18)
-    doc.setFont("helvetica", "bold")
-    doc.setTextColor(...colors.text)
-    doc.text("Financial Analysis", 20, yPosition)
-    yPosition += 15
-
-    // Add TCO Comparison Chart
-    doc.setFontSize(14)
-    doc.text("Total Cost of Ownership Comparison", 20, yPosition)
-    yPosition += 10
-    yPosition = addChartImage("tco-comparison", 20, yPosition, 170, 80)
-
-    // Financial summary boxes
-    const financialMetrics = [
-      { label: "Total Investment", value: this.formatCurrency(reportData.financialAnalysis.totalInvestment) },
-      { label: "Total Benefits", value: this.formatCurrency(reportData.financialAnalysis.totalBenefits) },
-      { label: "Net ROI", value: `${reportData.financialAnalysis.roi}%` },
-      { label: "Payback Period", value: `${reportData.financialAnalysis.paybackMonths} months` },
-    ]
-
-    financialMetrics.forEach((metric, index) => {
-      const row = Math.floor(index / 2)
-      const col = index % 2
-      const x = 20 + col * 90
-      const y = yPosition + row * 20
-
-      doc.setFillColor(240, 249, 255)
-      doc.rect(x, y, 85, 15, "F")
-      doc.setDrawColor(59, 130, 246)
-      doc.rect(x, y, 85, 15, "S")
-
-      doc.setFontSize(8)
-      doc.setTextColor(...colors.text)
-      doc.text(metric.label, x + 2, y + 6)
-
-      doc.setFontSize(12)
-      doc.setFont("helvetica", "bold")
-      doc.setTextColor(...colors.secondary)
-      doc.text(metric.value, x + 2, y + 12)
-      doc.setFont("helvetica", "normal")
-    })
-
-    yPosition += 50
-
-    // Add Cost Breakdown Chart
-    if (yPosition > 200) {
-      doc.addPage()
-      yPosition = 20
-    }
-
-    doc.setFontSize(14)
-    doc.setFont("helvetica", "bold")
-    doc.text("Cost Breakdown Analysis", 20, yPosition)
-    yPosition += 10
-    yPosition = addChartImage("cost-breakdown", 20, yPosition, 170, 80)
-
-    // Cost breakdown table
-    doc.setFontSize(14)
-    doc.setFont("helvetica", "bold")
-    doc.text("Detailed Cost Breakdown:", 20, yPosition)
-    yPosition += 10
-
-    // Table header
-    doc.setFillColor(...colors.primary)
-    doc.rect(20, yPosition, 170, 8, "F")
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(10)
-    doc.setFont("helvetica", "bold")
-    doc.text("Category", 25, yPosition + 6)
-    doc.text("Amount", 100, yPosition + 6)
-    doc.text("Percentage", 150, yPosition + 6)
-    yPosition += 8
-
-    // Table rows
-    doc.setTextColor(...colors.text)
-    doc.setFont("helvetica", "normal")
-    reportData.financialAnalysis.costBreakdown.forEach((item, index) => {
-      const bgColor = index % 2 === 0 ? [255, 255, 255] : [249, 250, 251]
-      doc.setFillColor(...bgColor)
-      doc.rect(20, yPosition, 170, 8, "F")
-
-      doc.text(item.category, 25, yPosition + 6)
-      doc.text(this.formatCurrency(item.amount), 100, yPosition + 6)
-      doc.text(`${item.percentage}%`, 150, yPosition + 6)
-      yPosition += 8
-    })
-
-    yPosition += 15
-
-    // Risk Assessment Section
-    if (yPosition > 220) {
-      doc.addPage()
-      yPosition = 20
-    }
-
-    doc.setFontSize(18)
-    doc.setFont("helvetica", "bold")
-    doc.text("Risk Assessment", 20, yPosition)
-    yPosition += 15
-
-    // Add Risk Assessment Chart
-    doc.setFontSize(14)
-    doc.text("Security Risk Analysis", 20, yPosition)
-    yPosition += 10
-    yPosition = addChartImage("risk-assessment", 20, yPosition, 170, 80)
-
-    // Risk reduction visualization
-    doc.setFontSize(12)
-    doc.text("Security Risk Reduction:", 20, yPosition)
-    yPosition += 10
-
-    // Current risk bar
-    doc.setFillColor(239, 68, 68) // Red
-    doc.rect(20, yPosition, reportData.riskAssessment.currentRisk * 2, 8, "F")
-    doc.setTextColor(...colors.text)
-    doc.text(`Current Risk: ${reportData.riskAssessment.currentRisk}%`, 25, yPosition + 6)
-    yPosition += 15
-
-    // Projected risk bar
-    doc.setFillColor(...colors.primary) // Green
-    doc.rect(20, yPosition, reportData.riskAssessment.projectedRisk * 2, 8, "F")
-    doc.text(`With NAC: ${reportData.riskAssessment.projectedRisk}%`, 25, yPosition + 6)
-    yPosition += 15
-
-    // Risk reduction highlight
-    doc.setFillColor(254, 243, 199) // Yellow background
-    doc.rect(20, yPosition, 170, 15, "F")
-    doc.setFontSize(14)
-    doc.setFont("helvetica", "bold")
-    doc.setTextColor(146, 64, 14) // Orange text
-    doc.text(`${reportData.riskAssessment.riskReduction}% Risk Reduction Achieved`, 25, yPosition + 10)
-    yPosition += 25
-
-    // Compliance score
-    doc.setFontSize(12)
-    doc.setFont("helvetica", "normal")
-    doc.setTextColor(...colors.text)
-    doc.text(`Compliance Score Improvement: ${reportData.riskAssessment.complianceScore}%`, 20, yPosition)
-    yPosition += 20
-
-    // Vendor Comparison Section
-    if (yPosition > 200) {
-      doc.addPage()
-      yPosition = 20
-    }
-
-    doc.setFontSize(18)
-    doc.setFont("helvetica", "bold")
-    doc.text("Vendor Comparison", 20, yPosition)
-    yPosition += 15
-
-    // Add Vendor Comparison Chart
-    doc.setFontSize(14)
-    doc.text("Vendor Performance Analysis", 20, yPosition)
-    yPosition += 10
-    yPosition = addChartImage("vendor-comparison", 20, yPosition, 170, 80)
-
-    // Comparison table header
-    doc.setFillColor(...colors.secondary)
-    doc.rect(20, yPosition, 170, 10, "F")
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(10)
-    doc.setFont("helvetica", "bold")
-    doc.text("Vendor", 25, yPosition + 7)
-    doc.text("Total Cost", 70, yPosition + 7)
-    doc.text("Payback", 110, yPosition + 7)
-    doc.text("Risk Score", 140, yPosition + 7)
-    doc.text("Status", 170, yPosition + 7)
-    yPosition += 10
-
-    // Comparison table rows
-    doc.setTextColor(...colors.text)
-    doc.setFont("helvetica", "normal")
-    reportData.vendorComparison.forEach((vendor, index) => {
-      const bgColor = vendor.recommended ? [220, 252, 231] : index % 2 === 0 ? [255, 255, 255] : [249, 250, 251]
-      doc.setFillColor(...bgColor)
-      doc.rect(20, yPosition, 170, 8, "F")
-
-      if (vendor.recommended) {
-        doc.setFont("helvetica", "bold")
-        doc.setTextColor(...colors.primary)
-      } else {
-        doc.setFont("helvetica", "normal")
-        doc.setTextColor(...colors.text)
-      }
-
-      doc.text(vendor.vendor, 25, yPosition + 6)
-      doc.text(this.formatCurrency(vendor.totalCost), 70, yPosition + 6)
-      doc.text(`${vendor.payback} mo`, 110, yPosition + 6)
-      doc.text(`${vendor.riskScore}%`, 140, yPosition + 6)
-      doc.text(vendor.recommended ? "Recommended" : "Alternative", 170, yPosition + 6)
-      yPosition += 8
-    })
-
-    yPosition += 15
-
-    // ROI Analysis Section
-    if (yPosition > 180) {
-      doc.addPage()
-      yPosition = 20
-    }
-
-    doc.setFontSize(18)
-    doc.setFont("helvetica", "bold")
-    doc.setTextColor(...colors.text)
-    doc.text("ROI Analysis", 20, yPosition)
-    yPosition += 15
-
-    // Add ROI Analysis Chart
-    doc.setFontSize(14)
-    doc.text("Return on Investment Projection", 20, yPosition)
-    yPosition += 10
-    yPosition = addChartImage("roi-analysis", 20, yPosition, 170, 80)
-
-    // Add Savings Analysis Chart
-    doc.setFontSize(14)
-    doc.text("Cumulative Savings Analysis", 20, yPosition)
-    yPosition += 10
-    yPosition = addChartImage("savings-analysis", 20, yPosition, 170, 80)
-
-    // Implementation Timeline
-    if (yPosition > 180) {
-      doc.addPage()
-      yPosition = 20
-    }
-
-    doc.setFontSize(18)
-    doc.setFont("helvetica", "bold")
-    doc.setTextColor(...colors.text)
-    doc.text("Implementation Timeline", 20, yPosition)
-    yPosition += 15
-
-    reportData.implementation.timeline.forEach((phase, index) => {
-      // Phase header
-      doc.setFillColor(...colors.accent)
-      doc.rect(20, yPosition, 170, 8, "F")
-      doc.setTextColor(255, 255, 255)
-      doc.setFontSize(11)
-      doc.setFont("helvetica", "bold")
-      doc.text(`${phase.phase} (${phase.duration})`, 25, yPosition + 6)
-      yPosition += 8
-
-      // Phase tasks
-      doc.setTextColor(...colors.text)
-      doc.setFontSize(9)
-      doc.setFont("helvetica", "normal")
-      phase.tasks.forEach((task) => {
-        doc.text(`• ${task}`, 30, yPosition + 5)
-        yPosition += 5
+      pdf.setFontSize(10)
+      pdf.setFont("helvetica", "normal")
+      data.recommendations.forEach((recommendation, index) => {
+        checkPageBreak(15)
+        pdf.text(`${index + 1}. ${recommendation}`, margin, yPosition)
+        yPosition += 8
       })
-      yPosition += 5
-    })
-
-    // Footer
-    const pageCount = doc.getNumberOfPages()
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i)
-      doc.setFontSize(8)
-      doc.setTextColor(128, 128, 128)
-      doc.text(`Generated by Portnox TCO Analyzer - Page ${i} of ${pageCount}`, 20, 290)
-      doc.text(`Generated on ${new Date().toLocaleDateString()}`, 150, 290)
     }
 
-    return new Promise((resolve) => {
-      const pdfBlob = doc.output("blob")
-      resolve(pdfBlob)
-    })
+    // Compliance Analysis
+    if (config.includeComplianceAnalysis) {
+      checkPageBreak(40)
+      pdf.setFontSize(16)
+      pdf.setFont("helvetica", "bold")
+      pdf.text("Compliance Analysis", margin, yPosition)
+      yPosition += 15
+
+      pdf.setFontSize(10)
+      pdf.setFont("helvetica", "normal")
+      pdf.text(`Compliance Frameworks: ${data.complianceAnalysis.frameworks.join(", ")}`, margin, yPosition)
+      yPosition += 8
+      pdf.text(`Coverage Score: ${data.complianceAnalysis.coverageScore}%`, margin, yPosition)
+      yPosition += 8
+      pdf.text(`Automation Level: ${data.complianceAnalysis.automationLevel}%`, margin, yPosition)
+      yPosition += 8
+      pdf.text(`Risk Reduction: ${data.complianceAnalysis.riskReduction}%`, margin, yPosition)
+    }
+
+    // Save the PDF
+    pdf.save("nac-vendor-analysis-report.pdf")
   }
 
-  // Export to JSON
-  async exportToJSON(): Promise<string> {
-    return JSON.stringify(this.data, null, 2)
-  }
+  async exportToExcel(data: ExportData, config: ExportConfiguration): Promise<void> {
+    const workbook = XLSX.utils.book_new()
 
-  // Export to CSV
-  async exportToCSV(): Promise<string> {
-    const vendors = Object.keys(this.data.analysis.tcoComparison)
-    const headers = [
-      "Vendor",
-      "Total Cost",
-      "Software Cost",
-      "Hardware Cost",
-      "Implementation Cost",
-      "Operational Cost",
-      "Hidden Costs",
-      "ROI %",
-      "Payback Period (days)",
-      "Risk Score",
-      "Compliance Score",
+    // Summary Sheet
+    const summaryData = [
+      ["NAC Vendor Analysis Report"],
+      [""],
+      ["Analysis Date", data.summary.analysisDate],
+      ["Industry Focus", data.summary.industryFocus],
+      ["Total Vendors Analyzed", data.summary.totalVendors],
+      ["Recommended Vendor", data.summary.recommendedVendor],
+      ["Total Projected Savings", `$${data.summary.totalSavings.toLocaleString()}`],
+      ["Average Payback Period", `${data.summary.averagePayback.toFixed(1)} months`],
     ]
 
-    const rows = vendors.map((vendor) => {
-      const tco = this.data.analysis.tcoComparison[vendor]
-      return [
-        COMPREHENSIVE_VENDOR_DATA[vendor]?.name || vendor,
-        tco.totalCost,
-        tco.software.total,
-        tco.hardware.total,
-        tco.implementation.total,
-        tco.operational.total,
-        tco.hidden.total,
-        tco.roi.toFixed(0),
-        tco.paybackPeriod.toFixed(0),
-        this.calculateRiskScore(vendor),
-        this.calculateComplianceScore(vendor),
-      ].join(",")
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData)
+    XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary")
+
+    // Vendor Comparison Sheet
+    const vendorHeaders = [
+      "Vendor Name",
+      "Total Cost",
+      "Year 1 Cost",
+      "Year 3 Cost",
+      "Year 5 Cost",
+      "ROI",
+      "Payback Period (months)",
+      "Security Score",
+      "Compliance Score",
+      "Implementation Time (days)",
+    ]
+
+    const vendorData = [
+      vendorHeaders,
+      ...data.vendors.map((vendor) => [
+        vendor.name,
+        vendor.totalCost,
+        vendor.year1Cost,
+        vendor.year3Cost,
+        vendor.year5Cost,
+        vendor.roi,
+        vendor.paybackPeriod,
+        vendor.securityScore,
+        vendor.complianceScore,
+        vendor.implementationTime,
+      ]),
+    ]
+
+    const vendorSheet = XLSX.utils.aoa_to_sheet(vendorData)
+    XLSX.utils.book_append_sheet(workbook, vendorSheet, "Vendor Comparison")
+
+    // Compliance Analysis Sheet
+    if (config.includeComplianceAnalysis) {
+      const complianceData = [
+        ["Compliance Analysis"],
+        [""],
+        ["Frameworks", data.complianceAnalysis.frameworks.join(", ")],
+        ["Coverage Score", `${data.complianceAnalysis.coverageScore}%`],
+        ["Automation Level", `${data.complianceAnalysis.automationLevel}%`],
+        ["Risk Reduction", `${data.complianceAnalysis.riskReduction}%`],
+      ]
+
+      const complianceSheet = XLSX.utils.aoa_to_sheet(complianceData)
+      XLSX.utils.book_append_sheet(workbook, complianceSheet, "Compliance")
+    }
+
+    // Recommendations Sheet
+    if (config.includeRecommendations && data.recommendations.length > 0) {
+      const recommendationsData = [
+        ["Recommendations"],
+        [""],
+        ...data.recommendations.map((rec, index) => [`${index + 1}`, rec]),
+      ]
+
+      const recommendationsSheet = XLSX.utils.aoa_to_sheet(recommendationsData)
+      XLSX.utils.book_append_sheet(workbook, recommendationsSheet, "Recommendations")
+    }
+
+    // Save the Excel file
+    XLSX.writeFile(workbook, "nac-vendor-analysis-report.xlsx")
+  }
+
+  async exportToCSV(data: ExportData): Promise<void> {
+    const csvData = [
+      [
+        "Vendor Name",
+        "Total Cost",
+        "Year 1 Cost",
+        "Year 3 Cost",
+        "Year 5 Cost",
+        "ROI",
+        "Payback Period",
+        "Security Score",
+        "Compliance Score",
+        "Implementation Time",
+      ],
+      ...data.vendors.map((vendor) => [
+        vendor.name,
+        vendor.totalCost.toString(),
+        vendor.year1Cost.toString(),
+        vendor.year3Cost.toString(),
+        vendor.year5Cost.toString(),
+        vendor.roi.toString(),
+        vendor.paybackPeriod.toString(),
+        vendor.securityScore.toString(),
+        vendor.complianceScore.toString(),
+        vendor.implementationTime.toString(),
+      ]),
+    ]
+
+    const csvContent = csvData.map((row) => row.join(",")).join("\n")
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const link = document.createElement("a")
+
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob)
+      link.setAttribute("href", url)
+      link.setAttribute("download", "nac-vendor-analysis-report.csv")
+      link.style.visibility = "hidden"
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
+  }
+
+  async prepareExportData(
+    tcoData: Record<string, any>,
+    config: any,
+    industryData: any,
+    summaryMetrics: any,
+  ): Promise<ExportData> {
+    // Capture charts if needed
+    const charts = await this.chartCaptureService.captureChartsBySelector("[data-chart]", "export-chart", {
+      width: 800,
+      height: 400,
+      scale: 2,
+      backgroundColor: "#ffffff",
     })
 
-    return [headers.join(","), ...rows].join("\n")
-  }
+    // Prepare vendor data
+    const vendors = Object.entries(tcoData).map(([vendorId, data]: [string, any]) => ({
+      name: data.vendorName || vendorId,
+      totalCost: data.totalCost || 0,
+      year1Cost: data.year1 || 0,
+      year3Cost: data.year3 || 0,
+      year5Cost: data.year5 || 0,
+      roi: data.roi?.totalSavings || 0,
+      paybackPeriod: data.roi?.paybackPeriod || 0,
+      securityScore: data.securityScore || 0,
+      complianceScore: data.complianceScore || 0,
+      implementationTime: data.implementationTime || 0,
+    }))
 
-  // Generate executive summary
-  generateExecutiveSummary(): string {
-    const portnoxData = this.data.analysis.tcoComparison["PORTNOX"]
-    const competitorAvg = this.calculateCompetitorAverage()
-    const savings = competitorAvg - (portnoxData?.totalCost || 0)
-    const percentSavings = Math.round((savings / competitorAvg) * 100)
+    // Find recommended vendor (lowest total cost)
+    const recommendedVendor = vendors.reduce((best, current) =>
+      current.totalCost < best.totalCost ? current : best,
+    ).name
 
-    return `
-# Executive Summary: NAC Investment Analysis
-
-## Overview
-Organization: ${this.data.configuration.deviceCount} devices
-Industry: ${INDUSTRIES[this.data.configuration.industry]?.name}
-Analysis Period: ${this.data.configuration.timeframe} years
-
-## Key Findings
-1. **Recommended Solution**: Portnox CLEAR
-2. **Cost Savings**: ${percentSavings}% reduction (${this.formatCurrency(savings)})
-3. **ROI**: ${portnoxData?.roi || 5506}% over ${this.data.configuration.timeframe} years
-4. **Payback Period**: ${(portnoxData?.paybackPeriod || 195) / 30} months
-
-## Strategic Benefits
-- **Deployment Speed**: 95% faster than traditional NAC (7 days vs 6-9 months)
-- **Risk Reduction**: 92% reduction in breach probability
-- **Operational Efficiency**: 90% reduction in administrative overhead
-- **Zero Infrastructure**: No hardware investment or maintenance
-
-## Financial Impact
-- Total Investment: ${this.formatCurrency(portnoxData?.totalCost || 0)}
-- Total Benefit: ${this.formatCurrency(portnoxData?.totalBenefit || 0)}
-- Net Benefit: ${this.formatCurrency(portnoxData?.netBenefit || 0)}
-
-## Recommendation
-Immediate implementation of Portnox CLEAR is recommended based on:
-- Superior financial returns
-- Minimal deployment risk
-- Comprehensive security capabilities
-- Future-proof cloud architecture
-`
-  }
-
-  // Helper methods
-  private calculateCompetitorAverage(): number {
-    const vendors = Object.keys(this.data.analysis.tcoComparison)
-    const competitorCosts = vendors
-      .filter((v) => v !== "PORTNOX")
-      .map((v) => this.data.analysis.tcoComparison[v]?.totalCost || 0)
-
-    return competitorCosts.length > 0
-      ? competitorCosts.reduce((sum, cost) => sum + cost, 0) / competitorCosts.length
-      : 0
-  }
-
-  private calculateRiskScore(vendor: string): number {
-    const vendorData = COMPREHENSIVE_VENDOR_DATA[vendor]
-    if (!vendorData) return 50
-
-    // Calculate risk score based on various factors
-    let score = 100
-
-    // Architecture complexity
-    if (vendorData.architecture === "DISTRIBUTED") score -= 20
-    if (vendorData.architecture === "CENTRALIZED") score -= 10
-
-    // Vendor lock-in
-    if (vendorData.vendorLockIn === "HIGH") score -= 30
-    if (vendorData.vendorLockIn === "MEDIUM") score -= 15
-
-    // Deployment complexity
-    const cloudDeployment = vendorData.deploymentModels.CLOUD
-    if (!cloudDeployment?.available) score -= 25
-
-    return Math.max(0, Math.min(100, score))
-  }
-
-  private calculateComplianceScore(vendor: string): number {
-    const vendorData = COMPREHENSIVE_VENDOR_DATA[vendor]
-    if (!vendorData) return 50
-
-    // Calculate compliance score based on capabilities
-    let score = 0
-    const capabilities = vendorData.capabilities
-
-    if (capabilities.zeroTrust) score += 20
-    if (capabilities.riskBasedAccess) score += 15
-    if (capabilities.cloudPKI) score += 15
-    if (capabilities.iotProfiling) score += 10
-    if (capabilities.apiAccess) score += 10
-    if (capabilities.multiTenant) score += 10
-    if (capabilities.reporting) score += 20
-
-    return Math.min(100, score)
-  }
-
-  private formatCurrency(amount: number): string {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount)
-  }
-
-  // Export methods for different formats
-  async exportToPDF(): Promise<Blob> {
-    return await this.generatePDF()
-  }
-
-  async exportToExcel(): Promise<Blob> {
-    // This would integrate with an Excel generation library
-    const csvContent = await this.exportToCSV()
-    return new Blob([csvContent], { type: "application/vnd.ms-excel" })
-  }
-
-  async exportToPowerPoint(): Promise<Blob> {
-    // This would integrate with a PowerPoint generation library
-    const content = this.generateExecutiveSummary()
-    return new Blob([content], { type: "application/vnd.ms-powerpoint" })
+    return {
+      summary: {
+        totalVendors: vendors.length,
+        recommendedVendor,
+        totalSavings: summaryMetrics?.totalSavings || 0,
+        averagePayback: summaryMetrics?.paybackPeriod || 0,
+        industryFocus: config?.industry || "General",
+        analysisDate: new Date().toLocaleDateString(),
+      },
+      vendors,
+      charts,
+      recommendations: [
+        `${recommendedVendor} offers the best total cost of ownership`,
+        "Consider implementation timeline and resource requirements",
+        "Validate compliance requirements with selected vendor",
+        "Plan for adequate training and change management",
+        "Establish clear success metrics and monitoring",
+      ],
+      complianceAnalysis: {
+        frameworks: config?.complianceRequirements || [],
+        coverageScore: 85,
+        automationLevel: 90,
+        riskReduction: 75,
+      },
+    }
   }
 }
 
-// Utility functions for export
-export function createExportData(configuration: any, analysis: any, recommendations?: any): ExportData {
-  return {
-    metadata: {
-      generatedAt: new Date(),
-      generatedBy: "Portnox TCO Analyzer",
-      version: "1.0.0",
-      title: "NAC Vendor Analysis Report",
-      description: "Comprehensive analysis of Network Access Control solutions",
-    },
-    configuration,
-    analysis,
-    recommendations: recommendations || {
-      executive: [
-        "Implement Portnox CLEAR for optimal ROI",
-        "Leverage cloud-native architecture",
-        "Prioritize zero-trust security model",
-      ],
-      technical: [
-        "Deploy in cloud-first configuration",
-        "Integrate with existing identity systems",
-        "Implement automated policy enforcement",
-      ],
-      financial: [
-        "Realize immediate cost savings",
-        "Eliminate infrastructure investments",
-        "Reduce operational overhead",
-      ],
-    },
-  }
-}
-
-export function downloadFile(content: string | Blob, filename: string, mimeType: string) {
-  const blob = content instanceof Blob ? content : new Blob([content], { type: mimeType })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement("a")
-  link.href = url
-  link.download = filename
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
-}
-
-// Simplified export functions for direct use
-export async function exportAnalysis(data: any, format: ExportFormat) {
-  const exporter = new NACAnalysisExporter(data)
+// Utility functions
+export const exportData = async (
+  format: "pdf" | "excel" | "csv",
+  tcoData: Record<string, any>,
+  config: any,
+  industryData: any,
+  summaryMetrics: any,
+  exportConfig: ExportConfiguration,
+): Promise<void> => {
+  const exportService = DataExportService.getInstance()
+  const data = await exportService.prepareExportData(tcoData, config, industryData, summaryMetrics)
 
   switch (format) {
-    case ExportFormat.PDF:
-      const pdfBlob = await exporter.exportToPDF()
-      downloadFile(pdfBlob, `NAC_Analysis_${new Date().toISOString().split("T")[0]}.pdf`, "application/pdf")
+    case "pdf":
+      await exportService.exportToPDF(data, exportConfig)
       break
-    case ExportFormat.CSV:
-      const csvContent = await exporter.exportToCSV()
-      downloadFile(csvContent, `NAC_Analysis_${new Date().toISOString().split("T")[0]}.csv`, "text/csv")
+    case "excel":
+      await exportService.exportToExcel(data, exportConfig)
       break
-    case ExportFormat.JSON:
-      const jsonContent = await exporter.exportToJSON()
-      downloadFile(jsonContent, `NAC_Analysis_${new Date().toISOString().split("T")[0]}.json`, "application/json")
-      break
-    case ExportFormat.EXCEL:
-      const excelBlob = await exporter.exportToExcel()
-      downloadFile(
-        excelBlob,
-        `NAC_Analysis_${new Date().toISOString().split("T")[0]}.xlsx`,
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      )
+    case "csv":
+      await exportService.exportToCSV(data)
       break
     default:
-      console.warn(`Export format ${format} not yet implemented`)
+      throw new Error(`Unsupported export format: ${format}`)
   }
 }
 
-export function generateComprehensiveReport(config: any): ExportData {
-  return createExportData(config, {
-    tcoComparison: {
-      PORTNOX: {
-        totalCost: 230000,
-        software: { total: 120000 },
-        hardware: { total: 0 },
-        implementation: { total: 25000 },
-        operational: { total: 50000 },
-        hidden: { total: 35000 },
-        roi: 5506,
-        paybackPeriod: 195,
-      },
-      CISCO_ISE: {
-        totalCost: 850000,
-        software: { total: 400000 },
-        hardware: { total: 200000 },
-        implementation: { total: 150000 },
-        operational: { total: 100000 },
-        hidden: { total: 0 },
-        roi: 285,
-        paybackPeriod: 1260,
-      },
-    },
-    roiAnalysis: {},
-    riskAssessment: {},
-    complianceMapping: {},
-  })
-}
+export const getDefaultExportConfig = (): ExportConfiguration => ({
+  includeCharts: true,
+  includeDetailedBreakdown: true,
+  includeRecommendations: true,
+  includeComplianceAnalysis: true,
+  format: "pdf",
+  chartQuality: "high",
+})
