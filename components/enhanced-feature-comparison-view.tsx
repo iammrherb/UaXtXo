@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
+import { COMPREHENSIVE_VENDOR_DATA } from "@/lib/vendors/comprehensive-vendor-data"
 import {
   CheckCircle2,
   XCircle,
@@ -23,7 +23,8 @@ import {
 } from "lucide-react"
 
 interface EnhancedFeatureComparisonViewProps {
-  selectedVendors: string[]
+  results: any[]
+  config: any
 }
 
 const FEATURE_CATEGORIES = {
@@ -62,16 +63,13 @@ const FEATURE_WEIGHTS = {
   "N/A": { score: 0, label: "Not Applicable", color: "text-gray-600", bg: "bg-gray-100" },
 }
 
-export default function EnhancedFeatureComparisonView({ selectedVendors }: EnhancedFeatureComparisonViewProps) {
+export function EnhancedFeatureComparisonView({ results, config }: EnhancedFeatureComparisonViewProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategories, setSelectedCategories] = useState<string[]>(Object.keys(FEATURE_CATEGORIES))
   const [showOnlyDifferences, setShowOnlyDifferences] = useState(false)
   const [sortBy, setSortBy] = useState<"name" | "score">("name")
 
-  const vendors = selectedVendors
-    .map((id) => ComprehensiveVendorDatabase[id])
-    .filter(Boolean)
-    .slice(0, 6) // Limit to 6 vendors for better display
+  const vendors = Object.values(COMPREHENSIVE_VENDOR_DATA).slice(0, 6) // Limit to 6 vendors for better display
 
   const renderFeatureIcon = (value: string) => {
     const weight = FEATURE_WEIGHTS[value as keyof typeof FEATURE_WEIGHTS]
@@ -501,3 +499,5 @@ export default function EnhancedFeatureComparisonView({ selectedVendors }: Enhan
     </div>
   )
 }
+
+export default EnhancedFeatureComparisonView
