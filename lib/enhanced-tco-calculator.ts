@@ -273,3 +273,92 @@ export function compareVendors(vendorIds: string[], config: CalculationConfigura
     .filter((result): result is CalculationResult => result !== null)
     .sort((a, b) => a.totalCost - b.totalCost)
 }
+
+// Add the missing calculateTCO export that's being imported elsewhere
+export function calculateTCO(
+  vendorId: string,
+  devices: number,
+  users: number,
+  years = 3,
+  industry = "healthcare",
+): CalculationResult {
+  const config: CalculationConfiguration = {
+    devices,
+    users,
+    years,
+    industry,
+    companySize: devices > 5000 ? "enterprise" : devices > 1000 ? "medium" : "small",
+    securityLevel: "high",
+    complianceRequirements: ["hipaa", "pci"],
+    currentSolution: "legacy",
+    deploymentComplexity: "medium",
+    supportLevel: "standard",
+    integrationRequirements: ["siem", "mdm"],
+    geographicScope: "national",
+    budgetConstraints: "moderate",
+  }
+
+  return calculateVendorTCO(vendorId, config)
+}
+
+// Industry-specific multipliers for risk calculations
+export const INDUSTRY_RISK_MULTIPLIERS = {
+  healthcare: { breach: 1.5, compliance: 1.8, downtime: 2.0 },
+  finance: { breach: 2.0, compliance: 2.2, downtime: 2.5 },
+  government: { breach: 1.8, compliance: 2.0, downtime: 1.8 },
+  education: { breach: 1.2, compliance: 1.4, downtime: 1.5 },
+  manufacturing: { breach: 1.4, compliance: 1.3, downtime: 2.2 },
+  retail: { breach: 1.3, compliance: 1.2, downtime: 1.8 },
+  technology: { breach: 1.6, compliance: 1.5, downtime: 2.0 },
+  other: { breach: 1.0, compliance: 1.0, downtime: 1.0 },
+}
+
+// Calculate industry-adjusted risk costs
+export function calculateRiskCosts(
+  industry: string,
+  breachProbability: number,
+  complianceViolationRisk: number,
+  downtimeHours: number,
+  downtimeCostPerHour: number,
+) {
+  const multipliers =
+    INDUSTRY_RISK_MULTIPLIERS[industry as keyof typeof INDUSTRY_RISK_MULTIPLIERS] || INDUSTRY_RISK_MULTIPLIERS.other
+
+  const avgBreachCost = 4350000 * multipliers.breach
+  const avgComplianceViolationCost = 500000 * multipliers.compliance
+  const adjustedDowntimeCost = downtimeCostPerHour * multipliers.downtime
+
+  return {
+    annualBreachRisk: (avgBreachCost * breachProbability) / 100,
+    annualComplianceRisk: (avgComplianceViolationCost * complianceViolationRisk) / 100,
+    annualDowntimeCost: downtimeHours * adjustedDowntimeCost,
+    totalAnnualRisk:
+      (avgBreachCost * breachProbability) / 100 +
+      (avgComplianceViolationCost * complianceViolationRisk) / 100 +
+      downtimeHours * adjustedDowntimeCost,
+  }
+}
+
+// Calculate operational savings from NAC implementation
+export function calculateOperationalSavings(
+  devices: number,
+  adminHoursPerWeek: number,
+  automationLevel: number,
+  avgHourlyRate = 150,
+) {
+  const currentAnnualAdminCost = adminHoursPerWeek * 52 * avgHourlyRate
+  const automationSavings = currentAnnualAdminCost * (automationLevel / 100)
+  const incidentReductionSavings = devices * 2 * avgHourlyRate // 2 hours saved per device per year
+  const complianceReportingSavings = 40 * 52 * avgHourlyRate * 0.7 // 70% reduction in compliance reporting time
+
+  return {
+    automationSavings,
+    incidentReductionSavings,
+    complianceReportingSavings,
+    totalAnnualSavings: automationSavings + incidentReductionSavings + complianceReportingSavings,
+  }
+}
+
+// Export all functions and types
+export type { VendorData }
+</merged_code>
