@@ -250,6 +250,7 @@ const safeNumber = (value: any, fallback = 0): number => {
   return fallback
 }
 
+export { IntegrationHubView }
 export default function IntegrationHubView({ selectedVendors, config }: IntegrationHubViewProps) {
   const [activeCategory, setActiveCategory] = useState("identity")
   const [searchTerm, setSearchTerm] = useState("")
