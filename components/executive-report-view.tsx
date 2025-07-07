@@ -518,3 +518,6 @@ export function ExecutiveReportView({ results, config }: ExecutiveReportViewProp
 
 // Default export for backward compatibility
 export default ExecutiveReportView
+
+// Add this line at the end of the file
+export const ExecutiveReportGenerator = ExecutiveReportView

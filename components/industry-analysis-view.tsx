@@ -1388,6 +1388,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Shield, AlertTriangle, Building, CheckCircle, Info } from "lucide-react"
 
+export const IndustryAnalysisDashboard = IndustryAnalysisView
+
 export default function IndustryAnalysisView({ results, config }: IndustryAnalysisViewProps) {
   const [selectedIndustry, setSelectedIndustry] = useState<string>(config.industry || "healthcare")
   const [selectedFramework, setSelectedFramework] = useState<string>("hipaa")
