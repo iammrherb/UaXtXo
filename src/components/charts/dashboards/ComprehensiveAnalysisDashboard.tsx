@@ -1,14 +1,13 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   BarChart,
   Bar,
@@ -18,499 +17,416 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  ScatterChart,
+  Scatter,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
-  ScatterChart,
-  Scatter,
 } from "recharts"
-import { DollarSign, Shield, Clock, AlertTriangle, BarChart3, Settings, Download, RefreshCw } from "lucide-react"
+import { DollarSign, Shield, Clock, Download, Filter, Settings, BarChart3, Activity } from "lucide-react"
+import type { VendorId } from "@/hooks/useVendorData"
+import { cn } from "@/lib/utils"
 
-// Enhanced vendor data with all 14 vendors
-const comprehensiveVendorData = {
-  portnox: {
+// Comprehensive vendor analysis data
+const comprehensiveVendorData = [
+  {
+    id: "portnox",
     name: "Portnox CLEAR",
-    type: "Cloud-Native",
+    tco5Year: 485000,
     deploymentDays: 7,
-    tcoReduction: 67,
     securityScore: 95,
     complianceScore: 92,
-    operationalEfficiency: 88,
-    riskReduction: 87,
-    color: "#00D4AA",
+    riskReduction: 98,
+    marketPosition: { x: 95, y: 15 }, // High capability, low complexity
+    deploymentType: "Cloud-Native",
+    category: "Zero Trust Leader",
   },
-  cisco_ise: {
+  {
+    id: "cisco_ise",
     name: "Cisco ISE",
-    type: "On-Premise",
+    tco5Year: 1250000,
     deploymentDays: 120,
-    tcoReduction: 0,
-    securityScore: 85,
-    complianceScore: 88,
-    operationalEfficiency: 65,
-    riskReduction: 72,
-    color: "#1BA0D7",
-  },
-  aruba_clearpass: {
-    name: "Aruba ClearPass",
-    type: "Hybrid",
-    deploymentDays: 90,
-    tcoReduction: -15,
-    securityScore: 82,
-    complianceScore: 85,
-    operationalEfficiency: 70,
-    riskReduction: 75,
-    color: "#FF6900",
-  },
-  fortinac: {
-    name: "FortiNAC",
-    type: "On-Premise",
-    deploymentDays: 75,
-    tcoReduction: -8,
-    securityScore: 80,
-    complianceScore: 82,
-    operationalEfficiency: 72,
-    riskReduction: 78,
-    color: "#EE3124",
-  },
-  forescout: {
-    name: "Forescout",
-    type: "Hybrid",
-    deploymentDays: 105,
-    tcoReduction: -25,
     securityScore: 88,
-    complianceScore: 90,
-    operationalEfficiency: 68,
-    riskReduction: 80,
-    color: "#0066CC",
+    complianceScore: 85,
+    riskReduction: 85,
+    marketPosition: { x: 85, y: 85 },
+    deploymentType: "On-Premise",
+    category: "Enterprise Legacy",
   },
-  extreme_nac: {
-    name: "Extreme NAC",
-    type: "On-Premise",
-    deploymentDays: 85,
-    tcoReduction: -12,
-    securityScore: 78,
+  {
+    id: "aruba_clearpass",
+    name: "Aruba ClearPass",
+    tco5Year: 950000,
+    deploymentDays: 90,
+    securityScore: 82,
     complianceScore: 80,
-    operationalEfficiency: 69,
-    riskReduction: 74,
-    color: "#662D91",
+    riskReduction: 80,
+    marketPosition: { x: 80, y: 70 },
+    deploymentType: "Hybrid",
+    category: "Enterprise Legacy",
   },
-  juniper_nac: {
-    name: "Juniper NAC",
-    type: "On-Premise",
-    deploymentDays: 95,
-    tcoReduction: -18,
-    securityScore: 79,
-    complianceScore: 83,
-    operationalEfficiency: 67,
-    riskReduction: 76,
-    color: "#84BD00",
-  },
-  microsoft_nps: {
-    name: "Microsoft NPS",
-    type: "On-Premise",
-    deploymentDays: 60,
-    tcoReduction: 15,
-    securityScore: 70,
+  {
+    id: "fortinac",
+    name: "FortiNAC",
+    tco5Year: 875000,
+    deploymentDays: 75,
+    securityScore: 78,
     complianceScore: 75,
-    operationalEfficiency: 75,
-    riskReduction: 65,
-    color: "#00BCF2",
+    riskReduction: 75,
+    marketPosition: { x: 75, y: 60 },
+    deploymentType: "On-Premise",
+    category: "Security Focused",
   },
-  packetfence: {
-    name: "PacketFence",
-    type: "Open Source",
-    deploymentDays: 45,
-    tcoReduction: 35,
-    securityScore: 72,
-    complianceScore: 70,
-    operationalEfficiency: 60,
-    riskReduction: 68,
-    color: "#2E8B57",
+  {
+    id: "forescout",
+    name: "Forescout",
+    tco5Year: 1100000,
+    deploymentDays: 105,
+    securityScore: 85,
+    complianceScore: 82,
+    riskReduction: 82,
+    marketPosition: { x: 82, y: 80 },
+    deploymentType: "On-Premise",
+    category: "Visibility Leader",
   },
-  arista_nac: {
-    name: "Arista NAC",
-    type: "On-Premise",
-    deploymentDays: 80,
-    tcoReduction: -10,
-    securityScore: 81,
-    complianceScore: 84,
-    operationalEfficiency: 71,
-    riskReduction: 77,
-    color: "#FF4500",
-  },
-  securew2: {
-    name: "SecureW2",
-    type: "Cloud",
-    deploymentDays: 30,
-    tcoReduction: 20,
-    securityScore: 76,
-    complianceScore: 78,
-    operationalEfficiency: 78,
-    riskReduction: 70,
-    color: "#4169E1",
-  },
-  radiusaas: {
-    name: "RADIUSaaS",
-    type: "Cloud",
-    deploymentDays: 21,
-    tcoReduction: 25,
-    securityScore: 74,
-    complianceScore: 76,
-    operationalEfficiency: 80,
-    riskReduction: 69,
-    color: "#32CD32",
-  },
-  foxpass: {
-    name: "Foxpass",
-    type: "Cloud",
-    deploymentDays: 14,
-    tcoReduction: 30,
-    securityScore: 73,
-    complianceScore: 74,
-    operationalEfficiency: 82,
-    riskReduction: 67,
-    color: "#FF69B4",
-  },
-  cisco_meraki: {
-    name: "Cisco Meraki",
-    type: "Cloud",
-    deploymentDays: 35,
-    tcoReduction: 10,
-    securityScore: 77,
-    complianceScore: 79,
-    operationalEfficiency: 76,
-    riskReduction: 71,
-    color: "#00A651",
-  },
+]
+
+const COLORS = ["#00D4AA", "#FF6B35", "#3B82F6", "#8B5CF6", "#10B981", "#F59E0B"]
+
+interface ComprehensiveAnalysisDashboardProps {
+  selectedVendors?: VendorId[]
+  analysisType?: "tco" | "security" | "deployment" | "comprehensive"
 }
 
-// TCO Analysis data
-const tcoAnalysisData = Object.entries(comprehensiveVendorData).map(([key, vendor]) => ({
-  vendor: vendor.name,
-  year1: Math.round(250000 * (1 - vendor.tcoReduction / 100) * 0.4),
-  year3: Math.round(250000 * (1 - vendor.tcoReduction / 100) * 1.2),
-  year5: Math.round(250000 * (1 - vendor.tcoReduction / 100) * 2.0),
-  deployment: vendor.deploymentDays,
-  efficiency: vendor.operationalEfficiency,
-  color: vendor.color,
-}))
+const ComprehensiveAnalysisDashboard: React.FC<ComprehensiveAnalysisDashboardProps> = ({
+  selectedVendors = ["portnox", "cisco_ise", "aruba_clearpass"],
+  analysisType = "comprehensive",
+}) => {
+  const [activeTab, setActiveTab] = useState("overview")
+  const [selectedMetric, setSelectedMetric] = useState("tco")
+  const [filterByCategory, setFilterByCategory] = useState<string[]>([])
+  const [deploymentTypeFilter, setDeploymentTypeFilter] = useState<string[]>([])
 
-// Risk vs Cost positioning data
-const riskCostData = Object.entries(comprehensiveVendorData).map(([key, vendor]) => ({
-  name: vendor.name,
-  risk: 100 - vendor.riskReduction,
-  cost: Math.round(250000 * (1 - vendor.tcoReduction / 100)),
-  security: vendor.securityScore,
-  type: vendor.type,
-  color: vendor.color,
-}))
+  const filteredData = useMemo(() => {
+    return comprehensiveVendorData.filter((vendor) => {
+      const categoryMatch = filterByCategory.length === 0 || filterByCategory.includes(vendor.category)
+      const deploymentMatch = deploymentTypeFilter.length === 0 || deploymentTypeFilter.includes(vendor.deploymentType)
+      const vendorMatch = selectedVendors.includes(vendor.id as VendorId)
+      return categoryMatch && deploymentMatch && vendorMatch
+    })
+  }, [filterByCategory, deploymentTypeFilter, selectedVendors])
 
-// Compliance coverage data
-const complianceData = Object.entries(comprehensiveVendorData).map(([key, vendor]) => ({
-  vendor: vendor.name,
-  sox: vendor.complianceScore * 0.95,
-  pci: vendor.complianceScore * 0.98,
-  hipaa: vendor.complianceScore * 0.92,
-  gdpr: vendor.complianceScore * 0.96,
-  nist: vendor.complianceScore * 0.94,
-  iso27001: vendor.complianceScore * 0.97,
-  color: vendor.color,
-}))
+  const tcoComparisonData = filteredData.map((vendor) => ({
+    name: vendor.name,
+    tco: vendor.tco5Year,
+    savings: vendor.id === "portnox" ? 0 : vendor.tco5Year - 485000,
+    savingsPercent: vendor.id === "portnox" ? 0 : ((vendor.tco5Year - 485000) / vendor.tco5Year) * 100,
+  }))
 
-const ComprehensiveAnalysisDashboard: React.FC = () => {
-  const [selectedVendors, setSelectedVendors] = useState<string[]>([
-    "portnox",
-    "cisco_ise",
-    "aruba_clearpass",
-    "forescout",
-  ])
-  const [analysisType, setAnalysisType] = useState("tco")
-  const [timeframe, setTimeframe] = useState(5)
-  const [includeHiddenCosts, setIncludeHiddenCosts] = useState(true)
-  const [riskAdjusted, setRiskAdjusted] = useState(true)
+  const securityRadarData = [
+    { subject: "Zero Trust", portnox: 95, cisco: 75, aruba: 70 },
+    { subject: "Threat Detection", portnox: 92, cisco: 85, aruba: 78 },
+    { subject: "Policy Enforcement", portnox: 98, cisco: 88, aruba: 82 },
+    { subject: "Risk Assessment", portnox: 94, cisco: 80, aruba: 75 },
+    { subject: "Compliance", portnox: 92, cisco: 85, aruba: 80 },
+    { subject: "Automation", portnox: 96, cisco: 70, aruba: 65 },
+  ]
 
-  const filteredTcoData = tcoAnalysisData.filter((item) =>
-    selectedVendors.some(
-      (vendorKey) => comprehensiveVendorData[vendorKey as keyof typeof comprehensiveVendorData]?.name === item.vendor,
-    ),
-  )
-
-  const filteredRiskData = riskCostData.filter((item) =>
-    selectedVendors.some(
-      (vendorKey) => comprehensiveVendorData[vendorKey as keyof typeof comprehensiveVendorData]?.name === item.name,
-    ),
-  )
-
-  const filteredComplianceData = complianceData.filter((item) =>
-    selectedVendors.some(
-      (vendorKey) => comprehensiveVendorData[vendorKey as keyof typeof comprehensiveVendorData]?.name === item.vendor,
-    ),
-  )
-
-  // Calculate key metrics
-  const portnoxData = comprehensiveVendorData.portnox
-  const avgCompetitorTCO =
-    tcoAnalysisData.filter((item) => item.vendor !== portnoxData.name).reduce((acc, curr) => acc + curr.year5, 0) /
-    (tcoAnalysisData.length - 1)
-
-  const portnoxTCO = tcoAnalysisData.find((item) => item.vendor === portnoxData.name)?.year5 || 0
-  const savings = avgCompetitorTCO - portnoxTCO
-  const savingsPercent = (savings / avgCompetitorTCO) * 100
+  const deploymentComparisonData = filteredData.map((vendor) => ({
+    name: vendor.name,
+    days: vendor.deploymentDays,
+    complexity: vendor.marketPosition.y,
+    type: vendor.deploymentType,
+  }))
 
   return (
-    <div className="space-y-8">
+    <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="text-center">
-        <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 mb-4">
-          Comprehensive NAC Analysis Suite
-        </h1>
-        <p className="text-lg text-slate-300 max-w-4xl mx-auto">
-          Advanced analytics across all 14 major NAC vendors with TCO analysis, risk assessment, compliance mapping, and
-          operational efficiency metrics.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500">
+            Comprehensive NAC Analysis Suite
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Deep-dive analysis across all major NAC vendors with advanced metrics and comparisons
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Download className="mr-2 h-4 w-4" />
+            Export Analysis
+          </Button>
+          <Button variant="outline" size="sm">
+            <Settings className="mr-2 h-4 w-4" />
+            Configure
+          </Button>
+        </div>
       </div>
 
-      {/* Configuration Panel */}
+      {/* Filters */}
       <Card className="bg-slate-800/30 border-slate-700/50">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Analysis Configuration
+          <CardTitle className="flex items-center text-white">
+            <Filter className="mr-2 h-5 w-5" />
+            Analysis Filters
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label>Analysis Timeframe</Label>
-              <Select value={timeframe.toString()} onValueChange={(value) => setTimeframe(Number.parseInt(value))}>
-                <SelectTrigger>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-sm font-medium text-slate-300 mb-2 block">Vendor Category</label>
+              <div className="space-y-2">
+                {["Zero Trust Leader", "Enterprise Legacy", "Security Focused", "Visibility Leader"].map((category) => (
+                  <div key={category} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={category}
+                      checked={filterByCategory.includes(category)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFilterByCategory([...filterByCategory, category])
+                        } else {
+                          setFilterByCategory(filterByCategory.filter((c) => c !== category))
+                        }
+                      }}
+                    />
+                    <label htmlFor={category} className="text-sm text-slate-300">
+                      {category}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-300 mb-2 block">Deployment Type</label>
+              <div className="space-y-2">
+                {["Cloud-Native", "On-Premise", "Hybrid"].map((type) => (
+                  <div key={type} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={type}
+                      checked={deploymentTypeFilter.includes(type)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setDeploymentTypeFilter([...deploymentTypeFilter, type])
+                        } else {
+                          setDeploymentTypeFilter(deploymentTypeFilter.filter((t) => t !== type))
+                        }
+                      }}
+                    />
+                    <label htmlFor={type} className="text-sm text-slate-300">
+                      {type}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-300 mb-2 block">Primary Metric</label>
+              <Select value={selectedMetric} onValueChange={setSelectedMetric}>
+                <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="3">3 Years</SelectItem>
-                  <SelectItem value="5">5 Years</SelectItem>
-                  <SelectItem value="7">7 Years</SelectItem>
+                  <SelectItem value="tco">Total Cost of Ownership</SelectItem>
+                  <SelectItem value="security">Security Score</SelectItem>
+                  <SelectItem value="deployment">Deployment Speed</SelectItem>
+                  <SelectItem value="risk">Risk Reduction</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="space-y-2">
-              <Label>Analysis Type</Label>
-              <Select value={analysisType} onValueChange={setAnalysisType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="tco">TCO Analysis</SelectItem>
-                  <SelectItem value="risk">Risk Assessment</SelectItem>
-                  <SelectItem value="compliance">Compliance</SelectItem>
-                  <SelectItem value="operational">Operational</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Switch id="hidden-costs" checked={includeHiddenCosts} onCheckedChange={setIncludeHiddenCosts} />
-              <Label htmlFor="hidden-costs">Include Hidden Costs</Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Switch id="risk-adjusted" checked={riskAdjusted} onCheckedChange={setRiskAdjusted} />
-              <Label htmlFor="risk-adjusted">Risk-Adjusted TCO</Label>
-            </div>
-          </div>
-
-          {/* Vendor Selection */}
-          <div className="space-y-2">
-            <Label>Selected Vendors for Comparison</Label>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(comprehensiveVendorData).map(([key, vendor]) => (
-                <Badge
-                  key={key}
-                  variant={selectedVendors.includes(key) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  style={selectedVendors.includes(key) ? { backgroundColor: vendor.color } : {}}
-                  onClick={() => {
-                    if (selectedVendors.includes(key)) {
-                      setSelectedVendors(selectedVendors.filter((v) => v !== key))
-                    } else if (selectedVendors.length < 6) {
-                      setSelectedVendors([...selectedVendors, key])
-                    }
-                  }}
-                >
-                  {vendor.name}
-                </Badge>
-              ))}
-            </div>
-            <p className="text-xs text-slate-400">Select up to 6 vendors for comparison</p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border-emerald-400/30">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-300">Portnox Advantage</p>
-                <p className="text-2xl font-bold text-white">{savingsPercent.toFixed(0)}%</p>
-                <p className="text-xs text-slate-400">TCO Reduction</p>
-              </div>
-              <DollarSign className="h-8 w-8 text-emerald-400" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-400/30">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-300">Deployment Speed</p>
-                <p className="text-2xl font-bold text-white">{portnoxData.deploymentDays}</p>
-                <p className="text-xs text-slate-400">Days vs 90+ avg</p>
-              </div>
-              <Clock className="h-8 w-8 text-blue-400" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/30">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-300">Security Score</p>
-                <p className="text-2xl font-bold text-white">{portnoxData.securityScore}</p>
-                <p className="text-xs text-slate-400">Industry Leading</p>
-              </div>
-              <Shield className="h-8 w-8 text-purple-400" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-orange-500/20 to-red-500/20 border-orange-400/30">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-300">Risk Reduction</p>
-                <p className="text-2xl font-bold text-white">{portnoxData.riskReduction}%</p>
-                <p className="text-xs text-slate-400">Breach Prevention</p>
-              </div>
-              <AlertTriangle className="h-8 w-8 text-orange-400" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Main Analysis Tabs */}
-      <Tabs defaultValue="tco-comparison" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="tco-comparison">TCO Analysis</TabsTrigger>
-          <TabsTrigger value="risk-assessment">Risk vs Cost</TabsTrigger>
-          <TabsTrigger value="compliance">Compliance</TabsTrigger>
-          <TabsTrigger value="operational">Operational</TabsTrigger>
-          <TabsTrigger value="market-position">Market Position</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-5 bg-slate-800/50 border border-slate-700/50">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="tco-analysis" className="flex items-center gap-2">
+            <DollarSign className="w-4 h-4" />
+            TCO Analysis
+          </TabsTrigger>
+          <TabsTrigger value="security-metrics" className="flex items-center gap-2">
+            <Shield className="w-4 h-4" />
+            Security
+          </TabsTrigger>
+          <TabsTrigger value="deployment" className="flex items-center gap-2">
+            <Clock className="w-4 h-4" />
+            Deployment
+          </TabsTrigger>
+          <TabsTrigger value="market-position" className="flex items-center gap-2">
+            <Activity className="w-4 h-4" />
+            Market Position
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="tco-comparison" className="space-y-6">
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {filteredData.map((vendor, index) => (
+              <Card key={vendor.id} className="bg-slate-800/30 border-slate-700/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg text-white flex items-center justify-between">
+                    {vendor.name}
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "text-xs",
+                        vendor.id === "portnox" ? "border-green-400 text-green-300" : "border-slate-400 text-slate-300",
+                      )}
+                    >
+                      {vendor.category}
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-400">5-Year TCO</span>
+                    <span className="font-semibold text-white">${(vendor.tco5Year / 1000).toFixed(0)}K</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-400">Deployment</span>
+                    <span className="font-semibold text-white">{vendor.deploymentDays} days</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-400">Security Score</span>
+                    <span className="font-semibold text-white">{vendor.securityScore}/100</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-400">Risk Reduction</span>
+                    <span className="font-semibold text-white">{vendor.riskReduction}%</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Quick Comparison Chart */}
           <Card className="bg-slate-800/30 border-slate-700/50">
             <CardHeader>
-              <CardTitle>Total Cost of Ownership Comparison</CardTitle>
-              <CardDescription>{timeframe}-Year TCO Analysis Across Selected Vendors</CardDescription>
+              <CardTitle className="text-white">Quick Comparison - 5-Year TCO</CardTitle>
+              <CardDescription>Total cost of ownership comparison across selected vendors</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={filteredTcoData}>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={tcoComparisonData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis
-                    dataKey="vendor"
-                    stroke="#9CA3AF"
-                    tick={{ fontSize: 12 }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
+                  <XAxis dataKey="name" stroke="#9CA3AF" />
                   <YAxis stroke="#9CA3AF" tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "#1F2937",
                       border: "1px solid #374151",
                       borderRadius: "8px",
+                      color: "#F9FAFB",
                     }}
                     formatter={(value: number) => [`$${value.toLocaleString()}`, "TCO"]}
                   />
-                  <Legend />
-                  <Bar dataKey="year1" fill="#3B82F6" name="Year 1" />
-                  <Bar dataKey="year3" fill="#10B981" name="Year 3" />
-                  <Bar dataKey="year5" fill="#F59E0B" name="Year 5" />
+                  <Bar dataKey="tco" fill="#00D4AA" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="risk-assessment" className="space-y-6">
-          <Card className="bg-slate-800/30 border-slate-700/50">
-            <CardHeader>
-              <CardTitle>Risk vs Cost Positioning</CardTitle>
-              <CardDescription>Security risk exposure vs total cost of ownership</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <ScatterChart data={filteredRiskData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis
-                    type="number"
-                    dataKey="cost"
-                    name="Cost"
-                    stroke="#9CA3AF"
-                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                  />
-                  <YAxis
-                    type="number"
-                    dataKey="risk"
-                    name="Risk"
-                    stroke="#9CA3AF"
-                    tickFormatter={(value) => `${value}%`}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#1F2937",
-                      border: "1px solid #374151",
-                      borderRadius: "8px",
-                    }}
-                    formatter={(value: number, name: string) => [
-                      name === "cost" ? `$${value.toLocaleString()}` : `${value}%`,
-                      name === "cost" ? "Total Cost" : "Risk Level",
-                    ]}
-                  />
-                  {filteredRiskData.map((entry, index) => (
-                    <Scatter key={entry.name} data={[entry]} fill={entry.color} name={entry.name} />
-                  ))}
-                </ScatterChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+        {/* TCO Analysis Tab */}
+        <TabsContent value="tco-analysis" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="bg-slate-800/30 border-slate-700/50">
+              <CardHeader>
+                <CardTitle className="text-white">TCO Breakdown</CardTitle>
+                <CardDescription>5-year total cost comparison</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={350}>
+                  <BarChart data={tcoComparisonData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis type="number" stroke="#9CA3AF" tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                    <YAxis type="category" dataKey="name" stroke="#9CA3AF" width={120} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#1F2937",
+                        border: "1px solid #374151",
+                        borderRadius: "8px",
+                        color: "#F9FAFB",
+                      }}
+                      formatter={(value: number) => [`$${value.toLocaleString()}`, "TCO"]}
+                    />
+                    <Bar dataKey="tco" fill="#00D4AA" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800/30 border-slate-700/50">
+              <CardHeader>
+                <CardTitle className="text-white">Cost Savings Analysis</CardTitle>
+                <CardDescription>Savings compared to Portnox CLEAR</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {tcoComparisonData
+                    .filter((v) => v.name !== "Portnox CLEAR")
+                    .map((vendor, index) => (
+                      <div key={vendor.name} className="p-4 bg-slate-700/30 rounded-lg">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium text-white">{vendor.name}</span>
+                          <Badge variant="destructive" className="bg-red-500/20 text-red-300">
+                            +${(vendor.savings / 1000).toFixed(0)}K
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-slate-400">
+                          {vendor.savingsPercent.toFixed(0)}% more expensive than Portnox
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
-        <TabsContent value="compliance" className="space-y-6">
+        {/* Security Metrics Tab */}
+        <TabsContent value="security-metrics" className="space-y-6">
           <Card className="bg-slate-800/30 border-slate-700/50">
             <CardHeader>
-              <CardTitle>Compliance Framework Coverage</CardTitle>
-              <CardDescription>Coverage percentage across major compliance standards</CardDescription>
+              <CardTitle className="text-white">Security Capabilities Radar</CardTitle>
+              <CardDescription>Comprehensive security feature comparison</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
-                <RadarChart data={filteredComplianceData}>
+                <RadarChart data={securityRadarData}>
                   <PolarGrid stroke="#374151" />
-                  <PolarAngleAxis dataKey="vendor" tick={{ fontSize: 12, fill: "#9CA3AF" }} />
-                  <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fontSize: 10, fill: "#9CA3AF" }} />
-                  <Radar name="SOX" dataKey="sox" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.1} />
-                  <Radar name="PCI-DSS" dataKey="pci" stroke="#10B981" fill="#10B981" fillOpacity={0.1} />
-                  <Radar name="HIPAA" dataKey="hipaa" stroke="#F59E0B" fill="#F59E0B" fillOpacity={0.1} />
-                  <Radar name="GDPR" dataKey="gdpr" stroke="#EF4444" fill="#EF4444" fillOpacity={0.1} />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: "#9CA3AF", fontSize: 12 }} />
+                  <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: "#9CA3AF", fontSize: 10 }} />
+                  <Radar
+                    name="Portnox"
+                    dataKey="portnox"
+                    stroke="#00D4AA"
+                    fill="#00D4AA"
+                    fillOpacity={0.3}
+                    strokeWidth={2}
+                  />
+                  <Radar
+                    name="Cisco ISE"
+                    dataKey="cisco"
+                    stroke="#3B82F6"
+                    fill="#3B82F6"
+                    fillOpacity={0.2}
+                    strokeWidth={2}
+                  />
+                  <Radar
+                    name="Aruba"
+                    dataKey="aruba"
+                    stroke="#F59E0B"
+                    fill="#F59E0B"
+                    fillOpacity={0.2}
+                    strokeWidth={2}
+                  />
                   <Legend />
                 </RadarChart>
               </ResponsiveContainer>
@@ -518,149 +434,83 @@ const ComprehensiveAnalysisDashboard: React.FC = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="operational" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="bg-slate-800/30 border-slate-700/50">
-              <CardHeader>
-                <CardTitle>Deployment Timeline</CardTitle>
-                <CardDescription>Average deployment time in days</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={filteredTcoData} layout="horizontal">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis type="number" stroke="#9CA3AF" />
-                    <YAxis type="category" dataKey="vendor" stroke="#9CA3AF" tick={{ fontSize: 10 }} width={100} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#1F2937",
-                        border: "1px solid #374151",
-                        borderRadius: "8px",
-                      }}
-                      formatter={(value: number) => [`${value} days`, "Deployment Time"]}
-                    />
-                    <Bar dataKey="deployment" fill="#8B5CF6" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-800/30 border-slate-700/50">
-              <CardHeader>
-                <CardTitle>Operational Efficiency</CardTitle>
-                <CardDescription>Efficiency score based on automation and management overhead</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={filteredTcoData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis
-                      dataKey="vendor"
-                      stroke="#9CA3AF"
-                      tick={{ fontSize: 10 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={60}
-                    />
-                    <YAxis stroke="#9CA3AF" domain={[0, 100]} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#1F2937",
-                        border: "1px solid #374151",
-                        borderRadius: "8px",
-                      }}
-                      formatter={(value: number) => [`${value}%`, "Efficiency Score"]}
-                    />
-                    <Bar dataKey="efficiency" fill="#10B981" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
+        {/* Deployment Tab */}
+        <TabsContent value="deployment" className="space-y-6">
+          <Card className="bg-slate-800/30 border-slate-700/50">
+            <CardHeader>
+              <CardTitle className="text-white">Deployment Time Comparison</CardTitle>
+              <CardDescription>Time to full deployment across vendors</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={deploymentComparisonData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="name" stroke="#9CA3AF" />
+                  <YAxis stroke="#9CA3AF" label={{ value: "Days", angle: -90, position: "insideLeft" }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1F2937",
+                      border: "1px solid #374151",
+                      borderRadius: "8px",
+                      color: "#F9FAFB",
+                    }}
+                    formatter={(value: number) => [`${value} days`, "Deployment Time"]}
+                  />
+                  <Bar dataKey="days" fill="#00D4AA" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
         </TabsContent>
 
+        {/* Market Position Tab */}
         <TabsContent value="market-position" className="space-y-6">
           <Card className="bg-slate-800/30 border-slate-700/50">
             <CardHeader>
-              <CardTitle>Market Positioning Analysis</CardTitle>
-              <CardDescription>Vendor positioning by deployment type and market approach</CardDescription>
+              <CardTitle className="text-white">Market Positioning Analysis</CardTitle>
+              <CardDescription>Capability vs Complexity positioning</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                {["Cloud-Native", "Cloud", "Hybrid", "On-Premise", "Open Source"].map((type) => {
-                  const vendors = Object.values(comprehensiveVendorData).filter((v) => v.type === type)
-                  return (
-                    <div key={type} className="p-4 bg-slate-700/30 rounded-lg">
-                      <h4 className="font-semibold text-white mb-2">{type}</h4>
-                      <p className="text-2xl font-bold text-cyan-400">{vendors.length}</p>
-                      <p className="text-xs text-slate-400">Vendors</p>
-                    </div>
-                  )
-                })}
-              </div>
-
-              <div className="space-y-4">
-                {Object.entries(comprehensiveVendorData)
-                  .filter(([key]) => selectedVendors.includes(key))
-                  .map(([key, vendor]) => (
-                    <div key={key} className="flex items-center justify-between p-4 bg-slate-700/20 rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: vendor.color }} />
-                        <div>
-                          <h4 className="font-semibold text-white">{vendor.name}</h4>
-                          <p className="text-sm text-slate-400">{vendor.type}</p>
-                        </div>
-                      </div>
-                      <div className="flex space-x-6 text-sm">
-                        <div className="text-center">
-                          <p className="text-white font-semibold">{vendor.securityScore}</p>
-                          <p className="text-slate-400">Security</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-white font-semibold">{vendor.deploymentDays}d</p>
-                          <p className="text-slate-400">Deploy</p>
-                        </div>
-                        <div className="text-center">
-                          <p className={`font-semibold ${vendor.tcoReduction > 0 ? "text-green-400" : "text-red-400"}`}>
-                            {vendor.tcoReduction > 0 ? "+" : ""}
-                            {vendor.tcoReduction}%
-                          </p>
-                          <p className="text-slate-400">TCO</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
+              <ResponsiveContainer width="100%" height={400}>
+                <ScatterChart>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis
+                    type="number"
+                    dataKey="x"
+                    name="Capability Score"
+                    domain={[60, 100]}
+                    stroke="#9CA3AF"
+                    label={{ value: "Capability Score", position: "insideBottom", offset: -10 }}
+                  />
+                  <YAxis
+                    type="number"
+                    dataKey="y"
+                    name="Complexity Score"
+                    domain={[0, 100]}
+                    stroke="#9CA3AF"
+                    label={{ value: "Implementation Complexity", angle: -90, position: "insideLeft" }}
+                  />
+                  <Tooltip
+                    cursor={{ strokeDasharray: "3 3" }}
+                    contentStyle={{
+                      backgroundColor: "#1F2937",
+                      border: "1px solid #374151",
+                      borderRadius: "8px",
+                      color: "#F9FAFB",
+                    }}
+                    formatter={(value: number, name: string) => [value, name === "x" ? "Capability" : "Complexity"]}
+                  />
+                  <Scatter
+                    name="Vendors"
+                    data={filteredData.map((v) => ({ ...v.marketPosition, name: v.name }))}
+                    fill="#00D4AA"
+                  />
+                </ScatterChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* Export Options */}
-      <Card className="bg-slate-800/30 border-slate-700/50">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-white">Export Analysis</h3>
-              <p className="text-sm text-slate-400">Download comprehensive reports and data</p>
-            </div>
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Export PDF
-              </Button>
-              <Button variant="outline" size="sm">
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Export Data
-              </Button>
-              <Button variant="outline" size="sm">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh Analysis
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }
