@@ -62,7 +62,7 @@ const FEATURE_WEIGHTS = {
   "N/A": { score: 0, label: "Not Applicable", color: "text-gray-600", bg: "bg-gray-100" },
 }
 
-export function EnhancedFeatureComparisonView({ selectedVendors }: EnhancedFeatureComparisonViewProps) {
+export default function EnhancedFeatureComparisonView({ selectedVendors }: EnhancedFeatureComparisonViewProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategories, setSelectedCategories] = useState<string[]>(Object.keys(FEATURE_CATEGORIES))
   const [showOnlyDifferences, setShowOnlyDifferences] = useState(false)
@@ -501,5 +501,3 @@ export function EnhancedFeatureComparisonView({ selectedVendors }: EnhancedFeatu
     </div>
   )
 }
-
-export default EnhancedFeatureComparisonView
