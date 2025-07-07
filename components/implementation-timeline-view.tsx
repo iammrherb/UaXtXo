@@ -8,11 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts"
 import { Calendar, Users, AlertTriangle, CheckCircle, Shield, Target } from "lucide-react"
-import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
+import { enhancedVendorDatabase } from "@/lib/vendors/enhanced-vendor-data"
 
 interface ImplementationTimelineViewProps {
-  results: any[]
-  config: any
+  results?: any[]
+  config?: any
   selectedVendors: string[]
 }
 
@@ -27,24 +27,27 @@ const safeNumber = (value: any, fallback = 0): number => {
 }
 
 export default function ImplementationTimelineView({
-  results,
-  config,
-  selectedVendors,
+  results = [],
+  config = {},
+  selectedVendors = [],
 }: ImplementationTimelineViewProps) {
   const [selectedVendor, setSelectedVendor] = useState(selectedVendors[0] || "portnox")
   const [viewMode, setViewMode] = useState<"timeline" | "comparison" | "gantt">("timeline")
 
   // Get real-time vendor data based on current selections
   const vendorTimelines = useMemo(() => {
+    if (!selectedVendors || selectedVendors.length === 0) return []
+
     return selectedVendors
       .map((vendorId) => {
-        const vendor = ComprehensiveVendorDatabase[vendorId]
-        const result = results.find((r) => r.vendor === vendorId)
+        const vendor = enhancedVendorDatabase[vendorId]
+        if (!vendor) return null
 
-        if (!vendor || !result) return null
+        // Find result for this vendor (with fallback)
+        const result = Array.isArray(results) ? results.find((r) => r?.vendor === vendorId) : null
 
         // Calculate implementation phases based on vendor complexity and config
-        const baseWeeks = safeNumber(result.timeline?.implementationWeeks, 12)
+        const baseWeeks = vendor.implementation?.timeToValue?.medium || 12
         const complexityMultiplier =
           config.deploymentComplexity === "simple"
             ? 0.7
@@ -69,19 +72,29 @@ export default function ImplementationTimelineView({
 
         // Resource requirements based on vendor and config
         const resourceMultiplier = devices > 5000 ? 1.5 : devices > 2000 ? 1.2 : 1.0
+        const complexityLevel = vendor.implementation?.complexity || "medium"
+
         const resources = {
           projectManager: 1,
           networkEngineers: Math.ceil(
-            (vendor.complexity === "high" ? 3 : vendor.complexity === "medium" ? 2 : 1) * resourceMultiplier,
+            (complexityLevel === "very high"
+              ? 4
+              : complexityLevel === "high"
+                ? 3
+                : complexityLevel === "medium"
+                  ? 2
+                  : 1) * resourceMultiplier,
           ),
-          securityEngineers: Math.ceil((vendor.securityComplexity === "high" ? 2 : 1) * resourceMultiplier),
+          securityEngineers: Math.ceil(
+            (complexityLevel === "high" || complexityLevel === "very high" ? 2 : 1) * resourceMultiplier,
+          ),
           systemAdmins: Math.ceil(2 * resourceMultiplier),
-          vendorSupport: vendor.supportLevel === "premium" ? 2 : 1,
+          vendorSupport: vendor.pricing?.support?.enterprise ? 2 : 1,
         }
 
         // Risk assessment based on real vendor data
         const risks = []
-        if (vendor.complexity === "high") {
+        if (complexityLevel === "high" || complexityLevel === "very high") {
           risks.push({
             type: "Technical Complexity",
             level: "high",
@@ -113,7 +126,7 @@ export default function ImplementationTimelineView({
           phases,
           resources,
           risks,
-          complexity: vendor.complexity,
+          complexity: complexityLevel,
           readinessScore: calculateReadinessScore(vendor, config),
           milestones: generateMilestones(phases, vendor.name),
         }
@@ -128,11 +141,13 @@ export default function ImplementationTimelineView({
     let score = 70 // Base score
 
     // Vendor factors
-    if (vendor.complexity === "low") score += 15
-    else if (vendor.complexity === "high") score -= 10
+    const complexity = vendor.implementation?.complexity || "medium"
+    if (complexity === "low") score += 15
+    else if (complexity === "high") score -= 10
+    else if (complexity === "very high") score -= 15
 
-    if (vendor.cloudNative) score += 10
-    if (vendor.supportLevel === "premium") score += 5
+    if (vendor.category === "cloud-native") score += 10
+    if (vendor.pricing?.support?.enterprise) score += 5
 
     // Config factors
     if (config.deploymentComplexity === "simple") score += 10
@@ -147,7 +162,7 @@ export default function ImplementationTimelineView({
   // Generate milestones based on phases
   function generateMilestones(phases: any, vendorName: string) {
     let currentWeek = 0
-    const milestones = []
+    const milestones: any[] = []
 
     Object.entries(phases).forEach(([phase, weeks]) => {
       currentWeek += safeNumber(weeks, 0)
@@ -163,7 +178,7 @@ export default function ImplementationTimelineView({
   }
 
   function getMilestoneDescription(phase: string, vendorName: string) {
-    const descriptions = {
+    const descriptions: Record<string, string> = {
       planning: `Complete ${vendorName} implementation planning and resource allocation`,
       procurement: `Finalize ${vendorName} licensing and hardware procurement`,
       installation: `Install and configure ${vendorName} infrastructure components`,
@@ -171,14 +186,14 @@ export default function ImplementationTimelineView({
       testing: `Complete ${vendorName} testing and validation procedures`,
       deployment: `Full production deployment of ${vendorName} solution`,
     }
-    return descriptions[phase as keyof typeof descriptions] || `Complete ${phase} phase`
+    return descriptions[phase] || `Complete ${phase} phase`
   }
 
   // Prepare timeline chart data
   const timelineChartData = useMemo(() => {
     if (!selectedVendorData) return []
 
-    const data = []
+    const data: any[] = []
     let cumulativeWeeks = 0
 
     Object.entries(selectedVendorData.phases).forEach(([phase, weeks]) => {
@@ -212,44 +227,51 @@ export default function ImplementationTimelineView({
     if (!selectedVendorData) return []
 
     const weeks = Array.from({ length: selectedVendorData.totalWeeks }, (_, i) => i + 1)
-    let currentWeek = 0
+    const data: any[] = []
+    const currentWeek = 0
 
-    return weeks.map((week) => {
+    weeks.forEach((week) => {
       const weekData: any = { week }
+      let weekAssigned = false
 
       Object.entries(selectedVendorData.phases).forEach(([phase, phaseWeeks]) => {
         const phaseStart = currentWeek + 1
         const phaseEnd = currentWeek + safeNumber(phaseWeeks, 0)
 
-        if (week >= phaseStart && week <= phaseEnd) {
+        if (week >= phaseStart && week <= phaseEnd && !weekAssigned) {
           weekData[phase] = 1
+          weekAssigned = true
         } else {
           weekData[phase] = 0
         }
       })
 
-      // Update currentWeek for next phase
-      const currentPhase = Object.entries(selectedVendorData.phases).find(([_, phaseWeeks]) => {
-        const phaseStart = currentWeek + 1
-        const phaseEnd = currentWeek + safeNumber(phaseWeeks, 0)
-        return week >= phaseStart && week <= phaseEnd
-      })
-
-      if (currentPhase && week === currentWeek + safeNumber(currentPhase[1], 0)) {
-        currentWeek += safeNumber(currentPhase[1], 0)
-      }
-
-      return weekData
+      data.push(weekData)
     })
+
+    return data
   }, [selectedVendorData])
 
   const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316", "#06B6D4"]
+
+  // Handle empty state
+  if (!selectedVendors || selectedVendors.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center text-muted-foreground">
+          <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
+          <p>No vendors selected for timeline analysis</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   if (!selectedVendorData) {
     return (
       <Card>
         <CardContent className="p-6 text-center text-muted-foreground">
-          <p>No implementation timeline data available</p>
+          <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
+          <p>No implementation timeline data available for selected vendors</p>
         </CardContent>
       </Card>
     )
@@ -270,7 +292,7 @@ export default function ImplementationTimelineView({
             </SelectTrigger>
             <SelectContent>
               {selectedVendors.map((vendorId) => {
-                const vendor = ComprehensiveVendorDatabase[vendorId]
+                const vendor = enhancedVendorDatabase[vendorId]
                 return (
                   <SelectItem key={vendorId} value={vendorId}>
                     {vendor?.name || vendorId}
@@ -372,7 +394,7 @@ export default function ImplementationTimelineView({
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {selectedVendorData.milestones.map((milestone, index) => (
+                {selectedVendorData.milestones.map((milestone: any, index: number) => (
                   <div key={index} className="flex items-center space-x-4 p-4 border rounded-lg">
                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
                       <span className="text-sm font-semibold">{milestone.week}</span>
@@ -431,7 +453,7 @@ export default function ImplementationTimelineView({
             <CardContent>
               <div className="space-y-4">
                 {selectedVendorData.risks.length > 0 ? (
-                  selectedVendorData.risks.map((risk, index) => (
+                  selectedVendorData.risks.map((risk: any, index: number) => (
                     <div key={index} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-semibold">{risk.type}</h4>
@@ -483,7 +505,7 @@ export default function ImplementationTimelineView({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {vendorTimelines.map((timeline, index) => (
-              <Card key={timeline?.vendorId}>
+              <Card key={timeline?.vendorId || index}>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     {timeline?.vendorName}
@@ -491,7 +513,7 @@ export default function ImplementationTimelineView({
                       variant={
                         timeline?.complexity === "low"
                           ? "secondary"
-                          : timeline?.complexity === "high"
+                          : timeline?.complexity === "high" || timeline?.complexity === "very high"
                             ? "destructive"
                             : "default"
                       }
