@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import {
+  Building2,
   AlertTriangle,
   CheckCircle2,
   Stethoscope,
@@ -285,10 +286,10 @@ const INDUSTRY_CHALLENGES = {
 export function IndustryAnalysisDashboard({ selectedIndustry, deviceCount, timeframe }: IndustryAnalysisProps) {
   const [activeTab, setActiveTab] = useState("overview")
 
-  const industryData = INDUSTRIES[selectedIndustry]
-  const industryROI = INDUSTRY_ROI[selectedIndustry]
-  const industryChallenges = INDUSTRY_CHALLENGES[selectedIndustry]
-  const IndustryIcon = INDUSTRY_ICONS[selectedIndustry]
+  const industryData = INDUSTRIES[selectedIndustry] || INDUSTRIES["HEALTHCARE"]
+  const industryROI = INDUSTRY_ROI[selectedIndustry] || INDUSTRY_ROI["HEALTHCARE"]
+  const industryChallenges = INDUSTRY_CHALLENGES[selectedIndustry] || INDUSTRY_CHALLENGES["HEALTHCARE"]
+  const IndustryIcon = INDUSTRY_ICONS[selectedIndustry] || Building2
 
   // Calculate industry-specific metrics
   const industryMetrics = useMemo(() => {
@@ -402,7 +403,7 @@ export function IndustryAnalysisDashboard({ selectedIndustry, deviceCount, timef
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {Object.entries(industryData.specificRequirements).map(([key, value]) => (
+                  {Object.entries(industryData.specificRequirements || {}).map(([key, value]) => (
                     <div key={key} className="flex items-center justify-between">
                       <span className="text-sm capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</span>
                       {value ? (
@@ -460,7 +461,7 @@ export function IndustryAnalysisDashboard({ selectedIndustry, deviceCount, timef
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {Object.entries(industryROI.portnoxBenefits).map(([key, value]) => (
+                {Object.entries(industryROI.portnoxBenefits || {}).map(([key, value]) => (
                   <div key={key} className="text-center">
                     <p className="text-sm text-muted-foreground capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</p>
                     <p className="text-lg font-bold">{formatCurrency(value)}</p>
@@ -471,11 +472,11 @@ export function IndustryAnalysisDashboard({ selectedIndustry, deviceCount, timef
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Annual Benefit</p>
-                  <p className="text-2xl font-bold">{formatCurrency(industryROI.totalAnnualBenefit)}</p>
+                  <p className="text-2xl font-bold">{formatCurrency(industryROI.totalAnnualBenefit || 0)}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-muted-foreground">3-Year ROI</p>
-                  <p className="text-2xl font-bold text-green-600">{industryROI.threeYearROI}%</p>
+                  <p className="text-2xl font-bold text-green-600">{industryROI.threeYearROI || 0}%</p>
                 </div>
               </div>
             </CardContent>
@@ -736,9 +737,9 @@ export function IndustryAnalysisDashboard({ selectedIndustry, deviceCount, timef
             <Zap className="h-4 w-4" />
             <AlertDescription>
               <strong>Industry Insight:</strong> Portnox CLEAR is specifically optimized for {industryData.name} with
-              features like {industryChallenges.specificFeatures[0].toLowerCase()}
-              and {industryChallenges.specificFeatures[1].toLowerCase()}, delivering immediate value while addressing
-              all compliance requirements.
+              features like {industryChallenges.specificFeatures[0].toLowerCase()} and{" "}
+              {industryChallenges.specificFeatures[1].toLowerCase()}, delivering immediate value while addressing all
+              compliance requirements.
             </AlertDescription>
           </Alert>
         </TabsContent>
@@ -746,3 +747,5 @@ export function IndustryAnalysisDashboard({ selectedIndustry, deviceCount, timef
     </div>
   )
 }
+
+export default IndustryAnalysisDashboard
