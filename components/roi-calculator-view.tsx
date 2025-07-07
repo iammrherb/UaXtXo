@@ -1,491 +1,429 @@
 "use client"
 
+import { CardDescription } from "@/components/ui/card"
+
 import { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Slider } from "@/components/ui/slider"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Separator } from "@/components/ui/separator"
 import {
   LineChart,
   Line,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
   Legend,
-  PieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area,
+  ResponsiveContainer,
 } from "recharts"
 import {
-  TrendingUp,
   DollarSign,
+  TrendingUp,
+  Shield,
+  Clock,
+  Users,
+  AlertTriangle,
+  CheckCircle2,
   Calculator,
   Target,
-  Clock,
-  Shield,
-  Users,
   Zap,
-  CheckCircle2,
-  ArrowUp,
-  ArrowDown,
 } from "lucide-react"
 
 interface ROICalculatorViewProps {
   selectedVendors: string[]
-  results: any[]
-  config: any
 }
 
-const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316", "#06B6D4"]
+const INDUSTRY_MULTIPLIERS = {
+  healthcare: { risk: 1.5, compliance: 1.8, downtime: 2.0 },
+  finance: { risk: 2.0, compliance: 2.2, downtime: 2.5 },
+  government: { risk: 1.8, compliance: 2.0, downtime: 1.8 },
+  education: { risk: 1.2, compliance: 1.4, downtime: 1.5 },
+  manufacturing: { risk: 1.4, compliance: 1.3, downtime: 2.2 },
+  retail: { risk: 1.3, compliance: 1.2, downtime: 1.8 },
+  technology: { risk: 1.6, compliance: 1.5, downtime: 2.0 },
+  other: { risk: 1.0, compliance: 1.0, downtime: 1.0 },
+}
 
-export default function ROICalculatorView({ selectedVendors, results, config }: ROICalculatorViewProps) {
-  // ROI Calculator State
-  const [roiInputs, setROIInputs] = useState({
-    devices: config?.devices || 1000,
-    users: config?.users || 2500,
-    currentNACCost: 250000,
-    breachRisk: 3.86, // Average breach cost in millions
-    complianceViolationRisk: 500000,
-    downtimeHourlyCost: 50000,
-    itStaffHourlyCost: 150,
-    timeframe: 3,
-    industryMultiplier: 1.2,
-    securityIncidents: 12, // per year
-    complianceAudits: 2, // per year
-    maintenanceWindows: 24, // per year
-  })
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"]
 
-  // Calculate comprehensive ROI metrics
+export default function ROICalculatorView({ selectedVendors }: ROICalculatorViewProps) {
+  const [devices, setDevices] = useState(1000)
+  const [users, setUsers] = useState(2000)
+  const [currentNACCost, setCurrentNACCost] = useState(150000)
+  const [industry, setIndustry] = useState("healthcare")
+  const [breachRisk, setBreachRisk] = useState([15])
+  const [downtimeCost, setDowntimeCost] = useState([50000])
+  const [adminHours, setAdminHours] = useState([40])
+  const [complianceViolationRisk, setComplianceViolationRisk] = useState([25])
+
+  const industryMultiplier = INDUSTRY_MULTIPLIERS[industry as keyof typeof INDUSTRY_MULTIPLIERS]
+
   const roiCalculations = useMemo(() => {
-    const portnoxCosts = {
-      year1: {
-        software: roiInputs.devices * 12 * 12, // $12/device/month
-        implementation: 50000,
-        training: 15000,
-        migration: 25000,
-        total: 0,
-      },
-      year2: {
-        software: roiInputs.devices * 12 * 12,
-        implementation: 0,
-        training: 5000,
-        migration: 0,
-        total: 0,
-      },
-      year3: {
-        software: roiInputs.devices * 12 * 12,
-        implementation: 0,
-        training: 5000,
-        migration: 0,
-        total: 0,
-      },
-    }
+    // Portnox CLEAR costs (cloud-native)
+    const portnoxAnnualCost = devices * 60 // $60 per device per year
+    const portnoxImplementationCost = 25000 // Low implementation cost
+    const portnoxOperationalCost = 50000 // Minimal operational overhead
 
-    // Calculate totals
-    Object.keys(portnoxCosts).forEach((year) => {
-      const yearData = portnoxCosts[year as keyof typeof portnoxCosts]
-      yearData.total = yearData.software + yearData.implementation + yearData.training + yearData.migration
-    })
+    // Traditional NAC costs (on-premise)
+    const traditionalAnnualCost = currentNACCost
+    const traditionalImplementationCost = 150000 // High implementation cost
+    const traditionalOperationalCost = 200000 // High operational overhead
 
-    const traditionalCosts = {
-      year1: {
-        software: roiInputs.currentNACCost * 0.4,
-        hardware: roiInputs.currentNACCost * 0.3,
-        implementation: roiInputs.currentNACCost * 0.2,
-        training: 45000,
-        migration: 75000,
-        maintenance: roiInputs.currentNACCost * 0.1,
-        total: 0,
-      },
-      year2: {
-        software: roiInputs.currentNACCost * 0.2,
-        hardware: 0,
-        implementation: 0,
-        training: 15000,
-        migration: 0,
-        maintenance: roiInputs.currentNACCost * 0.15,
-        total: 0,
-      },
-      year3: {
-        software: roiInputs.currentNACCost * 0.2,
-        hardware: roiInputs.currentNACCost * 0.1, // Hardware refresh
-        implementation: 0,
-        training: 15000,
-        migration: 0,
-        maintenance: roiInputs.currentNACCost * 0.15,
-        total: 0,
-      },
-    }
+    // Benefits calculations
+    const avgBreachCost = 3860000 * industryMultiplier.risk
+    const breachPreventionBenefit = (avgBreachCost * (breachRisk[0] / 100) * 0.8) / 3 // 80% risk reduction, amortized over 3 years
 
-    // Calculate totals
-    Object.keys(traditionalCosts).forEach((year) => {
-      const yearData = traditionalCosts[year as keyof typeof traditionalCosts]
-      yearData.total =
-        yearData.software +
-        yearData.hardware +
-        yearData.implementation +
-        yearData.training +
-        yearData.migration +
-        yearData.maintenance
-    })
+    const operationalSavings = adminHours[0] * 52 * 150 * 0.6 // 60% reduction in admin hours at $150/hour
 
-    // Calculate benefits
-    const benefits = {
-      year1: {
-        breachPrevention: roiInputs.breachRisk * 1000000 * 0.8, // 80% risk reduction
-        operationalSavings: roiInputs.itStaffHourlyCost * 2000, // 2000 hours saved
-        complianceSavings: roiInputs.complianceViolationRisk * 0.7, // 70% risk reduction
-        downtimeReduction: roiInputs.downtimeHourlyCost * 48, // 48 hours saved
-        total: 0,
-      },
-      year2: {
-        breachPrevention: roiInputs.breachRisk * 1000000 * 0.85,
-        operationalSavings: roiInputs.itStaffHourlyCost * 2500,
-        complianceSavings: roiInputs.complianceViolationRisk * 0.8,
-        downtimeReduction: roiInputs.downtimeHourlyCost * 72,
-        total: 0,
-      },
-      year3: {
-        breachPrevention: roiInputs.breachRisk * 1000000 * 0.9,
-        operationalSavings: roiInputs.itStaffHourlyCost * 3000,
-        complianceSavings: roiInputs.complianceViolationRisk * 0.85,
-        downtimeReduction: roiInputs.downtimeHourlyCost * 96,
-        total: 0,
-      },
-    }
+    const complianceViolationCost = 500000 * industryMultiplier.compliance
+    const complianceSavings = (complianceViolationCost * (complianceViolationRisk[0] / 100) * 0.7) / 3 // 70% risk reduction
 
-    // Calculate benefit totals
-    Object.keys(benefits).forEach((year) => {
-      const yearData = benefits[year as keyof typeof benefits]
-      yearData.total =
-        yearData.breachPrevention +
-        yearData.operationalSavings +
-        yearData.complianceSavings +
-        yearData.downtimeReduction
-    })
+    const downtimeSavings = (downtimeCost[0] * 48 * 0.5) / 12 // 50% reduction in 48 hours annual downtime
 
-    // Calculate net benefits and ROI
-    const netBenefits = {
-      year1: benefits.year1.total - (traditionalCosts.year1.total - portnoxCosts.year1.total),
-      year2: benefits.year2.total - (traditionalCosts.year2.total - portnoxCosts.year2.total),
-      year3: benefits.year3.total - (traditionalCosts.year3.total - portnoxCosts.year3.total),
-    }
+    const totalAnnualBenefits = breachPreventionBenefit + operationalSavings + complianceSavings + downtimeSavings
 
-    const totalInvestment =
-      portnoxCosts.year1.total + portnoxCosts.year2.total + portnoxCosts.year3.total - roiInputs.currentNACCost
-    const totalBenefits = benefits.year1.total + benefits.year2.total + benefits.year3.total
-    const totalSavings =
-      traditionalCosts.year1.total +
-      traditionalCosts.year2.total +
-      traditionalCosts.year3.total -
-      (portnoxCosts.year1.total + portnoxCosts.year2.total + portnoxCosts.year3.total)
+    // 3-year calculations
+    const portnoxTotal3Year = portnoxImplementationCost + portnoxAnnualCost * 3 + portnoxOperationalCost * 3
+    const traditionalTotal3Year =
+      traditionalImplementationCost + traditionalAnnualCost * 3 + traditionalOperationalCost * 3
 
-    const roi = totalInvestment > 0 ? ((totalBenefits + totalSavings - totalInvestment) / totalInvestment) * 100 : 0
-    const paybackPeriod = totalInvestment > 0 ? totalInvestment / ((totalBenefits + totalSavings) / 3) : 0
+    const totalSavings3Year = traditionalTotal3Year - portnoxTotal3Year
+    const totalBenefits3Year = totalAnnualBenefits * 3
+
+    const netBenefit = totalSavings3Year + totalBenefits3Year
+    const roi = (netBenefit / portnoxTotal3Year) * 100
+    const paybackPeriod = portnoxTotal3Year / (totalAnnualBenefits + totalSavings3Year / 3)
 
     return {
-      portnoxCosts,
-      traditionalCosts,
-      benefits,
-      netBenefits,
-      totalInvestment,
-      totalBenefits,
-      totalSavings,
+      portnoxTotal3Year,
+      traditionalTotal3Year,
+      totalSavings3Year,
+      totalBenefits3Year,
+      netBenefit,
       roi,
       paybackPeriod,
+      breachPreventionBenefit,
+      operationalSavings,
+      complianceSavings,
+      downtimeSavings,
+      totalAnnualBenefits,
     }
-  }, [roiInputs])
+  }, [devices, users, currentNACCost, industry, breachRisk, downtimeCost, adminHours, complianceViolationRisk])
 
-  // Prepare chart data
-  const cashFlowData = [
-    {
-      year: "Year 0",
-      investment: -roiCalculations.totalInvestment,
-      benefits: 0,
-      cumulative: -roiCalculations.totalInvestment,
-    },
-    {
-      year: "Year 1",
-      investment: 0,
-      benefits:
-        roiCalculations.benefits.year1.total +
-        roiCalculations.traditionalCosts.year1.total -
-        roiCalculations.portnoxCosts.year1.total,
-      cumulative:
-        -roiCalculations.totalInvestment +
-        (roiCalculations.benefits.year1.total +
-          roiCalculations.traditionalCosts.year1.total -
-          roiCalculations.portnoxCosts.year1.total),
-    },
-    {
-      year: "Year 2",
-      investment: 0,
-      benefits:
-        roiCalculations.benefits.year2.total +
-        roiCalculations.traditionalCosts.year2.total -
-        roiCalculations.portnoxCosts.year2.total,
-      cumulative:
-        -roiCalculations.totalInvestment +
-        (roiCalculations.benefits.year1.total +
-          roiCalculations.traditionalCosts.year1.total -
-          roiCalculations.portnoxCosts.year1.total) +
-        (roiCalculations.benefits.year2.total +
-          roiCalculations.traditionalCosts.year2.total -
-          roiCalculations.portnoxCosts.year2.total),
-    },
-    {
-      year: "Year 3",
-      investment: 0,
-      benefits:
-        roiCalculations.benefits.year3.total +
-        roiCalculations.traditionalCosts.year3.total -
-        roiCalculations.portnoxCosts.year3.total,
-      cumulative:
-        -roiCalculations.totalInvestment +
-        (roiCalculations.benefits.year1.total +
-          roiCalculations.traditionalCosts.year1.total -
-          roiCalculations.portnoxCosts.year1.total) +
-        (roiCalculations.benefits.year2.total +
-          roiCalculations.traditionalCosts.year2.total -
-          roiCalculations.portnoxCosts.year2.total) +
-        (roiCalculations.benefits.year3.total +
-          roiCalculations.traditionalCosts.year3.total -
-          roiCalculations.portnoxCosts.year3.total),
-    },
+  // Generate cash flow data
+  const cashFlowData = useMemo(() => {
+    const data = []
+    let cumulativePortnox = 0
+    let cumulativeTraditional = 0
+
+    for (let year = 0; year <= 3; year++) {
+      if (year === 0) {
+        cumulativePortnox = -25000 // Implementation cost
+        cumulativeTraditional = -150000 // Implementation cost
+      } else {
+        cumulativePortnox += roiCalculations.totalAnnualBenefits - (devices * 60 + 50000)
+        cumulativeTraditional += -(currentNACCost + 200000)
+      }
+
+      data.push({
+        year: `Year ${year}`,
+        portnox: Math.round(cumulativePortnox),
+        traditional: Math.round(cumulativeTraditional),
+        breakEven: 0,
+      })
+    }
+
+    return data
+  }, [roiCalculations, devices, currentNACCost])
+
+  // Benefits breakdown for pie chart
+  const benefitsData = [
+    { name: "Breach Prevention", value: roiCalculations.breachPreventionBenefit, color: "#0088FE" },
+    { name: "Operational Savings", value: roiCalculations.operationalSavings, color: "#00C49F" },
+    { name: "Compliance Savings", value: roiCalculations.complianceSavings, color: "#FFBB28" },
+    { name: "Downtime Reduction", value: roiCalculations.downtimeSavings, color: "#FF8042" },
   ]
 
-  const benefitsBreakdownData = [
-    { name: "Breach Prevention", value: roiCalculations.benefits.year1.breachPrevention },
-    { name: "Operational Savings", value: roiCalculations.benefits.year1.operationalSavings },
-    { name: "Compliance Savings", value: roiCalculations.benefits.year1.complianceSavings },
-    { name: "Downtime Reduction", value: roiCalculations.benefits.year1.downtimeReduction },
-  ]
+  // Scenario analysis
+  const scenarios = useMemo(() => {
+    const conservative = {
+      name: "Conservative",
+      roi: roiCalculations.roi * 0.7,
+      payback: roiCalculations.paybackPeriod * 1.3,
+      benefits: roiCalculations.totalBenefits3Year * 0.7,
+    }
+    const realistic = {
+      name: "Realistic",
+      roi: roiCalculations.roi,
+      payback: roiCalculations.paybackPeriod,
+      benefits: roiCalculations.totalBenefits3Year,
+    }
+    const optimistic = {
+      name: "Optimistic",
+      roi: roiCalculations.roi * 1.4,
+      payback: roiCalculations.paybackPeriod * 0.8,
+      benefits: roiCalculations.totalBenefits3Year * 1.4,
+    }
 
-  const costComparisonData = [
-    {
-      category: "Year 1",
-      portnox: roiCalculations.portnoxCosts.year1.total,
-      traditional: roiCalculations.traditionalCosts.year1.total,
-    },
-    {
-      category: "Year 2",
-      portnox: roiCalculations.portnoxCosts.year2.total,
-      traditional: roiCalculations.traditionalCosts.year2.total,
-    },
-    {
-      category: "Year 3",
-      portnox: roiCalculations.portnoxCosts.year3.total,
-      traditional: roiCalculations.traditionalCosts.year3.total,
-    },
-  ]
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
-
-  const formatPercent = (value: number) => {
-    return `${value.toFixed(1)}%`
-  }
-
-  const updateROIInput = (key: string, value: number) => {
-    setROIInputs((prev) => ({ ...prev, [key]: value }))
-  }
+    return [conservative, realistic, optimistic]
+  }, [roiCalculations])
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold">ROI Calculator & Financial Analysis</h2>
-          <p className="text-muted-foreground">Comprehensive return on investment analysis with payback calculations</p>
+          <h2 className="text-3xl font-bold tracking-tight">ROI Calculator</h2>
+          <p className="text-muted-foreground">
+            Comprehensive financial analysis and return on investment calculations
+          </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <Calculator className="mr-2 h-4 w-4" />
-            Export Analysis
-          </Button>
-          <Button>
-            <Target className="mr-2 h-4 w-4" />
-            Generate Report
-          </Button>
-        </div>
+        <Badge variant="outline" className="text-lg px-4 py-2">
+          {Math.round(roiCalculations.roi)}% ROI
+        </Badge>
       </div>
 
-      {/* Key ROI Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="text-sm font-medium">ROI</p>
-                <p className="text-2xl font-bold text-green-600">{formatPercent(roiCalculations.roi)}</p>
-                <p className="text-xs text-muted-foreground">3-year return</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="text-sm font-medium">Payback Period</p>
-                <p className="text-2xl font-bold text-blue-600">{roiCalculations.paybackPeriod.toFixed(1)}</p>
-                <p className="text-xs text-muted-foreground">years</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <DollarSign className="h-5 w-5 text-purple-600" />
-              <div>
-                <p className="text-sm font-medium">Total Savings</p>
-                <p className="text-2xl font-bold text-purple-600">{formatCurrency(roiCalculations.totalSavings)}</p>
-                <p className="text-xs text-muted-foreground">3-year total</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Shield className="h-5 w-5 text-orange-600" />
-              <div>
-                <p className="text-sm font-medium">Risk Reduction</p>
-                <p className="text-2xl font-bold text-orange-600">{formatCurrency(roiCalculations.totalBenefits)}</p>
-                <p className="text-xs text-muted-foreground">3-year value</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="calculator" className="space-y-4">
+      <Tabs defaultValue="parameters" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="calculator">ROI Calculator</TabsTrigger>
+          <TabsTrigger value="parameters">Parameters</TabsTrigger>
           <TabsTrigger value="analysis">Financial Analysis</TabsTrigger>
           <TabsTrigger value="benefits">Benefits Breakdown</TabsTrigger>
           <TabsTrigger value="scenarios">Scenario Planning</TabsTrigger>
         </TabsList>
 
-        {/* ROI Calculator Tab */}
-        <TabsContent value="calculator" className="space-y-6">
+        <TabsContent value="parameters" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Input Parameters */}
             <Card>
               <CardHeader>
-                <CardTitle>ROI Parameters</CardTitle>
-                <p className="text-muted-foreground">Adjust inputs to see impact on ROI calculations</p>
+                <CardTitle className="flex items-center gap-2">
+                  <Calculator className="h-5 w-5" />
+                  Environment Parameters
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="devices">Number of Devices</Label>
-                    <Input
-                      id="devices"
-                      type="number"
-                      value={roiInputs.devices}
-                      onChange={(e) => updateROIInput("devices", Number.parseInt(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="users">Number of Users</Label>
-                    <Input
-                      id="users"
-                      type="number"
-                      value={roiInputs.users}
-                      onChange={(e) => updateROIInput("users", Number.parseInt(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="currentCost">Current NAC Annual Cost</Label>
-                    <Input
-                      id="currentCost"
-                      type="number"
-                      value={roiInputs.currentNACCost}
-                      onChange={(e) => updateROIInput("currentNACCost", Number.parseInt(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div>
-                    <Label>Breach Risk ($ millions)</Label>
-                    <div className="px-3">
-                      <Slider
-                        value={[roiInputs.breachRisk]}
-                        onValueChange={(value) => updateROIInput("breachRisk", value[0])}
-                        max={10}
-                        min={1}
-                        step={0.1}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                        <span>$1M</span>
-                        <span>${roiInputs.breachRisk.toFixed(1)}M</span>
-                        <span>$10M</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Downtime Hourly Cost</Label>
-                    <div className="px-3">
-                      <Slider
-                        value={[roiInputs.downtimeHourlyCost]}
-                        onValueChange={(value) => updateROIInput("downtimeHourlyCost", value[0])}
-                        max={100000}
-                        min={10000}
-                        step={5000}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                        <span>$10K</span>
-                        <span>{formatCurrency(roiInputs.downtimeHourlyCost)}</span>
-                        <span>$100K</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <Label>IT Staff Hourly Rate</Label>
-                    <div className="px-3">
-                      <Slider
-                        value={[roiInputs.itStaffHourlyCost]}
-                        onValueChange={(value) => updateROIInput("itStaffHourlyCost", value[0])}
-                        max={300}
-                        min={75}
-                        step={25}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                        <span>$75</span>
-                        <span>${roiInputs.itStaffHourlyCost}</span>
-                        <span>$300</span>
-                      </div>
-                    </div>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="devices">Number of Devices</Label>
+                  <Input
+                    id="devices"
+                    type="number"
+                    value={devices}
+                    onChange={(e) => setDevices(Number(e.target.value))}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground">Total devices requiring NAC management</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="users">Number of Users</Label>
+                  <Input
+                    id="users"
+                    type="number"
+                    value={users}
+                    onChange={(e) => setUsers(Number(e.target.value))}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground">Total users accessing the network</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="current-cost">Current Annual NAC Cost</Label>
+                  <Input
+                    id="current-cost"
+                    type="number"
+                    value={currentNACCost}
+                    onChange={(e) => setCurrentNACCost(Number(e.target.value))}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground">Total annual cost of current NAC solution</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="industry">Industry</Label>
+                  <Select value={industry} onValueChange={setIndustry}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="healthcare">Healthcare</SelectItem>
+                      <SelectItem value="finance">Financial Services</SelectItem>
+                      <SelectItem value="government">Government</SelectItem>
+                      <SelectItem value="education">Education</SelectItem>
+                      <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                      <SelectItem value="retail">Retail</SelectItem>
+                      <SelectItem value="technology">Technology</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Industry affects risk multipliers and compliance requirements
+                  </p>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Cash Flow Chart */}
             <Card>
               <CardHeader>
-                <CardTitle>Cash Flow Analysis</CardTitle>
-                <p className="text-muted-foreground">Cumulative cash flow over time</p>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Risk Parameters
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-3">
+                  <Label>Annual Breach Risk: {breachRisk[0]}%</Label>
+                  <Slider
+                    value={breachRisk}
+                    onValueChange={setBreachRisk}
+                    max={50}
+                    min={5}
+                    step={1}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground">Estimated annual probability of security breach</p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Hourly Downtime Cost: ${downtimeCost[0].toLocaleString()}</Label>
+                  <Slider
+                    value={downtimeCost}
+                    onValueChange={setDowntimeCost}
+                    max={100000}
+                    min={10000}
+                    step={5000}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground">Cost per hour of network downtime</p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Weekly Admin Hours: {adminHours[0]}</Label>
+                  <Slider
+                    value={adminHours}
+                    onValueChange={setAdminHours}
+                    max={80}
+                    min={10}
+                    step={5}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground">Hours per week spent on NAC administration</p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Compliance Violation Risk: {complianceViolationRisk[0]}%</Label>
+                  <Slider
+                    value={complianceViolationRisk}
+                    onValueChange={setComplianceViolationRisk}
+                    max={50}
+                    min={5}
+                    step={1}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground">Annual risk of compliance violations</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">3-Year ROI</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">{Math.round(roiCalculations.roi)}%</div>
+                <p className="text-xs text-muted-foreground">Return on investment</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Payback Period</CardTitle>
+                <Clock className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {Math.floor(roiCalculations.paybackPeriod)}y {Math.round((roiCalculations.paybackPeriod % 1) * 12)}m
+                </div>
+                <p className="text-xs text-muted-foreground">Time to break even</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${Math.round(roiCalculations.totalSavings3Year / 1000)}K</div>
+                <p className="text-xs text-muted-foreground">3-year cost savings</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Risk Reduction</CardTitle>
+                <Shield className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${Math.round(roiCalculations.totalBenefits3Year / 1000)}K</div>
+                <p className="text-xs text-muted-foreground">3-year risk mitigation value</p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="analysis" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>3-Year Cost Comparison</CardTitle>
+                <CardDescription>Total cost of ownership analysis</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={[
+                      {
+                        solution: "Portnox CLEAR",
+                        implementation: 25000,
+                        annual: (devices * 60 + 50000) * 3,
+                        total: roiCalculations.portnoxTotal3Year,
+                      },
+                      {
+                        solution: "Traditional NAC",
+                        implementation: 150000,
+                        annual: (currentNACCost + 200000) * 3,
+                        total: roiCalculations.traditionalTotal3Year,
+                      },
+                    ]}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="solution" />
+                    <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                    <Legend />
+                    <Bar dataKey="implementation" fill="#8884d8" name="Implementation" />
+                    <Bar dataKey="annual" fill="#82ca9d" name="3-Year Operations" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Cumulative Cash Flow</CardTitle>
+                <CardDescription>Cash flow analysis with break-even point</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -493,149 +431,37 @@ export default function ROICalculatorView({ selectedVendors, results, config }: 
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="year" />
                     <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                    <Tooltip formatter={(value) => [formatCurrency(value as number), "Cash Flow"]} />
+                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                    <Legend />
+                    <Line type="monotone" dataKey="portnox" stroke="#0088FE" name="Portnox CLEAR" strokeWidth={2} />
                     <Line
                       type="monotone"
-                      dataKey="cumulative"
-                      stroke="#00D4AA"
-                      strokeWidth={3}
-                      dot={{ fill: "#00D4AA", strokeWidth: 2, r: 6 }}
+                      dataKey="traditional"
+                      stroke="#FF8042"
+                      name="Traditional NAC"
+                      strokeWidth={2}
                     />
-                    <Line type="monotone" dataKey="benefits" stroke="#0EA5E9" strokeWidth={2} strokeDasharray="5 5" />
+                    <Line
+                      type="monotone"
+                      dataKey="breakEven"
+                      stroke="#888888"
+                      strokeDasharray="5 5"
+                      name="Break Even"
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
 
-          {/* ROI Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle>ROI Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-green-600">Investment</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Initial Investment</span>
-                      <span className="font-medium">{formatCurrency(roiCalculations.totalInvestment)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>3-Year Portnox Cost</span>
-                      <span className="font-medium">
-                        {formatCurrency(
-                          roiCalculations.portnoxCosts.year1.total +
-                            roiCalculations.portnoxCosts.year2.total +
-                            roiCalculations.portnoxCosts.year3.total,
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-blue-600">Returns</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Cost Savings</span>
-                      <span className="font-medium">{formatCurrency(roiCalculations.totalSavings)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Risk Reduction Value</span>
-                      <span className="font-medium">{formatCurrency(roiCalculations.totalBenefits)}</span>
-                    </div>
-                    <div className="flex justify-between font-bold border-t pt-2">
-                      <span>Total Returns</span>
-                      <span>{formatCurrency(roiCalculations.totalSavings + roiCalculations.totalBenefits)}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-purple-600">Key Metrics</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>ROI</span>
-                      <Badge className="bg-green-100 text-green-800">{formatPercent(roiCalculations.roi)}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Payback Period</span>
-                      <Badge className="bg-blue-100 text-blue-800">
-                        {roiCalculations.paybackPeriod.toFixed(1)} years
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Break-even</span>
-                      <Badge className="bg-purple-100 text-purple-800">
-                        Month {Math.round(roiCalculations.paybackPeriod * 12)}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Financial Analysis Tab */}
-        <TabsContent value="analysis" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Cost Comparison Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>3-Year Cost Comparison</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={costComparisonData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="category" />
-                    <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                    <Tooltip formatter={(value) => [formatCurrency(value as number), "Cost"]} />
-                    <Legend />
-                    <Bar dataKey="portnox" fill="#00D4AA" name="Portnox CLEAR" />
-                    <Bar dataKey="traditional" fill="#EF4444" name="Traditional NAC" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            {/* Benefits Pie Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Annual Benefits Breakdown</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={benefitsBreakdownData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {benefitsBreakdownData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => [formatCurrency(value as number), "Annual Value"]} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Detailed Financial Breakdown */}
           <Card>
             <CardHeader>
               <CardTitle>Detailed Financial Analysis</CardTitle>
+              <CardDescription>Year-by-year breakdown of costs and benefits</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
                       <th className="text-left p-2">Category</th>
@@ -646,75 +472,86 @@ export default function ROICalculatorView({ selectedVendors, results, config }: 
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b bg-green-50">
-                      <td className="p-2 font-medium">Portnox CLEAR Costs</td>
-                      <td className="text-right p-2">{formatCurrency(roiCalculations.portnoxCosts.year1.total)}</td>
-                      <td className="text-right p-2">{formatCurrency(roiCalculations.portnoxCosts.year2.total)}</td>
-                      <td className="text-right p-2">{formatCurrency(roiCalculations.portnoxCosts.year3.total)}</td>
+                    <tr className="border-b bg-green-50 dark:bg-green-900/20">
+                      <td className="p-2 font-medium">Portnox CLEAR</td>
+                      <td className="text-right p-2">${(25000 + devices * 60 + 50000).toLocaleString()}</td>
+                      <td className="text-right p-2">${(devices * 60 + 50000).toLocaleString()}</td>
+                      <td className="text-right p-2">${(devices * 60 + 50000).toLocaleString()}</td>
                       <td className="text-right p-2 font-bold">
-                        {formatCurrency(
-                          roiCalculations.portnoxCosts.year1.total +
-                            roiCalculations.portnoxCosts.year2.total +
-                            roiCalculations.portnoxCosts.year3.total,
-                        )}
+                        ${roiCalculations.portnoxTotal3Year.toLocaleString()}
                       </td>
                     </tr>
-                    <tr className="border-b bg-red-50">
-                      <td className="p-2 font-medium">Traditional NAC Costs</td>
-                      <td className="text-right p-2">{formatCurrency(roiCalculations.traditionalCosts.year1.total)}</td>
-                      <td className="text-right p-2">{formatCurrency(roiCalculations.traditionalCosts.year2.total)}</td>
-                      <td className="text-right p-2">{formatCurrency(roiCalculations.traditionalCosts.year3.total)}</td>
+                    <tr className="border-b bg-red-50 dark:bg-red-900/20">
+                      <td className="p-2 font-medium">Traditional NAC</td>
+                      <td className="text-right p-2">${(150000 + currentNACCost + 200000).toLocaleString()}</td>
+                      <td className="text-right p-2">${(currentNACCost + 200000).toLocaleString()}</td>
+                      <td className="text-right p-2">${(currentNACCost + 200000).toLocaleString()}</td>
                       <td className="text-right p-2 font-bold">
-                        {formatCurrency(
-                          roiCalculations.traditionalCosts.year1.total +
-                            roiCalculations.traditionalCosts.year2.total +
-                            roiCalculations.traditionalCosts.year3.total,
-                        )}
+                        ${roiCalculations.traditionalTotal3Year.toLocaleString()}
                       </td>
                     </tr>
-                    <tr className="border-b bg-blue-50">
+                    <tr className="border-b bg-blue-50 dark:bg-blue-900/20">
                       <td className="p-2 font-medium">Cost Savings</td>
-                      <td className="text-right p-2 text-blue-600 font-medium">
-                        {formatCurrency(
-                          roiCalculations.traditionalCosts.year1.total - roiCalculations.portnoxCosts.year1.total,
-                        )}
+                      <td className="text-right p-2">
+                        ${(150000 + currentNACCost + 200000 - (25000 + devices * 60 + 50000)).toLocaleString()}
                       </td>
-                      <td className="text-right p-2 text-blue-600 font-medium">
-                        {formatCurrency(
-                          roiCalculations.traditionalCosts.year2.total - roiCalculations.portnoxCosts.year2.total,
-                        )}
+                      <td className="text-right p-2">
+                        ${(currentNACCost + 200000 - (devices * 60 + 50000)).toLocaleString()}
                       </td>
-                      <td className="text-right p-2 text-blue-600 font-medium">
-                        {formatCurrency(
-                          roiCalculations.traditionalCosts.year3.total - roiCalculations.portnoxCosts.year3.total,
-                        )}
+                      <td className="text-right p-2">
+                        ${(currentNACCost + 200000 - (devices * 60 + 50000)).toLocaleString()}
                       </td>
-                      <td className="text-right p-2 font-bold text-blue-600">
-                        {formatCurrency(roiCalculations.totalSavings)}
+                      <td className="text-right p-2 font-bold text-green-600">
+                        ${roiCalculations.totalSavings3Year.toLocaleString()}
                       </td>
                     </tr>
-                    <tr className="border-b bg-purple-50">
-                      <td className="p-2 font-medium">Risk Reduction Benefits</td>
-                      <td className="text-right p-2 text-purple-600 font-medium">
-                        {formatCurrency(roiCalculations.benefits.year1.total)}
+                    <tr className="border-b bg-purple-50 dark:bg-purple-900/20">
+                      <td className="p-2 font-medium">Risk Mitigation Benefits</td>
+                      <td className="text-right p-2">
+                        ${Math.round(roiCalculations.totalAnnualBenefits).toLocaleString()}
                       </td>
-                      <td className="text-right p-2 text-purple-600 font-medium">
-                        {formatCurrency(roiCalculations.benefits.year2.total)}
+                      <td className="text-right p-2">
+                        ${Math.round(roiCalculations.totalAnnualBenefits).toLocaleString()}
                       </td>
-                      <td className="text-right p-2 text-purple-600 font-medium">
-                        {formatCurrency(roiCalculations.benefits.year3.total)}
+                      <td className="text-right p-2">
+                        ${Math.round(roiCalculations.totalAnnualBenefits).toLocaleString()}
                       </td>
                       <td className="text-right p-2 font-bold text-purple-600">
-                        {formatCurrency(roiCalculations.totalBenefits)}
+                        ${roiCalculations.totalBenefits3Year.toLocaleString()}
                       </td>
                     </tr>
-                    <tr className="border-b-2 border-gray-400 bg-gray-100">
+                    <tr className="bg-yellow-50 dark:bg-yellow-900/20">
                       <td className="p-2 font-bold">Net Benefit</td>
-                      <td className="text-right p-2 font-bold">{formatCurrency(roiCalculations.netBenefits.year1)}</td>
-                      <td className="text-right p-2 font-bold">{formatCurrency(roiCalculations.netBenefits.year2)}</td>
-                      <td className="text-right p-2 font-bold">{formatCurrency(roiCalculations.netBenefits.year3)}</td>
-                      <td className="text-right p-2 font-bold text-green-600">
-                        {formatCurrency(roiCalculations.totalSavings + roiCalculations.totalBenefits)}
+                      <td className="text-right p-2 font-bold">
+                        $
+                        {(
+                          150000 +
+                          currentNACCost +
+                          200000 -
+                          (25000 + devices * 60 + 50000) +
+                          roiCalculations.totalAnnualBenefits
+                        ).toLocaleString()}
+                      </td>
+                      <td className="text-right p-2 font-bold">
+                        $
+                        {(
+                          currentNACCost +
+                          200000 -
+                          (devices * 60 + 50000) +
+                          roiCalculations.totalAnnualBenefits
+                        ).toLocaleString()}
+                      </td>
+                      <td className="text-right p-2 font-bold">
+                        $
+                        {(
+                          currentNACCost +
+                          200000 -
+                          (devices * 60 + 50000) +
+                          roiCalculations.totalAnnualBenefits
+                        ).toLocaleString()}
+                      </td>
+                      <td className="text-right p-2 font-bold text-yellow-600">
+                        ${roiCalculations.netBenefit.toLocaleString()}
                       </td>
                     </tr>
                   </tbody>
@@ -724,337 +561,380 @@ export default function ROICalculatorView({ selectedVendors, results, config }: 
           </Card>
         </TabsContent>
 
-        {/* Benefits Breakdown Tab */}
         <TabsContent value="benefits" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Breach Prevention Benefits */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-red-600" />
-                  Breach Prevention Value
-                </CardTitle>
+                <CardTitle>Benefits Distribution</CardTitle>
+                <CardDescription>Annual benefit breakdown by category</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-3xl font-bold text-red-600">
-                  {formatCurrency(roiCalculations.benefits.year1.breachPrevention)}
-                </div>
-                <div className="text-sm text-muted-foreground">Annual risk reduction value</div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Average breach cost</span>
-                    <span>{formatCurrency(roiInputs.breachRisk * 1000000)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Risk reduction</span>
-                    <Badge className="bg-green-100 text-green-800">80%</Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Annual incidents prevented</span>
-                    <span>0.8 breaches</span>
-                  </div>
-                </div>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={benefitsData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {benefitsData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                  </PieChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            {/* Operational Savings */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-blue-600" />
-                  Operational Savings
-                </CardTitle>
+                <CardTitle>Benefit Categories</CardTitle>
+                <CardDescription>Detailed breakdown of annual benefits</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="text-3xl font-bold text-blue-600">
-                  {formatCurrency(roiCalculations.benefits.year1.operationalSavings)}
-                </div>
-                <div className="text-sm text-muted-foreground">Annual staff time savings</div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Hours saved annually</span>
-                    <span>2,000 hours</span>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Shield className="h-5 w-5 text-blue-500" />
+                      <div>
+                        <h4 className="font-medium">Breach Prevention</h4>
+                        <p className="text-sm text-muted-foreground">80% risk reduction</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold">
+                        ${Math.round(roiCalculations.breachPreventionBenefit).toLocaleString()}
+                      </div>
+                      <div className="text-xs text-muted-foreground">per year</div>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Average hourly rate</span>
-                    <span>${roiInputs.itStaffHourlyCost}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Efficiency improvement</span>
-                    <Badge className="bg-blue-100 text-blue-800">90%</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Compliance Savings */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  Compliance Savings
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-3xl font-bold text-green-600">
-                  {formatCurrency(roiCalculations.benefits.year1.complianceSavings)}
-                </div>
-                <div className="text-sm text-muted-foreground">Annual compliance cost reduction</div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Violation risk reduction</span>
-                    <Badge className="bg-green-100 text-green-800">70%</Badge>
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Users className="h-5 w-5 text-green-500" />
+                      <div>
+                        <h4 className="font-medium">Operational Savings</h4>
+                        <p className="text-sm text-muted-foreground">60% admin time reduction</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold">
+                        ${Math.round(roiCalculations.operationalSavings).toLocaleString()}
+                      </div>
+                      <div className="text-xs text-muted-foreground">per year</div>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Audit preparation time</span>
-                    <span className="text-green-600">-80%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Automated reporting</span>
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Downtime Reduction */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-orange-600" />
-                  Downtime Reduction
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-3xl font-bold text-orange-600">
-                  {formatCurrency(roiCalculations.benefits.year1.downtimeReduction)}
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-yellow-500" />
+                      <div>
+                        <h4 className="font-medium">Compliance Savings</h4>
+                        <p className="text-sm text-muted-foreground">70% violation risk reduction</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold">${Math.round(roiCalculations.complianceSavings).toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">per year</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Zap className="h-5 w-5 text-orange-500" />
+                      <div>
+                        <h4 className="font-medium">Downtime Reduction</h4>
+                        <p className="text-sm text-muted-foreground">50% downtime reduction</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold">${Math.round(roiCalculations.downtimeSavings).toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">per year</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-sm text-muted-foreground">Annual downtime cost savings</div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Hours saved annually</span>
-                    <span>48 hours</span>
+
+                <Separator />
+
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div>
+                    <h4 className="font-bold">Total Annual Benefits</h4>
+                    <p className="text-sm text-muted-foreground">Combined value of all benefits</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Hourly downtime cost</span>
-                    <span>{formatCurrency(roiInputs.downtimeHourlyCost)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Availability improvement</span>
-                    <Badge className="bg-orange-100 text-orange-800">99.9%</Badge>
+                  <div className="text-right">
+                    <div className="text-xl font-bold text-green-600">
+                      ${Math.round(roiCalculations.totalAnnualBenefits).toLocaleString()}
+                    </div>
+                    <div className="text-xs text-muted-foreground">per year</div>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Benefits Timeline */}
           <Card>
             <CardHeader>
-              <CardTitle>Benefits Realization Timeline</CardTitle>
+              <CardTitle>Quantified Business Impact</CardTitle>
+              <CardDescription>Measurable improvements from Portnox CLEAR implementation</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart
-                  data={[
-                    {
-                      year: "Year 1",
-                      breachPrevention: roiCalculations.benefits.year1.breachPrevention,
-                      operationalSavings: roiCalculations.benefits.year1.operationalSavings,
-                      complianceSavings: roiCalculations.benefits.year1.complianceSavings,
-                      downtimeReduction: roiCalculations.benefits.year1.downtimeReduction,
-                    },
-                    {
-                      year: "Year 2",
-                      breachPrevention: roiCalculations.benefits.year2.breachPrevention,
-                      operationalSavings: roiCalculations.benefits.year2.operationalSavings,
-                      complianceSavings: roiCalculations.benefits.year2.complianceSavings,
-                      downtimeReduction: roiCalculations.benefits.year2.downtimeReduction,
-                    },
-                    {
-                      year: "Year 3",
-                      breachPrevention: roiCalculations.benefits.year3.breachPrevention,
-                      operationalSavings: roiCalculations.benefits.year3.operationalSavings,
-                      complianceSavings: roiCalculations.benefits.year3.complianceSavings,
-                      downtimeReduction: roiCalculations.benefits.year3.downtimeReduction,
-                    },
-                  ]}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="year" />
-                  <YAxis tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`} />
-                  <Tooltip formatter={(value) => [formatCurrency(value as number), "Annual Value"]} />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey="breachPrevention"
-                    stackId="1"
-                    stroke="#EF4444"
-                    fill="#EF4444"
-                    fillOpacity={0.6}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="operationalSavings"
-                    stackId="1"
-                    stroke="#0EA5E9"
-                    fill="#0EA5E9"
-                    fillOpacity={0.6}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="complianceSavings"
-                    stackId="1"
-                    stroke="#00D4AA"
-                    fill="#00D4AA"
-                    fillOpacity={0.6}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="downtimeReduction"
-                    stackId="1"
-                    stroke="#F97316"
-                    fill="#F97316"
-                    fillOpacity={0.6}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Security Improvements</h4>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      80% reduction in breach risk
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      95% faster threat detection
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      90% reduction in unauthorized access
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      Zero-trust architecture implementation
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Operational Improvements</h4>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                      60% reduction in admin overhead
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                      50% faster user onboarding
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                      90% automation of routine tasks
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                      24/7 cloud-based monitoring
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Scenario Planning Tab */}
         <TabsContent value="scenarios" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Conservative Scenario */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Scenario Analysis</CardTitle>
+              <CardDescription>ROI projections under different assumptions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {scenarios.map((scenario, index) => (
+                  <div
+                    key={scenario.name}
+                    className={`p-4 border rounded-lg ${
+                      scenario.name === "Realistic" ? "border-primary bg-primary/5" : "border-muted"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold">{scenario.name}</h4>
+                      {scenario.name === "Realistic" && <Badge variant="default">Recommended</Badge>}
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-2xl font-bold text-green-600">{Math.round(scenario.roi)}%</div>
+                        <div className="text-xs text-muted-foreground">3-Year ROI</div>
+                      </div>
+                      <div>
+                        <div className="text-lg font-semibold">
+                          {Math.floor(scenario.payback)}y {Math.round((scenario.payback % 1) * 12)}m
+                        </div>
+                        <div className="text-xs text-muted-foreground">Payback Period</div>
+                      </div>
+                      <div>
+                        <div className="text-lg font-semibold">${Math.round(scenario.benefits / 1000)}K</div>
+                        <div className="text-xs text-muted-foreground">Total Benefits</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ArrowDown className="h-5 w-5 text-orange-600" />
-                  Conservative Scenario
-                </CardTitle>
+                <CardTitle>Sensitivity Analysis</CardTitle>
+                <CardDescription>Impact of key variables on ROI</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>ROI</span>
-                    <Badge className="bg-orange-100 text-orange-800">{formatPercent(roiCalculations.roi * 0.7)}</Badge>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Breach Risk Impact</span>
+                      <span className="font-medium">High</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div className="bg-red-500 h-2 rounded-full" style={{ width: "85%" }}></div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      ±10% change in breach risk = ±{Math.round(roiCalculations.roi * 0.3)}% ROI impact
+                    </p>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Payback</span>
-                    <span>{(roiCalculations.paybackPeriod * 1.3).toFixed(1)} years</span>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Admin Hours Impact</span>
+                      <span className="font-medium">Medium</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div className="bg-yellow-500 h-2 rounded-full" style={{ width: "60%" }}></div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      ±10 hours/week = ±{Math.round(roiCalculations.roi * 0.15)}% ROI impact
+                    </p>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Total Benefits</span>
-                    <span>{formatCurrency((roiCalculations.totalBenefits + roiCalculations.totalSavings) * 0.7)}</span>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Downtime Cost Impact</span>
+                      <span className="font-medium">Medium</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div className="bg-orange-500 h-2 rounded-full" style={{ width: "55%" }}></div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      ±$10K/hour = ±{Math.round(roiCalculations.roi * 0.12)}% ROI impact
+                    </p>
                   </div>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Assumes 30% lower benefits realization and 30% longer implementation timeline.
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Device Count Impact</span>
+                      <span className="font-medium">Low</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div className="bg-green-500 h-2 rounded-full" style={{ width: "30%" }}></div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      ±500 devices = ±{Math.round(roiCalculations.roi * 0.08)}% ROI impact
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Realistic Scenario */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-blue-600" />
-                  Realistic Scenario
-                </CardTitle>
+                <CardTitle>Risk Factors</CardTitle>
+                <CardDescription>Factors that could impact ROI realization</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>ROI</span>
-                    <Badge className="bg-blue-100 text-blue-800">{formatPercent(roiCalculations.roi)}</Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Payback</span>
-                    <span>{roiCalculations.paybackPeriod.toFixed(1)} years</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Total Benefits</span>
-                    <span>{formatCurrency(roiCalculations.totalBenefits + roiCalculations.totalSavings)}</span>
-                  </div>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Based on current inputs and industry benchmarks. Most likely outcome.
-                </div>
-              </CardContent>
-            </Card>
+                <Alert>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Implementation Risk:</strong> Delays in deployment could reduce first-year benefits by up to
+                    25%.
+                  </AlertDescription>
+                </Alert>
 
-            {/* Optimistic Scenario */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ArrowUp className="h-5 w-5 text-green-600" />
-                  Optimistic Scenario
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>ROI</span>
-                    <Badge className="bg-green-100 text-green-800">{formatPercent(roiCalculations.roi * 1.4)}</Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Payback</span>
-                    <span>{(roiCalculations.paybackPeriod * 0.8).toFixed(1)} years</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Total Benefits</span>
-                    <span>{formatCurrency((roiCalculations.totalBenefits + roiCalculations.totalSavings) * 1.4)}</span>
-                  </div>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Assumes 40% higher benefits and faster implementation with additional use cases.
+                <Alert>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Adoption Risk:</strong> Slow user adoption may reduce operational savings by 15-30%
+                    initially.
+                  </AlertDescription>
+                </Alert>
+
+                <Alert className="border-green-200 bg-green-50 dark:bg-green-900/20">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <AlertDescription>
+                    <strong>Upside Potential:</strong> Additional integrations and automation could increase benefits by
+                    20-40%.
+                  </AlertDescription>
+                </Alert>
+
+                <div className="mt-4 p-3 bg-muted rounded-lg">
+                  <h4 className="font-semibold mb-2">Mitigation Strategies</h4>
+                  <ul className="text-sm space-y-1">
+                    <li>• Phased implementation approach</li>
+                    <li>• Comprehensive user training program</li>
+                    <li>• Regular progress monitoring and adjustment</li>
+                    <li>• Vendor support engagement</li>
+                  </ul>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Sensitivity Analysis */}
           <Card>
             <CardHeader>
-              <CardTitle>Sensitivity Analysis</CardTitle>
-              <p className="text-muted-foreground">Impact of key variables on ROI</p>
+              <CardTitle>Executive Summary</CardTitle>
+              <CardDescription>Key financial metrics for decision making</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-semibold mb-3">High Impact Variables</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span>Breach Cost (+/-$1M)</span>
-                        <Badge variant="outline">±{formatPercent(25)}</Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span>Device Count (+/-500)</span>
-                        <Badge variant="outline">±{formatPercent(15)}</Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span>Downtime Cost (+/-$25K/hr)</span>
-                        <Badge variant="outline">±{formatPercent(12)}</Badge>
-                      </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Investment Highlights</h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm">Initial Investment:</span>
+                      <span className="font-medium">${(25000).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">3-Year Total Cost:</span>
+                      <span className="font-medium">${roiCalculations.portnoxTotal3Year.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">Annual Savings:</span>
+                      <span className="font-medium text-green-600">
+                        ${Math.round(roiCalculations.totalSavings3Year / 3).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">Annual Benefits:</span>
+                      <span className="font-medium text-blue-600">
+                        ${Math.round(roiCalculations.totalAnnualBenefits).toLocaleString()}
+                      </span>
                     </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold mb-3">Medium Impact Variables</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span>IT Staff Rate (+/-$50/hr)</span>
-                        <Badge variant="outline">±{formatPercent(8)}</Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span>Implementation Time (+/-2 months)</span>
-                        <Badge variant="outline">±{formatPercent(6)}</Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span>Training Costs (+/-$10K)</span>
-                        <Badge variant="outline">±{formatPercent(3)}</Badge>
-                      </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Return Metrics</h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm">3-Year ROI:</span>
+                      <span className="font-bold text-green-600">{Math.round(roiCalculations.roi)}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">Payback Period:</span>
+                      <span className="font-medium">
+                        {Math.floor(roiCalculations.paybackPeriod)}y{" "}
+                        {Math.round((roiCalculations.paybackPeriod % 1) * 12)}m
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">Net Present Value:</span>
+                      <span className="font-medium text-purple-600">
+                        ${Math.round(roiCalculations.netBenefit * 0.85).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">Risk-Adjusted ROI:</span>
+                      <span className="font-medium">{Math.round(roiCalculations.roi * 0.8)}%</span>
                     </div>
                   </div>
                 </div>
