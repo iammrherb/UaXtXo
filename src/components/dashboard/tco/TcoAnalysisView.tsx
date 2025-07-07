@@ -118,6 +118,17 @@ const EnhancedMetricCard: React.FC<MetricCardProps> = ({
   )
 }
 
+// Helper function for coverage colors (if needed)
+const getCoverageColor = (coveragePercent: number | undefined, coverageLevel?: any): string => {
+  if (coverageLevel === "Covered") return "bg-emerald-500/80 text-white"
+  if (coverageLevel === "Partial") return "bg-yellow-500/80 text-gray-800"
+  if (coverageLevel === "NotCovered") return "bg-red-500/80 text-white"
+  if (coveragePercent === undefined) return "bg-slate-700/50 text-slate-300"
+  if (coveragePercent >= 80) return "bg-emerald-500/80 text-white"
+  if (coveragePercent >= 50) return "bg-yellow-500/80 text-gray-800"
+  return "bg-red-500/80 text-white"
+}
+
 const TcoAnalysisView: React.FC = () => {
   const { selectedOrgSize, selectedIndustry, comparisonYears } = useDashboardSettings()
   const { getAllVendorIds, getVendor, isLoadingAllVendors } = useVendorData()
