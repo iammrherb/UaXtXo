@@ -25,6 +25,7 @@ import IndustryAnalysisView from "./industry-analysis-view"
 import EnhancedFeatureComparisonView from "./enhanced-feature-comparison-view"
 import ImplementationTimelineView from "./implementation-timeline-view"
 import MigrationPlanningView from "./migration-planning-view"
+import ROICalculatorView from "./roi-calculator-view"
 import {
   BarChart3,
   Calculator,
@@ -47,6 +48,7 @@ import {
   Star,
   CheckCircle2,
   MapPin,
+  Target,
 } from "lucide-react"
 
 const NAVIGATION_ITEMS = [
@@ -81,6 +83,12 @@ const NAVIGATION_ITEMS = [
     description: "Migration readiness and planning",
   },
   {
+    id: "roi-calculator",
+    label: "ROI Calculator",
+    icon: <Target className="h-4 w-4" />,
+    description: "Financial analysis and payback",
+  },
+  {
     id: "reports",
     label: "Reports",
     icon: <FileText className="h-4 w-4" />,
@@ -111,6 +119,8 @@ const COMPLIANCE_VIEWS = [
 const MIGRATION_VIEWS = [
   { id: "migration-planning", label: "Migration Planning", icon: <MapPin className="h-4 w-4" /> },
 ]
+
+const ROI_VIEWS = [{ id: "roi-calculator", label: "ROI Calculator", icon: <Target className="h-4 w-4" /> }]
 
 const REPORTS_VIEWS = [
   { id: "executive-report", label: "Executive Report", icon: <FileText className="h-4 w-4" /> },
@@ -198,6 +208,8 @@ export default function TCOAnalyzer() {
         return COMPLIANCE_VIEWS
       case "migration-planning":
         return MIGRATION_VIEWS
+      case "roi-calculator":
+        return ROI_VIEWS
       case "reports":
         return REPORTS_VIEWS
       default:
@@ -283,6 +295,14 @@ export default function TCOAnalyzer() {
             return <MigrationPlanningView selectedVendors={selectedVendors} results={results} config={configuration} />
           default:
             return <MigrationPlanningView selectedVendors={selectedVendors} results={results} config={configuration} />
+        }
+
+      case "roi-calculator":
+        switch (activeSubView) {
+          case "roi-calculator":
+            return <ROICalculatorView selectedVendors={selectedVendors} results={results} config={configuration} />
+          default:
+            return <ROICalculatorView selectedVendors={selectedVendors} results={results} config={configuration} />
         }
 
       case "reports":
