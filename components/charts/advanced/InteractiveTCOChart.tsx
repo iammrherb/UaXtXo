@@ -44,6 +44,9 @@ import {
   Maximize2,
   Minimize2,
   Layers,
+  ArrowLeftRight,
+  Grid3X3,
+  Columns2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -118,6 +121,12 @@ const InteractiveTCOChart: React.FC<InteractiveTCOChartProps> = ({
   const [selectedVendors, setSelectedVendors] = useState<string[]>([])
   const [costRange, setCostRange] = useState<[number, number]>([0, 1000000])
   const [animationSpeed, setAnimationSpeed] = useState(1000)
+  const [comparisonMode, setComparisonMode] = useState<"single" | "side-by-side" | "overlay">("single")
+  const [comparisonData, setComparisonData] = useState<any[]>([])
+  const [comparisonConfig, setComparisonConfig] = useState({
+    leftChart: { data: initialData, title: title, chartType: "bar" as const },
+    rightChart: { data: [], title: "Comparison", chartType: "bar" as const },
+  })
 
   // Navigation breadcrumbs
   const breadcrumbs = useMemo(() => {
@@ -619,6 +628,86 @@ const InteractiveTCOChart: React.FC<InteractiveTCOChartProps> = ({
     )
   }
 
+  const renderComparisonChart = (side: "left" | "right") => {
+    const chartConfig = side === "left" ? comparisonConfig.leftChart : comparisonConfig.rightChart
+    const data = chartConfig.data
+    const chartType = chartConfig.chartType
+
+    const commonProps = {
+      data: data,
+      margin: { top: 20, right: 30, left: 20, bottom: 5 },
+    }
+
+    switch (chartType) {
+      case "bar":
+        return (
+          <BarChart {...commonProps}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" strokeOpacity={0.3} />
+            <XAxis dataKey="name" stroke="#9CA3AF" fontSize={12} />
+            <YAxis stroke="#9CA3AF" fontSize={12} />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend />
+            <Bar dataKey="value" fill={GRADIENT_COLORS.portnox[0]} radius={[4, 4, 0, 0]} />
+          </BarChart>
+        )
+      case "pie":
+        return (
+          <PieChart {...commonProps}>
+            <Pie data={data} cx="50%" cy="50%" outerRadius={80} innerRadius={20} paddingAngle={2} dataKey="value">
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={CHART_GRADIENTS[index % CHART_GRADIENTS.length]} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+            <Legend />
+          </PieChart>
+        )
+      case "line":
+        return (
+          <LineChart {...commonProps}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" strokeOpacity={0.3} />
+            <XAxis dataKey="name" stroke="#9CA3AF" fontSize={12} />
+            <YAxis stroke="#9CA3AF" fontSize={12} />
+            <Tooltip content={<CustomTooltip />} />
+            <Line type="monotone" dataKey="value" stroke={GRADIENT_COLORS.portnox[0]} strokeWidth={2} />
+          </LineChart>
+        )
+      case "area":
+        return (
+          <AreaChart {...commonProps}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" strokeOpacity={0.3} />
+            <XAxis dataKey="name" stroke="#9CA3AF" fontSize={12} />
+            <YAxis stroke="#9CA3AF" fontSize={12} />
+            <Tooltip content={<CustomTooltip />} />
+            <Area type="monotone" dataKey="value" stroke={GRADIENT_COLORS.portnox[0]} fill="url(#colorPv)" />
+          </AreaChart>
+        )
+      default:
+        return null
+    }
+  }
+
+  const renderOverlayChart = () => {
+    const commonProps = {
+      data: currentLevelData,
+      margin: { top: 20, right: 30, left: 20, bottom: 5 },
+    }
+
+    return (
+      <ComposedChart {...commonProps}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#374151" strokeOpacity={0.3} />
+        <XAxis dataKey="name" stroke="#9CA3AF" fontSize={12} />
+        <YAxis stroke="#9CA3AF" fontSize={12} />
+        <Tooltip content={<CustomTooltip />} />
+        <Legend />
+        <Bar dataKey="value" fill={GRADIENT_COLORS.portnox[0]} radius={[4, 4, 0, 0]} />
+        {comparisonData.length > 0 && (
+          <Line type="monotone" dataKey="comparisonValue" stroke={GRADIENT_COLORS.cisco[0]} strokeWidth={2} />
+        )}
+      </ComposedChart>
+    )
+  }
+
   return (
     <Card
       className={cn(
@@ -686,6 +775,21 @@ const InteractiveTCOChart: React.FC<InteractiveTCOChartProps> = ({
                 </TabsTrigger>
                 <TabsTrigger value="composed" className="text-xs">
                   <Layers className="w-3 h-3" />
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            {/* Comparison Mode Toggle */}
+            <Tabs value={comparisonMode} onValueChange={(value) => setComparisonMode(value as any)}>
+              <TabsList className="bg-slate-800 border-slate-700">
+                <TabsTrigger value="single" className="text-xs">
+                  <Grid3X3 className="w-3 h-3" />
+                </TabsTrigger>
+                <TabsTrigger value="side-by-side" className="text-xs">
+                  <Columns2 className="w-3 h-3" />
+                </TabsTrigger>
+                <TabsTrigger value="overlay" className="text-xs">
+                  <ArrowLeftRight className="w-3 h-3" />
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -758,20 +862,41 @@ const InteractiveTCOChart: React.FC<InteractiveTCOChartProps> = ({
 
         {/* Chart Container */}
         <div className={cn("w-full", isExpanded ? "h-[calc(100vh-300px)]" : "h-[400px]")}>
-          <ResponsiveContainer width="100%" height="100%">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`${currentLevel}-${currentLevelInfo.chartType}-${filteredData.length}`}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3 }}
-                className="w-full h-full"
-              >
-                {renderChart()}
-              </motion.div>
-            </AnimatePresence>
-          </ResponsiveContainer>
+          {comparisonMode === "single" ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${currentLevel}-${currentLevelInfo.chartType}-${filteredData.length}`}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full h-full"
+                >
+                  {renderChart()}
+                </motion.div>
+              </AnimatePresence>
+            </ResponsiveContainer>
+          ) : comparisonMode === "side-by-side" ? (
+            <div className="grid grid-cols-2 gap-4 h-full">
+              <div className="border border-slate-700 rounded-lg p-2">
+                <h4 className="text-sm font-medium text-slate-300 mb-2">{comparisonConfig.leftChart.title}</h4>
+                <ResponsiveContainer width="100%" height="90%">
+                  {renderComparisonChart("left")}
+                </ResponsiveContainer>
+              </div>
+              <div className="border border-slate-700 rounded-lg p-2">
+                <h4 className="text-sm font-medium text-slate-300 mb-2">{comparisonConfig.rightChart.title}</h4>
+                <ResponsiveContainer width="100%" height="90%">
+                  {renderComparisonChart("right")}
+                </ResponsiveContainer>
+              </div>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              {renderOverlayChart()}
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* Enhanced Chart Insights */}
