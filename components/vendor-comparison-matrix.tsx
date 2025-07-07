@@ -1,9 +1,7 @@
 "use client"
 
 import { CardDescription } from "@/components/ui/card"
-
 import { useMemo } from "react"
-
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -182,6 +180,88 @@ const featureCategoriesShort = {
   Network: "network",
   Advanced: "advanced",
   Compliance: "compliance",
+}
+
+// Vendor Scorecard Component
+export function VendorScorecard({ vendorId, data, rank }: { vendorId: string; data: any; rank: number }) {
+  const vendor = ComprehensiveVendorDatabase[vendorId]
+
+  if (!vendor || !data) {
+    return null
+  }
+
+  return (
+    <Card className={`${vendorId === "portnox" ? "ring-2 ring-primary" : ""}`}>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold">{rank}</div>
+            <span>{vendor.name}</span>
+            {vendorId === "portnox" && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
+          </div>
+          <Badge variant="outline">{data.overallScore}/100</Badge>
+        </CardTitle>
+        <CardDescription>{vendor.category}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          {Object.entries(SCORING_CRITERIA).map(([key, criteria]) => (
+            <div key={key} className="space-y-1">
+              <div className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-1">
+                  {criteria.icon}
+                  {criteria.name.split(" ")[0]}
+                </span>
+                <span className="font-medium">{data.scores[key]}</span>
+              </div>
+              <Progress value={data.scores[key]} className="h-2" />
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="font-semibold text-green-600">Strengths</h4>
+          <ul className="text-sm space-y-1">
+            {Object.entries(data.scores)
+              .filter(([_, score]) => score >= 80)
+              .map(([key, score]) => (
+                <li key={key} className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3 w-3 text-green-500" />
+                  {SCORING_CRITERIA[key as keyof typeof SCORING_CRITERIA].name} ({score})
+                </li>
+              ))}
+          </ul>
+        </div>
+
+        {Object.entries(data.scores).some(([_, score]) => score < 70) && (
+          <div className="space-y-2">
+            <h4 className="font-semibold text-orange-600">Areas for Improvement</h4>
+            <ul className="text-sm space-y-1">
+              {Object.entries(data.scores)
+                .filter(([_, score]) => score < 70)
+                .map(([key, score]) => (
+                  <li key={key} className="flex items-center gap-2">
+                    <AlertTriangle className="h-3 w-3 text-orange-500" />
+                    {SCORING_CRITERIA[key as keyof typeof SCORING_CRITERIA].name} ({score})
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="pt-2 border-t">
+          <div className="flex justify-between text-sm">
+            <span>Market Position:</span>
+            <Badge variant="outline">{vendor.marketPosition}</Badge>
+          </div>
+          <div className="flex justify-between text-sm mt-1">
+            <span>Category:</span>
+            <Badge variant="secondary">{vendor.category}</Badge>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 export default function VendorComparisonMatrix({
@@ -670,56 +750,8 @@ export default function VendorComparisonMatrix({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {filteredVendors.slice(0, 3).map((vendor) => (
-              <Card key={vendor.id} className={vendor.id === "portnox" ? "ring-2 ring-primary" : ""}>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    {vendor.vendor.name}
-                    {vendor.id === "portnox" && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
-                  </CardTitle>
-                  <CardDescription>Overall Score: {vendor.overallScore}/100</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-green-600">Strengths</h4>
-                    <ul className="text-sm space-y-1">
-                      {Object.entries(vendor.scores)
-                        .filter(([_, score]) => score >= 80)
-                        .map(([key, score]) => (
-                          <li key={key} className="flex items-center gap-2">
-                            <CheckCircle2 className="h-3 w-3 text-green-500" />
-                            {SCORING_CRITERIA[key as keyof typeof SCORING_CRITERIA].name} ({score})
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-orange-600">Areas for Improvement</h4>
-                    <ul className="text-sm space-y-1">
-                      {Object.entries(vendor.scores)
-                        .filter(([_, score]) => score < 70)
-                        .map(([key, score]) => (
-                          <li key={key} className="flex items-center gap-2">
-                            <AlertTriangle className="h-3 w-3 text-orange-500" />
-                            {SCORING_CRITERIA[key as keyof typeof SCORING_CRITERIA].name} ({score})
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-
-                  <div className="pt-2 border-t">
-                    <div className="flex justify-between text-sm">
-                      <span>Market Position:</span>
-                      <Badge variant="outline">{vendor.vendor.marketPosition}</Badge>
-                    </div>
-                    <div className="flex justify-between text-sm mt-1">
-                      <span>Category:</span>
-                      <Badge variant="secondary">{vendor.vendor.category}</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {filteredVendors.slice(0, 3).map((vendor, index) => (
+              <VendorScorecard key={vendor.id} vendorId={vendor.id} data={vendor} rank={index + 1} />
             ))}
           </div>
         </TabsContent>
