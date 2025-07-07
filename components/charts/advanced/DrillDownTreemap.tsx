@@ -43,14 +43,14 @@ const COLOR_SCHEMES = {
   security: ["#DC2626", "#EA580C", "#D97706", "#CA8A04", "#65A30D", "#16A34A"],
 }
 
-const DrillDownTreemap: React.FC<DrillDownTreemapProps> = ({ 
-  data, 
-  title, 
-  className, 
+const DrillDownTreemap: React.FC<DrillDownTreemapProps> = ({
+  data,
+  title,
+  className,
   colorScheme = "default",
   enableFiltering = true,
   enableSearch = true,
-  enableExport = true
+  enableExport = true,
 }) => {
   const [currentPath, setCurrentPath] = useState<string[]>([])
   const [isExpanded, setIsExpanded] = useState(false)
@@ -82,7 +82,7 @@ const DrillDownTreemap: React.FC<DrillDownTreemapProps> = ({
   const availableCategories = useMemo(() => {
     const categories = new Set<string>()
     const collectCategories = (nodes: TreemapNode[]) => {
-      nodes.forEach(node => {
+      nodes.forEach((node) => {
         if (node.category) categories.add(node.category)
         if (node.children) collectCategories(node.children)
       })
@@ -97,28 +97,25 @@ const DrillDownTreemap: React.FC<DrillDownTreemapProps> = ({
 
     // Search filter
     if (searchTerm && enableSearch) {
-      filtered = filtered.filter(item => 
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.category?.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.category?.toLowerCase().includes(searchTerm.toLowerCase()),
       )
     }
 
     // Category filter
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter(item => 
-        item.category && selectedCategories.includes(item.category)
-      )
+      filtered = filtered.filter((item) => item.category && selectedCategories.includes(item.category))
     }
 
     // Value range filter
-    filtered = filtered.filter(item => 
-      item.value >= valueRange[0] && item.value <= valueRange[1]
-    )
+    filtered = filtered.filter((item) => item.value >= valueRange[0] && item.value <= valueRange[1])
 
     // Trend filter
     if (showTrendOnly) {
-      filtered = filtered.filter(item => item.trend && item.trend !== "stable")
+      filtered = filtered.filter((item) => item.trend && item.trend !== "stable")
     }
 
     // Sort
@@ -174,16 +171,16 @@ const DrillDownTreemap: React.FC<DrillDownTreemapProps> = ({
         valueRange,
         sortBy,
         sortOrder,
-        showTrendOnly
+        showTrendOnly,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
-    
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" })
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
+    const a = document.createElement("a")
     a.href = url
-    a.download = `treemap-${title.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.json`
+    a.download = `treemap-${title.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}.json`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -249,12 +246,14 @@ const DrillDownTreemap: React.FC<DrillDownTreemapProps> = ({
 
             {data.metadata && Object.keys(data.metadata).length > 0 && (
               <div className="mt-2 pt-2 border-t border-slate-700">
-                {Object.entries(data.metadata).slice(0, 3).map(([key, value]) => (
-                  <div key={key} className="flex justify-between text-xs">
-                    <span className="text-slate-400 capitalize">{key}:</span>
-                    <span className="text-slate-300">{String(value)}</span>
-                  </div>
-                ))}
+                {Object.entries(data.metadata)
+                  .slice(0, 3)
+                  .map(([key, value]) => (
+                    <div key={key} className="flex justify-between text-xs">
+                      <span className="text-slate-400 capitalize">{key}:</span>
+                      <span className="text-slate-300">{String(value)}</span>
+                    </div>
+                  ))}
               </div>
             )}
 
@@ -317,11 +316,11 @@ const DrillDownTreemap: React.FC<DrillDownTreemapProps> = ({
               </text>
             )}
             {payload.trend && width > 100 && height > 80 && (
-              <text 
-                x={x + 8} 
-                y={y + height - 8} 
-                textAnchor="start" 
-                fill={payload.trend === "up" ? "#10B981" : payload.trend === "down" ? "#EF4444" : "#6B7280"} 
+              <text
+                x={x + 8}
+                y={y + height - 8}
+                textAnchor="start"
+                fill={payload.trend === "up" ? "#10B981" : payload.trend === "down" ? "#EF4444" : "#6B7280"}
                 fontSize="12"
               >
                 {payload.trend === "up" ? "↗" : payload.trend === "down" ? "↘" : "→"}
@@ -442,11 +441,7 @@ const DrillDownTreemap: React.FC<DrillDownTreemapProps> = ({
           {/* Show Trending Only */}
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <Checkbox
-                id="trending-only"
-                checked={showTrendOnly}
-                onCheckedChange={setShowTrendOnly}
-              />
+              <Checkbox id="trending-only" checked={showTrendOnly} onCheckedChange={setShowTrendOnly} />
               <Label htmlFor="trending-only" className="text-slate-300">
                 Show trending items only
               </Label>
@@ -534,9 +529,7 @@ const DrillDownTreemap: React.FC<DrillDownTreemapProps> = ({
 
       <CardContent className="pt-0">
         {/* Filters Panel */}
-        <AnimatePresence>
-          {renderFilters()}
-        </AnimatePresence>
+        <AnimatePresence>{renderFilters()}</AnimatePresence>
 
         {/* Treemap Container */}
         <div className={cn("w-full", isExpanded ? "h-[calc(100vh-300px)]" : "h-[500px]")}>
@@ -601,4 +594,26 @@ const DrillDownTreemap: React.FC<DrillDownTreemapProps> = ({
           <div className="flex flex-wrap gap-2">
             {processedData.slice(0, 8).map((item, index) => (
               <div key={item.name} className="flex items-center gap-2 text-sm">
-                <div className="w-3 h-3 rounded" style={{ backgroundColor: item.color }} />\
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: item.color }} />
+                <span className="text-slate-300">{item.name}</span>
+                <span className="text-slate-400">(${(item.value / 1000).toFixed(0)}K)</span>
+                {item.hasChildren && <ChevronRight className="w-3 h-3 text-blue-400" />}
+              </div>
+            ))}
+            {processedData.length > 8 && (
+              <span className="text-slate-400 text-sm">+{processedData.length - 8} more</span>
+            )}
+          </div>
+
+          {/* Instructions */}
+          <div className="text-xs text-slate-400 bg-slate-800/30 rounded p-2">
+            💡 <strong>Tips:</strong> Click on rectangles with arrows to drill down. Use filters to focus on specific
+            categories or value ranges. Hover over items for detailed information.
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+export default DrillDownTreemap
