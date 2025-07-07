@@ -24,6 +24,7 @@ import SecurityRiskAssessmentView from "./security-risk-assessment-view"
 import IndustryAnalysisView from "./industry-analysis-view"
 import EnhancedFeatureComparisonView from "./enhanced-feature-comparison-view"
 import ImplementationTimelineView from "./implementation-timeline-view"
+import MigrationPlanningView from "./migration-planning-view"
 import {
   BarChart3,
   Calculator,
@@ -45,6 +46,7 @@ import {
   X,
   Star,
   CheckCircle2,
+  MapPin,
 } from "lucide-react"
 
 const NAVIGATION_ITEMS = [
@@ -73,6 +75,12 @@ const NAVIGATION_ITEMS = [
     description: "Risk assessment and compliance",
   },
   {
+    id: "migration-planning",
+    label: "Migration Planning",
+    icon: <MapPin className="h-4 w-4" />,
+    description: "Migration readiness and planning",
+  },
+  {
     id: "reports",
     label: "Reports",
     icon: <FileText className="h-4 w-4" />,
@@ -98,6 +106,10 @@ const VENDOR_COMPARISON_VIEWS = [
 const COMPLIANCE_VIEWS = [
   { id: "compliance-risk", label: "Compliance Overview", icon: <Shield className="h-4 w-4" /> },
   { id: "security-risk-assessment", label: "Security Assessment", icon: <AlertTriangle className="h-4 w-4" /> },
+]
+
+const MIGRATION_VIEWS = [
+  { id: "migration-planning", label: "Migration Planning", icon: <MapPin className="h-4 w-4" /> },
 ]
 
 const REPORTS_VIEWS = [
@@ -184,6 +196,8 @@ export default function TCOAnalyzer() {
         return VENDOR_COMPARISON_VIEWS
       case "compliance-risk":
         return COMPLIANCE_VIEWS
+      case "migration-planning":
+        return MIGRATION_VIEWS
       case "reports":
         return REPORTS_VIEWS
       default:
@@ -261,6 +275,14 @@ export default function TCOAnalyzer() {
             return <SecurityRiskAssessmentView results={results} config={configuration} />
           default:
             return <ComplianceRiskView results={results} config={configuration} />
+        }
+
+      case "migration-planning":
+        switch (activeSubView) {
+          case "migration-planning":
+            return <MigrationPlanningView selectedVendors={selectedVendors} results={results} config={configuration} />
+          default:
+            return <MigrationPlanningView selectedVendors={selectedVendors} results={results} config={configuration} />
         }
 
       case "reports":
