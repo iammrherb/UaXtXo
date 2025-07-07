@@ -95,8 +95,8 @@ export function PortnoxPlatformView() {
       <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20">
         <Star className="h-4 w-4 text-green-600" />
         <AlertDescription className="text-green-800 dark:text-green-200">
-          <strong>Portnox CLEAR Platform:</strong> The industry's first cloud-native NAC solution 
-          delivering Zero Trust security with 7-day deployment and 68% lower TCO than traditional alternatives.
+          <strong>Portnox CLEAR Platform:</strong> The industry's first cloud-native NAC solution delivering Zero Trust
+          security with 7-day deployment and 68% lower TCO than traditional alternatives.
         </AlertDescription>
       </Alert>
 
@@ -143,7 +143,7 @@ export function PortnoxPlatformView() {
                       <Progress value={capability.score} className="flex-1" />
                       <span className="font-bold text-blue-600">{capability.score}/100</span>
                     </div>
-                    
+
                     <div>
                       <h4 className="font-semibold mb-2">Key Features:</h4>
                       <ul className="space-y-1">
@@ -196,9 +196,7 @@ export function PortnoxPlatformView() {
                     <div key={phase.phase} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-semibold">{phase.phase}</h4>
-                        <Badge variant="outline">
-                          {phase.traditional - phase.portnox} days saved
-                        </Badge>
+                        <Badge variant="outline">{phase.traditional - phase.portnox} days saved</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">{phase.description}</p>
                       <div className="grid grid-cols-2 gap-4 text-sm">
@@ -231,7 +229,7 @@ export function PortnoxPlatformView() {
                   { day: 4, title: "Integration", tasks: ["AD/LDAP sync", "SIEM connection"] },
                   { day: 5, title: "Testing", tasks: ["Pilot group", "Validation"] },
                   { day: 6, title: "Rollout", tasks: ["Phased deployment", "Monitoring"] },
-                  { day: 7, title: "Go-Live", tasks: ["Full production", "Support handoff"] }
+                  { day: 7, title: "Go-Live", tasks: ["Full production", "Support handoff"] },
                 ].map((day) => (
                   <div key={day.day} className="text-center">
                     <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -291,7 +289,7 @@ export function PortnoxPlatformView() {
                     { pillar: "Network", score: 94, icon: Wifi },
                     { pillar: "Application", score: 91, icon: Server },
                     { pillar: "Data", score: 96, icon: Lock },
-                    { pillar: "Visibility", score: 98, icon: Eye }
+                    { pillar: "Visibility", score: 98, icon: Eye },
                   ].map((pillar) => (
                     <div key={pillar.pillar} className="text-center p-4 border rounded-lg">
                       <pillar.icon className="h-8 w-8 mx-auto mb-2 text-blue-600" />
@@ -319,14 +317,14 @@ export function PortnoxPlatformView() {
                   <div className="text-3xl font-bold text-green-600">92%</div>
                   <p className="text-sm text-muted-foreground">Average risk reduction</p>
                 </div>
-                
+
                 <div className="text-center p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
                   <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
                   <h4 className="font-semibold">Visibility Improvement</h4>
                   <div className="text-3xl font-bold text-blue-600">98%</div>
                   <p className="text-sm text-muted-foreground">Network visibility</p>
                 </div>
-                
+
                 <div className="text-center p-4 border rounded-lg bg-purple-50 dark:bg-purple-950/20">
                   <Zap className="h-8 w-8 mx-auto mb-2 text-purple-600" />
                   <h4 className="font-semibold">Response Time</h4>
@@ -385,7 +383,7 @@ export function PortnoxPlatformView() {
                       <p className="text-sm text-muted-foreground">Modern queries</p>
                     </div>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-semibold mb-2">Automation Features:</h4>
                     <ul className="space-y-1 text-sm">
@@ -434,12 +432,46 @@ export function PortnoxPlatformView() {
                     </Button>
                   ))}
                 </div>
-                
+
                 <div className="border rounded-lg p-6 bg-slate-50 dark:bg-slate-900 min-h-[400px]">
                   <div className="text-center py-20">
                     <Globe className="h-16 w-16 mx-auto mb-4 text-blue-600" />
                     <h3 className="text-xl font-semibold mb-2">Interactive Demo</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Experience the Portnox CLEAR {activeDemo} interface
-                    </p>
-                    <Button size="lg" className="\
+                    <p className="text-muted-foreground mb-4">Experience the Portnox CLEAR {activeDemo} interface</p>
+                    <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                      Launch Live Demo
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Demo CTA */}
+          <Card className="border-2 border-green-500 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                <Star className="h-5 w-5" />
+                Ready to Experience Portnox CLEAR?
+              </CardTitle>
+              <CardDescription>Get hands-on with our 24-hour proof of concept</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button size="lg" className="bg-green-600 hover:bg-green-700">
+                  Start 24-Hour POC
+                </Button>
+                <Button variant="outline" size="lg">
+                  Schedule Demo
+                </Button>
+                <Button variant="ghost" size="lg">
+                  Contact Sales
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
