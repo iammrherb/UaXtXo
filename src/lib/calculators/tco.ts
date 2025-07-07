@@ -889,7 +889,7 @@ function calculateDevicePricing(vendor: EnhancedVendorData, devices: number): nu
 }
 
 // Calculate implementation costs
-function calculateImplementationCosts(vendor: EnhancedVendorData, devices: number, industry: string): number {
+function calculateImplementationCostsLegacy(vendor: EnhancedVendorData, devices: number, industry: string): number {
   const industryFactor = industryFactors[industry]?.complianceMultiplier || 1.0
 
   const baseCost = vendor.pricing.implementation.base_cost
@@ -1009,7 +1009,7 @@ export function calculateTotalCostOfOwnership(
 } {
   // Calculate base costs
   const softwareCost = calculateDevicePricing(vendor, devices)
-  const implementationCost = calculateImplementationCosts(vendor, devices, industry)
+  const implementationCost = calculateImplementationCostsLegacy(vendor, devices, industry)
   const infrastructureCost = includeInfrastructure ? calculateInfrastructureCosts(vendor, devices) : 0
   const annualOperationalCost = calculateAnnualOperationalCosts(vendor, devices, industry)
 
@@ -1075,7 +1075,7 @@ export function calculateTotalCostOfOwnership(
 }
 
 // Calculate full TCO for a specific vendor
-export function calculateFullTCOForVendor(
+export function calculateFullTCOForVendorLegacy(
   vendorId: string,
   orgConfig: {
     devices: number
@@ -1163,7 +1163,7 @@ export function calculateFullTCOForVendor(
 }
 
 // Compare multiple vendors
-export function compareMultipleVendorsTCO(
+export function compareMultipleVendorsTCOLegacy(
   vendorIds: string[],
   orgConfig: {
     devices: number
@@ -1183,7 +1183,7 @@ export function compareMultipleVendorsTCO(
 
   vendorIds.forEach((vendorId) => {
     try {
-      const result = calculateFullTCOForVendor(vendorId, orgConfig, analysisConfig, pricingConfig)
+      const result = calculateFullTCOForVendorLegacy(vendorId, orgConfig, analysisConfig, pricingConfig)
       results.push(result)
     } catch (error) {
       console.error(`Error calculating TCO for vendor ${vendorId}:`, error)
@@ -1240,7 +1240,7 @@ export function getVendorRecommendations(
     let score = 0
 
     // Cost efficiency (lower is better)
-    const tco = calculateFullTCOForVendor(vendorId, orgConfig, { years: 3 })
+    const tco = calculateFullTCOForVendorLegacy(vendorId, orgConfig, { years: 3 })
     const costScore = Math.max(0, 100 - tco.year3 / 1000) // Normalize cost score
 
     // Security score
@@ -1266,4 +1266,330 @@ export function getVendorRecommendations(
     .sort(([, a], [, b]) => (b as number) - (a as number))
     .slice(0, 3)
     .map(([vendorId]) => vendorId)
+}
+
+import type { VendorId, NewVendorData } from "@/lib/vendors/data"
+import { getVendorDataById } from "@/lib/vendors/data"
+import type { OrgSizeId, IndustryId } from "@/types/common"
+
+// Organization size configurations
+export const ORG_SIZE_CONFIGS = {
+  small_business: { devices: 250, users: 150, sites: 2 },
+  mid_market: { devices: 1500, users: 800, sites: 5 },
+  enterprise: { devices: 7500, users: 4000, sites: 15 },
+  global_enterprise: { devices: 25000, users: 15000, sites: 50 },
+} as const
+
+// Industry risk and compliance factors
+export const INDUSTRY_FACTORS = {
+  healthcare: {
+    riskMultiplier: 2.2,
+    complianceMultiplier: 1.8,
+    breachCostAverage: 10930000,
+    regulatoryPressure: "critical",
+  },
+  financial_services: {
+    riskMultiplier: 2.5,
+    complianceMultiplier: 2.0,
+    breachCostAverage: 5850000,
+    regulatoryPressure: "critical",
+  },
+  manufacturing: {
+    riskMultiplier: 1.8,
+    complianceMultiplier: 1.3,
+    breachCostAverage: 4990000,
+    regulatoryPressure: "high",
+  },
+  retail: {
+    riskMultiplier: 1.5,
+    complianceMultiplier: 1.2,
+    breachCostAverage: 3280000,
+    regulatoryPressure: "medium",
+  },
+  technology: {
+    riskMultiplier: 1.6,
+    complianceMultiplier: 1.1,
+    breachCostAverage: 5040000,
+    regulatoryPressure: "medium",
+  },
+  education: {
+    riskMultiplier: 1.2,
+    complianceMultiplier: 0.9,
+    breachCostAverage: 3790000,
+    regulatoryPressure: "low",
+  },
+  government: {
+    riskMultiplier: 3.0,
+    complianceMultiplier: 2.2,
+    breachCostAverage: 4910000,
+    regulatoryPressure: "critical",
+  },
+  energy_utilities: {
+    riskMultiplier: 2.8,
+    complianceMultiplier: 1.9,
+    breachCostAverage: 6720000,
+    regulatoryPressure: "critical",
+  },
+} as const
+
+export interface TCOResultBreakdown {
+  software: number
+  hardware: number
+  implementation: number
+  operational: number
+  support: number
+  hidden: number
+}
+
+export interface ROIMetrics {
+  paybackPeriodMonths: number
+  netPresentValue: number
+  internalRateOfReturn: number
+  totalBenefits: number
+  benefitCostRatio: number
+}
+
+export interface TCOResult {
+  vendorId: VendorId
+  vendorName: string
+  totalTCO: number
+  breakdown: TCOResultBreakdown
+  roiMetrics: ROIMetrics
+  riskReduction: {
+    breachProbabilityReduction: number
+    expectedAnnualLoss: number
+    riskAdjustedSavings: number
+  }
+  complianceMetrics: {
+    coverageScore: number
+    automationLevel: number
+    auditReadiness: number
+  }
+  operationalMetrics: {
+    fteReduction: number
+    efficiencyGains: number
+    maintenanceReduction: number
+  }
+}
+
+function calculateLicensingCosts(vendor: NewVendorData, orgSize: OrgSizeId, projectionYears: number): number {
+  const orgConfig = ORG_SIZE_CONFIGS[orgSize]
+  const devices = orgConfig.devices
+  const users = orgConfig.users
+
+  // Find appropriate pricing tier
+  let monthlyPrice = 0
+  let annualDiscount = 0
+
+  if (vendor.pricingTiers) {
+    for (const tier of vendor.pricingTiers) {
+      if (tier.orgSizeTarget?.includes(orgSize)) {
+        monthlyPrice = tier.pricePerDevicePerMonth || 0
+        annualDiscount = tier.annualDiscountPercent || 0
+        break
+      }
+      if (tier.userRange) {
+        const [min, max] = tier.userRange
+        if (users >= min && (max === null || users <= max)) {
+          monthlyPrice = tier.pricePerUserPerMonth || 0
+          annualDiscount = tier.annualDiscountPercent || 0
+          break
+        }
+      }
+    }
+  }
+
+  const annualCost = monthlyPrice * devices * 12 * (1 - annualDiscount / 100)
+  return annualCost * projectionYears
+}
+
+function calculateImplementationCostsNew(vendor: NewVendorData, orgSize: OrgSizeId, industry: IndustryId): number {
+  const orgConfig = ORG_SIZE_CONFIGS[orgSize]
+  const industryFactor = INDUSTRY_FACTORS[industry]
+
+  const baseCost = vendor.tcoFactors.licensingCostPerYear * 0.3 // 30% of annual licensing
+  const professionalServices = baseCost * vendor.implementation.professionalServicesCostFactor
+  const training = vendor.tcoFactors.trainingCostInitial * industryFactor.complianceMultiplier
+
+  return baseCost + professionalServices + training
+}
+
+function calculateOperationalCosts(
+  vendor: NewVendorData,
+  orgSize: OrgSizeId,
+  industry: IndustryId,
+  projectionYears: number,
+): number {
+  const orgConfig = ORG_SIZE_CONFIGS[orgSize]
+  const industryFactor = INDUSTRY_FACTORS[industry]
+
+  // Personnel costs
+  const avgSalary = 120000
+  const fteRequired = vendor.tcoFactors.personnelCostFactor
+  const annualPersonnelCost = fteRequired * avgSalary * industryFactor.complianceMultiplier
+
+  // Support and maintenance
+  const annualSupportCost = vendor.tcoFactors.licensingCostPerYear * vendor.tcoFactors.supportCostFactor
+
+  // Hardware refresh and maintenance
+  const annualHardwareCost = vendor.tcoFactors.hardwareCostPerYear
+
+  return (annualPersonnelCost + annualSupportCost + annualHardwareCost) * projectionYears
+}
+
+function calculateHiddenCosts(
+  vendor: NewVendorData,
+  orgSize: OrgSizeId,
+  industry: IndustryId,
+  projectionYears: number,
+): number {
+  const orgConfig = ORG_SIZE_CONFIGS[orgSize]
+  const industryFactor = INDUSTRY_FACTORS[industry]
+
+  // Downtime costs during implementation
+  const downtimeHours = vendor.implementation.averageDeploymentTimeDays * 0.5 // Half day downtime per deployment day
+  const downtimeCostPerHour = 5000 * industryFactor.riskMultiplier
+  const downtimeCost = downtimeHours * downtimeCostPerHour
+
+  // Integration complexity costs
+  const integrationCost = (vendor.tcoFactors.licensingCostPerYear * vendor.tcoFactors.hiddenCostFactor) / 100
+
+  // Opportunity costs
+  const opportunityCost = vendor.implementation.averageDeploymentTimeDays * 1000 // $1000 per day delay
+
+  return (downtimeCost + integrationCost + opportunityCost) * (projectionYears / 3)
+}
+
+function calculateROIMetrics(
+  vendor: NewVendorData,
+  totalCosts: number,
+  orgSize: OrgSizeId,
+  industry: IndustryId,
+  projectionYears: number,
+): ROIMetrics {
+  const orgConfig = ORG_SIZE_CONFIGS[orgSize]
+  const industryFactor = INDUSTRY_FACTORS[industry]
+
+  // Risk reduction benefits
+  const breachProbabilityReduction = vendor.roiFactors.incidentReductionPercent / 100
+  const expectedAnnualLoss = industryFactor.breachCostAverage * 0.28 // 28% annual breach probability
+  const riskReductionBenefit = expectedAnnualLoss * breachProbabilityReduction * projectionYears
+
+  // Operational efficiency benefits
+  const operationalSavings =
+    ((orgConfig.devices * 50 * vendor.roiFactors.operationalEfficiencyGainPercent) / 100) * projectionYears
+
+  // Compliance automation benefits
+  const complianceSavings =
+    orgConfig.devices * 25 * vendor.roiFactors.complianceAutomationSavingsFactor * projectionYears
+
+  const totalBenefits = riskReductionBenefit + operationalSavings + complianceSavings
+  const netPresentValue = totalBenefits - totalCosts
+  const benefitCostRatio = totalCosts > 0 ? totalBenefits / totalCosts : 0
+  const paybackPeriodMonths =
+    vendor.roiFactors.avgPaybackPeriodMonths ||
+    (totalBenefits > 0 ? Math.max(1, (totalCosts / totalBenefits) * 12) : 36)
+
+  return {
+    paybackPeriodMonths,
+    netPresentValue,
+    internalRateOfReturn: benefitCostRatio > 1 ? (benefitCostRatio - 1) * 100 : 0,
+    totalBenefits,
+    benefitCostRatio,
+  }
+}
+
+export function calculateFullTCOForVendorNew(
+  vendorId: VendorId,
+  orgSizeId: OrgSizeId,
+  industryId: IndustryId,
+  projectionYears: number,
+): TCOResult | null {
+  const vendor = getVendorDataById(vendorId)
+  if (!vendor) {
+    console.warn(`Vendor ${vendorId} not found`)
+    return null
+  }
+
+  const orgConfig = ORG_SIZE_CONFIGS[orgSizeId]
+  const industryFactor = INDUSTRY_FACTORS[industryId]
+
+  // Calculate cost components
+  const softwareCosts = calculateLicensingCosts(vendor, orgSizeId, projectionYears)
+  const hardwareCosts = vendor.tcoFactors.hardwareCostPerYear * projectionYears
+  const implementationCosts = calculateImplementationCostsNew(vendor, orgSizeId, industryId)
+  const operationalCosts = calculateOperationalCosts(vendor, orgSizeId, industryId, projectionYears)
+  const supportCosts = softwareCosts * vendor.tcoFactors.supportCostFactor
+  const hiddenCosts = calculateHiddenCosts(vendor, orgSizeId, industryId, projectionYears)
+
+  const breakdown: TCOResultBreakdown = {
+    software: softwareCosts,
+    hardware: hardwareCosts,
+    implementation: implementationCosts,
+    operational: operationalCosts,
+    support: supportCosts,
+    hidden: hiddenCosts,
+  }
+
+  const totalTCO = Object.values(breakdown).reduce((sum, cost) => sum + cost, 0)
+
+  // Calculate ROI metrics
+  const roiMetrics = calculateROIMetrics(vendor, totalTCO, orgSizeId, industryId, projectionYears)
+
+  // Risk reduction metrics
+  const breachProbabilityReduction = vendor.roiFactors.incidentReductionPercent
+  const expectedAnnualLoss = industryFactor.breachCostAverage * 0.28
+  const riskAdjustedSavings = expectedAnnualLoss * (breachProbabilityReduction / 100) * projectionYears
+
+  // Compliance metrics
+  const avgComplianceCoverage =
+    vendor.complianceSupport.reduce((sum, comp) => sum + comp.coveragePercent, 0) / vendor.complianceSupport.length
+
+  // Operational metrics
+  const fteReduction = 2.0 - vendor.tcoFactors.personnelCostFactor // Baseline 2.0 FTE
+  const efficiencyGains = vendor.roiFactors.operationalEfficiencyGainPercent
+  const maintenanceReduction =
+    vendor.implementation.complexityLevel === "low" ? 80 : vendor.implementation.complexityLevel === "medium" ? 60 : 40
+
+  return {
+    vendorId,
+    vendorName: vendor.name,
+    totalTCO,
+    breakdown,
+    roiMetrics,
+    riskReduction: {
+      breachProbabilityReduction,
+      expectedAnnualLoss,
+      riskAdjustedSavings,
+    },
+    complianceMetrics: {
+      coverageScore: avgComplianceCoverage,
+      automationLevel: vendor.roiFactors.complianceAutomationSavingsFactor * 100,
+      auditReadiness: avgComplianceCoverage * 0.9,
+    },
+    operationalMetrics: {
+      fteReduction,
+      efficiencyGains,
+      maintenanceReduction,
+    },
+  }
+}
+
+export function compareMultipleVendorsTCO(
+  vendorIds: VendorId[],
+  orgSizeId: OrgSizeId,
+  industryId: IndustryId,
+  projectionYears: number,
+): TCOResult[] {
+  const results: TCOResult[] = []
+
+  for (const vendorId of vendorIds) {
+    const result = calculateFullTCOForVendorNew(vendorId, orgSizeId, industryId, projectionYears)
+    if (result) {
+      results.push(result)
+    }
+  }
+
+  // Sort by total TCO (ascending)
+  return results.sort((a, b) => a.totalTCO - b.totalTCO)
 }
