@@ -5,17 +5,11 @@ import { useMemo, useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { useDashboardSettings } from "@/context/DashboardContext"
 import { useVendorData, type VendorId } from "@/hooks/useVendorData"
-import {
-  useTcoCalculator,
-  type TCOResult,
-  type TCOResultBreakdown,
-  calculatePortnoxTCO,
-  getCompetitorComparisons,
-} from "@/hooks/useTcoCalculator"
+import { useTcoCalculator, type TCOResult, type TCOResultBreakdown } from "@/hooks/useTcoCalculator"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell } from "recharts"
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts"
 import { cn } from "@/lib/utils"
 import {
   DollarSign,
@@ -125,40 +119,13 @@ const EnhancedMetricCard: React.FC<MetricCardProps> = ({
 }
 
 const TcoAnalysisView: React.FC = () => {
-  const { selectedOrgSize, selectedIndustry, comparisonYears, devices, users, portnoxAddons, portnoxBasePrice } =
-    useDashboardSettings()
+  const { selectedOrgSize, selectedIndustry, comparisonYears } = useDashboardSettings()
   const { getAllVendorIds, getVendor, isLoadingAllVendors } = useVendorData()
   const { calculateAllSelectedVendorsTco } = useTcoCalculator()
 
   const [isLoadingCalculations, setIsLoadingCalculations] = useState(true)
   const [tcoResults, setTcoResults] = useState<TCOResult[]>([])
   const [activeTab, setActiveTab] = useState("overview")
-
-  // Calculate Portnox TCO
-  const portnoxTCO = useMemo(() => {
-    return calculatePortnoxTCO(devices, users, selectedIndustry, comparisonYears, portnoxAddons, portnoxBasePrice)
-  }, [devices, users, selectedIndustry, comparisonYears, portnoxAddons, portnoxBasePrice])
-
-  // Get competitor comparisons
-  const competitorComparisons = useMemo(() => {
-    const comparisons = getCompetitorComparisons(devices, comparisonYears)
-
-    // Calculate savings vs Portnox
-    comparisons.forEach((comp) => {
-      comp.savingsVsPortnox = comp.tco3Year - portnoxTCO.totalTCO
-    })
-
-    return comparisons
-  }, [devices, comparisonYears, portnoxTCO.totalTCO])
-
-  const data = useMemo(() => {
-    return competitorComparisons.map((comp) => ({
-      name: comp.vendor,
-      tco: comp.tco3Year,
-    }))
-  }, [competitorComparisons])
-
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]
 
   // For this initial view, let's use a predefined set of vendors or all.
   const vendorIdsForAnalysis: VendorId[] = useMemo(() => {
@@ -317,7 +284,7 @@ const TcoAnalysisView: React.FC = () => {
         </h1>
         <p className="text-lg text-slate-300 max-w-3xl mx-auto">
           Interactive analysis with drill-down capabilities and real-time insights for Total Cost of Ownership across
-          selected vendors over a {comparisonYears}-year period in the {selectedIndustry} industry.
+          selected vendors over a {comparisonYears}-year period in the {selectedIndustry} industry ({selectedOrgSize}).
         </p>
       </div>
 
@@ -364,30 +331,6 @@ const TcoAnalysisView: React.FC = () => {
           />
         </div>
       )}
-
-      {/* 3-Year TCO Comparison Chart */}
-      <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
-        <CardHeader>
-          <CardTitle className="text-2xl text-white">3-Year TCO Comparison</CardTitle>
-          <CardDescription className="text-slate-400">Total Cost of Ownership for selected vendors</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={(value) => `$${value / 1000}k`} />
-              <Tooltip formatter={(value) => `$${value}`} />
-              <Legend />
-              <Bar dataKey="tco">
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
 
       {/* Advanced Analytics Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

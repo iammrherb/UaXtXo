@@ -1,25 +1,101 @@
-// src/types/common.ts
+export interface OrgSize {
+  devices: number
+  users: number
+  sites: number
+}
 
-export type OrgSizeId =
-  | "small_business"     // 1-100 users
-  | "mid_market"         // 100-1K users
-  | "enterprise"         // 1K-10K users
-  | "global_enterprise"; // 10K+ users
+export interface VendorData {
+  id: string
+  name: string
+  category: "cloud_native" | "traditional" | "hybrid"
+  pricing: {
+    perDevice: number
+    implementation: number
+    annualSupport: number
+  }
+  security: {
+    zeroTrustScore: number
+    breachRiskReduction: number
+  }
+  operationalMetrics: {
+    adminEffort: number
+    automationLevel: number
+    deploymentTime: number
+  }
+}
 
-export type IndustryId =
-  | "healthcare"
-  | "financial_services"
-  | "government"
-  | "education"
-  | "retail"
-  | "manufacturing"
-  | "technology"
-  | "energy_utilities"
-  | "pharmaceuticals"
-  | "telecommunications"
-  | "legal_services"
-  | "insurance";
+export interface IndustryData {
+  complianceMultiplier: number
+  riskMultiplier: number
+  downtimeMultiplier: number
+  averageBreachCost: number
+  requiredFrameworks: string[]
+}
 
-// Add other common types/enums here as needed
-// For example, a more structured way for ComplianceLevel could also be here
-export type ComplianceLevel = "NotCovered" | "Partial" | "Covered" | "Exceeds";
+export interface ComplianceFramework {
+  id: string
+  name: string
+  description: string
+  requirements: string[]
+  portnoxCoverage: number
+  competitorCoverage: Record<string, number>
+}
+
+export interface ThreatScenario {
+  id: string
+  name: string
+  description: string
+  probability: number
+  impact: number
+  mitigationLevel: Record<string, number>
+}
+
+export interface RiskAssessment {
+  scenarios: ThreatScenario[]
+  annualRiskExposure: number
+  mitigatedRisk: number
+  residualRisk: number
+}
+
+export interface TCOBreakdown {
+  year1: number
+  year2: number
+  year3: number
+  year5: number
+  breakdown: {
+    software: number[]
+    implementation: number[]
+    infrastructure: number[]
+    operations: number[]
+    support: number[]
+  }
+  benefits: {
+    riskReduction: number[]
+    compliance: number[]
+    operational: number[]
+    total: number[]
+  }
+  netTCO: number[]
+}
+
+export interface MigrationScenario {
+  fromVendor: string
+  toVendor: string
+  devices: number
+  users: number
+  existingContractRemaining: number
+  existingHardwareAge: number
+  includeEarlyTermination: boolean
+  includeTraining: boolean
+  includeDataMigration: boolean
+}
+
+export interface ExecutiveSummary {
+  totalSavings: number
+  paybackPeriod: number
+  roi: number
+  riskReduction: number
+  complianceImprovement: number
+  operationalEfficiency: number
+  recommendations: string[]
+}

@@ -3,24 +3,26 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import type { calculateVendorTCO } from "@/lib/tco-calculator"
+import { compareMultipleVendorsTCO, type calculateFullTCOForVendor } from "@/src/lib/calculators/tco"
+import { VENDOR_DATA as VENDOR_DATA_IMPORT } from "@/src/lib/vendors/data"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TooltipProvider } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
-import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { MoreHorizontal, LineChartIcon } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
 
 import {
   Bar,
-  BarChart,
   XAxis,
   YAxis,
   Tooltip as ReTooltip,
@@ -29,14 +31,7 @@ import {
   AreaChart,
   Area,
   CartesianGrid,
-  PieChart,
-  Pie,
-  Cell,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
+  ComposedChart,
 } from "recharts"
 
 import {
@@ -53,6 +48,7 @@ import {
   Shield,
   ArrowUpRight,
   ArrowDownRight,
+  Phone,
   SlidersHorizontal,
   InfoIcon,
   MoonIcon,
@@ -62,6 +58,7 @@ import {
   Settings,
   Search,
   X,
+  RefreshCw,
   Upload,
   Save,
   Building,
@@ -73,48 +70,103 @@ import {
   Maximize2,
   Minimize2,
   Star,
+  Award,
   Target,
-  Users,
-  Calendar,
-  AlertTriangle,
-  CheckCircle,
-  Timer,
-  Briefcase,
-  Calculator,
+  Sparkles,
+  Cpu,
+  Globe,
+  Lock,
 } from "lucide-react"
 
-type CalculationResult = NonNullable<ReturnType<typeof calculateVendorTCO>> & { id?: string }
+type CalculationResult = NonNullable<ReturnType<typeof calculateFullTCOForVendor>> & { id?: string }
 
-// Enhanced Modern Color Palette
+// Enhanced Modern Color Palette with Cutting-Edge Gradients
 const MODERN_COLORS = {
+  // Primary Brand Colors
   primary: {
     50: "#f0fdfa",
     100: "#ccfbf1",
     200: "#99f6e4",
     300: "#5eead4",
     400: "#2dd4bf",
-    500: "#14b8a6",
+    500: "#14b8a6", // Main teal
     600: "#0d9488",
     700: "#0f766e",
     800: "#115e59",
     900: "#134e4a",
     950: "#042f2e",
   },
+
+  // Accent Colors
+  accent: {
+    50: "#fef2f2",
+    100: "#fee2e2",
+    200: "#fecaca",
+    300: "#fca5a5",
+    400: "#f87171",
+    500: "#ef4444", // Main red
+    600: "#dc2626",
+    700: "#b91c1c",
+    800: "#991b1b",
+    900: "#7f1d1d",
+    950: "#450a0a",
+  },
+
+  // Purple Spectrum
+  purple: {
+    50: "#faf5ff",
+    100: "#f3e8ff",
+    200: "#e9d5ff",
+    300: "#d8b4fe",
+    400: "#c084fc",
+    500: "#a855f7", // Main purple
+    600: "#9333ea",
+    700: "#7c3aed",
+    800: "#6b21a8",
+    900: "#581c87",
+    950: "#3b0764",
+  },
+
+  // Blue Spectrum
+  blue: {
+    50: "#eff6ff",
+    100: "#dbeafe",
+    200: "#bfdbfe",
+    300: "#93c5fd",
+    400: "#60a5fa",
+    500: "#3b82f6", // Main blue
+    600: "#2563eb",
+    700: "#1d4ed8",
+    800: "#1e40af",
+    900: "#1e3a8a",
+    950: "#172554",
+  },
+
+  // Gradient Definitions
   gradients: {
+    // Primary Gradients
     ocean: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     sunset: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
     aurora: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
     cosmic: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+
+    // Tech Gradients
     cyber: "linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)",
     neon: "linear-gradient(135deg, #08fdd8 0%, #00d4aa 50%, #0693e3 100%)",
     matrix: "linear-gradient(135deg, #00ff88 0%, #00d4aa 50%, #0693e3 100%)",
     hologram: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
+
+    // Glass Morphism
     glass: "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)",
     glassDark: "linear-gradient(135deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.05) 100%)",
+
+    // Vendor Specific
     portnox: "linear-gradient(135deg, #14b8a6 0%, #0d9488 50%, #0f766e 100%)",
     cisco: "linear-gradient(135deg, #1ba1e2 0%, #0078d4 50%, #005a9e 100%)",
     aruba: "linear-gradient(135deg, #ff6900 0%, #e55100 50%, #bf360c 100%)",
     microsoft: "linear-gradient(135deg, #00bcf2 0%, #0078d4 50%, #106ebe 100%)",
+
+    // Status Gradients
     success: "linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)",
     warning: "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)",
     danger: "linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%)",
@@ -124,6 +176,7 @@ const MODERN_COLORS = {
 
 // Enhanced Animation Variants
 const modernAnimations = {
+  // Container animations
   staggerContainer: {
     hidden: { opacity: 0 },
     visible: {
@@ -134,6 +187,8 @@ const modernAnimations = {
       },
     },
   },
+
+  // Item animations
   slideInUp: {
     hidden: { opacity: 0, y: 60, scale: 0.9 },
     visible: {
@@ -148,6 +203,8 @@ const modernAnimations = {
       },
     },
   },
+
+  // Floating animation
   float: {
     y: [0, -10, 0],
     transition: {
@@ -156,6 +213,8 @@ const modernAnimations = {
       ease: "easeInOut",
     },
   },
+
+  // Glow pulse
   glowPulse: {
     boxShadow: [
       "0 0 20px rgba(20, 184, 166, 0.3)",
@@ -168,17 +227,789 @@ const modernAnimations = {
       ease: "easeInOut",
     },
   },
+
+  // Scale on hover
   scaleHover: {
     scale: 1.05,
     transition: { duration: 0.2 },
   },
+
+  // Rotate on hover
   rotateHover: {
     rotate: [0, 5, -5, 0],
     transition: { duration: 0.5 },
   },
 }
 
-// Complete Vendor Data with all 14 vendors
+// Enhanced Vendor Selection Panel Component
+const EnhancedVendorSelectionPanel = ({
+  selectedVendors,
+  onVendorToggle,
+  darkMode,
+  searchTerm,
+  setSearchTerm,
+  isCollapsed,
+}: {
+  selectedVendors: string[]
+  onVendorToggle: (vendorId: string) => void
+  darkMode: boolean
+  searchTerm: string
+  setSearchTerm: (term: string) => void
+  isCollapsed: boolean
+}) => {
+  const filteredVendors = Object.values(VENDOR_DATA_IMPORT).filter((vendor) =>
+    vendor.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
+
+  const [hoveredVendor, setHoveredVendor] = useState<string | null>(null)
+
+  // Enhanced Difficulty Badge with modern styling
+  const ModernDifficultyBadge = ({ level }: { level: number }) => {
+    const configs = {
+      1: { label: "Very Low", gradient: MODERN_COLORS.gradients.success, icon: "🟢" },
+      2: { label: "Low", gradient: MODERN_COLORS.gradients.info, icon: "🔵" },
+      3: { label: "Medium", gradient: MODERN_COLORS.gradients.warning, icon: "🟡" },
+      4: { label: "High", gradient: MODERN_COLORS.gradients.danger, icon: "🟠" },
+      5: { label: "Very High", gradient: "linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%)", icon: "🔴" },
+    }
+
+    const config = configs[level] || configs[3]
+
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <motion.div
+              className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium text-white"
+              style={{ background: config.gradient }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="text-xs">{config.icon}</span>
+              <span>{level}/5</span>
+            </motion.div>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="bg-slate-900 border-slate-700">
+            <p className="text-white">Implementation Difficulty: {config.label}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    )
+  }
+
+  // Enhanced Vendor Card with modern glass morphism
+  const ModernVendorCard = ({ vendor }: { vendor: any }) => {
+    const isSelected = selectedVendors.includes(vendor.id)
+    const isHovered = hoveredVendor === vendor.id
+    const isPortnox = vendor.id === "portnox"
+
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        whileHover={{ y: -8, scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onHoverStart={() => setHoveredVendor(vendor.id)}
+        onHoverEnd={() => setHoveredVendor(null)}
+        className="relative group"
+      >
+        {/* Background Gradient */}
+        <div
+          className={cn(
+            "absolute inset-0 rounded-2xl opacity-20 transition-opacity duration-300",
+            isSelected && "opacity-40",
+            isHovered && "opacity-60",
+          )}
+          style={{
+            background: isPortnox
+              ? MODERN_COLORS.gradients.portnox
+              : vendor.id === "cisco"
+                ? MODERN_COLORS.gradients.cisco
+                : vendor.id === "aruba"
+                  ? MODERN_COLORS.gradients.aruba
+                  : vendor.id === "microsoft"
+                    ? MODERN_COLORS.gradients.microsoft
+                    : MODERN_COLORS.gradients.hologram,
+          }}
+        />
+
+        {/* Glow Effect */}
+        {isSelected && (
+          <motion.div
+            className="absolute inset-0 rounded-2xl"
+            animate={modernAnimations.glowPulse}
+            style={{
+              background: `linear-gradient(135deg, ${MODERN_COLORS.primary[400]}20 0%, ${MODERN_COLORS.primary[600]}40 100%)`,
+              filter: "blur(8px)",
+            }}
+          />
+        )}
+
+        <Card
+          onClick={() => onVendorToggle(vendor.id)}
+          className={cn(
+            "relative cursor-pointer transition-all duration-300 h-full border-0 overflow-hidden",
+            "backdrop-blur-xl bg-white/10 dark:bg-black/20",
+            isSelected && "ring-2 ring-primary/50 shadow-2xl",
+            darkMode ? "hover:bg-white/20" : "hover:bg-black/5",
+          )}
+        >
+          {/* Selection Indicator */}
+          {isSelected && (
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-2 right-2 z-10">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 flex items-center justify-center">
+                <motion.div initial={{ rotate: -90 }} animate={{ rotate: 0 }} transition={{ delay: 0.1 }}>
+                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+
+          <CardHeader className="p-4 pb-2">
+            <div className="flex items-center justify-between mb-3">
+              <motion.div className="relative" whileHover={modernAnimations.rotateHover}>
+                <Image
+                  src={vendor.logo || "/placeholder.svg"}
+                  alt={vendor.name}
+                  width={80}
+                  height={24}
+                  className="h-6 object-contain filter brightness-110"
+                />
+              </motion.div>
+
+              {isPortnox && (
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  className="flex items-center gap-1"
+                >
+                  <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                  <span className="text-xs font-bold text-yellow-400">BEST</span>
+                </motion.div>
+              )}
+            </div>
+
+            <CardTitle className="text-base font-bold leading-tight">{vendor.name}</CardTitle>
+
+            <p className="text-xs text-muted-foreground mt-1">{vendor.category}</p>
+          </CardHeader>
+
+          <CardContent className="p-4 pt-0 space-y-3">
+            {/* Market Share Indicator */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-muted-foreground">Market Share</span>
+                <span className="font-semibold">{vendor.marketShare}%</span>
+              </div>
+              <div className="w-full bg-muted/30 rounded-full h-1.5 overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{
+                    background: isPortnox ? MODERN_COLORS.gradients.portnox : MODERN_COLORS.gradients.info,
+                  }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(vendor.marketShare * 2.5, 100)}%` }}
+                  transition={{ duration: 1, delay: 0.2 }}
+                />
+              </div>
+            </div>
+
+            {/* Price and Difficulty */}
+            <div className="flex justify-between items-center">
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground">Price</span>
+                <span className="font-bold text-sm">{vendor.priceIndicator}</span>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="text-xs text-muted-foreground mb-1">Difficulty</span>
+                <ModernDifficultyBadge level={vendor.difficulty} />
+              </div>
+            </div>
+
+            {/* Key Features Preview */}
+            <div className="space-y-2">
+              <span className="text-xs text-muted-foreground">Key Features</span>
+              <div className="flex flex-wrap gap-1">
+                {Object.entries(vendor.features?.advanced || {})
+                  .filter(([_, enabled]) => enabled)
+                  .slice(0, 3)
+                  .map(([feature, _]) => (
+                    <motion.span
+                      key={feature}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary font-medium"
+                    >
+                      {feature}
+                    </motion.span>
+                  ))}
+              </div>
+            </div>
+
+            {/* Hover Actions */}
+            <AnimatePresence>
+              {isHovered && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="flex gap-2 pt-2"
+                >
+                  <Button size="sm" variant="outline" className="flex-1 h-7 text-xs bg-transparent">
+                    <InfoIcon className="w-3 h-3 mr-1" />
+                    Details
+                  </Button>
+                  <Button size="sm" variant="outline" className="flex-1 h-7 text-xs bg-transparent">
+                    <BarChart3 className="w-3 h-3 mr-1" />
+                    Compare
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </CardContent>
+
+          {/* Floating Icons for Special Features */}
+          <div className="absolute top-4 left-4 flex flex-col gap-1">
+            {vendor.features?.advanced?.["AI/ML Analytics"] && (
+              <motion.div
+                animate={modernAnimations.float}
+                className="w-5 h-5 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center"
+              >
+                <Cpu className="w-2.5 h-2.5 text-white" />
+              </motion.div>
+            )}
+            {vendor.implementation?.cloudNative && (
+              <motion.div
+                animate={{
+                  ...modernAnimations.float,
+                  transition: { ...modernAnimations.float.transition, delay: 0.5 },
+                }}
+                className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400 flex items-center justify-center"
+              >
+                <Globe className="w-2.5 h-2.5 text-white" />
+              </motion.div>
+            )}
+            {vendor.features?.advanced?.["Zero Trust"] && (
+              <motion.div
+                animate={{ ...modernAnimations.float, transition: { ...modernAnimations.float.transition, delay: 1 } }}
+                className="w-5 h-5 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 flex items-center justify-center"
+              >
+                <Lock className="w-2.5 h-2.5 text-white" />
+              </motion.div>
+            )}
+          </div>
+        </Card>
+      </motion.div>
+    )
+  }
+
+  return (
+    <motion.div
+      animate={{ width: isCollapsed ? 0 : 400 }}
+      transition={{ duration: 0.4, ease: "easeInOut" }}
+      className={cn(
+        "border-r flex flex-col flex-shrink-0 overflow-hidden relative",
+        darkMode
+          ? "bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-slate-800/50"
+          : "bg-gradient-to-b from-slate-50 via-white to-slate-50 border-slate-200/50",
+      )}
+    >
+      {/* Animated Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div
+          className="w-full h-full"
+          style={{
+            backgroundImage: `radial-gradient(circle at 25% 25%, ${MODERN_COLORS.primary[500]}40 0%, transparent 50%), 
+                             radial-gradient(circle at 75% 75%, ${MODERN_COLORS.purple[500]}40 0%, transparent 50%)`,
+            backgroundSize: "100px 100px",
+            animation: "float 20s ease-in-out infinite",
+          }}
+        />
+      </div>
+
+      <div className="w-[400px] flex flex-col h-full relative z-10">
+        {/* Enhanced Header */}
+        <motion.div
+          className={cn(
+            "p-6 border-b backdrop-blur-xl",
+            darkMode ? "border-slate-800/50 bg-slate-900/50" : "border-slate-200/50 bg-white/50",
+          )}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <motion.div
+              className="p-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500"
+              whileHover={modernAnimations.scaleHover}
+            >
+              <Filter className="h-5 w-5 text-white" />
+            </motion.div>
+            <div className="flex-1">
+              <h3 className="font-bold text-lg bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                Vendor Selection
+              </h3>
+              <p className="text-xs text-muted-foreground">Choose your comparison vendors</p>
+            </div>
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3 }}>
+              <Badge
+                variant="secondary"
+                className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+              >
+                {selectedVendors.length} selected
+              </Badge>
+            </motion.div>
+          </div>
+
+          {/* Enhanced Search */}
+          <div className="relative">
+            <motion.div
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10"
+              animate={{ rotate: searchTerm ? 360 : 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Search className="h-4 w-4 text-muted-foreground" />
+            </motion.div>
+            <Input
+              placeholder="Search vendors..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={cn(
+                "pl-10 pr-4 border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl",
+                "focus:ring-2 focus:ring-emerald-500/50 transition-all duration-300",
+                darkMode ? "text-white placeholder:text-slate-400" : "text-slate-900 placeholder:text-slate-500",
+              )}
+            />
+            {searchTerm && (
+              <motion.button
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setSearchTerm("")}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </motion.button>
+            )}
+          </div>
+
+          {/* Quick Filters */}
+          <div className="flex gap-2 mt-4">
+            {["All", "Cloud", "Traditional", "AI-Powered"].map((filter, index) => (
+              <motion.button
+                key={filter}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={modernAnimations.scaleHover}
+                whileTap={{ scale: 0.95 }}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-300",
+                  filter === "All"
+                    ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg"
+                    : darkMode
+                      ? "bg-slate-800/50 text-slate-300 hover:bg-slate-700/50"
+                      : "bg-slate-100/50 text-slate-600 hover:bg-slate-200/50",
+                )}
+              >
+                {filter}
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Enhanced Vendor Grid */}
+        <ScrollArea className="flex-1">
+          <motion.div
+            className="p-6 grid grid-cols-1 gap-6"
+            variants={modernAnimations.staggerContainer}
+            initial="hidden"
+            animate="visible"
+          >
+            {filteredVendors.map((vendor, index) => (
+              <motion.div key={vendor.id} variants={modernAnimations.slideInUp} transition={{ delay: index * 0.1 }}>
+                <ModernVendorCard vendor={vendor} />
+              </motion.div>
+            ))}
+          </motion.div>
+        </ScrollArea>
+
+        {/* Enhanced Footer */}
+        <motion.div
+          className={cn(
+            "p-4 border-t backdrop-blur-xl",
+            darkMode ? "border-slate-800/50 bg-slate-900/50" : "border-slate-200/50 bg-white/50",
+          )}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>{filteredVendors.length} vendors available</span>
+            <motion.button
+              whileHover={modernAnimations.scaleHover}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-1 text-emerald-600 hover:text-emerald-500"
+            >
+              <Sparkles className="w-3 h-3" />
+              Get Recommendations
+            </motion.button>
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
+  )
+}
+
+// Enhanced Styled Components with Modern Design
+const ModernGradientCard = ({
+  children,
+  className,
+  gradient = "hologram",
+  darkMode,
+  glow = false,
+  ...props
+}: {
+  children: React.ReactNode
+  className?: string
+  gradient?: keyof typeof MODERN_COLORS.gradients
+  darkMode?: boolean
+  glow?: boolean
+  [key: string]: any
+}) => (
+  <motion.div
+    className={cn(
+      "relative overflow-hidden transition-all duration-500 border-0 rounded-3xl",
+      "backdrop-blur-xl bg-white/5 dark:bg-black/10",
+      "hover:shadow-2xl hover:shadow-primary/20",
+      className,
+    )}
+    whileHover={{ y: -8, scale: 1.02 }}
+    animate={glow ? modernAnimations.glowPulse : {}}
+    {...props}
+  >
+    {/* Animated Background */}
+    <div className="absolute inset-0 opacity-10" style={{ background: MODERN_COLORS.gradients[gradient] }} />
+
+    {/* Mesh Gradient Overlay */}
+    <div className="absolute inset-0 opacity-20">
+      <div
+        className="w-full h-full"
+        style={{
+          backgroundImage: `radial-gradient(circle at 20% 80%, ${MODERN_COLORS.primary[400]}40 0%, transparent 50%), 
+                           radial-gradient(circle at 80% 20%, ${MODERN_COLORS.purple[400]}40 0%, transparent 50%),
+                           radial-gradient(circle at 40% 40%, ${MODERN_COLORS.blue[400]}40 0%, transparent 50%)`,
+        }}
+      />
+    </div>
+
+    {/* Glass Border */}
+    <div className="absolute inset-0 rounded-3xl border border-white/20 dark:border-white/10" />
+
+    <div className="relative z-10">{children}</div>
+  </motion.div>
+)
+
+// Enhanced KPI Card with Modern Styling
+const ModernKPICard = ({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+  trend,
+  trendValue,
+  color = "primary",
+  darkMode,
+  sparklineData,
+  interactive = true,
+  size = "default",
+}: {
+  title: string
+  value: string | number
+  subtitle?: string
+  icon: React.ElementType
+  trend?: "up" | "down" | "neutral"
+  trendValue?: string
+  color?: string
+  darkMode?: boolean
+  sparklineData?: any[]
+  interactive?: boolean
+  size?: "small" | "default" | "large"
+}) => {
+  const [isHovered, setIsHovered] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  const colorMap = {
+    primary: MODERN_COLORS.gradients.portnox,
+    success: MODERN_COLORS.gradients.success,
+    warning: MODERN_COLORS.gradients.warning,
+    danger: MODERN_COLORS.gradients.danger,
+    info: MODERN_COLORS.gradients.info,
+    purple: MODERN_COLORS.gradients.hologram,
+    cyan: MODERN_COLORS.gradients.aurora,
+    pink: MODERN_COLORS.gradients.sunset,
+  }
+
+  const selectedGradient = colorMap[color] || MODERN_COLORS.gradients.portnox
+  const TrendIcon = trend === "up" ? ArrowUpRight : trend === "down" ? ArrowDownRight : Activity
+
+  return (
+    <motion.div
+      className={cn(
+        "relative overflow-hidden rounded-3xl border-0 transition-all duration-500",
+        "backdrop-blur-xl bg-white/5 dark:bg-black/10",
+        size === "small" && "p-4",
+        size === "default" && "p-6",
+        size === "large" && "p-8",
+      )}
+      whileHover={{ y: -12, scale: 1.03 }}
+      whileTap={{ scale: 0.98 }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      onClick={() => interactive && setIsExpanded(!isExpanded)}
+      style={{ cursor: interactive ? "pointer" : "default" }}
+    >
+      {/* Animated Background Gradient */}
+      <motion.div
+        className="absolute inset-0 opacity-20"
+        style={{ background: selectedGradient }}
+        animate={{
+          opacity: isHovered ? 0.3 : 0.1,
+          scale: isHovered ? 1.1 : 1,
+        }}
+        transition={{ duration: 0.5 }}
+      />
+
+      {/* Mesh Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div
+          className="w-full h-full"
+          style={{
+            backgroundImage: `radial-gradient(circle at 25% 25%, ${MODERN_COLORS.primary[400]}60 0%, transparent 50%)`,
+            backgroundSize: "50px 50px",
+          }}
+        />
+      </div>
+
+      {/* Glass Border */}
+      <motion.div
+        className="absolute inset-0 rounded-3xl border"
+        style={{ borderColor: "rgba(255, 255, 255, 0.2)" }}
+        animate={{
+          borderColor: isHovered ? "rgba(20, 184, 166, 0.5)" : "rgba(255, 255, 255, 0.2)",
+          boxShadow: isHovered ? "0 0 40px rgba(20, 184, 166, 0.3)" : "0 0 0px rgba(20, 184, 166, 0)",
+        }}
+        transition={{ duration: 0.3 }}
+      />
+
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-4">
+            <motion.div
+              className="p-4 rounded-2xl relative"
+              style={{ background: selectedGradient }}
+              animate={isHovered ? modernAnimations.float : {}}
+            >
+              <Icon className="h-6 w-6 text-white" />
+
+              {/* Icon Glow */}
+              <motion.div
+                className="absolute inset-0 rounded-2xl"
+                style={{ background: selectedGradient }}
+                animate={{
+                  scale: isHovered ? [1, 1.2, 1] : 1,
+                  opacity: isHovered ? [0.5, 0.8, 0.5] : 0,
+                }}
+                transition={{ duration: 1, repeat: isHovered ? Number.POSITIVE_INFINITY : 0 }}
+              />
+            </motion.div>
+
+            <div>
+              <h3 className={cn("text-sm font-semibold", darkMode ? "text-slate-200" : "text-slate-700")}>{title}</h3>
+              {subtitle && (
+                <p className={cn("text-xs mt-1", darkMode ? "text-slate-400" : "text-slate-500")}>{subtitle}</p>
+              )}
+            </div>
+          </div>
+
+          {interactive && (
+            <motion.button
+              className={cn("p-2 rounded-xl transition-colors", darkMode ? "hover:bg-white/10" : "hover:bg-black/5")}
+              whileHover={modernAnimations.scaleHover}
+              whileTap={{ scale: 0.9 }}
+            >
+              {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </motion.button>
+          )}
+        </div>
+
+        {/* Value Display */}
+        <motion.div
+          className={cn("text-4xl font-bold mb-4", darkMode ? "text-white" : "text-slate-900")}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">{value}</span>
+        </motion.div>
+
+        {/* Trend Indicator */}
+        {trend && trendValue && (
+          <motion.div
+            className="flex items-center space-x-3 mb-4"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div
+              className={cn(
+                "p-2 rounded-xl",
+                trend === "up" ? "bg-emerald-500/20" : trend === "down" ? "bg-red-500/20" : "bg-slate-500/20",
+              )}
+            >
+              <TrendIcon
+                className={cn(
+                  "h-4 w-4",
+                  trend === "up" ? "text-emerald-400" : trend === "down" ? "text-red-400" : "text-slate-400",
+                )}
+              />
+            </div>
+            <span
+              className={cn(
+                "text-sm font-semibold",
+                trend === "up" ? "text-emerald-400" : trend === "down" ? "text-red-400" : "text-slate-400",
+              )}
+            >
+              {trendValue}
+            </span>
+          </motion.div>
+        )}
+
+        {/* Sparkline Chart */}
+        {sparklineData && sparklineData.length > 0 && (
+          <motion.div
+            className="h-16 -mx-2 -mb-2 mt-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={sparklineData}>
+                <defs>
+                  <linearGradient id={`sparkline-${color}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#14b8a6"
+                  strokeWidth={3}
+                  fill={`url(#sparkline-${color})`}
+                  dot={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </motion.div>
+        )}
+
+        {/* Expanded Content */}
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.4 }}
+              className="mt-6 pt-6 border-t border-white/10"
+            >
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Previous Period:</span>
+                  <span className="text-slate-200 font-semibold">$2.1M</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Growth Rate:</span>
+                  <span className="text-emerald-400 font-semibold">+23.5%</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Benchmark:</span>
+                  <span className="text-slate-200 font-semibold">Industry Avg</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  )
+}
+
+// Organization size configurations
+const initialOrgSizeDetails: Record<string, { devices: number; users: number; label: string }> = {
+  startup: { devices: 100, users: 50, label: "Startup (50-100 employees)" },
+  smb: { devices: 500, users: 250, label: "Small Business (100-500 employees)" },
+  medium: { devices: 2500, users: 1500, label: "Mid-Market (500-2500 employees)" },
+  enterprise: { devices: 10000, users: 7500, label: "Enterprise (2500+ employees)" },
+  xlarge: { devices: 50000, users: 35000, label: "Global Enterprise (10000+ employees)" },
+  custom: { devices: 2500, users: 1500, label: "Custom Configuration" },
+}
+
+// Industry options
+const industryOptions = [
+  { value: "technology", label: "Technology" },
+  { value: "healthcare", label: "Healthcare" },
+  { value: "financial", label: "Financial Services" },
+  { value: "manufacturing", label: "Manufacturing" },
+  { value: "education", label: "Education" },
+  { value: "government", label: "Government" },
+  { value: "retail", label: "Retail" },
+  { value: "energy", label: "Energy & Utilities" },
+  { value: "media", label: "Media & Entertainment" },
+  { value: "other", label: "Other" },
+]
+
+// Region options
+const regionOptions = [
+  { value: "north-america", label: "North America" },
+  { value: "europe", label: "Europe" },
+  { value: "asia-pacific", label: "Asia Pacific" },
+  { value: "latin-america", label: "Latin America" },
+  { value: "middle-east-africa", label: "Middle East & Africa" },
+]
+
+// Main navigation configuration
+const MAIN_TABS_CONFIG = [
+  { value: "dashboard", label: "Executive Dashboard", icon: <BarChartHorizontal /> },
+  { value: "analysis", label: "TCO Analysis", icon: <BarChart3 /> },
+  { value: "comparison", label: "Vendor Comparison", icon: <LayoutGrid /> },
+  { value: "compliance", label: "Compliance & Risk", icon: <ShieldCheck /> },
+  { value: "reports", label: "Reports", icon: <FileText /> },
+]
+
+const ANALYSIS_SUB_TABS = [
+  { value: "cost-breakdown", label: "Cost Breakdown", icon: <FilePieChart /> },
+  { value: "roi-analysis", label: "ROI & Business Value", icon: <TrendingUpIcon /> },
+  { value: "operations", label: "Operations Impact", icon: <SlidersHorizontal /> },
+  { value: "timeline", label: "Timeline View", icon: <Clock /> },
+]
+
+const COMPARISON_SUB_TABS = [
+  { value: "feature-matrix", label: "Feature Matrix", icon: <LayoutGrid /> },
+  { value: "roadmap", label: "Implementation Roadmap", icon: <Road /> },
+  { value: "vendor-details", label: "Vendor Details", icon: <InfoIcon /> },
+]
+
+// Enhanced Vendor data with complete information
 const VENDOR_DATA = {
   portnox: {
     id: "portnox",
@@ -532,7 +1363,7 @@ const VENDOR_DATA = {
         SSO: true,
         TACACS: false,
         "Guest Portal": true,
-        PKI: false,
+        PKI: true,
         RADIUS: true,
       },
       advanced: {
@@ -598,7 +1429,7 @@ const VENDOR_DATA = {
         "AI/ML Analytics": true,
         "Zero Trust": true,
         Microsegmentation: true,
-        "Threat Detection": true,
+        "Threat Detection": false,
         "Compliance Automation": false,
         "Multi-tenant": true,
         "IoT Security": true,
@@ -844,6 +1675,60 @@ const VENDOR_DATA = {
     strengths: ["Strong certificate management", "EAP-TLS focus", "Cloud PKI", "Easy certificate deployment"],
     weaknesses: ["Limited to authentication", "No device visibility", "Certificate-only approach", "Narrow use case"],
   },
+  radiusaas: {
+    id: "radiusaas",
+    name: "RADIUS-as-a-Service",
+    category: "Cloud RADIUS",
+    marketShare: 1.2,
+    logo: "/radiusaas-logo.png",
+    description: "Cloud-based RADIUS service for network authentication",
+    priceIndicator: "$",
+    difficulty: 1,
+    features: {
+      core: {
+        "802.1X": true,
+        "Risk-Based Auth": false,
+        "Device Profiling": false,
+        "Policy Automation": false,
+        "Cloud Management": true,
+        "API Integration": false,
+        "Real-time Monitoring": false,
+        "Automated Remediation": false,
+        SSO: false,
+        TACACS: false,
+        "Guest Portal": false,
+        PKI: false,
+        RADIUS: true,
+      },
+      advanced: {
+        "AI/ML Analytics": false,
+        "Zero Trust": false,
+        Microsegmentation: false,
+        "Threat Detection": false,
+        "Compliance Automation": false,
+        "Multi-tenant": false,
+        "IoT Security": false,
+      },
+    },
+    implementation: {
+      deploymentTime: { poc: 4, fullDeployment: 48, fullScale: 48 },
+      complexity: "Low",
+      requiresHardware: false,
+      cloudNative: true,
+    },
+    pricing: {
+      model: "Per authentication",
+      startingPrice: 1.8,
+      enterprise: 2.2,
+    },
+    roi: {
+      breachRiskReduction: 0.25,
+      operationalEfficiency: 0.3,
+      complianceAutomation: 0.15,
+    },
+    strengths: ["Simple RADIUS service", "Pay per use", "Quick setup", "Basic authentication"],
+    weaknesses: ["Very limited features", "No NAC capabilities", "Authentication only", "Minimal management"],
+  },
   arista: {
     id: "arista",
     name: "Arista AGNI",
@@ -900,344 +1785,6 @@ const VENDOR_DATA = {
   },
 }
 
-// Enhanced Vendor Selection Panel Component (Toned Down)
-const VendorSelectionPanel = ({
-  selectedVendors,
-  onVendorToggle,
-  darkMode,
-  searchTerm,
-  setSearchTerm,
-  isCollapsed,
-}: {
-  selectedVendors: string[]
-  onVendorToggle: (vendorId: string) => void
-  darkMode: boolean
-  searchTerm: string
-  setSearchTerm: (term: string) => void
-  isCollapsed: boolean
-}) => {
-  const filteredVendors = Object.values(VENDOR_DATA).filter((vendor) =>
-    vendor.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
-
-  const VendorCard = ({ vendor }: { vendor: any }) => {
-    const isSelected = selectedVendors.includes(vendor.id)
-    const isPortnox = vendor.id === "portnox"
-
-    return (
-      <Card
-        onClick={() => onVendorToggle(vendor.id)}
-        className={cn(
-          "cursor-pointer transition-all duration-200 h-full",
-          isSelected ? "ring-2 ring-primary/50 bg-primary/5" : "hover:bg-muted/50",
-        )}
-      >
-        <CardHeader className="p-3 pb-2">
-          <div className="flex items-center justify-between mb-2">
-            <Image
-              src={vendor.logo || "/placeholder.svg"}
-              alt={vendor.name}
-              width={60}
-              height={20}
-              className="h-5 object-contain"
-            />
-            {isPortnox && <Star className="w-3 h-3 text-yellow-400 fill-current" />}
-            {isSelected && <CheckCircle className="w-4 h-4 text-primary" />}
-          </div>
-          <CardTitle className="text-sm font-semibold leading-tight">{vendor.name}</CardTitle>
-          <p className="text-xs text-muted-foreground">{vendor.category}</p>
-        </CardHeader>
-        <CardContent className="p-3 pt-0 space-y-2">
-          <div className="flex justify-between items-center text-xs">
-            <span className="text-muted-foreground">Price</span>
-            <span className="font-medium">{vendor.priceIndicator}</span>
-          </div>
-          <div className="flex justify-between items-center text-xs">
-            <span className="text-muted-foreground">Difficulty</span>
-            <Badge variant="outline" className="text-xs px-1 py-0">
-              {vendor.difficulty}/5
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  return (
-    <motion.div
-      animate={{ width: isCollapsed ? 0 : 320 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-      className={cn(
-        "border-r flex flex-col flex-shrink-0 overflow-hidden",
-        darkMode ? "bg-background border-border" : "bg-background border-border",
-      )}
-    >
-      <div className="w-[320px] flex flex-col h-full">
-        <div className="p-4 border-b">
-          <div className="flex items-center gap-2 mb-3">
-            <Filter className="h-4 w-4 text-primary" />
-            <h3 className="font-semibold text-sm">Vendor Selection</h3>
-            <Badge variant="secondary" className="text-xs">
-              {selectedVendors.length} selected
-            </Badge>
-          </div>
-          <div className="relative">
-            <Search className="h-3 w-3 absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search vendors..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-7 h-8 text-xs"
-            />
-          </div>
-        </div>
-
-        <ScrollArea className="flex-1">
-          <div className="p-4 grid grid-cols-2 gap-3">
-            {filteredVendors.map((vendor) => (
-              <VendorCard key={vendor.id} vendor={vendor} />
-            ))}
-          </div>
-        </ScrollArea>
-
-        <div className="p-4 border-t text-xs text-muted-foreground text-center">
-          {filteredVendors.length} vendors available
-        </div>
-      </div>
-    </motion.div>
-  )
-}
-
-// Enhanced Styled Components
-const ModernGradientCard = ({
-  children,
-  className,
-  gradient = "hologram",
-  darkMode,
-  glow = false,
-  ...props
-}: {
-  children: React.ReactNode
-  className?: string
-  gradient?: keyof typeof MODERN_COLORS.gradients
-  darkMode?: boolean
-  glow?: boolean
-  [key: string]: any
-}) => (
-  <motion.div
-    className={cn(
-      "relative overflow-hidden transition-all duration-300 border rounded-xl",
-      "backdrop-blur-sm bg-card/50",
-      "hover:shadow-lg",
-      className,
-    )}
-    whileHover={{ y: -4, scale: 1.01 }}
-    animate={glow ? modernAnimations.glowPulse : {}}
-    {...props}
-  >
-    <div className="absolute inset-0 opacity-5" style={{ background: MODERN_COLORS.gradients[gradient] }} />
-    <div className="relative z-10">{children}</div>
-  </motion.div>
-)
-
-// Enhanced KPI Card
-const ModernKPICard = ({
-  title,
-  value,
-  subtitle,
-  icon: Icon,
-  trend,
-  trendValue,
-  color = "primary",
-  darkMode,
-  sparklineData,
-  interactive = true,
-  size = "default",
-}: {
-  title: string
-  value: string | number
-  subtitle?: string
-  icon: React.ElementType
-  trend?: "up" | "down" | "neutral"
-  trendValue?: string
-  color?: string
-  darkMode?: boolean
-  sparklineData?: any[]
-  interactive?: boolean
-  size?: "small" | "default" | "large"
-}) => {
-  const [isHovered, setIsHovered] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
-
-  const TrendIcon = trend === "up" ? ArrowUpRight : trend === "down" ? ArrowDownRight : Activity
-
-  return (
-    <motion.div
-      className={cn(
-        "relative overflow-hidden rounded-xl border transition-all duration-300",
-        "backdrop-blur-sm bg-card/50",
-        size === "small" && "p-3",
-        size === "default" && "p-4",
-        size === "large" && "p-6",
-      )}
-      whileHover={{ y: -4, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      onClick={() => interactive && setIsExpanded(!isExpanded)}
-      style={{ cursor: interactive ? "pointer" : "default" }}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <Icon className="h-4 w-4 text-primary" />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold">{title}</h3>
-            {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
-          </div>
-        </div>
-        {interactive && (
-          <button className="p-1 rounded hover:bg-muted/50 transition-colors">
-            {isExpanded ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
-          </button>
-        )}
-      </div>
-
-      <div className="text-2xl font-bold mb-2 text-foreground">{value}</div>
-
-      {trend && trendValue && (
-        <div className="flex items-center space-x-2 mb-3">
-          <div
-            className={cn(
-              "p-1 rounded",
-              trend === "up" ? "bg-green-500/20" : trend === "down" ? "bg-red-500/20" : "bg-gray-500/20",
-            )}
-          >
-            <TrendIcon
-              className={cn(
-                "h-3 w-3",
-                trend === "up" ? "text-green-600" : trend === "down" ? "text-red-600" : "text-gray-600",
-              )}
-            />
-          </div>
-          <span
-            className={cn(
-              "text-xs font-medium",
-              trend === "up" ? "text-green-600" : trend === "down" ? "text-red-600" : "text-gray-600",
-            )}
-          >
-            {trendValue}
-          </span>
-        </div>
-      )}
-
-      {sparklineData && sparklineData.length > 0 && (
-        <div className="h-12 -mx-2 -mb-2 mt-3">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={sparklineData}>
-              <defs>
-                <linearGradient id={`sparkline-${color}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <Area
-                type="monotone"
-                dataKey="value"
-                stroke="#14b8a6"
-                strokeWidth={2}
-                fill={`url(#sparkline-${color})`}
-                dot={false}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mt-4 pt-4 border-t space-y-2 text-xs"
-          >
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Previous Period:</span>
-              <span className="font-medium">$2.1M</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Growth Rate:</span>
-              <span className="text-green-600 font-medium">+23.5%</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Benchmark:</span>
-              <span className="font-medium">Industry Avg</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  )
-}
-
-// Organization size configurations
-const initialOrgSizeDetails: Record<string, { devices: number; users: number; label: string }> = {
-  startup: { devices: 100, users: 50, label: "Startup (50-100 employees)" },
-  smb: { devices: 500, users: 250, label: "Small Business (100-500 employees)" },
-  medium: { devices: 2500, users: 1500, label: "Mid-Market (500-2500 employees)" },
-  enterprise: { devices: 10000, users: 7500, label: "Enterprise (2500+ employees)" },
-  xlarge: { devices: 50000, users: 35000, label: "Global Enterprise (10000+ employees)" },
-  custom: { devices: 2500, users: 1500, label: "Custom Configuration" },
-}
-
-// Industry options
-const industryOptions = [
-  { value: "technology", label: "Technology" },
-  { value: "healthcare", label: "Healthcare" },
-  { value: "financial", label: "Financial Services" },
-  { value: "manufacturing", label: "Manufacturing" },
-  { value: "education", label: "Education" },
-  { value: "government", label: "Government" },
-  { value: "retail", label: "Retail" },
-  { value: "energy", label: "Energy & Utilities" },
-  { value: "media", label: "Media & Entertainment" },
-  { value: "other", label: "Other" },
-]
-
-// Region options
-const regionOptions = [
-  { value: "north-america", label: "North America" },
-  { value: "europe", label: "Europe" },
-  { value: "asia-pacific", label: "Asia Pacific" },
-  { value: "latin-america", label: "Latin America" },
-  { value: "middle-east-africa", label: "Middle East & Africa" },
-]
-
-// Main navigation configuration
-const MAIN_TABS_CONFIG = [
-  { value: "dashboard", label: "Executive Dashboard", icon: <BarChartHorizontal /> },
-  { value: "analysis", label: "TCO Analysis", icon: <BarChart3 /> },
-  { value: "comparison", label: "Vendor Comparison", icon: <LayoutGrid /> },
-  { value: "compliance", label: "Compliance & Risk", icon: <ShieldCheck /> },
-  { value: "reports", label: "Reports", icon: <FileText /> },
-]
-
-const ANALYSIS_SUB_TABS = [
-  { value: "cost-breakdown", label: "Cost Breakdown", icon: <FilePieChart /> },
-  { value: "roi-analysis", label: "ROI & Business Value", icon: <TrendingUpIcon /> },
-  { value: "operations", label: "Operations Impact", icon: <SlidersHorizontal /> },
-  { value: "timeline", label: "Timeline View", icon: <Clock /> },
-]
-
-const COMPARISON_SUB_TABS = [
-  { value: "feature-matrix", label: "Feature Matrix", icon: <LayoutGrid /> },
-  { value: "roadmap", label: "Implementation Roadmap", icon: <Road /> },
-  { value: "vendor-details", label: "Vendor Details", icon: <InfoIcon /> },
-]
-
 // Settings Panel Component
 const SettingsPanel = ({
   isOpen,
@@ -1293,311 +1840,586 @@ const SettingsPanel = ({
           onClick={onClose}
         >
           <motion.div
-            className="w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-xl border shadow-2xl bg-background"
+            className={cn(
+              "w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl border shadow-2xl",
+              darkMode
+                ? "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border-slate-800/50"
+                : "bg-gradient-to-br from-white via-slate-50 to-white border-slate-200/50",
+            )}
             initial={{ scale: 0.9, opacity: 0, y: 50 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 50 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-6 border-b">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Settings className="h-5 w-5 text-primary" />
-                </div>
+            {/* Animated Background */}
+            <div className="absolute inset-0 opacity-10">
+              <div
+                className="w-full h-full"
+                style={{
+                  background: MODERN_COLORS.gradients.hologram,
+                  backgroundSize: "400% 400%",
+                  animation: "gradient 15s ease infinite",
+                }}
+              />
+            </div>
+
+            {/* Header */}
+            <div
+              className={cn(
+                "flex items-center justify-between p-6 border-b backdrop-blur-xl relative z-10",
+                darkMode ? "border-slate-800/50" : "border-slate-200/50",
+              )}
+            >
+              <div className="flex items-center space-x-4">
+                <motion.div
+                  className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500"
+                  whileHover={modernAnimations.scaleHover}
+                >
+                  <Settings className="h-6 w-6 text-white" />
+                </motion.div>
                 <div>
-                  <h2 className="text-xl font-bold">Settings & Configuration</h2>
-                  <p className="text-sm text-muted-foreground">Customize your TCO analysis parameters</p>
+                  <h2 className={cn("text-2xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
+                    Settings & Configuration
+                  </h2>
+                  <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
+                    Customize your TCO analysis parameters
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <Button size="sm" className="bg-primary hover:bg-primary/90">
+                <Button
+                  size="sm"
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-0"
+                >
                   <Save className="h-4 w-4 mr-1.5" />
                   Save Changes
                 </Button>
-                <Button size="sm" variant="outline" onClick={onClose}>
+                <Button size="sm" variant="outline" onClick={() => {}}>
+                  <RefreshCw className="h-4 w-4 mr-1.5" />
+                  Reset
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => {}}>
+                  <Upload className="h-4 w-4 mr-1.5" />
+                  Export
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => {}}>
+                  <Download className="h-4 w-4 mr-1.5" />
+                  Import
+                </Button>
+                <Button size="sm" variant="ghost" onClick={onClose}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
             </div>
 
-            <div className="border-b">
+            {/* Enhanced Tabs */}
+            <div className={cn("border-b relative z-10", darkMode ? "border-slate-800/50" : "border-slate-200/50")}>
               <div className="flex space-x-8 px-6">
                 {[
-                  { id: "organization", label: "Organization", icon: <Building /> },
-                  { id: "pricing", label: "Pricing", icon: <DollarSign /> },
-                  { id: "preferences", label: "Preferences", icon: <Settings /> },
-                  { id: "advanced", label: "Advanced", icon: <Zap /> },
+                  {
+                    id: "organization",
+                    label: "Organization",
+                    icon: <Building />,
+                    gradient: MODERN_COLORS.gradients.info,
+                  },
+                  { id: "pricing", label: "Pricing", icon: <DollarSign />, gradient: MODERN_COLORS.gradients.success },
+                  {
+                    id: "preferences",
+                    label: "Preferences",
+                    icon: <Settings />,
+                    gradient: MODERN_COLORS.gradients.purple,
+                  },
+                  { id: "advanced", label: "Advanced", icon: <Zap />, gradient: MODERN_COLORS.gradients.warning },
                 ].map((tab) => (
-                  <button
+                  <motion.button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "flex items-center space-x-2 py-4 border-b-2 transition-all duration-200",
-                      activeTab === tab.id
-                        ? "border-primary text-primary"
-                        : "border-transparent text-muted-foreground hover:text-foreground",
+                      "flex items-center space-x-2 py-4 border-b-2 transition-all duration-300 relative",
+                      activeTab === tab.id ? "border-emerald-500" : "border-transparent hover:border-emerald-300/50",
                     )}
+                    whileHover={modernAnimations.scaleHover}
                   >
-                    {React.cloneElement(tab.icon, { className: "h-4 w-4" })}
-                    <span className="font-medium">{tab.label}</span>
-                  </button>
+                    <motion.div
+                      className="p-2 rounded-xl"
+                      style={{
+                        background: activeTab === tab.id ? tab.gradient : "transparent",
+                      }}
+                      animate={{
+                        scale: activeTab === tab.id ? 1.1 : 1,
+                      }}
+                    >
+                      {React.cloneElement(tab.icon, {
+                        className: cn(
+                          "h-4 w-4 transition-colors",
+                          activeTab === tab.id ? "text-white" : darkMode ? "text-slate-400" : "text-slate-600",
+                        ),
+                      })}
+                    </motion.div>
+                    <span
+                      className={cn(
+                        "font-medium transition-colors",
+                        activeTab === tab.id
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : darkMode
+                            ? "text-slate-400"
+                            : "text-slate-600",
+                      )}
+                    >
+                      {tab.label}
+                    </span>
+                    {activeTab === tab.id && (
+                      <motion.div
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500"
+                        layoutId="activeSettingsTab"
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      />
+                    )}
+                  </motion.button>
                 ))}
               </div>
             </div>
 
-            <ScrollArea className="h-[60vh] p-6">
+            {/* Content */}
+            <ScrollArea className="h-[60vh] p-6 relative z-10">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.3 }}
                 >
                   {activeTab === "organization" && (
-                    <div className="space-y-6">
-                      <h3 className="text-lg font-semibold">Organization Details</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium">Number of Devices</Label>
-                          <Input
-                            type="number"
-                            value={customDevices}
-                            onChange={(e) => setCustomDevices(Number(e.target.value))}
-                          />
-                          <p className="text-xs text-muted-foreground">Include all network-connected devices</p>
+                    <div className="space-y-8">
+                      <div>
+                        <h3 className={cn("text-xl font-bold mb-6", darkMode ? "text-white" : "text-slate-900")}>
+                          Organization Details
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <motion.div
+                            className="space-y-3"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                          >
+                            <Label
+                              className={cn("text-sm font-semibold", darkMode ? "text-slate-300" : "text-slate-700")}
+                            >
+                              Number of Devices
+                            </Label>
+                            <Input
+                              type="number"
+                              value={customDevices}
+                              onChange={(e) => setCustomDevices(Number(e.target.value))}
+                              className={cn(
+                                "border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl",
+                                darkMode
+                                  ? "text-white placeholder:text-slate-400"
+                                  : "text-slate-900 placeholder:text-slate-500",
+                              )}
+                            />
+                            <p className={cn("text-xs", darkMode ? "text-slate-400" : "text-slate-500")}>
+                              Include all network-connected devices
+                            </p>
+                          </motion.div>
+
+                          <motion.div
+                            className="space-y-3"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            <Label
+                              className={cn("text-sm font-semibold", darkMode ? "text-slate-300" : "text-slate-700")}
+                            >
+                              Number of Users
+                            </Label>
+                            <Input
+                              type="number"
+                              value={customUsers}
+                              onChange={(e) => setCustomUsers(Number(e.target.value))}
+                              className={cn(
+                                "border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl",
+                                darkMode
+                                  ? "text-white placeholder:text-slate-400"
+                                  : "text-slate-900 placeholder:text-slate-500",
+                              )}
+                            />
+                            <p className={cn("text-xs", darkMode ? "text-slate-400" : "text-slate-500")}>
+                              Total user accounts requiring access
+                            </p>
+                          </motion.div>
+
+                          <motion.div
+                            className="space-y-3"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                          >
+                            <Label
+                              className={cn("text-sm font-semibold", darkMode ? "text-slate-300" : "text-slate-700")}
+                            >
+                              Industry
+                            </Label>
+                            <Select value={industry} onValueChange={setIndustry}>
+                              <SelectTrigger
+                                className={cn(
+                                  "border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl",
+                                  darkMode ? "text-white" : "text-slate-900",
+                                )}
+                              >
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {industryOptions.map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </motion.div>
+
+                          <motion.div
+                            className="space-y-3"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 }}
+                          >
+                            <Label
+                              className={cn("text-sm font-semibold", darkMode ? "text-slate-300" : "text-slate-700")}
+                            >
+                              Geographic Region
+                            </Label>
+                            <Select value={region} onValueChange={setRegion}>
+                              <SelectTrigger
+                                className={cn(
+                                  "border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl",
+                                  darkMode ? "text-white" : "text-slate-900",
+                                )}
+                              >
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {regionOptions.map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </motion.div>
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium">Number of Users</Label>
-                          <Input
-                            type="number"
-                            value={customUsers}
-                            onChange={(e) => setCustomUsers(Number(e.target.value))}
-                          />
-                          <p className="text-xs text-muted-foreground">Total user accounts requiring access</p>
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium">Industry</Label>
-                          <Select value={industry} onValueChange={setIndustry}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {industryOptions.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium">Geographic Region</Label>
-                          <Select value={region} onValueChange={setRegion}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {regionOptions.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <div className="space-y-3">
-                        <Label className="text-sm font-medium">Analysis Period</Label>
-                        <div className="px-3">
-                          <Slider
-                            value={[projectionYears]}
-                            onValueChange={(value) => setProjectionYears(value[0])}
-                            max={7}
-                            min={1}
-                            step={1}
-                            className="w-full"
-                          />
-                          <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                            <span>1 year</span>
-                            <span className="font-medium text-primary">{projectionYears} years</span>
-                            <span>7 years</span>
+
+                        <motion.div
+                          className="mt-8 space-y-4"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.5 }}
+                        >
+                          <Label
+                            className={cn("text-sm font-semibold", darkMode ? "text-slate-300" : "text-slate-700")}
+                          >
+                            Analysis Period
+                          </Label>
+                          <div className="px-4">
+                            <Slider
+                              value={[projectionYears]}
+                              onValueChange={(value) => setProjectionYears(value[0])}
+                              max={7}
+                              min={1}
+                              step={1}
+                              className="w-full"
+                            />
+                            <div className="flex justify-between text-xs text-slate-500 mt-2">
+                              <span>1 year</span>
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                                {projectionYears} years
+                              </span>
+                              <span>7 years</span>
+                            </div>
                           </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Recommended: 3-5 years for accurate ROI analysis
-                        </p>
+                          <p className={cn("text-xs", darkMode ? "text-slate-400" : "text-slate-500")}>
+                            Recommended: 3-5 years for accurate ROI analysis
+                          </p>
+                        </motion.div>
                       </div>
                     </div>
                   )}
 
                   {activeTab === "pricing" && (
-                    <div className="space-y-6">
-                      <h3 className="text-lg font-semibold">Pricing Configuration</h3>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium">Portnox Base Price (per device/month)</Label>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-lg font-bold text-muted-foreground">$</span>
-                            <Input
-                              type="number"
-                              step="0.1"
-                              value={portnoxBasePrice}
-                              onChange={(e) => setPortnoxBasePrice(Number(e.target.value))}
-                              className="w-32"
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-3">
-                          <Label className="text-sm font-medium">Portnox Add-ons</Label>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {Object.entries({
-                              atp: "Advanced Threat Protection (+$0.50/device)",
-                              compliance: "Compliance Automation (+$0.30/device)",
-                              iot: "IoT Security (+$0.40/device)",
-                              analytics: "Advanced Analytics (+$0.25/device)",
-                            }).map(([key, label]) => (
-                              <div key={key} className="flex items-center justify-between p-3 rounded-lg border">
-                                <span className="text-sm font-medium">{label}</span>
-                                <Switch
-                                  checked={portnoxAddons[key]}
-                                  onCheckedChange={(checked) => setPortnoxAddons({ ...portnoxAddons, [key]: checked })}
-                                />
-                              </div>
-                            ))}
-                          </div>
+                    <div className="space-y-8">
+                      <div>
+                        <h3 className={cn("text-xl font-bold mb-6", darkMode ? "text-white" : "text-slate-900")}>
+                          Pricing Configuration
+                        </h3>
+
+                        <div className="space-y-6">
+                          <motion.div
+                            className="space-y-3"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                          >
+                            <Label
+                              className={cn("text-sm font-semibold", darkMode ? "text-slate-300" : "text-slate-700")}
+                            >
+                              Portnox Base Price (per device/month)
+                            </Label>
+                            <div className="flex items-center space-x-3">
+                              <span className={cn("text-lg font-bold", darkMode ? "text-slate-400" : "text-slate-500")}>
+                                $
+                              </span>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={portnoxBasePrice}
+                                onChange={(e) => setPortnoxBasePrice(Number(e.target.value))}
+                                className={cn(
+                                  "w-32 border-0 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl",
+                                  darkMode ? "text-white" : "text-slate-900",
+                                )}
+                              />
+                            </div>
+                          </motion.div>
+
+                          <motion.div
+                            className="space-y-4"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            <Label
+                              className={cn("text-sm font-semibold", darkMode ? "text-slate-300" : "text-slate-700")}
+                            >
+                              Portnox Add-ons
+                            </Label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {Object.entries({
+                                atp: "Advanced Threat Protection (+$0.50/device)",
+                                compliance: "Compliance Automation (+$0.30/device)",
+                                iot: "IoT Security (+$0.40/device)",
+                                analytics: "Advanced Analytics (+$0.25/device)",
+                              }).map(([key, label], index) => (
+                                <motion.div
+                                  key={key}
+                                  className={cn(
+                                    "flex items-center justify-between p-4 rounded-xl border",
+                                    darkMode ? "bg-white/5 border-slate-700/50" : "bg-slate-50/50 border-slate-200/50",
+                                  )}
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: 0.3 + index * 0.1 }}
+                                >
+                                  <span
+                                    className={cn(
+                                      "text-sm font-medium",
+                                      darkMode ? "text-slate-300" : "text-slate-700",
+                                    )}
+                                  >
+                                    {label}
+                                  </span>
+                                  <Switch
+                                    checked={portnoxAddons[key]}
+                                    onCheckedChange={(checked) =>
+                                      setPortnoxAddons({ ...portnoxAddons, [key]: checked })
+                                    }
+                                    className="data-[state=checked]:bg-emerald-500"
+                                  />
+                                </motion.div>
+                              ))}
+                            </div>
+                          </motion.div>
                         </div>
                       </div>
                     </div>
                   )}
 
                   {activeTab === "preferences" && (
-                    <div className="space-y-6">
-                      <h3 className="text-lg font-semibold">Display Preferences</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Customize how data is displayed in charts and reports
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="p-4 rounded-lg border space-y-4">
-                          <h4 className="font-medium">Chart Preferences</h4>
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm">Default Chart Type</span>
-                              <Select defaultValue="bar">
-                                <SelectTrigger className="w-32">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="bar">Bar Chart</SelectItem>
-                                  <SelectItem value="line">Line Chart</SelectItem>
-                                  <SelectItem value="area">Area Chart</SelectItem>
-                                </SelectContent>
-                              </Select>
+                    <div className="space-y-8">
+                      <div>
+                        <h3 className={cn("text-xl font-bold mb-6", darkMode ? "text-white" : "text-slate-900")}>
+                          Display Preferences
+                        </h3>
+                        <p className={cn("text-sm mb-8", darkMode ? "text-slate-400" : "text-slate-500")}>
+                          Customize how data is displayed in charts and reports
+                        </p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <motion.div
+                            className={cn(
+                              "p-6 rounded-2xl border",
+                              darkMode ? "bg-white/5 border-slate-700/50" : "bg-slate-50/50 border-slate-200/50",
+                            )}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                          >
+                            <h4 className={cn("font-semibold mb-4", darkMode ? "text-white" : "text-slate-900")}>
+                              Chart Preferences
+                            </h4>
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm">Default Chart Type</span>
+                                <Select defaultValue="bar">
+                                  <SelectTrigger className="w-32">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="bar">Bar Chart</SelectItem>
+                                    <SelectItem value="line">Line Chart</SelectItem>
+                                    <SelectItem value="area">Area Chart</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm">Animation Speed</span>
+                                <Select defaultValue="normal">
+                                  <SelectTrigger className="w-32">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="slow">Slow</SelectItem>
+                                    <SelectItem value="normal">Normal</SelectItem>
+                                    <SelectItem value="fast">Fast</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
                             </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm">Animation Speed</span>
-                              <Select defaultValue="normal">
-                                <SelectTrigger className="w-32">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="slow">Slow</SelectItem>
-                                  <SelectItem value="normal">Normal</SelectItem>
-                                  <SelectItem value="fast">Fast</SelectItem>
-                                </SelectContent>
-                              </Select>
+                          </motion.div>
+
+                          <motion.div
+                            className={cn(
+                              "p-6 rounded-2xl border",
+                              darkMode ? "bg-white/5 border-slate-700/50" : "bg-slate-50/50 border-slate-200/50",
+                            )}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            <h4 className={cn("font-semibold mb-4", darkMode ? "text-white" : "text-slate-900")}>
+                              Data Display
+                            </h4>
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm">Currency Format</span>
+                                <Select defaultValue="usd">
+                                  <SelectTrigger className="w-32">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="usd">USD ($)</SelectItem>
+                                    <SelectItem value="eur">EUR (€)</SelectItem>
+                                    <SelectItem value="gbp">GBP (£)</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm">Number Format</span>
+                                <Select defaultValue="compact">
+                                  <SelectTrigger className="w-32">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="full">Full</SelectItem>
+                                    <SelectItem value="compact">Compact</SelectItem>
+                                    <SelectItem value="scientific">Scientific</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                        <div className="p-4 rounded-lg border space-y-4">
-                          <h4 className="font-medium">Data Display</h4>
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm">Currency Format</span>
-                              <Select defaultValue="usd">
-                                <SelectTrigger className="w-32">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="usd">USD ($)</SelectItem>
-                                  <SelectItem value="eur">EUR (€)</SelectItem>
-                                  <SelectItem value="gbp">GBP (£)</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm">Number Format</span>
-                              <Select defaultValue="compact">
-                                <SelectTrigger className="w-32">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="full">Full</SelectItem>
-                                  <SelectItem value="compact">Compact</SelectItem>
-                                  <SelectItem value="scientific">Scientific</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
+                          </motion.div>
                         </div>
                       </div>
                     </div>
                   )}
 
                   {activeTab === "advanced" && (
-                    <div className="space-y-6">
-                      <h3 className="text-lg font-semibold">Advanced Settings</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Advanced configuration options for detailed analysis
-                      </p>
-                      <div className="space-y-6">
-                        <div className="p-4 rounded-lg border space-y-4">
-                          <h4 className="font-medium">Calculation Parameters</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label className="text-sm">Discount Rate (%)</Label>
-                              <Input type="number" defaultValue="8" />
+                    <div className="space-y-8">
+                      <div>
+                        <h3 className={cn("text-xl font-bold mb-6", darkMode ? "text-white" : "text-slate-900")}>
+                          Advanced Settings
+                        </h3>
+                        <p className={cn("text-sm mb-8", darkMode ? "text-slate-400" : "text-slate-500")}>
+                          Advanced configuration options for detailed analysis
+                        </p>
+
+                        <div className="space-y-6">
+                          <motion.div
+                            className={cn(
+                              "p-6 rounded-2xl border",
+                              darkMode ? "bg-white/5 border-slate-700/50" : "bg-slate-50/50 border-slate-200/50",
+                            )}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                          >
+                            <h4 className={cn("font-semibold mb-4", darkMode ? "text-white" : "text-slate-900")}>
+                              Calculation Parameters
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label className="text-sm">Discount Rate (%)</Label>
+                                <Input type="number" defaultValue="8" className="w-full" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label className="text-sm">Inflation Rate (%)</Label>
+                                <Input type="number" defaultValue="3" className="w-full" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label className="text-sm">Risk Factor</Label>
+                                <Select defaultValue="medium">
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="low">Low</SelectItem>
+                                    <SelectItem value="medium">Medium</SelectItem>
+                                    <SelectItem value="high">High</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-2">
+                                <Label className="text-sm">Growth Rate (%)</Label>
+                                <Input type="number" defaultValue="5" className="w-full" />
+                              </div>
                             </div>
-                            <div className="space-y-2">
-                              <Label className="text-sm">Inflation Rate (%)</Label>
-                              <Input type="number" defaultValue="3" />
+                          </motion.div>
+
+                          <motion.div
+                            className={cn(
+                              "p-6 rounded-2xl border",
+                              darkMode ? "bg-white/5 border-slate-700/50" : "bg-slate-50/50 border-slate-200/50",
+                            )}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            <h4 className={cn("font-semibold mb-4", darkMode ? "text-white" : "text-slate-900")}>
+                              Data Sources
+                            </h4>
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm">Real-time Market Data</span>
+                                <Switch defaultChecked />
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm">Industry Benchmarks</span>
+                                <Switch defaultChecked />
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm">Vendor Pricing Updates</span>
+                                <Switch />
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm">Compliance Database</span>
+                                <Switch defaultChecked />
+                              </div>
                             </div>
-                            <div className="space-y-2">
-                              <Label className="text-sm">Risk Factor</Label>
-                              <Select defaultValue="medium">
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="low">Low</SelectItem>
-                                  <SelectItem value="medium">Medium</SelectItem>
-                                  <SelectItem value="high">High</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label className="text-sm">Growth Rate (%)</Label>
-                              <Input type="number" defaultValue="5" />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-4 rounded-lg border space-y-4">
-                          <h4 className="font-medium">Export & Integration</h4>
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm">Auto-export Reports</span>
-                              <Switch />
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm">API Access</span>
-                              <Switch />
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm">Real-time Updates</span>
-                              <Switch defaultChecked />
-                            </div>
-                          </div>
+                          </motion.div>
                         </div>
                       </div>
                     </div>
@@ -1612,1069 +2434,1121 @@ const SettingsPanel = ({
   )
 }
 
-// Enhanced Executive Dashboard Component
-const ExecutiveDashboard = ({ calculations, darkMode }: { calculations: CalculationResult[]; darkMode: boolean }) => {
-  const [selectedMetric, setSelectedMetric] = useState("tco")
-  const [timeRange, setTimeRange] = useState("5y")
-  const [viewMode, setViewMode] = useState("overview")
+// Main Enhanced Component
+export default function TcoAnalyzerUltimate() {
+  const [isClient, setIsClient] = useState(false)
+  const [darkMode, setDarkMode] = useState(true)
+  const [showSettings, setShowSettings] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
-  // Calculate aggregate metrics
-  const totalTCO = calculations.reduce((sum, calc) => sum + calc.totalTCO, 0)
-  const avgROI = calculations.reduce((sum, calc) => sum + (calc.roi?.totalROI || 0), 0) / calculations.length
-  const totalSavings = calculations.reduce((sum, calc) => sum + (calc.roi?.totalSavings || 0), 0)
-  const avgPaybackPeriod =
-    calculations.reduce((sum, calc) => sum + (calc.roi?.paybackPeriod || 0), 0) / calculations.length
+  // Advanced filtering and drill-down states
+  const [drillDownLevel, setDrillDownLevel] = useState<"overview" | "detailed" | "granular">("overview")
+  const [selectedMetric, setSelectedMetric] = useState<string | null>(null)
+  const [filterCriteria, setFilterCriteria] = useState({
+    costRange: [0, 10000000],
+    deploymentTime: [0, 365],
+    riskLevel: "all",
+    vendorType: "all",
+    features: [],
+  })
+  const [sortConfig, setSortConfig] = useState({ key: "total", direction: "asc" })
+  const [realTimeEnabled, setRealTimeEnabled] = useState(false)
+  const [lastUpdate, setLastUpdate] = useState(new Date())
+  const [chartType, setChartType] = useState<"bar" | "line" | "area" | "pie">("bar")
+  const [timeRange, setTimeRange] = useState<"1y" | "3y" | "5y" | "7y">("5y")
+  const [comparisonMode, setComparisonMode] = useState<"absolute" | "relative" | "normalized">("absolute")
+  const [selectedDataPoints, setSelectedDataPoints] = useState<string[]>([])
+  const [drillDownData, setDrillDownData] = useState<any>(null)
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false)
 
-  // Generate sparkline data
-  const generateSparklineData = (baseValue: number, trend: "up" | "down" | "neutral" = "up") => {
+  useEffect(() => {
+    setIsClient(true)
+    if (darkMode) {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
+
+    // Add custom CSS for animations
+    const style = document.createElement("style")
+    style.textContent = `
+      @keyframes gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+    `
+    document.head.appendChild(style)
+
+    return () => {
+      document.head.removeChild(style)
+    }
+  }, [darkMode])
+
+  const [orgSizeKey, setOrgSizeKey] = useState("medium")
+  const [customDevices, setCustomDevices] = useState(initialOrgSizeDetails.medium.devices)
+  const [customUsers, setCustomUsers] = useState(initialOrgSizeDetails.medium.users)
+  const [industry, setIndustry] = useState("technology")
+  const [projectionYears, setProjectionYears] = useState(5)
+  const [region, setRegion] = useState("north-america")
+  const [portnoxBasePrice, setPortnoxBasePrice] = useState(4.0)
+  const [portnoxAddons, setPortnoxAddons] = useState({
+    atp: false,
+    compliance: false,
+    iot: false,
+    analytics: false,
+  })
+  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco", "aruba", "meraki"])
+  const [activeMainTab, setActiveMainTab] = useState("dashboard")
+  const [activeSubTab, setActiveSubTab] = useState("cost-breakdown")
+  const [results, setResults] = useState<CalculationResult[] | null>(null)
+  const [calculationError, setCalculationError] = useState<string | null>(null)
+
+  // Utility functions for advanced features
+  const formatCurrency = (value: number, compact = false) => {
+    if (compact) {
+      if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
+      if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`
+      return `$${value.toFixed(0)}`
+    }
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value)
+  }
+
+  const calculatePercentageChange = (current: number, previous: number) => {
+    if (previous === 0) return 0
+    return ((current - previous) / previous) * 100
+  }
+
+  const generateTimeSeriesData = (baseValue: number, months: number, trend: "up" | "down" | "stable" = "stable") => {
     const data = []
-    const variation = baseValue * 0.1
-    for (let i = 0; i < 12; i++) {
-      const trendFactor = trend === "up" ? i * 0.05 : trend === "down" ? -i * 0.03 : 0
-      const randomVariation = (Math.random() - 0.5) * variation
+    for (let i = 0; i < months; i++) {
+      let value = baseValue
+      if (trend === "up") {
+        value = baseValue * (1 + i * 0.02 + (Math.random() * 0.1 - 0.05))
+      } else if (trend === "down") {
+        value = baseValue * (1 - i * 0.01 + (Math.random() * 0.1 - 0.05))
+      } else {
+        value = baseValue * (1 + (Math.random() * 0.2 - 0.1))
+      }
       data.push({
         month: i + 1,
-        value: baseValue + trendFactor * baseValue + randomVariation,
+        value: Math.max(0, value),
+        date: new Date(2024, i, 1).toISOString().split("T")[0],
       })
     }
     return data
   }
 
-  // FTE Analysis Data
-  const fteAnalysisData = [
-    { vendor: "Portnox", currentFTE: 0.5, projectedFTE: 0.3, savings: 0.2, efficiency: 95 },
-    { vendor: "Cisco ISE", currentFTE: 3.2, projectedFTE: 2.8, savings: 0.4, efficiency: 65 },
-    { vendor: "Aruba", currentFTE: 2.1, projectedFTE: 1.8, savings: 0.3, efficiency: 72 },
-    { vendor: "Microsoft", currentFTE: 1.8, projectedFTE: 1.5, savings: 0.3, efficiency: 78 },
-  ]
+  const filterResults = (results: CalculationResult[], criteria: any) => {
+    if (!results) return []
 
-  // Operations Analysis Data
-  const operationsData = [
-    { category: "Deployment", portnox: 7, cisco: 120, aruba: 90, microsoft: 45 },
-    { category: "Configuration", portnox: 2, cisco: 40, aruba: 30, microsoft: 20 },
-    { category: "Maintenance", portnox: 1, cisco: 8, aruba: 6, microsoft: 4 },
-    { category: "Troubleshooting", portnox: 0.5, cisco: 12, aruba: 8, microsoft: 6 },
-    { category: "Updates", portnox: 0, cisco: 4, aruba: 3, microsoft: 2 },
-  ]
+    return results.filter((result) => {
+      // Cost range filter
+      if (result.total < criteria.costRange[0] || result.total > criteria.costRange[1]) {
+        return false
+      }
 
-  // Implementation Timeline Data
-  const timelineData = [
-    { phase: "Planning", portnox: 3, cisco: 14, aruba: 10, microsoft: 7 },
-    { phase: "Procurement", portnox: 5, cisco: 21, aruba: 14, microsoft: 10 },
-    { phase: "Installation", portnox: 1, cisco: 30, aruba: 21, microsoft: 14 },
-    { phase: "Configuration", portnox: 2, cisco: 45, aruba: 30, microsoft: 21 },
-    { phase: "Testing", portnox: 3, cisco: 14, aruba: 10, microsoft: 7 },
-    { phase: "Rollout", portnox: 7, cisco: 60, aruba: 45, microsoft: 30 },
-  ]
+      // Deployment time filter
+      const deploymentDays = VENDOR_DATA[result.vendor]?.implementation?.deploymentTime?.fullDeployment / 24 || 0
+      if (deploymentDays < criteria.deploymentTime[0] || deploymentDays > criteria.deploymentTime[1]) {
+        return false
+      }
 
-  // Vendor Cost Breakdown Data
-  const vendorCostData = calculations.map((calc) => ({
-    vendor: calc.vendor,
-    licensing: calc.yearlyBreakdown?.[0]?.licensing || 0,
-    hardware: calc.yearlyBreakdown?.[0]?.hardware || 0,
-    implementation: calc.yearlyBreakdown?.[0]?.implementation || 0,
-    support: calc.yearlyBreakdown?.[0]?.support || 0,
-    operational: calc.yearlyBreakdown?.[0]?.operational || 0,
-    total: calc.totalTCO,
-  }))
+      // Risk level filter
+      if (criteria.riskLevel !== "all") {
+        const riskReduction = VENDOR_DATA[result.vendor]?.roi?.breachRiskReduction || 0
+        if (criteria.riskLevel === "high" && riskReduction < 0.8) return false
+        if (criteria.riskLevel === "medium" && (riskReduction < 0.5 || riskReduction >= 0.8)) return false
+        if (criteria.riskLevel === "low" && riskReduction >= 0.5) return false
+      }
 
-  return (
-    <div className="space-y-6">
-      {/* Executive Summary Header */}
-      <motion.div
-        className="relative overflow-hidden rounded-xl border bg-gradient-to-br from-primary/5 via-background to-primary/5 p-6"
-        variants={modernAnimations.slideInUp}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-50" />
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Executive Dashboard
+      // Vendor type filter
+      if (criteria.vendorType !== "all") {
+        const vendorCategory = VENDOR_DATA[result.vendor]?.category || ""
+        if (!vendorCategory.toLowerCase().includes(criteria.vendorType.toLowerCase())) {
+          return false
+        }
+      }
+
+      return true
+    })
+  }
+
+  const sortResults = (results: CalculationResult[], config: { key: string; direction: string }) => {
+    if (!results) return []
+
+    return [...results].sort((a, b) => {
+      let aValue, bValue
+
+      switch (config.key) {
+        case "total":
+          aValue = a.total
+          bValue = b.total
+          break
+        case "roi":
+          aValue = a.roi?.percentage || 0
+          bValue = b.roi?.percentage || 0
+          break
+        case "payback":
+          aValue = a.roi?.paybackMonths || 0
+          bValue = b.roi?.paybackMonths || 0
+          break
+        case "risk":
+          aValue = VENDOR_DATA[a.vendor]?.roi?.breachRiskReduction || 0
+          bValue = VENDOR_DATA[b.vendor]?.roi?.breachRiskReduction || 0
+          break
+        case "deployment":
+          aValue = VENDOR_DATA[a.vendor]?.implementation?.deploymentTime?.fullDeployment || 0
+          bValue = VENDOR_DATA[b.vendor]?.implementation?.deploymentTime?.fullDeployment || 0
+          break
+        default:
+          aValue = a.vendorName
+          bValue = b.vendorName
+      }
+
+      if (typeof aValue === "string") {
+        return config.direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
+      }
+
+      return config.direction === "asc" ? aValue - bValue : bValue - aValue
+    })
+  }
+
+  const currentDeviceCount = useMemo(
+    () => (orgSizeKey === "custom" ? customDevices : initialOrgSizeDetails[orgSizeKey]?.devices || 2500),
+    [orgSizeKey, customDevices],
+  )
+  const currentUsersCount = useMemo(
+    () => (orgSizeKey === "custom" ? customUsers : initialOrgSizeDetails[orgSizeKey]?.users || 1500),
+    [orgSizeKey, customUsers],
+  )
+
+  const handleCalculate = useCallback(() => {
+    setCalculationError(null)
+    try {
+      const calculatedResults = compareMultipleVendorsTCO(
+        selectedVendors,
+        {
+          devices: currentDeviceCount,
+          users: currentUsersCount,
+          industry: industry,
+          region: region,
+        },
+        {
+          years: projectionYears,
+        },
+        {
+          portnoxBasePrice: portnoxBasePrice,
+          portnoxAddons: portnoxAddons,
+        },
+      )
+
+      setResults(
+        calculatedResults.map((result) => ({
+          ...result,
+          vendorName: VENDOR_DATA[result.vendor].name,
+        })) as CalculationResult[],
+      )
+    } catch (error) {
+      console.error("Calculation error:", error)
+      setCalculationError("Failed to calculate TCO. Please check inputs.")
+      setResults(null)
+    }
+  }, [
+    selectedVendors,
+    orgSizeKey,
+    currentDeviceCount,
+    currentUsersCount,
+    industry,
+    projectionYears,
+    region,
+    portnoxBasePrice,
+    portnoxAddons,
+  ])
+
+  useEffect(() => {
+    if (selectedVendors.length > 0) {
+      handleCalculate()
+    } else {
+      setResults(null)
+    }
+  }, [handleCalculate, selectedVendors.length])
+
+  const handleVendorToggle = (vendorId: string) => {
+    setSelectedVendors((prev) => {
+      const isSelected = prev.includes(vendorId)
+      if (vendorId === "portnox" && isSelected && prev.length === 1) return prev
+
+      let newSelection
+      if (isSelected) {
+        newSelection = prev.filter((id) => id !== vendorId)
+      } else {
+        if (prev.length >= 6) {
+          // Simple alert, could be replaced with a toast notification
+          alert("You can select a maximum of 6 vendors for comparison.")
+          return prev
+        }
+        newSelection = [...prev, vendorId]
+      }
+      if (newSelection.includes("portnox")) {
+        return ["portnox", ...newSelection.filter((id) => id !== "portnox")]
+      }
+      return newSelection.length > 0 ? newSelection : ["portnox"]
+    })
+  }
+
+  const portnoxResult = useMemo(() => results?.find((r) => r?.vendor === "portnox"), [results])
+  const competitors = useMemo(() => results?.filter((r) => r?.vendor !== "portnox") || [], [results])
+  const lowestCompetitor = useMemo(
+    () =>
+      competitors.sort((a, b) => (a?.total ?? Number.POSITIVE_INFINITY) - (b?.total ?? Number.POSITIVE_INFINITY))[0],
+    [competitors],
+  )
+
+  const totalSavingsVsLowestCompetitor = useMemo(() => {
+    if (!portnoxResult || !lowestCompetitor) return 0
+    return lowestCompetitor.total - portnoxResult.total
+  }, [portnoxResult, lowestCompetitor])
+
+  const savingsPercentVsLowestCompetitor = useMemo(() => {
+    if (!portnoxResult || !lowestCompetitor || lowestCompetitor.total === 0) return 0
+    return (totalSavingsVsLowestCompetitor / lowestCompetitor.total) * 100
+  }, [totalSavingsVsLowestCompetitor, lowestCompetitor, portnoxResult])
+
+  // Enhanced Header Component
+  const ModernHeader = () => (
+    <motion.header
+      className={cn(
+        "sticky top-0 z-50 backdrop-blur-2xl transition-all duration-500 border-b",
+        darkMode
+          ? "bg-gradient-to-r from-slate-950/90 via-slate-900/90 to-slate-950/90 border-slate-800/30"
+          : "bg-gradient-to-r from-white/90 via-slate-50/90 to-white/90 border-slate-200/30",
+      )}
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 200, damping: 25, delay: 0.1 }}
+    >
+      {/* Animated Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div
+          className="w-full h-full"
+          style={{
+            backgroundImage: `radial-gradient(circle at 25% 25%, ${MODERN_COLORS.primary[500]}40 0%, transparent 50%), 
+                             radial-gradient(circle at 75% 75%, ${MODERN_COLORS.purple[500]}40 0%, transparent 50%)`,
+            backgroundSize: "200px 200px",
+            animation: "float 20s ease-in-out infinite",
+          }}
+        />
+      </div>
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="flex items-center justify-between h-20">
+          <div className="flex items-center space-x-6">
+            <motion.div
+              whileHover={{ rotate: [0, -5, 5, -5, 0], scale: 1.1 }}
+              transition={{ duration: 0.5 }}
+              className="relative"
+            >
+              <Image
+                src="/portnox-logo-color.png"
+                alt="Portnox Logo"
+                width={200}
+                height={50}
+                className="h-12 w-auto relative z-10"
+                priority
+              />
+              {/* Logo Glow Effect */}
+              <motion.div
+                className="absolute inset-0 rounded-lg"
+                animate={{
+                  boxShadow: [
+                    "0 0 20px rgba(20, 184, 166, 0.3)",
+                    "0 0 40px rgba(20, 184, 166, 0.5)",
+                    "0 0 20px rgba(20, 184, 166, 0.3)",
+                  ],
+                }}
+                transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+              />
+            </motion.div>
+
+            <Separator
+              orientation="vertical"
+              className={cn("h-10", darkMode ? "bg-slate-700/50" : "bg-slate-300/50")}
+            />
+
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
+              <h1 className="text-2xl font-bold tracking-tight">
+                <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+                  Total Cost Analyzer
+                </span>
               </h1>
-              <p className="text-muted-foreground mt-2">
-                Comprehensive TCO analysis across {calculations.length} vendors
+              <p className={cn("text-sm font-medium", darkMode ? "text-slate-400" : "text-slate-500")}>
+                Executive Intelligence Decision Platform
               </p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Select value={timeRange} onValueChange={setTimeRange}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1y">1 Year</SelectItem>
-                  <SelectItem value="3y">3 Years</SelectItem>
-                  <SelectItem value="5y">5 Years</SelectItem>
-                  <SelectItem value="7y">7 Years</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button size="sm" variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Key Metrics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <ModernKPICard
-              title="Total TCO"
-              value={`$${(totalTCO / 1000000).toFixed(1)}M`}
-              subtitle="5-year projection"
-              icon={DollarSign}
-              trend="down"
-              trendValue="-23.5%"
-              darkMode={darkMode}
-              sparklineData={generateSparklineData(totalTCO, "down")}
-            />
-            <ModernKPICard
-              title="Average ROI"
-              value={`${(avgROI * 100).toFixed(0)}%`}
-              subtitle="Return on investment"
-              icon={TrendingUp}
-              trend="up"
-              trendValue="+15.2%"
-              darkMode={darkMode}
-              sparklineData={generateSparklineData(avgROI * 100, "up")}
-            />
-            <ModernKPICard
-              title="Total Savings"
-              value={`$${(totalSavings / 1000000).toFixed(1)}M`}
-              subtitle="vs. status quo"
-              icon={Target}
-              trend="up"
-              trendValue="+$2.1M"
-              darkMode={darkMode}
-              sparklineData={generateSparklineData(totalSavings, "up")}
-            />
-            <ModernKPICard
-              title="Payback Period"
-              value={`${avgPaybackPeriod.toFixed(1)} mo`}
-              subtitle="Average across vendors"
-              icon={Clock}
-              trend="down"
-              trendValue="-3.2 mo"
-              darkMode={darkMode}
-              sparklineData={generateSparklineData(avgPaybackPeriod, "down")}
-            />
+          <div className="flex items-center space-x-4">
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.button
+                    onClick={() => setShowSettings(true)}
+                    className={cn(
+                      "p-3 rounded-2xl transition-all duration-300 relative group",
+                      darkMode
+                        ? "bg-white/5 hover:bg-white/10 text-slate-400 hover:text-slate-300"
+                        : "bg-black/5 hover:bg-black/10 text-slate-600 hover:text-slate-700",
+                    )}
+                    whileHover={modernAnimations.scaleHover}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <Settings className="h-5 w-5" />
+                    {/* Button Glow */}
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ background: MODERN_COLORS.gradients.portnox }}
+                    />
+                  </motion.button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  className={cn(
+                    "backdrop-blur-xl border-0",
+                    darkMode ? "bg-slate-900/90 text-white" : "bg-white/90 text-slate-900",
+                  )}
+                >
+                  <p>Settings & Configuration</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.button
+                    onClick={() => setDarkMode(!darkMode)}
+                    className={cn(
+                      "p-3 rounded-2xl transition-all duration-300 relative group",
+                      darkMode
+                        ? "bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400"
+                        : "bg-slate-800/10 hover:bg-slate-800/20 text-slate-600",
+                    )}
+                    whileHover={modernAnimations.scaleHover}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    {darkMode ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+                    {/* Button Glow */}
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{
+                        background: darkMode
+                          ? "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)"
+                          : "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+                      }}
+                    />
+                  </motion.button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  className={cn(
+                    "backdrop-blur-xl border-0",
+                    darkMode ? "bg-slate-900/90 text-white" : "bg-white/90 text-slate-900",
+                  )}
+                >
+                  <p>Toggle {darkMode ? "Light" : "Dark"} Mode</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <motion.div whileHover={modernAnimations.scaleHover} whileTap={{ scale: 0.95 }}>
+              <Button
+                size="sm"
+                variant="outline"
+                className={cn(
+                  "hidden sm:flex items-center space-x-2 border-0 backdrop-blur-xl",
+                  darkMode
+                    ? "bg-white/5 hover:bg-white/10 text-slate-300"
+                    : "bg-black/5 hover:bg-black/10 text-slate-700",
+                )}
+              >
+                <Download className="h-4 w-4" />
+                <span>Export PDF</span>
+              </Button>
+            </motion.div>
+
+            <motion.div whileHover={modernAnimations.scaleHover} whileTap={{ scale: 0.95 }}>
+              <Button
+                size="sm"
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-0 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+              >
+                <Phone className="h-4 w-4 mr-2" />
+                Schedule Demo
+              </Button>
+            </motion.div>
           </div>
         </div>
-      </motion.div>
+      </div>
+    </motion.header>
+  )
 
-      {/* View Mode Selector */}
-      <div className="flex items-center justify-between">
-        <Tabs value={viewMode} onValueChange={setViewMode} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="fte">FTE Analysis</TabsTrigger>
-            <TabsTrigger value="operations">Operations</TabsTrigger>
-            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+  // Enhanced Main Tab Navigation
+  const ModernMainTabNavigation = () => (
+    <motion.nav
+      className={cn(
+        "sticky top-20 z-40 backdrop-blur-2xl border-b",
+        darkMode
+          ? "bg-gradient-to-r from-slate-900/80 via-slate-800/80 to-slate-900/80 border-slate-800/30"
+          : "bg-gradient-to-r from-white/80 via-slate-50/80 to-white/80 border-slate-200/30",
+      )}
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 200, damping: 25, delay: 0.1 }}
+    >
+      <div className="container mx-auto px-4">
+        <Tabs value={activeMainTab} onValueChange={setActiveMainTab} className="w-full">
+          <TabsList className="flex items-center h-auto py-0 bg-transparent rounded-none justify-start overflow-x-auto">
+            {MAIN_TABS_CONFIG.map((tab, index) => (
+              <motion.div
+                key={tab.value}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.25 + index * 0.05, type: "spring", stiffness: 120, damping: 15 }}
+                className="flex-shrink-0"
+              >
+                <TabsTrigger
+                  value={tab.value}
+                  className={cn(
+                    "relative flex items-center h-14 text-sm rounded-none px-8 py-3 transition-all duration-300",
+                    "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+                    "group whitespace-nowrap border-0",
+                    activeMainTab === tab.value
+                      ? darkMode
+                        ? "text-emerald-400"
+                        : "text-emerald-600"
+                      : darkMode
+                        ? "text-slate-400 hover:text-slate-200"
+                        : "text-slate-500 hover:text-slate-700",
+                  )}
+                >
+                  {/* Tab Background */}
+                  {activeMainTab === tab.value && (
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl opacity-20"
+                      style={{ background: MODERN_COLORS.gradients.portnox }}
+                      layoutId="activeTabBackground"
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    />
+                  )}
+
+                  <motion.div
+                    className={cn("h-6 w-6 mr-3 transition-all duration-300", "group-hover:scale-110")}
+                    animate={activeMainTab === tab.value ? modernAnimations.float : {}}
+                  >
+                    {React.cloneElement(tab.icon, { className: "h-full w-full" })}
+                  </motion.div>
+
+                  <span
+                    className={cn(
+                      "font-medium transition-all duration-300",
+                      activeMainTab === tab.value ? "font-semibold" : "",
+                    )}
+                  >
+                    {tab.label}
+                  </span>
+
+                  {activeMainTab === tab.value && (
+                    <motion.div
+                      className="absolute bottom-0 left-0 right-0 h-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
+                      layoutId="activeMainTabIndicator"
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                </TabsTrigger>
+              </motion.div>
+            ))}
           </TabsList>
         </Tabs>
       </div>
-
-      {/* Dynamic Content Based on View Mode */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={viewMode}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-        >
-          {viewMode === "overview" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* TCO Comparison Chart */}
-              <ModernGradientCard gradient="hologram" darkMode={darkMode} className="col-span-1 lg:col-span-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <BarChart3 className="h-5 w-5 text-primary" />
-                    <span>Total Cost of Ownership Comparison</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={vendorCostData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                        <XAxis dataKey="vendor" />
-                        <YAxis tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`} />
-                        <ReTooltip
-                          formatter={(value: any) => [`$${(value / 1000000).toFixed(2)}M`, ""]}
-                          labelFormatter={(label) => `Vendor: ${label}`}
-                        />
-                        <ReLegend />
-                        <Bar dataKey="licensing" stackId="a" fill="#14b8a6" name="Licensing" />
-                        <Bar dataKey="hardware" stackId="a" fill="#0d9488" name="Hardware" />
-                        <Bar dataKey="implementation" stackId="a" fill="#0f766e" name="Implementation" />
-                        <Bar dataKey="support" stackId="a" fill="#115e59" name="Support" />
-                        <Bar dataKey="operational" stackId="a" fill="#134e4a" name="Operational" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </ModernGradientCard>
-
-              {/* ROI Comparison */}
-              <ModernGradientCard gradient="aurora" darkMode={darkMode}>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <TrendingUp className="h-5 w-5 text-primary" />
-                    <span>ROI Comparison</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={calculations.map((calc) => ({
-                          vendor: calc.vendor,
-                          roi: (calc.roi?.totalROI || 0) * 100,
-                        }))}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                        <XAxis dataKey="vendor" />
-                        <YAxis tickFormatter={(value) => `${value}%`} />
-                        <ReTooltip formatter={(value: any) => [`${value.toFixed(1)}%`, "ROI"]} />
-                        <Bar dataKey="roi" fill="#14b8a6" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </ModernGradientCard>
-
-              {/* Risk Assessment */}
-              <ModernGradientCard gradient="sunset" darkMode={darkMode}>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Shield className="h-5 w-5 text-primary" />
-                    <span>Risk Assessment</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart
-                        data={[
-                          { subject: "Security", portnox: 95, cisco: 85, aruba: 80, microsoft: 75 },
-                          { subject: "Scalability", portnox: 90, cisco: 95, aruba: 85, microsoft: 80 },
-                          { subject: "Ease of Use", portnox: 95, cisco: 60, aruba: 70, microsoft: 75 },
-                          { subject: "Integration", portnox: 85, cisco: 90, aruba: 80, microsoft: 95 },
-                          { subject: "Support", portnox: 85, cisco: 95, aruba: 85, microsoft: 90 },
-                          { subject: "Innovation", portnox: 95, cisco: 70, aruba: 75, microsoft: 80 },
-                        ]}
-                      >
-                        <PolarGrid />
-                        <PolarAngleAxis dataKey="subject" />
-                        <PolarRadiusAxis angle={90} domain={[0, 100]} />
-                        <Radar name="Portnox" dataKey="portnox" stroke="#14b8a6" fill="#14b8a6" fillOpacity={0.1} />
-                        <Radar name="Cisco" dataKey="cisco" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.1} />
-                        <Radar name="Aruba" dataKey="aruba" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.1} />
-                        <Radar name="Microsoft" dataKey="microsoft" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.1} />
-                        <ReLegend />
-                      </RadarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </ModernGradientCard>
-            </div>
-          )}
-
-          {viewMode === "fte" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* FTE Requirements Chart */}
-              <ModernGradientCard gradient="cyber" darkMode={darkMode} className="col-span-1 lg:col-span-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Users className="h-5 w-5 text-primary" />
-                    <span>FTE Requirements Analysis</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={fteAnalysisData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                        <XAxis dataKey="vendor" />
-                        <YAxis />
-                        <ReTooltip />
-                        <ReLegend />
-                        <Bar dataKey="currentFTE" fill="#ef4444" name="Current FTE Required" />
-                        <Bar dataKey="projectedFTE" fill="#14b8a6" name="Projected FTE Required" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </ModernGradientCard>
-
-              {/* FTE Savings */}
-              <ModernGradientCard gradient="neon" darkMode={darkMode}>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Briefcase className="h-5 w-5 text-primary" />
-                    <span>FTE Cost Savings</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {fteAnalysisData.map((item, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                        <div>
-                          <p className="font-medium">{item.vendor}</p>
-                          <p className="text-sm text-muted-foreground">{item.savings.toFixed(1)} FTE saved</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-green-600">
-                            ${((item.savings * 120000) / 1000).toFixed(0)}K/year
-                          </p>
-                          <p className="text-xs text-muted-foreground">Annual savings</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </ModernGradientCard>
-
-              {/* Efficiency Metrics */}
-              <ModernGradientCard gradient="matrix" darkMode={darkMode}>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Activity className="h-5 w-5 text-primary" />
-                    <span>Operational Efficiency</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={fteAnalysisData.map((item) => ({
-                            name: item.vendor,
-                            value: item.efficiency,
-                          }))}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          dataKey="value"
-                          label={({ name, value }) => `${name}: ${value}%`}
-                        >
-                          {fteAnalysisData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={["#14b8a6", "#3b82f6", "#f59e0b", "#8b5cf6"][index]} />
-                          ))}
-                        </Pie>
-                        <ReTooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </ModernGradientCard>
-            </div>
-          )}
-
-          {viewMode === "operations" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Operations Comparison */}
-              <ModernGradientCard gradient="hologram" darkMode={darkMode} className="col-span-1 lg:col-span-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <SlidersHorizontal className="h-5 w-5 text-primary" />
-                    <span>Operational Complexity Analysis</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={operationsData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                        <XAxis dataKey="category" />
-                        <YAxis tickFormatter={(value) => `${value}h`} />
-                        <ReTooltip formatter={(value: any) => [`${value} hours`, ""]} />
-                        <ReLegend />
-                        <Bar dataKey="portnox" fill="#14b8a6" name="Portnox" />
-                        <Bar dataKey="cisco" fill="#3b82f6" name="Cisco ISE" />
-                        <Bar dataKey="aruba" fill="#f59e0b" name="Aruba" />
-                        <Bar dataKey="microsoft" fill="#8b5cf6" name="Microsoft" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </ModernGradientCard>
-
-              {/* Maintenance Overhead */}
-              <ModernGradientCard gradient="aurora" darkMode={darkMode}>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Settings className="h-5 w-5 text-primary" />
-                    <span>Monthly Maintenance</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { vendor: "Portnox", hours: 2, cost: 400 },
-                      { vendor: "Cisco ISE", hours: 32, cost: 6400 },
-                      { vendor: "Aruba", hours: 24, cost: 4800 },
-                      { vendor: "Microsoft", hours: 16, cost: 3200 },
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                        <div>
-                          <p className="font-medium">{item.vendor}</p>
-                          <p className="text-sm text-muted-foreground">{item.hours} hours/month</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold">${item.cost.toLocaleString()}</p>
-                          <p className="text-xs text-muted-foreground">Monthly cost</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </ModernGradientCard>
-
-              {/* Automation Level */}
-              <ModernGradientCard gradient="sunset" darkMode={darkMode}>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Zap className="h-5 w-5 text-primary" />
-                    <span>Automation Level</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { vendor: "Portnox", automation: 95, color: "#14b8a6" },
-                      { vendor: "Cisco ISE", automation: 45, color: "#3b82f6" },
-                      { vendor: "Aruba", automation: 60, color: "#f59e0b" },
-                      { vendor: "Microsoft", automation: 70, color: "#8b5cf6" },
-                    ].map((item, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="font-medium">{item.vendor}</span>
-                          <span className="text-sm font-bold">{item.automation}%</span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="h-2 rounded-full transition-all duration-500"
-                            style={{
-                              width: `${item.automation}%`,
-                              backgroundColor: item.color,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </ModernGradientCard>
-            </div>
-          )}
-
-          {viewMode === "timeline" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Implementation Timeline */}
-              <ModernGradientCard gradient="cyber" darkMode={darkMode} className="col-span-1 lg:col-span-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Calendar className="h-5 w-5 text-primary" />
-                    <span>Implementation Timeline Comparison</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={timelineData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                        <XAxis dataKey="phase" />
-                        <YAxis tickFormatter={(value) => `${value}d`} />
-                        <ReTooltip formatter={(value: any) => [`${value} days`, ""]} />
-                        <ReLegend />
-                        <Bar dataKey="portnox" fill="#14b8a6" name="Portnox" />
-                        <Bar dataKey="cisco" fill="#3b82f6" name="Cisco ISE" />
-                        <Bar dataKey="aruba" fill="#f59e0b" name="Aruba" />
-                        <Bar dataKey="microsoft" fill="#8b5cf6" name="Microsoft" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </ModernGradientCard>
-
-              {/* Time to Value */}
-              <ModernGradientCard gradient="neon" darkMode={darkMode}>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Timer className="h-5 w-5 text-primary" />
-                    <span>Time to Value</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { vendor: "Portnox", days: 21, value: "Full ROI" },
-                      { vendor: "Cisco ISE", days: 184, value: "Partial ROI" },
-                      { vendor: "Aruba", days: 140, value: "Partial ROI" },
-                      { vendor: "Microsoft", days: 89, value: "Moderate ROI" },
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                        <div>
-                          <p className="font-medium">{item.vendor}</p>
-                          <p className="text-sm text-muted-foreground">{item.value}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold">{item.days} days</p>
-                          <p className="text-xs text-muted-foreground">To realize value</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </ModernGradientCard>
-
-              {/* Risk Timeline */}
-              <ModernGradientCard gradient="matrix" darkMode={darkMode}>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <AlertTriangle className="h-5 w-5 text-primary" />
-                    <span>Implementation Risk</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { vendor: "Portnox", risk: "Low", score: 15, color: "#10b981" },
-                      { vendor: "Cisco ISE", risk: "Very High", score: 85, color: "#ef4444" },
-                      { vendor: "Aruba", risk: "High", score: 70, color: "#f59e0b" },
-                      { vendor: "Microsoft", risk: "Medium", score: 45, color: "#3b82f6" },
-                    ].map((item, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="font-medium">{item.vendor}</span>
-                          <Badge
-                            variant="outline"
-                            className="text-xs"
-                            style={{ borderColor: item.color, color: item.color }}
-                          >
-                            {item.risk}
-                          </Badge>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="h-2 rounded-full transition-all duration-500"
-                            style={{
-                              width: `${item.score}%`,
-                              backgroundColor: item.color,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </ModernGradientCard>
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
-    </div>
+    </motion.nav>
   )
-}
 
-// Main TCO Analyzer Component
-export default function TCOAnalyzer() {
-  // State management
-  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco", "aruba", "microsoft"])
-  const [activeTab, setActiveTab] = useState("dashboard")
-  const [activeSubTab, setActiveSubTab] = useState("cost-breakdown")
-  const [darkMode, setDarkMode] = useState(false)
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isVendorPanelCollapsed, setIsVendorPanelCollapsed] = useState(false)
+  // Enhanced Sub Tab Navigation
+  const ModernSubTabNavigation = () => {
+    let subTabs: typeof ANALYSIS_SUB_TABS = []
 
-  // Configuration state
-  const [orgSizeKey, setOrgSizeKey] = useState("medium")
-  const [customDevices, setCustomDevices] = useState(2500)
-  const [customUsers, setCustomUsers] = useState(1500)
-  const [industry, setIndustry] = useState("technology")
-  const [region, setRegion] = useState("north-america")
-  const [projectionYears, setProjectionYears] = useState(5)
-  const [portnoxBasePrice, setPortnoxBasePrice] = useState(3.5)
-  const [portnoxAddons, setPortnoxAddons] = useState({
-    atp: true,
-    compliance: true,
-    iot: false,
-    analytics: true,
-  })
-
-  // Calculate TCO for selected vendors
-  const calculations = useMemo(() => {
-    return selectedVendors
-      .map((vendorId) => {
-        const vendor = VENDOR_DATA[vendorId]
-        if (!vendor) return null
-
-        // Mock calculation - replace with actual TCO calculation logic
-        const basePrice = vendor.pricing.startingPrice
-        const devices = orgSizeKey === "custom" ? customDevices : initialOrgSizeDetails[orgSizeKey].devices
-        const users = orgSizeKey === "custom" ? customUsers : initialOrgSizeDetails[orgSizeKey].users
-
-        const yearlyLicensing = basePrice * devices * 12
-        const yearlyHardware = vendor.implementation.requiresHardware ? devices * 0.5 * 12 : 0
-        const yearlyImplementation = vendor.implementation.deploymentTime.fullDeployment * 200
-        const yearlySupport = yearlyLicensing * 0.2
-        const yearlyOperational = devices * 0.1 * 12
-
-        const totalYearlyCost =
-          yearlyLicensing + yearlyHardware + yearlyImplementation + yearlySupport + yearlyOperational
-        const totalTCO = totalYearlyCost * projectionYears
-
-        // ROI calculation
-        const breachRiskReduction = vendor.roi.breachRiskReduction
-        const operationalEfficiency = vendor.roi.operationalEfficiency
-        const complianceAutomation = vendor.roi.complianceAutomation
-
-        const breachCostAvoidance = devices * 1000 * breachRiskReduction * projectionYears
-        const operationalSavings = users * 500 * operationalEfficiency * projectionYears
-        const complianceSavings = devices * 200 * complianceAutomation * projectionYears
-
-        const totalSavings = breachCostAvoidance + operationalSavings + complianceSavings
-        const netBenefit = totalSavings - totalTCO
-        const roi = netBenefit / totalTCO
-        const paybackPeriod = totalTCO / (totalSavings / projectionYears / 12)
-
-        return {
-          id: vendorId,
-          vendor: vendor.name,
-          totalTCO,
-          yearlyBreakdown: Array.from({ length: projectionYears }, (_, year) => ({
-            year: year + 1,
-            licensing: yearlyLicensing,
-            hardware: year === 0 ? yearlyHardware : 0,
-            implementation: year === 0 ? yearlyImplementation : 0,
-            support: yearlySupport,
-            operational: yearlyOperational,
-            total: year === 0 ? totalYearlyCost : yearlyLicensing + yearlySupport + yearlyOperational,
-          })),
-          roi: {
-            totalROI: roi,
-            totalSavings,
-            netBenefit,
-            paybackPeriod,
-            breachCostAvoidance,
-            operationalSavings,
-            complianceSavings,
-          },
-        }
-      })
-      .filter(Boolean) as CalculationResult[]
-  }, [selectedVendors, orgSizeKey, customDevices, customUsers, projectionYears, portnoxBasePrice, portnoxAddons])
-
-  // Vendor toggle handler
-  const handleVendorToggle = useCallback((vendorId: string) => {
-    setSelectedVendors((prev) => {
-      if (prev.includes(vendorId)) {
-        return prev.filter((id) => id !== vendorId)
-      } else {
-        return [...prev, vendorId]
-      }
-    })
-  }, [])
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey || event.metaKey) {
-        switch (event.key) {
-          case "s":
-            event.preventDefault()
-            setIsSettingsOpen(true)
-            break
-          case "d":
-            event.preventDefault()
-            setDarkMode(!darkMode)
-            break
-          case "f":
-            event.preventDefault()
-            setIsVendorPanelCollapsed(!isVendorPanelCollapsed)
-            break
-        }
-      }
+    if (activeMainTab === "analysis") {
+      subTabs = ANALYSIS_SUB_TABS
+    }
+    if (activeMainTab === "comparison") {
+      subTabs = COMPARISON_SUB_TABS
     }
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [darkMode, isVendorPanelCollapsed])
+    if (subTabs.length === 0) return null
+
+    return (
+      <motion.div
+        className={cn(
+          "border-b backdrop-blur-xl",
+          darkMode ? "bg-slate-900/50 border-slate-800/30" : "bg-white/50 border-slate-200/30",
+        )}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <div className="container mx-auto px-4">
+          <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
+            <TabsList className="flex items-center h-auto py-0 bg-transparent rounded-none justify-start overflow-x-auto">
+              {subTabs.map((tab, index) => (
+                <motion.div
+                  key={tab.value}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + index * 0.05 }}
+                  className="flex-shrink-0"
+                >
+                  <TabsTrigger
+                    value={tab.value}
+                    className={cn(
+                      "relative flex items-center h-12 text-sm rounded-none px-6 py-2 transition-all duration-300",
+                      "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+                      "group whitespace-nowrap border-0",
+                      activeSubTab === tab.value
+                        ? darkMode
+                          ? "text-teal-400"
+                          : "text-teal-600"
+                        : darkMode
+                          ? "text-slate-500 hover:text-slate-300"
+                          : "text-slate-600 hover:text-slate-800",
+                    )}
+                  >
+                    <motion.div
+                      className="h-4 w-4 mr-2 transition-all duration-300"
+                      animate={activeSubTab === tab.value ? { rotate: [0, 5, -5, 0] } : {}}
+                      transition={{ duration: 0.5 }}
+                    >
+                      {React.cloneElement(tab.icon, { className: "h-full w-full" })}
+                    </motion.div>
+
+                    <span
+                      className={cn(
+                        "font-medium transition-all duration-300",
+                        activeSubTab === tab.value ? "font-semibold" : "",
+                      )}
+                    >
+                      {tab.label}
+                    </span>
+
+                    {activeSubTab === tab.value && (
+                      <motion.div
+                        className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
+                        layoutId="activeSubTabIndicator"
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      />
+                    )}
+                  </TabsTrigger>
+                </motion.div>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      </motion.div>
+    )
+  }
+
+  // Enhanced Executive Dashboard
+  const ExecutiveDashboard = () => {
+    const kpiData = useMemo(() => {
+      if (!results || results.length === 0) return []
+
+      const portnoxData = results.find((r) => r.vendor === "portnox")
+      const competitorData = results.filter((r) => r.vendor !== "portnox")
+      const avgCompetitorCost = competitorData.reduce((sum, r) => sum + r.total, 0) / competitorData.length
+
+      return [
+        {
+          title: "Total Savings",
+          value: formatCurrency(avgCompetitorCost - (portnoxData?.total || 0), true),
+          subtitle: "vs. Average Competitor",
+          icon: DollarSign,
+          trend: "up",
+          trendValue: `${(((avgCompetitorCost - (portnoxData?.total || 0)) / avgCompetitorCost) * 100).toFixed(1)}%`,
+          color: "success",
+          sparklineData: generateTimeSeriesData(avgCompetitorCost - (portnoxData?.total || 0), 12, "up"),
+        },
+        {
+          title: "ROI",
+          value: `${portnoxData?.roi?.percentage?.toFixed(1) || 0}%`,
+          subtitle: `${portnoxData?.roi?.paybackMonths || 0} month payback`,
+          icon: TrendingUp,
+          trend: "up",
+          trendValue: "+23.5%",
+          color: "primary",
+          sparklineData: generateTimeSeriesData(portnoxData?.roi?.percentage || 0, 12, "up"),
+        },
+        {
+          title: "Risk Reduction",
+          value: "94%",
+          subtitle: "Breach risk mitigation",
+          icon: Shield,
+          trend: "up",
+          trendValue: "+18%",
+          color: "purple",
+          sparklineData: generateTimeSeriesData(94, 12, "stable"),
+        },
+        {
+          title: "Deployment Time",
+          value: "7 days",
+          subtitle: "vs. 120+ days average",
+          icon: Clock,
+          trend: "down",
+          trendValue: "-94%",
+          color: "cyan",
+          sparklineData: generateTimeSeriesData(7, 12, "stable"),
+        },
+      ]
+    }, [results])
+
+    return (
+      <motion.div className="space-y-8" variants={modernAnimations.staggerContainer} initial="hidden" animate="visible">
+        {/* KPI Cards Grid */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          variants={modernAnimations.slideInUp}
+        >
+          {kpiData.map((kpi, index) => (
+            <motion.div key={kpi.title} variants={modernAnimations.slideInUp} transition={{ delay: index * 0.1 }}>
+              <ModernKPICard {...kpi} darkMode={darkMode} size="default" interactive={true} />
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Main Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* TCO Comparison Chart */}
+          <motion.div variants={modernAnimations.slideInUp}>
+            <ModernGradientCard darkMode={darkMode} gradient="hologram" glow={false}>
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className={cn("text-xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
+                      Total Cost Comparison
+                    </CardTitle>
+                    <p className={cn("text-sm mt-1", darkMode ? "text-slate-400" : "text-slate-500")}>
+                      {projectionYears}-year TCO analysis
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button size="sm" variant="outline" className="h-8 bg-transparent">
+                      <BarChart3 className="h-3 w-3 mr-1" />
+                      Details
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent">
+                          <MoreHorizontal className="h-3 w-3" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                          <Download className="h-4 w-4 mr-2" />
+                          Export Chart
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Maximize2 className="h-4 w-4 mr-2" />
+                          Full Screen
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {results && results.length > 0 ? (
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart
+                        data={results.map((r) => ({
+                          vendor: r.vendorName,
+                          total: r.total,
+                          licensing: r.licensing,
+                          implementation: r.implementation,
+                          operations: r.operations,
+                          roi: r.roi?.percentage || 0,
+                        }))}
+                      >
+                        <defs>
+                          <linearGradient id="totalGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.8} />
+                            <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.2} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
+                        <XAxis
+                          dataKey="vendor"
+                          tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
+                          axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
+                        />
+                        <YAxis
+                          tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
+                          axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
+                          tickFormatter={(value) => formatCurrency(value, true)}
+                        />
+                        <ReTooltip
+                          contentStyle={{
+                            backgroundColor: darkMode ? "#1f2937" : "#ffffff",
+                            border: "none",
+                            borderRadius: "12px",
+                            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                          }}
+                          formatter={(value: any, name: string) => [
+                            typeof value === "number" ? formatCurrency(value) : value,
+                            name,
+                          ]}
+                        />
+                        <ReLegend />
+                        <Bar dataKey="total" fill="url(#totalGradient)" radius={[4, 4, 0, 0]} />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-80 flex items-center justify-center">
+                    <div className="text-center">
+                      <BarChart3
+                        className={cn("h-12 w-12 mx-auto mb-4", darkMode ? "text-slate-600" : "text-slate-400")}
+                      />
+                      <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>
+                        Select vendors to view comparison
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </ModernGradientCard>
+          </motion.div>
+
+          {/* ROI Timeline Chart */}
+          <motion.div variants={modernAnimations.slideInUp}>
+            <ModernGradientCard darkMode={darkMode} gradient="aurora" glow={false}>
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className={cn("text-xl font-bold", darkMode ? "text-white" : "text-slate-900")}>
+                      ROI Timeline
+                    </CardTitle>
+                    <p className={cn("text-sm mt-1", darkMode ? "text-slate-400" : "text-slate-500")}>
+                      Return on investment over time
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button size="sm" variant="outline" className="h-8 bg-transparent">
+                      <LineChartIcon className="h-3 w-3 mr-1" />
+                      Analyze
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={generateTimeSeriesData(100, 60, "up")}>
+                      <defs>
+                        <linearGradient id="roiGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
+                      <XAxis
+                        dataKey="month"
+                        tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
+                        axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
+                      />
+                      <YAxis
+                        tick={{ fill: darkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
+                        axisLine={{ stroke: darkMode ? "#4b5563" : "#d1d5db" }}
+                        tickFormatter={(value) => `${value}%`}
+                      />
+                      <ReTooltip
+                        contentStyle={{
+                          backgroundColor: darkMode ? "#1f2937" : "#ffffff",
+                          border: "none",
+                          borderRadius: "12px",
+                          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                        }}
+                        formatter={(value: any) => [`${value.toFixed(1)}%`, "ROI"]}
+                        labelFormatter={(label) => `Month ${label}`}
+                      />
+                      <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={3} fill="url(#roiGradient)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </ModernGradientCard>
+          </motion.div>
+        </div>
+
+        {/* Bottom Section - Insights and Recommendations */}
+        <motion.div className="grid grid-cols-1 lg:grid-cols-3 gap-8" variants={modernAnimations.slideInUp}>
+          {/* Key Insights */}
+          <motion.div variants={modernAnimations.slideInUp}>
+            <ModernGradientCard darkMode={darkMode} gradient="sunset" glow={false}>
+              <CardHeader>
+                <CardTitle
+                  className={cn("text-lg font-bold flex items-center", darkMode ? "text-white" : "text-slate-900")}
+                >
+                  <Sparkles className="h-5 w-5 mr-2 text-yellow-400" />
+                  Key Insights
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className={cn("p-3 rounded-xl", darkMode ? "bg-white/5" : "bg-black/5")}>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
+                      <span className="text-sm font-semibold">Cost Advantage</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Portnox delivers 67% lower TCO compared to traditional solutions
+                    </p>
+                  </div>
+
+                  <div className={cn("p-3 rounded-xl", darkMode ? "bg-white/5" : "bg-black/5")}>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                      <span className="text-sm font-semibold">Deployment Speed</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">94% faster deployment than legacy NAC solutions</p>
+                  </div>
+
+                  <div className={cn("p-3 rounded-xl", darkMode ? "bg-white/5" : "bg-black/5")}>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+                      <span className="text-sm font-semibold">Risk Mitigation</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Superior threat detection with AI-powered analytics</p>
+                  </div>
+                </div>
+              </CardContent>
+            </ModernGradientCard>
+          </motion.div>
+
+          {/* Recommendations */}
+          <motion.div variants={modernAnimations.slideInUp}>
+            <ModernGradientCard darkMode={darkMode} gradient="cosmic" glow={false}>
+              <CardHeader>
+                <CardTitle
+                  className={cn("text-lg font-bold flex items-center", darkMode ? "text-white" : "text-slate-900")}
+                >
+                  <Target className="h-5 w-5 mr-2 text-orange-400" />
+                  Recommendations
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div
+                    className={cn(
+                      "p-3 rounded-xl border-l-4 border-emerald-400",
+                      darkMode ? "bg-emerald-400/10" : "bg-emerald-50",
+                    )}
+                  >
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Award className="h-4 w-4 text-emerald-400" />
+                      <span className="text-sm font-semibold">Immediate Action</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Start with Portnox pilot deployment in critical network segments
+                    </p>
+                  </div>
+
+                  <div
+                    className={cn(
+                      "p-3 rounded-xl border-l-4 border-blue-400",
+                      darkMode ? "bg-blue-400/10" : "bg-blue-50",
+                    )}
+                  >
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Zap className="h-4 w-4 text-blue-400" />
+                      <span className="text-sm font-semibold">Quick Wins</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Enable AI analytics and compliance automation features
+                    </p>
+                  </div>
+
+                  <div
+                    className={cn(
+                      "p-3 rounded-xl border-l-4 border-purple-400",
+                      darkMode ? "bg-purple-400/10" : "bg-purple-50",
+                    )}
+                  >
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Activity className="h-4 w-4 text-purple-400" />
+                      <span className="text-sm font-semibold">Long-term</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Plan full migration strategy with phased rollout approach
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </ModernGradientCard>
+          </motion.div>
+
+          {/* Executive Summary */}
+          <motion.div variants={modernAnimations.slideInUp}>
+            <ModernGradientCard darkMode={darkMode} gradient="matrix" glow={false}>
+              <CardHeader>
+                <CardTitle
+                  className={cn("text-lg font-bold flex items-center", darkMode ? "text-white" : "text-slate-900")}
+                >
+                  <FileText className="h-5 w-5 mr-2 text-cyan-400" />
+                  Executive Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-emerald-400 mb-1">
+                      {formatCurrency(totalSavingsVsLowestCompetitor, true)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Total Savings vs Best Competitor</div>
+                  </div>
+
+                  <Separator className={darkMode ? "bg-slate-700" : "bg-slate-200"} />
+
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <div className="text-lg font-bold text-blue-400">{portnoxResult?.roi?.paybackMonths || 0}</div>
+                      <div className="text-xs text-muted-foreground">Months Payback</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-bold text-purple-400">
+                        {savingsPercentVsLowestCompetitor.toFixed(1)}%
+                      </div>
+                      <div className="text-xs text-muted-foreground">Cost Reduction</div>
+                    </div>
+                  </div>
+
+                  <Button
+                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-0"
+                    size="sm"
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    Schedule Executive Briefing
+                  </Button>
+                </div>
+              </CardContent>
+            </ModernGradientCard>
+          </motion.div>
+        </motion.div>
+      </motion.div>
+    )
+  }
+
+  if (!isClient) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>
+      </div>
+    )
+  }
 
   return (
-    <TooltipProvider>
-      <div className={cn("min-h-screen transition-colors duration-300", darkMode ? "dark" : "")}>
-        <div className="flex h-screen bg-background text-foreground">
-          {/* Vendor Selection Panel */}
-          <VendorSelectionPanel
+    <div className={cn("min-h-screen transition-colors duration-500", darkMode ? "dark bg-slate-950" : "bg-slate-50")}>
+      <TooltipProvider delayDuration={100}>
+        {/* Enhanced Header */}
+        <ModernHeader />
+
+        {/* Enhanced Main Navigation */}
+        <ModernMainTabNavigation />
+
+        {/* Enhanced Sub Navigation */}
+        <ModernSubTabNavigation />
+
+        {/* Main Content Area */}
+        <div className="flex min-h-[calc(100vh-160px)]">
+          {/* Enhanced Vendor Selection Panel */}
+          <EnhancedVendorSelectionPanel
             selectedVendors={selectedVendors}
             onVendorToggle={handleVendorToggle}
             darkMode={darkMode}
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
-            isCollapsed={isVendorPanelCollapsed}
+            isCollapsed={sidebarCollapsed}
           />
 
-          {/* Main Content Area */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Header */}
-            <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <div className="flex h-16 items-center justify-between px-6">
-                <div className="flex items-center space-x-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsVendorPanelCollapsed(!isVendorPanelCollapsed)}
-                    className="p-2"
-                  >
-                    {isVendorPanelCollapsed ? (
-                      <ChevronsRight className="h-4 w-4" />
-                    ) : (
-                      <ChevronsLeft className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <div className="flex items-center space-x-2">
-                    <Image src="/portnox-logo-color.png" alt="Portnox" width={120} height={32} className="h-8 w-auto" />
-                    <Separator orientation="vertical" className="h-6" />
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                      TCO Analyzer
-                    </h1>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <Badge variant="outline" className="text-xs">
-                    {selectedVendors.length} vendors selected
-                  </Badge>
-                  <Button variant="ghost" size="sm" onClick={() => setDarkMode(!darkMode)}>
-                    {darkMode ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setIsSettingsOpen(true)}>
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" className="bg-primary hover:bg-primary/90">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export
-                  </Button>
-                </div>
-              </div>
-            </header>
-
-            {/* Main Navigation */}
-            <div className="border-b">
-              <div className="px-6">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-5 bg-transparent h-12">
-                    {MAIN_TABS_CONFIG.map((tab) => (
-                      <TabsTrigger
-                        key={tab.value}
-                        value={tab.value}
-                        className="flex items-center space-x-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-                      >
-                        {React.cloneElement(tab.icon, { className: "h-4 w-4" })}
-                        <span className="hidden sm:inline">{tab.label}</span>
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </Tabs>
-              </div>
-            </div>
-
-            {/* Sub Navigation (for Analysis and Comparison tabs) */}
-            {(activeTab === "analysis" || activeTab === "comparison") && (
-              <div className="border-b bg-muted/30">
-                <div className="px-6">
-                  <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
-                    <TabsList className="bg-transparent h-10">
-                      {(activeTab === "analysis" ? ANALYSIS_SUB_TABS : COMPARISON_SUB_TABS).map((tab) => (
-                        <TabsTrigger
-                          key={tab.value}
-                          value={tab.value}
-                          className="flex items-center space-x-2 text-xs data-[state=active]:bg-background data-[state=active]:text-primary"
-                        >
-                          {React.cloneElement(tab.icon, { className: "h-3 w-3" })}
-                          <span>{tab.label}</span>
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                  </Tabs>
-                </div>
-              </div>
+          {/* Sidebar Toggle Button */}
+          <motion.button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className={cn(
+              "fixed left-2 top-1/2 -translate-y-1/2 z-50 p-3 rounded-2xl transition-all duration-300",
+              "backdrop-blur-xl border shadow-lg",
+              darkMode
+                ? "bg-slate-900/80 border-slate-700/50 text-slate-300 hover:text-white"
+                : "bg-white/80 border-slate-200/50 text-slate-600 hover:text-slate-900",
             )}
+            whileHover={modernAnimations.scaleHover}
+            whileTap={{ scale: 0.9 }}
+            style={{ left: sidebarCollapsed ? "1rem" : "25rem" }}
+          >
+            {sidebarCollapsed ? <ChevronsRight className="h-5 w-5" /> : <ChevronsLeft className="h-5 w-5" />}
+          </motion.button>
 
-            {/* Main Content */}
-            <main className="flex-1 overflow-auto">
-              <div className="p-6">
+          {/* Main Content */}
+          <main className="flex-1 overflow-hidden">
+            <div className="h-full overflow-y-auto">
+              <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <AnimatePresence mode="wait">
                   <motion.div
-                    key={activeTab}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
+                    key={activeMainTab}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3 }}
                   >
-                    {activeTab === "dashboard" && (
-                      <ExecutiveDashboard calculations={calculations} darkMode={darkMode} />
-                    )}
+                    {activeMainTab === "dashboard" && <ExecutiveDashboard />}
 
-                    {activeTab === "analysis" && (
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h2 className="text-2xl font-bold">TCO Analysis</h2>
-                            <p className="text-muted-foreground">Detailed cost breakdown and analysis</p>
-                          </div>
-                        </div>
+                    {activeMainTab === "analysis" && (
+                      <div className="space-y-8">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-center"
+                        >
+                          <h2 className={cn("text-3xl font-bold mb-4", darkMode ? "text-white" : "text-slate-900")}>
+                            Detailed TCO Analysis
+                          </h2>
+                          <p className={cn("text-lg", darkMode ? "text-slate-400" : "text-slate-500")}>
+                            Comprehensive cost breakdown and ROI analysis
+                          </p>
+                        </motion.div>
 
-                        {activeSubTab === "cost-breakdown" && (
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <ModernGradientCard
-                              gradient="hologram"
-                              darkMode={darkMode}
-                              className="col-span-1 lg:col-span-2"
-                            >
-                              <CardHeader>
-                                <CardTitle>Cost Breakdown by Category</CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="h-80">
-                                  <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart
-                                      data={calculations.map((calc) => ({
-                                        vendor: calc.vendor,
-                                        licensing: calc.yearlyBreakdown?.[0]?.licensing || 0,
-                                        hardware: calc.yearlyBreakdown?.[0]?.hardware || 0,
-                                        implementation: calc.yearlyBreakdown?.[0]?.implementation || 0,
-                                        support: calc.yearlyBreakdown?.[0]?.support || 0,
-                                        operational: calc.yearlyBreakdown?.[0]?.operational || 0,
-                                      }))}
-                                    >
-                                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                                      <XAxis dataKey="vendor" />
-                                      <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                                      <ReTooltip formatter={(value: any) => [`$${(value / 1000).toFixed(1)}K`, ""]} />
-                                      <ReLegend />
-                                      <Bar dataKey="licensing" stackId="a" fill="#14b8a6" name="Licensing" />
-                                      <Bar dataKey="hardware" stackId="a" fill="#0d9488" name="Hardware" />
-                                      <Bar dataKey="implementation" stackId="a" fill="#0f766e" name="Implementation" />
-                                      <Bar dataKey="support" stackId="a" fill="#115e59" name="Support" />
-                                      <Bar dataKey="operational" stackId="a" fill="#134e4a" name="Operational" />
-                                    </BarChart>
-                                  </ResponsiveContainer>
-                                </div>
-                              </CardContent>
-                            </ModernGradientCard>
-                          </div>
-                        )}
-
-                        {activeSubTab === "roi-analysis" && (
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <ModernGradientCard gradient="aurora" darkMode={darkMode}>
-                              <CardHeader>
-                                <CardTitle>ROI Comparison</CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="h-64">
-                                  <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart
-                                      data={calculations.map((calc) => ({
-                                        vendor: calc.vendor,
-                                        roi: (calc.roi?.totalROI || 0) * 100,
-                                      }))}
-                                    >
-                                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                                      <XAxis dataKey="vendor" />
-                                      <YAxis tickFormatter={(value) => `${value}%`} />
-                                      <ReTooltip formatter={(value: any) => [`${value.toFixed(1)}%`, "ROI"]} />
-                                      <Bar dataKey="roi" fill="#14b8a6" />
-                                    </BarChart>
-                                  </ResponsiveContainer>
-                                </div>
-                              </CardContent>
-                            </ModernGradientCard>
-
-                            <ModernGradientCard gradient="sunset" darkMode={darkMode}>
-                              <CardHeader>
-                                <CardTitle>Payback Period</CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="h-64">
-                                  <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart
-                                      data={calculations.map((calc) => ({
-                                        vendor: calc.vendor,
-                                        payback: calc.roi?.paybackPeriod || 0,
-                                      }))}
-                                    >
-                                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                                      <XAxis dataKey="vendor" />
-                                      <YAxis tickFormatter={(value) => `${value.toFixed(1)}mo`} />
-                                      <ReTooltip
-                                        formatter={(value: any) => [`${value.toFixed(1)} months`, "Payback"]}
-                                      />
-                                      <Bar dataKey="payback" fill="#f59e0b" />
-                                    </BarChart>
-                                  </ResponsiveContainer>
-                                </div>
-                              </CardContent>
-                            </ModernGradientCard>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {activeTab === "comparison" && (
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h2 className="text-2xl font-bold">Vendor Comparison</h2>
-                            <p className="text-muted-foreground">Side-by-side comparison of selected vendors</p>
-                          </div>
-                        </div>
-
-                        {activeSubTab === "feature-matrix" && (
-                          <div className="space-y-6">
-                            <ModernGradientCard gradient="cyber" darkMode={darkMode}>
-                              <CardHeader>
-                                <CardTitle>Feature Comparison Matrix</CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="overflow-x-auto">
-                                  <table className="w-full text-sm">
-                                    <thead>
-                                      <tr className="border-b">
-                                        <th className="text-left p-2">Feature</th>
-                                        {selectedVendors.map((vendorId) => (
-                                          <th key={vendorId} className="text-center p-2">
-                                            {VENDOR_DATA[vendorId]?.name}
-                                          </th>
-                                        ))}
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {Object.keys(VENDOR_DATA.portnox.features.core).map((feature) => (
-                                        <tr key={feature} className="border-b">
-                                          <td className="p-2 font-medium">{feature}</td>
-                                          {selectedVendors.map((vendorId) => (
-                                            <td key={vendorId} className="text-center p-2">
-                                              {VENDOR_DATA[vendorId]?.features.core[feature] ? (
-                                                <CheckCircle className="h-4 w-4 text-green-500 mx-auto" />
-                                              ) : (
-                                                <X className="h-4 w-4 text-red-500 mx-auto" />
-                                              )}
-                                            </td>
-                                          ))}
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </CardContent>
-                            </ModernGradientCard>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {activeTab === "compliance" && (
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h2 className="text-2xl font-bold">Compliance & Risk Analysis</h2>
-                            <p className="text-muted-foreground">Security compliance and risk assessment</p>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                          <ModernGradientCard gradient="matrix" darkMode={darkMode}>
+                        {/* Analysis content would go here */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                          <ModernGradientCard darkMode={darkMode} gradient="hologram">
                             <CardHeader>
-                              <CardTitle className="flex items-center space-x-2">
-                                <Shield className="h-5 w-5 text-primary" />
-                                <span>Compliance Coverage</span>
-                              </CardTitle>
+                              <CardTitle>Cost Breakdown Analysis</CardTitle>
                             </CardHeader>
                             <CardContent>
-                              <div className="space-y-4">
-                                {["SOC 2", "ISO 27001", "HIPAA", "PCI DSS", "GDPR"].map((standard, index) => (
-                                  <div key={standard} className="space-y-2">
-                                    <div className="flex justify-between">
-                                      <span className="font-medium">{standard}</span>
-                                      <span className="text-sm text-muted-foreground">
-                                        {selectedVendors.length} vendors
-                                      </span>
-                                    </div>
-                                    <div className="flex space-x-1">
-                                      {selectedVendors.map((vendorId) => (
-                                        <div
-                                          key={vendorId}
-                                          className={cn(
-                                            "flex-1 h-2 rounded",
-                                            Math.random() > 0.3 ? "bg-green-500" : "bg-red-500",
-                                          )}
-                                        />
-                                      ))}
-                                    </div>
-                                  </div>
-                                ))}
+                              <div className="h-80 flex items-center justify-center">
+                                <p className="text-muted-foreground">Detailed cost analysis coming soon...</p>
                               </div>
                             </CardContent>
                           </ModernGradientCard>
 
-                          <ModernGradientCard gradient="hologram" darkMode={darkMode}>
+                          <ModernGradientCard darkMode={darkMode} gradient="aurora">
                             <CardHeader>
-                              <CardTitle className="flex items-center space-x-2">
-                                <AlertTriangle className="h-5 w-5 text-primary" />
-                                <span>Risk Assessment</span>
-                              </CardTitle>
+                              <CardTitle>ROI Projections</CardTitle>
                             </CardHeader>
                             <CardContent>
-                              <div className="h-64">
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <RadarChart
-                                    data={[
-                                      { subject: "Security", portnox: 95, cisco: 85, aruba: 80, microsoft: 75 },
-                                      { subject: "Compliance", portnox: 90, cisco: 95, aruba: 85, microsoft: 90 },
-                                      { subject: "Availability", portnox: 99, cisco: 95, aruba: 92, microsoft: 88 },
-                                      { subject: "Scalability", portnox: 95, cisco: 90, aruba: 85, microsoft: 80 },
-                                      { subject: "Support", portnox: 85, cisco: 95, aruba: 85, microsoft: 90 },
-                                    ]}
-                                  >
-                                    <PolarGrid />
-                                    <PolarAngleAxis dataKey="subject" />
-                                    <PolarRadiusAxis angle={90} domain={[0, 100]} />
-                                    <Radar
-                                      name="Portnox"
-                                      dataKey="portnox"
-                                      stroke="#14b8a6"
-                                      fill="#14b8a6"
-                                      fillOpacity={0.1}
-                                    />
-                                    <Radar
-                                      name="Cisco"
-                                      dataKey="cisco"
-                                      stroke="#3b82f6"
-                                      fill="#3b82f6"
-                                      fillOpacity={0.1}
-                                    />
-                                    <Radar
-                                      name="Aruba"
-                                      dataKey="aruba"
-                                      stroke="#f59e0b"
-                                      fill="#f59e0b"
-                                      fillOpacity={0.1}
-                                    />
-                                    <Radar
-                                      name="Microsoft"
-                                      dataKey="microsoft"
-                                      stroke="#8b5cf6"
-                                      fill="#8b5cf6"
-                                      fillOpacity={0.1}
-                                    />
-                                    <ReLegend />
-                                  </RadarChart>
-                                </ResponsiveContainer>
+                              <div className="h-80 flex items-center justify-center">
+                                <p className="text-muted-foreground">ROI projections coming soon...</p>
                               </div>
                             </CardContent>
                           </ModernGradientCard>
@@ -2682,101 +3556,103 @@ export default function TCOAnalyzer() {
                       </div>
                     )}
 
-                    {activeTab === "reports" && (
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h2 className="text-2xl font-bold">Reports & Export</h2>
-                            <p className="text-muted-foreground">Generate and export detailed reports</p>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Button variant="outline" size="sm">
-                              <Upload className="h-4 w-4 mr-2" />
-                              Import Data
-                            </Button>
-                            <Button size="sm" className="bg-primary hover:bg-primary/90">
-                              <Download className="h-4 w-4 mr-2" />
-                              Export All
-                            </Button>
-                          </div>
-                        </div>
+                    {activeMainTab === "comparison" && (
+                      <div className="space-y-8">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-center"
+                        >
+                          <h2 className={cn("text-3xl font-bold mb-4", darkMode ? "text-white" : "text-slate-900")}>
+                            Vendor Comparison Matrix
+                          </h2>
+                          <p className={cn("text-lg", darkMode ? "text-slate-400" : "text-slate-500")}>
+                            Side-by-side feature and cost comparison
+                          </p>
+                        </motion.div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                          {[
-                            {
-                              title: "Executive Summary",
-                              description: "High-level overview for executives",
-                              icon: <Briefcase />,
-                              format: "PDF",
-                            },
-                            {
-                              title: "Detailed TCO Analysis",
-                              description: "Complete cost breakdown and projections",
-                              icon: <Calculator />,
-                              format: "Excel",
-                            },
-                            {
-                              title: "Vendor Comparison",
-                              description: "Side-by-side feature and cost comparison",
-                              icon: <LayoutGrid />,
-                              format: "PDF",
-                            },
-                            {
-                              title: "ROI Analysis",
-                              description: "Return on investment calculations",
-                              icon: <TrendingUp />,
-                              format: "Excel",
-                            },
-                            {
-                              title: "Implementation Roadmap",
-                              description: "Timeline and milestones",
-                              icon: <Road />,
-                              format: "PDF",
-                            },
-                            {
-                              title: "Risk Assessment",
-                              description: "Security and compliance analysis",
-                              icon: <Shield />,
-                              format: "PDF",
-                            },
-                          ].map((report, index) => (
-                            <ModernGradientCard key={index} gradient="glass" darkMode={darkMode}>
-                              <CardHeader>
-                                <div className="flex items-center space-x-3">
-                                  <div className="p-2 rounded-lg bg-primary/10">
-                                    {React.cloneElement(report.icon, { className: "h-5 w-5 text-primary" })}
-                                  </div>
-                                  <div>
-                                    <CardTitle className="text-lg">{report.title}</CardTitle>
-                                    <Badge variant="outline" className="text-xs mt-1">
-                                      {report.format}
-                                    </Badge>
-                                  </div>
-                                </div>
-                              </CardHeader>
-                              <CardContent>
-                                <p className="text-sm text-muted-foreground mb-4">{report.description}</p>
-                                <Button size="sm" className="w-full">
-                                  <Download className="h-4 w-4 mr-2" />
-                                  Generate Report
-                                </Button>
-                              </CardContent>
-                            </ModernGradientCard>
-                          ))}
-                        </div>
+                        {/* Comparison content would go here */}
+                        <ModernGradientCard darkMode={darkMode} gradient="cosmic">
+                          <CardHeader>
+                            <CardTitle>Feature Comparison Matrix</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-96 flex items-center justify-center">
+                              <p className="text-muted-foreground">Detailed vendor comparison coming soon...</p>
+                            </div>
+                          </CardContent>
+                        </ModernGradientCard>
+                      </div>
+                    )}
+
+                    {activeMainTab === "compliance" && (
+                      <div className="space-y-8">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-center"
+                        >
+                          <h2 className={cn("text-3xl font-bold mb-4", darkMode ? "text-white" : "text-slate-900")}>
+                            Compliance & Risk Assessment
+                          </h2>
+                          <p className={cn("text-lg", darkMode ? "text-slate-400" : "text-slate-500")}>
+                            Security compliance and risk analysis
+                          </p>
+                        </motion.div>
+
+                        {/* Compliance content would go here */}
+                        <ModernGradientCard darkMode={darkMode} gradient="matrix">
+                          <CardHeader>
+                            <CardTitle>Compliance Dashboard</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-96 flex items-center justify-center">
+                              <p className="text-muted-foreground">Compliance analysis coming soon...</p>
+                            </div>
+                          </CardContent>
+                        </ModernGradientCard>
+                      </div>
+                    )}
+
+                    {activeMainTab === "reports" && (
+                      <div className="space-y-8">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-center"
+                        >
+                          <h2 className={cn("text-3xl font-bold mb-4", darkMode ? "text-white" : "text-slate-900")}>
+                            Executive Reports
+                          </h2>
+                          <p className={cn("text-lg", darkMode ? "text-slate-400" : "text-slate-500")}>
+                            Generate and export detailed reports
+                          </p>
+                        </motion.div>
+
+                        {/* Reports content would go here */}
+                        <ModernGradientCard darkMode={darkMode} gradient="sunset">
+                          <CardHeader>
+                            <CardTitle>Report Generator</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-96 flex items-center justify-center">
+                              <p className="text-muted-foreground">Report generation coming soon...</p>
+                            </div>
+                          </CardContent>
+                        </ModernGradientCard>
                       </div>
                     )}
                   </motion.div>
                 </AnimatePresence>
               </div>
-            </main>
-          </div>
+            </div>
+          </main>
         </div>
 
-        {/* Settings Panel */}
+        {/* Enhanced Settings Panel */}
         <SettingsPanel
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
           orgSizeKey={orgSizeKey}
           setOrgSizeKey={setOrgSizeKey}
           customDevices={customDevices}
@@ -2795,7 +3671,7 @@ export default function TCOAnalyzer() {
           setPortnoxAddons={setPortnoxAddons}
           darkMode={darkMode}
         />
-      </div>
-    </TooltipProvider>
+      </TooltipProvider>
+    </div>
   )
 }
