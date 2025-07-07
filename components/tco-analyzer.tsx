@@ -26,6 +26,9 @@ import {
 } from "recharts"
 import { COMPREHENSIVE_VENDOR_DATA, INDUSTRIES } from "@/lib/vendors/comprehensive-vendor-data"
 import { calculateComprehensiveTCO } from "@/lib/calculators/comprehensive-tco-calculator"
+import { IndustryAnalysisDashboard } from "./industry-analysis-view"
+import { ExecutiveReportGenerator } from "./executive-report-view"
+import { VendorScorecard } from "./vendor-comparison-matrix"
 import { exportAnalysis, ExportFormat, NACAnalysisExporter, createExportData } from "@/lib/export/data-export-utilities"
 
 export function TCOAnalyzer() {
@@ -147,7 +150,7 @@ export function TCOAnalyzer() {
             riskReduction: 86,
           },
           complianceMapping: {},
-        }
+        },
       )
 
       const exporter = new NACAnalysisExporter(exportData)
@@ -158,7 +161,7 @@ export function TCOAnalyzer() {
           const pdfUrl = URL.createObjectURL(pdfBlob)
           const pdfLink = document.createElement("a")
           pdfLink.href = pdfUrl
-          pdfLink.download = `NAC_Analysis_Report_${new Date().toISOString().split('T')[0]}.pdf`
+          pdfLink.download = `NAC_Analysis_Report_${new Date().toISOString().split("T")[0]}.pdf`
           document.body.appendChild(pdfLink)
           pdfLink.click()
           document.body.removeChild(pdfLink)
@@ -166,11 +169,11 @@ export function TCOAnalyzer() {
           break
         case ExportFormat.EXCEL:
           const csvContent = await exporter.exportToCSV()
-          const csvBlob = new Blob([csvContent], { type: 'text/csv' })
+          const csvBlob = new Blob([csvContent], { type: "text/csv" })
           const csvUrl = URL.createObjectURL(csvBlob)
           const csvLink = document.createElement("a")
           csvLink.href = csvUrl
-          csvLink.download = `NAC_Analysis_Data_${new Date().toISOString().split('T')[0]}.csv`
+          csvLink.download = `NAC_Analysis_Data_${new Date().toISOString().split("T")[0]}.csv`
           document.body.appendChild(csvLink)
           csvLink.click()
           document.body.removeChild(csvLink)
@@ -180,8 +183,8 @@ export function TCOAnalyzer() {
           await exportAnalysis(exportData, format)
       }
     } catch (error) {
-      console.error('Export failed:', error)
-      alert('Export failed. Please try again.')
+      console.error("Export failed:", error)
+      alert("Export failed. Please try again.")
     }
   }
 
@@ -592,4 +595,43 @@ export function TCOAnalyzer() {
                         <p className="text-muted-foreground">ROI</p>
                         <p className="font-bold">{Math.round(vendor.roi)}%</p>
                       </div>
-                      <div>\
+                      <div>
+                        <p className="text-muted-foreground">Payback</p>
+                        <p className="font-bold">{Math.round(vendor.paybackPeriod / 30)} mo</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* Industry Insights Tab */}
+        <TabsContent value="industry">
+          <IndustryAnalysisDashboard industry={selectedIndustry} deviceCount={deviceCount[0]} timeframe={timeframe} />
+        </TabsContent>
+
+        {/* Vendor Scorecard Tab */}
+        <TabsContent value="scorecard">
+          <VendorScorecard vendors={selectedVendors} industry={selectedIndustry} deviceCount={deviceCount[0]} />
+        </TabsContent>
+
+        {/* Executive Reports Tab */}
+        <TabsContent value="reports">
+          <ExecutiveReportGenerator
+            tcoAnalysis={tcoAnalysis}
+            configuration={{
+              industry: selectedIndustry,
+              deviceCount: deviceCount[0],
+              timeframe,
+              vendors: selectedVendors,
+            }}
+          />
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
+
+export default TCOAnalyzer
