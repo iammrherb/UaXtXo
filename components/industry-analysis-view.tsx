@@ -1,50 +1,4 @@
 "use client"
-
-import type React from "react"
-import { useState, useMemo } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  ScatterChart,
-  Scatter,
-  Cell,
-} from "recharts"
-import {
-  TrendingUp,
-  AlertTriangle,
-  Shield,
-  DollarSign,
-  Users,
-  Building2,
-  Globe,
-  Target,
-  Activity,
-  BarChart3,
-  Zap,
-  Lock,
-  Eye,
-  CheckCircle,
-  ArrowUp,
-  ArrowDown,
-  Minus,
-  Download,
-} from "lucide-react"
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 
 interface IndustryAnalysisViewProps {
@@ -52,7 +6,699 @@ interface IndustryAnalysisViewProps {
   config: CalculationConfiguration
 }
 
-// Comprehensive industry benchmarking data
+// Comprehensive compliance frameworks with detailed controls
+const COMPLIANCE_FRAMEWORKS = {
+  hipaa: {
+    name: "HIPAA",
+    fullName: "Health Insurance Portability and Accountability Act",
+    industry: ["healthcare"],
+    maxFine: 2000000,
+    controls: {
+      "164.308(a)(1)": {
+        name: "Security Management Process",
+        description: "Implement policies and procedures to prevent, detect, contain, and correct security violations",
+        nacRequirement: "critical",
+        nacCapabilities: ["Policy enforcement", "Incident detection", "Automated response", "Audit logging"],
+        implementationCost: 25000,
+        ongoingCost: 5000,
+        riskReduction: 35,
+        complianceScore: 90,
+      },
+      "164.308(a)(3)": {
+        name: "Workforce Security",
+        description:
+          "Implement procedures for authorization and/or supervision of workforce members who work with ePHI",
+        nacRequirement: "critical",
+        nacCapabilities: ["Role-based access", "User authentication", "Session monitoring", "Access reviews"],
+        implementationCost: 15000,
+        ongoingCost: 3000,
+        riskReduction: 40,
+        complianceScore: 95,
+      },
+      "164.308(a)(4)": {
+        name: "Information Access Management",
+        description: "Implement policies and procedures for authorizing access to ePHI",
+        nacRequirement: "critical",
+        nacCapabilities: ["Access control", "Least privilege", "Dynamic authorization", "Context-aware access"],
+        implementationCost: 20000,
+        ongoingCost: 4000,
+        riskReduction: 45,
+        complianceScore: 92,
+      },
+      "164.310(a)": {
+        name: "Facility Access Controls",
+        description: "Implement physical safeguards for all workstations that access ePHI",
+        nacRequirement: "important",
+        nacCapabilities: ["Device authentication", "Location-based access", "Physical security integration"],
+        implementationCost: 30000,
+        ongoingCost: 2000,
+        riskReduction: 25,
+        complianceScore: 85,
+      },
+      "164.312(a)": {
+        name: "Access Control",
+        description: "Implement technical policies and procedures for electronic information systems",
+        nacRequirement: "critical",
+        nacCapabilities: [
+          "Unique user identification",
+          "Automatic logoff",
+          "Encryption",
+          "Multi-factor authentication",
+        ],
+        implementationCost: 35000,
+        ongoingCost: 6000,
+        riskReduction: 50,
+        complianceScore: 98,
+      },
+      "164.312(b)": {
+        name: "Audit Controls",
+        description: "Implement hardware, software, and/or procedural mechanisms to record and examine activity",
+        nacRequirement: "critical",
+        nacCapabilities: ["Activity logging", "Log analysis", "Audit trails", "Real-time monitoring"],
+        implementationCost: 18000,
+        ongoingCost: 4500,
+        riskReduction: 30,
+        complianceScore: 88,
+      },
+    },
+  },
+  pci_dss: {
+    name: "PCI-DSS",
+    fullName: "Payment Card Industry Data Security Standard",
+    industry: ["retail", "financial", "healthcare"],
+    maxFine: 500000,
+    controls: {
+      "1.1": {
+        name: "Network Segmentation",
+        description: "Establish and implement firewall and router configuration standards",
+        nacRequirement: "critical",
+        nacCapabilities: ["Network segmentation", "VLAN assignment", "Micro-segmentation", "Traffic isolation"],
+        implementationCost: 40000,
+        ongoingCost: 8000,
+        riskReduction: 55,
+        complianceScore: 95,
+      },
+      "2.1": {
+        name: "Default Credentials",
+        description: "Always change vendor-supplied defaults and remove unnecessary default accounts",
+        nacRequirement: "critical",
+        nacCapabilities: ["Credential management", "Default detection", "Enforcement policies", "Password policies"],
+        implementationCost: 12000,
+        ongoingCost: 2000,
+        riskReduction: 35,
+        complianceScore: 90,
+      },
+      "7.1": {
+        name: "Access Control",
+        description:
+          "Limit access to system components and cardholder data to only those individuals whose job requires such access",
+        nacRequirement: "critical",
+        nacCapabilities: [
+          "Role-based access",
+          "Need-to-know enforcement",
+          "Access certification",
+          "Privilege management",
+        ],
+        implementationCost: 25000,
+        ongoingCost: 5000,
+        riskReduction: 45,
+        complianceScore: 93,
+      },
+      "8.1": {
+        name: "User Identification",
+        description: "Assign all users a unique ID before allowing them to access system components",
+        nacRequirement: "critical",
+        nacCapabilities: ["Identity management", "Unique authentication", "User lifecycle", "Identity federation"],
+        implementationCost: 20000,
+        ongoingCost: 4000,
+        riskReduction: 40,
+        complianceScore: 88,
+      },
+      "10.1": {
+        name: "Audit Trails",
+        description: "Implement audit trails to link all access to system components to each individual user",
+        nacRequirement: "critical",
+        nacCapabilities: ["Comprehensive logging", "User attribution", "Log integrity", "Forensic analysis"],
+        implementationCost: 22000,
+        ongoingCost: 4500,
+        riskReduction: 38,
+        complianceScore: 92,
+      },
+      "11.1": {
+        name: "Wireless Detection",
+        description: "Test for the presence of wireless access points and detect unauthorized wireless access points",
+        nacRequirement: "important",
+        nacCapabilities: ["Rogue device detection", "Wireless monitoring", "Automated response", "RF analysis"],
+        implementationCost: 15000,
+        ongoingCost: 3000,
+        riskReduction: 30,
+        complianceScore: 85,
+      },
+    },
+  },
+  gdpr: {
+    name: "GDPR",
+    fullName: "General Data Protection Regulation",
+    industry: ["technology", "retail", "healthcare", "financial", "education"],
+    maxFine: 20000000,
+    controls: {
+      "Article 25": {
+        name: "Data Protection by Design",
+        description: "Implement appropriate technical and organizational measures",
+        nacRequirement: "critical",
+        nacCapabilities: ["Privacy controls", "Data minimization", "Access restrictions", "Purpose limitation"],
+        implementationCost: 35000,
+        ongoingCost: 7000,
+        riskReduction: 42,
+        complianceScore: 90,
+      },
+      "Article 32": {
+        name: "Security of Processing",
+        description: "Implement appropriate technical and organizational measures to ensure security",
+        nacRequirement: "critical",
+        nacCapabilities: ["Encryption", "Access control", "Integrity monitoring", "Availability controls"],
+        implementationCost: 45000,
+        ongoingCost: 9000,
+        riskReduction: 50,
+        complianceScore: 95,
+      },
+      "Article 33": {
+        name: "Breach Notification",
+        description: "Notify supervisory authority of personal data breach within 72 hours",
+        nacRequirement: "important",
+        nacCapabilities: ["Incident detection", "Automated alerting", "Forensic capabilities", "Timeline tracking"],
+        implementationCost: 18000,
+        ongoingCost: 3500,
+        riskReduction: 25,
+        complianceScore: 88,
+      },
+      "Article 35": {
+        name: "Data Protection Impact Assessment",
+        description: "Assess and mitigate risks to rights and freedoms of natural persons",
+        nacRequirement: "beneficial",
+        nacCapabilities: ["Risk assessment", "Impact analysis", "Control effectiveness", "Privacy metrics"],
+        implementationCost: 12000,
+        ongoingCost: 2500,
+        riskReduction: 20,
+        complianceScore: 82,
+      },
+    },
+  },
+  sox: {
+    name: "SOX",
+    fullName: "Sarbanes-Oxley Act",
+    industry: ["financial", "technology"],
+    maxFine: 5000000,
+    controls: {
+      "Section 302": {
+        name: "Corporate Responsibility",
+        description: "CEOs and CFOs must certify financial reports",
+        nacRequirement: "important",
+        nacCapabilities: ["Access logging", "Change tracking", "Audit trails", "Executive reporting"],
+        implementationCost: 28000,
+        ongoingCost: 5500,
+        riskReduction: 35,
+        complianceScore: 85,
+      },
+      "Section 404": {
+        name: "Internal Controls",
+        description: "Assess effectiveness of internal control structure",
+        nacRequirement: "critical",
+        nacCapabilities: ["Access control", "Segregation of duties", "Control monitoring", "Exception reporting"],
+        implementationCost: 40000,
+        ongoingCost: 8000,
+        riskReduction: 45,
+        complianceScore: 92,
+      },
+      "Section 802": {
+        name: "Records Retention",
+        description: "Criminal penalties for altering, destroying, or falsifying records",
+        nacRequirement: "important",
+        nacCapabilities: ["Log integrity", "Tamper protection", "Long-term retention", "Chain of custody"],
+        implementationCost: 25000,
+        ongoingCost: 5000,
+        riskReduction: 30,
+        complianceScore: 88,
+      },
+    },
+  },
+  nist_800_53: {
+    name: "NIST 800-53",
+    fullName: "Security and Privacy Controls for Federal Information Systems",
+    industry: ["government", "technology", "healthcare"],
+    maxFine: 500000,
+    controls: {
+      "AC-2": {
+        name: "Account Management",
+        description: "Manage information system accounts",
+        nacRequirement: "critical",
+        nacCapabilities: ["Account lifecycle", "Automated provisioning", "Access reviews", "Account monitoring"],
+        implementationCost: 30000,
+        ongoingCost: 6000,
+        riskReduction: 40,
+        complianceScore: 90,
+      },
+      "AC-3": {
+        name: "Access Enforcement",
+        description: "Enforce approved authorizations for logical access",
+        nacRequirement: "critical",
+        nacCapabilities: ["Policy enforcement", "Attribute-based access", "Dynamic authorization", "Context awareness"],
+        implementationCost: 35000,
+        ongoingCost: 7000,
+        riskReduction: 45,
+        complianceScore: 93,
+      },
+      "AC-4": {
+        name: "Information Flow Enforcement",
+        description: "Control information flows within the system",
+        nacRequirement: "critical",
+        nacCapabilities: ["Flow control", "Data classification", "Boundary protection", "Traffic analysis"],
+        implementationCost: 42000,
+        ongoingCost: 8500,
+        riskReduction: 50,
+        complianceScore: 95,
+      },
+      "IA-2": {
+        name: "Identification and Authentication",
+        description: "Uniquely identify and authenticate organizational users",
+        nacRequirement: "critical",
+        nacCapabilities: ["Multi-factor authentication", "Strong authentication", "Identity proofing", "Biometrics"],
+        implementationCost: 25000,
+        ongoingCost: 5000,
+        riskReduction: 42,
+        complianceScore: 88,
+      },
+      "AU-2": {
+        name: "Audit Events",
+        description: "Determine that the information system is capable of auditing",
+        nacRequirement: "critical",
+        nacCapabilities: ["Comprehensive logging", "Event correlation", "Real-time monitoring", "Behavioral analysis"],
+        implementationCost: 32000,
+        ongoingCost: 6500,
+        riskReduction: 38,
+        complianceScore: 91,
+      },
+    },
+  },
+  iso_27001: {
+    name: "ISO 27001",
+    fullName: "Information Security Management System",
+    industry: ["technology", "manufacturing", "financial"],
+    maxFine: 0,
+    controls: {
+      "A.9.1": {
+        name: "Access Control Policy",
+        description: "Establish, document and review access control policy",
+        nacRequirement: "critical",
+        nacCapabilities: ["Policy management", "Access governance", "Regular reviews", "Policy automation"],
+        implementationCost: 20000,
+        ongoingCost: 4000,
+        riskReduction: 35,
+        complianceScore: 87,
+      },
+      "A.9.2": {
+        name: "User Access Management",
+        description: "Ensure authorized user access and prevent unauthorized access",
+        nacRequirement: "critical",
+        nacCapabilities: ["User provisioning", "Access certification", "Privilege management", "Access analytics"],
+        implementationCost: 28000,
+        ongoingCost: 5500,
+        riskReduction: 40,
+        complianceScore: 90,
+      },
+      "A.9.4": {
+        name: "System and Application Access Control",
+        description: "Prevent unauthorized access to systems and applications",
+        nacRequirement: "critical",
+        nacCapabilities: ["Application control", "API security", "Service authentication", "Zero trust"],
+        implementationCost: 35000,
+        ongoingCost: 7000,
+        riskReduction: 45,
+        complianceScore: 92,
+      },
+      "A.12.4": {
+        name: "Logging and Monitoring",
+        description: "Record events and generate evidence",
+        nacRequirement: "critical",
+        nacCapabilities: ["Event logging", "Log analysis", "Security monitoring", "Incident correlation"],
+        implementationCost: 25000,
+        ongoingCost: 5000,
+        riskReduction: 38,
+        complianceScore: 89,
+      },
+    },
+  },
+}
+
+// Enhanced threat modeling with detailed attack vectors
+const THREAT_MODELS = {
+  healthcare: {
+    threats: [
+      {
+        name: "Ransomware Attacks",
+        probability: 0.35,
+        impact: 12000000,
+        attackVectors: ["Email phishing", "Unpatched systems", "Lateral movement", "Backup encryption"],
+        nacMitigation: 85,
+        timeToDetect: 72,
+        timeToContain: 168,
+        recoveryTime: 720,
+        reputationImpact: "Severe",
+        regulatoryFines: 2500000,
+      },
+      {
+        name: "Medical Device Compromise",
+        probability: 0.25,
+        impact: 8500000,
+        attackVectors: ["Default credentials", "Unencrypted communications", "Legacy protocols", "Network access"],
+        nacMitigation: 90,
+        timeToDetect: 120,
+        timeToContain: 48,
+        recoveryTime: 240,
+        reputationImpact: "High",
+        regulatoryFines: 1500000,
+      },
+      {
+        name: "Insider Data Theft",
+        probability: 0.15,
+        impact: 6200000,
+        attackVectors: ["Privileged access abuse", "Data exfiltration", "Credential sharing", "Policy violations"],
+        nacMitigation: 75,
+        timeToDetect: 180,
+        timeToContain: 24,
+        recoveryTime: 120,
+        reputationImpact: "High",
+        regulatoryFines: 3000000,
+      },
+      {
+        name: "Supply Chain Attack",
+        probability: 0.12,
+        impact: 15000000,
+        attackVectors: ["Third-party compromise", "Software updates", "Hardware tampering", "Vendor access"],
+        nacMitigation: 70,
+        timeToDetect: 240,
+        timeToContain: 96,
+        recoveryTime: 480,
+        reputationImpact: "Severe",
+        regulatoryFines: 5000000,
+      },
+    ],
+  },
+  financial: {
+    threats: [
+      {
+        name: "Advanced Persistent Threat",
+        probability: 0.28,
+        impact: 18000000,
+        attackVectors: ["Spear phishing", "Zero-day exploits", "Living off the land", "Credential harvesting"],
+        nacMitigation: 80,
+        timeToDetect: 200,
+        timeToContain: 72,
+        recoveryTime: 360,
+        reputationImpact: "Severe",
+        regulatoryFines: 50000000,
+      },
+      {
+        name: "Financial Fraud",
+        probability: 0.32,
+        impact: 12000000,
+        attackVectors: ["Account takeover", "Transaction manipulation", "Identity theft", "Social engineering"],
+        nacMitigation: 85,
+        timeToDetect: 24,
+        timeToContain: 12,
+        recoveryTime: 72,
+        reputationImpact: "High",
+        regulatoryFines: 25000000,
+      },
+      {
+        name: "DDoS Attacks",
+        probability: 0.45,
+        impact: 3500000,
+        attackVectors: ["Volumetric attacks", "Application layer attacks", "Protocol attacks", "Botnet usage"],
+        nacMitigation: 60,
+        timeToDetect: 5,
+        timeToContain: 2,
+        recoveryTime: 8,
+        reputationImpact: "Medium",
+        regulatoryFines: 0,
+      },
+      {
+        name: "Regulatory Violation",
+        probability: 0.2,
+        impact: 8000000,
+        attackVectors: ["Data mishandling", "Inadequate controls", "Audit failures", "Compliance gaps"],
+        nacMitigation: 95,
+        timeToDetect: 720,
+        timeToContain: 168,
+        recoveryTime: 2160,
+        reputationImpact: "Severe",
+        regulatoryFines: 75000000,
+      },
+    ],
+  },
+  retail: {
+    threats: [
+      {
+        name: "POS Malware",
+        probability: 0.3,
+        impact: 5200000,
+        attackVectors: ["Memory scraping", "Network sniffing", "Remote access", "Physical tampering"],
+        nacMitigation: 88,
+        timeToDetect: 45,
+        timeToContain: 24,
+        recoveryTime: 120,
+        reputationImpact: "High",
+        regulatoryFines: 500000,
+      },
+      {
+        name: "E-commerce Attack",
+        probability: 0.35,
+        impact: 4800000,
+        attackVectors: ["Web application attacks", "API exploitation", "Session hijacking", "Payment skimming"],
+        nacMitigation: 75,
+        timeToDetect: 30,
+        timeToContain: 12,
+        recoveryTime: 48,
+        reputationImpact: "High",
+        regulatoryFines: 750000,
+      },
+      {
+        name: "Customer Data Breach",
+        probability: 0.25,
+        impact: 7500000,
+        attackVectors: ["Database compromise", "Insider access", "Third-party breach", "Cloud misconfiguration"],
+        nacMitigation: 82,
+        timeToDetect: 90,
+        timeToContain: 48,
+        recoveryTime: 240,
+        reputationImpact: "Severe",
+        regulatoryFines: 2000000,
+      },
+    ],
+  },
+  manufacturing: {
+    threats: [
+      {
+        name: "Industrial Espionage",
+        probability: 0.22,
+        impact: 25000000,
+        attackVectors: ["IP theft", "Trade secret access", "Design document theft", "Process manipulation"],
+        nacMitigation: 78,
+        timeToDetect: 300,
+        timeToContain: 120,
+        recoveryTime: 720,
+        reputationImpact: "Severe",
+        regulatoryFines: 1000000,
+      },
+      {
+        name: "OT/IT Convergence Attack",
+        probability: 0.18,
+        impact: 15000000,
+        attackVectors: ["Network bridging", "Protocol exploitation", "HMI compromise", "SCADA manipulation"],
+        nacMitigation: 85,
+        timeToDetect: 180,
+        timeToContain: 72,
+        recoveryTime: 480,
+        reputationImpact: "High",
+        regulatoryFines: 500000,
+      },
+      {
+        name: "Supply Chain Disruption",
+        probability: 0.28,
+        impact: 12000000,
+        attackVectors: ["Vendor compromise", "Logistics attack", "Component tampering", "Communication disruption"],
+        nacMitigation: 70,
+        timeToDetect: 240,
+        timeToContain: 96,
+        recoveryTime: 600,
+        reputationImpact: "High",
+        regulatoryFines: 0,
+      },
+    ],
+  },
+  education: {
+    threats: [
+      {
+        name: "Student Data Breach",
+        probability: 0.28,
+        impact: 4200000,
+        attackVectors: ["Database access", "Insider threat", "Phishing attacks", "Weak authentication"],
+        nacMitigation: 80,
+        timeToDetect: 120,
+        timeToContain: 48,
+        recoveryTime: 240,
+        reputationImpact: "High",
+        regulatoryFines: 100000,
+      },
+      {
+        name: "Ransomware",
+        probability: 0.4,
+        impact: 3800000,
+        attackVectors: ["Email attacks", "Remote access", "Unpatched systems", "Backup encryption"],
+        nacMitigation: 85,
+        timeToDetect: 48,
+        timeToContain: 72,
+        recoveryTime: 360,
+        reputationImpact: "High",
+        regulatoryFines: 0,
+      },
+      {
+        name: "Research IP Theft",
+        probability: 0.15,
+        impact: 8500000,
+        attackVectors: ["Researcher access", "Collaboration platform", "Cloud storage", "Email compromise"],
+        nacMitigation: 75,
+        timeToDetect: 200,
+        timeToContain: 96,
+        recoveryTime: 480,
+        reputationImpact: "Severe",
+        regulatoryFines: 0,
+      },
+    ],
+  },
+  government: {
+    threats: [
+      {
+        name: "Nation State Attack",
+        probability: 0.35,
+        impact: 50000000,
+        attackVectors: ["Advanced malware", "Zero-day exploits", "Social engineering", "Supply chain"],
+        nacMitigation: 75,
+        timeToDetect: 400,
+        timeToContain: 168,
+        recoveryTime: 1440,
+        reputationImpact: "Severe",
+        regulatoryFines: 10000000,
+      },
+      {
+        name: "Critical Infrastructure Attack",
+        probability: 0.2,
+        impact: 75000000,
+        attackVectors: ["SCADA compromise", "Network disruption", "Physical damage", "Service interruption"],
+        nacMitigation: 80,
+        timeToDetect: 120,
+        timeToContain: 240,
+        recoveryTime: 2160,
+        reputationImpact: "Severe",
+        regulatoryFines: 25000000,
+      },
+      {
+        name: "Classified Data Breach",
+        probability: 0.15,
+        impact: 100000000,
+        attackVectors: ["Insider threat", "Privilege escalation", "Data exfiltration", "Clearance abuse"],
+        nacMitigation: 90,
+        timeToDetect: 300,
+        timeToContain: 72,
+        recoveryTime: 720,
+        reputationImpact: "Severe",
+        regulatoryFines: 50000000,
+      },
+    ],
+  },
+  technology: {
+    threats: [
+      {
+        name: "Intellectual Property Theft",
+        probability: 0.25,
+        impact: 35000000,
+        attackVectors: ["Source code theft", "Design document access", "Patent information", "Trade secrets"],
+        nacMitigation: 82,
+        timeToDetect: 250,
+        timeToContain: 96,
+        recoveryTime: 600,
+        reputationImpact: "Severe",
+        regulatoryFines: 2000000,
+      },
+      {
+        name: "Cloud Infrastructure Attack",
+        probability: 0.3,
+        impact: 15000000,
+        attackVectors: ["Misconfiguration", "API exploitation", "Container escape", "Privilege escalation"],
+        nacMitigation: 85,
+        timeToDetect: 60,
+        timeToContain: 24,
+        recoveryTime: 120,
+        reputationImpact: "High",
+        regulatoryFines: 1000000,
+      },
+      {
+        name: "Supply Chain Compromise",
+        probability: 0.18,
+        impact: 28000000,
+        attackVectors: ["Third-party libraries", "Build pipeline", "Distribution channels", "Update mechanisms"],
+        nacMitigation: 70,
+        timeToDetect: 180,
+        timeToContain: 120,
+        recoveryTime: 720,
+        reputationImpact: "Severe",
+        regulatoryFines: 5000000,
+      },
+    ],
+  },
+  energy: {
+    threats: [
+      {
+        name: "Critical Infrastructure Attack",
+        probability: 0.28,
+        impact: 85000000,
+        attackVectors: ["SCADA manipulation", "Grid disruption", "Physical damage", "Cascading failures"],
+        nacMitigation: 82,
+        timeToDetect: 90,
+        timeToContain: 180,
+        recoveryTime: 1440,
+        reputationImpact: "Severe",
+        regulatoryFines: 5000000,
+      },
+      {
+        name: "Industrial Sabotage",
+        probability: 0.15,
+        impact: 45000000,
+        attackVectors: ["Process manipulation", "Safety system bypass", "Equipment damage", "Production halt"],
+        nacMitigation: 85,
+        timeToDetect: 120,
+        timeToContain: 240,
+        recoveryTime: 2160,
+        reputationImpact: "Severe",
+        regulatoryFines: 10000000,
+      },
+      {
+        name: "Environmental Incident",
+        probability: 0.12,
+        impact: 125000000,
+        attackVectors: ["Safety system compromise", "Monitoring bypass", "Alarm suppression", "Emergency response"],
+        nacMitigation: 90,
+        timeToDetect: 30,
+        timeToContain: 60,
+        recoveryTime: 4320,
+        reputationImpact: "Severe",
+        regulatoryFines: 50000000,
+      },
+    ],
+  },
+}
+
+// Comprehensive industry benchmarking data with detailed operational metrics
 const INDUSTRY_BENCHMARKS = {
   healthcare: {
     name: "Healthcare",
@@ -77,6 +723,32 @@ const INDUSTRY_BENCHMARKS = {
     iotDevices: 15000,
     dataVolume: "High",
     regulatoryPressure: "Very High",
+    operationalMetrics: {
+      avgFtePerDevice: 0.0008,
+      maintenanceHoursPerDevice: 2.5,
+      trainingDaysPerYear: 15,
+      upgradeFrequency: 18,
+      downtimeToleranceHours: 2,
+      backupRequirements: "Real-time",
+      disasterRecoveryRto: 4,
+      disasterRecoveryRpo: 1,
+    },
+    infrastructureRequirements: {
+      redundancy: "Active-Active",
+      monitoring: "24x7 SOC",
+      compliance: "Continuous",
+      encryption: "End-to-end",
+      networkSegmentation: "Micro-segmentation",
+      accessControl: "Zero Trust",
+    },
+    vendorRequirements: {
+      certifications: ["HIPAA", "SOC 2 Type II", "FedRAMP"],
+      sla: "99.99%",
+      support: "24x7x365",
+      dataResidency: "US only",
+      auditFrequency: "Quarterly",
+      penetrationTesting: "Annual",
+    },
   },
   financial: {
     name: "Financial Services",
@@ -101,6 +773,32 @@ const INDUSTRY_BENCHMARKS = {
     iotDevices: 8000,
     dataVolume: "Very High",
     regulatoryPressure: "Extreme",
+    operationalMetrics: {
+      avgFtePerDevice: 0.0012,
+      maintenanceHoursPerDevice: 1.8,
+      trainingDaysPerYear: 20,
+      upgradeFrequency: 12,
+      downtimeToleranceHours: 0.5,
+      backupRequirements: "Real-time",
+      disasterRecoveryRto: 1,
+      disasterRecoveryRpo: 0.25,
+    },
+    infrastructureRequirements: {
+      redundancy: "Active-Active-Active",
+      monitoring: "24x7 SOC + CSIRT",
+      compliance: "Real-time",
+      encryption: "FIPS 140-2 Level 3",
+      networkSegmentation: "Zero Trust",
+      accessControl: "Privileged Access Management",
+    },
+    vendorRequirements: {
+      certifications: ["PCI-DSS", "SOC 2 Type II", "ISO 27001", "FedRAMP High"],
+      sla: "99.999%",
+      support: "24x7x365 + Dedicated TAM",
+      dataResidency: "Regional compliance",
+      auditFrequency: "Monthly",
+      penetrationTesting: "Quarterly",
+    },
   },
   retail: {
     name: "Retail",
@@ -125,6 +823,32 @@ const INDUSTRY_BENCHMARKS = {
     iotDevices: 25000,
     dataVolume: "High",
     regulatoryPressure: "Medium",
+    operationalMetrics: {
+      avgFtePerDevice: 0.0005,
+      maintenanceHoursPerDevice: 1.2,
+      trainingDaysPerYear: 8,
+      upgradeFrequency: 24,
+      downtimeToleranceHours: 4,
+      backupRequirements: "Daily",
+      disasterRecoveryRto: 24,
+      disasterRecoveryRpo: 8,
+    },
+    infrastructureRequirements: {
+      redundancy: "Active-Passive",
+      monitoring: "Business hours + On-call",
+      compliance: "Periodic",
+      encryption: "Standard",
+      networkSegmentation: "VLAN-based",
+      accessControl: "Role-based",
+    },
+    vendorRequirements: {
+      certifications: ["PCI-DSS", "SOC 2 Type I"],
+      sla: "99.9%",
+      support: "8x5 + Emergency",
+      dataResidency: "Flexible",
+      auditFrequency: "Annual",
+      penetrationTesting: "Annual",
+    },
   },
   manufacturing: {
     name: "Manufacturing",
@@ -149,6 +873,32 @@ const INDUSTRY_BENCHMARKS = {
     iotDevices: 35000,
     dataVolume: "Medium",
     regulatoryPressure: "Medium",
+    operationalMetrics: {
+      avgFtePerDevice: 0.0006,
+      maintenanceHoursPerDevice: 3.2,
+      trainingDaysPerYear: 12,
+      upgradeFrequency: 36,
+      downtimeToleranceHours: 8,
+      backupRequirements: "Daily",
+      disasterRecoveryRto: 48,
+      disasterRecoveryRpo: 24,
+    },
+    infrastructureRequirements: {
+      redundancy: "Active-Passive",
+      monitoring: "24x7 Operations Center",
+      compliance: "Periodic",
+      encryption: "Standard",
+      networkSegmentation: "OT/IT Separation",
+      accessControl: "Role-based + Physical",
+    },
+    vendorRequirements: {
+      certifications: ["ISO 27001", "IEC 62443"],
+      sla: "99.5%",
+      support: "24x7 Operations",
+      dataResidency: "On-premise preferred",
+      auditFrequency: "Annual",
+      penetrationTesting: "Biannual",
+    },
   },
   education: {
     name: "Education",
@@ -173,6 +923,32 @@ const INDUSTRY_BENCHMARKS = {
     iotDevices: 18000,
     dataVolume: "Medium",
     regulatoryPressure: "Low",
+    operationalMetrics: {
+      avgFtePerDevice: 0.0003,
+      maintenanceHoursPerDevice: 0.8,
+      trainingDaysPerYear: 5,
+      upgradeFrequency: 48,
+      downtimeToleranceHours: 12,
+      backupRequirements: "Weekly",
+      disasterRecoveryRto: 72,
+      disasterRecoveryRpo: 48,
+    },
+    infrastructureRequirements: {
+      redundancy: "Single point",
+      monitoring: "Business hours",
+      compliance: "Annual",
+      encryption: "Basic",
+      networkSegmentation: "Basic VLAN",
+      accessControl: "Basic authentication",
+    },
+    vendorRequirements: {
+      certifications: ["SOC 2 Type I"],
+      sla: "99%",
+      support: "8x5",
+      dataResidency: "Flexible",
+      auditFrequency: "Annual",
+      penetrationTesting: "Optional",
+    },
   },
   government: {
     name: "Government",
@@ -197,6 +973,32 @@ const INDUSTRY_BENCHMARKS = {
     iotDevices: 12000,
     dataVolume: "Very High",
     regulatoryPressure: "Extreme",
+    operationalMetrics: {
+      avgFtePerDevice: 0.0015,
+      maintenanceHoursPerDevice: 4.5,
+      trainingDaysPerYear: 25,
+      upgradeFrequency: 12,
+      downtimeToleranceHours: 1,
+      backupRequirements: "Real-time",
+      disasterRecoveryRto: 2,
+      disasterRecoveryRpo: 0.5,
+    },
+    infrastructureRequirements: {
+      redundancy: "Multi-site Active-Active",
+      monitoring: "24x7 CIRT + SOC",
+      compliance: "Continuous",
+      encryption: "FIPS 140-2 Level 4",
+      networkSegmentation: "Classified separation",
+      accessControl: "Multi-factor + Biometric",
+    },
+    vendorRequirements: {
+      certifications: ["FedRAMP High", "FIPS 140-2", "Common Criteria"],
+      sla: "99.99%",
+      support: "24x7x365 + Cleared personnel",
+      dataResidency: "US Government Cloud",
+      auditFrequency: "Continuous",
+      penetrationTesting: "Quarterly + Red Team",
+    },
   },
   technology: {
     name: "Technology",
@@ -221,6 +1023,32 @@ const INDUSTRY_BENCHMARKS = {
     iotDevices: 5000,
     dataVolume: "Very High",
     regulatoryPressure: "High",
+    operationalMetrics: {
+      avgFtePerDevice: 0.001,
+      maintenanceHoursPerDevice: 1.5,
+      trainingDaysPerYear: 18,
+      upgradeFrequency: 6,
+      downtimeToleranceHours: 2,
+      backupRequirements: "Real-time",
+      disasterRecoveryRto: 4,
+      disasterRecoveryRpo: 1,
+    },
+    infrastructureRequirements: {
+      redundancy: "Multi-cloud Active-Active",
+      monitoring: "24x7 DevSecOps",
+      compliance: "Continuous",
+      encryption: "End-to-end",
+      networkSegmentation: "Zero Trust",
+      accessControl: "Identity-centric",
+    },
+    vendorRequirements: {
+      certifications: ["SOC 2 Type II", "ISO 27001", "GDPR"],
+      sla: "99.95%",
+      support: "24x7 + DevOps integration",
+      dataResidency: "Multi-region",
+      auditFrequency: "Quarterly",
+      penetrationTesting: "Continuous",
+    },
   },
   energy: {
     name: "Energy & Utilities",
@@ -245,1067 +1073,293 @@ const INDUSTRY_BENCHMARKS = {
     iotDevices: 50000,
     dataVolume: "High",
     regulatoryPressure: "Very High",
+    operationalMetrics: {
+      avgFtePerDevice: 0.0008,
+      maintenanceHoursPerDevice: 5.2,
+      trainingDaysPerYear: 22,
+      upgradeFrequency: 24,
+      downtimeToleranceHours: 0.25,
+      backupRequirements: "Real-time",
+      disasterRecoveryRto: 1,
+      disasterRecoveryRpo: 0.1,
+    },
+    infrastructureRequirements: {
+      redundancy: "N+2 Redundancy",
+      monitoring: "24x7 Control Center",
+      compliance: "Real-time",
+      encryption: "FIPS 140-2",
+      networkSegmentation: "Air-gapped OT",
+      accessControl: "Physical + Logical",
+    },
+    vendorRequirements: {
+      certifications: ["NERC CIP", "IEC 62443", "NIST CSF"],
+      sla: "99.999%",
+      support: "24x7x365 + Emergency response",
+      dataResidency: "On-premise + Secure cloud",
+      auditFrequency: "Quarterly",
+      penetrationTesting: "Quarterly + Red Team",
+    },
   },
 }
 
-const IndustryAnalysisView: React.FC<IndustryAnalysisViewProps> = ({ results, config }) => {
-  const [selectedIndustry, setSelectedIndustry] = useState<string>(config.industry || "healthcare")
-  const [comparisonMode, setComparisonMode] = useState<"single" | "multi">("single")
-  const [selectedMetrics, setSelectedMetrics] = useState<string[]>([
-    "securitySpend",
-    "breachCost",
-    "nacAdoption",
-    "maturityLevel",
-  ])
-
-  const currentIndustry = INDUSTRY_BENCHMARKS[selectedIndustry as keyof typeof INDUSTRY_BENCHMARKS]
-  const portnoxResult = results.find((r) => r.vendorId === "portnox") || results[0]
-
-  // Calculate organization's current profile
-  const organizationProfile = useMemo(() => {
-    const deviceRatio = config.devices / currentIndustry.avgDevices
-    const estimatedSecuritySpend = (portnoxResult?.totalCost / config.years / (config.devices * 100)) * 100 // As % of assumed IT budget
-
-    return {
-      securitySpend: estimatedSecuritySpend,
-      devices: config.devices,
-      maturityLevel: portnoxResult?.risk.securityScore || 75,
-      complianceScore: portnoxResult?.risk.complianceScore || 80,
-      automationLevel: portnoxResult?.ops.automationLevel || 70,
-      estimatedBreachCost: currentIndustry.avgBreachCost * (deviceRatio > 1 ? Math.sqrt(deviceRatio) : 1),
-      riskReduction: portnoxResult?.risk.breachReduction * 100 || 75,
-      nacReadiness: 85, // Based on analysis completion
-    }
-  }, [config, currentIndustry, portnoxResult])
-
-  // Risk comparison data
-  const riskComparisonData = useMemo(() => {
-    return Object.entries(INDUSTRY_BENCHMARKS).map(([key, industry]) => ({
-      industry: industry.name,
-      avgBreachCost: industry.avgBreachCost / 1000000,
-      breachFrequency: industry.breachFrequency * 100,
-      securitySpend: industry.avgSecuritySpend,
-      maturityLevel: industry.maturityLevel,
-      nacAdoption: industry.nacAdoption,
-      isSelected: key === selectedIndustry,
-    }))
-  }, [selectedIndustry])
-
-  // Maturity radar chart data
-  const maturityRadarData = [
-    {
-      metric: "Security Posture",
-      industry: currentIndustry.maturityLevel,
-      organization: organizationProfile.maturityLevel,
-      fullMark: 100,
+// Enhanced vendor cost models with detailed breakdowns
+const ENHANCED_VENDOR_COSTS = {
+  portnox: {
+    licensing: {
+      perDeviceBase: 60,
+      volumeDiscounts: {
+        500: 0.9,
+        1000: 0.8,
+        5000: 0.7,
+        10000: 0.6,
+      },
+      tiers: {
+        essentials: { multiplier: 0.75, features: ["Basic NAC", "Cloud RADIUS", "Device discovery"] },
+        professional: { multiplier: 1.0, features: ["Advanced NAC", "Risk scoring", "Automation"] },
+        enterprise: { multiplier: 1.33, features: ["Full platform", "AI/ML", "Advanced analytics"] },
+      },
     },
-    {
-      metric: "Compliance",
-      industry: currentIndustry.complianceRequirement,
-      organization: organizationProfile.complianceScore,
-      fullMark: 100,
+    addOns: {
+      riskAnalytics: { cost: 10, perDevice: true, description: "ML-based risk scoring and behavioral analytics" },
+      privilegedAccess: { cost: 1000, perUser: true, description: "Password vault and session recording" },
+      complianceReporting: { cost: 5000, flat: true, description: "Automated compliance reporting and dashboards" },
+      apiAccess: { cost: 2500, flat: true, description: "REST API access and custom integrations" },
+      advancedThreatDetection: { cost: 15, perDevice: true, description: "AI-powered threat detection and response" },
     },
-    {
-      metric: "Automation",
-      industry: currentIndustry.automationLevel,
-      organization: organizationProfile.automationLevel,
-      fullMark: 100,
+    integrations: {
+      activeDirctory: { cost: 0, complexity: "low", timeToImplement: 4 },
+      azureAd: { cost: 0, complexity: "low", timeToImplement: 2 },
+      okta: { cost: 0, complexity: "low", timeToImplement: 3 },
+      splunk: { cost: 0, complexity: "medium", timeToImplement: 8 },
+      microsoftSentinel: { cost: 0, complexity: "medium", timeToImplement: 6 },
+      crowdstrike: { cost: 0, complexity: "medium", timeToImplement: 5 },
+      jamf: { cost: 0, complexity: "low", timeToImplement: 4 },
+      intune: { cost: 0, complexity: "low", timeToImplement: 3 },
+      servicenow: { cost: 2500, complexity: "high", timeToImplement: 16 },
+      customApi: { cost: 5000, complexity: "high", timeToImplement: 24 },
     },
-    {
-      metric: "NAC Adoption",
-      industry: currentIndustry.nacAdoption,
-      organization: organizationProfile.nacReadiness,
-      fullMark: 100,
+    hardware: {
+      required: false,
+      cloudNative: true,
+      onPremiseOption: false,
     },
-    {
-      metric: "Incident Response",
-      industry: Math.max(0, 100 - currentIndustry.incidentResponseTime * 2),
-      organization: Math.max(0, 100 - (portnoxResult?.timeline.implementationWeeks || 12) * 4),
-      fullMark: 100,
+    infrastructure: {
+      serverRequirements: null,
+      networkRequirements: "Internet connectivity",
+      storageRequirements: "Cloud-based",
+      backupRequirements: "Included",
     },
-    {
-      metric: "Risk Management",
-      industry: Math.max(0, 100 - currentIndustry.breachFrequency * 200),
-      organization: Math.max(0, 100 - (100 - organizationProfile.riskReduction)),
-      fullMark: 100,
+    support: {
+      basic: { cost: 0, included: true, coverage: "8x5 Email/Chat", sla: "24 hours" },
+      premium: { cost: 5000, coverage: "24x7 Phone/Email", sla: "4 hours" },
+      enterprise: { cost: 15000, coverage: "24x7 All channels + TAM", sla: "1 hour" },
     },
-  ]
-
-  // Threat landscape comparison
-  const threatLandscapeData = [
-    { threat: "External Attacks", industry: 85, organization: Math.max(0, 85 - organizationProfile.riskReduction) },
-    {
-      threat: "Insider Threats",
-      industry: 65,
-      organization: Math.max(0, 65 - organizationProfile.riskReduction * 0.6),
+    professionalServices: {
+      quickStart: { cost: 5000, duration: 2, description: "Basic setup and configuration" },
+      standardImplementation: { cost: 15000, duration: 4, description: "Full implementation with best practices" },
+      enterpriseDeployment: { cost: 35000, duration: 8, description: "Complex multi-site deployment" },
+      migration: { cost: 25000, duration: 6, description: "Migration from existing NAC solution" },
+      training: {
+        virtual: { cost: 1500, duration: 1, participants: 10 },
+        onsite: { cost: 3500, duration: 2, participants: 20 },
+        certification: { cost: 500, duration: 0.5, participants: 1 },
+      },
     },
-    { threat: "Ransomware", industry: 78, organization: Math.max(0, 78 - organizationProfile.riskReduction * 0.8) },
-    { threat: "Data Breaches", industry: 72, organization: Math.max(0, 72 - organizationProfile.riskReduction * 0.9) },
-    {
-      threat: "Compliance Violations",
-      industry: 45,
-      organization: Math.max(0, 45 - organizationProfile.riskReduction * 0.5),
+    operationalMetrics: {
+      automationLevel: 95,
+      fteSavingsPerDevice: 0.0008,
+      maintenanceHoursPerMonth: 2,
+      upgradeComplexity: "automatic",
+      troubleshootingTimeHours: 0.5,
     },
-  ]
-
-  const BenchmarkOverview = () => (
-    <div className="space-y-6">
-      {/* Industry Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Industry Benchmark Analysis
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4 mb-6">
-            <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
-              <SelectTrigger className="w-64">
-                <SelectValue placeholder="Select industry" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(INDUSTRY_BENCHMARKS).map(([key, industry]) => (
-                  <SelectItem key={key} value={key}>
-                    {industry.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Badge variant="outline">{currentIndustry.name} Selected</Badge>
-          </div>
-
-          {/* Key Industry Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <DollarSign className="h-5 w-5 text-blue-600" />
-                <Badge variant="outline">Industry Avg</Badge>
-              </div>
-              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                {currentIndustry.avgSecuritySpend}%
-              </div>
-              <div className="text-sm text-blue-700 dark:text-blue-300">Security Spend</div>
-            </div>
-
-            <div className="bg-red-50 dark:bg-red-950 p-4 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
-                <Badge variant="outline">Risk Level</Badge>
-              </div>
-              <div className="text-2xl font-bold text-red-900 dark:text-red-100">
-                ${(currentIndustry.avgBreachCost / 1000000).toFixed(1)}M
-              </div>
-              <div className="text-sm text-red-700 dark:text-red-300">Avg Breach Cost</div>
-            </div>
-
-            <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <Shield className="h-5 w-5 text-green-600" />
-                <Badge variant="outline">Adoption</Badge>
-              </div>
-              <div className="text-2xl font-bold text-green-900 dark:text-green-100">
-                {currentIndustry.nacAdoption}%
-              </div>
-              <div className="text-sm text-green-700 dark:text-green-300">NAC Adoption</div>
-            </div>
-
-            <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <Target className="h-5 w-5 text-purple-600" />
-                <Badge variant="outline">Maturity</Badge>
-              </div>
-              <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">
-                {currentIndustry.maturityLevel}%
-              </div>
-              <div className="text-sm text-purple-700 dark:text-purple-300">Security Maturity</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Your Organization vs Industry */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Performance Comparison
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {[
-                {
-                  metric: "Security Spend",
-                  industry: currentIndustry.avgSecuritySpend,
-                  organization: organizationProfile.securitySpend,
-                  unit: "%",
-                  better: "lower",
-                },
-                {
-                  metric: "Security Maturity",
-                  industry: currentIndustry.maturityLevel,
-                  organization: organizationProfile.maturityLevel,
-                  unit: "%",
-                  better: "higher",
-                },
-                {
-                  metric: "Compliance Score",
-                  industry: currentIndustry.complianceRequirement,
-                  organization: organizationProfile.complianceScore,
-                  unit: "%",
-                  better: "higher",
-                },
-                {
-                  metric: "Automation Level",
-                  industry: currentIndustry.automationLevel,
-                  organization: organizationProfile.automationLevel,
-                  unit: "%",
-                  better: "higher",
-                },
-              ].map((item, idx) => {
-                const diff = item.organization - item.industry
-                const isGood = (item.better === "higher" && diff > 0) || (item.better === "lower" && diff < 0)
-                const absDiff = Math.abs(diff)
-
-                return (
-                  <div key={idx} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{item.metric}</span>
-                      <div className="flex items-center gap-2">
-                        {isGood ? (
-                          <ArrowUp className="h-4 w-4 text-green-600" />
-                        ) : diff === 0 ? (
-                          <Minus className="h-4 w-4 text-gray-600" />
-                        ) : (
-                          <ArrowDown className="h-4 w-4 text-red-600" />
-                        )}
-                        <Badge variant={isGood ? "default" : diff === 0 ? "secondary" : "destructive"}>
-                          {diff > 0 ? "+" : ""}
-                          {diff.toFixed(1)}
-                          {item.unit}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <div className="text-muted-foreground">Industry Average</div>
-                        <div className="font-medium">
-                          {item.industry.toFixed(1)}
-                          {item.unit}
-                        </div>
-                        <Progress value={(item.industry / 100) * 100} className="h-2 mt-1" />
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Your Organization</div>
-                        <div className="font-medium">
-                          {item.organization.toFixed(1)}
-                          {item.unit}
-                        </div>
-                        <Progress value={(item.organization / 100) * 100} className="h-2 mt-1" />
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Maturity Assessment
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <RadarChart data={maturityRadarData}>
-                <PolarGrid />
-                <PolarAngleAxis dataKey="metric" />
-                <PolarRadiusAxis angle={90} domain={[0, 100]} />
-                <Radar
-                  name="Industry Average"
-                  dataKey="industry"
-                  stroke="#8884d8"
-                  fill="#8884d8"
-                  fillOpacity={0.1}
-                  strokeWidth={2}
-                />
-                <Radar
-                  name="Your Organization"
-                  dataKey="organization"
-                  stroke="#82ca9d"
-                  fill="#82ca9d"
-                  fillOpacity={0.2}
-                  strokeWidth={2}
-                />
-                <Tooltip />
-              </RadarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Industry Characteristics */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            {currentIndustry.name} Industry Profile
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="space-y-4">
-              <h4 className="font-semibold text-lg">Risk Profile</h4>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span>Risk Tolerance</span>
-                  <Badge
-                    variant={
-                      currentIndustry.riskTolerance === "Very Low" || currentIndustry.riskTolerance === "Low"
-                        ? "destructive"
-                        : currentIndustry.riskTolerance === "Medium"
-                          ? "secondary"
-                          : "default"
-                    }
-                  >
-                    {currentIndustry.riskTolerance}
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>Breach Frequency</span>
-                  <span className="font-medium">{(currentIndustry.breachFrequency * 100).toFixed(0)}%/year</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Critical Assets</span>
-                  <span className="font-medium">{currentIndustry.criticalAssets}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Regulatory Pressure</span>
-                  <Badge
-                    variant={
-                      currentIndustry.regulatoryPressure === "Extreme" ||
-                      currentIndustry.regulatoryPressure === "Very High"
-                        ? "destructive"
-                        : currentIndustry.regulatoryPressure === "High"
-                          ? "secondary"
-                          : "default"
-                    }
-                  >
-                    {currentIndustry.regulatoryPressure}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="font-semibold text-lg">Technology Landscape</h4>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span>Cloud Adoption</span>
-                  <span className="font-medium">{currentIndustry.cloudAdoption}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Remote Work</span>
-                  <span className="font-medium">{currentIndustry.remoteWork}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>IoT Devices</span>
-                  <span className="font-medium">{(currentIndustry.iotDevices / 1000).toFixed(0)}K</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Data Volume</span>
-                  <Badge variant="outline">{currentIndustry.dataVolume}</Badge>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="font-semibold text-lg">Top Threats</h4>
-              <div className="space-y-2">
-                {currentIndustry.topThreats.map((threat, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-orange-500" />
-                    <span className="text-sm">{threat}</span>
-                  </div>
-                ))}
-              </div>
-              <h4 className="font-semibold text-lg mt-4">Compliance Frameworks</h4>
-              <div className="flex flex-wrap gap-2">
-                {currentIndustry.complianceFrameworks.map((framework, idx) => (
-                  <Badge key={idx} variant="outline">
-                    {framework}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
-
-  const CrossIndustryComparison = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Cross-Industry Risk Analysis
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={riskComparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="industry" angle={-45} textAnchor="end" height={100} />
-              <YAxis yAxisId="left" orientation="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
-              <Bar yAxisId="left" dataKey="avgBreachCost" fill="#8884d8" name="Avg Breach Cost ($M)" />
-              <Bar yAxisId="right" dataKey="securitySpend" fill="#82ca9d" name="Security Spend (%)" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Security Maturity by Industry
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Object.entries(INDUSTRY_BENCHMARKS)
-                .sort(([, a], [, b]) => b.maturityLevel - a.maturityLevel)
-                .map(([key, industry], idx) => (
-                  <div key={key} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{industry.name}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">{industry.maturityLevel}%</span>
-                        {key === selectedIndustry && <Badge variant="outline">Your Industry</Badge>}
-                      </div>
-                    </div>
-                    <Progress value={industry.maturityLevel} className="h-2" />
-                  </div>
-                ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              NAC Adoption Rates
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Object.entries(INDUSTRY_BENCHMARKS)
-                .sort(([, a], [, b]) => b.nacAdoption - a.nacAdoption)
-                .map(([key, industry], idx) => (
-                  <div key={key} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{industry.name}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">{industry.nacAdoption}%</span>
-                        {key === selectedIndustry && <Badge variant="outline">Your Industry</Badge>}
-                      </div>
-                    </div>
-                    <Progress value={industry.nacAdoption} className="h-2" />
-                  </div>
-                ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            Risk vs Investment Analysis
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <ScatterChart data={riskComparisonData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="securitySpend"
-                name="Security Spend"
-                unit="%"
-                label={{ value: "Security Spend (% of IT Budget)", position: "insideBottom", offset: -10 }}
-              />
-              <YAxis
-                dataKey="avgBreachCost"
-                name="Breach Cost"
-                unit="M"
-                label={{ value: "Average Breach Cost ($M)", angle: -90, position: "insideLeft" }}
-              />
-              <Tooltip
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    const data = payload[0].payload
-                    return (
-                      <div className="bg-white p-3 border rounded shadow-lg">
-                        <p className="font-semibold">{data.industry}</p>
-                        <p>Security Spend: {data.securitySpend}%</p>
-                        <p>Breach Cost: ${data.avgBreachCost.toFixed(1)}M</p>
-                        <p>NAC Adoption: {data.nacAdoption}%</p>
-                        <p>Maturity: {data.maturityLevel}%</p>
-                      </div>
-                    )
-                  }
-                  return null
-                }}
-              />
-              <Scatter dataKey="avgBreachCost" fill="#8884d8">
-                {riskComparisonData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.isSelected ? "#ff7300" : "#8884d8"} />
-                ))}
-              </Scatter>
-            </ScatterChart>
-          </ResponsiveContainer>
-          <div className="mt-4 text-sm text-muted-foreground">
-            <p>• Industries in the lower right quadrant have optimal risk/investment ratios</p>
-            <p>• Your industry is highlighted in orange</p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
-
-  const ThreatLandscape = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" />
-            Threat Landscape Analysis
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <h4 className="font-semibold mb-4">Current Threat Exposure</h4>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={threatLandscapeData} layout="horizontal">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" domain={[0, 100]} />
-                  <YAxis dataKey="threat" type="category" width={120} />
-                  <Tooltip />
-                  <Bar dataKey="industry" fill="#ff7300" name="Industry Average" />
-                  <Bar dataKey="organization" fill="#82ca9d" name="With NAC Solution" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-4">Risk Reduction Impact</h4>
-              <div className="space-y-4">
-                {threatLandscapeData.map((threat, idx) => {
-                  const reduction = threat.industry - threat.organization
-                  const reductionPercent = (reduction / threat.industry) * 100
-
-                  return (
-                    <div key={idx} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{threat.threat}</span>
-                        <Badge variant="default" className="bg-green-600">
-                          -{reductionPercent.toFixed(0)}%
-                        </Badge>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <div className="text-muted-foreground">Current Risk</div>
-                          <Progress value={threat.industry} className="h-2 mt-1" />
-                          <div className="text-xs mt-1">{threat.industry}%</div>
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground">With NAC</div>
-                          <Progress value={threat.organization} className="h-2 mt-1" />
-                          <div className="text-xs mt-1">{threat.organization}%</div>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-yellow-600" />
-              Attack Vectors
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {[
-                { vector: "Unmanaged Devices", risk: 85, mitigation: 90 },
-                { vector: "Weak Authentication", risk: 75, mitigation: 95 },
-                { vector: "Lateral Movement", risk: 80, mitigation: 85 },
-                { vector: "Privilege Escalation", risk: 70, mitigation: 80 },
-                { vector: "Data Exfiltration", risk: 65, mitigation: 75 },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between">
-                  <span className="text-sm">{item.vector}</span>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="destructive" className="text-xs">
-                      {item.risk}%
-                    </Badge>
-                    <ArrowDown className="h-3 w-3 text-green-600" />
-                    <Badge variant="default" className="text-xs bg-green-600">
-                      -{item.mitigation}%
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5 text-blue-600" />
-              Compliance Gaps
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {currentIndustry.complianceFrameworks.map((framework, idx) => {
-                const currentGap = Math.max(0, 100 - organizationProfile.complianceScore)
-                const futureGap = Math.max(0, currentGap - 25) // Assume 25% improvement
-
-                return (
-                  <div key={idx} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{framework}</span>
-                      <Badge variant={currentGap > 20 ? "destructive" : currentGap > 10 ? "secondary" : "default"}>
-                        {currentGap}% gap
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <div className="text-xs text-muted-foreground">Current</div>
-                        <Progress value={100 - currentGap} className="h-2" />
-                      </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground">With NAC</div>
-                        <Progress value={100 - futureGap} className="h-2" />
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Eye className="h-5 w-5 text-purple-600" />
-              Visibility Improvements
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[
-                { area: "Device Discovery", current: 60, target: 100 },
-                { area: "User Activity", current: 45, target: 95 },
-                { area: "Network Traffic", current: 70, target: 90 },
-                { area: "Policy Violations", current: 30, target: 85 },
-                { area: "Threat Detection", current: 55, target: 92 },
-              ].map((item, idx) => (
-                <div key={idx} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{item.area}</span>
-                    <Badge variant="outline">+{item.target - item.current}%</Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <div className="text-xs text-muted-foreground">Current</div>
-                      <Progress value={item.current} className="h-2" />
-                      <div className="text-xs mt-1">{item.current}%</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground">Target</div>
-                      <Progress value={item.target} className="h-2" />
-                      <div className="text-xs mt-1">{item.target}%</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  )
-
-  const RecommendationsAndGaps = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            Industry-Specific Recommendations
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h4 className="font-semibold text-lg text-green-600">Strengths to Leverage</h4>
-              <div className="space-y-3">
-                {organizationProfile.maturityLevel > currentIndustry.maturityLevel && (
-                  <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                    <div>
-                      <div className="font-medium">Above-Average Security Maturity</div>
-                      <div className="text-sm text-muted-foreground">
-                        Your security maturity ({organizationProfile.maturityLevel}%) exceeds industry average (
-                        {currentIndustry.maturityLevel}%)
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {organizationProfile.automationLevel > currentIndustry.automationLevel && (
-                  <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                    <div>
-                      <div className="font-medium">Strong Automation Foundation</div>
-                      <div className="text-sm text-muted-foreground">
-                        Your automation level ({organizationProfile.automationLevel}%) is above industry standard (
-                        {currentIndustry.automationLevel}%)
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                  <div>
-                    <div className="font-medium">Proactive NAC Evaluation</div>
-                    <div className="text-sm text-muted-foreground">
-                      You're ahead of {100 - currentIndustry.nacAdoption}% of organizations in your industry by
-                      evaluating NAC solutions
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="font-semibold text-lg text-orange-600">Areas for Improvement</h4>
-              <div className="space-y-3">
-                {organizationProfile.complianceScore < currentIndustry.complianceRequirement && (
-                  <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
-                    <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
-                    <div>
-                      <div className="font-medium">Compliance Gap</div>
-                      <div className="text-sm text-muted-foreground">
-                        Your compliance score ({organizationProfile.complianceScore}%) is below industry requirement (
-                        {currentIndustry.complianceRequirement}%)
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {config.devices > currentIndustry.avgDevices * 1.5 && (
-                  <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
-                    <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
-                    <div>
-                      <div className="font-medium">Scale Complexity</div>
-                      <div className="text-sm text-muted-foreground">
-                        Your device count ({config.devices.toLocaleString()}) significantly exceeds industry average (
-                        {currentIndustry.avgDevices.toLocaleString()})
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
-                  <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
-                  <div>
-                    <div className="font-medium">Incident Response Time</div>
-                    <div className="text-sm text-muted-foreground">
-                      Industry average response time is {currentIndustry.incidentResponseTime} hours - NAC can reduce
-                      this significantly
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Peer Comparison & Best Practices
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div>
-              <h4 className="font-semibold mb-4">Organizations Similar to Yours</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[
-                  {
-                    profile: "Large Enterprise",
-                    devices: "10K+ devices",
-                    nacAdoption: 78,
-                    avgSpend: currentIndustry.avgSecuritySpend * 1.2,
-                    keyBenefits: ["Reduced complexity", "Better compliance", "Cost savings"],
-                  },
-                  {
-                    profile: "Multi-Location",
-                    devices: "5K-15K devices",
-                    nacAdoption: 65,
-                    avgSpend: currentIndustry.avgSecuritySpend,
-                    keyBenefits: ["Centralized control", "Consistent policies", "Remote visibility"],
-                  },
-                  {
-                    profile: "High-Security",
-                    devices: "Similar scale",
-                    nacAdoption: 85,
-                    avgSpend: currentIndustry.avgSecuritySpend * 1.5,
-                    keyBenefits: ["Zero trust", "Threat prevention", "Compliance automation"],
-                  },
-                ].map((peer, idx) => (
-                  <div key={idx} className="border rounded-lg p-4">
-                    <h5 className="font-semibold mb-2">{peer.profile}</h5>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Scale:</span>
-                        <span className="font-medium">{peer.devices}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>NAC Adoption:</span>
-                        <span className="font-medium">{peer.nacAdoption}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Security Spend:</span>
-                        <span className="font-medium">{peer.avgSpend.toFixed(1)}%</span>
-                      </div>
-                      <div className="mt-3">
-                        <div className="text-xs text-muted-foreground mb-1">Key Benefits:</div>
-                        {peer.keyBenefits.map((benefit, benefitIdx) => (
-                          <div key={benefitIdx} className="flex items-center gap-1 text-xs">
-                            <CheckCircle className="h-3 w-3 text-green-600" />
-                            {benefit}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-4">Industry Best Practices</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <h5 className="font-medium text-blue-600">Implementation Approach</h5>
-                  {[
-                    "Start with critical assets and high-risk areas",
-                    "Implement in phases to minimize disruption",
-                    "Establish baseline visibility before enforcement",
-                    "Integrate with existing security tools",
-                    "Plan for user training and change management",
-                  ].map((practice, idx) => (
-                    <div key={idx} className="flex items-start gap-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-blue-600 mt-0.5" />
-                      {practice}
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-3">
-                  <h5 className="font-medium text-purple-600">Success Metrics</h5>
-                  {[
-                    "100% device visibility within 30 days",
-                    "95%+ policy compliance within 90 days",
-                    "50%+ reduction in security incidents",
-                    "75%+ reduction in manual processes",
-                    "ROI achievement within 18 months",
-                  ].map((metric, idx) => (
-                    <div key={idx} className="flex items-start gap-2 text-sm">
-                      <Target className="h-4 w-4 text-purple-600 mt-0.5" />
-                      {metric}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Strategic Roadmap
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {[
-              {
-                phase: "Foundation (Months 1-3)",
-                priority: "Critical",
-                objectives: [
-                  "Achieve industry-standard device visibility",
-                  "Implement basic access controls",
-                  "Establish compliance baseline",
-                ],
-                metrics: ["100% device discovery", "Basic policy enforcement", "Compliance gap assessment"],
-              },
-              {
-                phase: "Enhancement (Months 4-6)",
-                priority: "High",
-                objectives: [
-                  "Exceed industry automation levels",
-                  "Implement advanced threat detection",
-                  "Optimize operational processes",
-                ],
-                metrics: [
-                  `>${currentIndustry.automationLevel}% automation`,
-                  "Advanced analytics deployment",
-                  "Process optimization",
-                ],
-              },
-              {
-                phase: "Leadership (Months 7-12)",
-                priority: "Strategic",
-                objectives: [
-                  "Achieve top-quartile security posture",
-                  "Become industry benchmark",
-                  "Drive continuous improvement",
-                ],
-                metrics: [
-                  `>${Math.max(...Object.values(INDUSTRY_BENCHMARKS).map((i) => i.maturityLevel))}% maturity`,
-                  "Industry leadership position",
-                  "Continuous optimization",
-                ],
-              },
-            ].map((phase, idx) => (
-              <div key={idx} className="border-l-4 border-blue-500 pl-6">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold text-lg">{phase.phase}</h4>
-                  <Badge
-                    variant={
-                      phase.priority === "Critical"
-                        ? "destructive"
-                        : phase.priority === "High"
-                          ? "default"
-                          : "secondary"
-                    }
-                  >
-                    {phase.priority}
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h5 className="font-medium mb-2">Objectives:</h5>
-                    <ul className="space-y-1">
-                      {phase.objectives.map((objective, objIdx) => (
-                        <li key={objIdx} className="flex items-start gap-2 text-sm">
-                          <Target className="h-4 w-4 text-blue-600 mt-0.5" />
-                          {objective}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <h5 className="font-medium mb-2">Success Metrics:</h5>
-                    <ul className="space-y-1">
-                      {phase.metrics.map((metric, metricIdx) => (
-                        <li key={metricIdx} className="flex items-start gap-2 text-sm">
-                          <Activity className="h-4 w-4 text-green-600 mt-0.5" />
-                          {metric}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
-
-  return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Industry Analysis</h2>
-          <p className="text-muted-foreground">
-            Compare your risk profile and security posture against industry standards and peers
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Select value={comparisonMode} onValueChange={(value: "single" | "multi") => setComparisonMode(value)}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="single">Single Industry</SelectItem>
-              <SelectItem value="multi">Multi-Industry</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export Analysis
-          </Button>
-        </div>
-      </div>
-
-      <Tabs defaultValue="benchmark" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="benchmark">Benchmark Overview</TabsTrigger>
-          <TabsTrigger value="comparison">Cross-Industry</TabsTrigger>
-          <TabsTrigger value="threats">Threat Landscape</TabsTrigger>
-          <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="benchmark" className="space-y-6">
-          <BenchmarkOverview />
-        </TabsContent>
-
-        <TabsContent value="comparison" className="space-y-6">
-          <CrossIndustryComparison />
-        </TabsContent>
-
-        <TabsContent value="threats" className="space-y-6">
-          <ThreatLandscape />
-        </TabsContent>
-
-        <TabsContent value="recommendations" className="space-y-6">
-          <RecommendationsAndGaps />
-        </TabsContent>
-      </Tabs>
-    </div>
-  )
-}
-
-export default IndustryAnalysisView
+  },
+  cisco: {
+    licensing: {
+      perDeviceBase: 125,
+      volumeDiscounts: {
+        500: 0.95,
+        1000: 0.88,
+        5000: 0.78,
+        10000: 0.68,
+      },
+      tiers: {
+        base: { multiplier: 1.0, features: ["Basic ISE", "802.1X", "Guest access"] },
+        plus: { multiplier: 1.4, features: ["Profiling", "BYOD", "Posture assessment"] },
+        apex: { multiplier: 1.8, features: ["pxGrid", "TC-NAC", "Device admin", "Threat-centric NAC"] },
+      },
+    },
+    addOns: {
+      pxgrid: { cost: 25, perDevice: true, description: "Platform Exchange Grid for ecosystem integration" },
+      threatCentricNac: { cost: 35, perDevice: true, description: "Advanced threat detection and response" },
+      deviceAdmin: { cost: 15, perDevice: true, description: "TACACS+ device administration" },
+      guestAccess: { cost: 5, perDevice: true, description: "Advanced guest management portal" },
+      postureAssessment: { cost: 20, perDevice: true, description: "Endpoint compliance checking" },
+    },
+    integrations: {
+      ciscoInfrastructure: { cost: 0, complexity: "low", timeToImplement: 8 },
+      activeDirctory: { cost: 0, complexity: "medium", timeToImplement: 12 },
+      dnacCenter: { cost: 25000, complexity: "high", timeToImplement: 32 },
+      stealthwatch: { cost: 15000, complexity: "high", timeToImplement: 24 },
+      amp: { cost: 10000, complexity: "medium", timeToImplement: 16 },
+      umbrella: { cost: 8000, complexity: "medium", timeToImplement: 12 },
+      firepower: { cost: 12000, complexity: "high", timeToImplement: 20 },
+    },
+    hardware: {
+      required: true,
+      appliances: [
+        { model: "ISE-3315", capacity: 500, cost: 25000, redundancy: true },
+        { model: "ISE-3355", capacity: 2000, cost: 45000, redundancy: true },
+        { model: "ISE-3395", capacity: 10000, cost: 85000, redundancy: true },
+        { model: "ISE-3515", capacity: 50000, cost: 150000, redundancy: true },
+      ],
+    },
+    infrastructure: {
+      serverRequirements: "VMware vSphere 6.7+, 16GB RAM minimum",
+      networkRequirements: "Cisco infrastructure preferred",
+      storageRequirements: "600GB SSD minimum",
+      backupRequirements: "Customer managed",
+    },
+    support: {
+      basic: { cost: 12000, coverage: "8x5 TAC", sla: "Next business day" },
+      premium: { cost: 25000, coverage: "24x7 TAC", sla: "2 hours" },
+      enterprise: { cost: 50000, coverage: "24x7 Priority TAC + TAM", sla: "30 minutes" },
+    },
+    professionalServices: {
+      quickStart: { cost: 25000, duration: 4, description: "Basic ISE deployment" },
+      standardImplementation: { cost: 75000, duration: 12, description: "Full ISE implementation" },
+      enterpriseDeployment: { cost: 200000, duration: 24, description: "Complex multi-node deployment" },
+      migration: { cost: 150000, duration: 20, description: "Migration from legacy NAC" },
+      training: {
+        virtual: { cost: 3000, duration: 3, participants: 8 },
+        onsite: { cost: 8000, duration: 5, participants: 12 },
+        certification: { cost: 2500, duration: 5, participants: 1 },
+      },
+    },
+    operationalMetrics: {
+      automationLevel: 65,
+      fteSavingsPerDevice: 0.0003,
+      maintenanceHoursPerMonth: 20,
+      upgradeComplexity: "high",
+      troubleshootingTimeHours: 6,
+    },
+  },
+  aruba: {
+    licensing: {
+      perDeviceBase: 95,
+      volumeDiscounts: {
+        500: 0.93,
+        1000: 0.86,
+        5000: 0.79,
+        10000: 0.71,
+      },
+      tiers: {
+        base: { multiplier: 1.0, features: ["Basic ClearPass", "802.1X", "Guest portal"] },
+        premium: { multiplier: 1.3, features: ["OnGuard", "OnConnect", "Advanced profiling"] },
+        enterprise: { multiplier: 1.6, features: ["Full platform", "Advanced analytics", "Cloud integration"] },
+      },
+    },
+    addOns: {
+      onguard: { cost: 25, perDevice: true, description: "Endpoint compliance and posture assessment" },
+      onconnect: { cost: 20, perDevice: true, description: "Secure remote access solution" },
+      guestAccess: { cost: 8, perDevice: true, description: "Advanced guest management and portal" },
+      deviceInsight: { cost: 15, perDevice: true, description: "IoT device profiling and classification" },
+      policyEnforcement: { cost: 12, perDevice: true, description: "Dynamic policy enforcement" },
+    },
+    integrations: {
+      arubaInfrastructure: { cost: 0, complexity: "low", timeToImplement: 6 },
+      arubaCentral: { cost: 0, complexity: "low", timeToImplement: 4 },
+      activeDirctory: { cost: 0, complexity: "medium", timeToImplement: 8 },
+      vmware: { cost: 5000, complexity: "medium", timeToImplement: 12 },
+      splunk: { cost: 3000, complexity: "medium", timeToImplement: 10 },
+      servicenow: { cost: 8000, complexity: "high", timeToImplement: 16 },
+    },
+    hardware: {
+      required: true,
+      appliances: [
+        { model: "C1000", capacity: 1000, cost: 15000, redundancy: true },
+        { model: "C2000", capacity: 5000, cost: 35000, redundancy: true },
+        { model: "C3000", capacity: 25000, cost: 75000, redundancy: true },
+      ],
+    },
+    infrastructure: {
+      serverRequirements: "VMware vSphere 6.5+, 8GB RAM minimum",
+      networkRequirements: "Aruba infrastructure recommended",
+      storageRequirements: "500GB SSD minimum",
+      backupRequirements: "Customer managed",
+    },
+    support: {
+      basic: { cost: 8000, coverage: "8x5 Support", sla: "Next business day" },
+      premium: { cost: 18000, coverage: "24x7 Support", sla: "4 hours" },
+      enterprise: { cost: 35000, coverage: "24x7 Priority + TAM", sla: "1 hour" },
+    },
+    professionalServices: {
+      quickStart: { cost: 15000, duration: 3, description: "Basic ClearPass setup" },
+      standardImplementation: { cost: 45000, duration: 8, description: "Full ClearPass deployment" },
+      enterpriseDeployment: { cost: 120000, duration: 16, description: "Complex multi-site deployment" },
+      migration: { cost: 85000, duration: 12, description: "Migration from existing solution" },
+      training: {
+        virtual: { cost: 2500, duration: 2, participants: 10 },
+        onsite: { cost: 5500, duration: 3, participants: 15 },
+        certification: { cost: 1800, duration: 3, participants: 1 },
+      },
+    },
+    operationalMetrics: {
+      automationLevel: 75,
+      fteSavingsPerDevice: 0.0005,
+      maintenanceHoursPerMonth: 12,
+      upgradeComplexity: "medium",
+      troubleshootingTimeHours: 3,
+    },
+  },
+  fortinet: {
+    licensing: {
+      perDeviceBase: 85,
+      volumeDiscounts: {
+        500: 0.92,
+        1000: 0.84,
+        5000: 0.76,
+        10000: 0.68,
+      },
+      tiers: {
+        base: { multiplier: 1.0, features: ["Basic FortiNAC", "Device discovery", "Basic policies"] },
+        advanced: { multiplier: 1.25, features: ["Advanced policies", "Guest access", "IoT security"] },
+        enterprise: { multiplier: 1.5, features: ["Full platform", "Security Fabric integration", "Analytics"] },
+      },
+    },
+    addOns: {
+      iotSecurity: { cost: 18, perDevice: true, description: "IoT device security and management" },
+      guestAccess: { cost: 10, perDevice: true, description: "Guest network access management" },
+      securityFabric: { cost: 22, perDevice: true, description: "Integration with FortiGate Security Fabric" },
+      advancedThreatProtection: { cost: 25, perDevice: true, description: "Advanced threat detection and response" },
+    },
+    integrations: {
+      fortigate: { cost: 0, complexity: "low", timeToImplement: 4 },
+      fortisiem: { cost: 0, complexity: "medium", timeToImplement: 8 },
+      fortianalyzer: { cost: 0, complexity: "medium", timeToImplement: 6 },
+      activeDirctory: { cost: 0, complexity: "medium", timeToImplement: 10 },
+      vmware: { cost: 3000, complexity: "medium", timeToImplement: 12 },
+    },
+    hardware: {
+      required: true,
+      appliances: [
+        { model: "FortiNAC-1000F", capacity: 2500, cost: 18000, redundancy: true },
+        { model: "FortiNAC-3000F", capacity: 10000, cost: 45000, redundancy: true },
+        { model: "FortiNAC-5000F", capacity: 50000, cost: 95000, redundancy: true },
+      ],
+    },
+    infrastructure: {
+      serverRequirements: "VMware vSphere 6.0+, 8GB RAM minimum",
+      networkRequirements: "FortiGate integration recommended",
+      storageRequirements: "400GB SSD minimum",
+      backupRequirements: "Customer managed",
+    },
+    support: {
+      basic: { cost: 7500, coverage: "8x5 Support", sla: "Next business day" },
+      premium: { cost: 16000, coverage: "24x7 Support", sla: "4 hours" },
+      enterprise: { cost: 32000, coverage: "24x7 Priority Support", sla: "2 hours" },
+    },
+    professionalServices: {
+      quickStart: { cost: 12000, duration: 2, description: "Basic FortiNAC setup" },
+      standardImplementation: { cost: 35000, duration: 6, description: "Full FortiNAC deployment" },
+      enterpriseDeployment: { cost: 85000, duration: 12, description: "Complex enterprise deployment" },
+      migration: { cost: 65000, duration:\
