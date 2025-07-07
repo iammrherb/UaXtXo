@@ -239,3 +239,180 @@ Immediate implementation of Portnox CLEAR is recommended based on:
           tasks: ["Phased deployment", "User training", "Monitoring"],
         },
         {
+          name: "Legacy Decommission",
+          duration: hasExistingNAC ? "14 days" : "0 days",
+          tasks: hasExistingNAC ? ["Data migration", "System shutdown", "License cleanup"] : [],
+        },
+      ],
+      risks: [
+        {
+          risk: "User disruption",
+          mitigation: "Phased rollout with pilot groups",
+          probability: "Low",
+        },
+        {
+          risk: "Policy conflicts",
+          mitigation: "Comprehensive policy mapping and testing",
+          probability: "Medium",
+        },
+      ],
+    }
+  }
+
+  // Helper methods
+  private calculateCompetitorAverage(): number {
+    const vendors = Object.keys(this.data.analysis.tcoComparison)
+    const competitorCosts = vendors
+      .filter((v) => v !== "PORTNOX")
+      .map((v) => this.data.analysis.tcoComparison[v]?.totalCost || 0)
+
+    return competitorCosts.length > 0
+      ? competitorCosts.reduce((sum, cost) => sum + cost, 0) / competitorCosts.length
+      : 0
+  }
+
+  private calculateRiskScore(vendor: string): number {
+    const vendorData = COMPREHENSIVE_VENDOR_DATA[vendor]
+    if (!vendorData) return 50
+
+    // Calculate risk score based on various factors
+    let score = 100
+
+    // Architecture complexity
+    if (vendorData.architecture === "DISTRIBUTED") score -= 20
+    if (vendorData.architecture === "CENTRALIZED") score -= 10
+
+    // Vendor lock-in
+    if (vendorData.vendorLockIn === "HIGH") score -= 30
+    if (vendorData.vendorLockIn === "MEDIUM") score -= 15
+
+    // Deployment complexity
+    const cloudDeployment = vendorData.deploymentModels.CLOUD
+    if (!cloudDeployment?.available) score -= 25
+
+    return Math.max(0, Math.min(100, score))
+  }
+
+  private calculateComplianceScore(vendor: string): number {
+    const vendorData = COMPREHENSIVE_VENDOR_DATA[vendor]
+    if (!vendorData) return 50
+
+    // Calculate compliance score based on capabilities
+    let score = 0
+    const capabilities = vendorData.capabilities
+
+    if (capabilities.zeroTrust) score += 20
+    if (capabilities.riskBasedAccess) score += 15
+    if (capabilities.cloudPKI) score += 15
+    if (capabilities.iotProfiling) score += 10
+    if (capabilities.apiAccess) score += 10
+    if (capabilities.multiTenant) score += 10
+    if (capabilities.reporting) score += 20
+
+    return Math.min(100, score)
+  }
+
+  private formatCurrency(amount: number): string {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  private getRegulationRequirements(regulation: string): string[] {
+    const requirements: Record<string, string[]> = {
+      HIPAA: [
+        "Access controls and unique user identification",
+        "Automatic logoff and encryption",
+        "Audit controls and integrity",
+        "Person or entity authentication",
+      ],
+      SOX: ["IT general controls", "Change management", "Access controls", "Data backup and recovery"],
+      PCI_DSS: [
+        "Network security controls",
+        "Access control measures",
+        "Regular monitoring and testing",
+        "Information security policy",
+      ],
+      GDPR: [
+        "Data protection by design",
+        "Access controls and authentication",
+        "Data breach notification",
+        "Privacy impact assessments",
+      ],
+      NIST: [
+        "Identify and protect functions",
+        "Detect and respond capabilities",
+        "Recovery procedures",
+        "Continuous monitoring",
+      ],
+    }
+
+    return requirements[regulation] || ["Standard security requirements"]
+  }
+
+  // Export methods for different formats
+  async exportToPDF(): Promise<Blob> {
+    // This would integrate with a PDF generation library
+    const content = this.generateExecutiveSummary()
+    return new Blob([content], { type: "application/pdf" })
+  }
+
+  async exportToExcel(): Promise<Blob> {
+    // This would integrate with an Excel generation library
+    const csvContent = await this.exportToCSV()
+    return new Blob([csvContent], { type: "application/vnd.ms-excel" })
+  }
+
+  async exportToPowerPoint(): Promise<Blob> {
+    // This would integrate with a PowerPoint generation library
+    const content = this.generateExecutiveSummary()
+    return new Blob([content], { type: "application/vnd.ms-powerpoint" })
+  }
+}
+
+// Utility functions for export
+export function createExportData(configuration: any, analysis: any, recommendations?: any): ExportData {
+  return {
+    metadata: {
+      generatedAt: new Date(),
+      generatedBy: "Portnox TCO Analyzer",
+      version: "1.0.0",
+      title: "NAC Vendor Analysis Report",
+      description: "Comprehensive analysis of Network Access Control solutions",
+    },
+    configuration,
+    analysis,
+    recommendations: recommendations || {
+      executive: [
+        "Implement Portnox CLEAR for optimal ROI",
+        "Leverage cloud-native architecture",
+        "Prioritize zero-trust security model",
+      ],
+      technical: [
+        "Deploy in cloud-first configuration",
+        "Integrate with existing identity systems",
+        "Implement automated policy enforcement",
+      ],
+      financial: [
+        "Realize immediate cost savings",
+        "Eliminate infrastructure investments",
+        "Reduce operational overhead",
+      ],
+    },
+  }
+}
+
+export function downloadFile(content: string, filename: string, mimeType: string) {
+  const blob = new Blob([content], { type: mimeType })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
