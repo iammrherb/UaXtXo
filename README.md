@@ -1,121 +1,62 @@
 # Portnox TCO Analyzer
 
-A comprehensive Total Cost of Ownership (TCO) analysis tool for Network Access Control (NAC) solutions, featuring Portnox and competitive vendor comparisons.
+This project is a Total Cost of Ownership (TCO) analyzer for Network Access Control (NAC) solutions, with a focus on Portnox CLEAR. It provides a comprehensive comparison across major NAC vendors, highlighting the benefits of cloud-native solutions.
 
-## 🚀 Live Demo
+## Features
 
-Visit the live application: [https://iammrherb.github.io/portnox-tco-analyzer/](https://iammrherb.github.io/portnox-tco-analyzer/)
+- **TCO Analysis**: Detailed cost comparison across 13 major NAC vendors.
+- **Zero Trust Security**: Evaluation of security maturity scores.
+- **Implementation Simplicity**: Analysis of deployment time and complexity.
+- **Hidden Cost Analysis**: Identification of often-overlooked costs.
+- **ROI & Benefits**: Calculation of risk-adjusted returns and financial benefits.
+- **Migration Path**: Assessment of migration costs and savings.
 
-## ✨ Features
+## Technologies Used
 
-- **Executive Dashboard** - High-level TCO overview and key metrics
-- **Detailed Cost Breakdown** - Comprehensive cost analysis by category
-- **ROI & Business Value** - Return on investment calculations and projections
-- **Compliance & Risk Assessment** - Framework coverage and risk analysis
-- **Operations Impact** - Efficiency gains and operational benefits
-- **Feature Matrix Comparison** - Side-by-side vendor feature comparison
-- **Implementation Roadmap** - Deployment timeline and planning
-- **Vendor Selection Panel** - Easy vendor comparison and selection
+- Next.js
+- React
+- Tailwind CSS
+- Recharts
+- Lucide React Icons
+- Shadcn/ui components
 
-## 🛠️ Technology Stack
+## Getting Started
 
-- **Framework**: Next.js 14 with App Router
-- **Styling**: Tailwind CSS with custom design system
-- **UI Components**: Radix UI primitives with shadcn/ui
-- **Charts**: Recharts for data visualization
-- **Animations**: Framer Motion
-- **Icons**: Lucide React
-- **Deployment**: GitHub Pages with automated CI/CD
+1.  Clone the repository:
 
-## 🏗️ Development
+    \`\`\`bash
+    git clone <repository-url>
+    \`\`\`
 
-### Prerequisites
+2.  Install dependencies:
 
-- Node.js 18+ 
-- npm or yarn
+    \`\`\`bash
+    npm install
+    \`\`\`
 
-### Installation
+3.  Run the development server:
 
-\`\`\`bash
-# Clone the repository
-git clone https://github.com/iammrherb/portnox-tco-analyzer.git
+    \`\`\`bash
+    npm run dev
+    \`\`\`
 
-# Navigate to project directory
-cd portnox-tco-analyzer
+4.  Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-# Install dependencies
-npm install
+## Usage
 
-# Start development server
-npm run dev
-\`\`\`
+The application provides a user-friendly interface to compare NAC vendors based on various factors. You can adjust parameters such as organization size, industry, and analysis period to tailor the analysis to your specific needs.
 
-### Building for Production
+## Key Findings
 
-\`\`\`bash
-# Build the application
-npm run build
+- **TCO Leadership**: Portnox CLEAR demonstrates 61-68% lower TCO compared to market leaders.
+- **Zero Trust Security Excellence**: Portnox CLEAR achieves the highest Zero Trust maturity score.
+- **Implementation Simplicity**: Portnox CLEAR offers a 7-day deployment time.
+- **Hidden Cost Analysis**: Traditional solutions often have significant hidden costs.
 
-# Export static files (for GitHub Pages)
-npm run export
-\`\`\`
+## Contributing
 
-## 📊 Vendor Data
+Contributions are welcome! Please open an issue or submit a pull request with your proposed changes.
 
-The application includes comprehensive data for major NAC vendors:
+## License
 
-- **Portnox CLEAR** - Cloud-native NAC leader
-- **Cisco ISE** - Traditional enterprise NAC
-- **Aruba ClearPass** - HPE's NAC solution
-- **Cisco Meraki** - Cloud-managed NAC
-- **Forescout** - Agentless device visibility
-- **FortiNAC** - Fortinet's security fabric NAC
-- **Juniper Mist** - AI-driven NAC
-- **Microsoft Intune/NPS** - Hybrid endpoint NAC
-- And more...
-
-## 🔧 Configuration
-
-The application supports various configuration options:
-
-- Organization size (startup to enterprise)
-- Industry vertical selection
-- Projection timeline (1-5 years)
-- Regional pricing adjustments
-- Compliance framework requirements
-
-## 📈 Analytics & Calculations
-
-- **TCO Calculations**: Comprehensive cost modeling including software, hardware, implementation, support, and hidden costs
-- **ROI Analysis**: Payback period, net present value, and annual savings calculations
-- **Risk Assessment**: Security posture scoring and compliance readiness metrics
-- **Operational Impact**: Efficiency gains and labor savings analysis
-
-## 🚀 Deployment
-
-The application is automatically deployed to GitHub Pages using GitHub Actions:
-
-1. Push changes to the `main` branch
-2. GitHub Actions builds and deploys the application
-3. Live site updates automatically
-
-## 📝 License
-
-This project is proprietary software owned by Portnox. All rights reserved.
-
-## 🤝 Contributing
-
-This is a private repository. For questions or contributions, please contact the development team.
-
-## 📞 Support
-
-For technical support or questions about the TCO Analyzer:
-
-- Email: support@portnox.com
-- Website: https://www.portnox.com
-- Documentation: https://docs.portnox.com
-
----
-
-Built with ❤️ by the Portnox team
-\`\`\`
+[MIT](https://opensource.org/license/mit/)

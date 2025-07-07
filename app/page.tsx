@@ -1,9 +1,13 @@
-import TcoAnalyzerUltimate from "@/components/tco-analyzer" // Updated import
+"use client"
 
-export default function HomePage() {
+import ComprehensiveNACAnalysis from "@/components/ComprehensiveNACAnalysis"
+
+const VendorComparisonPage = () => {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <TcoAnalyzerUltimate />
+    <div className="container mx-auto py-10">
+      <ComprehensiveNACAnalysis />
     </div>
   )
 }
+
+export default VendorComparisonPage

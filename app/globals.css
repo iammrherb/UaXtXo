@@ -4,73 +4,77 @@
 
 @layer base {
   :root {
-    --portnox-primary-rgb: 0, 212, 170;
-    --portnox-primary: #00d4aa;
-    --portnox-primary-dark: #00a085;
-    --portnox-primary-light: #4de5c9;
-    --portnox-secondary-rgb: 27, 41, 81;
-    --portnox-secondary: #1b2951;
-    --portnox-secondary-light: #2a3f6e;
-    --portnox-accent: #ff6b35;
+    --background: 0 0% 100%;
+    --foreground: 222.2 47.4% 11.2%;
 
-    --background: 220 20% 97%;
-    --foreground: 224 71% 4%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
+    --popover-foreground: 222.2 47.4% 11.2%;
 
-    --primary: 168 100% 42%;
-    --primary-foreground: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 220 13% 91%;
-    --secondary-foreground: 224 71% 4%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
 
-    --muted: 220 9% 85%;
-    --muted-foreground: 220 9% 45%;
+    --primary: 222.1 83.2% 9.8%;
+    --primary-foreground: 210 40% 98%;
 
-    --accent: 168 100% 42%;
-    --accent-foreground: 0 0% 100%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
-    --border: 220 13% 88%;
-    --input: 220 13% 88%;
-    --ring: 168 100% 42%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-    --radius: 0.75rem;
+    --ring: 222.1 83.2% 9.8%;
 
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --info: #3b82f6;
-    --text-tertiary-script: #64748b;
-    --bg-accent-script: linear-gradient(135deg, #e5f9f5 0%, #d1f4ed 100%);
+    --radius: 0.5rem;
+
+    --chart-1: 142.1 76.2% 33.3%;
+    --chart-2: 39 100% 50%;
+    --chart-3: 23.4 93.2% 59%;
+    --chart-4: 277.1 76.2% 53.3%;
+
+    --color-portnox: 142.1 76.2% 33.3%;
+    --color-traditional: 39 100% 50%;
   }
 
   .dark {
     --background: 224 71% 4%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
+    --foreground: 213 31% 91%;
+
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
+
+    --accent: 216 34% 17%;
+    --accent-foreground: 210 40% 98%;
+
     --popover: 224 71% 4%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 168 100% 42%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 222 47% 11%;
+    --popover-foreground: 215 20.2% 65.1%;
+
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 1.2%;
+
+    --secondary: 210 40% 13.1%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 75%;
-    --accent: 168 100% 42%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%;
+
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 27%;
-    --input: 217 33% 27%;
-    --ring: 168 100% 42%;
+
+    --ring: 217.2 32.6% 17.5%;
+
+    --radius: 0.5rem;
   }
 }
 
@@ -80,54 +84,45 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: "Inter", sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-  }
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
-    letter-spacing: -0.02em;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-track {
-  background: hsl(var(--background));
-}
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted) / 0.8);
-  border-radius: var(--radius);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.7);
+@layer components {
+  .bg-portnox-blue {
+    background-color: hsl(var(--chart-1));
+  }
+  .text-portnox-blue {
+    color: hsl(var(--chart-1));
+  }
+  .border-portnox-blue {
+    border-color: hsl(var(--chart-1));
+  }
+  .bg-portnox-blue-light {
+    background-color: hsla(var(--chart-1), 0.1);
+  }
+  .text-portnox-blue-light {
+    color: hsla(var(--chart-1), 0.8);
+  }
+
+  .bg-traditional {
+    background-color: hsl(var(--chart-2));
+  }
+  .text-traditional {
+    color: hsl(var(--chart-2));
+  }
+  .border-traditional {
+    border-color: hsl(var(--chart-2));
+  }
 }
 
-.recharts-default-tooltip {
-  background-color: hsl(var(--card)) !important;
-  border-color: hsl(var(--border)) !important;
-  color: hsl(var(--card-foreground)) !important;
-  border-radius: var(--radius) !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-.recharts-tooltip-label {
-  color: hsl(var(--card-foreground)) !important;
-  font-weight: 600 !important;
-}
-.recharts-legend-item-text {
-  color: hsl(var(--foreground)) !important;
-}
-.recharts-cartesian-axis-tick-value {
-  fill: hsl(var(--muted-foreground)) !important;
-}
-.recharts-text {
-  fill: hsl(var(--muted-foreground)) !important;
+/* Custom Animations */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
