@@ -7,7 +7,7 @@ import { type CalculationResult, compareVendors, type CalculationConfiguration }
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Separator } from "@/lib/utils"
+import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import EnhancedVendorSelection from "./enhanced-vendor-selection"
 import SettingsPanel from "./settings-panel"
