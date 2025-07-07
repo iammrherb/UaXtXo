@@ -1,348 +1,417 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
-import { X, Settings, Building, Shield, DollarSign, Zap } from "lucide-react"
-import type { CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Save, RotateCcw } from "lucide-react"
 
 interface SettingsPanelProps {
-  configuration: CalculationConfiguration
-  onConfigurationChange: (config: CalculationConfiguration) => void
-  onClose: () => void
+  config: any
+  onConfigChange: (config: any) => void
 }
 
-export default function SettingsPanel({ configuration, onConfigurationChange, onClose }: SettingsPanelProps) {
-  const [localConfig, setLocalConfig] = useState<CalculationConfiguration>({
-    devices: configuration?.devices || 1000,
-    users: configuration?.users || 2500,
-    years: configuration?.years || 3,
-    industry: configuration?.industry || "technology",
-    companySize: configuration?.companySize || "medium",
-    securityLevel: configuration?.securityLevel || "high",
-    complianceRequirements: configuration?.complianceRequirements || ["SOC2"],
-    currentSolution: configuration?.currentSolution || "basic",
-    deploymentComplexity: configuration?.deploymentComplexity || "medium",
-    supportLevel: configuration?.supportLevel || "premium",
-    integrationRequirements: configuration?.integrationRequirements || ["active-directory"],
-    geographicScope: configuration?.geographicScope || "single-region",
-    budgetConstraints: configuration?.budgetConstraints || "moderate",
-  })
+export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
+  const [localConfig, setLocalConfig] = useState(config)
 
   const handleSave = () => {
-    onConfigurationChange(localConfig)
-    onClose()
+    onConfigChange(localConfig)
   }
 
   const handleReset = () => {
-    const defaultConfig: CalculationConfiguration = {
-      devices: 1000,
-      users: 2500,
-      years: 3,
-      industry: "technology",
-      companySize: "medium",
-      securityLevel: "high",
-      complianceRequirements: ["SOC2"],
-      currentSolution: "basic",
+    const defaultConfig = {
+      deviceCount: 1000,
+      timeframe: 3,
+      industry: "healthcare",
+      hasExistingNAC: false,
+      existingVendor: "",
+      annualRevenue: 100000000,
+      securityBudget: 2000000,
+      complianceRequirements: ["hipaa", "sox"],
       deploymentComplexity: "medium",
-      supportLevel: "premium",
-      integrationRequirements: ["active-directory"],
-      geographicScope: "single-region",
-      budgetConstraints: "moderate",
+      geographicScope: "national",
+      integrationRequirements: ["active_directory", "siem", "itsm"],
+      businessCriticality: "high",
     }
     setLocalConfig(defaultConfig)
+    onConfigChange(defaultConfig)
   }
 
-  const updateConfig = (key: keyof CalculationConfiguration, value: any) => {
-    setLocalConfig((prev) => ({ ...prev, [key]: value }))
+  const updateConfig = (key: string, value: any) => {
+    setLocalConfig((prev: any) => ({ ...prev, [key]: value }))
   }
+
+  const industries = [
+    { value: "healthcare", label: "Healthcare" },
+    { value: "financial", label: "Financial Services" },
+    { value: "education", label: "Education" },
+    { value: "government", label: "Government" },
+    { value: "manufacturing", label: "Manufacturing" },
+    { value: "retail", label: "Retail" },
+    { value: "technology", label: "Technology" },
+    { value: "other", label: "Other" },
+  ]
+
+  const complianceOptions = [
+    { id: "hipaa", label: "HIPAA" },
+    { id: "pci_dss", label: "PCI DSS" },
+    { id: "gdpr", label: "GDPR" },
+    { id: "sox", label: "SOX" },
+    { id: "iso27001", label: "ISO 27001" },
+    { id: "nist", label: "NIST" },
+    { id: "fedramp", label: "FedRAMP" },
+    { id: "fisma", label: "FISMA" },
+  ]
+
+  const integrationOptions = [
+    { id: "active_directory", label: "Active Directory" },
+    { id: "siem", label: "SIEM" },
+    { id: "itsm", label: "ITSM" },
+    { id: "mdm", label: "MDM" },
+    { id: "vpn", label: "VPN" },
+    { id: "firewall", label: "Firewall" },
+    { id: "endpoint_protection", label: "Endpoint Protection" },
+    { id: "cloud_services", label: "Cloud Services" },
+  ]
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between p-6 border-b">
-        <div className="flex items-center gap-2">
-          <Settings className="h-5 w-5" />
-          <h2 className="text-lg font-semibold">Analysis Configuration</h2>
-        </div>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
+    <div className="space-y-6">
+      <Tabs defaultValue="organization" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="organization">Organization</TabsTrigger>
+          <TabsTrigger value="technical">Technical</TabsTrigger>
+          <TabsTrigger value="compliance">Compliance</TabsTrigger>
+          <TabsTrigger value="advanced">Advanced</TabsTrigger>
+        </TabsList>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Organization Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building className="h-4 w-4" />
-              Organization Profile
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="devices">Number of Devices</Label>
-                <Input
-                  id="devices"
-                  type="number"
-                  value={localConfig.devices}
-                  onChange={(e) => updateConfig("devices", Number.parseInt(e.target.value) || 0)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="users">Number of Users</Label>
-                <Input
-                  id="users"
-                  type="number"
-                  value={localConfig.users}
-                  onChange={(e) => updateConfig("users", Number.parseInt(e.target.value) || 0)}
-                />
-              </div>
+        <TabsContent value="organization" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="industry">Industry</Label>
+              <Select value={localConfig.industry} onValueChange={(value) => updateConfig("industry", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  {industries.map((industry) => (
+                    <SelectItem key={industry.value} value={industry.value}>
+                      {industry.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div>
-              <Label>Analysis Period: {localConfig.years} years</Label>
-              <Slider
-                value={[localConfig.years]}
-                onValueChange={(value) => updateConfig("years", value[0])}
-                max={5}
-                min={1}
-                step={1}
-                className="mt-2"
+            <div className="space-y-2">
+              <Label htmlFor="deviceCount">Number of Devices</Label>
+              <Input
+                id="deviceCount"
+                type="number"
+                value={localConfig.deviceCount}
+                onChange={(e) => updateConfig("deviceCount", Number.parseInt(e.target.value) || 0)}
+                placeholder="1000"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Industry</Label>
-                <Select value={localConfig.industry} onValueChange={(value) => updateConfig("industry", value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="technology">Technology</SelectItem>
-                    <SelectItem value="healthcare">Healthcare</SelectItem>
-                    <SelectItem value="finance">Financial Services</SelectItem>
-                    <SelectItem value="education">Education</SelectItem>
-                    <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                    <SelectItem value="retail">Retail</SelectItem>
-                    <SelectItem value="government">Government</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Company Size</Label>
-                <Select value={localConfig.companySize} onValueChange={(value) => updateConfig("companySize", value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="small">Small (1-500 employees)</SelectItem>
-                    <SelectItem value="medium">Medium (500-5000 employees)</SelectItem>
-                    <SelectItem value="large">Large (5000+ employees)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Security Requirements */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Security Requirements
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label>Security Level</Label>
-              <Select value={localConfig.securityLevel} onValueChange={(value) => updateConfig("securityLevel", value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="basic">Basic Security</SelectItem>
-                  <SelectItem value="standard">Standard Security</SelectItem>
-                  <SelectItem value="high">High Security</SelectItem>
-                  <SelectItem value="critical">Critical Security</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-2">
+              <Label htmlFor="annualRevenue">Annual Revenue ($)</Label>
+              <Input
+                id="annualRevenue"
+                type="number"
+                value={localConfig.annualRevenue}
+                onChange={(e) => updateConfig("annualRevenue", Number.parseInt(e.target.value) || 0)}
+                placeholder="100000000"
+              />
             </div>
 
-            <div>
-              <Label>Compliance Requirements</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {["SOC2", "ISO27001", "HIPAA", "PCI-DSS", "GDPR", "NIST", "FedRAMP"].map((compliance) => (
-                  <Badge
-                    key={compliance}
-                    variant={localConfig.complianceRequirements.includes(compliance) ? "default" : "outline"}
-                    className="cursor-pointer"
-                    onClick={() => {
-                      const current = localConfig.complianceRequirements
-                      const updated = current.includes(compliance)
-                        ? current.filter((c) => c !== compliance)
-                        : [...current, compliance]
-                      updateConfig("complianceRequirements", updated)
-                    }}
-                  >
-                    {compliance}
-                  </Badge>
-                ))}
+            <div className="space-y-2">
+              <Label htmlFor="securityBudget">Security Budget ($)</Label>
+              <Input
+                id="securityBudget"
+                type="number"
+                value={localConfig.securityBudget}
+                onChange={(e) => updateConfig("securityBudget", Number.parseInt(e.target.value) || 0)}
+                placeholder="2000000"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="timeframe">Analysis Timeframe (Years)</Label>
+              <div className="px-3">
+                <Slider
+                  value={[localConfig.timeframe]}
+                  onValueChange={(value) => updateConfig("timeframe", value[0])}
+                  max={5}
+                  min={1}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-sm text-muted-foreground mt-1">
+                  <span>1 year</span>
+                  <span>{localConfig.timeframe} years</span>
+                  <span>5 years</span>
+                </div>
               </div>
             </div>
 
-            <div>
-              <Label>Current Solution</Label>
-              <Select
-                value={localConfig.currentSolution}
-                onValueChange={(value) => updateConfig("currentSolution", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No NAC Solution</SelectItem>
-                  <SelectItem value="basic">Basic Network Security</SelectItem>
-                  <SelectItem value="legacy">Legacy NAC Solution</SelectItem>
-                  <SelectItem value="partial">Partial Implementation</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Deployment Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="h-4 w-4" />
-              Deployment Configuration
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label>Deployment Complexity</Label>
-              <Select
-                value={localConfig.deploymentComplexity}
-                onValueChange={(value) => updateConfig("deploymentComplexity", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="simple">Simple (Cloud-only)</SelectItem>
-                  <SelectItem value="medium">Medium (Hybrid)</SelectItem>
-                  <SelectItem value="complex">Complex (Multi-site)</SelectItem>
-                  <SelectItem value="enterprise">Enterprise (Global)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Support Level</Label>
-              <Select value={localConfig.supportLevel} onValueChange={(value) => updateConfig("supportLevel", value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="basic">Basic Support</SelectItem>
-                  <SelectItem value="standard">Standard Support</SelectItem>
-                  <SelectItem value="premium">Premium Support</SelectItem>
-                  <SelectItem value="enterprise">Enterprise Support</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Geographic Scope</Label>
+            <div className="space-y-2">
+              <Label htmlFor="geographicScope">Geographic Scope</Label>
               <Select
                 value={localConfig.geographicScope}
                 onValueChange={(value) => updateConfig("geographicScope", value)}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select scope" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="single-region">Single Region</SelectItem>
-                  <SelectItem value="multi-region">Multi-Region</SelectItem>
+                  <SelectItem value="local">Local</SelectItem>
+                  <SelectItem value="regional">Regional</SelectItem>
+                  <SelectItem value="national">National</SelectItem>
                   <SelectItem value="global">Global</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+          </div>
+        </TabsContent>
 
-            <div>
-              <Label>Integration Requirements</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {["active-directory", "siem", "mdm", "firewall", "vpn", "cloud-platforms", "ticketing"].map(
-                  (integration) => (
-                    <Badge
-                      key={integration}
-                      variant={localConfig.integrationRequirements.includes(integration) ? "default" : "outline"}
-                      className="cursor-pointer"
-                      onClick={() => {
-                        const current = localConfig.integrationRequirements
-                        const updated = current.includes(integration)
-                          ? current.filter((i) => i !== integration)
-                          : [...current, integration]
-                        updateConfig("integrationRequirements", updated)
-                      }}
-                    >
-                      {integration.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-                    </Badge>
-                  ),
-                )}
-              </div>
+        <TabsContent value="technical" className="space-y-4">
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="hasExistingNAC"
+                checked={localConfig.hasExistingNAC}
+                onCheckedChange={(checked) => updateConfig("hasExistingNAC", checked)}
+              />
+              <Label htmlFor="hasExistingNAC">Has Existing NAC Solution</Label>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Budget Constraints */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4" />
-              Budget Considerations
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label>Budget Constraints</Label>
+            {localConfig.hasExistingNAC && (
+              <div className="space-y-2">
+                <Label htmlFor="existingVendor">Current NAC Vendor</Label>
+                <Select
+                  value={localConfig.existingVendor}
+                  onValueChange={(value) => updateConfig("existingVendor", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select current vendor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cisco">Cisco ISE</SelectItem>
+                    <SelectItem value="aruba">Aruba ClearPass</SelectItem>
+                    <SelectItem value="forescout">Forescout</SelectItem>
+                    <SelectItem value="fortinet">Fortinet FortiNAC</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="deploymentComplexity">Deployment Complexity</Label>
               <Select
-                value={localConfig.budgetConstraints}
-                onValueChange={(value) => updateConfig("budgetConstraints", value)}
+                value={localConfig.deploymentComplexity}
+                onValueChange={(value) => updateConfig("deploymentComplexity", value)}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select complexity" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tight">Tight Budget</SelectItem>
-                  <SelectItem value="moderate">Moderate Budget</SelectItem>
-                  <SelectItem value="flexible">Flexible Budget</SelectItem>
-                  <SelectItem value="unlimited">No Budget Constraints</SelectItem>
+                  <SelectItem value="low">Low - Simple network, single site</SelectItem>
+                  <SelectItem value="medium">Medium - Multiple sites, moderate complexity</SelectItem>
+                  <SelectItem value="high">High - Complex network, many sites</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      <div className="border-t p-6">
-        <div className="flex gap-3">
-          <Button onClick={handleSave} className="flex-1">
-            Save Configuration
-          </Button>
+            <div className="space-y-2">
+              <Label htmlFor="businessCriticality">Business Criticality</Label>
+              <Select
+                value={localConfig.businessCriticality}
+                onValueChange={(value) => updateConfig("businessCriticality", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select criticality" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low - Non-critical systems</SelectItem>
+                  <SelectItem value="medium">Medium - Important but not critical</SelectItem>
+                  <SelectItem value="high">High - Mission-critical systems</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-3">
+              <Label>Required Integrations</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {integrationOptions.map((integration) => (
+                  <div key={integration.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={integration.id}
+                      checked={localConfig.integrationRequirements?.includes(integration.id)}
+                      onCheckedChange={(checked) => {
+                        const current = localConfig.integrationRequirements || []
+                        if (checked) {
+                          updateConfig("integrationRequirements", [...current, integration.id])
+                        } else {
+                          updateConfig(
+                            "integrationRequirements",
+                            current.filter((item: string) => item !== integration.id),
+                          )
+                        }
+                      }}
+                    />
+                    <Label htmlFor={integration.id} className="text-sm">
+                      {integration.label}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="compliance" className="space-y-4">
+          <div className="space-y-3">
+            <Label>Compliance Requirements</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {complianceOptions.map((compliance) => (
+                <div key={compliance.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={compliance.id}
+                    checked={localConfig.complianceRequirements?.includes(compliance.id)}
+                    onCheckedChange={(checked) => {
+                      const current = localConfig.complianceRequirements || []
+                      if (checked) {
+                        updateConfig("complianceRequirements", [...current, compliance.id])
+                      } else {
+                        updateConfig(
+                          "complianceRequirements",
+                          current.filter((item: string) => item !== compliance.id),
+                        )
+                      }
+                    }}
+                  />
+                  <Label htmlFor={compliance.id} className="text-sm">
+                    {compliance.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Compliance Impact</CardTitle>
+              <CardDescription>How your selections affect compliance scoring</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {localConfig.complianceRequirements?.map((req: string) => {
+                  const compliance = complianceOptions.find((c) => c.id === req)
+                  return (
+                    <div key={req} className="flex items-center justify-between">
+                      <span className="text-sm">{compliance?.label}</span>
+                      <Badge variant="outline">Required</Badge>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="advanced" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Advanced Configuration</CardTitle>
+              <CardDescription>Fine-tune analysis parameters</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Risk Tolerance Level</Label>
+                <div className="px-3">
+                  <Slider
+                    value={[localConfig.riskTolerance || 50]}
+                    onValueChange={(value) => updateConfig("riskTolerance", value[0])}
+                    max={100}
+                    min={0}
+                    step={10}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-sm text-muted-foreground mt-1">
+                    <span>Conservative</span>
+                    <span>Moderate</span>
+                    <span>Aggressive</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Budget Flexibility (%)</Label>
+                <div className="px-3">
+                  <Slider
+                    value={[localConfig.budgetFlexibility || 20]}
+                    onValueChange={(value) => updateConfig("budgetFlexibility", value[0])}
+                    max={50}
+                    min={0}
+                    step={5}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-sm text-muted-foreground mt-1">
+                    <span>Fixed</span>
+                    <span>{localConfig.budgetFlexibility || 20}%</span>
+                    <span>Flexible</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="includeHiddenCosts"
+                  checked={localConfig.includeHiddenCosts !== false}
+                  onCheckedChange={(checked) => updateConfig("includeHiddenCosts", checked)}
+                />
+                <Label htmlFor="includeHiddenCosts">Include Hidden Costs Analysis</Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="enableBenchmarking"
+                  checked={localConfig.enableBenchmarking !== false}
+                  onCheckedChange={(checked) => updateConfig("enableBenchmarking", checked)}
+                />
+                <Label htmlFor="enableBenchmarking">Enable Industry Benchmarking</Label>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      <Separator />
+
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-muted-foreground">Configuration will be applied to all analysis modules</div>
+        <div className="flex space-x-2">
           <Button variant="outline" onClick={handleReset}>
+            <RotateCcw className="h-4 w-4 mr-2" />
             Reset to Defaults
+          </Button>
+          <Button onClick={handleSave}>
+            <Save className="h-4 w-4 mr-2" />
+            Apply Settings
           </Button>
         </div>
       </div>
     </div>
   )
 }
+
+export default SettingsPanel
