@@ -49,7 +49,7 @@ export interface EnhancedVendorData {
   }
 }
 
-// Enhanced vendor database
+// Enhanced vendor database with ALL vendors
 export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
   portnox: {
     id: "portnox",
@@ -217,6 +217,58 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
       automated_reporting: false,
     },
   },
+  meraki: {
+    id: "meraki",
+    name: "Cisco Meraki",
+    category: "hybrid",
+    pricing: {
+      perDevice: {
+        base: 82,
+        volume_discount: 0.1,
+        enterprise_discount: 0.18,
+      },
+      implementation: {
+        base_cost: 20000,
+        per_device: 8,
+        consulting_days: 15,
+        training_cost: 5000,
+      },
+      annual_support: {
+        percentage: 0.15,
+        minimum: 8000,
+      },
+      infrastructure: {
+        hardware_required: true,
+        server_cost: 0,
+        storage_cost: 0,
+        network_cost: 25000, // Access points and switches
+      },
+    },
+    security: {
+      zeroTrustScore: 75,
+      breachRiskReduction: 58,
+      complianceScore: 68,
+      breachCostSavings: {
+        risk_reduction_percentage: 58,
+        insurance_discount: 8,
+        audit_cost_reduction: 20,
+      },
+    },
+    operationalMetrics: {
+      adminEffort: 10,
+      automationLevel: 65,
+      deploymentTime: 30,
+      maintenanceOverhead: 15,
+    },
+    compliance: {
+      frameworks: ["PCI-DSS", "ISO27001"],
+      coverage_percentage: {
+        "PCI-DSS": 70,
+        ISO27001: 65,
+      },
+      automated_reporting: true,
+    },
+  },
   juniper: {
     id: "juniper",
     name: "Juniper Mist",
@@ -324,6 +376,424 @@ export const enhancedVendorDatabase: Record<string, EnhancedVendorData> = {
         NIST: 81,
       },
       automated_reporting: false,
+    },
+  },
+  fortinet: {
+    id: "fortinet",
+    name: "FortiNAC",
+    category: "traditional",
+    pricing: {
+      perDevice: {
+        base: 78,
+        volume_discount: 0.12,
+        enterprise_discount: 0.2,
+      },
+      implementation: {
+        base_cost: 35000,
+        per_device: 15,
+        consulting_days: 25,
+        training_cost: 7000,
+      },
+      annual_support: {
+        percentage: 0.18,
+        minimum: 15000,
+      },
+      infrastructure: {
+        hardware_required: true,
+        server_cost: 45000,
+        storage_cost: 15000,
+        network_cost: 10000,
+      },
+    },
+    security: {
+      zeroTrustScore: 78,
+      breachRiskReduction: 68,
+      complianceScore: 72,
+      breachCostSavings: {
+        risk_reduction_percentage: 68,
+        insurance_discount: 12,
+        audit_cost_reduction: 28,
+      },
+    },
+    operationalMetrics: {
+      adminEffort: 18,
+      automationLevel: 55,
+      deploymentTime: 45,
+      maintenanceOverhead: 25,
+    },
+    compliance: {
+      frameworks: ["PCI-DSS", "ISO27001", "NIST"],
+      coverage_percentage: {
+        "PCI-DSS": 75,
+        ISO27001: 72,
+        NIST: 78,
+      },
+      automated_reporting: false,
+    },
+  },
+  extreme: {
+    id: "extreme",
+    name: "ExtremeControl",
+    category: "traditional",
+    pricing: {
+      perDevice: {
+        base: 70,
+        volume_discount: 0.1,
+        enterprise_discount: 0.18,
+      },
+      implementation: {
+        base_cost: 30000,
+        per_device: 12,
+        consulting_days: 20,
+        training_cost: 6000,
+      },
+      annual_support: {
+        percentage: 0.16,
+        minimum: 12000,
+      },
+      infrastructure: {
+        hardware_required: false,
+        server_cost: 0,
+        storage_cost: 0,
+        network_cost: 8000,
+      },
+    },
+    security: {
+      zeroTrustScore: 72,
+      breachRiskReduction: 55,
+      complianceScore: 65,
+      breachCostSavings: {
+        risk_reduction_percentage: 55,
+        insurance_discount: 8,
+        audit_cost_reduction: 22,
+      },
+    },
+    operationalMetrics: {
+      adminEffort: 16,
+      automationLevel: 50,
+      deploymentTime: 45,
+      maintenanceOverhead: 22,
+    },
+    compliance: {
+      frameworks: ["ISO27001", "NIST"],
+      coverage_percentage: {
+        ISO27001: 65,
+        NIST: 68,
+      },
+      automated_reporting: false,
+    },
+  },
+  microsoft: {
+    id: "microsoft",
+    name: "Microsoft NPS/Intune",
+    category: "hybrid",
+    pricing: {
+      perDevice: {
+        base: 50,
+        volume_discount: 0.08,
+        enterprise_discount: 0.15,
+      },
+      implementation: {
+        base_cost: 20000,
+        per_device: 8,
+        consulting_days: 15,
+        training_cost: 3000,
+      },
+      annual_support: {
+        percentage: 0.12,
+        minimum: 5000,
+      },
+      infrastructure: {
+        hardware_required: false,
+        server_cost: 0,
+        storage_cost: 0,
+        network_cost: 0,
+      },
+    },
+    security: {
+      zeroTrustScore: 80,
+      breachRiskReduction: 62,
+      complianceScore: 75,
+      breachCostSavings: {
+        risk_reduction_percentage: 62,
+        insurance_discount: 10,
+        audit_cost_reduction: 25,
+      },
+    },
+    operationalMetrics: {
+      adminEffort: 14,
+      automationLevel: 58,
+      deploymentTime: 35,
+      maintenanceOverhead: 20,
+    },
+    compliance: {
+      frameworks: ["HIPAA", "SOX", "GDPR", "ISO27001"],
+      coverage_percentage: {
+        HIPAA: 75,
+        SOX: 78,
+        GDPR: 82,
+        ISO27001: 76,
+      },
+      automated_reporting: true,
+    },
+  },
+  packetfence: {
+    id: "packetfence",
+    name: "PacketFence",
+    category: "traditional",
+    pricing: {
+      perDevice: {
+        base: 0, // Open source
+        volume_discount: 0,
+        enterprise_discount: 0,
+      },
+      implementation: {
+        base_cost: 0,
+        per_device: 0,
+        consulting_days: 60, // High implementation effort
+        training_cost: 2000,
+      },
+      annual_support: {
+        percentage: 0,
+        minimum: 0,
+      },
+      infrastructure: {
+        hardware_required: true,
+        server_cost: 25000,
+        storage_cost: 8000,
+        network_cost: 5000,
+      },
+    },
+    security: {
+      zeroTrustScore: 65,
+      breachRiskReduction: 45,
+      complianceScore: 55,
+      breachCostSavings: {
+        risk_reduction_percentage: 45,
+        insurance_discount: 5,
+        audit_cost_reduction: 15,
+      },
+    },
+    operationalMetrics: {
+      adminEffort: 35, // High maintenance
+      automationLevel: 25,
+      deploymentTime: 120,
+      maintenanceOverhead: 50,
+    },
+    compliance: {
+      frameworks: ["ISO27001"],
+      coverage_percentage: {
+        ISO27001: 55,
+      },
+      automated_reporting: false,
+    },
+  },
+  foxpass: {
+    id: "foxpass",
+    name: "Foxpass",
+    category: "cloud_native",
+    pricing: {
+      perDevice: {
+        base: 30,
+        volume_discount: 0.05,
+        enterprise_discount: 0.1,
+      },
+      implementation: {
+        base_cost: 2000,
+        per_device: 1,
+        consulting_days: 3,
+        training_cost: 1000,
+      },
+      annual_support: {
+        percentage: 0.1,
+        minimum: 2000,
+      },
+      infrastructure: {
+        hardware_required: false,
+        server_cost: 0,
+        storage_cost: 0,
+        network_cost: 0,
+      },
+    },
+    security: {
+      zeroTrustScore: 60,
+      breachRiskReduction: 35,
+      complianceScore: 45,
+      breachCostSavings: {
+        risk_reduction_percentage: 35,
+        insurance_discount: 3,
+        audit_cost_reduction: 10,
+      },
+    },
+    operationalMetrics: {
+      adminEffort: 8,
+      automationLevel: 40,
+      deploymentTime: 5,
+      maintenanceOverhead: 5,
+    },
+    compliance: {
+      frameworks: ["HIPAA"],
+      coverage_percentage: {
+        HIPAA: 30,
+      },
+      automated_reporting: false,
+    },
+  },
+  securew2: {
+    id: "securew2",
+    name: "SecureW2",
+    category: "cloud_native",
+    pricing: {
+      perDevice: {
+        base: 45,
+        volume_discount: 0.08,
+        enterprise_discount: 0.15,
+      },
+      implementation: {
+        base_cost: 5000,
+        per_device: 2,
+        consulting_days: 5,
+        training_cost: 1500,
+      },
+      annual_support: {
+        percentage: 0.12,
+        minimum: 3000,
+      },
+      infrastructure: {
+        hardware_required: false,
+        server_cost: 0,
+        storage_cost: 0,
+        network_cost: 0,
+      },
+    },
+    security: {
+      zeroTrustScore: 68,
+      breachRiskReduction: 40,
+      complianceScore: 50,
+      breachCostSavings: {
+        risk_reduction_percentage: 40,
+        insurance_discount: 5,
+        audit_cost_reduction: 12,
+      },
+    },
+    operationalMetrics: {
+      adminEffort: 6,
+      automationLevel: 45,
+      deploymentTime: 10,
+      maintenanceOverhead: 8,
+    },
+    compliance: {
+      frameworks: ["HIPAA", "PCI-DSS"],
+      coverage_percentage: {
+        HIPAA: 40,
+        "PCI-DSS": 45,
+      },
+      automated_reporting: false,
+    },
+  },
+  radiusaas: {
+    id: "radiusaas",
+    name: "RADIUS-as-a-Service",
+    category: "cloud_native",
+    pricing: {
+      perDevice: {
+        base: 22,
+        volume_discount: 0.05,
+        enterprise_discount: 0.1,
+      },
+      implementation: {
+        base_cost: 1000,
+        per_device: 0.5,
+        consulting_days: 2,
+        training_cost: 500,
+      },
+      annual_support: {
+        percentage: 0.08,
+        minimum: 1000,
+      },
+      infrastructure: {
+        hardware_required: false,
+        server_cost: 0,
+        storage_cost: 0,
+        network_cost: 0,
+      },
+    },
+    security: {
+      zeroTrustScore: 55,
+      breachRiskReduction: 25,
+      complianceScore: 35,
+      breachCostSavings: {
+        risk_reduction_percentage: 25,
+        insurance_discount: 2,
+        audit_cost_reduction: 5,
+      },
+    },
+    operationalMetrics: {
+      adminEffort: 4,
+      automationLevel: 30,
+      deploymentTime: 2,
+      maintenanceOverhead: 3,
+    },
+    compliance: {
+      frameworks: ["HIPAA"],
+      coverage_percentage: {
+        HIPAA: 20,
+      },
+      automated_reporting: false,
+    },
+  },
+  arista: {
+    id: "arista",
+    name: "Arista AGNI",
+    category: "cloud_native",
+    pricing: {
+      perDevice: {
+        base: 90,
+        volume_discount: 0.12,
+        enterprise_discount: 0.2,
+      },
+      implementation: {
+        base_cost: 30000,
+        per_device: 10,
+        consulting_days: 18,
+        training_cost: 8000,
+      },
+      annual_support: {
+        percentage: 0.18,
+        minimum: 15000,
+      },
+      infrastructure: {
+        hardware_required: false,
+        server_cost: 0,
+        storage_cost: 0,
+        network_cost: 5000,
+      },
+    },
+    security: {
+      zeroTrustScore: 85,
+      breachRiskReduction: 72,
+      complianceScore: 78,
+      breachCostSavings: {
+        risk_reduction_percentage: 72,
+        insurance_discount: 15,
+        audit_cost_reduction: 35,
+      },
+    },
+    operationalMetrics: {
+      adminEffort: 10,
+      automationLevel: 68,
+      deploymentTime: 25,
+      maintenanceOverhead: 12,
+    },
+    compliance: {
+      frameworks: ["HIPAA", "PCI-DSS", "ISO27001", "NIST"],
+      coverage_percentage: {
+        HIPAA: 78,
+        "PCI-DSS": 80,
+        ISO27001: 76,
+        NIST: 82,
+      },
+      automated_reporting: true,
     },
   },
 }
@@ -607,34 +1077,121 @@ export function calculateTotalCostOfOwnership(
 // Calculate full TCO for a specific vendor
 export function calculateFullTCOForVendor(
   vendorId: string,
-  orgSize: { devices: number; users: number; sites: number },
-  industry = "technology",
-  years = 3,
+  orgConfig: {
+    devices: number
+    users: number
+    industry: string
+    region: string
+  },
+  analysisConfig: {
+    years: number
+  },
+  pricingConfig?: {
+    portnoxBasePrice: number
+    portnoxAddons: any
+  },
 ) {
   const vendor = enhancedVendorDatabase[vendorId]
   if (!vendor) {
-    throw new Error(`Missing data for vendor '${vendorId}' or org size '${JSON.stringify(orgSize)}'`)
+    console.warn(`Vendor '${vendorId}' not found in database. Available vendors:`, Object.keys(enhancedVendorDatabase))
+    // Return fallback data structure
+    return {
+      vendor: vendorId,
+      vendorName: `Unknown Vendor (${vendorId})`,
+      total: 0,
+      year1: 0,
+      year2: 0,
+      year3: 0,
+      year5: 0,
+      breakdown: {
+        software: [0],
+        implementation: [0],
+        infrastructure: [0],
+        operations: [0],
+        support: [0],
+      },
+      benefits: {
+        riskReduction: [0],
+        compliance: [0],
+        operational: [0],
+        total: [0],
+      },
+      netTCO: [0, 0, 0, 0, 0],
+      roi: {
+        percentage: 0,
+        paybackMonths: 0,
+      },
+      licensing: 0,
+      implementation: 0,
+      operations: 0,
+    }
   }
 
-  return calculateTotalCostOfOwnership(vendor, orgSize.devices, years, true, industry)
+  const tcoResult = calculateTotalCostOfOwnership(
+    vendor,
+    orgConfig.devices,
+    analysisConfig.years,
+    true,
+    orgConfig.industry,
+  )
+
+  // Calculate ROI metrics
+  const totalBenefits = tcoResult.benefits.total.reduce((sum, benefit) => sum + benefit, 0)
+  const totalCosts = tcoResult.year3 // Use 3-year total as baseline
+  const roiPercentage = totalCosts > 0 ? ((totalBenefits - totalCosts) / totalCosts) * 100 : 0
+  const paybackMonths = totalBenefits > 0 ? Math.max(1, (totalCosts / totalBenefits) * 12) : 12
+
+  return {
+    vendor: vendorId,
+    vendorName: vendor.name,
+    total: tcoResult.year3,
+    year1: tcoResult.year1,
+    year2: tcoResult.year2,
+    year3: tcoResult.year3,
+    year5: tcoResult.year5,
+    breakdown: tcoResult.breakdown,
+    benefits: tcoResult.benefits,
+    netTCO: tcoResult.netTCO,
+    roi: {
+      percentage: roiPercentage,
+      paybackMonths: Math.round(paybackMonths),
+    },
+    licensing: tcoResult.breakdown.software[0],
+    implementation: tcoResult.breakdown.implementation[0],
+    operations: tcoResult.breakdown.operations[0],
+  }
 }
 
 // Compare multiple vendors
 export function compareMultipleVendorsTCO(
   vendorIds: string[],
-  orgSize: { devices: number; users: number; sites: number },
-  industry = "technology",
-  years = 3,
+  orgConfig: {
+    devices: number
+    users: number
+    industry: string
+    region: string
+  },
+  analysisConfig: {
+    years: number
+  },
+  pricingConfig?: {
+    portnoxBasePrice: number
+    portnoxAddons: any
+  },
 ) {
-  const results = {}
+  const results = []
 
   vendorIds.forEach((vendorId) => {
     try {
-      results[vendorId] = calculateFullTCOForVendor(vendorId, orgSize, industry, years)
+      const result = calculateFullTCOForVendor(vendorId, orgConfig, analysisConfig, pricingConfig)
+      results.push(result)
     } catch (error) {
       console.error(`Error calculating TCO for vendor ${vendorId}:`, error)
-      // Provide fallback data
-      results[vendorId] = {
+      // Add fallback result
+      results.push({
+        vendor: vendorId,
+        vendorName: `Error: ${vendorId}`,
+        total: 0,
         year1: 0,
         year2: 0,
         year3: 0,
@@ -653,7 +1210,14 @@ export function compareMultipleVendorsTCO(
           total: [0],
         },
         netTCO: [0, 0, 0, 0, 0],
-      }
+        roi: {
+          percentage: 0,
+          paybackMonths: 0,
+        },
+        licensing: 0,
+        implementation: 0,
+        operations: 0,
+      })
     }
   })
 
@@ -662,8 +1226,12 @@ export function compareMultipleVendorsTCO(
 
 // Get vendor recommendations based on organization profile
 export function getVendorRecommendations(
-  orgSize: { devices: number; users: number; sites: number },
-  industry: string,
+  orgConfig: {
+    devices: number
+    users: number
+    industry: string
+    region: string
+  },
   priorities: string[] = ["cost", "security", "compliance"],
 ): string[] {
   const vendorScores = {}
@@ -672,7 +1240,7 @@ export function getVendorRecommendations(
     let score = 0
 
     // Cost efficiency (lower is better)
-    const tco = calculateFullTCOForVendor(vendorId, orgSize, industry, 3)
+    const tco = calculateFullTCOForVendor(vendorId, orgConfig, { years: 3 })
     const costScore = Math.max(0, 100 - tco.year3 / 1000) // Normalize cost score
 
     // Security score
@@ -695,7 +1263,7 @@ export function getVendorRecommendations(
 
   // Sort by score and return top recommendations
   return Object.entries(vendorScores)
-    .sort(([, a], [, b]) => b - a)
+    .sort(([, a], [, b]) => (b as number) - (a as number))
     .slice(0, 3)
     .map(([vendorId]) => vendorId)
 }
