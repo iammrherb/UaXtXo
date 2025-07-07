@@ -1,37 +1,66 @@
-// src/app/(dashboard)/page.tsx
-"use client"; // Required if ExecutiveSummary or its children use client hooks like useState, useEffect
+"use client"
 
-import React from "react";
-import ExecutiveSummary from "@/components/charts/dashboards/ExecutiveSummary"; // Adjust path if necessary
+import { useState } from "react"
+import { motion } from "framer-motion"
+import { useDashboardSettings } from "@/context/DashboardContext"
+import ExecutiveSummary from "@/components/charts/dashboards/ExecutiveSummary"
+import ComplianceOverview from "@/components/charts/dashboards/ComplianceOverview"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Download, FileText } from "lucide-react"
 
-export default function DashboardRootPage() {
-  // Here you might fetch global settings or user preferences
-  // that could be passed down to ExecutiveSummary, e.g., default comparison vendors, org size.
-  // For now, ExecutiveSummary uses its own internal defaults.
+const Dashboard = () => {
+  const { selectedOrgSize, selectedIndustry } = useDashboardSettings()
+  const [activeTab, setActiveTab] = useState("overview")
+
+  const fadeInUp = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.5, ease: "easeOut" },
+  }
 
   return (
-    <div className="space-y-6">
-      {/* The main h1 title might be part of the ExecutiveSummary component itself or kept here */}
-      {/* <h1 className="text-3xl font-bold text-white">Overview</h1> */}
+    <motion.div variants={fadeInUp} initial="initial" animate="animate" className="space-y-8">
+      {/* Executive Summary Section */}
+      <ExecutiveSummary />
 
-      <ExecutiveSummary
-        // Example of passing props if needed later:
-        // selectedOrgSize="enterprise"
-        // selectedIndustry="financial_services"
-        // comparisonYears={5}
-        // primaryVendorId="portnox"
-        // competitorVendorIds={["cisco_ise", "aruba_clearpass"]}
-      />
+      {/* Compliance Overview Section */}
+      <ComplianceOverview />
 
-      {/* You can add more sections to the overview page if needed */}
-      {/*
-      <div className="p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl mt-8">
-        <h2 className="text-2xl font-bold text-white mb-4">Additional Overview Stats</h2>
-        <p className="text-gray-300">
-          More summary information or quick links could go here.
-        </p>
+      {/* Additional Analysis and Reporting */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-xl text-white">Detailed Analysis</CardTitle>
+            <CardDescription className="text-slate-400">
+              Explore in-depth TCO, ROI, and vendor comparisons
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center justify-center">
+            <Button variant="secondary" size="lg">
+              <FileText className="w-5 h-5 mr-2" />
+              View Analysis
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-xl text-white">Custom Reports</CardTitle>
+            <CardDescription className="text-slate-400">
+              Generate tailored reports for your organization
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center justify-center">
+            <Button variant="secondary" size="lg">
+              <Download className="w-5 h-5 mr-2" />
+              Generate Report
+            </Button>
+          </CardContent>
+        </Card>
       </div>
-      */}
-    </div>
-  );
+    </motion.div>
+  )
 }
+
+export default Dashboard
