@@ -31,7 +31,6 @@ import { SettingsPanel } from "@/components/settings-panel"
 
 // Import calculation utilities
 import { calculateTCO, type CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-import { COMPREHENSIVE_VENDOR_DATA } from "@/lib/vendors/comprehensive-vendor-data"
 
 export default function ZTCADashboard() {
   // Configuration state
@@ -48,6 +47,7 @@ export default function ZTCADashboard() {
     geographicScope: "national",
     integrationRequirements: ["active_directory", "siem", "itsm"],
     businessCriticality: "high",
+    selectedVendors: ["portnox", "cisco", "aruba", "fortinet", "microsoft"],
   })
 
   // Active view state
@@ -56,12 +56,7 @@ export default function ZTCADashboard() {
 
   // Calculate results for all vendors
   const results = useMemo(() => {
-    return Object.keys(COMPREHENSIVE_VENDOR_DATA).map((vendorKey) =>
-      calculateTCO({
-        ...config,
-        selectedVendors: [vendorKey],
-      }),
-    )
+    return calculateTCO(config)
   }, [config])
 
   // Main navigation items
@@ -139,13 +134,19 @@ export default function ZTCADashboard() {
       case "security-assessment":
         return <SecurityRiskAssessmentView results={results} config={config} />
       case "roi-calculator":
-        return <ROICalculatorView results={results} config={config} />
+        return <ROICalculatorView selectedVendors={config.selectedVendors || []} />
       case "implementation":
-        return <ImplementationTimelineView results={results} config={config} />
+        return (
+          <ImplementationTimelineView
+            selectedVendors={config.selectedVendors || []}
+            config={config}
+            results={results}
+          />
+        )
       case "compliance":
         return <ComplianceRiskView results={results} config={config} />
       case "integration":
-        return <IntegrationHubView results={results} config={config} />
+        return <IntegrationHubView selectedVendors={config.selectedVendors || []} config={config} />
       case "reports":
         return <ExecutiveReportView results={results} config={config} />
       default:
@@ -225,7 +226,9 @@ export default function ZTCADashboard() {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Best ROI</span>
                   <span className="font-semibold text-green-600">
-                    {results.length > 0 ? `${Math.max(...results.map((r) => r.roi || 0)).toFixed(0)}%` : "N/A"}
+                    {results.length > 0
+                      ? `${Math.max(...results.map((r) => r.roi?.percentage || 0)).toFixed(0)}%`
+                      : "N/A"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">

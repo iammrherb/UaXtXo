@@ -1,19 +1,19 @@
 import { getVendorData, type VendorData } from "./comprehensive-vendor-data"
 
 export interface CalculationConfiguration {
-  devices: number
-  users: number
-  years: number
+  deviceCount: number
+  timeframe: number
   industry: string
-  companySize: string
-  securityLevel: string
+  hasExistingNAC: boolean
+  existingVendor: string
+  annualRevenue: number
+  securityBudget: number
   complianceRequirements: string[]
-  currentSolution: string
   deploymentComplexity: string
-  supportLevel: string
-  integrationRequirements: string[]
   geographicScope: string
-  budgetConstraints: string
+  integrationRequirements: string[]
+  businessCriticality: string
+  selectedVendors?: string[]
 }
 
 export interface CalculationResult {
@@ -177,9 +177,9 @@ export function calculateVendorTCO(vendorId: string, config: CalculationConfigur
   }
 
   // Calculate costs
-  const annualLicenseCost = config.devices * pricing.deviceCost
+  const annualLicenseCost = config.deviceCount * pricing.deviceCost
   const annualSupportCost = annualLicenseCost * pricing.supportMultiplier
-  const implementationCost = pricing.implementationBase + config.devices * 15
+  const implementationCost = pricing.implementationBase + config.deviceCount * 15
   const trainingCost = pricing.trainingCost
   const annualMaintenanceCost = annualLicenseCost * pricing.maintenanceMultiplier
 
@@ -187,18 +187,18 @@ export function calculateVendorTCO(vendorId: string, config: CalculationConfigur
   const hardwareCost =
     vendorId === "portnox" || vendorId === "foxpass" || vendorId === "securew2"
       ? 0
-      : Math.max(25000, config.devices * 8)
+      : Math.max(25000, config.deviceCount * 8)
 
   // Operational savings
   const avgFteCost = 150000
-  const fteSaved = pricing.fteSavings * (config.devices / 1000)
+  const fteSaved = pricing.fteSavings * (config.deviceCount / 1000)
   const annualOpsSaving = fteSaved * avgFteCost
 
   // Total costs
-  const totalLicensing = annualLicenseCost * config.years
-  const totalSupport = annualSupportCost * config.years
-  const totalMaintenance = annualMaintenanceCost * config.years
-  const totalOperational = (avgFteCost * 0.5 - annualOpsSaving) * config.years
+  const totalLicensing = annualLicenseCost * config.timeframe
+  const totalSupport = annualSupportCost * config.timeframe
+  const totalMaintenance = annualMaintenanceCost * config.timeframe
+  const totalOperational = (avgFteCost * 0.5 - annualOpsSaving) * config.timeframe
 
   const totalCost =
     totalLicensing +
@@ -210,7 +210,7 @@ export function calculateVendorTCO(vendorId: string, config: CalculationConfigur
     Math.max(0, totalOperational)
 
   // ROI calculations
-  const totalSavings = annualOpsSaving * config.years
+  const totalSavings = annualOpsSaving * config.timeframe
   const netPresentValue = totalSavings - totalCost
   const roiPercentage = totalCost > 0 ? ((totalSavings - totalCost) / totalCost) * 100 : 0
   const paybackMonths = annualOpsSaving > 0 ? Math.max(1, (totalCost / annualOpsSaving) * 12) : 999
@@ -275,30 +275,57 @@ export function compareVendors(vendorIds: string[], config: CalculationConfigura
 }
 
 // Add the missing calculateTCO export that's being imported elsewhere
-export function calculateTCO(
-  vendorId: string,
-  devices: number,
-  users: number,
-  years = 3,
-  industry = "healthcare",
-): CalculationResult {
-  const config: CalculationConfiguration = {
-    devices,
-    users,
-    years,
-    industry,
-    companySize: devices > 5000 ? "enterprise" : devices > 1000 ? "medium" : "small",
-    securityLevel: "high",
-    complianceRequirements: ["hipaa", "pci"],
-    currentSolution: "legacy",
-    deploymentComplexity: "medium",
-    supportLevel: "standard",
-    integrationRequirements: ["siem", "mdm"],
-    geographicScope: "national",
-    budgetConstraints: "moderate",
-  }
+export function calculateTCO(config: CalculationConfiguration): CalculationResult[] {
+  const vendorIds = config.selectedVendors || ["portnox", "cisco", "aruba", "fortinet", "microsoft"]
 
-  return calculateVendorTCO(vendorId, config)
+  return vendorIds.map((vendorId) => {
+    try {
+      return calculateVendorTCO(vendorId, config)
+    } catch (error) {
+      console.warn(`Failed to calculate TCO for ${vendorId}:`, error)
+      // Return a default result to prevent crashes
+      return {
+        vendor: vendorId,
+        vendorId,
+        vendorName: vendorId.charAt(0).toUpperCase() + vendorId.slice(1),
+        vendorData: { name: vendorId, id: vendorId } as VendorData,
+        total: 0,
+        totalCost: 0,
+        breakdown: {
+          licensing: 0,
+          hardware: 0,
+          implementation: 0,
+          support: 0,
+          training: 0,
+          maintenance: 0,
+          operational: 0,
+        },
+        roi: {
+          percentage: 0,
+          annualSavings: 0,
+          paybackMonths: 0,
+          netPresentValue: 0,
+        },
+        risk: {
+          securityScore: 0,
+          complianceScore: 0,
+          breachReduction: 0,
+          operationalRisk: 0,
+        },
+        ops: {
+          fteSaved: 0,
+          annualOpsSaving: 0,
+          automationLevel: 0,
+          maintenanceHours: 0,
+        },
+        timeline: {
+          implementationWeeks: 0,
+          timeToValue: 0,
+          migrationRisk: "unknown",
+        },
+      }
+    }
+  })
 }
 
 // Industry-specific multipliers for risk calculations
@@ -359,6 +386,5 @@ export function calculateOperationalSavings(
   }
 }
 
-// Export all functions and types
+// Export all types
 export type { VendorData }
-</merged_code>
