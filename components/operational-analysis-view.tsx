@@ -39,46 +39,53 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
 
         // Calculate operational costs
         const monthlyMaintenanceCost = metrics.operationalCosts.monthlyMaintenance * devices
-        const annualOperationalCost = 
-          monthlyMaintenanceCost * 12 + 
+        const annualOperationalCost =
+          monthlyMaintenanceCost * 12 +
           metrics.operationalCosts.monitoring * 12 +
-          (metrics.operationalCosts.incidentResponse * 12) + // Assume 1 incident per month
-          (metrics.operationalCosts.changeManagement * 24) // Assume 2 changes per month
+          metrics.operationalCosts.incidentResponse * 12 + // Assume 1 incident per month
+          metrics.operationalCosts.changeManagement * 24 // Assume 2 changes per month
 
         // Calculate efficiency scores
         const efficiencyScore = Math.round(
-          (metrics.automationLevel * 0.4) +
-          ((100 - metrics.adminEffort) * 0.3) +
-          ((10 - metrics.troubleshootingTime) * 10 * 0.2) +
-          ((metrics.upgradeComplexity === "low" ? 100 : metrics.upgradeComplexity === "medium" ? 75 : metrics.upgradeComplexity === "high" ? 50 : 25) * 0.1)
+          metrics.automationLevel * 0.4 +
+            (100 - metrics.adminEffort) * 0.3 +
+            (10 - metrics.troubleshootingTime) * 10 * 0.2 +
+            (metrics.upgradeComplexity === "low"
+              ? 100
+              : metrics.upgradeComplexity === "medium"
+                ? 75
+                : metrics.upgradeComplexity === "high"
+                  ? 50
+                  : 25) *
+              0.1,
         )
 
         return {
           vendorId,
           vendorName: vendor.name,
           category: vendor.category,
-          
+
           // Staffing metrics
           requiredAdmins,
           requiredSpecialists,
           totalStaff,
           trainingDaysPerYear: metrics.staffingRequirements.trainingDays,
-          
+
           // Time metrics
           adminEffortHours: metrics.adminEffort * devicesInThousands * 52, // Weekly hours * 52 weeks
           troubleshootingTime: metrics.troubleshootingTime,
           maintenanceWindows: metrics.maintenanceWindows,
-          
+
           // Cost metrics
           monthlyMaintenanceCost,
           annualOperationalCost,
           costPerDevice: annualOperationalCost / devices,
-          
+
           // Efficiency metrics
           automationLevel: metrics.automationLevel,
           efficiencyScore,
           upgradeComplexity: metrics.upgradeComplexity,
-          
+
           // Capabilities
           apiAvailability: metrics.apiAvailability,
           cloudManagement: metrics.cloudManagement,
@@ -92,36 +99,38 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
   const comparativeMetrics = useMemo(() => {
     if (operationalData.length === 0) return null
 
-    const avgEfficiency = operationalData.reduce((sum, vendor) => sum + vendor.efficiencyScore, 0) / operationalData.length
-    const avgCostPerDevice = operationalData.reduce((sum, vendor) => sum + vendor.costPerDevice, 0) / operationalData.length
+    const avgEfficiency =
+      operationalData.reduce((sum, vendor) => sum + vendor.efficiencyScore, 0) / operationalData.length
+    const avgCostPerDevice =
+      operationalData.reduce((sum, vendor) => sum + vendor.costPerDevice, 0) / operationalData.length
     const avgStaffing = operationalData.reduce((sum, vendor) => sum + vendor.totalStaff, 0) / operationalData.length
 
     return {
       avgEfficiency: Math.round(avgEfficiency),
       avgCostPerDevice: Math.round(avgCostPerDevice),
       avgStaffing: Math.round(avgStaffing),
-      bestEfficiency: Math.max(...operationalData.map(v => v.efficiencyScore)),
-      lowestCost: Math.min(...operationalData.map(v => v.costPerDevice)),
-      minStaffing: Math.min(...operationalData.map(v => v.totalStaff)),
+      bestEfficiency: Math.max(...operationalData.map((v) => v.efficiencyScore)),
+      lowestCost: Math.min(...operationalData.map((v) => v.costPerDevice)),
+      minStaffing: Math.min(...operationalData.map((v) => v.totalStaff)),
     }
   }, [operationalData])
 
   // Prepare chart data
-  const efficiencyComparisonData = operationalData.map(vendor => ({
+  const efficiencyComparisonData = operationalData.map((vendor) => ({
     vendor: vendor.vendorName,
     efficiency: vendor.efficiencyScore,
     automation: vendor.automationLevel,
     adminEffort: 100 - (vendor.adminEffortHours / (40 * 52)) * 100, // Convert to efficiency percentage
   }))
 
-  const costAnalysisData = operationalData.map(vendor => ({
+  const costAnalysisData = operationalData.map((vendor) => ({
     vendor: vendor.vendorName,
     annualCost: vendor.annualOperationalCost,
     costPerDevice: vendor.costPerDevice,
     maintenanceCost: vendor.monthlyMaintenanceCost * 12,
   }))
 
-  const staffingComparisonData = operationalData.map(vendor => ({
+  const staffingComparisonData = operationalData.map((vendor) => ({
     vendor: vendor.vendorName,
     admins: vendor.requiredAdmins,
     specialists: vendor.requiredSpecialists,
@@ -133,40 +142,55 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
   const maturityRadarData = [
     {
       capability: "Automation",
-      ...operationalData.reduce((acc, vendor) => {
-        acc[vendor.vendorName] = vendor.automationLevel
-        return acc
-      }, {} as Record<string, number>)
+      ...operationalData.reduce(
+        (acc, vendor) => {
+          acc[vendor.vendorName] = vendor.automationLevel
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
     },
     {
       capability: "Efficiency",
-      ...operationalData.reduce((acc, vendor) => {
-        acc[vendor.vendorName] = vendor.efficiencyScore
-        return acc
-      }, {} as Record<string, number>)
+      ...operationalData.reduce(
+        (acc, vendor) => {
+          acc[vendor.vendorName] = vendor.efficiencyScore
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
     },
     {
       capability: "Cloud Readiness",
-      ...operationalData.reduce((acc, vendor) => {
-        acc[vendor.vendorName] = vendor.cloudManagement ? 100 : 50
-        return acc
-      }, {} as Record<string, number>)
+      ...operationalData.reduce(
+        (acc, vendor) => {
+          acc[vendor.vendorName] = vendor.cloudManagement ? 100 : 50
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
     },
     {
       capability: "API Integration",
-      ...operationalData.reduce((acc, vendor) => {
-        acc[vendor.vendorName] = vendor.apiAvailability ? 100 : 0
-        return acc
-      }, {} as Record<string, number>)
+      ...operationalData.reduce(
+        (acc, vendor) => {
+          acc[vendor.vendorName] = vendor.apiAvailability ? 100 : 0
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
     },
     {
       capability: "Reporting",
-      ...operationalData.reduce((acc, vendor) => {
-        acc[vendor.vendorName] = vendor.reportingCapabilities === "enterprise" ? 100 : 
-                                 vendor.reportingCapabilities === "advanced" ? 75 : 50
-        return acc
-      }, {} as Record<string, number>)
-    }
+      ...operationalData.reduce(
+        (acc, vendor) => {
+          acc[vendor.vendorName] =
+            vendor.reportingCapabilities === "enterprise" ? 100 : vendor.reportingCapabilities === "advanced" ? 75 : 50
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
+    },
   ]
 
   return (
@@ -228,9 +252,7 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
               <Zap className="h-5 w-5 text-orange-500" />
               <div>
                 <p className="text-sm font-medium">Best Automation</p>
-                <p className="text-2xl font-bold">
-                  {Math.max(...operationalData.map(v => v.automationLevel))}%
-                </p>
+                <p className="text-2xl font-bold">{Math.max(...operationalData.map((v) => v.automationLevel))}%</p>
               </div>
             </div>
           </CardContent>
@@ -273,7 +295,15 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     {vendor.vendorName}
-                    <Badge variant={vendor.efficiencyScore > 80 ? "default" : vendor.efficiencyScore > 60 ? "secondary" : "destructive"}>
+                    <Badge
+                      variant={
+                        vendor.efficiencyScore > 80
+                          ? "default"
+                          : vendor.efficiencyScore > 60
+                            ? "secondary"
+                            : "destructive"
+                      }
+                    >
                       {vendor.efficiencyScore}/100
                     </Badge>
                   </CardTitle>
@@ -287,13 +317,13 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
                       </div>
                       <Progress value={vendor.automationLevel} className="h-2" />
                     </div>
-                    
+
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span>Admin Effort (hrs/week)</span>
                         <span>{Math.round(vendor.adminEffortHours / 52)}</span>
                       </div>
-                      <Progress value={Math.max(0, 100 - (vendor.adminEffortHours / 52 / 40 * 100))} className="h-2" />
+                      <Progress value={Math.max(0, 100 - (vendor.adminEffortHours / 52 / 40) * 100)} className="h-2" />
                     </div>
 
                     <div>
@@ -301,7 +331,7 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
                         <span>Troubleshooting Time</span>
                         <span>{vendor.troubleshootingTime} hrs</span>
                       </div>
-                      <Progress value={Math.max(0, 100 - (vendor.troubleshootingTime * 10))} className="h-2" />
+                      <Progress value={Math.max(0, 100 - vendor.troubleshootingTime * 10)} className="h-2" />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 text-sm">
@@ -360,7 +390,7 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
                   {operationalData.slice(0, 5).map((vendor) => {
                     const currentStaff = 3 // Assume current staffing
                     const gap = Math.max(0, vendor.totalStaff - currentStaff)
-                    
+
                     return (
                       <div key={vendor.vendorId} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
@@ -397,7 +427,7 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
                       data={operationalData.slice(0, 5).map((vendor, index) => ({
                         name: vendor.vendorName,
                         value: vendor.trainingDaysPerYear,
-                        color: COLORS[index % COLORS.length]
+                        color: COLORS[index % COLORS.length],
                       }))}
                       cx="50%"
                       cy="50%"
@@ -425,6 +455,181 @@ export default function OperationalAnalysisView({ selectedVendors, devices, user
               <Alert>
                 <Users className="h-4 w-4" />
                 <AlertDescription>
-                  Based on the analysis, cloud-native solutions like Portnox require 60-70% fewer staff resources 
-                  compared to traditional on-premise solutions. Consider vendor solutions with high automation 
-                  levels\
+                  Based on the analysis, cloud-native solutions like Portnox require 60-70% fewer staff resources
+                  compared to traditional on-premise solutions. Consider vendor solutions with high automation levels to
+                  minimize operational overhead.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="costs" className="space-y-6">
+          {/* Cost Analysis */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Annual Operational Cost Comparison</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={costAnalysisData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="vendor" />
+                  <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                  <Bar dataKey="annualCost" fill="#00D4AA" name="Total Annual Cost" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Cost Breakdown */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {operationalData.slice(0, 6).map((vendor) => (
+              <Card key={vendor.vendorId}>
+                <CardHeader>
+                  <CardTitle>{vendor.vendorName} - Cost Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span>Monthly Maintenance</span>
+                      <span>${vendor.monthlyMaintenanceCost.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Annual Operational</span>
+                      <span>${vendor.annualOperationalCost.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between font-semibold">
+                      <span>Cost per Device</span>
+                      <span>${vendor.costPerDevice.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="maintenance" className="space-y-6">
+          {/* Maintenance Requirements */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {operationalData.slice(0, 6).map((vendor) => (
+              <Card key={vendor.vendorId}>
+                <CardHeader>
+                  <CardTitle>{vendor.vendorName} - Maintenance Profile</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Maintenance Windows/Month</span>
+                        <span>{vendor.maintenanceWindows}</span>
+                      </div>
+                      <Progress value={(vendor.maintenanceWindows / 8) * 100} className="h-2" />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Upgrade Complexity</span>
+                        <span className="capitalize">{vendor.upgradeComplexity}</span>
+                      </div>
+                      <Progress
+                        value={
+                          vendor.upgradeComplexity === "low" ? 25 : vendor.upgradeComplexity === "medium" ? 50 : 75
+                        }
+                        className="h-2"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center space-x-2">
+                        {vendor.cloudManagement ? (
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <AlertTriangle className="h-4 w-4 text-red-500" />
+                        )}
+                        <span>Cloud Updates</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {vendor.automationLevel > 70 ? (
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <AlertTriangle className="h-4 w-4 text-red-500" />
+                        )}
+                        <span>Auto Patching</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="maturity" className="space-y-6">
+          {/* Operational Maturity Assessment */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Operational Maturity Assessment</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {maturityRadarData.map((capability) => (
+                  <div key={capability.capability}>
+                    <h4 className="font-semibold mb-3">{capability.capability}</h4>
+                    <div className="space-y-2">
+                      {operationalData.map((vendor) => {
+                        const score = capability[vendor.vendorName] || 0
+                        return (
+                          <div key={vendor.vendorId}>
+                            <div className="flex justify-between text-sm mb-1">
+                              <span>{vendor.vendorName}</span>
+                              <span>{score}%</span>
+                            </div>
+                            <Progress value={score} className="h-2" />
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Maturity Recommendations */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Maturity Recommendations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Alert>
+                  <Target className="h-4 w-4" />
+                  <AlertDescription>
+                    Focus on vendors with high automation levels (80%+) to reduce operational overhead and improve
+                    efficiency.
+                  </AlertDescription>
+                </Alert>
+                <Alert>
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Cloud-managed solutions provide better scalability and reduced maintenance burden for growing
+                    organizations.
+                  </AlertDescription>
+                </Alert>
+                <Alert>
+                  <Zap className="h-4 w-4" />
+                  <AlertDescription>
+                    API availability is crucial for integration with existing security tools and automation workflows.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}

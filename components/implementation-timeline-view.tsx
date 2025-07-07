@@ -5,284 +5,152 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts"
-import { Calendar, Users, AlertTriangle, CheckCircle, Shield, Target } from "lucide-react"
-import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { Calendar, Clock, Users, AlertTriangle, CheckCircle, Target, Zap } from "lucide-react"
+import { enhancedVendorDatabase } from "@/lib/vendors/enhanced-vendor-data"
 
 interface ImplementationTimelineViewProps {
-  results?: any[]
-  config?: any
   selectedVendors?: string[]
-}
-
-// Safe number helper function
-const safeNumber = (value: any, fallback = 0): number => {
-  if (typeof value === "number" && !isNaN(value) && isFinite(value)) return value
-  if (typeof value === "string") {
-    const parsed = Number.parseFloat(value)
-    return !isNaN(parsed) && isFinite(parsed) ? parsed : fallback
+  config?: {
+    devices?: number
+    users?: number
+    locations?: number
+    industry?: string
   }
-  return fallback
+  results?: any[]
 }
 
 export default function ImplementationTimelineView({
-  results = [],
-  config = {},
   selectedVendors = [],
+  config = {},
+  results = [],
 }: ImplementationTimelineViewProps) {
-  const [selectedVendor, setSelectedVendor] = useState(selectedVendors[0] || "portnox")
-  const [viewMode, setViewMode] = useState<"timeline" | "comparison" | "gantt">("timeline")
+  const [selectedVendor, setSelectedVendor] = useState<string>(selectedVendors[0] || "")
 
-  // Get real-time vendor data based on current selections
-  const vendorTimelines = useMemo(() => {
+  // Early return if no vendors selected
+  if (selectedVendors.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Please select at least one vendor to view implementation timeline analysis.
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
+
+  // Calculate implementation data for each vendor
+  const implementationData = useMemo(() => {
     return selectedVendors
       .map((vendorId) => {
-        const vendor = ComprehensiveVendorDatabase[vendorId]
-        const result = results.find((r) => r?.vendor === vendorId)
-
+        const vendor = enhancedVendorDatabase[vendorId]
         if (!vendor) return null
 
-        // Calculate implementation phases based on vendor complexity and config
-        const baseWeeks = safeNumber(result?.timeline?.implementationWeeks, 12)
-        const complexityMultiplier =
-          config?.deploymentComplexity === "simple"
-            ? 0.7
-            : config?.deploymentComplexity === "complex"
-              ? 1.3
-              : config?.deploymentComplexity === "enterprise"
-                ? 1.5
-                : 1.0
+        const devices = config.devices || 1000
+        const locations = config.locations || 1
+        const complexity = devices > 5000 ? "high" : devices > 1000 ? "medium" : "low"
 
-        const totalWeeks = Math.ceil(baseWeeks * complexityMultiplier)
-        const devices = safeNumber(config?.devices, 1000)
-
-        // Phase breakdown based on vendor characteristics
-        const phases = {
-          planning: Math.ceil(totalWeeks * 0.15),
-          procurement: Math.ceil(totalWeeks * 0.1),
-          installation: Math.ceil(totalWeeks * 0.25),
-          configuration: Math.ceil(totalWeeks * 0.3),
-          testing: Math.ceil(totalWeeks * 0.15),
-          deployment: Math.ceil(totalWeeks * 0.05),
+        // Base timeline from vendor data
+        const baseTimeline = vendor.implementation?.timeline || {
+          planning: 4,
+          deployment: 8,
+          testing: 4,
+          rollout: 6,
         }
 
-        // Resource requirements based on vendor and config
-        const resourceMultiplier = devices > 5000 ? 1.5 : devices > 2000 ? 1.2 : 1.0
-        const resources = {
-          projectManager: 1,
-          networkEngineers: Math.ceil(
-            (vendor.complexity === "high" ? 3 : vendor.complexity === "medium" ? 2 : 1) * resourceMultiplier,
-          ),
-          securityEngineers: Math.ceil((vendor.securityComplexity === "high" ? 2 : 1) * resourceMultiplier),
-          systemAdmins: Math.ceil(2 * resourceMultiplier),
-          vendorSupport: vendor.supportLevel === "premium" ? 2 : 1,
+        // Adjust timeline based on complexity
+        const complexityMultiplier = complexity === "high" ? 1.5 : complexity === "medium" ? 1.2 : 1.0
+        const locationMultiplier = Math.max(1, Math.log10(locations) * 0.5 + 1)
+
+        const adjustedTimeline = {
+          planning: Math.ceil(baseTimeline.planning * complexityMultiplier),
+          deployment: Math.ceil(baseTimeline.deployment * complexityMultiplier * locationMultiplier),
+          testing: Math.ceil(baseTimeline.testing * complexityMultiplier),
+          rollout: Math.ceil(baseTimeline.rollout * locationMultiplier),
         }
 
-        // Risk assessment based on real vendor data
-        const risks = []
-        if (vendor.complexity === "high") {
-          risks.push({
-            type: "Technical Complexity",
-            level: "high",
-            impact: "Schedule delay of 2-4 weeks",
-            mitigation: "Engage vendor professional services early",
-          })
-        }
-        if (devices > 3000) {
-          risks.push({
-            type: "Scale Challenges",
-            level: "medium",
-            impact: "Performance issues during rollout",
-            mitigation: "Implement phased deployment approach",
-          })
-        }
-        if (config?.integrationRequirements?.length > 3) {
-          risks.push({
-            type: "Integration Complexity",
-            level: "medium",
-            impact: "Extended testing phase",
-            mitigation: "Parallel integration testing",
-          })
-        }
+        const totalWeeks = Object.values(adjustedTimeline).reduce((sum, weeks) => sum + weeks, 0)
 
         return {
           vendorId,
           vendorName: vendor.name,
+          category: vendor.category,
+          complexity,
+          timeline: adjustedTimeline,
           totalWeeks,
-          phases,
-          resources,
-          risks,
-          complexity: vendor.complexity,
-          readinessScore: calculateReadinessScore(vendor, config),
-          milestones: generateMilestones(phases, vendor.name),
+          totalMonths: Math.ceil(totalWeeks / 4),
+          requirements: vendor.implementation?.requirements || [],
+          risks: vendor.implementation?.risks || [],
+          resources: vendor.implementation?.resources || {},
+          milestones: [
+            { phase: "Planning Complete", week: adjustedTimeline.planning },
+            {
+              phase: "Pilot Deployment",
+              week: adjustedTimeline.planning + Math.ceil(adjustedTimeline.deployment * 0.3),
+            },
+            {
+              phase: "Testing Complete",
+              week: adjustedTimeline.planning + adjustedTimeline.deployment + adjustedTimeline.testing,
+            },
+            { phase: "Full Rollout", week: totalWeeks },
+          ],
         }
       })
       .filter(Boolean)
-  }, [selectedVendors, results, config])
+  }, [selectedVendors, config])
 
-  const selectedVendorData = vendorTimelines.find((v) => v?.vendorId === selectedVendor) || vendorTimelines[0]
+  const selectedVendorData = implementationData.find((v) => v?.vendorId === selectedVendor) || implementationData[0]
 
-  // Calculate readiness score based on vendor and config
-  function calculateReadinessScore(vendor: any, config: any) {
-    let score = 70 // Base score
-
-    // Vendor factors
-    if (vendor?.complexity === "low") score += 15
-    else if (vendor?.complexity === "high") score -= 10
-
-    if (vendor?.cloudNative) score += 10
-    if (vendor?.supportLevel === "premium") score += 5
-
-    // Config factors
-    if (config?.deploymentComplexity === "simple") score += 10
-    else if (config?.deploymentComplexity === "complex") score -= 10
-
-    if (config?.currentSolution === "none") score -= 5
-    if (config?.securityLevel === "critical") score -= 5
-
-    return Math.max(0, Math.min(100, score))
+  if (!selectedVendorData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>No implementation data available for selected vendors.</AlertDescription>
+        </Alert>
+      </div>
+    )
   }
-
-  // Generate milestones based on phases
-  function generateMilestones(phases: any, vendorName: string) {
-    let currentWeek = 0
-    const milestones = []
-
-    Object.entries(phases).forEach(([phase, weeks]) => {
-      currentWeek += safeNumber(weeks, 0)
-      milestones.push({
-        phase: phase.charAt(0).toUpperCase() + phase.slice(1),
-        week: currentWeek,
-        status: "pending",
-        description: getMilestoneDescription(phase, vendorName),
-      })
-    })
-
-    return milestones
-  }
-
-  function getMilestoneDescription(phase: string, vendorName: string) {
-    const descriptions = {
-      planning: `Complete ${vendorName} implementation planning and resource allocation`,
-      procurement: `Finalize ${vendorName} licensing and hardware procurement`,
-      installation: `Install and configure ${vendorName} infrastructure components`,
-      configuration: `Configure ${vendorName} policies and integration settings`,
-      testing: `Complete ${vendorName} testing and validation procedures`,
-      deployment: `Full production deployment of ${vendorName} solution`,
-    }
-    return descriptions[phase as keyof typeof descriptions] || `Complete ${phase} phase`
-  }
-
-  // Prepare timeline chart data
-  const timelineChartData = useMemo(() => {
-    if (!selectedVendorData) return []
-
-    const data = []
-    let cumulativeWeeks = 0
-
-    Object.entries(selectedVendorData.phases).forEach(([phase, weeks]) => {
-      const phaseWeeks = safeNumber(weeks, 0)
-      data.push({
-        phase: phase.charAt(0).toUpperCase() + phase.slice(1),
-        weeks: phaseWeeks,
-        start: cumulativeWeeks,
-        end: cumulativeWeeks + phaseWeeks,
-        resources: selectedVendorData.resources.networkEngineers + selectedVendorData.resources.securityEngineers,
-      })
-      cumulativeWeeks += phaseWeeks
-    })
-
-    return data
-  }, [selectedVendorData])
-
-  // Prepare comparison data
-  const comparisonData = useMemo(() => {
-    return vendorTimelines.map((timeline) => ({
-      vendor: timeline?.vendorName || "Unknown",
-      totalWeeks: timeline?.totalWeeks || 0,
-      readinessScore: timeline?.readinessScore || 0,
-      riskLevel: timeline?.risks?.length || 0,
-      resourceCount: Object.values(timeline?.resources || {}).reduce((sum, count) => sum + safeNumber(count, 0), 0),
-    }))
-  }, [vendorTimelines])
-
-  // Prepare Gantt chart data
-  const ganttData = useMemo(() => {
-    if (!selectedVendorData) return []
-
-    const weeks = Array.from({ length: selectedVendorData.totalWeeks }, (_, i) => i + 1)
-    let currentWeek = 0
-
-    return weeks.map((week) => {
-      const weekData: any = { week }
-
-      Object.entries(selectedVendorData.phases).forEach(([phase, phaseWeeks]) => {
-        const phaseStart = currentWeek + 1
-        const phaseEnd = currentWeek + safeNumber(phaseWeeks, 0)
-
-        if (week >= phaseStart && week <= phaseEnd) {
-          weekData[phase] = 1
-        } else {
-          weekData[phase] = 0
-        }
-      })
-
-      // Update currentWeek for next phase
-      const currentPhase = Object.entries(selectedVendorData.phases).find(([_, phaseWeeks]) => {
-        const phaseStart = currentWeek + 1
-        const phaseEnd = currentWeek + safeNumber(phaseWeeks, 0)
-        return week >= phaseStart && week <= phaseEnd
-      })
-
-      if (currentPhase && week === currentWeek + safeNumber(currentPhase[1], 0)) {
-        currentWeek += safeNumber(currentPhase[1], 0)
-      }
-
-      return weekData
-    })
-  }, [selectedVendorData])
-
-  const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316", "#06B6D4"]
 
   return (
     <div className="space-y-6">
-      {/* Header with vendor selection */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Implementation Timeline</h2>
-          <p className="text-muted-foreground">Detailed implementation planning and resource allocation</p>
+          <h2 className="text-3xl font-bold tracking-tight">Implementation Timeline Analysis</h2>
+          <p className="text-muted-foreground">Detailed implementation planning and timeline projections</p>
         </div>
-        <div className="flex items-center space-x-4">
-          <Select value={selectedVendor} onValueChange={setSelectedVendor}>
-            <SelectTrigger className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {selectedVendors.map((vendorId) => {
-                const vendor = ComprehensiveVendorDatabase[vendorId]
-                return (
-                  <SelectItem key={vendorId} value={vendorId}>
-                    {vendor?.name || vendorId}
-                  </SelectItem>
-                )
-              })}
-            </SelectContent>
-          </Select>
+        <div className="flex items-center space-x-2">
+          <select
+            value={selectedVendor}
+            onChange={(e) => setSelectedVendor(e.target.value)}
+            className="px-3 py-2 border rounded-md"
+          >
+            {implementationData.map((vendor) => (
+              <option key={vendor?.vendorId} value={vendor?.vendorId}>
+                {vendor?.vendorName}
+              </option>
+            ))}
+          </select>
+          <Button variant="outline" size="sm">
+            <Calendar className="h-4 w-4 mr-2" />
+            Export Timeline
+          </Button>
         </div>
       </div>
 
-      {/* Summary Cards */}
+      {/* Timeline Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-blue-600" />
+              <Clock className="h-5 w-5 text-blue-500" />
               <div>
                 <p className="text-sm font-medium">Total Duration</p>
-                <p className="text-2xl font-bold">
-                  {vendorTimelines.length > 0 ? vendorTimelines[0].totalWeeks : 0} weeks
-                </p>
+                <p className="text-2xl font-bold">{selectedVendorData.totalMonths} months</p>
               </div>
             </div>
           </CardContent>
@@ -290,14 +158,21 @@ export default function ImplementationTimelineView({
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-green-600" />
+              <Target className="h-5 w-5 text-green-500" />
+              <div>
+                <p className="text-sm font-medium">Complexity</p>
+                <p className="text-2xl font-bold capitalize">{selectedVendorData.complexity}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Users className="h-5 w-5 text-purple-500" />
               <div>
                 <p className="text-sm font-medium">Team Size</p>
-                <p className="text-2xl font-bold">
-                  {vendorTimelines.length > 0
-                    ? Object.values(vendorTimelines[0].resources).reduce((sum, count) => sum + safeNumber(count, 0), 0)
-                    : 0}
-                </p>
+                <p className="text-2xl font-bold">{selectedVendorData.resources.teamSize || "TBD"}</p>
               </div>
             </div>
           </CardContent>
@@ -305,227 +180,125 @@ export default function ImplementationTimelineView({
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Target className="h-5 w-5 text-purple-600" />
+              <Zap className="h-5 w-5 text-orange-500" />
               <div>
-                <p className="text-sm font-medium">Readiness Score</p>
+                <p className="text-sm font-medium">Risk Level</p>
                 <p className="text-2xl font-bold">
-                  {vendorTimelines.length > 0 ? vendorTimelines[0].readinessScore : 0}%
+                  {selectedVendorData.risks.length > 3
+                    ? "High"
+                    : selectedVendorData.risks.length > 1
+                      ? "Medium"
+                      : "Low"}
                 </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5 text-orange-600" />
-              <div>
-                <p className="text-sm font-medium">Risk Factors</p>
-                <p className="text-2xl font-bold">{vendorTimelines.length > 0 ? vendorTimelines[0].risks.length : 0}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Content Tabs */}
-      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as any)}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="timeline">Timeline View</TabsTrigger>
-          <TabsTrigger value="comparison">Vendor Comparison</TabsTrigger>
-          <TabsTrigger value="gantt">Gantt Chart</TabsTrigger>
+      <Tabs defaultValue="timeline" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <TabsTrigger value="phases">Phase Details</TabsTrigger>
+          <TabsTrigger value="resources">Resources</TabsTrigger>
+          <TabsTrigger value="risks">Risk Management</TabsTrigger>
         </TabsList>
 
         <TabsContent value="timeline" className="space-y-6">
-          {/* Phase Timeline */}
+          {/* Visual Timeline */}
           <Card>
             <CardHeader>
-              <CardTitle>Implementation Phases</CardTitle>
+              <CardTitle>Implementation Timeline - {selectedVendorData.vendorName}</CardTitle>
             </CardHeader>
             <CardContent>
-              {vendorTimelines.length > 0 && (
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={timelineChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="phase" />
-                    <YAxis />
-                    <Tooltip
-                      formatter={(value, name) => [
-                        name === "weeks" ? `${safeNumber(value, 0)} weeks` : safeNumber(value, 0),
-                        name === "weeks" ? "Duration" : "Resources",
-                      ]}
-                    />
-                    <Bar dataKey="weeks" fill="#00D4AA" name="weeks" />
-                    <Bar dataKey="resources" fill="#0EA5E9" name="resources" />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Milestones */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Key Milestones</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {vendorTimelines.length > 0 && (
-                <div className="space-y-4">
+              <div className="space-y-6">
+                {/* Timeline visualization */}
+                <div className="relative">
+                  <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border"></div>
                   {selectedVendorData.milestones.map((milestone, index) => (
-                    <div key={index} className="flex items-center space-x-4 p-4 border rounded-lg">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
-                        <span className="text-sm font-semibold">{milestone.week}</span>
+                    <div key={index} className="relative flex items-center space-x-4 pb-8">
+                      <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-bold">
+                        {index + 1}
                       </div>
                       <div className="flex-1">
                         <h4 className="font-semibold">{milestone.phase}</h4>
-                        <p className="text-sm text-muted-foreground">{milestone.description}</p>
+                        <p className="text-sm text-muted-foreground">Week {milestone.week}</p>
                       </div>
-                      <Badge variant="outline">Week {milestone.week}</Badge>
+                      <Badge variant="outline">{Math.ceil(milestone.week / 4)} months</Badge>
                     </div>
                   ))}
                 </div>
-              )}
+              </div>
             </CardContent>
           </Card>
 
-          {/* Resource Allocation */}
+          {/* Phase Progress */}
           <Card>
             <CardHeader>
-              <CardTitle>Resource Requirements</CardTitle>
+              <CardTitle>Phase Breakdown</CardTitle>
             </CardHeader>
             <CardContent>
-              {vendorTimelines.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    {Object.entries(selectedVendorData.resources).map(([role, count]) => (
-                      <div key={role} className="flex items-center justify-between">
-                        <span className="font-medium">
-                          {role.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
-                        </span>
-                        <Badge variant="secondary">
-                          {safeNumber(count, 0)} person{safeNumber(count, 0) !== 1 ? "s" : ""}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-3">Readiness Assessment</h4>
-                    <div className="space-y-3">
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Overall Readiness</span>
-                          <span>{selectedVendorData.readinessScore}%</span>
-                        </div>
-                        <Progress value={selectedVendorData.readinessScore} className="h-2" />
-                      </div>
+              <div className="space-y-4">
+                {Object.entries(selectedVendorData.timeline).map(([phase, weeks]) => (
+                  <div key={phase}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="capitalize">{phase}</span>
+                      <span>{weeks} weeks</span>
                     </div>
+                    <Progress value={(weeks / selectedVendorData.totalWeeks) * 100} className="h-2" />
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Risk Assessment */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Risk Assessment & Mitigation</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {vendorTimelines.length > 0 && (
-                <div className="space-y-4">
-                  {selectedVendorData.risks.length > 0 ? (
-                    selectedVendorData.risks.map((risk, index) => (
-                      <div key={index} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold">{risk.type}</h4>
-                          <Badge
-                            variant={
-                              risk.level === "high" ? "destructive" : risk.level === "medium" ? "default" : "secondary"
-                            }
-                          >
-                            {risk.level} risk
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">{risk.impact}</p>
-                        <div className="flex items-center space-x-2">
-                          <Shield className="h-4 w-4 text-green-600" />
-                          <span className="text-sm font-medium">Mitigation:</span>
-                          <span className="text-sm">{risk.mitigation}</span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-600" />
-                      <p>Low risk implementation profile</p>
-                    </div>
-                  )}
-                </div>
-              )}
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="comparison" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Vendor Implementation Comparison</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {vendorTimelines.length > 0 && (
-                <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={comparisonData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="vendor" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="totalWeeks" fill="#00D4AA" name="Total Weeks" />
-                    <Bar dataKey="readinessScore" fill="#0EA5E9" name="Readiness Score" />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
-
+        <TabsContent value="phases" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {vendorTimelines.map((timeline, index) => (
-              <Card key={timeline?.vendorId}>
+            {Object.entries(selectedVendorData.timeline).map(([phase, weeks]) => (
+              <Card key={phase}>
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    {timeline?.vendorName}
-                    <Badge
-                      variant={
-                        timeline?.complexity === "low"
-                          ? "secondary"
-                          : timeline?.complexity === "high"
-                            ? "destructive"
-                            : "default"
-                      }
-                    >
-                      {timeline?.complexity} complexity
-                    </Badge>
-                  </CardTitle>
+                  <CardTitle className="capitalize">{phase} Phase</CardTitle>
+                  <Badge variant="secondary">{weeks} weeks}</Badge>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Duration:</span>
-                      <span className="font-semibold">{timeline?.totalWeeks} weeks</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Team Size:</span>
-                      <span className="font-semibold">
-                        {Object.values(timeline?.resources || {}).reduce((sum, count) => sum + safeNumber(count, 0), 0)}{" "}
-                        people
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Readiness:</span>
-                      <span className="font-semibold">{timeline?.readinessScore}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Risk Factors:</span>
-                      <span className="font-semibold">{timeline?.risks?.length || 0}</span>
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Key activities and deliverables for the {phase} phase.
+                    </p>
+                    {/* Add phase-specific details here */}
+                    <div className="mt-4">
+                      <h5 className="font-medium mb-2">Key Activities:</h5>
+                      <ul className="text-sm space-y-1">
+                        {phase === "planning" && (
+                          <>
+                            <li>• Requirements gathering</li>
+                            <li>• Network assessment</li>
+                            <li>• Architecture design</li>
+                          </>
+                        )}
+                        {phase === "deployment" && (
+                          <>
+                            <li>• Infrastructure setup</li>
+                            <li>• Software installation</li>
+                            <li>• Initial configuration</li>
+                          </>
+                        )}
+                        {phase === "testing" && (
+                          <>
+                            <li>• Functional testing</li>
+                            <li>• Performance validation</li>
+                            <li>• Security verification</li>
+                          </>
+                        )}
+                        {phase === "rollout" && (
+                          <>
+                            <li>• Phased deployment</li>
+                            <li>• User training</li>
+                            <li>• Go-live support</li>
+                          </>
+                        )}
+                      </ul>
                     </div>
                   </div>
                 </CardContent>
@@ -534,63 +307,87 @@ export default function ImplementationTimelineView({
           </div>
         </TabsContent>
 
-        <TabsContent value="gantt" className="space-y-6">
+        <TabsContent value="resources" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Implementation Gantt Chart</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Week-by-week breakdown of {selectedVendorData.vendorName} implementation
-              </p>
+              <CardTitle>Resource Requirements</CardTitle>
             </CardHeader>
             <CardContent>
-              {vendorTimelines.length > 0 && (
-                <ResponsiveContainer width="100%" height={400}>
-                  <AreaChart data={ganttData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="week" />
-                    <YAxis />
-                    <Tooltip />
-                    {Object.keys(selectedVendorData.phases).map((phase, index) => (
-                      <Area
-                        key={phase}
-                        type="monotone"
-                        dataKey={phase}
-                        stackId="1"
-                        stroke={COLORS[index % COLORS.length]}
-                        fill={COLORS[index % COLORS.length]}
-                        fillOpacity={0.6}
-                      />
-                    ))}
-                  </AreaChart>
-                </ResponsiveContainer>
-              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold mb-3">Team Composition</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>Project Manager</span>
+                      <span>1 FTE</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Network Engineers</span>
+                      <span>{Math.ceil((config.devices || 1000) / 2000)} FTE</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Security Specialists</span>
+                      <span>1-2 FTE</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>System Administrators</span>
+                      <span>1 FTE</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-3">External Resources</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>Vendor Professional Services</span>
+                      <span>Recommended</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Training Sessions</span>
+                      <span>2-3 days</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Support Hours</span>
+                      <span>40-80 hrs</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
+        </TabsContent>
 
+        <TabsContent value="risks" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Phase Details</CardTitle>
+              <CardTitle>Implementation Risks & Mitigation</CardTitle>
             </CardHeader>
             <CardContent>
-              {vendorTimelines.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Object.entries(selectedVendorData.phases).map(([phase, weeks], index) => (
-                    <div key={phase} className="border rounded-lg p-4">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                        />
-                        <h4 className="font-semibold capitalize">{phase}</h4>
-                      </div>
-                      <p className="text-2xl font-bold">{safeNumber(weeks, 0)} weeks</p>
-                      <p className="text-sm text-muted-foreground">
-                        {Math.round((safeNumber(weeks, 0) / selectedVendorData.totalWeeks) * 100)}% of total time
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div className="space-y-4">
+                {selectedVendorData.risks.length > 0 ? (
+                  selectedVendorData.risks.map((risk: string, index: number) => (
+                    <Alert key={index}>
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>{risk}</AlertDescription>
+                    </Alert>
+                  ))
+                ) : (
+                  <div className="space-y-4">
+                    <Alert>
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>Network downtime during deployment phases</AlertDescription>
+                    </Alert>
+                    <Alert>
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>User adoption and training challenges</AlertDescription>
+                    </Alert>
+                    <Alert>
+                      <CheckCircle className="h-4 w-4" />
+                      <AlertDescription>Integration complexity with existing systems</AlertDescription>
+                    </Alert>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
