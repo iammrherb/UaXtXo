@@ -1,23 +1,15 @@
 "use client"
-
 import { useState, useMemo } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { Calendar, Clock, Users, AlertTriangle, CheckCircle, Target, Zap } from "lucide-react"
-import { enhancedVendorDatabase } from "@/lib/vendors/enhanced-vendor-data"
+import { CheckCircle2, AlertTriangle, Calendar, Shield, TrendingUp } from "lucide-react"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 interface ImplementationTimelineViewProps {
   selectedVendors?: string[]
-  config?: {
-    devices?: number
-    users?: number
-    locations?: number
-    industry?: string
-  }
+  config?: any
   results?: any[]
 }
 
@@ -26,278 +18,273 @@ export default function ImplementationTimelineView({
   config = {},
   results = [],
 }: ImplementationTimelineViewProps) {
-  const [selectedVendor, setSelectedVendor] = useState<string>(selectedVendors[0] || "")
+  const [activeTab, setActiveTab] = useState("timeline")
 
-  // Calculate implementation data for each vendor
-  const implementationData = useMemo(() => {
-    return selectedVendors
-      .map((vendorId) => {
-        const vendor = enhancedVendorDatabase[vendorId]
-        if (!vendor) return null
+  // Vendor implementation data
+  const vendorData = useMemo(() => {
+    const data = {
+      portnox: {
+        name: "Portnox CLEAR",
+        phases: [
+          { name: "Planning", duration: 2, description: "Requirements and design" },
+          { name: "Setup", duration: 1, description: "Cloud configuration" },
+          { name: "Pilot", duration: 3, description: "Test deployment" },
+          { name: "Rollout", duration: 7, description: "Full deployment" },
+        ],
+        totalDays: 13,
+        complexity: "Simple",
+        fteRequired: 0.1,
+        riskLevel: "Low",
+      },
+      cisco: {
+        name: "Cisco ISE",
+        phases: [
+          { name: "Planning", duration: 28, description: "Architecture and design" },
+          { name: "Hardware", duration: 14, description: "Appliance deployment" },
+          { name: "Configuration", duration: 35, description: "Complex setup" },
+          { name: "Testing", duration: 21, description: "Validation and tuning" },
+          { name: "Rollout", duration: 42, description: "Phased deployment" },
+        ],
+        totalDays: 140,
+        complexity: "Very Complex",
+        fteRequired: 2.5,
+        riskLevel: "High",
+      },
+      aruba: {
+        name: "Aruba ClearPass",
+        phases: [
+          { name: "Planning", duration: 14, description: "Design and planning" },
+          { name: "Hardware", duration: 7, description: "Appliance setup" },
+          { name: "Configuration", duration: 21, description: "Policy configuration" },
+          { name: "Testing", duration: 14, description: "Validation" },
+          { name: "Rollout", duration: 28, description: "Deployment" },
+        ],
+        totalDays: 84,
+        complexity: "Complex",
+        fteRequired: 1.5,
+        riskLevel: "Medium",
+      },
+      fortinet: {
+        name: "Fortinet FortiNAC",
+        phases: [
+          { name: "Planning", duration: 21, description: "Architecture design" },
+          { name: "Hardware", duration: 10, description: "Appliance deployment" },
+          { name: "Configuration", duration: 28, description: "System setup" },
+          { name: "Testing", duration: 14, description: "Validation" },
+          { name: "Rollout", duration: 35, description: "Full deployment" },
+        ],
+        totalDays: 108,
+        complexity: "Complex",
+        fteRequired: 2.0,
+        riskLevel: "Medium-High",
+      },
+    }
 
-        const devices = config.devices || 1000
-        const locations = config.locations || 1
-        const complexity = devices > 5000 ? "high" : devices > 1000 ? "medium" : "low"
+    return selectedVendors.map((vendor) => {
+      const key = vendor.toLowerCase()
+      return data[key] || data.portnox
+    })
+  }, [selectedVendors])
 
-        // Base timeline from vendor data
-        const baseTimeline = vendor.implementation?.timeline || {
-          planning: 4,
-          deployment: 8,
-          testing: 4,
-          rollout: 6,
-        }
+  // Timeline comparison chart data
+  const timelineData = vendorData.map((vendor) => ({
+    vendor: vendor.name,
+    days: vendor.totalDays,
+    weeks: Math.ceil(vendor.totalDays / 7),
+  }))
 
-        // Adjust timeline based on complexity
-        const complexityMultiplier = complexity === "high" ? 1.5 : complexity === "medium" ? 1.2 : 1.0
-        const locationMultiplier = Math.max(1, Math.log10(locations) * 0.5 + 1)
-
-        const adjustedTimeline = {
-          planning: Math.ceil(baseTimeline.planning * complexityMultiplier),
-          deployment: Math.ceil(baseTimeline.deployment * complexityMultiplier * locationMultiplier),
-          testing: Math.ceil(baseTimeline.testing * complexityMultiplier),
-          rollout: Math.ceil(baseTimeline.rollout * locationMultiplier),
-        }
-
-        const totalWeeks = Object.values(adjustedTimeline).reduce((sum, weeks) => sum + weeks, 0)
-
-        return {
-          vendorId,
-          vendorName: vendor.name,
-          category: vendor.category,
-          complexity,
-          timeline: adjustedTimeline,
-          totalWeeks,
-          totalMonths: Math.ceil(totalWeeks / 4),
-          requirements: vendor.implementation?.requirements || [],
-          risks: vendor.implementation?.risks || [],
-          resources: vendor.implementation?.resources || {},
-          milestones: [
-            { phase: "Planning Complete", week: adjustedTimeline.planning },
-            {
-              phase: "Pilot Deployment",
-              week: adjustedTimeline.planning + Math.ceil(adjustedTimeline.deployment * 0.3),
-            },
-            {
-              phase: "Testing Complete",
-              week: adjustedTimeline.planning + adjustedTimeline.deployment + adjustedTimeline.testing,
-            },
-            { phase: "Full Rollout", week: totalWeeks },
-          ],
-        }
-      })
-      .filter(Boolean)
-  }, [selectedVendors, config])
+  // Complexity comparison
+  const complexityData = vendorData.map((vendor) => ({
+    vendor: vendor.name,
+    complexity:
+      vendor.complexity === "Simple"
+        ? 1
+        : vendor.complexity === "Complex"
+          ? 3
+          : vendor.complexity === "Very Complex"
+            ? 5
+            : 2,
+    fte: vendor.fteRequired,
+  }))
 
   // Early return if no vendors selected
   if (selectedVendors.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Alert>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            Please select at least one vendor to view implementation timeline analysis.
-          </AlertDescription>
-        </Alert>
-      </div>
-    )
-  }
-
-  const selectedVendorData = implementationData.find((v) => v?.vendorId === selectedVendor) || implementationData[0]
-
-  if (!selectedVendorData) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Alert>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>No implementation data available for selected vendors.</AlertDescription>
-        </Alert>
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <Calendar className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+          <h3 className="text-lg font-semibold mb-2">No Vendors Selected</h3>
+          <p className="text-muted-foreground">Select vendors to view implementation timeline</p>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Implementation Timeline Analysis</h2>
-          <p className="text-muted-foreground">Detailed implementation planning and timeline projections</p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <select
-            value={selectedVendor}
-            onChange={(e) => setSelectedVendor(e.target.value)}
-            className="px-3 py-2 border rounded-md"
-          >
-            {implementationData.map((vendor) => (
-              <option key={vendor?.vendorId} value={vendor?.vendorId}>
-                {vendor?.vendorName}
-              </option>
-            ))}
-          </select>
-          <Button variant="outline" size="sm">
-            <Calendar className="h-4 w-4 mr-2" />
-            Export Timeline
-          </Button>
+          <h2 className="text-2xl font-bold">Implementation Timeline Analysis</h2>
+          <p className="text-muted-foreground">Compare deployment timelines and complexity across NAC vendors</p>
         </div>
       </div>
 
-      {/* Timeline Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-blue-500" />
-              <div>
-                <p className="text-sm font-medium">Total Duration</p>
-                <p className="text-2xl font-bold">{selectedVendorData.totalMonths} months</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Target className="h-5 w-5 text-green-500" />
-              <div>
-                <p className="text-sm font-medium">Complexity</p>
-                <p className="text-2xl font-bold capitalize">{selectedVendorData.complexity}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-purple-500" />
-              <div>
-                <p className="text-sm font-medium">Team Size</p>
-                <p className="text-2xl font-bold">{selectedVendorData.resources.teamSize || "TBD"}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Zap className="h-5 w-5 text-orange-500" />
-              <div>
-                <p className="text-sm font-medium">Risk Level</p>
-                <p className="text-2xl font-bold">
-                  {selectedVendorData.risks.length > 3
-                    ? "High"
-                    : selectedVendorData.risks.length > 1
-                      ? "Medium"
-                      : "Low"}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="timeline" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
-          <TabsTrigger value="phases">Phase Details</TabsTrigger>
-          <TabsTrigger value="resources">Resources</TabsTrigger>
-          <TabsTrigger value="risks">Risk Management</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-4 w-full">
+          <TabsTrigger value="timeline">Timeline Comparison</TabsTrigger>
+          <TabsTrigger value="phases">Implementation Phases</TabsTrigger>
+          <TabsTrigger value="resources">Resource Requirements</TabsTrigger>
+          <TabsTrigger value="risks">Risk Assessment</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="timeline" className="space-y-6">
-          {/* Visual Timeline */}
+        <TabsContent value="timeline" className="space-y-4">
+          {/* Timeline Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {vendorData.map((vendor, index) => (
+              <Card key={vendor.name} className={index === 0 ? "border-green-200" : ""}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">{vendor.name}</CardTitle>
+                  {index === 0 && <Badge className="w-fit bg-green-600">Fastest</Badge>}
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold">{vendor.totalDays}</div>
+                      <p className="text-sm text-muted-foreground">days</p>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Complexity</span>
+                        <Badge variant="secondary">{vendor.complexity}</Badge>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>FTE Required</span>
+                        <Badge variant="outline">{vendor.fteRequired}</Badge>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Risk Level</span>
+                        <Badge variant={vendor.riskLevel === "Low" ? "default" : "destructive"}>
+                          {vendor.riskLevel}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Timeline Chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Implementation Timeline - {selectedVendorData.vendorName}</CardTitle>
+              <CardTitle>Implementation Timeline Comparison</CardTitle>
+              <CardDescription>Days required for full deployment</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                {/* Timeline visualization */}
-                <div className="relative">
-                  <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border"></div>
-                  {selectedVendorData.milestones.map((milestone, index) => (
-                    <div key={index} className="relative flex items-center space-x-4 pb-8">
-                      <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-bold">
-                        {index + 1}
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={timelineData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="vendor" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="days" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Key Insights */}
+          <Alert className="bg-green-50 border-green-200">
+            <TrendingUp className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Key Insight:</strong> Portnox CLEAR deploys 90% faster than traditional NAC solutions, delivering
+              value in days instead of months. Cloud-native architecture eliminates hardware procurement and complex
+              configuration requirements.
+            </AlertDescription>
+          </Alert>
+        </TabsContent>
+
+        <TabsContent value="phases" className="space-y-4">
+          {vendorData.map((vendor, vendorIndex) => (
+            <Card key={vendor.name} className={vendorIndex === 0 ? "border-green-200" : ""}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  {vendor.name}
+                  <Badge variant="outline">{vendor.totalDays} days total</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {vendor.phases.map((phase, index) => (
+                    <div key={phase.name} className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                            vendorIndex === 0 ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+                          }`}
+                        >
+                          {index + 1}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium">{phase.name}</p>
+                            <Badge variant="secondary">{phase.duration} days</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{phase.description}</p>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold">{milestone.phase}</h4>
-                        <p className="text-sm text-muted-foreground">Week {milestone.week}</p>
-                      </div>
-                      <Badge variant="outline">{Math.ceil(milestone.week / 4)} months</Badge>
                     </div>
                   ))}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Phase Progress */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Phase Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {Object.entries(selectedVendorData.timeline).map(([phase, weeks]) => (
-                  <div key={phase}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="capitalize">{phase}</span>
-                      <span>{weeks} weeks</span>
-                    </div>
-                    <Progress value={(weeks / selectedVendorData.totalWeeks) * 100} className="h-2" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ))}
         </TabsContent>
 
-        <TabsContent value="phases" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {Object.entries(selectedVendorData.timeline).map(([phase, weeks]) => (
-              <Card key={phase}>
+        <TabsContent value="resources" className="space-y-4">
+          {/* Resource Requirements Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Resource Requirements Comparison</CardTitle>
+              <CardDescription>FTE and complexity requirements</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={complexityData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="vendor" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="fte" fill="#10b981" name="FTE Required" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Detailed Resource Breakdown */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {vendorData.map((vendor, index) => (
+              <Card key={vendor.name}>
                 <CardHeader>
-                  <CardTitle className="capitalize">{phase} Phase</CardTitle>
-                  <Badge variant="secondary">{weeks} weeks</Badge>
+                  <CardTitle className="text-lg">{vendor.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      Key activities and deliverables for the {phase} phase.
-                    </p>
-                    <div className="mt-4">
-                      <h5 className="font-medium mb-2">Key Activities:</h5>
-                      <ul className="text-sm space-y-1">
-                        {phase === "planning" && (
-                          <>
-                            <li>• Requirements gathering</li>
-                            <li>• Network assessment</li>
-                            <li>• Architecture design</li>
-                          </>
-                        )}
-                        {phase === "deployment" && (
-                          <>
-                            <li>• Infrastructure setup</li>
-                            <li>• Software installation</li>
-                            <li>• Initial configuration</li>
-                          </>
-                        )}
-                        {phase === "testing" && (
-                          <>
-                            <li>• Functional testing</li>
-                            <li>• Performance validation</li>
-                            <li>• Security verification</li>
-                          </>
-                        )}
-                        {phase === "rollout" && (
-                          <>
-                            <li>• Phased deployment</li>
-                            <li>• User training</li>
-                            <li>• Go-live support</li>
-                          </>
-                        )}
-                      </ul>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Full-Time Equivalent</span>
+                      <Badge variant="outline">{vendor.fteRequired} FTE</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Skill Level Required</span>
+                      <Badge variant={index === 0 ? "default" : "secondary"}>{index === 0 ? "Basic" : "Expert"}</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Training Required</span>
+                      <Badge variant="outline">{index === 0 ? "2 hours" : "40+ hours"}</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Certification Cost</span>
+                      <Badge variant="outline">{index === 0 ? "$0" : "$15K+"}</Badge>
                     </div>
                   </div>
                 </CardContent>
@@ -306,91 +293,126 @@ export default function ImplementationTimelineView({
           </div>
         </TabsContent>
 
-        <TabsContent value="resources" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Resource Requirements</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-semibold mb-3">Team Composition</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Project Manager</span>
-                      <span>1 FTE</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Network Engineers</span>
-                      <span>{Math.ceil((config.devices || 1000) / 2000)} FTE</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Security Specialists</span>
-                      <span>1-2 FTE</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>System Administrators</span>
-                      <span>1 FTE</span>
-                    </div>
+        <TabsContent value="risks" className="space-y-4">
+          {/* Risk Assessment */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="border-green-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-green-600" />
+                  Portnox CLEAR - Low Risk
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <span className="text-sm">No hardware dependencies</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <span className="text-sm">Cloud-native reliability</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <span className="text-sm">Automated configuration</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <span className="text-sm">Instant rollback capability</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <span className="text-sm">24/7 expert support</span>
                   </div>
                 </div>
-                <div>
-                  <h4 className="font-semibold mb-3">External Resources</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Vendor Professional Services</span>
-                      <span>Recommended</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Training Sessions</span>
-                      <span>2-3 days</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Support Hours</span>
-                      <span>40-80 hrs</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
 
-        <TabsContent value="risks" className="space-y-6">
+            <Card className="border-red-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                  Traditional NAC - High Risk
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-red-500" />
+                    <span className="text-sm">Hardware failure points</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-red-500" />
+                    <span className="text-sm">Complex configuration errors</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-red-500" />
+                    <span className="text-sm">Extended downtime windows</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-red-500" />
+                    <span className="text-sm">Skill dependency risks</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-red-500" />
+                    <span className="text-sm">Integration challenges</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Risk Mitigation Strategies */}
           <Card>
             <CardHeader>
-              <CardTitle>Implementation Risks & Mitigation</CardTitle>
+              <CardTitle>Risk Mitigation Strategies</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {selectedVendorData.risks.length > 0 ? (
-                  selectedVendorData.risks.map((risk: string, index: number) => (
-                    <Alert key={index}>
-                      <AlertTriangle className="h-4 w-4" />
-                      <AlertDescription>{risk}</AlertDescription>
-                    </Alert>
-                  ))
-                ) : (
-                  <div className="space-y-4">
-                    <Alert>
-                      <AlertTriangle className="h-4 w-4" />
-                      <AlertDescription>Network downtime during deployment phases</AlertDescription>
-                    </Alert>
-                    <Alert>
-                      <AlertTriangle className="h-4 w-4" />
-                      <AlertDescription>User adoption and training challenges</AlertDescription>
-                    </Alert>
-                    <Alert>
-                      <CheckCircle className="h-4 w-4" />
-                      <AlertDescription>Integration complexity with existing systems</AlertDescription>
-                    </Alert>
-                  </div>
-                )}
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <h4 className="font-semibold text-green-800 mb-2">Portnox Advantages</h4>
+                  <ul className="space-y-1 text-sm text-green-700">
+                    <li>• Cloud-native architecture eliminates single points of failure</li>
+                    <li>• Automated deployment reduces human error</li>
+                    <li>• Instant rollback and configuration versioning</li>
+                    <li>• Built-in redundancy and 99.99% uptime SLA</li>
+                    <li>• Comprehensive monitoring and alerting</li>
+                  </ul>
+                </div>
+                <div className="p-4 bg-orange-50 rounded-lg">
+                  <h4 className="font-semibold text-orange-800 mb-2">Traditional NAC Challenges</h4>
+                  <ul className="space-y-1 text-sm text-orange-700">
+                    <li>• Hardware procurement delays and failures</li>
+                    <li>• Complex multi-vendor integration issues</li>
+                    <li>• Extensive testing and validation requirements</li>
+                    <li>• High dependency on specialized expertise</li>
+                    <li>• Lengthy troubleshooting and resolution times</li>
+                  </ul>
+                </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Summary Card */}
+      <Card className="bg-gradient-to-r from-green-50 to-blue-50">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-semibold">Implementation Summary</h3>
+              <p className="text-muted-foreground mt-1">
+                Portnox CLEAR delivers 90% faster deployment with 95% less risk
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl font-bold text-green-600">13 days</div>
+              <p className="text-sm text-muted-foreground">vs 140 days traditional</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
