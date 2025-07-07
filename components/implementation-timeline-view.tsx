@@ -18,6 +18,7 @@ import {
   Network,
   FileText,
   Download,
+  Calendar,
 } from "lucide-react"
 
 interface ImplementationTimelineViewProps {
@@ -339,17 +340,22 @@ export default function ImplementationTimelineView({ selectedVendors }: Implemen
                 <CardContent>
                   <div className="space-y-6">
                     {IMPLEMENTATION_PHASES.map((phase, index) => {
-                      const phaseData = selectedVendorData.timeline.phases[phase.id as keyof typeof selectedVendorData.timeline.phases]
+                      const phaseData =
+                        selectedVendorData.timeline.phases[phase.id as keyof typeof selectedVendorData.timeline.phases]
                       const startWeek = IMPLEMENTATION_PHASES.slice(0, index).reduce(
-                        (sum, p) => sum + (selectedVendorData.timeline.phases[p.id as keyof typeof selectedVendorData.timeline.phases]?.weeks || 0),
+                        (sum, p) =>
+                          sum +
+                          (selectedVendorData.timeline.phases[p.id as keyof typeof selectedVendorData.timeline.phases]
+                            ?.weeks || 0),
                         0,
                       )
-                      const progressPercentage = ((startWeek + phaseData.weeks) / selectedVendorData.timeline.totalWeeks) * 100
 
                       return (
                         <div key={phase.id} className="relative">
                           <div className="flex items-start gap-4">
-                            <div className={`w-8 h-8 rounded-full ${phase.color} flex items-center justify-center text-white`}>
+                            <div
+                              className={`w-8 h-8 rounded-full ${phase.color} flex items-center justify-center text-white`}
+                            >
                               {phase.icon}
                             </div>
                             <div className="flex-1">
@@ -358,14 +364,18 @@ export default function ImplementationTimelineView({ selectedVendors }: Implemen
                                 <div className="flex items-center gap-2">
                                   <Badge variant="outline">{phaseData.weeks} weeks</Badge>
                                   <div className={`w-3 h-3 rounded-full ${getEffortColor(phaseData.effort)}`} />
-                                  <span className="text-xs text-muted-foreground capitalize">{phaseData.effort} effort</span>
+                                  <span className="text-xs text-muted-foreground capitalize">
+                                    {phaseData.effort} effort
+                                  </span>
                                 </div>
                               </div>
                               <p className="text-sm text-muted-foreground mb-3">{phase.description}</p>
                               <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div
                                   className={`h-2 rounded-full ${phase.color}`}
-                                  style={{ width: `${(phaseData.weeks / selectedVendorData.timeline.totalWeeks) * 100}%` }}
+                                  style={{
+                                    width: `${(phaseData.weeks / selectedVendorData.timeline.totalWeeks) * 100}%`,
+                                  }}
                                 />
                               </div>
                               <div className="flex justify-between text-xs text-muted-foreground mt-1">
@@ -405,4 +415,152 @@ export default function ImplementationTimelineView({ selectedVendors }: Implemen
                             </AlertDescription>
                           </Alert>
                         )}
-                        {selectedVendorData.timeline.resources > 4
+                        {selectedVendorData.timeline.resources > 4 && (
+                          <Alert>
+                            <Users className="h-4 w-4" />
+                            <AlertDescription>
+                              Large resource requirement may impact other projects and require careful resource
+                              planning.
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                        {selectedVendorData.timeline.riskLevel === "medium" && (
+                          <Alert>
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertDescription>
+                              Medium risk deployment requires careful monitoring and contingency planning.
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-3">Mitigation Strategies</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
+                          <span>Conduct thorough pre-deployment assessment</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
+                          <span>Establish clear project milestones and checkpoints</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
+                          <span>Maintain regular communication with vendor support</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
+                          <span>Plan for parallel testing and rollback procedures</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="comparison" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Vendor Timeline Comparison</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {vendors.map((vendor) => (
+                  <div key={vendor.id} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold">{vendor.name}</h4>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">{vendor.timeline.totalWeeks} weeks</Badge>
+                        {getComplexityBadge(vendor.timeline.complexity)}
+                        {getRiskBadge(vendor.timeline.riskLevel)}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-6 gap-2 mb-2">
+                      {IMPLEMENTATION_PHASES.map((phase) => {
+                        const phaseData = vendor.timeline.phases[phase.id as keyof typeof vendor.timeline.phases]
+                        const widthPercentage = (phaseData.weeks / vendor.timeline.totalWeeks) * 100
+                        return (
+                          <div
+                            key={phase.id}
+                            className={`h-6 rounded ${phase.color} flex items-center justify-center text-white text-xs`}
+                            style={{ width: `${widthPercentage}%`, minWidth: "40px" }}
+                            title={`${phase.name}: ${phaseData.weeks} weeks`}
+                          >
+                            {phaseData.weeks}w
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{vendor.timeline.resources} FTE required</span>
+                      <span>{vendor.timeline.complexity} complexity</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="gantt" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Gantt Chart View
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {selectedVendorData && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-12 gap-1 text-xs text-muted-foreground mb-4">
+                    {Array.from({ length: Math.ceil(selectedVendorData.timeline.totalWeeks) }, (_, i) => (
+                      <div key={i} className="text-center">
+                        W{i + 1}
+                      </div>
+                    ))}
+                  </div>
+                  {IMPLEMENTATION_PHASES.map((phase, index) => {
+                    const phaseData =
+                      selectedVendorData.timeline.phases[phase.id as keyof typeof selectedVendorData.timeline.phases]
+                    const startWeek = IMPLEMENTATION_PHASES.slice(0, index).reduce(
+                      (sum, p) =>
+                        sum +
+                        (selectedVendorData.timeline.phases[p.id as keyof typeof selectedVendorData.timeline.phases]
+                          ?.weeks || 0),
+                      0,
+                    )
+                    const startCol = Math.floor(startWeek)
+                    const duration = Math.ceil(phaseData.weeks)
+
+                    return (
+                      <div key={phase.id} className="grid grid-cols-12 gap-1 items-center mb-2">
+                        <div className="col-span-12 flex items-center">
+                          <div className="w-32 text-sm font-medium mr-4">{phase.name}</div>
+                          <div className="flex-1 grid grid-cols-12 gap-1">
+                            {Array.from({ length: 12 }, (_, i) => (
+                              <div
+                                key={i}
+                                className={`h-6 rounded ${
+                                  i >= startCol && i < startCol + duration ? phase.color : "bg-gray-100"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
