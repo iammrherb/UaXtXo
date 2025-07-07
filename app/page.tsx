@@ -2,269 +2,355 @@
 
 import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
-  Calculator,
-  Shield,
-  Building,
-  Clock,
-  FileText,
   Settings,
-  BarChart3,
-  Target,
+  TrendingUp,
+  Shield,
+  FileText,
+  Users,
+  Building,
   Zap,
+  BarChart3,
   CheckCircle,
+  AlertTriangle,
+  DollarSign,
+  Clock,
+  Target,
 } from "lucide-react"
 
 // Import all view components
+import { SettingsPanel } from "@/components/settings-panel"
 import { ExecutiveDashboardView } from "@/components/executive-dashboard-view"
-import { SecurityRiskAssessmentView } from "@/components/security-risk-assessment-view"
-import { IndustryAnalysisDashboard } from "@/components/industry-analysis-dashboard"
-import { ImplementationTimelineView } from "@/components/implementation-timeline-view"
-import { ROICalculatorView } from "@/components/roi-calculator-view"
-import { ExecutiveReportView } from "@/components/executive-report-view"
-import { IntegrationHubView } from "@/components/integration-hub-view"
 import { EnhancedFeatureComparisonView } from "@/components/enhanced-feature-comparison-view"
 import { ComplianceRiskView } from "@/components/compliance-risk-view"
-import { SettingsPanel } from "@/components/settings-panel"
+import { FinancialAnalysisView } from "@/components/financial-analysis-view"
+import { BusinessImpactView } from "@/components/business-impact-view"
+import { CybersecurityPostureView } from "@/components/cybersecurity-posture-view"
+import { ImplementationTimelineView } from "@/components/implementation-timeline-view"
+import { IntegrationHubView } from "@/components/integration-hub-view"
+import { ROICalculatorView } from "@/components/roi-calculator-view"
+import { SecurityRiskAssessmentView } from "@/components/security-risk-assessment-view"
+import { IndustryAnalysisView } from "@/components/industry-analysis-view"
+import { MigrationPlanningView } from "@/components/migration-planning-view"
+import { ExecutiveReportView } from "@/components/executive-report-view"
 
-// Import calculation utilities
-import { calculateTCO, type CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+// Import calculation functions
+import {
+  calculateTCO,
+  getAllVendors,
+  getAllIndustries,
+  type CalculationConfiguration,
+  ENHANCED_VENDOR_DATABASE,
+  INDUSTRY_DATABASE,
+  COMPLIANCE_FRAMEWORK_MAPPINGS,
+} from "@/lib/enhanced-tco-calculator"
 
-export default function ZTCADashboard() {
+export default function ZTCAIntegratedDashboard() {
+  const [activeTab, setActiveTab] = useState("executive-dashboard")
+  const [showSettings, setShowSettings] = useState(false)
+
   // Configuration state
   const [config, setConfig] = useState<CalculationConfiguration>({
     deviceCount: 1000,
+    userCount: 800,
     timeframe: 3,
     industry: "healthcare",
+    deploymentModel: "cloud",
     hasExistingNAC: false,
-    existingVendor: "",
-    annualRevenue: 100000000,
-    securityBudget: 2000000,
-    complianceRequirements: ["hipaa", "sox"],
-    deploymentComplexity: "medium",
-    geographicScope: "national",
-    integrationRequirements: ["active_directory", "siem", "itsm"],
-    businessCriticality: "high",
-    selectedVendors: ["portnox", "cisco", "aruba", "fortinet", "microsoft"],
+    currentVendor: undefined,
+    includeCompliance: true,
+    includeRiskReduction: true,
+    includeHiddenCosts: true,
   })
 
-  // Active view state
-  const [activeView, setActiveView] = useState("executive")
-  const [showSettings, setShowSettings] = useState(false)
-
-  // Calculate results for all vendors
-  const results = useMemo(() => {
+  // Calculate TCO data
+  const tcoData = useMemo(() => {
     return calculateTCO(config)
   }, [config])
 
-  // Main navigation items
-  const navigationItems = [
-    {
-      id: "executive",
-      label: "Executive Dashboard",
-      icon: BarChart3,
-      description: "High-level overview and key metrics",
-    },
-    {
-      id: "industry-analysis",
-      label: "Industry Analysis",
-      icon: Building,
-      description: "Industry-specific insights and benchmarks",
-    },
-    {
-      id: "vendor-comparison",
-      label: "Vendor Comparison",
-      icon: Target,
-      description: "Detailed vendor feature and cost comparison",
-    },
-    {
-      id: "security-assessment",
-      label: "Security Assessment",
-      icon: Shield,
-      description: "Risk analysis and security posture evaluation",
-    },
-    {
-      id: "roi-calculator",
-      label: "ROI Calculator",
-      icon: Calculator,
-      description: "Return on investment analysis",
-    },
-    {
-      id: "implementation",
-      label: "Implementation",
-      icon: Clock,
-      description: "Timeline and migration planning",
-    },
-    {
-      id: "compliance",
-      label: "Compliance",
-      icon: CheckCircle,
-      description: "Regulatory compliance analysis",
-    },
-    {
-      id: "integration",
-      label: "Integration Hub",
-      icon: Zap,
-      description: "Third-party integrations and APIs",
-    },
-    {
-      id: "reports",
-      label: "Executive Reports",
-      icon: FileText,
-      description: "Generate comprehensive reports",
-    },
-  ]
+  // Get industry and vendor data
+  const industryData = INDUSTRY_DATABASE[config.industry]
+  const allVendors = getAllVendors()
+  const allIndustries = getAllIndustries()
 
-  const renderActiveView = () => {
-    switch (activeView) {
-      case "executive":
-        return <ExecutiveDashboardView results={results} config={config} />
-      case "industry-analysis":
-        return (
-          <IndustryAnalysisDashboard
-            selectedIndustry={config.industry.toUpperCase()}
-            deviceCount={config.deviceCount}
-            timeframe={config.timeframe}
-          />
-        )
-      case "vendor-comparison":
-        return <EnhancedFeatureComparisonView results={results} config={config} />
-      case "security-assessment":
-        return <SecurityRiskAssessmentView results={results} config={config} />
-      case "roi-calculator":
-        return <ROICalculatorView selectedVendors={config.selectedVendors || []} />
-      case "implementation":
-        return (
-          <ImplementationTimelineView
-            selectedVendors={config.selectedVendors || []}
-            config={config}
-            results={results}
-          />
-        )
-      case "compliance":
-        return <ComplianceRiskView results={results} config={config} />
-      case "integration":
-        return <IntegrationHubView selectedVendors={config.selectedVendors || []} config={config} />
-      case "reports":
-        return <ExecutiveReportView results={results} config={config} />
-      default:
-        return <ExecutiveDashboardView results={results} config={config} />
+  // Calculate summary metrics
+  const summaryMetrics = useMemo(() => {
+    const portnoxData = tcoData["portnox"]
+    const competitorData = Object.entries(tcoData)
+      .filter(([id]) => id !== "portnox")
+      .map(([, data]) => data)
+
+    const avgCompetitorCost = competitorData.reduce((sum, data) => sum + data.year3, 0) / competitorData.length
+    const savings = avgCompetitorCost - portnoxData.year3
+    const savingsPercent = (savings / avgCompetitorCost) * 100
+
+    return {
+      totalSavings: savings,
+      savingsPercent,
+      paybackPeriod: portnoxData.roi.paybackPeriod,
+      riskReduction: portnoxData.roi.breachRiskReduction,
+      complianceScore: 95,
+      timeToValue: 7,
     }
+  }, [tcoData])
+
+  const handleConfigChange = (newConfig: Partial<CalculationConfiguration>) => {
+    setConfig((prev) => ({ ...prev, ...newConfig }))
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Shield className="h-8 w-8 text-blue-600" />
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Zero Trust NAC Analyzer</h1>
-                  <p className="text-sm text-gray-500">Comprehensive Network Access Control Analysis Platform</p>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="text-green-600 border-green-600">
-                {config.deviceCount.toLocaleString()} Devices
-              </Badge>
-              <Badge variant="outline" className="text-blue-600 border-blue-600">
-                {config.industry.charAt(0).toUpperCase() + config.industry.slice(1)}
-              </Badge>
-              <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)}>
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-            </div>
+      <div className="container mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900">Zero Trust Cybersecurity Analyzer</h1>
+            <p className="text-lg text-gray-600 mt-2">Comprehensive NAC vendor analysis and TCO calculator</p>
+          </div>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowSettings(!showSettings)}
+              className="flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Settings
+            </Button>
+            <Button className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Generate Report
+            </Button>
           </div>
         </div>
-      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex gap-8">
-          {/* Sidebar Navigation */}
-          <div className="w-80 space-y-2">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Analysis Modules</CardTitle>
-                <CardDescription>Select an analysis view</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-1">
-                {navigationItems.map((item) => {
-                  const Icon = item.icon
-                  return (
-                    <Button
-                      key={item.id}
-                      variant={activeView === item.id ? "default" : "ghost"}
-                      className="w-full justify-start h-auto p-3"
-                      onClick={() => setActiveView(item.id)}
-                    >
-                      <div className="flex items-start space-x-3">
-                        <Icon className="h-5 w-5 mt-0.5 shrink-0" />
-                        <div className="text-left">
-                          <div className="font-medium">{item.label}</div>
-                          <div className="text-xs text-muted-foreground">{item.description}</div>
-                        </div>
-                      </div>
-                    </Button>
-                  )
-                })}
-              </CardContent>
-            </Card>
+        {/* Key Metrics Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5 text-green-600" />
+                <div>
+                  <p className="text-sm text-gray-600">Total Savings</p>
+                  <p className="text-xl font-bold text-green-600">${Math.round(summaryMetrics.totalSavings / 1000)}K</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Quick Stats */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Quick Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Best ROI</span>
-                  <span className="font-semibold text-green-600">
-                    {results.length > 0
-                      ? `${Math.max(...results.map((r) => r.roi?.percentage || 0)).toFixed(0)}%`
-                      : "N/A"}
-                  </span>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
+                <div>
+                  <p className="text-sm text-gray-600">Cost Reduction</p>
+                  <p className="text-xl font-bold text-blue-600">{Math.round(summaryMetrics.savingsPercent)}%</p>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Lowest TCO</span>
-                  <span className="font-semibold">
-                    {results.length > 0 ? `$${Math.min(...results.map((r) => r.totalCost)).toLocaleString()}` : "N/A"}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Risk Reduction</span>
-                  <span className="font-semibold text-blue-600">85%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Compliance Score</span>
-                  <span className="font-semibold text-purple-600">98%</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Main Content */}
-          <div className="flex-1">
-            {showSettings && (
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle>Configuration Settings</CardTitle>
-                  <CardDescription>Adjust parameters to customize your analysis</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <SettingsPanel config={config} onConfigChange={setConfig} />
-                </CardContent>
-              </Card>
-            )}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-purple-600" />
+                <div>
+                  <p className="text-sm text-gray-600">Payback Period</p>
+                  <p className="text-xl font-bold text-purple-600">{summaryMetrics.paybackPeriod} mo</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-            {renderActiveView()}
-          </div>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-red-600" />
+                <div>
+                  <p className="text-sm text-gray-600">Risk Reduction</p>
+                  <p className="text-xl font-bold text-red-600">{summaryMetrics.riskReduction}%</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <div>
+                  <p className="text-sm text-gray-600">Compliance Score</p>
+                  <p className="text-xl font-bold text-green-600">{summaryMetrics.complianceScore}%</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <Zap className="h-5 w-5 text-orange-600" />
+                <div>
+                  <p className="text-sm text-gray-600">Time to Value</p>
+                  <p className="text-xl font-bold text-orange-600">{summaryMetrics.timeToValue} days</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Settings Panel */}
+        {showSettings && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Analysis Configuration</CardTitle>
+              <CardDescription>Adjust parameters to customize your analysis</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SettingsPanel
+                config={config}
+                onConfigChange={handleConfigChange}
+                industries={allIndustries}
+                vendors={allVendors}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Main Analysis Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-13">
+            <TabsTrigger value="executive-dashboard" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Executive
+            </TabsTrigger>
+            <TabsTrigger value="feature-comparison" className="flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              Features
+            </TabsTrigger>
+            <TabsTrigger value="compliance-risk" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Compliance
+            </TabsTrigger>
+            <TabsTrigger value="financial-analysis" className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              Financial
+            </TabsTrigger>
+            <TabsTrigger value="business-impact" className="flex items-center gap-2">
+              <Building className="h-4 w-4" />
+              Business
+            </TabsTrigger>
+            <TabsTrigger value="security-posture" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Security
+            </TabsTrigger>
+            <TabsTrigger value="implementation" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Timeline
+            </TabsTrigger>
+            <TabsTrigger value="integration-hub" className="flex items-center gap-2">
+              <Zap className="h-4 w-4" />
+              Integration
+            </TabsTrigger>
+            <TabsTrigger value="roi-calculator" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              ROI
+            </TabsTrigger>
+            <TabsTrigger value="risk-assessment" className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4" />
+              Risk
+            </TabsTrigger>
+            <TabsTrigger value="industry-analysis" className="flex items-center gap-2">
+              <Building className="h-4 w-4" />
+              Industry
+            </TabsTrigger>
+            <TabsTrigger value="migration-planning" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Migration
+            </TabsTrigger>
+            <TabsTrigger value="executive-report" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Report
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="executive-dashboard">
+            <ExecutiveDashboardView
+              tcoData={tcoData}
+              config={config}
+              industryData={industryData}
+              summaryMetrics={summaryMetrics}
+            />
+          </TabsContent>
+
+          <TabsContent value="feature-comparison">
+            <EnhancedFeatureComparisonView vendors={allVendors} config={config} />
+          </TabsContent>
+
+          <TabsContent value="compliance-risk">
+            <ComplianceRiskView
+              config={config}
+              industryData={industryData}
+              complianceMappings={COMPLIANCE_FRAMEWORK_MAPPINGS}
+              tcoData={tcoData}
+            />
+          </TabsContent>
+
+          <TabsContent value="financial-analysis">
+            <FinancialAnalysisView tcoData={tcoData} config={config} industryData={industryData} />
+          </TabsContent>
+
+          <TabsContent value="business-impact">
+            <BusinessImpactView tcoData={tcoData} config={config} industryData={industryData} />
+          </TabsContent>
+
+          <TabsContent value="security-posture">
+            <CybersecurityPostureView vendors={allVendors} config={config} industryData={industryData} />
+          </TabsContent>
+
+          <TabsContent value="implementation">
+            <ImplementationTimelineView vendors={allVendors} config={config} />
+          </TabsContent>
+
+          <TabsContent value="integration-hub">
+            <IntegrationHubView vendors={allVendors} config={config} />
+          </TabsContent>
+
+          <TabsContent value="roi-calculator">
+            <ROICalculatorView tcoData={tcoData} config={config} onConfigChange={handleConfigChange} />
+          </TabsContent>
+
+          <TabsContent value="risk-assessment">
+            <SecurityRiskAssessmentView vendors={allVendors} config={config} industryData={industryData} />
+          </TabsContent>
+
+          <TabsContent value="industry-analysis">
+            <IndustryAnalysisView config={config} industryData={industryData} tcoData={tcoData} />
+          </TabsContent>
+
+          <TabsContent value="migration-planning">
+            <MigrationPlanningView config={config} vendors={allVendors} tcoData={tcoData} />
+          </TabsContent>
+
+          <TabsContent value="executive-report">
+            <ExecutiveReportView
+              tcoData={tcoData}
+              config={config}
+              industryData={industryData}
+              summaryMetrics={summaryMetrics}
+            />
+          </TabsContent>
+        </Tabs>
+
+        {/* Footer */}
+        <div className="text-center text-sm text-gray-500 pt-8 border-t">
+          <p>Zero Trust Cybersecurity Analyzer - Comprehensive NAC vendor analysis and TCO calculator</p>
+          <p className="mt-1">
+            Analysis includes {Object.keys(ENHANCED_VENDOR_DATABASE).length} vendors,{" "}
+            {Object.keys(INDUSTRY_DATABASE).length} industries, and {Object.keys(COMPLIANCE_FRAMEWORK_MAPPINGS).length}{" "}
+            compliance frameworks
+          </p>
         </div>
       </div>
     </div>
