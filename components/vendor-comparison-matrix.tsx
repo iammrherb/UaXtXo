@@ -1,11 +1,13 @@
 "use client"
 
-import React from "react"
-
 import { CardDescription } from "@/components/ui/card"
 
-import { useState, useMemo } from "react"
+import { useMemo } from "react"
+
+import { useState } from "react"
+import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -175,6 +177,13 @@ const FEATURE_CATEGORIES = {
   },
 }
 
+const featureCategoriesShort = {
+  Authentication: "authentication",
+  Network: "network",
+  Advanced: "advanced",
+  Compliance: "compliance",
+}
+
 export default function VendorComparisonMatrix({
   selectedVendors,
   onVendorSelectionChange,
@@ -308,8 +317,31 @@ export default function VendorComparisonMatrix({
     return featureMap[feature] !== undefined ? featureMap[feature] : Math.random() > 0.3
   }
 
+  const renderCheck = (value: string) => {
+    if (value === "✓✓✓") return <CheckCircle2 className="h-5 w-5 text-green-500" />
+    if (value === "✓✓") return <CheckCircle2 className="h-5 w-5 text-yellow-500" />
+    if (value === "✓") return <CheckCircle2 className="h-5 w-5 text-orange-500" />
+    if (value === "✗") return <XCircle className="h-5 w-5 text-red-500" />
+    return <span className="text-xs">{value}</span>
+  }
+
+  const allFeatures = Object.values(featureCategoriesShort).reduce(
+    (acc, categoryKey) => {
+      filteredVendors.forEach((vendor) => {
+        if (vendor.vendor.featureSupport[categoryKey]) {
+          Object.keys(vendor.vendor.featureSupport[categoryKey]).forEach((feature) => {
+            if (!acc[categoryKey]) acc[categoryKey] = new Set()
+            acc[categoryKey].add(feature)
+          })
+        }
+      })
+      return acc
+    },
+    {} as Record<string, Set<string>>,
+  )
+
   return (
-    <div className="space-y-6">
+    <motion.div className="space-y-6" initial="initial" animate="animate">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Vendor Comparison Matrix</h2>
@@ -503,62 +535,50 @@ export default function VendorComparisonMatrix({
           <Card>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-muted/50">
-                    <tr>
-                      <th className="text-left p-4 font-medium sticky left-0 bg-muted/50 z-10 min-w-64">Feature</th>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Feature</TableHead>
                       {filteredVendors.slice(0, 6).map((vendor) => (
-                        <th key={vendor.id} className="text-center p-4 font-medium min-w-32">
+                        <TableHead key={vendor.id} className="text-center">
                           <div className="flex flex-col items-center gap-1">
                             <span className="text-sm">{vendor.vendor.name}</span>
                             <Badge variant="outline" className="text-xs">
                               Score: {vendor.overallScore}
                             </Badge>
                           </div>
-                        </th>
+                        </TableHead>
                       ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(FEATURE_CATEGORIES)
-                      .filter(([key]) => filterCategory === "all" || filterCategory === key)
-                      .map(([categoryKey, category]) => (
-                        <React.Fragment key={categoryKey}>
-                          <tr className="bg-muted/20">
-                            <td
-                              colSpan={filteredVendors.length + 1}
-                              className="p-4 font-semibold sticky left-0 bg-muted/20 z-10"
-                            >
-                              {category.name}
-                            </td>
-                          </tr>
-                          {category.features
-                            .filter((feature) => {
-                              if (!showOnlyDifferences) return true
-                              const supports = filteredVendors.map((v) => getFeatureSupport(v.id, feature))
-                              return new Set(supports).size > 1
-                            })
-                            .map((feature) => (
-                              <tr key={feature} className="border-b hover:bg-muted/10">
-                                <td className="p-4 font-medium sticky left-0 bg-background z-10">{feature}</td>
-                                {filteredVendors.slice(0, 6).map((vendor) => {
-                                  const supported = getFeatureSupport(vendor.id, feature)
-                                  return (
-                                    <td key={vendor.id} className="p-4 text-center">
-                                      {supported ? (
-                                        <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
-                                      ) : (
-                                        <XCircle className="h-5 w-5 text-red-500 mx-auto" />
-                                      )}
-                                    </td>
-                                  )
-                                })}
-                              </tr>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Object.entries(allFeatures).map(([category, features]) => (
+                      <>
+                        <TableRow key={category} className="bg-muted/50">
+                          <TableCell colSpan={filteredVendors.length + 1} className="font-bold">
+                            {Object.keys(featureCategoriesShort).find(
+                              (key) => featureCategoriesShort[key as keyof typeof featureCategoriesShort] === category,
+                            )}
+                          </TableCell>
+                        </TableRow>
+                        {Array.from(features).map((feature) => (
+                          <TableRow key={feature}>
+                            <TableCell className="font-medium">{feature}</TableCell>
+                            {filteredVendors.slice(0, 6).map((vendor) => (
+                              <TableCell key={vendor.id} className="text-center">
+                                {renderCheck(
+                                  vendor.vendor.featureSupport[category as keyof typeof featureCategoriesShort]?.[
+                                    feature
+                                  ] || "✗",
+                                )}
+                              </TableCell>
                             ))}
-                        </React.Fragment>
-                      ))}
-                  </tbody>
-                </table>
+                          </TableRow>
+                        ))}
+                      </>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             </CardContent>
           </Card>
@@ -855,6 +875,6 @@ export default function VendorComparisonMatrix({
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </motion.div>
   )
 }
