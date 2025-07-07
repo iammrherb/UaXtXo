@@ -946,3 +946,6 @@ export default function ROICalculatorView({ selectedVendors }: ROICalculatorView
     </div>
   )
 }
+
+// Add this line at the very end of the file
+export { ROICalculatorView }
