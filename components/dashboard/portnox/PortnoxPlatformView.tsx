@@ -1,222 +1,445 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Shield, Cloud, Zap, Users, Network, Lock, CheckCircle, ArrowRight, Star } from "lucide-react"
-import { useDashboardSettings } from "@/context/DashboardContext"
-import Image from "next/image"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import {
+  Shield,
+  Cloud,
+  Zap,
+  Users,
+  CheckCircle,
+  Star,
+  TrendingUp,
+  Lock,
+  Eye,
+  Smartphone,
+  Wifi,
+  Server,
+  Globe,
+} from "lucide-react"
 
-export default function PortnoxPlatformView() {
-  const { settings } = useDashboardSettings()
+const platformCapabilities = [
+  {
+    category: "Zero Trust Architecture",
+    icon: Shield,
+    score: 95,
+    features: ["Continuous verification", "Least privilege access", "Micro-segmentation", "Risk-based authentication"],
+    description: "Industry-leading Zero Trust implementation with continuous verification and adaptive policies",
+  },
+  {
+    category: "Cloud-Native Platform",
+    icon: Cloud,
+    score: 100,
+    features: ["Multi-tenant SaaS", "Global deployment", "Auto-scaling", "99.9% uptime SLA"],
+    description: "Born-in-the-cloud architecture delivering unmatched scalability and reliability",
+  },
+  {
+    category: "Rapid Deployment",
+    icon: Zap,
+    score: 98,
+    features: ["7-day implementation", "Zero hardware required", "Automated configuration", "24-hour POC"],
+    description: "Fastest time-to-value in the industry with automated deployment and configuration",
+  },
+  {
+    category: "User Experience",
+    icon: Users,
+    score: 92,
+    features: ["Intuitive dashboard", "Self-service portal", "Mobile app", "Single sign-on"],
+    description: "Designed for both IT administrators and end-users with intuitive interfaces",
+  },
+]
 
-  const platformFeatures = [
-    {
-      icon: Shield,
-      title: "Zero Trust Network Access",
-      description: "Comprehensive device and user authentication with continuous monitoring",
-      score: 98,
-      highlight: true,
-    },
-    {
-      icon: Cloud,
-      title: "Cloud-Native Architecture",
-      description: "Scalable, resilient infrastructure with global deployment capabilities",
-      score: 95,
-      highlight: true,
-    },
-    {
-      icon: Zap,
-      title: "Automated Policy Enforcement",
-      description: "Dynamic policy application based on device posture and user context",
-      score: 92,
-      highlight: false,
-    },
-    {
-      icon: Network,
-      title: "Network Visibility",
-      description: "Real-time network monitoring and threat detection across all endpoints",
-      score: 90,
-      highlight: false,
-    },
-    {
-      icon: Users,
-      title: "User Experience",
-      description: "Seamless authentication with minimal user friction",
-      score: 94,
-      highlight: false,
-    },
-    {
-      icon: Lock,
-      title: "Compliance Management",
-      description: "Built-in compliance reporting for major industry standards",
-      score: 96,
-      highlight: true,
-    },
-  ]
+const deploymentMetrics = [
+  { phase: "Planning", traditional: 14, portnox: 1, description: "Requirements gathering and design" },
+  { phase: "Hardware", traditional: 21, portnox: 0, description: "Procurement and installation" },
+  { phase: "Configuration", traditional: 28, portnox: 3, description: "System setup and policies" },
+  { phase: "Testing", traditional: 14, portnox: 2, description: "Validation and optimization" },
+  { phase: "Rollout", traditional: 7, portnox: 1, description: "Production deployment" },
+]
 
-  const competitiveAdvantages = [
-    "Industry-leading deployment speed (6 weeks vs 16 weeks average)",
-    "40% lower total cost of ownership compared to legacy solutions",
-    "99.9% uptime SLA with global cloud infrastructure",
-    "Native integration with 200+ enterprise applications",
-    "AI-powered threat detection and response capabilities",
-  ]
+const securityFeatures = [
+  { feature: "Device Discovery", coverage: 100, automation: 95 },
+  { feature: "Risk Assessment", coverage: 98, automation: 92 },
+  { feature: "Policy Enforcement", coverage: 96, automation: 90 },
+  { feature: "Threat Response", coverage: 94, automation: 88 },
+  { feature: "Compliance Monitoring", coverage: 97, automation: 93 },
+]
+
+const customerMetrics = [
+  { metric: "Deployment Time", value: "7 days", improvement: "95% faster" },
+  { metric: "TCO Reduction", value: "68%", improvement: "vs Cisco ISE" },
+  { metric: "Security Incidents", value: "92%", improvement: "reduction" },
+  { metric: "Admin Productivity", value: "75%", improvement: "increase" },
+]
+
+const integrationEcosystem = [
+  { category: "Identity Providers", count: 25, examples: ["Azure AD", "Okta", "Ping"] },
+  { category: "SIEM/SOAR", count: 15, examples: ["Splunk", "QRadar", "Phantom"] },
+  { category: "Network Infrastructure", count: 30, examples: ["Cisco", "Aruba", "Juniper"] },
+  { category: "Endpoint Security", count: 20, examples: ["CrowdStrike", "SentinelOne", "Defender"] },
+  { category: "Cloud Platforms", count: 10, examples: ["AWS", "Azure", "GCP"] },
+]
+
+export function PortnoxPlatformView() {
+  const [activeDemo, setActiveDemo] = useState("dashboard")
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Image src="/portnox-logo-color.png" alt="Portnox" width={48} height={48} className="rounded-lg" />
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Portnox Platform</h2>
-            <p className="text-gray-600">Cloud-native NAC solution for {settings.industry} organizations</p>
-          </div>
-        </div>
-        <Badge className="bg-portnox-blue text-white hover:bg-portnox-blue/90">Recommended Solution</Badge>
-      </div>
-
       {/* Platform Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Platform Capabilities</CardTitle>
+      <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20">
+        <Star className="h-4 w-4 text-green-600" />
+        <AlertDescription className="text-green-800 dark:text-green-200">
+          <strong>Portnox CLEAR Platform:</strong> The industry's first cloud-native NAC solution 
+          delivering Zero Trust security with 7-day deployment and 68% lower TCO than traditional alternatives.
+        </AlertDescription>
+      </Alert>
+
+      {/* Key Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {customerMetrics.map((metric, index) => (
+          <Card key={metric.metric} className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{metric.metric}</CardTitle>
+              <TrendingUp className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                {platformFeatures.map((feature, index) => (
-                  <div
-                    key={index}
-                    className={`p-4 rounded-lg border ${
-                      feature.highlight ? "bg-portnox-blue/5 border-portnox-blue/20" : "bg-gray-50 border-gray-200"
-                    }`}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div
-                        className={`p-2 rounded-lg ${
-                          feature.highlight ? "bg-portnox-blue text-white" : "bg-gray-200 text-gray-600"
-                        }`}
-                      >
-                        <feature.icon className="h-5 w-5" />
+              <div className="text-2xl font-bold text-blue-600">{metric.value}</div>
+              <p className="text-xs text-muted-foreground">{metric.improvement}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Tabs defaultValue="capabilities" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="capabilities">Platform Capabilities</TabsTrigger>
+          <TabsTrigger value="deployment">Deployment Advantage</TabsTrigger>
+          <TabsTrigger value="security">Security Features</TabsTrigger>
+          <TabsTrigger value="integrations">Integrations</TabsTrigger>
+          <TabsTrigger value="demo">Interactive Demo</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="capabilities" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {platformCapabilities.map((capability) => (
+              <Card key={capability.category} className="border-2 border-blue-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <capability.icon className="h-5 w-5 text-blue-600" />
+                    {capability.category}
+                  </CardTitle>
+                  <CardDescription>{capability.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">Capability Score:</span>
+                      <Progress value={capability.score} className="flex-1" />
+                      <span className="font-bold text-blue-600">{capability.score}/100</span>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold mb-2">Key Features:</h4>
+                      <ul className="space-y-1">
+                        {capability.features.map((feature, index) => (
+                          <li key={index} className="flex items-center gap-2 text-sm">
+                            <CheckCircle className="h-3 w-3 text-green-500" />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="deployment" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Deployment Timeline Comparison */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Deployment Timeline Comparison</CardTitle>
+                <CardDescription>Portnox vs Traditional NAC Implementation</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={350}>
+                  <BarChart data={deploymentMetrics}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="phase" />
+                    <YAxis tickFormatter={(value) => `${value}d`} />
+                    <Tooltip formatter={(value) => `${value} days`} />
+                    <Bar dataKey="traditional" fill="#ef4444" name="Traditional NAC" />
+                    <Bar dataKey="portnox" fill="#10b981" name="Portnox CLEAR" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Deployment Advantages */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Deployment Advantages</CardTitle>
+                <CardDescription>Why Portnox CLEAR deploys 95% faster</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {deploymentMetrics.map((phase) => (
+                    <div key={phase.phase} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold">{phase.phase}</h4>
+                        <Badge variant="outline">
+                          {phase.traditional - phase.portnox} days saved
+                        </Badge>
                       </div>
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-semibold">{feature.title}</h3>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">{feature.score}%</span>
-                            {feature.highlight && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
-                          </div>
+                      <p className="text-sm text-muted-foreground mb-2">{phase.description}</p>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-red-600">Traditional: {phase.traditional} days</span>
                         </div>
-                        <p className="text-sm text-gray-600">{feature.description}</p>
-                        <Progress value={feature.score} className="h-2" />
+                        <div>
+                          <span className="text-green-600">Portnox: {phase.portnox} days</span>
+                        </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Deployment Process */}
+          <Card>
+            <CardHeader>
+              <CardTitle>7-Day Deployment Process</CardTitle>
+              <CardDescription>Step-by-step implementation timeline</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+                {[
+                  { day: 1, title: "Initial Setup", tasks: ["Account provisioning", "Basic configuration"] },
+                  { day: 2, title: "Discovery", tasks: ["Network scanning", "Device identification"] },
+                  { day: 3, title: "Policies", tasks: ["Policy creation", "Rule definition"] },
+                  { day: 4, title: "Integration", tasks: ["AD/LDAP sync", "SIEM connection"] },
+                  { day: 5, title: "Testing", tasks: ["Pilot group", "Validation"] },
+                  { day: 6, title: "Rollout", tasks: ["Phased deployment", "Monitoring"] },
+                  { day: 7, title: "Go-Live", tasks: ["Full production", "Support handoff"] }
+                ].map((day) => (
+                  <div key={day.day} className="text-center">
+                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <span className="font-bold text-blue-600">{day.day}</span>
+                    </div>
+                    <h4 className="font-semibold text-sm mb-1">{day.title}</h4>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      {day.tasks.map((task, index) => (
+                        <li key={index}>• {task}</li>
+                      ))}
+                    </ul>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
-        </div>
+        </TabsContent>
 
-        {/* Key Metrics */}
-        <div className="space-y-4">
-          <Card className="bg-gradient-to-br from-portnox-blue to-portnox-teal text-white">
-            <CardHeader>
-              <CardTitle className="text-white">Platform Score</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold mb-2">94/100</div>
-              <p className="text-portnox-blue-light text-sm">
-                Overall platform rating based on security, performance, and usability
-              </p>
-            </CardContent>
-          </Card>
+        <TabsContent value="security" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Security Coverage */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Security Feature Coverage</CardTitle>
+                <CardDescription>Comprehensive protection across all attack vectors</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {securityFeatures.map((feature) => (
+                    <div key={feature.feature} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{feature.feature}</span>
+                        <span className="text-sm font-bold">{feature.coverage}%</span>
+                      </div>
+                      <Progress value={feature.coverage} className="h-2" />
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Coverage: {feature.coverage}%</span>
+                        <span>Automation: {feature.automation}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
+            {/* Zero Trust Pillars */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Zero Trust Implementation</CardTitle>
+                <CardDescription>Comprehensive Zero Trust architecture coverage</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { pillar: "Identity", score: 95, icon: Users },
+                    { pillar: "Device", score: 92, icon: Smartphone },
+                    { pillar: "Network", score: 94, icon: Wifi },
+                    { pillar: "Application", score: 91, icon: Server },
+                    { pillar: "Data", score: 96, icon: Lock },
+                    { pillar: "Visibility", score: 98, icon: Eye }
+                  ].map((pillar) => (
+                    <div key={pillar.pillar} className="text-center p-4 border rounded-lg">
+                      <pillar.icon className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                      <h4 className="font-semibold">{pillar.pillar}</h4>
+                      <div className="text-2xl font-bold text-blue-600">{pillar.score}</div>
+                      <Progress value={pillar.score} className="mt-2" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Security Benefits */}
           <Card>
             <CardHeader>
-              <CardTitle>Deployment Timeline</CardTitle>
+              <CardTitle>Security Benefits & ROI</CardTitle>
+              <CardDescription>Quantified security improvements and risk reduction</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Planning & Design</span>
-                  <span className="text-sm font-medium">1 week</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center p-4 border rounded-lg bg-green-50 dark:bg-green-950/20">
+                  <Shield className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                  <h4 className="font-semibold">Breach Risk Reduction</h4>
+                  <div className="text-3xl font-bold text-green-600">92%</div>
+                  <p className="text-sm text-muted-foreground">Average risk reduction</p>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Infrastructure Setup</span>
-                  <span className="text-sm font-medium">2 weeks</span>
+                
+                <div className="text-center p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                  <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                  <h4 className="font-semibold">Visibility Improvement</h4>
+                  <div className="text-3xl font-bold text-blue-600">98%</div>
+                  <p className="text-sm text-muted-foreground">Network visibility</p>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Policy Configuration</span>
-                  <span className="text-sm font-medium">2 weeks</span>
+                
+                <div className="text-center p-4 border rounded-lg bg-purple-50 dark:bg-purple-950/20">
+                  <Zap className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                  <h4 className="font-semibold">Response Time</h4>
+                  <div className="text-3xl font-bold text-purple-600">85%</div>
+                  <p className="text-sm text-muted-foreground">Faster incident response</p>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Testing & Go-Live</span>
-                  <span className="text-sm font-medium">1 week</span>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="integrations" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Integration Ecosystem */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Integration Ecosystem</CardTitle>
+                <CardDescription>100+ pre-built integrations across security stack</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {integrationEcosystem.map((category) => (
+                    <div key={category.category} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold">{category.category}</h4>
+                        <Badge variant="secondary">{category.count} integrations</Badge>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {category.examples.map((example) => (
+                          <Badge key={example} variant="outline" className="text-xs">
+                            {example}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="border-t pt-2">
-                  <div className="flex justify-between items-center font-semibold">
-                    <span>Total Timeline</span>
-                    <span className="text-portnox-blue">6 weeks</span>
+              </CardContent>
+            </Card>
+
+            {/* API & Automation */}
+            <Card>
+              <CardHeader>
+                <CardTitle>API & Automation</CardTitle>
+                <CardDescription>Comprehensive automation and orchestration capabilities</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-4 border rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">REST</div>
+                      <p className="text-sm text-muted-foreground">Full REST API</p>
+                    </div>
+                    <div className="text-center p-4 border rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">GraphQL</div>
+                      <p className="text-sm text-muted-foreground">Modern queries</p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold mb-2">Automation Features:</h4>
+                    <ul className="space-y-1 text-sm">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        Automated device onboarding
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        Dynamic policy enforcement
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        Threat response orchestration
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        Compliance reporting
+                      </li>
+                    </ul>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
+        <TabsContent value="demo" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>ROI Projection</CardTitle>
+              <CardTitle>Interactive Platform Demo</CardTitle>
+              <CardDescription>Experience the Portnox CLEAR interface</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">285%</div>
-                <p className="text-sm text-gray-600">{settings.comparisonYears}-year ROI</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Competitive Advantages */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Competitive Advantages</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {competitiveAdvantages.map((advantage, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">{advantage}</span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Call to Action */}
-      <Card className="bg-gradient-to-r from-portnox-blue/10 to-portnox-teal/10 border-portnox-blue/20">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-portnox-blue mb-2">
-                Ready to Transform Your Network Security?
-              </h3>
-              <p className="text-gray-600">
-                Schedule a personalized demo to see how Portnox can secure your {settings.industry} organization.
-              </p>
-            </div>
-            <Button className="bg-portnox-blue hover:bg-portnox-blue/90 text-white">
-              Schedule Demo
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  {["dashboard", "devices", "policies", "reports"].map((demo) => (
+                    <Button
+                      key={demo}
+                      variant={activeDemo === demo ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setActiveDemo(demo)}
+                      className="capitalize"
+                    >
+                      {demo}
+                    </Button>
+                  ))}
+                </div>
+                
+                <div className="border rounded-lg p-6 bg-slate-50 dark:bg-slate-900 min-h-[400px]">
+                  <div className="text-center py-20">
+                    <Globe className="h-16 w-16 mx-auto mb-4 text-blue-600" />
+                    <h3 className="text-xl font-semibold mb-2">Interactive Demo</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Experience the Portnox CLEAR {activeDemo} interface
+                    </p>
+                    <Button size="lg" className="\

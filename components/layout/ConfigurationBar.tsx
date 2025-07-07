@@ -1,4 +1,5 @@
 "use client"
+
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
@@ -33,11 +34,11 @@ export function ConfigurationBar() {
   ]
 
   return (
-    <Card className="mb-6 border-portnox-blue/20 bg-gradient-to-r from-white to-portnox-blue/5">
+    <Card className="mb-6 border-blue-200 bg-gradient-to-r from-white to-blue-50 dark:border-blue-800 dark:from-slate-900 dark:to-blue-950/20">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-4">
-          <Settings className="h-5 w-5 text-portnox-blue" />
-          <h3 className="font-semibold text-portnox-blue">Analysis Configuration</h3>
+          <Settings className="h-5 w-5 text-blue-600" />
+          <h3 className="font-semibold text-blue-600 dark:text-blue-400">Analysis Configuration</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
