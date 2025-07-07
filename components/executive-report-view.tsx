@@ -10,28 +10,59 @@ import { Badge } from "@/components/ui/badge"
 import { FileText, Download, CheckCircle2, TrendingUp, Mail, Printer } from "lucide-react"
 import { INDUSTRIES, INDUSTRY_ROI } from "@/lib/vendors/comprehensive-vendor-data"
 
-interface ReportGeneratorProps {
-  industry: string
-  deviceCount: number
-  timeframe: 1 | 3 | 5
-  selectedVendors: string[]
-  comparisonData: any
-  roiData: any
+interface ExecutiveReportViewProps {
+  results: any[]
+  config: any
 }
 
-export function ExecutiveReportGenerator({
-  industry,
-  deviceCount,
-  timeframe,
-  selectedVendors,
-  comparisonData,
-  roiData,
-}: ReportGeneratorProps) {
+export function ExecutiveReportView({ results, config }: ExecutiveReportViewProps) {
   const [reportType, setReportType] = useState<"executive" | "technical" | "financial" | "compliance">("executive")
   const [reportFormat, setReportFormat] = useState<"pdf" | "pptx" | "docx">("pdf")
 
-  const industryData = INDUSTRIES[industry] || INDUSTRIES["HEALTHCARE"]
-  const industryROI = INDUSTRY_ROI[industry] || INDUSTRY_ROI["HEALTHCARE"]
+  const industryData = INDUSTRIES[config.industry?.toUpperCase()] || INDUSTRIES["HEALTHCARE"]
+  const industryROI = INDUSTRY_ROI[config.industry?.toUpperCase()] || INDUSTRY_ROI["HEALTHCARE"]
+
+  // Calculate comparison data from results
+  const comparisonData = useMemo(() => {
+    const data: Record<string, any> = {}
+    results.forEach((result) => {
+      if (result.vendor) {
+        data[result.vendor] = {
+          totalCost: result.totalCost || 0,
+          software: result.softwareCost || 0,
+          implementation: result.implementationCost || 0,
+          operational: result.operationalCost || 0,
+        }
+      }
+    })
+    return data
+  }, [results])
+
+  // Calculate ROI data
+  const roiData = useMemo(() => {
+    const portnoxResult = results.find((r) => r.vendor === "PORTNOX")
+    if (!portnoxResult) return null
+
+    const competitorAvg =
+      results.filter((r) => r.vendor !== "PORTNOX").reduce((acc, r) => acc + (r.totalCost || 0), 0) /
+      Math.max(1, results.length - 1)
+
+    const savings = competitorAvg - (portnoxResult.totalCost || 0)
+    const roi = portnoxResult.roi || 5506
+    const paybackMonths = portnoxResult.paybackPeriod || 6.5
+
+    return {
+      roi,
+      paybackMonths,
+      totalBenefit: savings * 3,
+      directSavings: savings,
+      riskReduction: industryData.avgBreachCost * 0.92,
+      productivity: config.deviceCount * 1000,
+      compliance: 250000,
+      annualBenefit: savings,
+      netBenefit: savings * 2.5,
+    }
+  }, [results, config, industryData])
 
   // Generate report content based on type
   const reportContent = useMemo(() => {
@@ -49,11 +80,11 @@ export function ExecutiveReportGenerator({
       case "executive":
         return {
           title: "Executive Summary: NAC Investment Analysis",
-          subtitle: `${industryData.name} | ${deviceCount} Devices | ${timeframe}-Year Analysis`,
+          subtitle: `${industryData.name} | ${config.deviceCount} Devices | ${config.timeframe}-Year Analysis`,
           sections: [
             {
               title: "Strategic Recommendation",
-              content: `Portnox CLEAR is the recommended Network Access Control solution, delivering ${percentSavings}% cost savings (${formatCurrency(savings)}) while providing superior security capabilities and operational efficiency.`,
+              content: `Portnox CLEAR is the recommended Network Access Control solution, delivering ${percentSavings}% cost savings ($${formatCurrency(savings)}) while providing superior security capabilities and operational efficiency.`,
               highlights: [
                 `${roiData?.roi || "5,506"}% ROI with ${roiData?.paybackMonths || "6.5"} month payback`,
                 "95% faster deployment than traditional NAC",
@@ -63,12 +94,12 @@ export function ExecutiveReportGenerator({
             },
             {
               title: "Financial Impact",
-              content: `Total investment of ${formatCurrency(portnoxData.totalCost)} over ${timeframe} years delivers ${formatCurrency(roiData?.totalBenefit || savings * 3)} in quantifiable benefits.`,
+              content: `Total investment of $${formatCurrency(portnoxData.totalCost)} over ${config.timeframe} years delivers $${formatCurrency(roiData?.totalBenefit || savings * 3)} in quantifiable benefits.`,
               metrics: {
-                "Direct Cost Savings": formatCurrency(roiData?.directSavings || savings),
-                "Risk Mitigation Value": formatCurrency(roiData?.riskReduction || industryData.avgBreachCost * 0.92),
-                "Productivity Gains": formatCurrency(roiData?.productivity || deviceCount * 1000),
-                "Compliance Benefits": formatCurrency(roiData?.compliance || 250000),
+                "Direct Cost Savings": `$${formatCurrency(roiData?.directSavings || savings)}`,
+                "Risk Mitigation Value": `$${formatCurrency(roiData?.riskReduction || industryData.avgBreachCost * 0.92)}`,
+                "Productivity Gains": `$${formatCurrency(roiData?.productivity || config.deviceCount * 1000)}`,
+                "Compliance Benefits": `$${formatCurrency(roiData?.compliance || 250000)}`,
               },
             },
             {
@@ -125,7 +156,7 @@ export function ExecutiveReportGenerator({
       case "financial":
         return {
           title: "Financial Analysis: Total Cost of Ownership",
-          subtitle: `Comprehensive ${timeframe}-Year Cost Breakdown`,
+          subtitle: `Comprehensive ${config.timeframe}-Year Cost Breakdown`,
           sections: [
             {
               title: "Cost Comparison",
@@ -141,9 +172,9 @@ export function ExecutiveReportGenerator({
               title: "ROI Calculation",
               content: `Investment in Portnox delivers exceptional returns:`,
               roi: {
-                "Total Investment": formatCurrency(portnoxData.totalCost),
-                "Annual Benefits": formatCurrency(roiData?.annualBenefit || savings),
-                "3-Year Net Benefit": formatCurrency(roiData?.netBenefit || savings * 2.5),
+                "Total Investment": `$${formatCurrency(portnoxData.totalCost)}`,
+                "Annual Benefits": `$${formatCurrency(roiData?.annualBenefit || savings)}`,
+                "3-Year Net Benefit": `$${formatCurrency(roiData?.netBenefit || savings * 2.5)}`,
                 "Return on Investment": `${roiData?.roi || "5,506"}%`,
               },
             },
@@ -179,9 +210,9 @@ export function ExecutiveReportGenerator({
               title: "Risk Mitigation",
               content: "Quantifiable risk reduction across all categories:",
               risks: {
-                "Breach Risk": { reduction: "92%", value: formatCurrency(industryData.avgBreachCost * 0.92) },
-                "Compliance Risk": { reduction: "94%", value: formatCurrency(500000 * 0.94) },
-                "Operational Risk": { reduction: "86%", value: formatCurrency(250000 * 0.86) },
+                "Breach Risk": { reduction: "92%", value: `$${formatCurrency(industryData.avgBreachCost * 0.92)}` },
+                "Compliance Risk": { reduction: "94%", value: `$${formatCurrency(500000 * 0.94)}` },
+                "Operational Risk": { reduction: "86%", value: `$${formatCurrency(250000 * 0.86)}` },
                 "Reputational Risk": { reduction: "85%", value: "Protected brand value" },
               },
             },
@@ -201,15 +232,15 @@ export function ExecutiveReportGenerator({
       default:
         return null
     }
-  }, [reportType, industry, deviceCount, timeframe, comparisonData, roiData, industryData, industryROI])
+  }, [reportType, config, comparisonData, roiData, industryData])
 
   const formatCurrency = (value: number) => {
     if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`
+      return `${(value / 1000000).toFixed(1)}M`
     } else if (value >= 1000) {
-      return `$${(value / 1000).toFixed(0)}K`
+      return `${(value / 1000).toFixed(0)}K`
     }
-    return `$${Math.round(value).toLocaleString()}`
+    return `${Math.round(value).toLocaleString()}`
   }
 
   const generateReport = () => {
@@ -225,10 +256,10 @@ export function ExecutiveReportGenerator({
       ...reportContent,
       metadata: {
         generatedAt: new Date().toISOString(),
-        industry,
-        deviceCount,
-        timeframe,
-        selectedVendors,
+        industry: config.industry,
+        deviceCount: config.deviceCount,
+        timeframe: config.timeframe,
+        selectedVendors: results.map((r) => r.vendor),
       },
     }
 
@@ -486,4 +517,4 @@ export function ExecutiveReportGenerator({
 }
 
 // Default export for backward compatibility
-export default ExecutiveReportGenerator
+export default ExecutiveReportView
