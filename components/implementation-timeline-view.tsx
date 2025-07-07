@@ -266,7 +266,6 @@ export default function ImplementationTimelineView({
                     <p className="text-sm text-muted-foreground">
                       Key activities and deliverables for the {phase} phase.
                     </p>
-                    {/* Add phase-specific details here */}
                     <div className="mt-4">
                       <h5 className="font-medium mb-2">Key Activities:</h5>
                       <ul className="text-sm space-y-1">
