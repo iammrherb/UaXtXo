@@ -20,21 +20,21 @@ import {
   Target,
 } from "lucide-react"
 
-// Import all view components
-import { SettingsPanel } from "@/components/settings-panel"
-import { ExecutiveDashboardView } from "@/components/executive-dashboard-view"
-import { EnhancedFeatureComparisonView } from "@/components/enhanced-feature-comparison-view"
-import { ComplianceRiskView } from "@/components/compliance-risk-view"
-import { FinancialAnalysisView } from "@/components/financial-analysis-view"
-import { BusinessImpactView } from "@/components/business-impact-view"
-import { CybersecurityPostureView } from "@/components/cybersecurity-posture-view"
-import { ImplementationTimelineView } from "@/components/implementation-timeline-view"
-import { IntegrationHubView } from "@/components/integration-hub-view"
-import { ROICalculatorView } from "@/components/roi-calculator-view"
-import { SecurityRiskAssessmentView } from "@/components/security-risk-assessment-view"
-import { IndustryAnalysisView } from "@/components/industry-analysis-view"
-import { MigrationPlanningView } from "@/components/migration-planning-view"
-import { ExecutiveReportView } from "@/components/executive-report-view"
+// Import all view components as default exports
+import SettingsPanel from "@/components/settings-panel"
+import ExecutiveDashboardView from "@/components/executive-dashboard-view"
+import EnhancedFeatureComparisonView from "@/components/enhanced-feature-comparison-view"
+import ComplianceRiskView from "@/components/compliance-risk-view"
+import FinancialAnalysisView from "@/components/financial-analysis-view"
+import BusinessImpactView from "@/components/business-impact-view"
+import CybersecurityPostureView from "@/components/cybersecurity-posture-view"
+import ImplementationTimelineView from "@/components/implementation-timeline-view"
+import IntegrationHubView from "@/components/integration-hub-view"
+import ROICalculatorView from "@/components/roi-calculator-view"
+import SecurityRiskAssessmentView from "@/components/security-risk-assessment-view"
+import IndustryAnalysisView from "@/components/industry-analysis-view"
+import MigrationPlanningView from "@/components/migration-planning-view"
+import ExecutiveReportView from "@/components/executive-report-view"
 
 // Import calculation functions
 import {
