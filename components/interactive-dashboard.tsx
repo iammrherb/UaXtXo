@@ -72,18 +72,21 @@ interface ChartConfig {
 
 interface InteractiveDashboardProps {
   initialConfig: CalculationConfiguration
-  onConfigChange: (config: CalculationConfiguration) => void
+  onConfigChange?: (config: CalculationConfiguration) => void
 }
 
 const COLORS = ["#00D4AA", "#0EA5E9", "#8B5CF6", "#EF4444", "#F97316", "#06B6D4", "#84CC16", "#F59E0B"]
 
 export default function InteractiveDashboard({ initialConfig, onConfigChange }: InteractiveDashboardProps) {
-  const [config, setConfig] = useState<CalculationConfiguration>(initialConfig)
-  const [filters, setFilters] = useState<FilterState>({
+  // Stabilize the initial config to prevent infinite loops
+  const stableInitialConfig = useMemo(() => initialConfig, [])
+
+  const [config, setConfig] = useState<CalculationConfiguration>(stableInitialConfig)
+  const [filters, setFilters] = useState<FilterState>(() => ({
     selectedVendors: Object.keys(ENHANCED_VENDOR_DATABASE),
     priceRange: [0, 500000],
     timeframe: 3,
-    industries: [initialConfig.industry],
+    industries: [stableInitialConfig.industry],
     deploymentModels: ["cloud", "on-premise", "hybrid"],
     complianceFrameworks: [],
     securityScoreRange: [0, 100],
@@ -91,7 +94,7 @@ export default function InteractiveDashboard({ initialConfig, onConfigChange }: 
     showOnlyRecommended: false,
     sortBy: "cost",
     sortOrder: "asc",
-  })
+  }))
 
   const [chartConfigs, setChartConfigs] = useState<ChartConfig[]>([
     { type: "bar", dataKey: "totalCost", title: "Total Cost Comparison", visible: true, color: "#00D4AA" },
@@ -100,113 +103,141 @@ export default function InteractiveDashboard({ initialConfig, onConfigChange }: 
     { type: "radar", dataKey: "capabilities", title: "Vendor Capabilities", visible: true, color: "#EF4444" },
   ])
 
-  const [isRealTimeEnabled, setIsRealTimeEnabled] = useState(true)
+  const [isRealTimeEnabled, setIsRealTimeEnabled] = useState(false) // Start disabled to prevent immediate updates
   const [refreshInterval, setRefreshInterval] = useState(5000)
   const [showFilters, setShowFilters] = useState(true)
   const [selectedMetric, setSelectedMetric] = useState<string>("totalCost")
   const [comparisonMode, setComparisonMode] = useState<"absolute" | "relative">("absolute")
 
   const refreshIntervalRef = useRef<NodeJS.Timeout>()
+  const configUpdateTimeoutRef = useRef<NodeJS.Timeout>()
 
-  // Calculate TCO data with current configuration
+  // Calculate TCO data with current configuration - memoized to prevent recalculation
   const tcoData = useMemo(() => {
-    return calculateTCO(config)
+    try {
+      return calculateTCO(config)
+    } catch (error) {
+      console.error("Error calculating TCO:", error)
+      return {}
+    }
   }, [config])
 
-  // Filter and process vendor data
+  // Filter and process vendor data - memoized with stable dependencies
   const filteredVendorData = useMemo(() => {
-    const vendorEntries = Object.entries(tcoData)
-      .filter(([vendorId]) => filters.selectedVendors.includes(vendorId))
-      .map(([vendorId, data]) => {
-        const vendor = ENHANCED_VENDOR_DATABASE[vendorId]
-        return {
-          id: vendorId,
-          name: vendor.name,
-          category: vendor.category,
-          totalCost: data.totalCost,
-          year1: data.year1,
-          year3: data.year3,
-          year5: data.year5,
-          roi: data.roi.percentage,
-          roiSavings: data.roi.operationalSavings + data.roi.complianceSavings,
-          paybackPeriod: data.roi.paybackPeriod,
-          securityScore: vendor.capabilities.security,
-          implementationTime: vendor.implementation.timeToValue,
-          deploymentModels: vendor.deployment,
-          complianceFrameworks: vendor.compliance.frameworks,
-          automation: vendor.capabilities.automation,
-          scalability: vendor.capabilities.scalability,
-          integration: vendor.capabilities.integration,
-          usability: vendor.capabilities.usability,
-        }
-      })
-      .filter((vendor) => {
-        // Apply filters
-        if (vendor.totalCost < filters.priceRange[0] || vendor.totalCost > filters.priceRange[1]) return false
-        if (
-          vendor.securityScore < filters.securityScoreRange[0] ||
-          vendor.securityScore > filters.securityScoreRange[1]
-        )
-          return false
-        if (
-          vendor.implementationTime < filters.implementationTimeRange[0] ||
-          vendor.implementationTime > filters.implementationTimeRange[1]
-        )
-          return false
+    if (!tcoData || Object.keys(tcoData).length === 0) {
+      return []
+    }
 
-        // Deployment model filter
-        if (filters.deploymentModels.length > 0) {
-          const hasMatchingDeployment = vendor.deploymentModels.some((model) =>
-            filters.deploymentModels.includes(model),
+    try {
+      const vendorEntries = Object.entries(tcoData)
+        .filter(([vendorId]) => filters.selectedVendors.includes(vendorId))
+        .map(([vendorId, data]) => {
+          const vendor = ENHANCED_VENDOR_DATABASE[vendorId]
+          if (!vendor || !data) return null
+
+          return {
+            id: vendorId,
+            name: vendor.name,
+            category: vendor.category,
+            totalCost: data.totalCost || 0,
+            year1: data.year1 || 0,
+            year3: data.year3 || 0,
+            year5: data.year5 || 0,
+            roi: data.roi?.percentage || 0,
+            roiSavings: (data.roi?.operationalSavings || 0) + (data.roi?.complianceSavings || 0),
+            paybackPeriod: data.roi?.paybackPeriod || 0,
+            securityScore: vendor.capabilities?.security || 0,
+            implementationTime: vendor.implementation?.timeToValue || 0,
+            deploymentModels: vendor.deployment || [],
+            complianceFrameworks: vendor.compliance?.frameworks || [],
+            automation: vendor.capabilities?.automation || 0,
+            scalability: vendor.capabilities?.scalability || 0,
+            integration: vendor.capabilities?.integration || 0,
+            usability: vendor.capabilities?.usability || 0,
+          }
+        })
+        .filter((vendor): vendor is NonNullable<typeof vendor> => vendor !== null)
+        .filter((vendor) => {
+          // Apply filters safely
+          if (vendor.totalCost < filters.priceRange[0] || vendor.totalCost > filters.priceRange[1]) return false
+          if (
+            vendor.securityScore < filters.securityScoreRange[0] ||
+            vendor.securityScore > filters.securityScoreRange[1]
           )
-          if (!hasMatchingDeployment) return false
-        }
-
-        // Compliance framework filter
-        if (filters.complianceFrameworks.length > 0) {
-          const hasMatchingCompliance = vendor.complianceFrameworks.some((framework) =>
-            filters.complianceFrameworks.includes(framework),
+            return false
+          if (
+            vendor.implementationTime < filters.implementationTimeRange[0] ||
+            vendor.implementationTime > filters.implementationTimeRange[1]
           )
-          if (!hasMatchingCompliance) return false
+            return false
+
+          // Deployment model filter
+          if (filters.deploymentModels.length > 0) {
+            const hasMatchingDeployment = vendor.deploymentModels.some((model) =>
+              filters.deploymentModels.includes(model),
+            )
+            if (!hasMatchingDeployment) return false
+          }
+
+          // Compliance framework filter
+          if (filters.complianceFrameworks.length > 0) {
+            const hasMatchingCompliance = vendor.complianceFrameworks.some((framework) =>
+              filters.complianceFrameworks.includes(framework),
+            )
+            if (!hasMatchingCompliance) return false
+          }
+
+          return true
+        })
+
+      // Sort data safely
+      const sortedData = [...vendorEntries].sort((a, b) => {
+        let aValue: number, bValue: number
+
+        switch (filters.sortBy) {
+          case "cost":
+            aValue = a.totalCost
+            bValue = b.totalCost
+            break
+          case "roi":
+            aValue = a.roi
+            bValue = b.roi
+            break
+          case "security":
+            aValue = a.securityScore
+            bValue = b.securityScore
+            break
+          case "implementation":
+            aValue = a.implementationTime
+            bValue = b.implementationTime
+            break
+          default:
+            aValue = a.totalCost
+            bValue = b.totalCost
         }
 
-        return true
+        return filters.sortOrder === "asc" ? aValue - bValue : bValue - aValue
       })
 
-    // Sort data
-    const sortedData = [...vendorEntries].sort((a, b) => {
-      let aValue: number, bValue: number
-
-      switch (filters.sortBy) {
-        case "cost":
-          aValue = a.totalCost
-          bValue = b.totalCost
-          break
-        case "roi":
-          aValue = a.roi
-          bValue = b.roi
-          break
-        case "security":
-          aValue = a.securityScore
-          bValue = b.securityScore
-          break
-        case "implementation":
-          aValue = a.implementationTime
-          bValue = b.implementationTime
-          break
-        default:
-          aValue = a.totalCost
-          bValue = b.totalCost
-      }
-
-      return filters.sortOrder === "asc" ? aValue - bValue : bValue - aValue
-    })
-
-    return sortedData
+      return sortedData
+    } catch (error) {
+      console.error("Error filtering vendor data:", error)
+      return []
+    }
   }, [tcoData, filters])
 
-  // Chart data preparation
+  // Chart data preparation - memoized to prevent recalculation
   const chartData = useMemo(() => {
+    if (!filteredVendorData || filteredVendorData.length === 0) {
+      return {
+        costComparison: [],
+        roiAnalysis: [],
+        securityVsCost: [],
+        capabilities: [],
+        timeline: [],
+      }
+    }
+
     return {
       costComparison: filteredVendorData.map((vendor) => ({
         name: vendor.name,
@@ -243,16 +274,41 @@ export default function InteractiveDashboard({ initialConfig, onConfigChange }: 
     }
   }, [filteredVendorData])
 
-  // Real-time updates
+  // Debounced config update to prevent infinite loops
+  const debouncedConfigUpdate = useCallback(
+    (newConfig: CalculationConfiguration) => {
+      if (configUpdateTimeoutRef.current) {
+        clearTimeout(configUpdateTimeoutRef.current)
+      }
+
+      configUpdateTimeoutRef.current = setTimeout(() => {
+        if (onConfigChange) {
+          onConfigChange(newConfig)
+        }
+      }, 300) // 300ms debounce
+    },
+    [onConfigChange],
+  )
+
+  // Real-time updates with proper cleanup
   useEffect(() => {
-    if (isRealTimeEnabled) {
+    if (isRealTimeEnabled && refreshInterval > 0) {
       refreshIntervalRef.current = setInterval(() => {
         // Simulate real-time data updates (in a real app, this would fetch new data)
-        setConfig((prev) => ({ ...prev, deviceCount: prev.deviceCount + Math.floor(Math.random() * 10) - 5 }))
+        setConfig((prev) => {
+          const deviceCountChange = Math.floor(Math.random() * 10) - 5
+          const newDeviceCount = Math.max(1, prev.deviceCount + deviceCountChange)
+
+          if (newDeviceCount !== prev.deviceCount) {
+            return { ...prev, deviceCount: newDeviceCount }
+          }
+          return prev
+        })
       }, refreshInterval)
     } else {
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current)
+        refreshIntervalRef.current = undefined
       }
     }
 
@@ -263,13 +319,29 @@ export default function InteractiveDashboard({ initialConfig, onConfigChange }: 
     }
   }, [isRealTimeEnabled, refreshInterval])
 
-  // Update parent configuration
+  // Update parent configuration with debouncing
   useEffect(() => {
-    onConfigChange(config)
-  }, [config, onConfigChange])
+    debouncedConfigUpdate(config)
+  }, [config, debouncedConfigUpdate])
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current)
+      }
+      if (configUpdateTimeoutRef.current) {
+        clearTimeout(configUpdateTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  // Memoized update functions to prevent unnecessary re-renders
   const updateFilter = useCallback((key: keyof FilterState, value: any) => {
-    setFilters((prev) => ({ ...prev, [key]: value }))
+    setFilters((prev) => {
+      if (prev[key] === value) return prev // Prevent unnecessary updates
+      return { ...prev, [key]: value }
+    })
   }, [])
 
   const updateChartConfig = useCallback((index: number, updates: Partial<ChartConfig>) => {
@@ -297,8 +369,47 @@ export default function InteractiveDashboard({ initialConfig, onConfigChange }: 
     console.log(`Exporting data as ${format}`)
   }, [])
 
-  // Custom tooltip component
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  // Memoized handlers to prevent re-renders
+  const handleVendorToggle = useCallback(
+    (vendorId: string, checked: boolean) => {
+      updateFilter(
+        "selectedVendors",
+        checked ? [...filters.selectedVendors, vendorId] : filters.selectedVendors.filter((v) => v !== vendorId),
+      )
+    },
+    [filters.selectedVendors, updateFilter],
+  )
+
+  const handlePriceRangeChange = useCallback(
+    (value: number[]) => {
+      updateFilter("priceRange", value as [number, number])
+    },
+    [updateFilter],
+  )
+
+  const handleSecurityRangeChange = useCallback(
+    (value: number[]) => {
+      updateFilter("securityScoreRange", value as [number, number])
+    },
+    [updateFilter],
+  )
+
+  const handleSortChange = useCallback(
+    (value: string) => {
+      updateFilter("sortBy", value)
+    },
+    [updateFilter],
+  )
+
+  const handleSortOrderChange = useCallback(
+    (checked: boolean) => {
+      updateFilter("sortOrder", checked ? "desc" : "asc")
+    },
+    [updateFilter],
+  )
+
+  // Custom tooltip component - memoized
+  const CustomTooltip = useCallback(({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border rounded-lg shadow-lg">
@@ -312,7 +423,26 @@ export default function InteractiveDashboard({ initialConfig, onConfigChange }: 
       )
     }
     return null
-  }
+  }, [])
+
+  // Memoized metrics to prevent recalculation
+  const keyMetrics = useMemo(() => {
+    if (filteredVendorData.length === 0) {
+      return {
+        lowestCost: 0,
+        highestROI: 0,
+        avgSecurity: 0,
+        fastestDeploy: 0,
+      }
+    }
+
+    return {
+      lowestCost: Math.min(...filteredVendorData.map((v) => v.totalCost)),
+      highestROI: Math.max(...filteredVendorData.map((v) => v.roi)),
+      avgSecurity: filteredVendorData.reduce((sum, v) => sum + v.securityScore, 0) / filteredVendorData.length,
+      fastestDeploy: Math.min(...filteredVendorData.map((v) => v.implementationTime)),
+    }
+  }, [filteredVendorData])
 
   return (
     <div className="space-y-6">
@@ -384,16 +514,7 @@ export default function InteractiveDashboard({ initialConfig, onConfigChange }: 
                           <Checkbox
                             id={id}
                             checked={filters.selectedVendors.includes(id)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                updateFilter("selectedVendors", [...filters.selectedVendors, id])
-                              } else {
-                                updateFilter(
-                                  "selectedVendors",
-                                  filters.selectedVendors.filter((v) => v !== id),
-                                )
-                              }
-                            }}
+                            onCheckedChange={(checked) => handleVendorToggle(id, !!checked)}
                           />
                           <Label htmlFor={id} className="text-sm">
                             {vendor.name}
@@ -409,7 +530,7 @@ export default function InteractiveDashboard({ initialConfig, onConfigChange }: 
                     <div className="px-3">
                       <Slider
                         value={filters.priceRange}
-                        onValueChange={(value) => updateFilter("priceRange", value)}
+                        onValueChange={handlePriceRangeChange}
                         max={500000}
                         min={0}
                         step={10000}
@@ -428,7 +549,7 @@ export default function InteractiveDashboard({ initialConfig, onConfigChange }: 
                     <div className="px-3">
                       <Slider
                         value={filters.securityScoreRange}
-                        onValueChange={(value) => updateFilter("securityScoreRange", value)}
+                        onValueChange={handleSecurityRangeChange}
                         max={100}
                         min={0}
                         step={5}
@@ -444,7 +565,7 @@ export default function InteractiveDashboard({ initialConfig, onConfigChange }: 
                   {/* Sort Options */}
                   <div className="space-y-2">
                     <Label>Sort By</Label>
-                    <Select value={filters.sortBy} onValueChange={(value: any) => updateFilter("sortBy", value)}>
+                    <Select value={filters.sortBy} onValueChange={handleSortChange}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -456,10 +577,7 @@ export default function InteractiveDashboard({ initialConfig, onConfigChange }: 
                       </SelectContent>
                     </Select>
                     <div className="flex items-center space-x-2">
-                      <Switch
-                        checked={filters.sortOrder === "desc"}
-                        onCheckedChange={(checked) => updateFilter("sortOrder", checked ? "desc" : "asc")}
-                      />
+                      <Switch checked={filters.sortOrder === "desc"} onCheckedChange={handleSortOrderChange} />
                       <Label className="text-sm">Descending</Label>
                     </div>
                   </div>
@@ -489,68 +607,53 @@ export default function InteractiveDashboard({ initialConfig, onConfigChange }: 
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {filteredVendorData.length > 0 && (
-          <>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <DollarSign className="h-5 w-5 text-green-600" />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Lowest Cost</p>
-                    <p className="text-2xl font-bold">
-                      ${Math.min(...filteredVendorData.map((v) => v.totalCost)).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <DollarSign className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Lowest Cost</p>
+                <p className="text-2xl font-bold">${keyMetrics.lowestCost.toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Highest ROI</p>
-                    <p className="text-2xl font-bold">
-                      {Math.max(...filteredVendorData.map((v) => v.roi)).toFixed(1)}%
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Highest ROI</p>
+                <p className="text-2xl font-bold">{keyMetrics.highestROI.toFixed(1)}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5 text-purple-600" />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Avg Security</p>
-                    <p className="text-2xl font-bold">
-                      {(
-                        filteredVendorData.reduce((sum, v) => sum + v.securityScore, 0) / filteredVendorData.length
-                      ).toFixed(0)}
-                      %
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Shield className="h-5 w-5 text-purple-600" />
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Avg Security</p>
+                <p className="text-2xl font-bold">{keyMetrics.avgSecurity.toFixed(0)}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-5 w-5 text-orange-600" />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Fastest Deploy</p>
-                    <p className="text-2xl font-bold">
-                      {Math.min(...filteredVendorData.map((v) => v.implementationTime))} days
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </>
-        )}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Clock className="h-5 w-5 text-orange-600" />
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Fastest Deploy</p>
+                <p className="text-2xl font-bold">{keyMetrics.fastestDeploy} days</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Interactive Charts */}
@@ -648,7 +751,7 @@ export default function InteractiveDashboard({ initialConfig, onConfigChange }: 
           <CardContent>
             <div data-chart="capabilities-radar">
               <ResponsiveContainer width="100%" height={300}>
-                <RadarChart data={chartData.capabilities[0] ? [chartData.capabilities[0]] : []}>
+                <RadarChart data={chartData.capabilities.length > 0 ? [chartData.capabilities[0]] : []}>
                   <PolarGrid />
                   <PolarAngleAxis dataKey="name" />
                   <PolarRadiusAxis angle={90} domain={[0, 100]} />
