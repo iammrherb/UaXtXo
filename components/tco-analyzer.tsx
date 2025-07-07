@@ -26,10 +26,7 @@ import {
 } from "recharts"
 import { COMPREHENSIVE_VENDOR_DATA, INDUSTRIES } from "@/lib/vendors/comprehensive-vendor-data"
 import { calculateComprehensiveTCO } from "@/lib/calculators/comprehensive-tco-calculator"
-import { IndustryAnalysisDashboard } from "./industry-analysis-view"
-import { ExecutiveReportGenerator } from "./executive-report-view"
-import { VendorScorecard } from "./vendor-comparison-matrix"
-import { exportAnalysis, ExportFormat, generateComprehensiveReport } from "@/lib/export/data-export-utilities"
+import { exportAnalysis, ExportFormat, NACAnalysisExporter, createExportData } from "@/lib/export/data-export-utilities"
 
 export function TCOAnalyzer() {
   // Configuration state
@@ -128,15 +125,64 @@ export function TCOAnalyzer() {
   }
 
   const handleExport = async (format: ExportFormat) => {
-    const reportData = generateComprehensiveReport({
-      industry: selectedIndustry,
-      deviceCount: deviceCount[0],
-      timeframe,
-      vendors: selectedVendors,
-      tcoData: tcoAnalysis,
-    })
+    try {
+      const exportData = createExportData(
+        {
+          industry: selectedIndustry,
+          deviceCount: deviceCount[0],
+          timeframe,
+          vendors: selectedVendors,
+          deploymentModel,
+        },
+        {
+          tcoComparison: tcoAnalysis,
+          roiAnalysis: {
+            portnoxROI: portnoxData?.roi || 5506,
+            savings,
+            percentSavings,
+          },
+          riskAssessment: {
+            currentRisk: 28,
+            projectedRisk: 4,
+            riskReduction: 86,
+          },
+          complianceMapping: {},
+        }
+      )
 
-    await exportAnalysis(reportData, format)
+      const exporter = new NACAnalysisExporter(exportData)
+
+      switch (format) {
+        case ExportFormat.PDF:
+          const pdfBlob = await exporter.exportToPDF()
+          const pdfUrl = URL.createObjectURL(pdfBlob)
+          const pdfLink = document.createElement("a")
+          pdfLink.href = pdfUrl
+          pdfLink.download = `NAC_Analysis_Report_${new Date().toISOString().split('T')[0]}.pdf`
+          document.body.appendChild(pdfLink)
+          pdfLink.click()
+          document.body.removeChild(pdfLink)
+          URL.revokeObjectURL(pdfUrl)
+          break
+        case ExportFormat.EXCEL:
+          const csvContent = await exporter.exportToCSV()
+          const csvBlob = new Blob([csvContent], { type: 'text/csv' })
+          const csvUrl = URL.createObjectURL(csvBlob)
+          const csvLink = document.createElement("a")
+          csvLink.href = csvUrl
+          csvLink.download = `NAC_Analysis_Data_${new Date().toISOString().split('T')[0]}.csv`
+          document.body.appendChild(csvLink)
+          csvLink.click()
+          document.body.removeChild(csvLink)
+          URL.revokeObjectURL(csvUrl)
+          break
+        default:
+          await exportAnalysis(exportData, format)
+      }
+    } catch (error) {
+      console.error('Export failed:', error)
+      alert('Export failed. Please try again.')
+    }
   }
 
   const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#84cc16", "#f97316"]
@@ -546,69 +592,4 @@ export function TCOAnalyzer() {
                         <p className="text-muted-foreground">ROI</p>
                         <p className="font-bold">{Math.round(vendor.roi)}%</p>
                       </div>
-                      <div>
-                        <p className="text-muted-foreground">Payback</p>
-                        <p className="font-bold">{Math.round(vendor.paybackPeriod / 30)} mo</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        {/* Industry Insights Tab */}
-        <TabsContent value="industry">
-          <IndustryAnalysisDashboard
-            selectedIndustry={selectedIndustry}
-            deviceCount={deviceCount[0]}
-            timeframe={timeframe}
-          />
-        </TabsContent>
-
-        {/* Vendor Scorecard Tab */}
-        <TabsContent value="scorecard">
-          <VendorScorecard
-            vendorKey="PORTNOX"
-            comparisonVendors={selectedVendors.filter((v) => v !== "PORTNOX")}
-            showDetails={true}
-          />
-        </TabsContent>
-
-        {/* Executive Reports Tab */}
-        <TabsContent value="reports">
-          <ExecutiveReportGenerator
-            industry={selectedIndustry}
-            deviceCount={deviceCount[0]}
-            timeframe={timeframe}
-            selectedVendors={selectedVendors}
-            comparisonData={Object.fromEntries(
-              comparisonData.map((d) => [
-                d.vendorKey,
-                {
-                  totalCost: d.totalCost,
-                  software: d.software,
-                  hardware: d.hardware,
-                  implementation: d.implementation,
-                  operational: d.operational,
-                },
-              ]),
-            )}
-            roiData={{
-              roi: portnoxData?.roi || 5506,
-              paybackMonths: (portnoxData?.paybackPeriod || 195) / 30,
-              annualBenefit: 1500000,
-              totalBenefit: 4500000,
-              netBenefit: 4354000,
-              directSavings: savings,
-              riskReduction: portnoxData?.riskReduction || 1200000,
-              productivity: 500000,
-              compliance: 250000,
-            }}
-          />
-        </TabsContent>
-      </Tabs>
-    </div>
-  )
-}
+                      <div>\
