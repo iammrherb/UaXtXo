@@ -1,6 +1,4 @@
 import { ChartCaptureService, type CapturedChart } from "./chart-capture-utilities"
-import jsPDF from "jspdf"
-import * as XLSX from "xlsx"
 
 // Export formats
 export enum ExportFormat {
@@ -55,22 +53,25 @@ export interface ExportData {
 }
 
 // Main export utility class
-export class DataExportService {
-  private static instance: DataExportService
+export class NACAnalysisExporter {
+  private static instance: NACAnalysisExporter
   private chartCaptureService: ChartCaptureService
 
   constructor() {
     this.chartCaptureService = ChartCaptureService.getInstance()
   }
 
-  static getInstance(): DataExportService {
-    if (!DataExportService.instance) {
-      DataExportService.instance = new DataExportService()
+  static getInstance(): NACAnalysisExporter {
+    if (!NACAnalysisExporter.instance) {
+      NACAnalysisExporter.instance = new NACAnalysisExporter()
     }
-    return DataExportService.instance
+    return NACAnalysisExporter.instance
   }
 
   async exportToPDF(data: ExportData, config: ExportConfiguration): Promise<void> {
+    // Dynamic import to avoid SSR issues
+    const { jsPDF } = await import("jspdf")
+
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "mm",
@@ -253,6 +254,9 @@ export class DataExportService {
   }
 
   async exportToExcel(data: ExportData, config: ExportConfiguration): Promise<void> {
+    // Dynamic import to avoid SSR issues
+    const XLSX = await import("xlsx")
+
     const workbook = XLSX.utils.book_new()
 
     // Summary Sheet
@@ -435,6 +439,48 @@ export class DataExportService {
         riskReduction: 75,
       },
     }
+  }
+}
+
+// Data export service class
+export class DataExportService {
+  private static instance: DataExportService
+  private chartCaptureService: ChartCaptureService
+
+  constructor() {
+    this.chartCaptureService = ChartCaptureService.getInstance()
+  }
+
+  static getInstance(): DataExportService {
+    if (!DataExportService.instance) {
+      DataExportService.instance = new DataExportService()
+    }
+    return DataExportService.instance
+  }
+
+  async exportToPDF(data: ExportData, config: ExportConfiguration): Promise<void> {
+    const exporter = new NACAnalysisExporter()
+    return exporter.exportToPDF(data, config)
+  }
+
+  async exportToExcel(data: ExportData, config: ExportConfiguration): Promise<void> {
+    const exporter = new NACAnalysisExporter()
+    return exporter.exportToExcel(data, config)
+  }
+
+  async exportToCSV(data: ExportData): Promise<void> {
+    const exporter = new NACAnalysisExporter()
+    return exporter.exportToCSV(data)
+  }
+
+  async prepareExportData(
+    tcoData: Record<string, any>,
+    config: any,
+    industryData: any,
+    summaryMetrics: any,
+  ): Promise<ExportData> {
+    const exporter = new NACAnalysisExporter()
+    return exporter.prepareExportData(tcoData, config, industryData, summaryMetrics)
   }
 }
 
