@@ -1,150 +1,235 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ConfigurationBar } from "@/components/layout/ConfigurationBar"
-import { TcoAnalysisView } from "@/components/dashboard/tco/TcoAnalysisView"
-import { VendorComparisonView } from "@/components/dashboard/vendorcomp/VendorComparisonView"
-import { PortnoxPlatformView } from "@/components/dashboard/portnox/PortnoxPlatformView"
-import { ExecutiveSummary } from "@/components/charts/dashboards/ExecutiveSummary"
-import { ComplianceOverview } from "@/components/charts/dashboards/ComplianceOverview"
-import { Shield, TrendingUp, Award, CheckCircle, AlertTriangle } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import {
+  Calculator,
+  TrendingUp,
+  Target,
+  Brain,
+  BarChart3,
+  Zap,
+  Shield,
+  DollarSign,
+  Clock,
+  Activity,
+} from "lucide-react"
+import WhatIfScenarioBuilder from "@/components/analysis/WhatIfScenarioBuilder"
+import SensitivityAnalyzer from "@/components/analysis/SensitivityAnalyzer"
+import MonteCarloSimulator from "@/components/analysis/MonteCarloSimulator"
+import ScenarioComparison from "@/components/analysis/ScenarioComparison"
+import { motion } from "framer-motion"
 
-export default function HomePage() {
-  const [activeTab, setActiveTab] = useState("overview")
+export default function Home() {
+  const [activeTab, setActiveTab] = useState("scenarios")
+
+  const analysisTools = [
+    {
+      id: "scenarios",
+      name: "What-If Scenarios",
+      description: "Build and test different business scenarios with varying assumptions",
+      icon: Calculator,
+      color: "bg-emerald-500",
+      features: ["Parameter adjustment", "Scenario templates", "Real-time calculations", "Risk assessment"],
+    },
+    {
+      id: "sensitivity",
+      name: "Sensitivity Analysis",
+      description: "Understand which parameters have the greatest impact on your TCO",
+      icon: Target,
+      color: "bg-blue-500",
+      features: ["Tornado charts", "Spider diagrams", "Parameter ranking", "Impact quantification"],
+    },
+    {
+      id: "montecarlo",
+      name: "Monte Carlo Simulation",
+      description: "Statistical analysis with uncertainty and probability distributions",
+      icon: Brain,
+      color: "bg-purple-500",
+      features: ["10,000+ simulations", "Risk metrics", "Confidence intervals", "Distribution analysis"],
+    },
+    {
+      id: "comparison",
+      name: "Scenario Comparison",
+      description: "Compare multiple scenarios side-by-side to identify the best path forward",
+      icon: BarChart3,
+      color: "bg-orange-500",
+      features: ["Side-by-side comparison", "Performance ranking", "Trade-off analysis", "Visual insights"],
+    },
+  ]
+
+  const keyBenefits = [
+    {
+      icon: DollarSign,
+      title: "Cost Optimization",
+      description: "Identify scenarios that minimize TCO while maximizing value",
+    },
+    {
+      icon: Shield,
+      title: "Risk Management",
+      description: "Quantify and mitigate risks through scenario planning",
+    },
+    {
+      icon: TrendingUp,
+      title: "ROI Maximization",
+      description: "Find the optimal balance between investment and returns",
+    },
+    {
+      icon: Clock,
+      title: "Time to Value",
+      description: "Accelerate decision-making with data-driven insights",
+    },
+  ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-      <div className="container mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Zero Trust Cost Analyzer
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Comprehensive NAC vendor comparison with security metrics, compliance mapping, and TCO analysis
-          </p>
-        </div>
-
-        {/* Configuration Bar */}
-        <ConfigurationBar />
-
-        {/* Key Metrics Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Portnox Advantage</CardTitle>
-              <Award className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">68%</div>
-              <p className="text-xs text-muted-foreground">Lower TCO vs Cisco ISE</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Zero Trust Score</CardTitle>
-              <Shield className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">95/100</div>
-              <p className="text-xs text-muted-foreground">Industry leading security</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">ROI Timeline</CardTitle>
-              <TrendingUp className="h-4 w-4 text-purple-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-purple-600">12 mo</div>
-              <p className="text-xs text-muted-foreground">Payback period</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Implementation</CardTitle>
-              <CheckCircle className="h-4 w-4 text-orange-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">7 days</div>
-              <p className="text-xs text-muted-foreground">Time to deployment</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Executive Alert */}
-        <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20">
-          <AlertTriangle className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-amber-800 dark:text-amber-200">
-            <strong>Executive Insight:</strong> Organizations switching to Portnox CLEAR achieve an average of
-            <span className="font-bold"> $575,000 in 5-year savings</span> compared to Cisco ISE, with
-            <span className="font-bold"> 95% faster deployment</span> and superior Zero Trust capabilities.
-          </AlertDescription>
-        </Alert>
-
-        {/* Main Analysis Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Executive Summary</TabsTrigger>
-            <TabsTrigger value="tco">TCO Analysis</TabsTrigger>
-            <TabsTrigger value="vendors">Vendor Comparison</TabsTrigger>
-            <TabsTrigger value="compliance">Compliance</TabsTrigger>
-            <TabsTrigger value="portnox">Portnox Platform</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-6">
-            <ExecutiveSummary />
-          </TabsContent>
-
-          <TabsContent value="tco" className="space-y-6">
-            <TcoAnalysisView />
-          </TabsContent>
-
-          <TabsContent value="vendors" className="space-y-6">
-            <VendorComparisonView />
-          </TabsContent>
-
-          <TabsContent value="compliance" className="space-y-6">
-            <ComplianceOverview />
-          </TabsContent>
-
-          <TabsContent value="portnox" className="space-y-6">
-            <PortnoxPlatformView />
-          </TabsContent>
-        </Tabs>
-
-        {/* Bottom CTA */}
-        <Card className="border-2 border-green-500 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-300">
-              <Award className="h-5 w-5" />
-              Ready to Experience Portnox CLEAR?
-            </CardTitle>
-            <CardDescription>
-              Start your 24-hour proof of concept and see the difference cloud-native NAC makes
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-green-600 hover:bg-green-700">
-                Start 24-Hour POC
-              </Button>
-              <Button variant="outline" size="lg">
-                Schedule Executive Briefing
-              </Button>
-              <Button variant="ghost" size="lg">
-                Download Full Report
-              </Button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="w-full max-w-7xl mx-auto p-6 space-y-8">
+        {/* Hero Section */}
+        <motion.div
+          className="text-center space-y-6 py-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/30">
+              <Zap className="h-8 w-8 text-emerald-400" />
             </div>
-          </CardContent>
-        </Card>
+            <h1 className="text-5xl font-bold text-white">Advanced TCO Analysis Suite</h1>
+          </div>
+
+          <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
+            Comprehensive what-if scenarios and sensitivity analysis tools to optimize your Network Access Control
+            investment decisions with confidence and precision.
+          </p>
+
+          <div className="flex items-center justify-center gap-4 pt-4">
+            <Badge variant="outline" className="px-4 py-2 text-emerald-400 border-emerald-400/50">
+              <Activity className="h-4 w-4 mr-2" />
+              Real-time Analysis
+            </Badge>
+            <Badge variant="outline" className="px-4 py-2 text-blue-400 border-blue-400/50">
+              <Brain className="h-4 w-4 mr-2" />
+              AI-Powered Insights
+            </Badge>
+            <Badge variant="outline" className="px-4 py-2 text-purple-400 border-purple-400/50">
+              <Shield className="h-4 w-4 mr-2" />
+              Risk Assessment
+            </Badge>
+          </div>
+        </motion.div>
+
+        {/* Key Benefits */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          {keyBenefits.map((benefit, index) => (
+            <Card key={index} className="bg-slate-800/50 border-slate-700/50 hover:bg-slate-800/70 transition-colors">
+              <CardContent className="p-6 text-center">
+                <div className="p-3 rounded-xl bg-slate-700/50 w-fit mx-auto mb-4">
+                  <benefit.icon className="h-6 w-6 text-emerald-400" />
+                </div>
+                <h3 className="font-semibold text-white mb-2">{benefit.title}</h3>
+                <p className="text-sm text-slate-400">{benefit.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </motion.div>
+
+        {/* Analysis Tools Overview */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          {analysisTools.map((tool, index) => (
+            <Card
+              key={tool.id}
+              className={`bg-slate-800/50 border-slate-700/50 hover:bg-slate-800/70 transition-all duration-300 cursor-pointer ${
+                activeTab === tool.id ? "ring-2 ring-emerald-500/50" : ""
+              }`}
+              onClick={() => setActiveTab(tool.id)}
+            >
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-xl ${tool.color}/20 border ${tool.color}/30`}>
+                    <tool.icon className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-white">{tool.name}</CardTitle>
+                    <p className="text-slate-400 text-sm mt-1">{tool.description}</p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-2">
+                  {tool.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-sm text-slate-300">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      {feature}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </motion.div>
+
+        {/* Main Analysis Interface */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-4 bg-slate-800/50 mb-8">
+              {analysisTools.map((tool) => (
+                <TabsTrigger
+                  key={tool.id}
+                  value={tool.id}
+                  className="flex items-center gap-2 data-[state=active]:bg-emerald-600"
+                >
+                  <tool.icon className="h-4 w-4" />
+                  <span className="hidden sm:inline">{tool.name.split(" ")[0]}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            <TabsContent value="scenarios" className="space-y-6">
+              <WhatIfScenarioBuilder />
+            </TabsContent>
+
+            <TabsContent value="sensitivity" className="space-y-6">
+              <SensitivityAnalyzer />
+            </TabsContent>
+
+            <TabsContent value="montecarlo" className="space-y-6">
+              <MonteCarloSimulator />
+            </TabsContent>
+
+            <TabsContent value="comparison" className="space-y-6">
+              <ScenarioComparison />
+            </TabsContent>
+          </Tabs>
+        </motion.div>
+
+        {/* Footer */}
+        <motion.div
+          className="text-center py-8 border-t border-slate-700/50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+        >
+          <p className="text-slate-400 text-sm">
+            Advanced TCO Analysis Suite - Empowering data-driven NAC investment decisions
+          </p>
+        </motion.div>
       </div>
     </div>
   )
