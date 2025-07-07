@@ -1,5 +1,6 @@
 import { COMPREHENSIVE_VENDOR_DATA, INDUSTRIES } from "../vendors/comprehensive-vendor-data"
 import type { DetailedCostBreakdown } from "../calculators/comprehensive-tco-calculator"
+import { ChartCaptureService, type CapturedChart, resizeChartForPDF } from "./chart-capture-utilities"
 
 // Export formats
 export enum ExportFormat {
@@ -39,6 +40,7 @@ export interface ExportData {
     technical: string[]
     financial: string[]
   }
+  charts?: CapturedChart[]
 }
 
 // PDF generation interface
@@ -74,13 +76,16 @@ export interface PDFReportData {
     timeline: Array<{ phase: string; duration: string; tasks: string[] }>
     resources: Array<{ role: string; allocation: string }>
   }
+  charts: CapturedChart[]
 }
 
 // Main export utility class
 export class NACAnalysisExporter {
   private data: ExportData
+  private chartService: ChartCaptureService
 
   constructor(data: Partial<ExportData>) {
+    this.chartService = ChartCaptureService.getInstance()
     this.data = {
       metadata: {
         generatedAt: new Date(),
@@ -108,6 +113,48 @@ export class NACAnalysisExporter {
         technical: [],
         financial: [],
       },
+      charts: data.charts || [],
+    }
+  }
+
+  // Capture charts before generating PDF
+  async captureChartsForPDF(): Promise<void> {
+    try {
+      // Wait for charts to be fully rendered
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      const chartElements = [
+        { selector: '[data-chart="tco-comparison"]', id: "tco-comparison" },
+        { selector: '[data-chart="cost-breakdown"]', id: "cost-breakdown" },
+        { selector: '[data-chart="savings-analysis"]', id: "savings-analysis" },
+        { selector: '[data-chart="vendor-comparison"]', id: "vendor-comparison" },
+        { selector: '[data-chart="roi-analysis"]', id: "roi-analysis" },
+        { selector: '[data-chart="risk-assessment"]', id: "risk-assessment" },
+      ]
+
+      const capturedCharts: CapturedChart[] = []
+
+      for (const { selector, id } of chartElements) {
+        const element = document.querySelector(selector) as HTMLElement
+        if (element) {
+          try {
+            const chart = await this.chartService.captureChart(element, id, {
+              width: 800,
+              height: 400,
+              scale: 2,
+              backgroundColor: "#ffffff",
+            })
+            capturedCharts.push(chart)
+          } catch (error) {
+            console.warn(`Failed to capture chart ${id}:`, error)
+          }
+        }
+      }
+
+      this.data.charts = capturedCharts
+    } catch (error) {
+      console.error("Failed to capture charts for PDF:", error)
+      this.data.charts = []
     }
   }
 
@@ -197,11 +244,15 @@ export class NACAnalysisExporter {
           { role: "Portnox Professional Services", allocation: "Included" },
         ],
       },
+      charts: this.data.charts || [],
     }
   }
 
-  // Generate PDF using jsPDF
+  // Generate PDF using jsPDF with chart integration
   async generatePDF(): Promise<Blob> {
+    // Capture charts first
+    await this.captureChartsForPDF()
+
     // Dynamic import to avoid SSR issues
     const { jsPDF } = await import("jspdf")
     const doc = new jsPDF()
@@ -217,6 +268,22 @@ export class NACAnalysisExporter {
     }
 
     let yPosition = 20
+
+    // Helper function to add images to PDF
+    const addChartImage = (chartId: string, x: number, y: number, width: number, height: number): number => {
+      const chart = reportData.charts.find((c) => c.id === chartId)
+      if (chart) {
+        try {
+          const resized = resizeChartForPDF(chart, width, height)
+          doc.addImage(resized.dataUrl, "PNG", x, y, resized.width, resized.height)
+          return y + resized.height + 10
+        } catch (error) {
+          console.warn(`Failed to add chart ${chartId} to PDF:`, error)
+          return y
+        }
+      }
+      return y
+    }
 
     // Helper function to add text with word wrapping
     const addWrappedText = (text: string, x: number, y: number, maxWidth: number, fontSize = 10) => {
@@ -317,6 +384,12 @@ export class NACAnalysisExporter {
     doc.text("Financial Analysis", 20, yPosition)
     yPosition += 15
 
+    // Add TCO Comparison Chart
+    doc.setFontSize(14)
+    doc.text("Total Cost of Ownership Comparison", 20, yPosition)
+    yPosition += 10
+    yPosition = addChartImage("tco-comparison", 20, yPosition, 170, 80)
+
     // Financial summary boxes
     const financialMetrics = [
       { label: "Total Investment", value: this.formatCurrency(reportData.financialAnalysis.totalInvestment) },
@@ -349,10 +422,22 @@ export class NACAnalysisExporter {
 
     yPosition += 50
 
+    // Add Cost Breakdown Chart
+    if (yPosition > 200) {
+      doc.addPage()
+      yPosition = 20
+    }
+
+    doc.setFontSize(14)
+    doc.setFont("helvetica", "bold")
+    doc.text("Cost Breakdown Analysis", 20, yPosition)
+    yPosition += 10
+    yPosition = addChartImage("cost-breakdown", 20, yPosition, 170, 80)
+
     // Cost breakdown table
     doc.setFontSize(14)
     doc.setFont("helvetica", "bold")
-    doc.text("Cost Breakdown:", 20, yPosition)
+    doc.text("Detailed Cost Breakdown:", 20, yPosition)
     yPosition += 10
 
     // Table header
@@ -392,6 +477,12 @@ export class NACAnalysisExporter {
     doc.setFont("helvetica", "bold")
     doc.text("Risk Assessment", 20, yPosition)
     yPosition += 15
+
+    // Add Risk Assessment Chart
+    doc.setFontSize(14)
+    doc.text("Security Risk Analysis", 20, yPosition)
+    yPosition += 10
+    yPosition = addChartImage("risk-assessment", 20, yPosition, 170, 80)
 
     // Risk reduction visualization
     doc.setFontSize(12)
@@ -438,6 +529,12 @@ export class NACAnalysisExporter {
     doc.text("Vendor Comparison", 20, yPosition)
     yPosition += 15
 
+    // Add Vendor Comparison Chart
+    doc.setFontSize(14)
+    doc.text("Vendor Performance Analysis", 20, yPosition)
+    yPosition += 10
+    yPosition = addChartImage("vendor-comparison", 20, yPosition, 170, 80)
+
     // Comparison table header
     doc.setFillColor(...colors.secondary)
     doc.rect(20, yPosition, 170, 10, "F")
@@ -476,6 +573,30 @@ export class NACAnalysisExporter {
     })
 
     yPosition += 15
+
+    // ROI Analysis Section
+    if (yPosition > 180) {
+      doc.addPage()
+      yPosition = 20
+    }
+
+    doc.setFontSize(18)
+    doc.setFont("helvetica", "bold")
+    doc.setTextColor(...colors.text)
+    doc.text("ROI Analysis", 20, yPosition)
+    yPosition += 15
+
+    // Add ROI Analysis Chart
+    doc.setFontSize(14)
+    doc.text("Return on Investment Projection", 20, yPosition)
+    yPosition += 10
+    yPosition = addChartImage("roi-analysis", 20, yPosition, 170, 80)
+
+    // Add Savings Analysis Chart
+    doc.setFontSize(14)
+    doc.text("Cumulative Savings Analysis", 20, yPosition)
+    yPosition += 10
+    yPosition = addChartImage("savings-analysis", 20, yPosition, 170, 80)
 
     // Implementation Timeline
     if (yPosition > 180) {
