@@ -458,12 +458,52 @@ export function getAllVendorComparisons(params: Omit<TCOCalculationParams, "vend
   return calculator.compareVendors(vendorKeys)
 }
 
+// Main export function that was missing
+export function calculateComprehensiveTCO(params: TCOCalculationParams): DetailedCostBreakdown {
+  const calculator = new ComprehensiveTCOCalculator(params)
+  return calculator.calculate()
+}
+
+// Simplified calculation function for quick estimates
+export function calculateQuickTCO(
+  vendorKey: string,
+  deviceCount: number,
+  timeframe: 1 | 3 | 5 = 3,
+  industry = "GENERAL",
+): {
+  totalCost: number
+  monthlyCost: number
+  perDeviceCost: number
+  savings: number
+} {
+  const params: TCOCalculationParams = {
+    vendorKey,
+    deviceCount,
+    timeframe,
+    industry,
+    deploymentModel: "CLOUD",
+    hasExistingNAC: false,
+    includeCompliance: true,
+    includeRiskReduction: true,
+  }
+
+  const result = calculateComprehensiveTCO(params)
+  const portnoxResult = calculateComprehensiveTCO({ ...params, vendorKey: "PORTNOX" })
+
+  return {
+    totalCost: result.totalCost,
+    monthlyCost: Math.round(result.totalCost / (timeframe * 12)),
+    perDeviceCost: Math.round(result.totalCost / deviceCount),
+    savings: result.totalCost - portnoxResult.totalCost,
+  }
+}
+
 // Industry-specific recommendations
 export function getIndustryRecommendations(industry: string, deviceCount: number) {
   const industryData = INDUSTRIES[industry]
   const recommendations = []
 
-  if (industryData.specificRequirements.medicalDeviceManagement) {
+  if (industryData?.specificRequirements?.medicalDeviceManagement) {
     recommendations.push({
       priority: "CRITICAL",
       title: "Medical Device Security",
@@ -475,7 +515,7 @@ export function getIndustryRecommendations(industry: string, deviceCount: number
     })
   }
 
-  if (industryData.specificRequirements.otItConvergence) {
+  if (industryData?.specificRequirements?.otItConvergence) {
     recommendations.push({
       priority: "HIGH",
       title: "OT/IT Convergence",
@@ -487,7 +527,7 @@ export function getIndustryRecommendations(industry: string, deviceCount: number
     })
   }
 
-  if (industryData.specificRequirements.byodManagement) {
+  if (industryData?.specificRequirements?.byodManagement) {
     recommendations.push({
       priority: "HIGH",
       title: "BYOD at Scale",
@@ -543,5 +583,38 @@ export function calculateMigrationComplexity(currentVendor: string | null, targe
     totalDays,
     complexity,
     estimatedCost: totalHours * 150, // $150/hour professional services
+  }
+}
+
+// Vendor comparison utilities
+export function compareVendorsByCategory(
+  vendorKeys: string[],
+  deviceCount: number,
+  timeframe: 1 | 3 | 5,
+  industry: string,
+) {
+  const comparisons = vendorKeys.map((vendorKey) => {
+    const result = calculateQuickTCO(vendorKey, deviceCount, timeframe, industry)
+    const vendor = COMPREHENSIVE_VENDOR_DATA[vendorKey]
+
+    return {
+      vendorKey,
+      vendor,
+      ...result,
+      deploymentTime: vendor?.deploymentTime || "Unknown",
+      securityScore: vendor?.securityScore || 0,
+      supportQuality: vendor?.supportQuality || "Unknown",
+    }
+  })
+
+  return {
+    comparisons,
+    lowestCost: comparisons.reduce((min, curr) => (curr.totalCost < min.totalCost ? curr : min)),
+    fastestDeployment: comparisons.reduce((min, curr) => {
+      const currDays = Number.parseInt(curr.deploymentTime.toString()) || 999
+      const minDays = Number.parseInt(min.deploymentTime.toString()) || 999
+      return currDays < minDays ? curr : min
+    }),
+    highestSecurity: comparisons.reduce((max, curr) => (curr.securityScore > max.securityScore ? curr : max)),
   }
 }
