@@ -11,7 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { COMPREHENSIVE_VENDOR_DATA } from "@/lib/vendors/comprehensive-vendor-data"
+import { VendorDetailsModal } from "./vendor-details-modal"
+import { VendorComparisonTable } from "./vendor-comparison-table"
 import {
   Search,
   Filter,
@@ -28,6 +33,15 @@ import {
   Info,
   Zap,
   Target,
+  Eye,
+  GitCompare,
+  Award,
+  Globe,
+  BarChart3,
+  Lock,
+  Wifi,
+  Smartphone,
+  CloudLightning,
 } from "lucide-react"
 
 interface VendorSelectionInterfaceProps {
@@ -51,13 +65,15 @@ interface FilterState {
 const VENDOR_CATEGORIES = {
   all: "All Categories",
   "cloud-native": "Cloud-Native",
-  "on-premise": "On-Premise",
-  hybrid: "Hybrid",
-  specialized: "Specialized",
+  enterprise: "Enterprise",
+  "mid-market": "Mid-Market",
+  sme: "SME",
+  "open-source": "Open Source",
 }
 
 const PRICE_RANGES = {
   all: "All Price Ranges",
+  free: "Free/Open Source",
   low: "Under $50/device/year",
   medium: "$50-$150/device/year",
   high: "Over $150/device/year",
@@ -69,6 +85,7 @@ const DEPLOYMENT_MODELS = {
   "on-premise": "On-Premise",
   hybrid: "Hybrid",
   saas: "SaaS",
+  virtual: "Virtual Appliance",
 }
 
 const COMPLEXITY_LEVELS = {
@@ -97,24 +114,19 @@ export default function VendorSelectionInterface({
 
   const [showFilters, setShowFilters] = useState(false)
   const [recommendations, setRecommendations] = useState<string[]>([])
+  const [selectedForComparison, setSelectedForComparison] = useState<string[]>([])
+  const [showComparison, setShowComparison] = useState(false)
+  const [selectedVendorDetails, setSelectedVendorDetails] = useState<string | null>(null)
 
-  // Get vendor data with error handling
+  // Get vendor data with comprehensive details
   const getVendorData = (vendorId: string) => {
-    return (
-      COMPREHENSIVE_VENDOR_DATA[vendorId] || {
-        name: vendorId,
-        category: "unknown",
-        pricing: { basePrice: 0 },
-        implementation: { complexity: "medium" },
-        security: { overallScore: 0 },
-        deployment: { models: [] },
-      }
-    )
+    return COMPREHENSIVE_VENDOR_DATA[vendorId] || null
   }
 
   // Filter vendors based on current filters
   const filteredVendors = Object.keys(COMPREHENSIVE_VENDOR_DATA).filter((vendorId) => {
     const vendor = getVendorData(vendorId)
+    if (!vendor) return false
 
     // Search filter
     if (filters.search && !vendor.name.toLowerCase().includes(filters.search.toLowerCase())) {
@@ -128,8 +140,11 @@ export default function VendorSelectionInterface({
 
     // Price range filter
     if (filters.priceRange !== "all") {
-      const basePrice = vendor.pricing?.basePrice || 0
+      const basePrice = vendor.licensing?.base?.[0]?.listPrice || 0
       switch (filters.priceRange) {
+        case "free":
+          if (basePrice > 0) return false
+          break
         case "low":
           if (basePrice >= 50) return false
           break
@@ -144,21 +159,24 @@ export default function VendorSelectionInterface({
 
     // Deployment model filter
     if (filters.deploymentModel !== "all") {
-      const deploymentModels = vendor.deployment?.models || []
-      if (!deploymentModels.includes(filters.deploymentModel)) {
-        return false
+      const hasCloudDeployment = vendor.hardware?.cloud && vendor.hardware.cloud.length > 0
+      const hasPhysicalDeployment = vendor.hardware?.physical && vendor.hardware.physical.length > 0
+      const hasVirtualDeployment = vendor.hardware?.virtual && vendor.hardware.virtual.length > 0
+
+      switch (filters.deploymentModel) {
+        case "cloud":
+          if (!hasCloudDeployment) return false
+          break
+        case "on-premise":
+          if (!hasPhysicalDeployment) return false
+          break
+        case "virtual":
+          if (!hasVirtualDeployment) return false
+          break
+        case "hybrid":
+          if (!hasCloudDeployment && !hasPhysicalDeployment) return false
+          break
       }
-    }
-
-    // Complexity filter
-    if (filters.complexity !== "all" && vendor.implementation?.complexity !== filters.complexity) {
-      return false
-    }
-
-    // Security score filter
-    const securityScore = vendor.security?.overallScore || 0
-    if (securityScore < filters.securityScore) {
-      return false
     }
 
     return true
@@ -168,6 +186,7 @@ export default function VendorSelectionInterface({
   const sortedVendors = [...filteredVendors].sort((a, b) => {
     const vendorA = getVendorData(a)
     const vendorB = getVendorData(b)
+    if (!vendorA || !vendorB) return 0
 
     let comparison = 0
     switch (filters.sortBy) {
@@ -175,16 +194,16 @@ export default function VendorSelectionInterface({
         comparison = vendorA.name.localeCompare(vendorB.name)
         break
       case "price":
-        comparison = (vendorA.pricing?.basePrice || 0) - (vendorB.pricing?.basePrice || 0)
+        const priceA = vendorA.licensing?.base?.[0]?.listPrice || 0
+        const priceB = vendorB.licensing?.base?.[0]?.listPrice || 0
+        comparison = priceA - priceB
         break
-      case "security":
-        comparison = (vendorA.security?.overallScore || 0) - (vendorB.security?.overallScore || 0)
+      case "category":
+        comparison = vendorA.category.localeCompare(vendorB.category)
         break
-      case "complexity":
-        const complexityOrder = { low: 1, medium: 2, high: 3 }
-        comparison =
-          complexityOrder[vendorA.implementation?.complexity || "medium"] -
-          complexityOrder[vendorB.implementation?.complexity || "medium"]
+      case "position":
+        const positionOrder = { leader: 1, challenger: 2, visionary: 3, niche: 4 }
+        comparison = positionOrder[vendorA.marketPosition] - positionOrder[vendorB.marketPosition]
         break
       default:
         comparison = vendorA.name.localeCompare(vendorB.name)
@@ -193,31 +212,30 @@ export default function VendorSelectionInterface({
     return filters.sortOrder === "asc" ? comparison : -comparison
   })
 
-  // Generate recommendations based on common use cases
+  // Generate recommendations based on market position and capabilities
   useEffect(() => {
     const recommended = []
 
-    // Always recommend Portnox as primary
+    // Always recommend Portnox as primary cloud-native solution
     if (COMPREHENSIVE_VENDOR_DATA["portnox"]) {
       recommended.push("portnox")
     }
 
     // Add market leaders
-    if (COMPREHENSIVE_VENDOR_DATA["cisco_ise"]) {
-      recommended.push("cisco_ise")
-    }
+    Object.entries(COMPREHENSIVE_VENDOR_DATA).forEach(([id, vendor]) => {
+      if (vendor.marketPosition === "leader" && !recommended.includes(id)) {
+        recommended.push(id)
+      }
+    })
 
-    // Add cloud-native alternatives
-    if (COMPREHENSIVE_VENDOR_DATA["aruba_clearpass"]) {
-      recommended.push("aruba_clearpass")
-    }
+    // Add challengers for comparison
+    Object.entries(COMPREHENSIVE_VENDOR_DATA).forEach(([id, vendor]) => {
+      if (vendor.marketPosition === "challenger" && recommended.length < 6 && !recommended.includes(id)) {
+        recommended.push(id)
+      }
+    })
 
-    // Add specialized solutions
-    if (COMPREHENSIVE_VENDOR_DATA["forescout"]) {
-      recommended.push("forescout")
-    }
-
-    setRecommendations(recommended)
+    setRecommendations(recommended.slice(0, 6))
   }, [])
 
   const handleVendorToggle = (vendorId: string) => {
@@ -228,12 +246,28 @@ export default function VendorSelectionInterface({
       newSelection = selectedVendors.filter((id) => id !== vendorId)
     } else {
       if (selectedVendors.length >= maxSelections) {
-        return // Don't add if max selections reached
+        return
       }
       newSelection = [...selectedVendors, vendorId]
     }
 
     onVendorSelectionChange(newSelection)
+  }
+
+  const handleComparisonToggle = (vendorId: string) => {
+    const isSelected = selectedForComparison.includes(vendorId)
+    let newSelection: string[]
+
+    if (isSelected) {
+      newSelection = selectedForComparison.filter((id) => id !== vendorId)
+    } else {
+      if (selectedForComparison.length >= 4) {
+        return
+      }
+      newSelection = [...selectedForComparison, vendorId]
+    }
+
+    setSelectedForComparison(newSelection)
   }
 
   const handleSelectRecommended = () => {
@@ -262,87 +296,173 @@ export default function VendorSelectionInterface({
     })
   }
 
+  const getVendorIcon = (vendor: any) => {
+    if (vendor.category === "cloud-native") return <CloudLightning className="h-5 w-5 text-blue-500" />
+    if (vendor.category === "enterprise") return <Building2 className="h-5 w-5 text-purple-500" />
+    if (vendor.category === "open-source") return <Globe className="h-5 w-5 text-green-500" />
+    return <Server className="h-5 w-5 text-gray-500" />
+  }
+
+  const getMarketPositionBadge = (position: string) => {
+    const badges = {
+      leader: { variant: "default" as const, color: "text-green-600", label: "Leader" },
+      challenger: { variant: "secondary" as const, color: "text-blue-600", label: "Challenger" },
+      visionary: { variant: "outline" as const, color: "text-purple-600", label: "Visionary" },
+      niche: { variant: "outline" as const, color: "text-orange-600", label: "Niche" },
+    }
+    const badge = badges[position as keyof typeof badges] || badges.niche
+    return (
+      <Badge variant={badge.variant} className={`text-xs ${badge.color}`}>
+        {badge.label}
+      </Badge>
+    )
+  }
+
   const VendorCard = ({ vendorId }: { vendorId: string }) => {
     const vendor = getVendorData(vendorId)
+    if (!vendor) return null
+
     const isSelected = selectedVendors.includes(vendorId)
+    const isSelectedForComparison = selectedForComparison.includes(vendorId)
     const isRecommended = recommendations.includes(vendorId)
     const isPrimary = vendorId === "portnox"
 
+    const basePrice = vendor.licensing?.base?.[0]?.listPrice || 0
+    const hasCloudDeployment = vendor.hardware?.cloud && vendor.hardware.cloud.length > 0
+    const hasPhysicalDeployment = vendor.hardware?.physical && vendor.hardware.physical.length > 0
+
     return (
       <Card
-        className={`transition-all duration-200 hover:shadow-md cursor-pointer ${
+        className={`transition-all duration-200 hover:shadow-lg cursor-pointer ${
           isSelected ? "ring-2 ring-primary bg-primary/5" : "hover:bg-muted/50"
-        } ${isPrimary ? "border-primary/50" : ""}`}
-        onClick={() => handleVendorToggle(vendorId)}
+        } ${isPrimary ? "border-primary/50 shadow-md" : ""}`}
       >
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                  <Building2 className="h-5 w-5" />
+                <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+                  {getVendorIcon(vendor)}
                 </div>
                 {isPrimary && <Star className="absolute -top-1 -right-1 h-4 w-4 text-yellow-500 fill-current" />}
               </div>
-              <div>
-                <h4 className="font-semibold text-sm flex items-center gap-2">
-                  {vendor.name}
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-semibold text-sm">{vendor.name}</h4>
                   {isPrimary && (
                     <Badge variant="secondary" className="text-xs">
-                      Primary
-                    </Badge>
-                  )}
-                  {isRecommended && (
-                    <Badge variant="outline" className="text-xs">
                       Recommended
                     </Badge>
                   )}
-                </h4>
-                <p className="text-xs text-muted-foreground capitalize">{vendor.category}</p>
+                  {isRecommended && !isPrimary && (
+                    <Badge variant="outline" className="text-xs">
+                      Popular
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-muted-foreground capitalize">{vendor.category}</p>
+                  {getMarketPositionBadge(vendor.marketPosition)}
+                </div>
               </div>
             </div>
-            <Checkbox checked={isSelected} onChange={() => handleVendorToggle(vendorId)} className="mt-1" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="flex items-center gap-1">
-              <DollarSign className="h-3 w-3 text-green-600" />
-              <span>${vendor.pricing?.basePrice || 0}/device</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Shield className="h-3 w-3 text-blue-600" />
-              <span>{vendor.security?.overallScore || 0}% security</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3 text-orange-600" />
-              <span className="capitalize">{vendor.implementation?.complexity || "medium"} setup</span>
-            </div>
-            <div className="flex items-center gap-1">
-              {vendor.category === "cloud-native" ? (
-                <Cloud className="h-3 w-3 text-purple-600" />
-              ) : (
-                <Server className="h-3 w-3 text-gray-600" />
-              )}
-              <span className="capitalize">{vendor.category}</span>
+            <div className="flex flex-col items-end gap-2">
+              <Checkbox
+                checked={isSelected}
+                onChange={() => handleVendorToggle(vendorId)}
+                className="data-[state=checked]:bg-primary"
+              />
             </div>
           </div>
 
-          {vendor.deployment?.models && vendor.deployment.models.length > 0 && (
-            <div className="mt-3 pt-2 border-t">
+          <div className="space-y-3">
+            {/* Key Metrics */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="flex items-center gap-1">
+                <DollarSign className="h-3 w-3 text-green-600" />
+                <span>{basePrice > 0 ? `$${basePrice}/device` : "Contact Sales"}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3 text-orange-600" />
+                <span>{vendor.tcoFactors?.upgradeComplexity || "Medium"} setup</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {hasCloudDeployment ? (
+                  <Cloud className="h-3 w-3 text-blue-600" />
+                ) : (
+                  <Server className="h-3 w-3 text-gray-600" />
+                )}
+                <span>{hasCloudDeployment ? "Cloud" : "On-Premise"}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Shield className="h-3 w-3 text-purple-600" />
+                <span>Enterprise Security</span>
+              </div>
+            </div>
+
+            {/* Feature Highlights */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-muted-foreground">Key Features:</div>
               <div className="flex flex-wrap gap-1">
-                {vendor.deployment.models.slice(0, 2).map((model, idx) => (
-                  <Badge key={idx} variant="outline" className="text-xs capitalize">
-                    {model}
-                  </Badge>
-                ))}
-                {vendor.deployment.models.length > 2 && (
+                {vendor.featureSupport?.authentication?.["802.1X"] === "✓✓✓" && (
                   <Badge variant="outline" className="text-xs">
-                    +{vendor.deployment.models.length - 2} more
+                    <Wifi className="h-3 w-3 mr-1" />
+                    802.1X
+                  </Badge>
+                )}
+                {vendor.featureSupport?.advanced?.["Zero Trust"] === "✓✓✓" && (
+                  <Badge variant="outline" className="text-xs">
+                    <Lock className="h-3 w-3 mr-1" />
+                    Zero Trust
+                  </Badge>
+                )}
+                {vendor.featureSupport?.advanced?.["Cloud Native"] === "✓✓✓" && (
+                  <Badge variant="outline" className="text-xs">
+                    <Cloud className="h-3 w-3 mr-1" />
+                    Cloud Native
+                  </Badge>
+                )}
+                {vendor.featureSupport?.network?.IoT === "✓✓✓" && (
+                  <Badge variant="outline" className="text-xs">
+                    <Smartphone className="h-3 w-3 mr-1" />
+                    IoT
                   </Badge>
                 )}
               </div>
             </div>
-          )}
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-between pt-2 border-t">
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedVendorDetails(vendorId)
+                  }}
+                  className="text-xs h-7"
+                >
+                  <Eye className="h-3 w-3 mr-1" />
+                  Details
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleComparisonToggle(vendorId)
+                  }}
+                  className={`text-xs h-7 ${isSelectedForComparison ? "bg-blue-100 text-blue-700" : ""}`}
+                  disabled={!isSelectedForComparison && selectedForComparison.length >= 4}
+                >
+                  <GitCompare className="h-3 w-3 mr-1" />
+                  Compare
+                </Button>
+              </div>
+              <div className="text-xs text-muted-foreground">{vendor.tcoFactors?.fteRequirement || 1} FTE req.</div>
+            </div>
+          </div>
         </CardContent>
       </Card>
     )
@@ -353,12 +473,21 @@ export default function VendorSelectionInterface({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Vendor Selection</h2>
+          <h2 className="text-3xl font-bold">Vendor Selection & Analysis</h2>
           <p className="text-muted-foreground">
-            Choose up to {maxSelections} NAC vendors for comparison • {selectedVendors.length} selected
+            Choose up to {maxSelections} NAC vendors for comprehensive analysis • {selectedVendors.length} selected
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowComparison(true)}
+            disabled={selectedForComparison.length < 2}
+          >
+            <GitCompare className="h-4 w-4 mr-2" />
+            Compare ({selectedForComparison.length})
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)}>
             <Filter className="h-4 w-4 mr-2" />
             {showFilters ? "Hide" : "Show"} Filters
@@ -366,201 +495,203 @@ export default function VendorSelectionInterface({
         </div>
       </div>
 
-      {/* Selection Summary */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            Selection Summary
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{selectedVendors.length}</div>
-                <div className="text-sm text-muted-foreground">Selected</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-muted-foreground">{maxSelections}</div>
-                <div className="text-sm text-muted-foreground">Maximum</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{sortedVendors.length}</div>
-                <div className="text-sm text-muted-foreground">Available</div>
-              </div>
-            </div>
-            <Progress value={(selectedVendors.length / maxSelections) * 100} className="w-32" />
-          </div>
+      <Tabs defaultValue="selection" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="selection">Vendor Selection</TabsTrigger>
+          <TabsTrigger value="overview">Market Overview</TabsTrigger>
+          <TabsTrigger value="comparison">Quick Compare</TabsTrigger>
+          <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+        </TabsList>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              {selectedVendors.length > 0 ? (
-                <>
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  Ready for analysis
-                </>
-              ) : (
-                <>
-                  <AlertCircle className="h-4 w-4 text-orange-600" />
-                  Select vendors to begin
-                </>
-              )}
-            </div>
-            <div className="flex gap-2">
-              {showRecommendations && (
-                <Button variant="outline" size="sm" onClick={handleSelectRecommended}>
-                  <Star className="h-4 w-4 mr-2" />
-                  Select Recommended
-                </Button>
-              )}
-              <Button variant="outline" size="sm" onClick={handleSelectAll}>
-                <Users className="h-4 w-4 mr-2" />
-                Select All Filtered
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleClearSelection}>
-                Clear All
-              </Button>
-            </div>
-          </div>
-
-          {selectedVendors.length >= maxSelections && (
-            <Alert className="mt-4">
-              <Info className="h-4 w-4" />
-              <AlertDescription>
-                Maximum selection limit reached. Deselect vendors to choose different ones.
-              </AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Filters */}
-      {showFilters && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Advanced Filters</span>
-              <Button variant="outline" size="sm" onClick={resetFilters}>
-                Reset Filters
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Search */}
-              <div>
-                <Label htmlFor="search">Search Vendors</Label>
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="search"
-                    placeholder="Search by name..."
-                    value={filters.search}
-                    onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
-                    className="pl-8"
-                  />
+        <TabsContent value="selection" className="space-y-6">
+          {/* Selection Summary */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Selection Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary">{selectedVendors.length}</div>
+                    <div className="text-sm text-muted-foreground">Selected</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-muted-foreground">{maxSelections}</div>
+                    <div className="text-sm text-muted-foreground">Maximum</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-green-600">{sortedVendors.length}</div>
+                    <div className="text-sm text-muted-foreground">Available</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-blue-600">{selectedForComparison.length}</div>
+                    <div className="text-sm text-muted-foreground">For Compare</div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Progress value={(selectedVendors.length / maxSelections) * 100} className="w-32" />
+                  <div className="text-xs text-center text-muted-foreground">
+                    {Math.round((selectedVendors.length / maxSelections) * 100)}% of limit
+                  </div>
                 </div>
               </div>
 
-              {/* Category */}
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Select
-                  value={filters.category}
-                  onValueChange={(value) => setFilters((prev) => ({ ...prev, category: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(VENDOR_CATEGORIES).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Price Range */}
-              <div>
-                <Label htmlFor="priceRange">Price Range</Label>
-                <Select
-                  value={filters.priceRange}
-                  onValueChange={(value) => setFilters((prev) => ({ ...prev, priceRange: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PRICE_RANGES).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Deployment Model */}
-              <div>
-                <Label htmlFor="deploymentModel">Deployment Model</Label>
-                <Select
-                  value={filters.deploymentModel}
-                  onValueChange={(value) => setFilters((prev) => ({ ...prev, deploymentModel: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(DEPLOYMENT_MODELS).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Complexity */}
-              <div>
-                <Label htmlFor="complexity">Implementation Complexity</Label>
-                <Select
-                  value={filters.complexity}
-                  onValueChange={(value) => setFilters((prev) => ({ ...prev, complexity: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(COMPLEXITY_LEVELS).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Sort Options */}
-              <div>
-                <Label htmlFor="sortBy">Sort By</Label>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  {selectedVendors.length > 0 ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                      Ready for comprehensive analysis
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="h-4 w-4 text-orange-600" />
+                      Select vendors to begin analysis
+                    </>
+                  )}
+                </div>
                 <div className="flex gap-2">
-                  <Select
-                    value={filters.sortBy}
-                    onValueChange={(value) => setFilters((prev) => ({ ...prev, sortBy: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="name">Name</SelectItem>
-                      <SelectItem value="price">Price</SelectItem>
-                      <SelectItem value="security">Security Score</SelectItem>
-                      <SelectItem value="complexity">Complexity</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {showRecommendations && (
+                    <Button variant="outline" size="sm" onClick={handleSelectRecommended}>
+                      <Star className="h-4 w-4 mr-2" />
+                      Select Recommended
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" onClick={handleSelectAll}>
+                    <Users className="h-4 w-4 mr-2" />
+                    Select All Filtered
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleClearSelection}>
+                    Clear All
+                  </Button>
+                </div>
+              </div>
+
+              {selectedVendors.length >= maxSelections && (
+                <Alert className="mt-4">
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    Maximum selection limit reached. Deselect vendors to choose different ones.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Filters */}
+          {showFilters && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Advanced Filters & Sorting</span>
+                  <Button variant="outline" size="sm" onClick={resetFilters}>
+                    Reset All Filters
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Search */}
+                  <div>
+                    <Label htmlFor="search">Search Vendors</Label>
+                    <div className="relative">
+                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="search"
+                        placeholder="Search by name..."
+                        value={filters.search}
+                        onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
+                        className="pl-8"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Category */}
+                  <div>
+                    <Label htmlFor="category">Category</Label>
+                    <Select
+                      value={filters.category}
+                      onValueChange={(value) => setFilters((prev) => ({ ...prev, category: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(VENDOR_CATEGORIES).map(([key, label]) => (
+                          <SelectItem key={key} value={key}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Price Range */}
+                  <div>
+                    <Label htmlFor="priceRange">Price Range</Label>
+                    <Select
+                      value={filters.priceRange}
+                      onValueChange={(value) => setFilters((prev) => ({ ...prev, priceRange: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(PRICE_RANGES).map(([key, label]) => (
+                          <SelectItem key={key} value={key}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Deployment Model */}
+                  <div>
+                    <Label htmlFor="deploymentModel">Deployment Model</Label>
+                    <Select
+                      value={filters.deploymentModel}
+                      onValueChange={(value) => setFilters((prev) => ({ ...prev, deploymentModel: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(DEPLOYMENT_MODELS).map(([key, label]) => (
+                          <SelectItem key={key} value={key}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Sort Options */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="sortBy">Sort By:</Label>
+                    <Select
+                      value={filters.sortBy}
+                      onValueChange={(value) => setFilters((prev) => ({ ...prev, sortBy: value }))}
+                    >
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="name">Name</SelectItem>
+                        <SelectItem value="price">Price</SelectItem>
+                        <SelectItem value="category">Category</SelectItem>
+                        <SelectItem value="position">Market Position</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <Button
                     variant="outline"
                     size="sm"
@@ -568,92 +699,355 @@ export default function VendorSelectionInterface({
                       setFilters((prev) => ({ ...prev, sortOrder: prev.sortOrder === "asc" ? "desc" : "asc" }))
                     }
                   >
-                    {filters.sortOrder === "asc" ? "↑" : "↓"}
+                    {filters.sortOrder === "asc" ? "↑ Ascending" : "↓ Descending"}
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Vendor Grid */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">Available Vendors ({sortedVendors.length})</h3>
+              <div className="text-sm text-muted-foreground">
+                Showing {sortedVendors.length} of {Object.keys(COMPREHENSIVE_VENDOR_DATA).length} vendors
               </div>
             </div>
 
-            <Separator />
-
-            {/* Security Score Filter */}
-            <div>
-              <Label htmlFor="securityScore">Minimum Security Score: {filters.securityScore}%</Label>
-              <input
-                type="range"
-                id="securityScore"
-                min="0"
-                max="100"
-                step="5"
-                value={filters.securityScore}
-                onChange={(e) => setFilters((prev) => ({ ...prev, securityScore: Number(e.target.value) }))}
-                className="w-full mt-2"
-              />
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Vendor Grid */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Available Vendors ({sortedVendors.length})</h3>
-          <div className="text-sm text-muted-foreground">
-            Showing {sortedVendors.length} of {Object.keys(COMPREHENSIVE_VENDOR_DATA).length} vendors
+            {sortedVendors.length === 0 ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <AlertCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">No vendors found</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Try adjusting your filters to see more vendors, or reset all filters to start over.
+                  </p>
+                  <Button variant="outline" onClick={resetFilters}>
+                    <Filter className="h-4 w-4 mr-2" />
+                    Reset All Filters
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sortedVendors.map((vendorId) => (
+                  <VendorCard key={vendorId} vendorId={vendorId} />
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        </TabsContent>
 
-        {sortedVendors.length === 0 ? (
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <Building2 className="h-5 w-5 text-blue-600" />
+                  <h3 className="font-semibold">Total Vendors</h3>
+                </div>
+                <div className="text-3xl font-bold">{Object.keys(COMPREHENSIVE_VENDOR_DATA).length}</div>
+                <p className="text-sm text-muted-foreground">Available for analysis</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <Award className="h-5 w-5 text-green-600" />
+                  <h3 className="font-semibold">Market Leaders</h3>
+                </div>
+                <div className="text-3xl font-bold">
+                  {Object.values(COMPREHENSIVE_VENDOR_DATA).filter((v) => v.marketPosition === "leader").length}
+                </div>
+                <p className="text-sm text-muted-foreground">Industry leaders</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <CloudLightning className="h-5 w-5 text-purple-600" />
+                  <h3 className="font-semibold">Cloud-Native</h3>
+                </div>
+                <div className="text-3xl font-bold">
+                  {Object.values(COMPREHENSIVE_VENDOR_DATA).filter((v) => v.category === "cloud-native").length}
+                </div>
+                <p className="text-sm text-muted-foreground">Modern solutions</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <Globe className="h-5 w-5 text-orange-600" />
+                  <h3 className="font-semibold">Open Source</h3>
+                </div>
+                <div className="text-3xl font-bold">
+                  {Object.values(COMPREHENSIVE_VENDOR_DATA).filter((v) => v.category === "open-source").length}
+                </div>
+                <p className="text-sm text-muted-foreground">Free alternatives</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Market Position Distribution */}
           <Card>
-            <CardContent className="p-8 text-center">
-              <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No vendors found</h3>
-              <p className="text-muted-foreground mb-4">Try adjusting your filters to see more vendors.</p>
-              <Button variant="outline" onClick={resetFilters}>
-                Reset Filters
-              </Button>
+            <CardHeader>
+              <CardTitle>Market Position Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {["leader", "challenger", "visionary", "niche"].map((position) => {
+                  const count = Object.values(COMPREHENSIVE_VENDOR_DATA).filter(
+                    (v) => v.marketPosition === position,
+                  ).length
+                  const percentage = Math.round((count / Object.keys(COMPREHENSIVE_VENDOR_DATA).length) * 100)
+
+                  return (
+                    <div key={position} className="text-center p-4 border rounded-lg">
+                      <div className="text-2xl font-bold mb-1">{count}</div>
+                      <div className="text-sm font-medium capitalize mb-1">{position}s</div>
+                      <div className="text-xs text-muted-foreground">{percentage}% of market</div>
+                      <Progress value={percentage} className="mt-2" />
+                    </div>
+                  )
+                })}
+              </div>
             </CardContent>
           </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sortedVendors.map((vendorId) => (
-              <VendorCard key={vendorId} vendorId={vendorId} />
-            ))}
-          </div>
-        )}
-      </div>
+        </TabsContent>
 
-      {/* Recommendations */}
-      {showRecommendations && recommendations.length > 0 && (
-        <Card className="bg-muted/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-yellow-500" />
-              Recommended Selection
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              Based on market analysis and common use cases, we recommend starting with these vendors:
-            </p>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {recommendations.map((vendorId) => {
-                const vendor = getVendorData(vendorId)
-                return (
-                  <Badge key={vendorId} variant="outline" className="flex items-center gap-1">
-                    {vendorId === "portnox" && <Star className="h-3 w-3 text-yellow-500" />}
-                    {vendor.name}
-                  </Badge>
-                )
-              })}
-            </div>
-            <Button variant="outline" size="sm" onClick={handleSelectRecommended}>
-              <Zap className="h-4 w-4 mr-2" />
-              Use Recommended Selection
-            </Button>
-          </CardContent>
-        </Card>
+        <TabsContent value="comparison" className="space-y-6">
+          {selectedForComparison.length < 2 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <GitCompare className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Select Vendors to Compare</h3>
+                <p className="text-muted-foreground mb-6">
+                  Choose 2-4 vendors from the selection tab to see a detailed comparison.
+                </p>
+                <Button variant="outline" onClick={() => setSelectedForComparison(recommendations.slice(0, 3))}>
+                  <Star className="h-4 w-4 mr-2" />
+                  Compare Recommended Vendors
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <VendorComparisonTable vendors={selectedForComparison} />
+          )}
+        </TabsContent>
+
+        <TabsContent value="recommendations" className="space-y-6">
+          {/* Recommended Selection */}
+          <Card className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/20 dark:to-green-950/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-yellow-500" />
+                Expert Recommendations
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-6">
+                Based on market analysis, customer feedback, and technical capabilities, we recommend these vendor
+                combinations for different use cases:
+              </p>
+
+              <div className="space-y-6">
+                {/* Primary Recommendation */}
+                <div className="p-4 border rounded-lg bg-white/50 dark:bg-gray-900/50">
+                  <h4 className="font-semibold text-green-700 dark:text-green-300 mb-2 flex items-center gap-2">
+                    <Award className="h-4 w-4" />
+                    Best Overall Choice
+                  </h4>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {recommendations.slice(0, 1).map((vendorId) => {
+                      const vendor = getVendorData(vendorId)
+                      return vendor ? (
+                        <Badge key={vendorId} variant="default" className="flex items-center gap-1">
+                          <Star className="h-3 w-3" />
+                          {vendor.name}
+                        </Badge>
+                      ) : null
+                    })}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Portnox CLEAR offers the best combination of features, ease of deployment, and total cost of
+                    ownership. Ideal for organizations seeking modern, cloud-native NAC with zero-trust capabilities.
+                  </p>
+                </div>
+
+                {/* Comprehensive Analysis */}
+                <div className="p-4 border rounded-lg bg-white/50 dark:bg-gray-900/50">
+                  <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Comprehensive Analysis Set
+                  </h4>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {recommendations.slice(0, 4).map((vendorId) => {
+                      const vendor = getVendorData(vendorId)
+                      return vendor ? (
+                        <Badge key={vendorId} variant="outline" className="flex items-center gap-1">
+                          {getVendorIcon(vendor)}
+                          {vendor.name}
+                        </Badge>
+                      ) : null
+                    })}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Compare market leaders and innovative solutions to make an informed decision. This set covers
+                    different deployment models, price points, and feature sets.
+                  </p>
+                </div>
+
+                {/* Budget-Conscious */}
+                <div className="p-4 border rounded-lg bg-white/50 dark:bg-gray-900/50">
+                  <h4 className="font-semibold text-orange-700 dark:text-orange-300 mb-2 flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    Budget-Conscious Selection
+                  </h4>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {Object.entries(COMPREHENSIVE_VENDOR_DATA)
+                      .filter(([_, vendor]) => {
+                        const basePrice = vendor.licensing?.base?.[0]?.listPrice || 0
+                        return basePrice < 50 || basePrice === 0
+                      })
+                      .slice(0, 3)
+                      .map(([vendorId, vendor]) => (
+                        <Badge key={vendorId} variant="outline" className="flex items-center gap-1">
+                          <DollarSign className="h-3 w-3" />
+                          {vendor.name}
+                        </Badge>
+                      ))}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Cost-effective solutions that still provide essential NAC capabilities. Consider total cost of
+                    ownership including implementation and maintenance.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-2 mt-6">
+                <Button onClick={handleSelectRecommended}>
+                  <Zap className="h-4 w-4 mr-2" />
+                  Use Expert Recommendations
+                </Button>
+                <Button variant="outline" onClick={() => setSelectedForComparison(recommendations.slice(0, 4))}>
+                  <GitCompare className="h-4 w-4 mr-2" />
+                  Compare Recommended
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Selection Guidance */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-green-600">Why These Recommendations?</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                  <div>
+                    <div className="font-medium">Market Leadership</div>
+                    <div className="text-sm text-muted-foreground">Proven track record and strong market position</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                  <div>
+                    <div className="font-medium">Feature Completeness</div>
+                    <div className="text-sm text-muted-foreground">
+                      Comprehensive NAC capabilities and modern features
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                  <div>
+                    <div className="font-medium">Total Cost of Ownership</div>
+                    <div className="text-sm text-muted-foreground">Optimized for long-term value and ROI</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                  <div>
+                    <div className="font-medium">Customer Satisfaction</div>
+                    <div className="text-sm text-muted-foreground">High ratings and positive feedback</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-blue-600">Selection Tips</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <div className="font-medium">Start with 3-5 Vendors</div>
+                    <div className="text-sm text-muted-foreground">
+                      Optimal number for thorough comparison without analysis paralysis
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <div className="font-medium">Include Different Categories</div>
+                    <div className="text-sm text-muted-foreground">
+                      Mix cloud-native, enterprise, and specialized solutions
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <div className="font-medium">Consider Your Requirements</div>
+                    <div className="text-sm text-muted-foreground">
+                      Match vendor capabilities to your specific needs
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <div className="font-medium">Plan for Growth</div>
+                    <div className="text-sm text-muted-foreground">
+                      Choose solutions that scale with your organization
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Vendor Details Modal */}
+      {selectedVendorDetails && (
+        <VendorDetailsModal
+          vendorId={selectedVendorDetails}
+          isOpen={!!selectedVendorDetails}
+          onClose={() => setSelectedVendorDetails(null)}
+        />
       )}
+
+      {/* Comparison Modal */}
+      <Dialog open={showComparison} onOpenChange={setShowComparison}>
+        <DialogContent className="max-w-6xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Vendor Comparison</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[80vh]">
+            <VendorComparisonTable vendors={selectedForComparison} />
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
