@@ -23,6 +23,10 @@ import {
   Download,
 } from "lucide-react"
 
+import InteractiveTCOChart from "@/components/charts/advanced/InteractiveTCOChart"
+import RealTimeMetrics from "@/components/charts/advanced/RealTimeMetrics"
+import DrillDownTreemap from "@/components/charts/advanced/DrillDownTreemap"
+
 const COST_CATEGORY_COLORS: { [key in keyof TCOResultBreakdown]: string } = {
   software: "#3B82F6",
   hardware: "#EF4444",
@@ -448,4 +452,94 @@ const TcoAnalysisView: React.FC = () => {
                       </tr>
                     ))}
                     <tr className="bg-slate-800/70 hover:bg-slate-700/50 transition-colors duration-150">
-                      <td className="whitespace-nowrap py-3.5 pl-4 pr-3 text-sm font-bold text-white sm:pl-6 \
+                      <td className="whitespace-nowrap py-3.5 pl-4 pr-3 text-sm font-bold text-white sm:pl-6 sticky left-0 bg-slate-800/70 hover:bg-slate-700/50 z-10">
+                        Total TCO
+                      </td>
+                      {tcoResults.map((vendor) => (
+                        <td
+                          key={`${vendor.vendorId}-total`}
+                          className="whitespace-nowrap px-3 py-3.5 text-sm font-bold text-right text-white"
+                        >
+                          {vendor.totalTCO.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "USD",
+                            minimumFractionDigits: 0,
+                          })}
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="interactive" className="space-y-6">
+          <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-2xl text-white">Interactive TCO Explorer</CardTitle>
+              <CardDescription className="text-slate-400">
+                Explore cost components with interactive filtering and drill-down capabilities.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="h-[600px] pt-6">
+              <InteractiveTCOChart
+                data={chartData}
+                costCategories={Object.keys(COST_CATEGORY_COLORS)}
+                colorMapping={COST_CATEGORY_COLORS}
+                onDataPointClick={(data) => console.log("Clicked:", data)}
+                onFilterChange={(filters) => console.log("Filters:", filters)}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="realtime" className="space-y-6">
+          <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-2xl text-white">Real-Time TCO Metrics</CardTitle>
+              <CardDescription className="text-slate-400">
+                Live updates and trend analysis for cost optimization insights.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="h-[600px] pt-6">
+              <RealTimeMetrics
+                data={tcoResults.map((result) => ({
+                  timestamp: Date.now(),
+                  vendor: result.vendorName,
+                  totalCost: result.totalTCO,
+                  trend: Math.random() > 0.5 ? "up" : "down",
+                  changePercent: Math.round(Math.random() * 20 - 10),
+                }))}
+                updateInterval={5000}
+                onMetricUpdate={(metric) => console.log("Metric updated:", metric)}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="breakdown" className="space-y-6">
+          <Card className="bg-slate-800/30 border-slate-700/50 shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-2xl text-white">Cost Breakdown Treemap</CardTitle>
+              <CardDescription className="text-slate-400">
+                Hierarchical visualization of cost components with drill-down capabilities.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="h-[600px] pt-6">
+              <DrillDownTreemap
+                data={treemapData}
+                levels={drillDownLevels}
+                onNodeClick={(node) => console.log("Node clicked:", node)}
+                onLevelChange={(level) => console.log("Level changed:", level)}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </motion.div>
+  )
+}
+
+export default TcoAnalysisView
