@@ -24,6 +24,7 @@ import {
   Globe,
   CheckCircle,
   Info,
+  UserCheck,
 } from "lucide-react"
 
 // Import all view components
@@ -39,6 +40,7 @@ import EnhancedFeatureComparisonView from "@/components/enhanced-feature-compari
 import IndustryAnalysisView from "@/components/industry-analysis-view"
 import ExecutiveReportView from "@/components/executive-report-view"
 import InteractiveDashboard from "@/components/interactive-dashboard"
+import VendorSelectionInterface from "@/components/vendor-selection-interface"
 
 // Configuration interface
 interface AppConfig {
@@ -62,7 +64,7 @@ const DEFAULT_CONFIG: AppConfig = {
 
 export default function Home() {
   const [config, setConfig] = useState<AppConfig>(DEFAULT_CONFIG)
-  const [activeTab, setActiveTab] = useState("dashboard")
+  const [activeTab, setActiveTab] = useState("vendors")
   const [isLoading, setIsLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
 
@@ -196,7 +198,11 @@ export default function Home() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12">
+          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-13">
+            <TabsTrigger value="vendors" className="flex items-center gap-1">
+              <UserCheck className="h-4 w-4" />
+              <span className="hidden sm:inline">Vendors</span>
+            </TabsTrigger>
             <TabsTrigger value="dashboard" className="flex items-center gap-1">
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Dashboard</span>
@@ -254,6 +260,15 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
+            <TabsContent value="vendors" className="space-y-6">
+              <VendorSelectionInterface
+                selectedVendors={config.selectedVendors}
+                onVendorSelectionChange={handleVendorSelectionChange}
+                maxSelections={10}
+                showRecommendations={true}
+              />
+            </TabsContent>
+
             <TabsContent value="dashboard" className="space-y-6">
               <InteractiveDashboard initialConfig={config} onConfigChange={handleConfigChange} />
             </TabsContent>
@@ -267,7 +282,7 @@ export default function Home() {
             </TabsContent>
 
             <TabsContent value="security" className="space-y-6">
-              <SecurityRiskAssessmentView />
+              <SecurityRiskAssessmentView config={config} />
             </TabsContent>
 
             <TabsContent value="business" className="space-y-6">
@@ -279,7 +294,14 @@ export default function Home() {
             </TabsContent>
 
             <TabsContent value="migration" className="space-y-6">
-              <MigrationPlanningView />
+              <MigrationPlanningView
+                selectedVendors={config.selectedVendors}
+                currentEnvironment={{
+                  devices: config.deviceCount,
+                  users: Math.floor(config.deviceCount * 0.8),
+                  industry: config.industry,
+                }}
+              />
             </TabsContent>
 
             <TabsContent value="comparison" className="space-y-6">
