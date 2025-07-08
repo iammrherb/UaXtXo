@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import type { VendorId, NewVendorData } from "@/lib/vendors/comprehensive-vendor-data"
-import { getVendorDataById } from "@/lib/vendors/comprehensive-vendor-data"
+import { getVendorDataById, VENDOR_DATA } from "@/lib/vendors/comprehensive-vendor-data"
 import type { OrgSizeId, IndustryId } from "@/types/common"
 
 // Organization size configurations
@@ -417,11 +417,67 @@ export function useTcoCalculator() {
       // Compliance metrics
       const industryStandards = INDUSTRY_FACTORS[industryId].requiredStandards
       const coveredStandards = vendor.complianceSupport
-        .filter(comp => industryStandards.includes(comp.standardId))
-        .filter(comp => comp.coverageLevel === "Covered")
-      
+        .filter((comp) => industryStandards.includes(comp.standardId))
+        .filter((comp) => comp.coverageLevel === "Covered")
+
       const complianceMetrics = {
         coverageScore: securityMetrics.complianceCoverageScore,
-        automationLevel: vendor.complianceSupport.reduce((acc, comp) => acc + comp.automationPercent, 0) / vendor.complianceSupport.length,
+        automationLevel:
+          vendor.complianceSupport.reduce((acc, comp) => acc + comp.automationPercent, 0) /
+          vendor.complianceSupport.length,
         auditReadiness: securityMetrics.complianceCoverageScore * 0.9,
-        \
+        standardsCovered: coveredStandards.map((comp) => comp.standardId),
+      }
+
+      // Market position (calculated against all vendors)
+      const allTCOs = VENDOR_DATA.map((v) => {
+        const result = calculateSingleVendorTco(v.id, orgSizeId, industryId, projectionYears)
+        return result ? result.totalTCO : Number.POSITIVE_INFINITY
+      })
+        .filter((tco) => tco !== Number.POSITIVE_INFINITY)
+        .sort((a, b) => a - b)
+
+      const ranking = allTCOs.findIndex((tco) => tco >= totalTCO) + 1
+      const percentileSavings = ((allTCOs[allTCOs.length - 1] - totalTCO) / allTCOs[allTCOs.length - 1]) * 100
+
+      const marketPosition = {
+        ranking,
+        percentileSavings,
+        competitiveAdvantage: vendor.strengths.slice(0, 3),
+      }
+
+      return {
+        vendorId,
+        vendorName: vendor.name,
+        totalTCO,
+        breakdown,
+        roiMetrics,
+        securityMetrics,
+        operationalMetrics,
+        complianceMetrics,
+        marketPosition,
+      }
+    }
+  }, [])
+
+  const calculateMultiVendorComparison = useMemo(() => {
+    return (
+      vendorIds: VendorId[],
+      orgSizeId: OrgSizeId,
+      industryId: IndustryId,
+      projectionYears: number,
+    ): TCOResult[] => {
+      return vendorIds
+        .map((vendorId) => calculateSingleVendorTco(vendorId, orgSizeId, industryId, projectionYears))
+        .filter((result): result is TCOResult => result !== null)
+        .sort((a, b) => a.totalTCO - b.totalTCO)
+    }
+  }, [calculateSingleVendorTco])
+
+  return {
+    calculateSingleVendorTco,
+    calculateMultiVendorComparison,
+    orgSizeConfigs: ORG_SIZE_CONFIGS,
+    industryFactors: INDUSTRY_FACTORS,
+  }
+}

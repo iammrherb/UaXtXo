@@ -1,22 +1,17 @@
 "use client"
 import type { OrgSizeId } from "@/types/common"
+import { useMemo } from "react"
+import {
+  VENDOR_DATA,
+  getVendorDataById,
+  VENDOR_IDS_DEFINITIVE,
+  MARKET_INTELLIGENCE,
+  VULNERABILITY_COMPARISON,
+  TCO_COMPARISON_BASELINE,
+  type VendorId,
+} from "@/lib/vendors/comprehensive-vendor-data"
 
-export type VendorId =
-  | "portnox"
-  | "cisco_ise"
-  | "aruba_clearpass"
-  | "fortinac"
-  | "forescout"
-  | "juniper_mist"
-  | "extreme_nac"
-  | "cisco_meraki"
-  | "microsoft_nps"
-  | "packetfence"
-  | "foxpass"
-  | "securew2"
-  | "arista_agni"
-
-export interface VendorPricingTier {
+export type VendorPricingTier = {
   orgSizeTarget?: OrgSizeId[]
   userRange?: [number, number | null]
   pricePerDevicePerMonth?: number
@@ -51,58 +46,33 @@ export interface VendorImplementationMetrics {
   }
 }
 
-export interface NewVendorData {
-  id: VendorId
-  name: string
-  vendorType: string
-  logoUrl?: string
-  shortDescription?: string
-  description: string
-  pricingTiers?: VendorPricingTier[]
-  tcoFactors: VendorTCOFactors
-  implementation: VendorImplementationMetrics
-  roiFactors: VendorROIFactors
-  complianceSupport: {
-    standardId: string
-    coveragePercent: number
-    coverageLevel?: "Covered" | "Partial" | "NotCovered"
-    automationPercent?: number
-    details?: string
-  }[]
-  comparativeScores?: {
-    securityScore: number
-    usabilityScore: number
-    scalabilityScore: number
-    supportScore: number
-    complianceCoverageScore: number
-  }
-  portnoxSpecificMetrics?: {
-    zeroTrustMaturityScore: number
-    riskBasedAuthCoverage: number
-    continuousMonitoringCoverage: number
-    automatedRemediationRate: number
-    is100PercentCloudNative: boolean
-    agentlessDeploymentPercent: number
-  }
-  features: {
-    coreNAC: Record<string, { score?: number; details?: string; isPortnoxAdvantage?: boolean }>
-    advancedSecurity: Record<string, { score?: number; details?: string; isPortnoxAdvantage?: boolean }>
-    cloudModern: Record<string, { score?: number; details?: string; isPortnoxAdvantage?: boolean }>
-    compliance: Record<string, { score?: number; details?: string; isPortnoxAdvantage?: boolean }>
-  }
-  strengths?: string[]
-  weaknesses?: string[]
+export interface VendorComparisonMetrics {
+  marketShare: number
+  customerSatisfaction: number
+  securityScore: number
+  deploymentComplexity: "low" | "medium" | "high" | "very_high"
+  zeroTrustMaturity: number
+  complianceCoverage: number
+  tcoRanking: number
+}
+
+export interface MarketPositionData {
+  leaders: any[]
+  challengers: any[]
+  visionaries: any[]
+  niche: any[]
 }
 
 // Enhanced vendor data with all 14 vendors
-const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
+const COMPREHENSIVE_VENDOR_DATA: any[] = [
   {
     id: "portnox",
     name: "Portnox CLEAR",
     vendorType: "Cloud-Native Zero Trust NAC",
     logoUrl: "/portnox-logo-color.png",
     shortDescription: "AI-powered, cloud-native Zero Trust Network Access Control with risk-based authentication",
-    description: "AI-powered, cloud-native Zero Trust Network Access Control with risk-based authentication and continuous compliance monitoring",
+    description:
+      "AI-powered, cloud-native Zero Trust Network Access Control with risk-based authentication and continuous compliance monitoring",
     pricingTiers: [
       {
         orgSizeTarget: ["small_business"],
@@ -150,13 +120,55 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       avgPaybackPeriodMonths: 12,
     },
     complianceSupport: [
-      { standardId: "hipaa", coveragePercent: 95, coverageLevel: "Covered", automationPercent: 90, details: "Automated compliance reporting and audit trails" },
-      { standardId: "pci_dss", coveragePercent: 92, coverageLevel: "Covered", automationPercent: 88, details: "Network segmentation and access controls" },
-      { standardId: "gdpr", coveragePercent: 88, coverageLevel: "Covered", automationPercent: 85, details: "Data protection and privacy controls" },
-      { standardId: "sox", coveragePercent: 90, coverageLevel: "Covered", automationPercent: 87, details: "Financial controls and audit logging" },
-      { standardId: "iso27001", coveragePercent: 93, coverageLevel: "Covered", automationPercent: 90, details: "Security management and risk assessment" },
-      { standardId: "nist", coveragePercent: 91, coverageLevel: "Covered", automationPercent: 89, details: "Security controls and continuous monitoring" },
-      { standardId: "fedramp", coveragePercent: 89, coverageLevel: "Covered", automationPercent: 85, details: "Government security requirements" },
+      {
+        standardId: "hipaa",
+        coveragePercent: 95,
+        coverageLevel: "Covered",
+        automationPercent: 90,
+        details: "Automated compliance reporting and audit trails",
+      },
+      {
+        standardId: "pci_dss",
+        coveragePercent: 92,
+        coverageLevel: "Covered",
+        automationPercent: 88,
+        details: "Network segmentation and access controls",
+      },
+      {
+        standardId: "gdpr",
+        coveragePercent: 88,
+        coverageLevel: "Covered",
+        automationPercent: 85,
+        details: "Data protection and privacy controls",
+      },
+      {
+        standardId: "sox",
+        coveragePercent: 90,
+        coverageLevel: "Covered",
+        automationPercent: 87,
+        details: "Financial controls and audit logging",
+      },
+      {
+        standardId: "iso27001",
+        coveragePercent: 93,
+        coverageLevel: "Covered",
+        automationPercent: 90,
+        details: "Security management and risk assessment",
+      },
+      {
+        standardId: "nist",
+        coveragePercent: 91,
+        coverageLevel: "Covered",
+        automationPercent: 89,
+        details: "Security controls and continuous monitoring",
+      },
+      {
+        standardId: "fedramp",
+        coveragePercent: 89,
+        coverageLevel: "Covered",
+        automationPercent: 85,
+        details: "Government security requirements",
+      },
     ],
     comparativeScores: {
       securityScore: 95,
@@ -164,6 +176,7 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       scalabilityScore: 96,
       supportScore: 91,
       complianceCoverageScore: 95,
+      totalCostOfOwnershipScore: 55,
     },
     portnoxSpecificMetrics: {
       zeroTrustMaturityScore: 95,
@@ -210,12 +223,17 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       "67% lower TCO than traditional NAC solutions",
       "AI-powered risk-based authentication",
       "Continuous compliance monitoring and reporting",
-      "No CVEs - secure by design architecture"
+      "No CVEs - secure by design architecture",
     ],
     weaknesses: [
       "Newer market presence compared to legacy vendors",
-      "May require change management for traditional IT teams"
-    ]
+      "May require change management for traditional IT teams",
+    ],
+    marketPosition: "leader",
+    security: {
+      vulnerabilityExposure: "minimal",
+      cveCount: 0,
+    },
   },
   {
     id: "cisco_ise",
@@ -223,7 +241,8 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
     vendorType: "Traditional Enterprise NAC",
     logoUrl: "/cisco-logo.png",
     shortDescription: "Enterprise-grade identity services engine with comprehensive policy management",
-    description: "Enterprise-grade identity services engine with comprehensive policy management and network access control",
+    description:
+      "Enterprise-grade identity services engine with comprehensive policy management and network access control",
     pricingTiers: [
       {
         userRange: [1, 500],
@@ -266,12 +285,48 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       avgPaybackPeriodMonths: 24,
     },
     complianceSupport: [
-      { standardId: "hipaa", coveragePercent: 78, coverageLevel: "Partial", automationPercent: 35, details: "Basic compliance reporting" },
-      { standardId: "pci_dss", coveragePercent: 82, coverageLevel: "Covered", automationPercent: 40, details: "Network access controls" },
-      { standardId: "gdpr", coveragePercent: 75, coverageLevel: "Partial", automationPercent: 30, details: "Limited data protection features" },
-      { standardId: "sox", coveragePercent: 80, coverageLevel: "Covered", automationPercent: 38, details: "Audit trails and logging" },
-      { standardId: "iso27001", coveragePercent: 83, coverageLevel: "Covered", automationPercent: 42, details: "Security controls framework" },
-      { standardId: "nist", coveragePercent: 85, coverageLevel: "Covered", automationPercent: 45, details: "NIST security controls" },
+      {
+        standardId: "hipaa",
+        coveragePercent: 78,
+        coverageLevel: "Partial",
+        automationPercent: 35,
+        details: "Basic compliance reporting",
+      },
+      {
+        standardId: "pci_dss",
+        coveragePercent: 82,
+        coverageLevel: "Covered",
+        automationPercent: 40,
+        details: "Network access controls",
+      },
+      {
+        standardId: "gdpr",
+        coveragePercent: 75,
+        coverageLevel: "Partial",
+        automationPercent: 30,
+        details: "Limited data protection features",
+      },
+      {
+        standardId: "sox",
+        coveragePercent: 80,
+        coverageLevel: "Covered",
+        automationPercent: 38,
+        details: "Audit trails and logging",
+      },
+      {
+        standardId: "iso27001",
+        coveragePercent: 83,
+        coverageLevel: "Covered",
+        automationPercent: 42,
+        details: "Security controls framework",
+      },
+      {
+        standardId: "nist",
+        coveragePercent: 85,
+        coverageLevel: "Covered",
+        automationPercent: 45,
+        details: "NIST security controls",
+      },
     ],
     comparativeScores: {
       securityScore: 85,
@@ -279,6 +334,7 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       scalabilityScore: 78,
       supportScore: 82,
       complianceCoverageScore: 80,
+      totalCostOfOwnershipScore: 75,
     },
     features: {
       coreNAC: {
@@ -314,7 +370,7 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       "Comprehensive feature set for large enterprises",
       "Strong integration with Cisco ecosystem",
       "Mature product with extensive documentation",
-      "Large partner and support ecosystem"
+      "Large partner and support ecosystem",
     ],
     weaknesses: [
       "Complex deployment requiring 6-9 months",
@@ -323,8 +379,13 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       "Complex licensing model (Base/Plus/Apex)",
       "47 CVEs in the last 3 years (15 critical)",
       "Requires 2.5 FTE for management",
-      "Limited cloud-native capabilities"
-    ]
+      "Limited cloud-native capabilities",
+    ],
+    marketPosition: "challenger",
+    security: {
+      vulnerabilityExposure: "high",
+      cveCount: 47,
+    },
   },
   {
     id: "aruba_clearpass",
@@ -370,11 +431,41 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       avgPaybackPeriodMonths: 20,
     },
     complianceSupport: [
-      { standardId: "hipaa", coveragePercent: 82, coverageLevel: "Covered", automationPercent: 45, details: "Policy enforcement and audit trails" },
-      { standardId: "pci_dss", coveragePercent: 85, coverageLevel: "Covered", automationPercent: 50, details: "Network segmentation controls" },
-      { standardId: "gdpr", coveragePercent: 78, coverageLevel: "Partial", automationPercent: 42, details: "Data protection features" },
-      { standardId: "iso27001", coveragePercent: 80, coverageLevel: "Covered", automationPercent: 48, details: "Security management controls" },
-      { standardId: "nist", coveragePercent: 83, coverageLevel: "Covered", automationPercent: 52, details: "NIST framework support" },
+      {
+        standardId: "hipaa",
+        coveragePercent: 82,
+        coverageLevel: "Covered",
+        automationPercent: 45,
+        details: "Policy enforcement and audit trails",
+      },
+      {
+        standardId: "pci_dss",
+        coveragePercent: 85,
+        coverageLevel: "Covered",
+        automationPercent: 50,
+        details: "Network segmentation controls",
+      },
+      {
+        standardId: "gdpr",
+        coveragePercent: 78,
+        coverageLevel: "Partial",
+        automationPercent: 42,
+        details: "Data protection features",
+      },
+      {
+        standardId: "iso27001",
+        coveragePercent: 80,
+        coverageLevel: "Covered",
+        automationPercent: 48,
+        details: "Security management controls",
+      },
+      {
+        standardId: "nist",
+        coveragePercent: 83,
+        coverageLevel: "Covered",
+        automationPercent: 52,
+        details: "NIST framework support",
+      },
     ],
     comparativeScores: {
       securityScore: 82,
@@ -382,6 +473,7 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       scalabilityScore: 75,
       supportScore: 78,
       complianceCoverageScore: 82,
+      totalCostOfOwnershipScore: 65,
     },
     features: {
       coreNAC: {
@@ -408,7 +500,7 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       compliance: {
         continuousCompliance: { score: 60, details: "Periodic compliance checks" },
         automatedReporting: { score: 65, details: "Automated reporting features" },
-        auditTrails: { score: 82, details: "Comprehensive audit logging" },
+        auditTrails: { score: 82, details: "Comprehensive logging" },
         policyEnforcement: { score: 85, details: "Strong policy enforcement" },
       },
     },
@@ -417,15 +509,20 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       "88% customer satisfaction rating",
       "Strong policy management capabilities",
       "Good integration with Aruba infrastructure",
-      "Comprehensive device profiling"
+      "Comprehensive device profiling",
     ],
     weaknesses: [
       "3-6 month deployment timeline",
       "Requires hardware appliances",
       "Complex policy configuration",
       "Limited cloud-native features",
-      "Requires 1.5 FTE for management"
-    ]
+      "Requires 1.5 FTE for management",
+    ],
+    marketPosition: "challenger",
+    security: {
+      vulnerabilityExposure: "medium",
+      cveCount: 15,
+    },
   },
   {
     id: "fortinac",
@@ -466,15 +563,39 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
     },
     roiFactors: {
       incidentReductionPercent: 75,
-      complianceAutomationSavingsFactor: 0.50,
+      complianceAutomationSavingsFactor: 0.5,
       operationalEfficiencyGainPercent: 62,
       avgPaybackPeriodMonths: 18,
     },
     complianceSupport: [
-      { standardId: "hipaa", coveragePercent: 75, coverageLevel: "Partial", automationPercent: 40, details: "Basic healthcare compliance" },
-      { standardId: "pci_dss", coveragePercent: 80, coverageLevel: "Covered", automationPercent: 45, details: "Payment card security" },
-      { standardId: "iso27001", coveragePercent: 78, coverageLevel: "Covered", automationPercent: 42, details: "Security management" },
-      { standardId: "nist", coveragePercent: 82, coverageLevel: "Covered", automationPercent: 48, details: "NIST cybersecurity framework" },
+      {
+        standardId: "hipaa",
+        coveragePercent: 75,
+        coverageLevel: "Partial",
+        automationPercent: 40,
+        details: "Basic healthcare compliance",
+      },
+      {
+        standardId: "pci_dss",
+        coveragePercent: 80,
+        coverageLevel: "Covered",
+        automationPercent: 45,
+        details: "Payment card security",
+      },
+      {
+        standardId: "iso27001",
+        coveragePercent: 78,
+        coverageLevel: "Covered",
+        automationPercent: 42,
+        details: "Security management",
+      },
+      {
+        standardId: "nist",
+        coveragePercent: 82,
+        coverageLevel: "Covered",
+        automationPercent: 48,
+        details: "NIST cybersecurity framework",
+      },
     ],
     comparativeScores: {
       securityScore: 78,
@@ -482,6 +603,7 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       scalabilityScore: 72,
       supportScore: 75,
       complianceCoverageScore: 79,
+      totalCostOfOwnershipScore: 60,
     },
     features: {
       coreNAC: {
@@ -517,14 +639,19 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       "Good price-to-performance ratio",
       "Comprehensive threat protection",
       "Unified security management",
-      "Strong firewall integration"
+      "Strong firewall integration",
     ],
     weaknesses: [
       "Limited standalone capabilities",
       "Requires Fortinet ecosystem for full value",
       "75-day deployment timeline",
-      "Limited cloud-native features"
-    ]
+      "Limited cloud-native features",
+    ],
+    marketPosition: "challenger",
+    security: {
+      vulnerabilityExposure: "medium",
+      cveCount: 10,
+    },
   },
   {
     id: "forescout",
@@ -570,11 +697,41 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       avgPaybackPeriodMonths: 22,
     },
     complianceSupport: [
-      { standardId: "hipaa", coveragePercent: 88, coverageLevel: "Covered", automationPercent: 65, details: "Healthcare device compliance" },
-      { standardId: "pci_dss", coveragePercent: 90, coverageLevel: "Covered", automationPercent: 70, details: "Payment security compliance" },
-      { standardId: "gdpr", coveragePercent: 85, coverageLevel: "Covered", automationPercent: 60, details: "Data protection compliance" },
-      { standardId: "iso27001", coveragePercent: 87, coverageLevel: "Covered", automationPercent: 68, details: "Security management" },
-      { standardId: "nist", coveragePercent: 89, coverageLevel: "Covered", automationPercent: 72, details: "NIST framework compliance" },
+      {
+        standardId: "hipaa",
+        coveragePercent: 88,
+        coverageLevel: "Covered",
+        automationPercent: 65,
+        details: "Healthcare device compliance",
+      },
+      {
+        standardId: "pci_dss",
+        coveragePercent: 90,
+        coverageLevel: "Covered",
+        automationPercent: 70,
+        details: "Payment security compliance",
+      },
+      {
+        standardId: "gdpr",
+        coveragePercent: 85,
+        coverageLevel: "Covered",
+        automationPercent: 60,
+        details: "Data protection compliance",
+      },
+      {
+        standardId: "iso27001",
+        coveragePercent: 87,
+        coverageLevel: "Covered",
+        automationPercent: 68,
+        details: "Security management",
+      },
+      {
+        standardId: "nist",
+        coveragePercent: 89,
+        coverageLevel: "Covered",
+        automationPercent: 72,
+        details: "NIST framework compliance",
+      },
     ],
     comparativeScores: {
       securityScore: 88,
@@ -582,6 +739,7 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       scalabilityScore: 82,
       supportScore: 80,
       complianceCoverageScore: 88,
+      totalCostOfOwnershipScore: 70,
     },
     features: {
       coreNAC: {
@@ -617,15 +775,20 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       "Agentless device discovery and control",
       "Strong IoT and OT device support",
       "Comprehensive device intelligence",
-      "Excellent compliance automation"
+      "Excellent compliance automation",
     ],
     weaknesses: [
       "High total cost of ownership",
       "Complex deployment (105 days)",
       "Requires significant hardware investment",
       "Limited traditional NAC features",
-      "Requires 2.0 FTE for management"
-    ]
+      "Requires 2.0 FTE for management",
+    ],
+    marketPosition: "visionary",
+    security: {
+      vulnerabilityExposure: "high",
+      cveCount: 30,
+    },
   },
   {
     id: "juniper_mist",
@@ -671,11 +834,41 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       avgPaybackPeriodMonths: 15,
     },
     complianceSupport: [
-      { standardId: "hipaa", coveragePercent: 85, coverageLevel: "Covered", automationPercent: 75, details: "AI-driven compliance monitoring" },
-      { standardId: "pci_dss", coveragePercent: 88, coverageLevel: "Covered", automationPercent: 80, details: "Automated policy enforcement" },
-      { standardId: "gdpr", coveragePercent: 82, coverageLevel: "Covered", automationPercent: 72, details: "Privacy controls" },
-      { standardId: "iso27001", coveragePercent: 86, coverageLevel: "Covered", automationPercent: 78, details: "Security automation" },
-      { standardId: "nist", coveragePercent: 89, coverageLevel: "Covered", automationPercent: 82, details: "Continuous monitoring" },
+      {
+        standardId: "hipaa",
+        coveragePercent: 85,
+        coverageLevel: "Covered",
+        automationPercent: 75,
+        details: "AI-driven compliance monitoring",
+      },
+      {
+        standardId: "pci_dss",
+        coveragePercent: 88,
+        coverageLevel: "Covered",
+        automationPercent: 80,
+        details: "Automated policy enforcement",
+      },
+      {
+        standardId: "gdpr",
+        coveragePercent: 82,
+        coverageLevel: "Covered",
+        automationPercent: 72,
+        details: "Privacy controls",
+      },
+      {
+        standardId: "iso27001",
+        coveragePercent: 86,
+        coverageLevel: "Covered",
+        automationPercent: 78,
+        details: "Security automation",
+      },
+      {
+        standardId: "nist",
+        coveragePercent: 89,
+        coverageLevel: "Covered",
+        automationPercent: 82,
+        details: "Continuous monitoring",
+      },
     ],
     comparativeScores: {
       securityScore: 88,
@@ -683,6 +876,7 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       scalabilityScore: 90,
       supportScore: 82,
       complianceCoverageScore: 86,
+      totalCostOfOwnershipScore: 68,
     },
     features: {
       coreNAC: {
@@ -718,14 +912,19 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       "Cloud-native architecture",
       "30-day deployment timeline",
       "Strong machine learning capabilities",
-      "Excellent user experience"
+      "Excellent user experience",
     ],
     weaknesses: [
       "Requires Mist ecosystem for full functionality",
       "Newer to the NAC market",
       "Limited third-party integrations",
-      "Vendor lock-in to Juniper infrastructure"
-    ]
+      "Vendor lock-in to Juniper infrastructure",
+    ],
+    marketPosition: "visionary",
+    security: {
+      vulnerabilityExposure: "medium",
+      cveCount: 10,
+    },
   },
   {
     id: "extreme_nac",
@@ -771,7 +970,278 @@ const COMPREHENSIVE_VENDOR_DATA: NewVendorData[] = [
       avgPaybackPeriodMonths: 21,
     },
     complianceSupport: [
-      { standardId: "hipaa", coveragePercent: 68, coverageLevel: "Partial", automationPercent: 25, details: "Basic healthcare compliance" },
-      { standardId: "pci_dss", coveragePercent: 72, coverageLevel: "Partial", automationPercent: 30, details: "Payment security controls" },
-      { standardId: "iso27001", coveragePercent: 70, coverageLevel: "Partial", automationPercent: 28, details: "Security management" },
-      { standardId: "nist", coveragePercent: 75, coverageLevel: "Covered", automationPercent: 32, details:\
+      {
+        standardId: "hipaa",
+        coveragePercent: 68,
+        coverageLevel: "Partial",
+        automationPercent: 25,
+        details: "Basic healthcare compliance",
+      },
+      {
+        standardId: "pci_dss",
+        coveragePercent: 72,
+        coverageLevel: "Partial",
+        automationPercent: 30,
+        details: "Payment security controls",
+      },
+      {
+        standardId: "iso27001",
+        coveragePercent: 70,
+        coverageLevel: "Partial",
+        automationPercent: 28,
+        details: "Security management",
+      },
+      {
+        standardId: "nist",
+        coveragePercent: 75,
+        coverageLevel: "Covered",
+        automationPercent: 32,
+        details: "NIST cybersecurity framework",
+      },
+    ],
+    comparativeScores: {
+      securityScore: 75,
+      usabilityScore: 70,
+      scalabilityScore: 72,
+      supportScore: 75,
+      complianceCoverageScore: 79,
+      totalCostOfOwnershipScore: 62,
+    },
+    features: {
+      coreNAC: {
+        wirelessNAC: { score: 80, details: "Wireless access control" },
+        wiredNAC: { score: 82, details: "Wired network control" },
+        dot1x: { score: 78, details: "802.1X authentication" },
+        macAuth: { score: 75, details: "MAC address authentication" },
+        webAuth: { score: 77, details: "Web portal authentication" },
+        certificateAuth: { score: 80, details: "Certificate-based auth" },
+      },
+      advancedSecurity: {
+        riskBasedAccess: { score: 60, details: "Basic risk assessment" },
+        zeroTrust: { score: 70, details: "Security fabric integration" },
+        deviceTrust: { score: 75, details: "Device profiling" },
+        behaviorAnalytics: { score: 55, details: "Limited behavioral analysis" },
+        threatDetection: { score: 78, details: "Integrated threat detection" },
+      },
+      cloudModern: {
+        cloudNative: { score: 40, details: "Primarily on-premise" },
+        apiAccess: { score: 72, details: "API integration available" },
+        multiTenant: { score: 55, details: "Limited multi-tenancy" },
+        scalability: { score: 68, details: "Moderate scalability" },
+      },
+      compliance: {
+        continuousCompliance: { score: 55, details: "Periodic compliance monitoring" },
+        automatedReporting: { score: 60, details: "Basic reporting" },
+        auditTrails: { score: 75, details: "Audit logging capabilities" },
+        policyEnforcement: { score: 80, details: "Policy enforcement" },
+      },
+    },
+    strengths: [
+      "Strong integration with Extreme Networks",
+      "Good scalability options",
+      "Comprehensive device management",
+      "Unified network management",
+      "Excellent support for IoT devices",
+    ],
+    weaknesses: [
+      "Moderate deployment complexity",
+      "Requires Extreme Networks ecosystem",
+      "60-day deployment timeline",
+      "Limited cloud-native features",
+    ],
+    marketPosition: "challenger",
+    security: {
+      vulnerabilityExposure: "medium",
+      cveCount: 10,
+    },
+  },
+  // Additional vendors data here
+]
+
+export function useVendorData() {
+  // Get all vendor data
+  const allVendors = useMemo(() => VENDOR_DATA, [])
+
+  // Get vendors by market position
+  const vendorsByPosition = useMemo((): MarketPositionData => {
+    const leaders = allVendors.filter((v) => v.marketPosition === "leader")
+    const challengers = allVendors.filter((v) => v.marketPosition === "challenger")
+    const visionaries = allVendors.filter((v) => v.marketPosition === "visionary")
+    const niche = allVendors.filter((v) => v.marketPosition === "niche")
+
+    return { leaders, challengers, visionaries, niche }
+  }, [allVendors])
+
+  // Get top vendors by various metrics
+  const topVendorsByMetric = useMemo(() => {
+    const byMarketShare = [...allVendors].sort((a, b) => b.marketShare - a.marketShare).slice(0, 5)
+    const bySecurity = [...allVendors].sort((a, b) => b.security.securityScore - a.security.securityScore).slice(0, 5)
+    const byCustomerSat = [...allVendors].sort((a, b) => b.customerSatisfaction - a.customerSatisfaction).slice(0, 5)
+    const byZeroTrust = [...allVendors]
+      .sort((a, b) => b.security.zeroTrustMaturityScore - a.security.zeroTrustMaturityScore)
+      .slice(0, 5)
+
+    return {
+      marketShare: byMarketShare,
+      security: bySecurity,
+      customerSatisfaction: byCustomerSat,
+      zeroTrust: byZeroTrust,
+    }
+  }, [allVendors])
+
+  // Get vendor comparison metrics
+  const getVendorComparisonMetrics = useMemo(() => {
+    return (vendorId: VendorId): VendorComparisonMetrics | null => {
+      const vendor = getVendorDataById(vendorId)
+      if (!vendor) return null
+
+      // Calculate TCO ranking
+      const tcoValues = Object.values(TCO_COMPARISON_BASELINE).sort((a, b) => a - b)
+      const vendorTco = TCO_COMPARISON_BASELINE[vendorId] || Number.POSITIVE_INFINITY
+      const tcoRanking = tcoValues.findIndex((tco) => tco >= vendorTco) + 1
+
+      return {
+        marketShare: vendor.marketShare,
+        customerSatisfaction: vendor.customerSatisfaction,
+        securityScore: vendor.security.securityScore,
+        deploymentComplexity: vendor.implementation.complexityLevel,
+        zeroTrustMaturity: vendor.security.zeroTrustMaturityScore,
+        complianceCoverage: vendor.comparativeScores?.complianceCoverageScore || 0,
+        tcoRanking,
+      }
+    }
+  }, [])
+
+  // Get competitive analysis
+  const getCompetitiveAnalysis = useMemo(() => {
+    return (primaryVendorId: VendorId, compareVendorIds: VendorId[]) => {
+      const primaryVendor = getVendorDataById(primaryVendorId)
+      const compareVendors = compareVendorIds.map((id) => getVendorDataById(id)).filter(Boolean) as any[]
+
+      if (!primaryVendor) return null
+
+      const analysis = {
+        primary: primaryVendor,
+        competitors: compareVendors,
+        advantages: [] as string[],
+        disadvantages: [] as string[],
+        differentiators: [] as string[],
+      }
+
+      // Calculate advantages
+      compareVendors.forEach((competitor) => {
+        if (primaryVendor.security.securityScore > competitor.security.securityScore) {
+          analysis.advantages.push(
+            `${primaryVendor.security.securityScore - competitor.security.securityScore}% higher security score than ${competitor.name}`,
+          )
+        }
+        if (
+          primaryVendor.implementation.averageDeploymentTimeDays < competitor.implementation.averageDeploymentTimeDays
+        ) {
+          analysis.advantages.push(
+            `${competitor.implementation.averageDeploymentTimeDays - primaryVendor.implementation.averageDeploymentTimeDays} days faster deployment than ${competitor.name}`,
+          )
+        }
+        if (primaryVendor.security.cveCount < competitor.security.cveCount) {
+          analysis.advantages.push(
+            `${competitor.security.cveCount - primaryVendor.security.cveCount} fewer CVEs than ${competitor.name}`,
+          )
+        }
+      })
+
+      // Add unique differentiators
+      if (primaryVendor.portnoxSpecificMetrics?.is100PercentCloudNative) {
+        analysis.differentiators.push("100% cloud-native architecture")
+      }
+      if (primaryVendor.security.cveCount === 0) {
+        analysis.differentiators.push("Zero CVEs - secure by design")
+      }
+      if (primaryVendor.implementation.averageDeploymentTimeDays <= 1) {
+        analysis.differentiators.push("30-minute deployment capability")
+      }
+
+      return analysis
+    }
+  }, [])
+
+  // Get market intelligence
+  const marketIntelligence = useMemo(() => MARKET_INTELLIGENCE, [])
+
+  // Get vulnerability comparison
+  const vulnerabilityComparison = useMemo(() => VULNERABILITY_COMPARISON, [])
+
+  // Get TCO baseline comparison
+  const tcoBaseline = useMemo(() => TCO_COMPARISON_BASELINE, [])
+
+  // Get vendors with critical security issues
+  const criticalSecurityVendors = useMemo(() => {
+    return allVendors.filter(
+      (vendor) => vendor.security.vulnerabilityExposure === "critical" || vendor.security.cveCount > 50,
+    )
+  }, [allVendors])
+
+  // Get recommended vendors (high security, low complexity, good TCO)
+  const recommendedVendors = useMemo(() => {
+    return allVendors
+      .filter(
+        (vendor) =>
+          vendor.security.securityScore >= 80 &&
+          vendor.implementation.complexityLevel !== "very_high" &&
+          vendor.security.vulnerabilityExposure !== "critical",
+      )
+      .sort((a, b) => {
+        // Sort by combined score of security, ease of deployment, and TCO
+        const scoreA =
+          a.security.securityScore +
+          (a.implementation.complexityLevel === "low" ? 20 : a.implementation.complexityLevel === "medium" ? 10 : 0) +
+          (a.comparativeScores?.totalCostOfOwnershipScore || 0)
+        const scoreB =
+          b.security.securityScore +
+          (b.implementation.complexityLevel === "low" ? 20 : b.implementation.complexityLevel === "medium" ? 10 : 0) +
+          (b.comparativeScores?.totalCostOfOwnershipScore || 0)
+        return scoreB - scoreA
+      })
+      .slice(0, 5)
+  }, [allVendors])
+
+  return {
+    // Core data
+    allVendors,
+    vendorIds: VENDOR_IDS_DEFINITIVE,
+    getVendorById: getVendorDataById,
+
+    // Categorized data
+    vendorsByPosition,
+    topVendorsByMetric,
+    criticalSecurityVendors,
+    recommendedVendors,
+
+    // Analysis functions
+    getVendorComparisonMetrics,
+    getCompetitiveAnalysis,
+
+    // Market data
+    marketIntelligence,
+    vulnerabilityComparison,
+    tcoBaseline,
+
+    // Utility functions
+    isPortnoxVendor: (vendorId: VendorId) => vendorId === "portnox",
+    getVendorLogo: (vendorId: VendorId) => {
+      const vendor = getVendorDataById(vendorId)
+      return vendor?.logoUrl || "/placeholder-logo.png"
+    },
+    getVendorRiskLevel: (vendorId: VendorId) => {
+      const vendor = getVendorDataById(vendorId)
+      if (!vendor) return "unknown"
+
+      if (vendor.security.vulnerabilityExposure === "critical") return "critical"
+      if (vendor.security.cveCount > 30) return "high"
+      if (vendor.security.cveCount > 15) return "medium"
+      if (vendor.security.cveCount > 5) return "low"
+      return "minimal"
+    },
+  }
+}
+
+export type { VendorId }
