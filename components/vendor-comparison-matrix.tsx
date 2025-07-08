@@ -2,159 +2,303 @@
 
 import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  Shield,
-  DollarSign,
-  Users,
-  Zap,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  TrendingUp,
-  Target,
-  Award,
-  Filter,
-  Download,
-  Eye,
-  BarChart3,
-} from "lucide-react"
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+} from "recharts"
+import { CheckCircle, XCircle, Award } from "lucide-react"
 import { COMPREHENSIVE_VENDOR_DATA } from "@/lib/vendors/comprehensive-vendor-data"
-import { calculateComprehensiveTCO, compareVendorsByCategory } from "@/lib/calculators/comprehensive-tco-calculator"
+import { calculateComprehensiveTCO } from "@/lib/calculators/comprehensive-tco-calculator"
 
 interface VendorComparisonMatrixProps {
   selectedVendors?: string[]
-  deviceCount?: number
-  timeframe?: 1 | 3 | 5
-  industry?: string
+  onVendorSelectionChange?: (vendors: string[]) => void
 }
 
-export function VendorComparisonMatrix({
-  selectedVendors = ["PORTNOX", "CISCO_ISE", "ARUBA_CLEARPASS", "FORESCOUT"],
-  deviceCount = 500,
-  timeframe = 3,
-  industry = "HEALTHCARE",
-}: VendorComparisonMatrixProps) {
-  const [activeTab, setActiveTab] = useState("overview")
-  const [filterCategory, setFilterCategory] = useState("all")
-  const [sortBy, setSortBy] = useState("totalCost")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
-  const [showDetails, setShowDetails] = useState<string | null>(null)
+// Vendor scorecard component
+export function VendorScorecard({
+  vendorId,
+  config = {
+    deviceCount: 500,
+    industry: "HEALTHCARE",
+    timeframe: 3,
+    deploymentModel: "CLOUD",
+    complianceRequirements: [],
+  },
+}: {
+  vendorId: string
+  config?: any
+}) {
+  const vendor = COMPREHENSIVE_VENDOR_DATA[vendorId]
+  const tcoResult = calculateComprehensiveTCO(vendorId, config)
 
-  // Calculate comprehensive comparison data
-  const comparisonData = useMemo(() => {
-    return compareVendorsByCategory(selectedVendors, deviceCount, timeframe, industry)
-  }, [selectedVendors, deviceCount, timeframe, industry])
+  if (!vendor || !tcoResult) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-muted-foreground">Vendor data not available</div>
+        </CardContent>
+      </Card>
+    )
+  }
 
-  // Feature comparison matrix
-  const featureMatrix = useMemo(() => {
-    const features = [
-      "zeroTrustMaturity",
-      "cloudNative",
-      "agentlessSupport",
-      "iotDeviceSupport",
-      "byodSupport",
-      "complianceAutomation",
-      "threatDetection",
-      "networkSegmentation",
-      "guestAccess",
-      "certificateManagement",
-    ]
-
-    return selectedVendors.map((vendorKey) => {
-      const vendor = COMPREHENSIVE_VENDOR_DATA[vendorKey]
-      const featureScores = {}
-
-      features.forEach((feature) => {
-        featureScores[feature] = vendor?.capabilities?.[feature] || 0
-      })
-
-      return {
-        vendorKey,
-        vendor,
-        features: featureScores,
-      }
-    })
-  }, [selectedVendors])
-
-  // Security scorecard data
-  const securityScorecard = useMemo(() => {
-    return selectedVendors.map((vendorKey) => {
-      const vendor = COMPREHENSIVE_VENDOR_DATA[vendorKey]
-      const tcoData = calculateComprehensiveTCO({
-        vendorKey,
-        deviceCount,
-        timeframe,
-        industry,
-        deploymentModel: "CLOUD",
-        hasExistingNAC: false,
-        includeCompliance: true,
-        includeRiskReduction: true,
-      })
-
-      return {
-        vendorKey,
-        vendor,
-        securityScore: vendor?.securityScore || 0,
-        complianceScore: vendor?.complianceScore || 0,
-        zeroTrustScore: vendor?.capabilities?.zeroTrustMaturity || 0,
-        threatDetectionScore: vendor?.capabilities?.threatDetection || 0,
-        riskReduction: tcoData.riskReduction.total,
-        vulnerabilities: vendor?.vulnerabilities || 0,
-      }
-    })
-  }, [selectedVendors, deviceCount, timeframe, industry])
+  const overallScore = Math.round(
+    tcoResult.security.overallScore * 0.3 +
+      (100 - tcoResult.totalCost / 50000) * 0.25 +
+      (100 - tcoResult.implementation.timeline / 3.65) * 0.2 +
+      tcoResult.security.complianceScore * 0.25,
+  )
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-green-600"
-    if (score >= 70) return "text-yellow-600"
+    if (score >= 80) return "text-green-600"
+    if (score >= 60) return "text-yellow-600"
     return "text-red-600"
   }
 
-  const getScoreBadgeVariant = (score: number) => {
-    if (score >= 90) return "default"
-    if (score >= 70) return "secondary"
+  const getScoreBadge = (score: number) => {
+    if (score >= 80) return "default"
+    if (score >= 60) return "secondary"
     return "destructive"
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with Controls */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5" />
-                Vendor Comparison Matrix
-              </CardTitle>
-              <CardDescription>
-                Comprehensive analysis of {selectedVendors.length} NAC vendors across multiple dimensions
-              </CardDescription>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Award className="h-5 w-5" />
+            {vendor.name} Scorecard
+          </CardTitle>
+          <Badge variant={getScoreBadge(overallScore)}>{overallScore}/100</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm">Security Score</span>
+              <span className={`text-sm font-medium ${getScoreColor(tcoResult.security.overallScore)}`}>
+                {tcoResult.security.overallScore}%
+              </span>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Filter className="w-4 h-4 mr-2" />
-                Filter
-              </Button>
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
+            <Progress value={tcoResult.security.overallScore} className="h-2" />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm">Cost Efficiency</span>
+              <span className={`text-sm font-medium ${getScoreColor(100 - tcoResult.totalCost / 50000)}`}>
+                {Math.round(100 - tcoResult.totalCost / 50000)}%
+              </span>
+            </div>
+            <Progress value={100 - tcoResult.totalCost / 50000} className="h-2" />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm">Deployment Speed</span>
+              <span className={`text-sm font-medium ${getScoreColor(100 - tcoResult.implementation.timeline / 3.65)}`}>
+                {Math.round(100 - tcoResult.implementation.timeline / 3.65)}%
+              </span>
+            </div>
+            <Progress value={100 - tcoResult.implementation.timeline / 3.65} className="h-2" />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm">Compliance</span>
+              <span className={`text-sm font-medium ${getScoreColor(tcoResult.security.complianceScore)}`}>
+                {tcoResult.security.complianceScore}%
+              </span>
+            </div>
+            <Progress value={tcoResult.security.complianceScore} className="h-2" />
+          </div>
+        </div>
+
+        <div className="pt-4 border-t">
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold text-green-600">
+                ${(tcoResult.roi.totalSavings / 1000).toFixed(0)}k
+              </div>
+              <div className="text-xs text-muted-foreground">Total Savings</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-blue-600">{tcoResult.roi.paybackPeriod.toFixed(1)}mo</div>
+              <div className="text-xs text-muted-foreground">Payback Period</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-purple-600">{tcoResult.implementation.timeline}d</div>
+              <div className="text-xs text-muted-foreground">Deploy Time</div>
             </div>
           </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+export default function VendorComparisonMatrix({ 
+  selectedVendors = ["portnox", "cisco_ise", "aruba_clearpass", "forescout"],
+  onVendorSelectionChange 
+}: VendorComparisonMatrixProps) {
+  const [activeTab, setActiveTab] = useState("overview")
+  const [sortBy, setSortBy] = useState("totalCost")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+
+  // Default configuration
+  const config = {
+    deviceCount: 500,
+    industry: "HEALTHCARE",
+    timeframe: 3,
+    deploymentModel: "CLOUD",
+    complianceRequirements: ["HIPAA", "SOC2"]
+  }
+
+  // Calculate TCO for all selected vendors
+  const vendorResults = useMemo(() => {
+    return selectedVendors.map(vendorId => {
+      const vendor = COMPREHENSIVE_VENDOR_DATA[vendorId]
+      const tcoResult = calculateComprehensiveTCO(vendorId, config)
+      
+      return {
+        vendorId,
+        vendor,
+        tcoResult,
+        overallScore: tcoResult ? Math.round(
+          (tcoResult.security.overallScore * 0.3) +
+          ((100 - (tcoResult.totalCost / 50000)) * 0.25) +
+          ((100 - tcoResult.implementation.timeline / 3.65) * 0.2) +
+          (tcoResult.security.complianceScore * 0.25)
+        ) : 0
+      }
+    }).filter(result => result.vendor && result.tcoResult)
+  }, [selectedVendors])
+
+  // Sort vendors based on selected criteria
+  const sortedVendors = useMemo(() => {
+    return [...vendorResults].sort((a, b) => {
+      let aValue: number, bValue: number
+      
+      switch (sortBy) {
+        case "totalCost":
+          aValue = a.tcoResult?.totalCost || 0
+          bValue = b.tcoResult?.totalCost || 0
+          break
+        case "securityScore":
+          aValue = a.tcoResult?.security.overallScore || 0
+          bValue = b.tcoResult?.security.overallScore || 0
+          break
+        case "deploymentTime":
+          aValue = a.tcoResult?.implementation.timeline || 0
+          bValue = b.tcoResult?.implementation.timeline || 0
+          break
+        case "overallScore":
+          aValue = a.overallScore
+          bValue = b.overallScore
+          break
+        default:
+          aValue = a.overallScore
+          bValue = b.overallScore
+      }
+      
+      return sortOrder === "asc" ? aValue - bValue : bValue - aValue
+    })
+  }, [vendorResults, sortBy, sortOrder])
+
+  // Chart data for visualizations
+  const chartData = sortedVendors.map(({ vendorId, vendor, tcoResult }) => ({
+    name: vendor?.name || vendorId,
+    totalCost: tcoResult?.totalCost || 0,
+    securityScore: tcoResult?.security.overallScore || 0,
+    deploymentTime: tcoResult?.implementation.timeline || 0,
+    roi: tcoResult?.roi.totalSavings || 0
+  }))
+
+  const handleVendorToggle = (vendorId: string) => {
+    const newSelection = selectedVendors.includes(vendorId)
+      ? selectedVendors.filter(id => id !== vendorId)
+      : [...selectedVendors, vendorId]
+    
+    onVendorSelectionChange?.(newSelection)
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Vendor Comparison Matrix</h2>
+          <p className="text-muted-foreground">
+            Comprehensive side-by-side analysis of NAC vendors • {selectedVendors.length} vendors selected
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Sort by..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="overallScore">Overall Score</SelectItem>
+              <SelectItem value="totalCost">Total Cost</SelectItem>
+              <SelectItem value="securityScore">Security Score</SelectItem>
+              <SelectItem value="deploymentTime">Deployment Time</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+          >
+            {sortOrder === "asc" ? "↑" : "↓"} {sortOrder.toUpperCase()}
+          </Button>
+        </div>
+      </div>
+
+      {/* Vendor Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Vendor Selection</CardTitle>
+          <CardDescription>Select vendors to include in the comparison</CardDescription>
         </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {Object.entries(COMPREHENSIVE_VENDOR_DATA).map(([vendorId, vendor]) => (
+              <div key={vendorId} className="flex items-center space-x-2">
+                <Checkbox
+                  id={vendorId}
+                  checked={selectedVendors.includes(vendorId)}
+                  onCheckedChange={() => handleVendorToggle(vendorId)}
+                />
+                <label htmlFor={vendorId} className="text-sm font-medium">
+                  {vendor.name}
+                </label>
+              </div>
+            ))}
+          </div>
+        </CardContent>
       </Card>
 
       {/* Main Comparison Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-5 w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="features">Features</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
@@ -162,129 +306,85 @@ export function VendorComparisonMatrix({
           <TabsTrigger value="scorecard">Scorecard</TabsTrigger>
         </TabsList>
 
-        {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
+          {/* Quick Comparison Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {comparisonData.comparisons.map((comparison) => (
-              <Card key={comparison.vendorKey} className="relative">
+            {sortedVendors.slice(0, 4).map(({ vendorId, vendor, tcoResult, overallScore }) => (
+              <Card key={vendorId}>
                 <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{comparison.vendor?.name || comparison.vendorKey}</CardTitle>
-                    {comparison.vendorKey === "PORTNOX" && <Badge variant="default">Recommended</Badge>}
-                  </div>
+                  <CardTitle className="text-lg flex items-center justify-between">
+                    {vendor?.name}
+                    <Badge variant={overallScore >= 80 ? "default" : overallScore >= 60 ? "secondary" : "destructive"}>
+                      {overallScore}
+                    </Badge>
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Total Cost</span>
-                      <span className="font-semibold">${(comparison.totalCost / 1000).toFixed(0)}K</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Per Device</span>
-                      <span className="font-semibold">${comparison.perDeviceCost}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Deployment</span>
-                      <span className="font-semibold">{comparison.deploymentTime}</span>
-                    </div>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Total Cost</span>
+                    <span className="font-medium">${(tcoResult?.totalCost || 0).toLocaleString()}</span>
                   </div>
-
-                  <Separator />
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Security Score</span>
-                      <Badge variant={getScoreBadgeVariant(comparison.securityScore)}>
-                        {comparison.securityScore}/100
-                      </Badge>
-                    </div>
-                    <Progress value={comparison.securityScore} className="h-2" />
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Security</span>
+                    <span className="font-medium">{tcoResult?.security.overallScore || 0}%</span>
                   </div>
-
-                  {comparison.savings > 0 && (
-                    <Alert className="bg-green-50 border-green-200">
-                      <TrendingUp className="h-4 w-4" />
-                      <AlertDescription className="text-sm">
-                        Save ${(comparison.savings / 1000).toFixed(0)}K vs Portnox
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full bg-transparent"
-                    onClick={() => setShowDetails(comparison.vendorKey)}
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    View Details
-                  </Button>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Deploy Time</span>
+                    <span className="font-medium">{tcoResult?.implementation.timeline || 0}d</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">ROI</span>
+                    <span className="font-medium text-green-600">
+                      ${((tcoResult?.roi.totalSavings || 0) / 1000).toFixed(0)}k
+                    </span>
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Comparison Chart */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Lowest Cost Solution</CardTitle>
+              <CardHeader>
+                <CardTitle>Cost Comparison</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-3">
-                  <DollarSign className="w-8 h-8 text-green-600" />
-                  <div>
-                    <div className="font-semibold">{comparisonData.lowestCost.vendor?.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      ${(comparisonData.lowestCost.totalCost / 1000).toFixed(0)}K total
-                    </div>
-                  </div>
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
+                    <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
+                    <Bar dataKey="totalCost" fill="#3b82f6" />
+                  </BarChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Fastest Deployment</CardTitle>
+              <CardHeader>
+                <CardTitle>Security vs Deployment Time</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-3">
-                  <Zap className="w-8 h-8 text-blue-600" />
-                  <div>
-                    <div className="font-semibold">{comparisonData.fastestDeployment.vendor?.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {comparisonData.fastestDeployment.deploymentTime}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Highest Security</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-3">
-                  <Shield className="w-8 h-8 text-purple-600" />
-                  <div>
-                    <div className="font-semibold">{comparisonData.highestSecurity.vendor?.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {comparisonData.highestSecurity.securityScore}/100 score
-                    </div>
-                  </div>
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <RadarChart data={chartData}>
+                    <PolarGrid />
+                    <PolarAngleAxis dataKey="name" />
+                    <PolarRadiusAxis />
+                    <Radar dataKey="securityScore" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
+                  </RadarChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
-        {/* Features Tab */}
         <TabsContent value="features" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Feature Comparison Matrix</CardTitle>
-              <CardDescription>Detailed capability comparison across key NAC features</CardDescription>
+              <CardDescription>Detailed capability comparison across all vendors</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -292,42 +392,35 @@ export function VendorComparisonMatrix({
                   <TableHeader>
                     <TableRow>
                       <TableHead>Feature</TableHead>
-                      {selectedVendors.map((vendorKey) => (
-                        <TableHead key={vendorKey} className="text-center">
-                          {COMPREHENSIVE_VENDOR_DATA[vendorKey]?.name || vendorKey}
+                      {sortedVendors.map(({ vendorId, vendor }) => (
+                        <TableHead key={vendorId} className="text-center">
+                          {vendor?.name}
                         </TableHead>
                       ))}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {[
-                      { key: "zeroTrustMaturity", label: "Zero Trust Maturity" },
-                      { key: "cloudNative", label: "Cloud Native" },
-                      { key: "agentlessSupport", label: "Agentless Support" },
-                      { key: "iotDeviceSupport", label: "IoT Device Support" },
-                      { key: "byodSupport", label: "BYOD Support" },
-                      { key: "complianceAutomation", label: "Compliance Automation" },
-                      { key: "threatDetection", label: "Threat Detection" },
-                      { key: "networkSegmentation", label: "Network Segmentation" },
-                      { key: "guestAccess", label: "Guest Access" },
-                      { key: "certificateManagement", label: "Certificate Management" },
-                    ].map((feature) => (
-                      <TableRow key={feature.key}>
-                        <TableCell className="font-medium">{feature.label}</TableCell>
-                        {featureMatrix.map((vendor) => (
-                          <TableCell key={vendor.vendorKey} className="text-center">
-                            <div className="flex items-center justify-center">
-                              {vendor.features[feature.key] >= 90 ? (
-                                <CheckCircle className="w-5 h-5 text-green-600" />
-                              ) : vendor.features[feature.key] >= 70 ? (
-                                <div className="w-5 h-5 rounded-full bg-yellow-400" />
-                              ) : vendor.features[feature.key] >= 50 ? (
-                                <div className="w-5 h-5 rounded-full bg-orange-400" />
-                              ) : (
-                                <XCircle className="w-5 h-5 text-red-600" />
-                              )}
-                            </div>
-                            <div className="text-xs text-muted-foreground mt-1">{vendor.features[feature.key]}%</div>
+                      { key: "wirelessNAC", label: "Wireless NAC" },
+                      { key: "wiredNAC", label: "Wired NAC" },
+                      { key: "zeroTrust", label: "Zero Trust" },
+                      { key: "riskBasedAccess", label: "Risk-Based Access" },
+                      { key: "deviceTrust", label: "Device Trust" },
+                      { key: "iotProfiling", label: "IoT Profiling" },
+                      { key: "behaviorAnalytics", label: "Behavior Analytics" },
+                      { key: "microSegmentation", label: "Micro-Segmentation" },
+                      { key: "cloudPKI", label: "Cloud PKI" },
+                      { key: "multiTenant", label: "Multi-Tenant" }
+                    ].map(({ key, label }) => (
+                      <TableRow key={key}>
+                        <TableCell className="font-medium">{label}</TableCell>
+                        {sortedVendors.map(({ vendorId, vendor }) => (
+                          <TableCell key={vendorId} className="text-center">
+                            {vendor?.capabilities[key as keyof typeof vendor.capabilities] ? (
+                              <CheckCircle className="h-5 w-5 text-green-600 mx-auto" />
+                            ) : (
+                              <XCircle className="h-5 w-5 text-red-400 mx-auto" />
+                            )}
                           </TableCell>
                         ))}
                       </TableRow>
@@ -339,87 +432,59 @@ export function VendorComparisonMatrix({
           </Card>
         </TabsContent>
 
-        {/* Security Tab */}
         <TabsContent value="security" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {securityScorecard.map((vendor) => (
-              <Card key={vendor.vendorKey}>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>{vendor.vendor?.name || vendor.vendorKey}</span>
-                    <Badge variant={getScoreBadgeVariant(vendor.securityScore)}>{vendor.securityScore}/100</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Overall Security</span>
-                      <span className={`font-semibold ${getScoreColor(vendor.securityScore)}`}>
-                        {vendor.securityScore}/100
-                      </span>
-                    </div>
-                    <Progress value={vendor.securityScore} className="h-2" />
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Compliance Score</span>
-                      <span className={`font-semibold ${getScoreColor(vendor.complianceScore)}`}>
-                        {vendor.complianceScore}/100
-                      </span>
-                    </div>
-                    <Progress value={vendor.complianceScore} className="h-2" />
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Zero Trust Maturity</span>
-                      <span className={`font-semibold ${getScoreColor(vendor.zeroTrustScore)}`}>
-                        {vendor.zeroTrustScore}/100
-                      </span>
-                    </div>
-                    <Progress value={vendor.zeroTrustScore} className="h-2" />
-                  </div>
-
-                  <Separator />
-
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <div className="text-muted-foreground">Risk Reduction</div>
-                      <div className="font-semibold text-green-600">${(vendor.riskReduction / 1000).toFixed(0)}K</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Vulnerabilities</div>
-                      <div
-                        className={`font-semibold ${vendor.vulnerabilities === 0 ? "text-green-600" : "text-red-600"}`}
-                      >
-                        {vendor.vulnerabilities}
+            <Card>
+              <CardHeader>
+                <CardTitle>Security Scorecard</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {sortedVendors.map(({ vendorId, vendor, tcoResult }) => (
+                    <div key={vendorId} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium">{vendor?.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Risk Reduction: {tcoResult?.security.riskReduction || 0}%
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-green-600">
+                          {tcoResult?.security.overallScore || 0}%
+                        </div>
+                        <div className="text-xs text-muted-foreground">Security Score</div>
                       </div>
                     </div>
-                  </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-                  {vendor.vulnerabilities === 0 && (
-                    <Alert className="bg-green-50 border-green-200">
-                      <Shield className="h-4 w-4" />
-                      <AlertDescription className="text-sm">
-                        Zero known vulnerabilities - Secure by design
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+            <Card>
+              <CardHeader>
+                <CardTitle>Compliance Coverage</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {sortedVendors.map(({ vendorId, vendor, tcoResult }) => (
+                    <div key={vendorId} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">{vendor?.name}</span>
+                        <span className="text-sm">{tcoResult?.security.complianceScore || 0}%</span>
+                      </div>
+                      <Progress value={tcoResult?.security.complianceScore || 0} className="h-2" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 
-        {/* Costs Tab */}
         <TabsContent value="costs" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Cost Breakdown Comparison</CardTitle>
-              <CardDescription>
-                Detailed cost analysis over {timeframe} years for {deviceCount} devices
-              </CardDescription>
+              <CardTitle>Detailed Cost Breakdown</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -427,330 +492,5 @@ export function VendorComparisonMatrix({
                   <TableHeader>
                     <TableRow>
                       <TableHead>Vendor</TableHead>
-                      <TableHead className="text-right">Software</TableHead>
-                      <TableHead className="text-right">Hardware</TableHead>
-                      <TableHead className="text-right">Implementation</TableHead>
-                      <TableHead className="text-right">Operational</TableHead>
-                      <TableHead className="text-right">Total Cost</TableHead>
-                      <TableHead className="text-right">Savings vs Portnox</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {comparisonData.comparisons.map((comparison) => {
-                      const tcoData = calculateComprehensiveTCO({
-                        vendorKey: comparison.vendorKey,
-                        deviceCount,
-                        timeframe,
-                        industry,
-                        deploymentModel: "CLOUD",
-                        hasExistingNAC: false,
-                        includeCompliance: true,
-                        includeRiskReduction: true,
-                      })
-
-                      return (
-                        <TableRow key={comparison.vendorKey}>
-                          <TableCell className="font-medium">
-                            {comparison.vendor?.name || comparison.vendorKey}
-                          </TableCell>
-                          <TableCell className="text-right">${(tcoData.software.total / 1000).toFixed(0)}K</TableCell>
-                          <TableCell className="text-right">${(tcoData.hardware.total / 1000).toFixed(0)}K</TableCell>
-                          <TableCell className="text-right">
-                            ${(tcoData.implementation.total / 1000).toFixed(0)}K
-                          </TableCell>
-                          <TableCell className="text-right">
-                            ${(tcoData.operational.total / 1000).toFixed(0)}K
-                          </TableCell>
-                          <TableCell className="text-right font-semibold">
-                            ${(tcoData.totalCost / 1000).toFixed(0)}K
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {comparison.savings > 0 ? (
-                              <span className="text-red-600">+${(comparison.savings / 1000).toFixed(0)}K</span>
-                            ) : comparison.savings < 0 ? (
-                              <span className="text-green-600">
-                                -${(Math.abs(comparison.savings) / 1000).toFixed(0)}K
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground">Baseline</span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Scorecard Tab */}
-        <TabsContent value="scorecard" className="space-y-6">
-          <VendorScorecard
-            selectedVendors={selectedVendors}
-            deviceCount={deviceCount}
-            timeframe={timeframe}
-            industry={industry}
-          />
-        </TabsContent>
-      </Tabs>
-    </div>
-  )
-}
-
-// Vendor Scorecard Component
-export function VendorScorecard({
-  selectedVendors = ["PORTNOX", "CISCO_ISE", "ARUBA_CLEARPASS", "FORESCOUT"],
-  deviceCount = 500,
-  timeframe = 3,
-  industry = "HEALTHCARE",
-}: VendorComparisonMatrixProps) {
-  const scorecardData = useMemo(() => {
-    return selectedVendors.map((vendorKey) => {
-      const vendor = COMPREHENSIVE_VENDOR_DATA[vendorKey]
-      const tcoData = calculateComprehensiveTCO({
-        vendorKey,
-        deviceCount,
-        timeframe,
-        industry,
-        deploymentModel: "CLOUD",
-        hasExistingNAC: false,
-        includeCompliance: true,
-        includeRiskReduction: true,
-      })
-
-      // Calculate overall score
-      const costScore = Math.max(0, 100 - tcoData.totalCost / 10000) // Lower cost = higher score
-      const securityScore = vendor?.securityScore || 0
-      const deploymentScore =
-        vendor?.deploymentTime === "30 minutes"
-          ? 100
-          : vendor?.deploymentTime === "7 days"
-            ? 80
-            : vendor?.deploymentTime === "30 days"
-              ? 60
-              : 40
-      const supportScore =
-        vendor?.supportQuality === "EXCELLENT"
-          ? 100
-          : vendor?.supportQuality === "GOOD"
-            ? 80
-            : vendor?.supportQuality === "FAIR"
-              ? 60
-              : 40
-
-      const overallScore = Math.round((costScore + securityScore + deploymentScore + supportScore) / 4)
-
-      return {
-        vendorKey,
-        vendor,
-        scores: {
-          overall: overallScore,
-          cost: Math.round(costScore),
-          security: securityScore,
-          deployment: deploymentScore,
-          support: supportScore,
-        },
-        tcoData,
-        recommendation:
-          overallScore >= 85
-            ? "HIGHLY_RECOMMENDED"
-            : overallScore >= 70
-              ? "RECOMMENDED"
-              : overallScore >= 55
-                ? "CONSIDER"
-                : "NOT_RECOMMENDED",
-      }
-    })
-  }, [selectedVendors, deviceCount, timeframe, industry])
-
-  const getRecommendationBadge = (recommendation: string) => {
-    switch (recommendation) {
-      case "HIGHLY_RECOMMENDED":
-        return <Badge className="bg-green-600">Highly Recommended</Badge>
-      case "RECOMMENDED":
-        return <Badge className="bg-blue-600">Recommended</Badge>
-      case "CONSIDER":
-        return <Badge variant="secondary">Consider</Badge>
-      default:
-        return <Badge variant="destructive">Not Recommended</Badge>
-    }
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {scorecardData.map((scorecard) => (
-          <Card key={scorecard.vendorKey} className="relative">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>{scorecard.vendor?.name || scorecard.vendorKey}</CardTitle>
-                {getRecommendationBadge(scorecard.recommendation)}
-              </div>
-              <CardDescription>Overall Score: {scorecard.scores.overall}/100</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Overall Score Circle */}
-              <div className="flex items-center justify-center">
-                <div className="relative w-24 h-24">
-                  <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="currentColor"
-                      strokeWidth="8"
-                      fill="transparent"
-                      className="text-muted-foreground/20"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="currentColor"
-                      strokeWidth="8"
-                      fill="transparent"
-                      strokeDasharray={`${2.51 * scorecard.scores.overall} 251`}
-                      className={
-                        scorecard.scores.overall >= 85
-                          ? "text-green-600"
-                          : scorecard.scores.overall >= 70
-                            ? "text-blue-600"
-                            : scorecard.scores.overall >= 55
-                              ? "text-yellow-600"
-                              : "text-red-600"
-                      }
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl font-bold">{scorecard.scores.overall}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Individual Scores */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-green-600" />
-                    <span className="text-sm">Cost Efficiency</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Progress value={scorecard.scores.cost} className="w-16 h-2" />
-                    <span className="text-sm font-medium w-8">{scorecard.scores.cost}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-blue-600" />
-                    <span className="text-sm">Security</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Progress value={scorecard.scores.security} className="w-16 h-2" />
-                    <span className="text-sm font-medium w-8">{scorecard.scores.security}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-purple-600" />
-                    <span className="text-sm">Deployment Speed</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Progress value={scorecard.scores.deployment} className="w-16 h-2" />
-                    <span className="text-sm font-medium w-8">{scorecard.scores.deployment}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-orange-600" />
-                    <span className="text-sm">Support Quality</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Progress value={scorecard.scores.support} className="w-16 h-2" />
-                    <span className="text-sm font-medium w-8">{scorecard.scores.support}</span>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Key Metrics */}
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <div className="text-muted-foreground">Total Cost</div>
-                  <div className="font-semibold">${(scorecard.tcoData.totalCost / 1000).toFixed(0)}K</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">ROI</div>
-                  <div className="font-semibold text-green-600">{scorecard.tcoData.roi.toFixed(0)}%</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">Payback</div>
-                  <div className="font-semibold">{Math.round(scorecard.tcoData.paybackPeriod / 30)} months</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">Risk Reduction</div>
-                  <div className="font-semibold text-blue-600">
-                    ${(scorecard.tcoData.riskReduction.total / 1000).toFixed(0)}K
-                  </div>
-                </div>
-              </div>
-
-              {/* Recommendation */}
-              {scorecard.recommendation === "HIGHLY_RECOMMENDED" && (
-                <Alert className="bg-green-50 border-green-200">
-                  <Award className="h-4 w-4" />
-                  <AlertDescription className="text-sm">
-                    Excellent choice with superior value proposition and minimal risk.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {scorecard.recommendation === "NOT_RECOMMENDED" && (
-                <Alert className="bg-red-50 border-red-200">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription className="text-sm">
-                    Consider alternatives due to cost, complexity, or security concerns.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Summary Recommendations */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5" />
-            Executive Recommendations
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {scorecardData
-              .filter((s) => s.recommendation === "HIGHLY_RECOMMENDED")
-              .map((scorecard) => (
-                <Alert key={scorecard.vendorKey} className="bg-green-50 border-green-200">
-                  <CheckCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>{scorecard.vendor?.name}</strong> delivers exceptional value with
-                    {scorecard.scores.overall}/100 overall score. Recommended for immediate deployment with $
-                    {(scorecard.tcoData.totalCost / 1000).toFixed(0)}K total investment and{" "}
-                    {scorecard.tcoData.roi.toFixed(0)}% ROI.
-                  </AlertDescription>
-                </Alert>
-              ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
-
-export default VendorComparisonMatrix
+                      <TableHead>Software</TableHead>
+                      <TableHea\

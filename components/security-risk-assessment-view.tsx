@@ -25,19 +25,32 @@ import {
 import { Shield, AlertTriangle, TrendingUp, TrendingDown, Eye, Zap } from "lucide-react"
 
 interface SecurityRiskAssessmentViewProps {
-  results: any[]
-  config: any
+  results?: any[]
+  config?: {
+    deviceCount?: number
+    industry?: string
+    timeframe?: number
+    complianceRequirements?: string[]
+  }
 }
 
-export function SecurityRiskAssessmentView({ results, config }: SecurityRiskAssessmentViewProps) {
+export function SecurityRiskAssessmentView({ results = [], config = {} }: SecurityRiskAssessmentViewProps) {
+  // Provide default values for config
+  const {
+    deviceCount = 500,
+    industry = "HEALTHCARE",
+    timeframe = 3,
+    complianceRequirements = ["HIPAA", "SOC2"],
+  } = config
+
   // Security assessment data
   const securityPostureData = [
-    { subject: "Identity & Access", A: 120, B: 110, fullMark: 150 },
-    { subject: "Network Security", A: 98, B: 130, fullMark: 150 },
-    { subject: "Device Management", A: 86, B: 130, fullMark: 150 },
-    { subject: "Threat Detection", A: 99, B: 100, fullMark: 150 },
-    { subject: "Incident Response", A: 85, B: 90, fullMark: 150 },
-    { subject: "Compliance", A: 65, B: 85, fullMark: 150 },
+    { subject: "Identity & Access", current: 45, withNAC: 95, fullMark: 100 },
+    { subject: "Network Security", current: 55, withNAC: 90, fullMark: 100 },
+    { subject: "Device Management", current: 35, withNAC: 88, fullMark: 100 },
+    { subject: "Threat Detection", current: 40, withNAC: 85, fullMark: 100 },
+    { subject: "Incident Response", current: 50, withNAC: 80, fullMark: 100 },
+    { subject: "Compliance", current: 60, withNAC: 95, fullMark: 100 },
   ]
 
   const threatLandscapeData = [
@@ -128,6 +141,33 @@ export function SecurityRiskAssessmentView({ results, config }: SecurityRiskAsse
     },
   ]
 
+  // Calculate industry-specific risk factors
+  const industryRiskFactors = {
+    HEALTHCARE: {
+      primaryRisks: ["Patient data breaches", "Medical device vulnerabilities", "HIPAA violations"],
+      riskMultiplier: 1.4,
+      complianceFrameworks: ["HIPAA", "HITECH", "FDA"],
+    },
+    FINANCIAL: {
+      primaryRisks: ["Financial fraud", "PCI DSS violations", "Customer data theft"],
+      riskMultiplier: 1.6,
+      complianceFrameworks: ["PCI DSS", "SOX", "GLBA"],
+    },
+    GOVERNMENT: {
+      primaryRisks: ["Classified data exposure", "Nation-state attacks", "FISMA violations"],
+      riskMultiplier: 1.5,
+      complianceFrameworks: ["FISMA", "FedRAMP", "NIST"],
+    },
+    EDUCATION: {
+      primaryRisks: ["Student data breaches", "Research IP theft", "FERPA violations"],
+      riskMultiplier: 1.2,
+      complianceFrameworks: ["FERPA", "COPPA", "GDPR"],
+    },
+  }
+
+  const currentIndustryRisk =
+    industryRiskFactors[industry as keyof typeof industryRiskFactors] || industryRiskFactors.HEALTHCARE
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -135,14 +175,24 @@ export function SecurityRiskAssessmentView({ results, config }: SecurityRiskAsse
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Security Risk Assessment</h2>
           <p className="text-muted-foreground">
-            Comprehensive analysis of current security posture and risk mitigation strategies
+            Comprehensive analysis of current security posture and risk mitigation strategies for {industry}
           </p>
         </div>
         <div className="flex space-x-2">
           <Badge variant="destructive">High Risk</Badge>
-          <Badge variant="outline">{config.deviceCount.toLocaleString()} Devices</Badge>
+          <Badge variant="outline">{deviceCount.toLocaleString()} Devices</Badge>
+          <Badge variant="secondary">{timeframe} Year Analysis</Badge>
         </div>
       </div>
+
+      {/* Industry-Specific Risk Alert */}
+      <Alert className="border-orange-200 bg-orange-50">
+        <AlertTriangle className="h-4 w-4 text-orange-600" />
+        <AlertDescription>
+          <strong>{industry} Industry Alert:</strong> Your industry faces elevated security risks including{" "}
+          {currentIndustryRisk.primaryRisks.join(", ")}. Risk multiplier: {currentIndustryRisk.riskMultiplier}x
+        </AlertDescription>
+      </Alert>
 
       {/* Risk Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -170,6 +220,7 @@ export function SecurityRiskAssessmentView({ results, config }: SecurityRiskAsse
           <TabsTrigger value="threats">Threat Analysis</TabsTrigger>
           <TabsTrigger value="vulnerabilities">Vulnerabilities</TabsTrigger>
           <TabsTrigger value="timeline">Risk Timeline</TabsTrigger>
+          <TabsTrigger value="compliance">Compliance</TabsTrigger>
         </TabsList>
 
         <TabsContent value="posture" className="space-y-4">
@@ -184,9 +235,9 @@ export function SecurityRiskAssessmentView({ results, config }: SecurityRiskAsse
                   <RadarChart data={securityPostureData}>
                     <PolarGrid />
                     <PolarAngleAxis dataKey="subject" />
-                    <PolarRadiusAxis angle={30} domain={[0, 150]} />
-                    <Radar name="Current" dataKey="A" stroke="#ef4444" fill="#ef4444" fillOpacity={0.3} />
-                    <Radar name="With NAC" dataKey="B" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
+                    <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                    <Radar name="Current" dataKey="current" stroke="#ef4444" fill="#ef4444" fillOpacity={0.3} />
+                    <Radar name="With NAC" dataKey="withNAC" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
                     <Legend />
                   </RadarChart>
                 </ResponsiveContainer>
@@ -206,16 +257,22 @@ export function SecurityRiskAssessmentView({ results, config }: SecurityRiskAsse
                         <span className="font-medium">{domain.subject}</span>
                         <div className="flex space-x-2">
                           <Badge variant="destructive" className="text-xs">
-                            {Math.round((domain.A / domain.fullMark) * 100)}%
+                            {domain.current}%
                           </Badge>
                           <Badge variant="default" className="text-xs">
-                            {Math.round((domain.B / domain.fullMark) * 100)}%
+                            {domain.withNAC}%
                           </Badge>
                         </div>
                       </div>
                       <div className="flex space-x-2">
-                        <Progress value={(domain.A / domain.fullMark) * 100} className="h-2 flex-1" />
-                        <Progress value={(domain.B / domain.fullMark) * 100} className="h-2 flex-1" />
+                        <div className="flex-1">
+                          <div className="text-xs text-muted-foreground mb-1">Current</div>
+                          <Progress value={domain.current} className="h-2" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-xs text-muted-foreground mb-1">With NAC</div>
+                          <Progress value={domain.withNAC} className="h-2" />
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -387,11 +444,106 @@ export function SecurityRiskAssessmentView({ results, config }: SecurityRiskAsse
                     <h4 className="font-medium">Key Risk Factors:</h4>
                     <ul className="text-sm space-y-1 text-muted-foreground">
                       <li>• Increasing sophistication of cyber attacks</li>
-                      <li>• Growing number of connected devices</li>
+                      <li>
+                        • Growing number of connected devices ({deviceCount.toLocaleString()} in your environment)
+                      </li>
                       <li>• Remote work security challenges</li>
-                      <li>• Regulatory compliance requirements</li>
+                      <li>• Regulatory compliance requirements ({complianceRequirements.join(", ")})</li>
                       <li>• Supply chain vulnerabilities</li>
                     </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="compliance" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Compliance Framework Coverage</CardTitle>
+                <CardDescription>Current vs. target compliance posture</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {currentIndustryRisk.complianceFrameworks.map((framework) => (
+                    <div key={framework} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">{framework}</span>
+                        <div className="flex space-x-2">
+                          <Badge variant="destructive" className="text-xs">
+                            45%
+                          </Badge>
+                          <Badge variant="default" className="text-xs">
+                            95%
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <div className="flex-1">
+                          <div className="text-xs text-muted-foreground mb-1">Current</div>
+                          <Progress value={45} className="h-2" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-xs text-muted-foreground mb-1">With NAC</div>
+                          <Progress value={95} className="h-2" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Compliance Risk Assessment</CardTitle>
+                <CardDescription>Regulatory violation risks and mitigation</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Alert className="border-red-200 bg-red-50">
+                    <AlertTriangle className="h-4 w-4 text-red-600" />
+                    <AlertDescription>
+                      <strong>High Risk:</strong> Current compliance gaps expose your organization to potential fines of
+                      up to $2.3M annually based on {industry} regulatory requirements.
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium">Audit Readiness</div>
+                        <div className="text-sm text-muted-foreground">Current preparation level</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-red-600">35%</div>
+                        <div className="text-xs text-green-600">→ 95% with NAC</div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium">Violation Risk</div>
+                        <div className="text-sm text-muted-foreground">Probability of regulatory violation</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-red-600">78%</div>
+                        <div className="text-xs text-green-600">→ 8% with NAC</div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium">Reporting Automation</div>
+                        <div className="text-sm text-muted-foreground">Automated compliance reporting</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-red-600">15%</div>
+                        <div className="text-xs text-green-600">→ 90% with NAC</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
