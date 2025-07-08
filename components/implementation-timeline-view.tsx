@@ -13,7 +13,7 @@ interface ImplementationTimelineViewProps {
   results?: any[]
 }
 
-export function ImplementationTimelineView({
+export default function ImplementationTimelineView({
   selectedVendors = [],
   config = {},
   results = [],
@@ -416,8 +416,3 @@ export function ImplementationTimelineView({
     </div>
   )
 }
-
-// Keep the existing default export
-export default ImplementationTimelineView
-
-// Add this export at the end of the file

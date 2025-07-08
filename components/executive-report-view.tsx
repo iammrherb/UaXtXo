@@ -1,724 +1,1060 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import type React from "react"
+import { useState, useMemo } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import {
+  PieChart,
+  Pie,
+  Cell,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  Legend,
+  ScatterChart,
+  Scatter,
 } from "recharts"
-import { Download, TrendingUp, Shield, CheckCircle2, Target, Zap } from "lucide-react"
+import {
+  TrendingUp,
+  DollarSign,
+  Shield,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Target,
+  Activity,
+  BarChart3,
+  PieChartIcon,
+  Download,
+  Mail,
+  Printer,
+  Globe,
+} from "lucide-react"
+import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 
 interface ExecutiveReportViewProps {
-  results?: any[]
-  config?: any
+  results: CalculationResult[]
+  config: CalculationConfiguration
 }
 
-// Mock data for executive report
-const EXECUTIVE_SUMMARY_DATA = {
-  recommendation: "Portnox CLEAR",
-  paybackPeriod: 0.3,
-  totalROI: 485,
-  riskReduction: 85,
-  complianceImprovement: 92,
-  operationalEfficiency: 78,
-  keyFindings: [
-    "Fastest payback in healthcare industry at 0.3 months",
-    "85% reduction in security breach risk",
-    "92% improvement in compliance automation",
-    "78% increase in operational efficiency",
-    "$4.9M annual risk mitigation value",
-  ],
-  industryComparison: {
-    yourOrganization: 95,
-    industryAverage: 68,
-    topPerformers: 88,
-  },
-  implementationTimeline: [
-    { phase: "Planning", duration: 2, status: "ready" },
-    { phase: "Deployment", duration: 5, status: "ready" },
-    { phase: "Integration", duration: 3, status: "ready" },
-    { phase: "Optimization", duration: 2, status: "ready" },
-  ],
-  riskMitigation: [
-    { category: "Data Breach", current: 28, withNAC: 4, reduction: 86 },
-    { category: "Compliance Violation", current: 35, withNAC: 8, reduction: 77 },
-    { category: "Operational Downtime", current: 15, withNAC: 3, reduction: 80 },
-    { category: "Insider Threats", current: 22, withNAC: 6, reduction: 73 },
-  ],
-  costBreakdown: [
-    { category: "Licensing", amount: 120000, percentage: 52 },
-    { category: "Implementation", amount: 25000, percentage: 11 },
-    { category: "Training", amount: 15000, percentage: 6 },
-    { category: "Support", amount: 35000, percentage: 15 },
-    { category: "Infrastructure", amount: 35000, percentage: 15 },
-  ],
-  benefitsBreakdown: [
-    { category: "Breach Cost Avoidance", amount: 4900000, percentage: 68 },
-    { category: "Operational Savings", amount: 850000, percentage: 12 },
-    { category: "Compliance Savings", amount: 650000, percentage: 9 },
-    { category: "Productivity Gains", amount: 800000, percentage: 11 },
-  ],
-}
+const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({ results, config }) => {
+  const [selectedMetric, setSelectedMetric] = useState<string>("security")
+  const [timeframe, setTimeframe] = useState<string>("5year")
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D"]
+  // Find Portnox result for detailed analysis
+  const portnoxResult = results.find((r) => r.vendorId === "portnox") || results[0]
+  const topThreeResults = results.slice(0, 3)
 
-export const ExecutiveReportGenerator = ExecutiveReportView
-
-export default function ExecutiveReportView({ results = [], config = {} }: ExecutiveReportViewProps) {
-  const [selectedSection, setSelectedSection] = useState<string>("summary")
-  const [exportFormat, setExportFormat] = useState<"pdf" | "pptx" | "docx">("pdf")
-
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`
-    } else if (value >= 1000) {
-      return `$${(value / 1000).toFixed(0)}K`
+  // Enhanced risk assessment calculations
+  const riskAssessment = useMemo(() => {
+    const industryRiskFactors = {
+      healthcare: { multiplier: 1.4, breachCost: 10930000, regulatoryRisk: 95 },
+      financial: { multiplier: 1.3, breachCost: 5970000, regulatoryRisk: 90 },
+      retail: { multiplier: 1.1, breachCost: 3620000, regulatoryRisk: 70 },
+      manufacturing: { multiplier: 1.2, breachCost: 4470000, regulatoryRisk: 75 },
+      education: { multiplier: 1.0, breachCost: 3860000, regulatoryRisk: 60 },
+      government: { multiplier: 1.5, breachCost: 5240000, regulatoryRisk: 98 },
+      technology: { multiplier: 1.1, breachCost: 4880000, regulatoryRisk: 65 },
+      default: { multiplier: 1.2, breachCost: 4450000, regulatoryRisk: 75 },
     }
-    return `$${Math.round(value).toLocaleString()}`
+
+    const industryData =
+      industryRiskFactors[config.industry as keyof typeof industryRiskFactors] || industryRiskFactors.default
+
+    // Calculate comprehensive risk metrics for each vendor
+    return results.map((result) => {
+      // Security Risk Score (0-100, lower is better)
+      const securityRisk = Math.max(0, 100 - result.risk.securityScore)
+
+      // Compliance Risk Score
+      const complianceRisk = Math.max(0, 100 - result.risk.complianceScore)
+
+      // Financial Risk (based on TCO and ROI)
+      const financialRisk = Math.min(100, Math.max(0, (result.totalCost / (config.devices * 1000)) * 20))
+
+      // Operational Risk (based on automation and complexity)
+      const operationalRisk = result.risk.operationalRisk
+
+      // Implementation Risk
+      const implementationRisk =
+        result.timeline.migrationRisk === "high" ? 80 : result.timeline.migrationRisk === "medium" ? 50 : 20
+
+      // Vendor Risk (stability and market position)
+      const vendorRisk = result.vendorData.marketShare < 5 ? 70 : result.vendorData.marketShare < 15 ? 40 : 20
+
+      // Calculate potential breach cost with industry factors
+      const annualBreachProbability = (securityRisk / 100) * 0.3 // Max 30% annual probability
+      const potentialBreachCost = industryData.breachCost * industryData.multiplier
+      const expectedAnnualLoss = annualBreachProbability * potentialBreachCost
+
+      // Risk mitigation value
+      const riskMitigationValue = (result.risk.breachReduction * potentialBreachCost) / 100
+
+      // Overall risk score (weighted average)
+      const overallRisk = Math.round(
+        securityRisk * 0.25 +
+          complianceRisk * 0.2 +
+          financialRisk * 0.15 +
+          operationalRisk * 0.15 +
+          implementationRisk * 0.15 +
+          vendorRisk * 0.1,
+      )
+
+      return {
+        vendor: result.vendorName,
+        vendorId: result.vendorId,
+        overallRisk,
+        securityRisk,
+        complianceRisk,
+        financialRisk,
+        operationalRisk,
+        implementationRisk,
+        vendorRisk,
+        annualBreachProbability: Math.round(annualBreachProbability * 100),
+        potentialBreachCost,
+        expectedAnnualLoss,
+        riskMitigationValue,
+        regulatoryExposure: industryData.regulatoryRisk,
+        riskCategory: overallRisk > 70 ? "High" : overallRisk > 40 ? "Medium" : "Low",
+        riskColor: overallRisk > 70 ? "#ef4444" : overallRisk > 40 ? "#f59e0b" : "#10b981",
+      }
+    })
+  }, [results, config])
+
+  // Convert breakdown object to array for charts
+  const getBreakdownArray = (breakdown: any) => {
+    return [
+      { name: "Licensing", value: breakdown.licensing, color: "#8884d8" },
+      { name: "Hardware", value: breakdown.hardware, color: "#82ca9d" },
+      { name: "Implementation", value: breakdown.implementation, color: "#ffc658" },
+      { name: "Support", value: breakdown.support, color: "#ff7300" },
+      { name: "Training", value: breakdown.training, color: "#00ff00" },
+      { name: "Maintenance", value: breakdown.maintenance, color: "#ff00ff" },
+      { name: "Operational", value: breakdown.operational, color: "#00ffff" },
+    ].filter((item) => item.value > 0)
   }
 
-  const handleExport = () => {
-    // Mock export functionality
-    console.log(`Exporting executive report as ${exportFormat}`)
-    // In a real implementation, this would generate and download the file
+  // Enhanced business impact calculations
+  const businessImpact = useMemo(() => {
+    const portnoxRisk = riskAssessment.find((r) => r.vendorId === "portnox")
+    const currentStateRisk = {
+      annualBreachProbability: 25, // 25% without NAC
+      potentialBreachCost: riskAssessment[0]?.potentialBreachCost || 4450000,
+      operationalEfficiency: 60, // Current efficiency
+      complianceGaps: 40, // 40% compliance gaps
+    }
+
+    return {
+      riskReduction: {
+        breachProbabilityReduction: Math.max(
+          0,
+          currentStateRisk.annualBreachProbability - (portnoxRisk?.annualBreachProbability || 15),
+        ),
+        annualRiskSavings:
+          ((currentStateRisk.annualBreachProbability - (portnoxRisk?.annualBreachProbability || 15)) / 100) *
+          currentStateRisk.potentialBreachCost,
+        complianceImprovement: Math.max(
+          0,
+          (portnoxResult?.risk.complianceScore || 90) - (100 - currentStateRisk.complianceGaps),
+        ),
+      },
+      operationalBenefits: {
+        efficiencyGain: Math.max(
+          0,
+          (portnoxResult?.ops.automationLevel || 90) - currentStateRisk.operationalEfficiency,
+        ),
+        fteSavings: portnoxResult?.ops.fteSaved || 0,
+        annualOpsSavings: portnoxResult?.ops.annualOpsSaving || 0,
+        maintenanceReduction: Math.max(0, 40 - (portnoxResult?.ops.maintenanceHours || 20)),
+      },
+      strategicValue: {
+        digitalTransformationReadiness: ((portnoxResult?.risk.securityScore || 90) / 100) * 100,
+        futureProofing: portnoxResult?.vendorData.cloudNative ? 85 : 65,
+        scalabilityScore: Math.min(100, (portnoxResult?.vendorData.maxDevices || 50000) / 1000),
+        innovationIndex: portnoxResult?.vendorData.aiMlCapabilities ? 90 : 70,
+      },
+    }
+  }, [portnoxResult, riskAssessment])
+
+  // Industry benchmarking data
+  const industryBenchmarks = {
+    healthcare: { avgSecuritySpend: 15, avgBreachCost: 10930000, complianceRequirement: 95 },
+    financial: { avgSecuritySpend: 18, avgBreachCost: 5970000, complianceRequirement: 98 },
+    retail: { avgSecuritySpend: 8, avgBreachCost: 3620000, complianceRequirement: 75 },
+    manufacturing: { avgSecuritySpend: 12, avgBreachCost: 4470000, complianceRequirement: 80 },
+    education: { avgSecuritySpend: 6, avgBreachCost: 3860000, complianceRequirement: 70 },
+    government: { avgSecuritySpend: 20, avgBreachCost: 5240000, complianceRequirement: 99 },
+    technology: { avgSecuritySpend: 14, avgBreachCost: 4880000, complianceRequirement: 85 },
+    default: { avgSecuritySpend: 12, avgBreachCost: 4450000, complianceRequirement: 80 },
   }
+
+  const currentBenchmark =
+    industryBenchmarks[config.industry as keyof typeof industryBenchmarks] || industryBenchmarks.default
+
+  const ExecutiveSummary = () => (
+    <div className="space-y-6">
+      {/* Key Metrics Dashboard */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Recommended Solution</p>
+                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{portnoxResult.vendorName}</p>
+                <p className="text-xs text-blue-600 dark:text-blue-400">Best overall value</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">5-Year TCO</p>
+                <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                  ${(portnoxResult.totalCost / 1000000).toFixed(1)}M
+                </p>
+                <p className="text-xs text-green-600 dark:text-green-400">
+                  {(
+                    ((portnoxResult.totalCost - results[results.length - 1].totalCost) /
+                      results[results.length - 1].totalCost) *
+                    100
+                  ).toFixed(0)}
+                  % savings vs highest
+                </p>
+              </div>
+              <DollarSign className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-purple-700 dark:text-purple-300">ROI</p>
+                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                  {portnoxResult.roi.percentage.toFixed(0)}%
+                </p>
+                <p className="text-xs text-purple-600 dark:text-purple-400">
+                  {portnoxResult.roi.paybackMonths} month payback
+                </p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-purple-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Risk Reduction</p>
+                <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                  {businessImpact.riskReduction.breachProbabilityReduction.toFixed(0)}%
+                </p>
+                <p className="text-xs text-orange-600 dark:text-orange-400">Breach probability</p>
+              </div>
+              <Shield className="h-8 w-8 text-orange-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Strategic Recommendation */}
+      <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <CardContent className="p-8">
+          <div className="flex items-start justify-between">
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold">Executive Recommendation</h3>
+              <p className="text-lg opacity-90">
+                Deploy {portnoxResult.vendorName} as your Network Access Control solution to achieve optimal security
+                posture while minimizing total cost of ownership and operational complexity.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <div className="bg-white/10 rounded-lg p-4">
+                  <div className="text-2xl font-bold">
+                    ${(businessImpact.riskReduction.annualRiskSavings / 1000000).toFixed(1)}M
+                  </div>
+                  <div className="text-sm opacity-80">Annual risk savings</div>
+                </div>
+                <div className="bg-white/10 rounded-lg p-4">
+                  <div className="text-2xl font-bold">{businessImpact.operationalBenefits.fteSavings.toFixed(1)}</div>
+                  <div className="text-sm opacity-80">FTE savings</div>
+                </div>
+                <div className="bg-white/10 rounded-lg p-4">
+                  <div className="text-2xl font-bold">{portnoxResult.timeline.implementationWeeks}</div>
+                  <div className="text-sm opacity-80">Weeks to deploy</div>
+                </div>
+              </div>
+            </div>
+            <Target className="h-16 w-16 opacity-80" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Key Benefits */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-blue-600" />
+              Security Benefits
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span>Zero Trust Architecture</span>
+              <Badge variant="default">Implemented</Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Threat Detection</span>
+              <div className="text-right">
+                <div className="text-sm font-medium">{portnoxResult.risk.securityScore}% Coverage</div>
+                <Progress value={portnoxResult.risk.securityScore} className="w-20 h-2" />
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Compliance Score</span>
+              <div className="text-right">
+                <div className="text-sm font-medium">{portnoxResult.risk.complianceScore}%</div>
+                <Progress value={portnoxResult.risk.complianceScore} className="w-20 h-2" />
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Breach Risk Reduction</span>
+              <Badge variant="outline" className="text-green-600">
+                -{(portnoxResult.risk.breachReduction * 100).toFixed(0)}%
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-green-600" />
+              Operational Benefits
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span>Automation Level</span>
+              <div className="text-right">
+                <div className="text-sm font-medium">{portnoxResult.ops.automationLevel}%</div>
+                <Progress value={portnoxResult.ops.automationLevel} className="w-20 h-2" />
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>FTE Reduction</span>
+              <Badge variant="outline" className="text-blue-600">
+                {portnoxResult.ops.fteSaved.toFixed(1)} FTEs
+              </Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Annual OpEx Savings</span>
+              <Badge variant="outline" className="text-green-600">
+                ${(portnoxResult.ops.annualOpsSaving / 1000).toFixed(0)}K
+              </Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Maintenance Hours</span>
+              <Badge variant="outline">{portnoxResult.ops.maintenanceHours}h/month</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+
+  const EnhancedRiskAssessment = () => (
+    <div className="space-y-6">
+      {/* Risk Overview Dashboard */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {riskAssessment.slice(0, 4).map((risk, idx) => (
+          <Card key={risk.vendorId} className={`border-l-4`} style={{ borderLeftColor: risk.riskColor }}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-semibold">{risk.vendor}</h4>
+                <Badge
+                  variant={
+                    risk.riskCategory === "Low"
+                      ? "default"
+                      : risk.riskCategory === "Medium"
+                        ? "secondary"
+                        : "destructive"
+                  }
+                >
+                  {risk.riskCategory} Risk
+                </Badge>
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span>Overall Risk Score</span>
+                  <span className="font-medium">{risk.overallRisk}/100</span>
+                </div>
+                <Progress value={100 - risk.overallRisk} className="h-2" />
+                <div className="text-xs text-muted-foreground">
+                  Annual breach probability: {risk.annualBreachProbability}%
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Detailed Risk Analysis */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-600" />
+              Risk Category Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[
+                "securityRisk",
+                "complianceRisk",
+                "financialRisk",
+                "operationalRisk",
+                "implementationRisk",
+                "vendorRisk",
+              ].map((riskType) => (
+                <div key={riskType} className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="capitalize font-medium">
+                      {riskType.replace(/([A-Z])/g, " $1").replace("Risk", " Risk")}
+                    </span>
+                    <span className="text-muted-foreground">
+                      Avg:{" "}
+                      {Math.round(
+                        riskAssessment.reduce((sum, r) => sum + r[riskType as keyof typeof r], 0) /
+                          riskAssessment.length,
+                      )}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {riskAssessment.slice(0, 3).map((risk, idx) => (
+                      <div key={idx} className="space-y-1">
+                        <div className="text-xs text-muted-foreground">{risk.vendor}</div>
+                        <Progress value={100 - (risk[riskType as keyof typeof risk] as number)} className="h-2" />
+                        <div className="text-xs text-center">
+                          {100 - (risk[riskType as keyof typeof risk] as number)}%
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-red-600" />
+              Financial Risk Analysis
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer
+              config={{
+                expectedLoss: { label: "Expected Annual Loss", color: "hsl(var(--chart-1))" },
+                mitigation: { label: "Risk Mitigation Value", color: "hsl(var(--chart-2))" },
+              }}
+              className="h-[300px]"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={riskAssessment.slice(0, 5)}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="vendor" />
+                  <YAxis tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="expectedAnnualLoss" fill="hsl(var(--chart-1))" name="Expected Annual Loss" />
+                  <Bar dataKey="riskMitigationValue" fill="hsl(var(--chart-2))" name="Risk Mitigation Value" />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Industry Risk Comparison */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="h-5 w-5 text-blue-600" />
+            Industry Risk Benchmarking
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-4">
+              <h4 className="font-semibold text-lg">Current Industry: {config.industry}</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span>Average Security Spend</span>
+                  <span className="font-medium">{currentBenchmark.avgSecuritySpend}% of IT budget</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Average Breach Cost</span>
+                  <span className="font-medium">${(currentBenchmark.avgBreachCost / 1000000).toFixed(1)}M</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Compliance Requirement</span>
+                  <span className="font-medium">{currentBenchmark.complianceRequirement}%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-semibold text-lg">Your Risk Profile</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span>Regulatory Exposure</span>
+                  <Badge variant={riskAssessment[0]?.regulatoryExposure > 90 ? "destructive" : "secondary"}>
+                    {riskAssessment[0]?.regulatoryExposure}%
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Potential Breach Cost</span>
+                  <span className="font-medium text-red-600">
+                    ${(riskAssessment[0]?.potentialBreachCost / 1000000).toFixed(1)}M
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Current Breach Probability</span>
+                  <span className="font-medium text-orange-600">25%/year</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-semibold text-lg">With Recommended Solution</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span>Reduced Breach Probability</span>
+                  <span className="font-medium text-green-600">
+                    {riskAssessment.find((r) => r.vendorId === "portnox")?.annualBreachProbability}%/year
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Annual Risk Savings</span>
+                  <span className="font-medium text-green-600">
+                    ${(businessImpact.riskReduction.annualRiskSavings / 1000000).toFixed(1)}M
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Compliance Improvement</span>
+                  <span className="font-medium text-blue-600">
+                    +{businessImpact.riskReduction.complianceImprovement}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Risk Mitigation Roadmap */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-purple-600" />
+            Risk Mitigation Roadmap
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {[
+              {
+                phase: "Phase 1: Foundation (Weeks 1-4)",
+                priority: "Critical",
+                actions: [
+                  "Deploy core NAC infrastructure",
+                  "Implement basic device authentication",
+                  "Establish network segmentation",
+                  "Configure initial security policies",
+                ],
+                riskReduction: 35,
+                cost: 150000,
+              },
+              {
+                phase: "Phase 2: Enhancement (Weeks 5-8)",
+                priority: "High",
+                actions: [
+                  "Enable advanced threat detection",
+                  "Implement behavioral analytics",
+                  "Deploy automated response capabilities",
+                  "Integrate with SIEM/SOAR platforms",
+                ],
+                riskReduction: 25,
+                cost: 75000,
+              },
+              {
+                phase: "Phase 3: Optimization (Weeks 9-12)",
+                priority: "Medium",
+                actions: [
+                  "Fine-tune security policies",
+                  "Implement compliance reporting",
+                  "Deploy advanced analytics",
+                  "Establish continuous monitoring",
+                ],
+                riskReduction: 15,
+                cost: 50000,
+              },
+            ].map((phase, idx) => (
+              <div key={idx} className="border rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-semibold text-lg">{phase.phase}</h4>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={
+                        phase.priority === "Critical"
+                          ? "destructive"
+                          : phase.priority === "High"
+                            ? "default"
+                            : "secondary"
+                      }
+                    >
+                      {phase.priority}
+                    </Badge>
+                    <Badge variant="outline">-{phase.riskReduction}% Risk</Badge>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h5 className="font-medium mb-2">Key Actions:</h5>
+                    <ul className="space-y-1 text-sm">
+                      {phase.actions.map((action, actionIdx) => (
+                        <li key={actionIdx} className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          {action}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm">Investment:</span>
+                      <span className="font-medium">${(phase.cost / 1000).toFixed(0)}K</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">Risk Reduction:</span>
+                      <span className="font-medium text-green-600">{phase.riskReduction}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">ROI:</span>
+                      <span className="font-medium text-blue-600">
+                        {(
+                          ((phase.riskReduction * businessImpact.riskReduction.annualRiskSavings) / 100 / phase.cost) *
+                          100
+                        ).toFixed(0)}
+                        %
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Risk Heat Map */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5 text-red-600" />
+            Vendor Risk Heat Map
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer
+            config={{
+              risk: { label: "Risk Score", color: "hsl(var(--chart-1))" },
+              cost: { label: "Total Cost", color: "hsl(var(--chart-2))" },
+            }}
+            className="h-[400px]"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart
+                data={riskAssessment.map((risk, idx) => ({
+                  ...risk,
+                  totalCost: results[idx]?.totalCost / 1000000 || 0,
+                }))}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="overallRisk"
+                  name="Risk Score"
+                  domain={[0, 100]}
+                  label={{ value: "Risk Score (Lower is Better)", position: "insideBottom", offset: -10 }}
+                />
+                <YAxis
+                  dataKey="totalCost"
+                  name="Total Cost"
+                  label={{ value: "Total Cost ($M)", angle: -90, position: "insideLeft" }}
+                />
+                <ChartTooltip
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload
+                      return (
+                        <div className="bg-white p-3 border rounded shadow-lg">
+                          <p className="font-semibold">{data.vendor}</p>
+                          <p>Risk Score: {data.overallRisk}</p>
+                          <p>Total Cost: ${data.totalCost.toFixed(1)}M</p>
+                          <p>Category: {data.riskCategory}</p>
+                        </div>
+                      )
+                    }
+                    return null
+                  }}
+                />
+                <Scatter dataKey="totalCost" fill="hsl(var(--chart-1))" />
+              </ScatterChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+          <div className="mt-4 text-sm text-muted-foreground">
+            <p>• Lower left quadrant represents optimal solutions (low risk, low cost)</p>
+            <p>• Upper right quadrant represents high-risk, high-cost solutions to avoid</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const CostAnalysis = () => (
+    <div className="space-y-6">
+      {/* Cost Comparison Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            5-Year Total Cost Comparison
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer
+            config={{
+              totalCost: { label: "Total Cost", color: "hsl(var(--chart-1))" },
+            }}
+            className="h-[300px]"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={results.slice(0, 6)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="vendorName" />
+                <YAxis tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="totalCost" fill="hsl(var(--chart-1))" />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
+      {/* Cost Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PieChartIcon className="h-5 w-5" />
+              {portnoxResult.vendorName} Cost Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer
+              config={{
+                value: { label: "Cost", color: "hsl(var(--chart-1))" },
+              }}
+              className="h-[300px]"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={getBreakdownArray(portnoxResult.breakdown)}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {getBreakdownArray(portnoxResult.breakdown).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Cost Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {getBreakdownArray(portnoxResult.breakdown).map((item, idx) => (
+                <div key={idx} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: item.color }} />
+                    <span>{item.name}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-medium">${(item.value / 1000).toFixed(0)}K</div>
+                    <div className="text-xs text-muted-foreground">
+                      {((item.value / portnoxResult.totalCost) * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ROI Analysis */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-green-600" />
+            Return on Investment Analysis
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {topThreeResults.map((result, idx) => (
+              <div key={result.vendorId} className="space-y-4">
+                <h4 className="font-semibold text-lg">{result.vendorName}</h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span>ROI</span>
+                    <span className={`font-medium ${result.roi.percentage > 0 ? "text-green-600" : "text-red-600"}`}>
+                      {result.roi.percentage.toFixed(0)}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Payback Period</span>
+                    <span className="font-medium">{result.roi.paybackMonths} months</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Annual Savings</span>
+                    <span className="font-medium text-green-600">${(result.roi.annualSavings / 1000).toFixed(0)}K</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>NPV</span>
+                    <span
+                      className={`font-medium ${result.roi.netPresentValue > 0 ? "text-green-600" : "text-red-600"}`}
+                    >
+                      ${(result.roi.netPresentValue / 1000).toFixed(0)}K
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const ImplementationPlan = () => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Implementation Timeline
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {[
+              {
+                phase: "Planning & Design",
+                weeks: "1-2",
+                tasks: ["Requirements gathering", "Network assessment", "Solution design", "Stakeholder alignment"],
+              },
+              {
+                phase: "Infrastructure Setup",
+                weeks: "3-4",
+                tasks: ["Hardware deployment", "Software installation", "Basic configuration", "Network integration"],
+              },
+              {
+                phase: "Policy Configuration",
+                weeks: "5-6",
+                tasks: ["Security policies", "User groups", "Device profiles", "Access rules"],
+              },
+              {
+                phase: "Testing & Validation",
+                weeks: "7-8",
+                tasks: ["Pilot deployment", "User acceptance testing", "Performance validation", "Security testing"],
+              },
+              {
+                phase: "Production Rollout",
+                weeks: "9-12",
+                tasks: ["Phased deployment", "User training", "Monitoring setup", "Documentation"],
+              },
+              {
+                phase: "Optimization",
+                weeks: "13-16",
+                tasks: ["Performance tuning", "Policy refinement", "Advanced features", "Continuous improvement"],
+              },
+            ].map((phase, idx) => (
+              <div key={idx} className="border-l-4 border-blue-500 pl-6">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold">{phase.phase}</h4>
+                  <Badge variant="outline">Weeks {phase.weeks}</Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {phase.tasks.map((task, taskIdx) => (
+                    <div key={taskIdx} className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      {task}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Resource Requirements</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between">
+                <span>Project Manager</span>
+                <span>1 FTE × 16 weeks</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Network Engineer</span>
+                <span>2 FTE × 12 weeks</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Security Analyst</span>
+                <span>1 FTE × 16 weeks</span>
+              </div>
+              <div className="flex justify-between">
+                <span>System Administrator</span>
+                <span>1 FTE × 8 weeks</span>
+              </div>
+              <div className="border-t pt-2 font-semibold">
+                <div className="flex justify-between">
+                  <span>Total Effort</span>
+                  <span>52 person-weeks</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Success Metrics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between">
+                <span>Device Visibility</span>
+                <Badge variant="outline">100%</Badge>
+              </div>
+              <div className="flex justify-between">
+                <span>Policy Compliance</span>
+                <Badge variant="outline">≥95%</Badge>
+              </div>
+              <div className="flex justify-between">
+                <span>Incident Reduction</span>
+                <Badge variant="outline">≥75%</Badge>
+              </div>
+              <div className="flex justify-between">
+                <span>User Satisfaction</span>
+                <Badge variant="outline">≥4.5/5</Badge>
+              </div>
+              <div className="flex justify-between">
+                <span>Time to Remediation</span>
+                <Badge variant="outline">≤15 min</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Executive Report</h2>
-          <p className="text-muted-foreground">Comprehensive NAC investment analysis and recommendations</p>
+          <p className="text-muted-foreground">
+            Comprehensive analysis and recommendations for Network Access Control implementation
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExport}>
+          <Button variant="outline" size="sm">
+            <Mail className="h-4 w-4 mr-2" />
+            Email Report
+          </Button>
+          <Button variant="outline" size="sm">
+            <Printer className="h-4 w-4 mr-2" />
+            Print
+          </Button>
+          <Button variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
-            Export Report
+            Export PDF
           </Button>
         </div>
       </div>
 
-      <Tabs value={selectedSection} onValueChange={setSelectedSection} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+      <Tabs defaultValue="summary" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="summary">Executive Summary</TabsTrigger>
-          <TabsTrigger value="financial">Financial Analysis</TabsTrigger>
           <TabsTrigger value="risk">Risk Assessment</TabsTrigger>
+          <TabsTrigger value="cost">Cost Analysis</TabsTrigger>
           <TabsTrigger value="implementation">Implementation</TabsTrigger>
-          <TabsTrigger value="appendix">Appendix</TabsTrigger>
         </TabsList>
 
         <TabsContent value="summary" className="space-y-6">
-          {/* Executive Summary Header */}
-          <Card className="bg-gradient-to-r from-blue-50 to-green-50">
-            <CardHeader>
-              <CardTitle className="text-2xl">Executive Summary</CardTitle>
-              <CardDescription className="text-lg">
-                Strategic NAC Investment Recommendation for Healthcare Organization
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">{EXECUTIVE_SUMMARY_DATA.paybackPeriod} mo</div>
-                  <div className="text-sm text-muted-foreground">Payback Period</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">{EXECUTIVE_SUMMARY_DATA.totalROI}%</div>
-                  <div className="text-sm text-muted-foreground">3-Year ROI</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600">{EXECUTIVE_SUMMARY_DATA.riskReduction}%</div>
-                  <div className="text-sm text-muted-foreground">Risk Reduction</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-orange-600">
-                    {EXECUTIVE_SUMMARY_DATA.complianceImprovement}%
-                  </div>
-                  <div className="text-sm text-muted-foreground">Compliance Score</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Key Recommendation */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-green-600" />
-                Strategic Recommendation
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Alert className="mb-4">
-                <CheckCircle2 className="h-4 w-4" />
-                <AlertDescription className="text-lg">
-                  <strong>Recommended Solution:</strong> Implement {EXECUTIVE_SUMMARY_DATA.recommendation} immediately
-                  to achieve fastest ROI and maximum risk reduction in the healthcare industry.
-                </AlertDescription>
-              </Alert>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-semibold mb-3">Key Business Drivers</h4>
-                  <ul className="space-y-2">
-                    {EXECUTIVE_SUMMARY_DATA.keyFindings.map((finding, index) => (
-                      <li key={index} className="flex items-start gap-2 text-sm">
-                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span>{finding}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-3">Industry Position</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Your Organization (Projected)</span>
-                        <span className="font-medium">
-                          {EXECUTIVE_SUMMARY_DATA.industryComparison.yourOrganization}%
-                        </span>
-                      </div>
-                      <Progress value={EXECUTIVE_SUMMARY_DATA.industryComparison.yourOrganization} className="h-2" />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Top Performers</span>
-                        <span className="font-medium">{EXECUTIVE_SUMMARY_DATA.industryComparison.topPerformers}%</span>
-                      </div>
-                      <Progress value={EXECUTIVE_SUMMARY_DATA.industryComparison.topPerformers} className="h-2" />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Industry Average</span>
-                        <span className="font-medium">
-                          {EXECUTIVE_SUMMARY_DATA.industryComparison.industryAverage}%
-                        </span>
-                      </div>
-                      <Progress value={EXECUTIVE_SUMMARY_DATA.industryComparison.industryAverage} className="h-2" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Wins */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-yellow-500" />
-                  Immediate Impact
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="text-sm space-y-2">
-                  <li>• Device visibility within 24 hours</li>
-                  <li>• Policy enforcement in 48 hours</li>
-                  <li>• Compliance reporting in 1 week</li>
-                  <li>• Full ROI realization in 0.3 months</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-blue-500" />
-                  Risk Mitigation
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="text-sm space-y-2">
-                  <li>• 85% reduction in breach probability</li>
-                  <li>• $4.9M annual risk value protection</li>
-                  <li>• HIPAA compliance automation</li>
-                  <li>• Real-time threat detection</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-green-500" />
-                  Operational Benefits
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="text-sm space-y-2">
-                  <li>• 78% efficiency improvement</li>
-                  <li>• 60% reduction in admin overhead</li>
-                  <li>• Automated guest access</li>
-                  <li>• Simplified device onboarding</li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="financial" className="space-y-6">
-          {/* Financial Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Investment Breakdown</CardTitle>
-                <CardDescription>3-year total cost of ownership</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={EXECUTIVE_SUMMARY_DATA.costBreakdown}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percentage }) => `${name} ${percentage}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="amount"
-                    >
-                      {EXECUTIVE_SUMMARY_DATA.costBreakdown.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Benefits Realization</CardTitle>
-                <CardDescription>Annual value creation</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={EXECUTIVE_SUMMARY_DATA.benefitsBreakdown}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percentage }) => `${name} ${percentage}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="amount"
-                    >
-                      {EXECUTIVE_SUMMARY_DATA.benefitsBreakdown.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* ROI Timeline */}
-          <Card>
-            <CardHeader>
-              <CardTitle>ROI Timeline</CardTitle>
-              <CardDescription>Cumulative return on investment over 3 years</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart
-                  data={[
-                    { month: 0, investment: -230000, benefits: 0, cumulative: -230000 },
-                    { month: 1, investment: -230000, benefits: 720000, cumulative: 490000 },
-                    { month: 6, investment: -250000, benefits: 4320000, cumulative: 4070000 },
-                    { month: 12, investment: -280000, benefits: 8640000, cumulative: 8360000 },
-                    { month: 24, investment: -320000, benefits: 17280000, cumulative: 16960000 },
-                    { month: 36, investment: -360000, benefits: 25920000, cumulative: 25560000 },
-                  ]}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" label={{ value: "Months", position: "insideBottom", offset: -10 }} />
-                  <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                  <Legend />
-                  <Line type="monotone" dataKey="cumulative" stroke="#8884d8" strokeWidth={3} name="Cumulative ROI" />
-                  <Line type="monotone" dataKey="benefits" stroke="#82ca9d" strokeWidth={2} name="Benefits" />
-                  <Line type="monotone" dataKey="investment" stroke="#ff7c7c" strokeWidth={2} name="Investment" />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Financial Summary Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Financial Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="text-xl font-bold text-red-600">$230K</div>
-                  <div className="text-sm text-muted-foreground">Initial Investment</div>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="text-xl font-bold text-green-600">$7.2M</div>
-                  <div className="text-sm text-muted-foreground">Annual Benefits</div>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="text-xl font-bold text-blue-600">$25.6M</div>
-                  <div className="text-sm text-muted-foreground">3-Year Net Value</div>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="text-xl font-bold text-purple-600">11,130%</div>
-                  <div className="text-sm text-muted-foreground">3-Year ROI</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <ExecutiveSummary />
         </TabsContent>
 
         <TabsContent value="risk" className="space-y-6">
-          {/* Risk Mitigation Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Risk Mitigation Analysis</CardTitle>
-              <CardDescription>Current vs. projected risk levels with NAC implementation</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={EXECUTIVE_SUMMARY_DATA.riskMitigation}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="category" />
-                  <YAxis label={{ value: "Risk Level (%)", angle: -90, position: "insideLeft" }} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="current" fill="#ff7c7c" name="Current Risk" />
-                  <Bar dataKey="withNAC" fill="#82ca9d" name="With NAC" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <EnhancedRiskAssessment />
+        </TabsContent>
 
-          {/* Risk Categories */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {EXECUTIVE_SUMMARY_DATA.riskMitigation.map((risk, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <CardTitle className="text-lg">{risk.category}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Current Risk Level</span>
-                        <span className="font-medium text-red-600">{risk.current}%</span>
-                      </div>
-                      <Progress value={risk.current} className="h-2" />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>With NAC Implementation</span>
-                        <span className="font-medium text-green-600">{risk.withNAC}%</span>
-                      </div>
-                      <Progress value={risk.withNAC} className="h-2" />
-                    </div>
-                    <div className="text-center p-3 bg-green-50 rounded-lg">
-                      <div className="text-lg font-bold text-green-600">{risk.reduction}%</div>
-                      <div className="text-sm text-muted-foreground">Risk Reduction</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Compliance Impact */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Compliance Impact</CardTitle>
-              <CardDescription>HIPAA compliance improvement with automated controls</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-red-600">65%</div>
-                  <div className="text-sm text-muted-foreground mb-2">Current Compliance Score</div>
-                  <Badge variant="destructive">Non-Compliant</Badge>
-                </div>
-                <div className="flex items-center justify-center">
-                  <div className="text-2xl">→</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">92%</div>
-                  <div className="text-sm text-muted-foreground mb-2">With NAC Implementation</div>
-                  <Badge variant="default" className="bg-green-600">
-                    Fully Compliant
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="cost" className="space-y-6">
+          <CostAnalysis />
         </TabsContent>
 
         <TabsContent value="implementation" className="space-y-6">
-          {/* Implementation Timeline */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Implementation Timeline</CardTitle>
-              <CardDescription>12-week deployment plan with key milestones</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {EXECUTIVE_SUMMARY_DATA.implementationTimeline.map((phase, index) => (
-                  <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-semibold">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium">{phase.phase}</h4>
-                      <p className="text-sm text-muted-foreground">{phase.duration} weeks</p>
-                    </div>
-                    <Badge variant={phase.status === "ready" ? "default" : "secondary"}>{phase.status}</Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Resource Requirements */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Resource Requirements</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span>Project Manager</span>
-                    <Badge variant="outline">1 FTE</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Network Engineer</span>
-                    <Badge variant="outline">0.5 FTE</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Security Analyst</span>
-                    <Badge variant="outline">0.5 FTE</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Portnox Professional Services</span>
-                    <Badge variant="outline">Included</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Success Metrics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span>Device Visibility</span>
-                    <Badge variant="default">100%</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Policy Compliance</span>
-                    <Badge variant="default">95%</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Incident Reduction</span>
-                    <Badge variant="default">85%</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>User Satisfaction</span>
-                    <Badge variant="default">90%</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Next Steps */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recommended Next Steps</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-sm font-semibold">
-                    1
-                  </div>
-                  <div>
-                    <h4 className="font-medium">Executive Approval</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Secure executive sponsorship and budget approval for NAC implementation
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-sm font-semibold">
-                    2
-                  </div>
-                  <div>
-                    <h4 className="font-medium">Vendor Selection</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Finalize contract negotiations with Portnox and establish implementation timeline
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-sm font-semibold">
-                    3
-                  </div>
-                  <div>
-                    <h4 className="font-medium">Project Kickoff</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Assemble project team and initiate planning phase with Portnox professional services
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="appendix" className="space-y-6">
-          {/* Methodology */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Analysis Methodology</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-semibold mb-2">Data Sources</h4>
-                  <ul className="text-sm space-y-1 ml-4">
-                    <li>• Industry breach cost reports (IBM, Ponemon Institute)</li>
-                    <li>• Healthcare compliance requirements (HIPAA, HITECH)</li>
-                    <li>• Vendor pricing and capability assessments</li>
-                    <li>• Internal operational cost analysis</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Assumptions</h4>
-                  <ul className="text-sm space-y-1 ml-4">
-                    <li>• 2,500 devices in scope for NAC implementation</li>
-                    <li>• Current breach probability: 28% annually</li>
-                    <li>• Average healthcare breach cost: $10.9M</li>
-                    <li>• Implementation timeline: 12 weeks</li>
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Vendor Comparison Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Vendor Evaluation Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-2">Vendor</th>
-                      <th className="text-left p-2">Payback (Months)</th>
-                      <th className="text-left p-2">3-Year TCO</th>
-                      <th className="text-left p-2">Risk Reduction</th>
-                      <th className="text-left p-2">Complexity</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b bg-green-50">
-                      <td className="p-2 font-medium">Portnox CLEAR</td>
-                      <td className="p-2">0.3</td>
-                      <td className="p-2">$230K</td>
-                      <td className="p-2">85%</td>
-                      <td className="p-2">Low</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-2">Cisco ISE</td>
-                      <td className="p-2">8.5</td>
-                      <td className="p-2">$850K</td>
-                      <td className="p-2">78%</td>
-                      <td className="p-2">Very High</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-2">Aruba ClearPass</td>
-                      <td className="p-2">6.2</td>
-                      <td className="p-2">$620K</td>
-                      <td className="p-2">75%</td>
-                      <td className="p-2">High</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Contact Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Contacts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-semibold mb-2">Internal Team</h4>
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <div className="font-medium">John Smith</div>
-                      <div className="text-muted-foreground">CISO</div>
-                      <div className="text-muted-foreground">john.smith@company.com</div>
-                    </div>
-                    <div>
-                      <div className="font-medium">Sarah Johnson</div>
-                      <div className="text-muted-foreground">IT Director</div>
-                      <div className="text-muted-foreground">sarah.johnson@company.com</div>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Portnox Team</h4>
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <div className="font-medium">Michael Chen</div>
-                      <div className="text-muted-foreground">Solutions Engineer</div>
-                      <div className="text-muted-foreground">michael.chen@portnox.com</div>
-                    </div>
-                    <div>
-                      <div className="font-medium">Lisa Rodriguez</div>
-                      <div className="text-muted-foreground">Customer Success Manager</div>
-                      <div className="text-muted-foreground">lisa.rodriguez@portnox.com</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <ImplementationPlan />
         </TabsContent>
       </Tabs>
     </div>
   )
 }
+
+export default ExecutiveReportView

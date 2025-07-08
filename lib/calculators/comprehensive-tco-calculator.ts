@@ -1,397 +1,547 @@
 // lib/calculators/comprehensive-tco-calculator.ts
 
-import { COMPREHENSIVE_VENDOR_DATA } from "@/lib/vendors/comprehensive-vendor-data"
-import type { VendorData } from "@/types/vendor-analysis"
+import {
+  COMPREHENSIVE_VENDOR_DATA,
+  INDUSTRIES,
+  MIGRATION_COSTS,
+  INDUSTRY_ROI,
+} from "../vendors/comprehensive-vendor-data"
 
-// Main calculation configuration interface
-export interface TCOCalculationConfig {
-  industry: string
+export interface TCOCalculationParams {
+  vendorKey: string
   deviceCount: number
-  timeframe: number
-  deploymentModel: string
-  complianceRequirements: string[]
-  currentSolution?: string
-  region?: string
-  supportLevel?: string
+  timeframe: 1 | 3 | 5
+  industry: string
+  deploymentModel: "CLOUD" | "HYBRID" | "ON_PREMISE"
+  hasExistingNAC: boolean
+  currentVendor?: string
+  includeCompliance: boolean
+  includeRiskReduction: boolean
 }
 
-// TCO calculation result interface
-export interface TCOCalculationResult {
-  vendorId: string
-  vendorName: string
-  totalCost: number
-  year1: number
-  year3: number
-  year5: number
-  costBreakdown: {
-    software: number
-    hardware: number
-    implementation: number
-    operational: number
-    hidden: number
+export interface DetailedCostBreakdown {
+  software: {
+    base: number
+    additionalModules: number
+    support: number
+    training: number
+    total: number
   }
-  roi: {
-    totalSavings: number
-    paybackPeriod: number
-    netPresentValue: number
-    internalRateOfReturn: number
-  }
-  security: {
-    overallScore: number
-    riskReduction: number
-    complianceScore: number
+  hardware: {
+    appliances: number
+    infrastructure: number
+    networking: number
+    refresh: number
+    total: number
   }
   implementation: {
-    timeline: number
-    complexity: string
-    riskLevel: string
+    professionalServices: number
+    deployment: number
+    migration: number
+    training: number
+    total: number
   }
+  operational: {
+    fteRequired: number
+    fteCost: number
+    trainingCost: number
+    certificationCost: number
+    maintenanceWindows: number
+    total: number
+  }
+  hidden: {
+    downtime: number
+    integrationCosts: number
+    scalingCosts: number
+    vendorLockIn: number
+    complexity: number
+    total: number
+  }
+  migration: {
+    parallelOperation: number
+    policyMigration: number
+    deviceReEnrollment: number
+    testingValidation: number
+    total: number
+  }
+  compliance: {
+    automationSavings: number
+    auditCosts: number
+    violationRisk: number
+    certificationCosts: number
+    total: number
+  }
+  riskReduction: {
+    breachPrevention: number
+    insuranceReduction: number
+    incidentResponse: number
+    reputationProtection: number
+    total: number
+  }
+  totalCost: number
+  totalBenefit: number
+  netCost: number
+  roi: number
+  paybackPeriod: number
 }
 
-// Industry-specific multipliers
-const INDUSTRY_MULTIPLIERS = {
-  HEALTHCARE: {
-    compliance: 1.3,
-    security: 1.4,
-    downtime: 2.0,
-    training: 1.2,
-  },
-  FINANCIAL: {
-    compliance: 1.5,
-    security: 1.6,
-    downtime: 2.5,
-    training: 1.3,
-  },
-  GOVERNMENT: {
-    compliance: 1.4,
-    security: 1.5,
-    downtime: 1.8,
-    training: 1.4,
-  },
-  EDUCATION: {
-    compliance: 1.1,
-    security: 1.2,
-    downtime: 1.3,
-    training: 1.1,
-  },
-  MANUFACTURING: {
-    compliance: 1.2,
-    security: 1.3,
-    downtime: 2.2,
-    training: 1.2,
-  },
-  RETAIL: {
-    compliance: 1.2,
-    security: 1.3,
-    downtime: 1.8,
-    training: 1.1,
-  },
-  TECHNOLOGY: {
-    compliance: 1.1,
-    security: 1.2,
-    downtime: 1.5,
-    training: 1.0,
-  },
-}
+export class ComprehensiveTCOCalculator {
+  private params: TCOCalculationParams
+  private vendor: (typeof COMPREHENSIVE_VENDOR_DATA)[keyof typeof COMPREHENSIVE_VENDOR_DATA]
+  private industry: (typeof INDUSTRIES)[keyof typeof INDUSTRIES]
+  private scaleFactor: number
 
-// Device count scaling factors
-const getDeviceScalingFactor = (deviceCount: number): number => {
-  if (deviceCount <= 100) return 1.0
-  if (deviceCount <= 500) return 0.95
-  if (deviceCount <= 1000) return 0.9
-  if (deviceCount <= 5000) return 0.85
-  if (deviceCount <= 10000) return 0.8
-  return 0.75
-}
+  constructor(params: TCOCalculationParams) {
+    this.params = params
+    this.vendor = COMPREHENSIVE_VENDOR_DATA[params.vendorKey]
+    this.industry = INDUSTRIES[params.industry]
+    this.scaleFactor = params.deviceCount / 500 // Base calculations are for 500 devices
+  }
 
-// Calculate comprehensive TCO for a vendor
-export function calculateComprehensiveTCO(vendorId: string, config: TCOCalculationConfig): TCOCalculationResult | null {
-  try {
-    const vendor = COMPREHENSIVE_VENDOR_DATA[vendorId]
-    if (!vendor) {
-      console.warn(`Vendor ${vendorId} not found`)
-      return null
-    }
+  calculate(): DetailedCostBreakdown {
+    const baseCosts = this.vendor.costs[this.params.timeframe]
 
-    const { deviceCount, timeframe, industry } = config
-    const industryMultiplier =
-      INDUSTRY_MULTIPLIERS[industry as keyof typeof INDUSTRY_MULTIPLIERS] || INDUSTRY_MULTIPLIERS.TECHNOLOGY
-    const scalingFactor = getDeviceScalingFactor(deviceCount)
-
-    // Get cost structure for the timeframe
-    const costStructure = vendor.costs[timeframe as keyof typeof vendor.costs] || vendor.costs[3]
-
-    // Calculate base costs
-    const softwareCost =
-      costStructure.software.base * deviceCount * scalingFactor +
-      (costStructure.software.additionalModules || 0) +
-      (costStructure.software.support || 0)
-
-    const hardwareCost =
-      costStructure.hardware.appliances +
-      (costStructure.hardware.infrastructure || 0) +
-      (costStructure.hardware.networking || 0)
-
-    const implementationCost =
-      costStructure.implementation.professionalServices +
-      (costStructure.implementation.deployment || 0) +
-      (costStructure.implementation.migration || 0) +
-      (costStructure.implementation.training || 0)
-
-    const operationalCost =
-      costStructure.operational.fteRequired * (costStructure.operational.avgSalary || 120000) * timeframe +
-      (costStructure.operational.trainingCost || 0) +
-      (costStructure.operational.certificationCost || 0)
-
-    const hiddenCost = Object.values(costStructure.hidden || {}).reduce((sum, cost) => sum + cost, 0)
-
-    // Apply industry multipliers
-    const adjustedSoftwareCost = softwareCost * industryMultiplier.compliance
-    const adjustedImplementationCost = implementationCost * industryMultiplier.training
-    const adjustedOperationalCost = operationalCost * industryMultiplier.security
-    const adjustedHiddenCost = hiddenCost * industryMultiplier.downtime
+    // Scale all costs based on device count
+    const software = this.calculateSoftwareCosts(baseCosts.software)
+    const hardware = this.calculateHardwareCosts(baseCosts.hardware)
+    const implementation = this.calculateImplementationCosts(baseCosts.implementation)
+    const operational = this.calculateOperationalCosts(baseCosts.operational)
+    const hidden = this.calculateHiddenCosts(baseCosts.hidden)
+    const migration = this.calculateMigrationCosts()
+    const compliance = this.params.includeCompliance ? this.calculateComplianceCosts() : this.zeroCosts()
+    const riskReduction = this.params.includeRiskReduction ? this.calculateRiskReduction() : this.zeroCosts()
 
     const totalCost =
-      adjustedSoftwareCost + hardwareCost + adjustedImplementationCost + adjustedOperationalCost + adjustedHiddenCost
+      software.total + hardware.total + implementation.total + operational.total + hidden.total + migration.total
 
-    // Calculate year-by-year costs
-    const year1 = adjustedSoftwareCost * 0.4 + hardwareCost + adjustedImplementationCost
-    const year3 = totalCost * 0.6
-    const year5 = totalCost
-
-    // Calculate ROI metrics
-    const baselineCost = calculateBaselineCost(deviceCount, timeframe, industry)
-    const totalSavings = Math.max(0, baselineCost - totalCost)
-    const paybackPeriod = totalSavings > 0 ? year1 / (totalSavings / timeframe) : 999
-    const netPresentValue = calculateNPV(totalSavings, totalCost, timeframe)
-    const internalRateOfReturn = calculateIRR(totalSavings, totalCost, timeframe)
-
-    // Calculate security scores
-    const overallScore = calculateSecurityScore(vendor, industry)
-    const riskReduction = calculateRiskReduction(vendor, industry)
-    const complianceScore = calculateComplianceScore(vendor, config.complianceRequirements)
-
-    // Implementation metrics
-    const timeline = vendor.implementation?.timeline || 90
-    const complexity = vendor.implementation?.complexity || "MODERATE"
-    const riskLevel = vendor.implementation?.riskLevel || "MODERATE"
+    const totalBenefit = compliance.total + riskReduction.total
+    const netCost = totalCost - totalBenefit
+    const roi = totalBenefit > 0 ? ((totalBenefit - totalCost) / totalCost) * 100 : 0
+    const paybackPeriod =
+      totalCost > 0 && totalBenefit > 0 ? (totalCost / (totalBenefit / this.params.timeframe)) * 365 : 0 // Days
 
     return {
-      vendorId,
-      vendorName: vendor.name,
+      software,
+      hardware,
+      implementation,
+      operational,
+      hidden,
+      migration,
+      compliance,
+      riskReduction,
       totalCost,
-      year1,
-      year3,
-      year5,
-      costBreakdown: {
-        software: adjustedSoftwareCost,
-        hardware: hardwareCost,
-        implementation: adjustedImplementationCost,
-        operational: adjustedOperationalCost,
-        hidden: adjustedHiddenCost,
-      },
-      roi: {
-        totalSavings,
-        paybackPeriod,
-        netPresentValue,
-        internalRateOfReturn,
-      },
-      security: {
-        overallScore,
-        riskReduction,
-        complianceScore,
-      },
-      implementation: {
-        timeline,
-        complexity,
-        riskLevel,
-      },
+      totalBenefit,
+      netCost,
+      roi,
+      paybackPeriod,
     }
-  } catch (error) {
-    console.error(`Error calculating TCO for ${vendorId}:`, error)
-    return null
+  }
+
+  private calculateSoftwareCosts(baseSoftware: any) {
+    const scaled = this.scale(baseSoftware.base || 0)
+    const modules = this.scale(baseSoftware.additionalModules || 0)
+    const support = this.scale(baseSoftware.support || 0)
+    const training = this.scale(baseSoftware.training || 0)
+
+    // Add complexity multipliers for certain vendors
+    let complexityMultiplier = 1
+    if (this.params.vendorKey === "CISCO_ISE") {
+      complexityMultiplier = 1.2 // 20% overhead for licensing complexity
+    }
+
+    return {
+      base: scaled * complexityMultiplier,
+      additionalModules: modules,
+      support,
+      training,
+      total: scaled * complexityMultiplier + modules + support + training,
+    }
+  }
+
+  private calculateHardwareCosts(baseHardware: any) {
+    // Cloud vendors have no hardware costs
+    if (this.vendor.deploymentModels[this.params.deploymentModel]?.available === false) {
+      return this.zeroCosts()
+    }
+
+    const appliances = this.scale(baseHardware.appliances || 0)
+    const infrastructure = this.scale(baseHardware.infrastructure || 0)
+    const networking = this.scale(baseHardware.networking || 0)
+    const refresh = this.params.timeframe >= 3 ? this.scale(baseHardware.refresh || 0) : 0
+
+    return {
+      appliances,
+      infrastructure,
+      networking,
+      refresh,
+      total: appliances + infrastructure + networking + refresh,
+    }
+  }
+
+  private calculateImplementationCosts(baseImplementation: any) {
+    const professionalServices = this.scale(baseImplementation.professionalServices || 0)
+    const deployment = this.scale(baseImplementation.deployment || 0)
+    const migration = this.scale(baseImplementation.migration || 0)
+    const training = this.scale(baseImplementation.training || 0)
+
+    // Add industry-specific complexity
+    let industryMultiplier = 1
+    if (this.industry.riskProfile === "CRITICAL") {
+      industryMultiplier = 1.3 // 30% more for critical industries
+    }
+
+    return {
+      professionalServices: professionalServices * industryMultiplier,
+      deployment: deployment * industryMultiplier,
+      migration,
+      training,
+      total: (professionalServices + deployment) * industryMultiplier + migration + training,
+    }
+  }
+
+  private calculateOperationalCosts(baseOperational: any) {
+    const fteRequired = baseOperational.fteRequired || 0
+    const avgSalary = baseOperational.avgSalary || 120000
+    const fteCost = fteRequired * avgSalary * this.params.timeframe
+    const trainingCost = this.scale(baseOperational.trainingCost || 0)
+    const certificationCost = this.scale(baseOperational.certificationCost || 0)
+
+    // Calculate maintenance window costs (downtime)
+    let maintenanceWindows = 0
+    if (this.params.vendorKey !== "PORTNOX" && this.params.vendorKey !== "FOXPASS") {
+      // Traditional vendors require maintenance windows
+      maintenanceWindows = 50000 * this.params.timeframe * this.scaleFactor
+    }
+
+    return {
+      fteRequired,
+      fteCost: this.scale(fteCost),
+      trainingCost,
+      certificationCost,
+      maintenanceWindows,
+      total: this.scale(fteCost) + trainingCost + certificationCost + maintenanceWindows,
+    }
+  }
+
+  private calculateHiddenCosts(baseHidden: any) {
+    const downtime = this.scale(baseHidden?.downtime || 0)
+    const integrationCosts = this.scale(baseHidden?.integrationCosts || 0)
+    const scalingCosts = this.scale(baseHidden?.scalingCosts || 0)
+
+    // Calculate vendor lock-in costs
+    let vendorLockIn = 0
+    if (this.vendor.vendorLockIn === "EXTREME") {
+      vendorLockIn = 100000 * this.params.timeframe * this.scaleFactor
+    } else if (this.vendor.vendorLockIn === "HIGH") {
+      vendorLockIn = 50000 * this.params.timeframe * this.scaleFactor
+    } else if (this.vendor.vendorLockIn === "MODERATE") {
+      vendorLockIn = 25000 * this.params.timeframe * this.scaleFactor
+    }
+
+    // Complexity costs
+    const complexity = this.scale(baseHidden?.complexity || 0)
+
+    return {
+      downtime,
+      integrationCosts,
+      scalingCosts,
+      vendorLockIn,
+      complexity,
+      total: downtime + integrationCosts + scalingCosts + vendorLockIn + complexity,
+    }
+  }
+
+  private calculateMigrationCosts() {
+    if (!this.params.hasExistingNAC) {
+      // Implementing NAC from scratch
+      const migrationFactors = MIGRATION_COSTS.FROM_NO_NAC.factors
+      const portnoxAdvantage = MIGRATION_COSTS.FROM_NO_NAC.portnoxAdvantage
+
+      if (this.params.vendorKey === "PORTNOX") {
+        return {
+          parallelOperation: 0,
+          policyMigration: 0,
+          deviceReEnrollment: this.scale(portnoxAdvantage.reduced.networkReadiness),
+          testingValidation: this.scale(portnoxAdvantage.reduced.pilotTesting),
+          total: this.scale(
+            portnoxAdvantage.reduced.networkReadiness +
+              portnoxAdvantage.reduced.pilotTesting +
+              portnoxAdvantage.reduced.userTraining,
+          ),
+        }
+      } else {
+        return {
+          parallelOperation: this.scale(migrationFactors.certificateInfrastructure),
+          policyMigration: this.scale(migrationFactors.processDocumentation),
+          deviceReEnrollment: this.scale(migrationFactors.userTraining),
+          testingValidation: this.scale(migrationFactors.pilotTesting),
+          total: this.scale(Object.values(migrationFactors).reduce((a, b) => a + b, 0)),
+        }
+      }
+    } else {
+      // Migrating from existing NAC
+      const migrationFactors = MIGRATION_COSTS.FROM_EXISTING_NAC.factors
+      const portnoxAdvantage = MIGRATION_COSTS.FROM_EXISTING_NAC.portnoxAdvantage
+
+      if (this.params.vendorKey === "PORTNOX") {
+        return {
+          parallelOperation: this.scale(portnoxAdvantage.reduced.parallelOperation),
+          policyMigration: 0, // Automated
+          deviceReEnrollment: 0, // Automated
+          testingValidation: this.scale(portnoxAdvantage.reduced.testingValidation),
+          total: this.scale(
+            portnoxAdvantage.reduced.parallelOperation +
+              portnoxAdvantage.reduced.integrationRework +
+              portnoxAdvantage.reduced.testingValidation,
+          ),
+        }
+      } else {
+        return {
+          parallelOperation: this.scale(migrationFactors.parallelOperation),
+          policyMigration: this.scale(migrationFactors.policyMigration),
+          deviceReEnrollment: this.scale(migrationFactors.deviceReEnrollment),
+          testingValidation: this.scale(migrationFactors.testingValidation),
+          total: this.scale(Object.values(migrationFactors).reduce((a, b) => a + b, 0)),
+        }
+      }
+    }
+  }
+
+  private calculateComplianceCosts() {
+    const industryROI = INDUSTRY_ROI[this.params.industry]
+    if (!industryROI) return this.zeroCosts()
+
+    // Calculate compliance automation savings
+    const automationSavings =
+      this.params.vendorKey === "PORTNOX"
+        ? this.scale(industryROI.portnoxBenefits.complianceAutomation) * this.params.timeframe
+        : this.scale(industryROI.portnoxBenefits.complianceAutomation * 0.3) * this.params.timeframe
+
+    // Audit cost reduction
+    const auditCosts = this.params.vendorKey === "PORTNOX" ? this.scale(50000) * this.params.timeframe : 0
+
+    // Violation risk reduction
+    const violationRisk =
+      this.params.vendorKey === "PORTNOX"
+        ? this.scale(100000) * this.params.timeframe
+        : this.scale(25000) * this.params.timeframe
+
+    return {
+      automationSavings,
+      auditCosts,
+      violationRisk,
+      certificationCosts: 0,
+      total: automationSavings + auditCosts + violationRisk,
+    }
+  }
+
+  private calculateRiskReduction() {
+    const industryROI = INDUSTRY_ROI[this.params.industry]
+    if (!industryROI) return this.zeroCosts()
+
+    // Breach prevention value
+    const breachPrevention =
+      this.params.vendorKey === "PORTNOX"
+        ? this.scale(industryROI.portnoxBenefits.breachPrevention) * this.params.timeframe
+        : this.scale(industryROI.portnoxBenefits.breachPrevention * 0.5) * this.params.timeframe
+
+    // Insurance premium reduction
+    const insuranceReduction =
+      this.params.vendorKey === "PORTNOX"
+        ? this.scale(75000) * this.params.timeframe
+        : this.scale(25000) * this.params.timeframe
+
+    // Incident response cost reduction
+    const incidentResponse =
+      this.params.vendorKey === "PORTNOX"
+        ? this.scale(100000) * this.params.timeframe
+        : this.scale(40000) * this.params.timeframe
+
+    // Reputation protection value
+    const reputationProtection = this.scale(200000) * this.params.timeframe
+
+    return {
+      breachPrevention,
+      insuranceReduction,
+      incidentResponse,
+      reputationProtection,
+      total: breachPrevention + insuranceReduction + incidentResponse + reputationProtection,
+    }
+  }
+
+  private scale(value: number): number {
+    return Math.round(value * this.scaleFactor)
+  }
+
+  private zeroCosts() {
+    return {
+      appliances: 0,
+      infrastructure: 0,
+      networking: 0,
+      refresh: 0,
+      total: 0,
+    }
+  }
+
+  // Comparison methods
+  compareVendors(vendorKeys: string[]): Record<string, DetailedCostBreakdown> {
+    const results: Record<string, DetailedCostBreakdown> = {}
+
+    vendorKeys.forEach((vendorKey) => {
+      const calculator = new ComprehensiveTCOCalculator({
+        ...this.params,
+        vendorKey,
+      })
+      results[vendorKey] = calculator.calculate()
+    })
+
+    return results
+  }
+
+  generateExecutiveSummary(comparison: Record<string, DetailedCostBreakdown>) {
+    const portnoxData = comparison["PORTNOX"]
+    const savings: Record<string, number> = {}
+    const percentSavings: Record<string, number> = {}
+
+    Object.entries(comparison).forEach(([vendorKey, data]) => {
+      if (vendorKey !== "PORTNOX") {
+        savings[vendorKey] = data.totalCost - portnoxData.totalCost
+        percentSavings[vendorKey] = Math.round((savings[vendorKey] / data.totalCost) * 100)
+      }
+    })
+
+    return {
+      portnoxTCO: portnoxData.totalCost,
+      portnoxROI: portnoxData.roi,
+      portnoxPayback: portnoxData.paybackPeriod,
+      savings,
+      percentSavings,
+      recommendation: this.generateRecommendation(comparison),
+    }
+  }
+
+  private generateRecommendation(comparison: Record<string, DetailedCostBreakdown>): string {
+    const portnoxData = comparison["PORTNOX"]
+    const avgSavings =
+      Object.values(comparison)
+        .filter((_, index) => Object.keys(comparison)[index] !== "PORTNOX")
+        .reduce((acc, data) => acc + (data.totalCost - portnoxData.totalCost), 0) /
+      (Object.keys(comparison).length - 1)
+
+    if (avgSavings > 500000) {
+      return `Portnox CLEAR delivers exceptional value with ${Math.round(avgSavings / 1000)}K average savings 
+        over ${this.params.timeframe} years. The combination of zero infrastructure costs, 
+        95% faster deployment, and ${Math.round(portnoxData.roi)}% ROI makes it the clear choice 
+        for ${this.industry.name} organizations.`
+    } else if (avgSavings > 200000) {
+      return `Portnox CLEAR provides substantial cost savings of ${Math.round(avgSavings / 1000)}K 
+        while delivering superior security capabilities. The cloud-native architecture eliminates 
+        hardware costs and reduces operational overhead by 90%, making it ideal for 
+        modern ${this.industry.name} environments.`
+    } else {
+      return `Portnox CLEAR offers competitive pricing with ${Math.round(avgSavings / 1000)}K savings, 
+        but more importantly delivers 95% faster time to value and eliminates vendor lock-in. 
+        For ${this.industry.name} organizations prioritizing agility and innovation, 
+        Portnox is the recommended solution.`
+    }
   }
 }
 
-// Calculate quick TCO estimate
-export function calculateQuickTCO(vendorId: string, deviceCount: number): number {
-  const vendor = COMPREHENSIVE_VENDOR_DATA[vendorId]
-  if (!vendor) return 0
-
-  const costStructure = vendor.costs[3] // Use 3-year as default
-  const scalingFactor = getDeviceScalingFactor(deviceCount)
-
-  return (
-    costStructure.software.base * deviceCount * scalingFactor +
-    costStructure.hardware.appliances +
-    costStructure.implementation.professionalServices +
-    costStructure.operational.fteRequired * 120000 * 3
-  )
-}
-
-// Compare vendors by category
-export function compareVendorsByCategory(
-  vendorIds: string[],
-  config: TCOCalculationConfig,
-): Record<string, TCOCalculationResult> {
-  const results: Record<string, TCOCalculationResult> = {}
-
-  vendorIds.forEach((vendorId) => {
-    const result = calculateComprehensiveTCO(vendorId, config)
-    if (result) {
-      results[vendorId] = result
-    }
+// Helper function to get all vendor comparisons
+export function getAllVendorComparisons(params: Omit<TCOCalculationParams, "vendorKey">) {
+  const vendorKeys = Object.keys(COMPREHENSIVE_VENDOR_DATA)
+  const calculator = new ComprehensiveTCOCalculator({
+    ...params,
+    vendorKey: "PORTNOX", // Default for base calculator
   })
 
-  return results
+  return calculator.compareVendors(vendorKeys)
 }
 
-// Helper functions
-function calculateBaselineCost(deviceCount: number, timeframe: number, industry: string): number {
-  // Baseline cost calculation for comparison (typical legacy NAC solution)
-  const basePerDevice = 150 // Average cost per device for traditional NAC
-  const industryMultiplier = INDUSTRY_MULTIPLIERS[industry as keyof typeof INDUSTRY_MULTIPLIERS]?.security || 1.2
+// Industry-specific recommendations
+export function getIndustryRecommendations(industry: string, deviceCount: number) {
+  const industryData = INDUSTRIES[industry]
+  const recommendations = []
 
-  return deviceCount * basePerDevice * timeframe * industryMultiplier
-}
-
-function calculateNPV(savings: number, investment: number, years: number): number {
-  const discountRate = 0.1 // 10% discount rate
-  let npv = -investment
-
-  for (let year = 1; year <= years; year++) {
-    npv += savings / years / Math.pow(1 + discountRate, year)
+  if (industryData.specificRequirements.medicalDeviceManagement) {
+    recommendations.push({
+      priority: "CRITICAL",
+      title: "Medical Device Security",
+      description: "Portnox excels at agentless IoT/medical device profiling and isolation",
+      vendors: {
+        recommended: ["PORTNOX", "FORESCOUT"],
+        avoid: ["MICROSOFT_NPS", "FOXPASS", "MERAKI_ACCESS_CONTROL"],
+      },
+    })
   }
 
-  return npv
-}
-
-function calculateIRR(savings: number, investment: number, years: number): number {
-  // Simplified IRR calculation
-  const annualSavings = savings / years
-  return (annualSavings / investment) * 100
-}
-
-function calculateSecurityScore(vendor: VendorData, industry: string): number {
-  let score = 70 // Base score
-
-  // Add points for security features
-  if (vendor.capabilities.zeroTrust) score += 10
-  if (vendor.capabilities.riskBasedAccess) score += 8
-  if (vendor.capabilities.behaviorAnalytics) score += 7
-  if (vendor.capabilities.microSegmentation) score += 8
-  if (vendor.capabilities.mfa) score += 5
-
-  // Industry-specific adjustments
-  const industryMultiplier = INDUSTRY_MULTIPLIERS[industry as keyof typeof INDUSTRY_MULTIPLIERS]?.security || 1.0
-  score *= industryMultiplier
-
-  return Math.min(100, Math.round(score))
-}
-
-function calculateRiskReduction(vendor: VendorData, industry: string): number {
-  let reduction = 60 // Base risk reduction
-
-  // Add reduction for advanced features
-  if (vendor.capabilities.zeroTrust) reduction += 15
-  if (vendor.capabilities.continuousCompliance) reduction += 10
-  if (vendor.capabilities.behaviorAnalytics) reduction += 8
-  if (vendor.capabilities.deviceTrust) reduction += 7
-
-  return Math.min(95, reduction)
-}
-
-function calculateComplianceScore(vendor: VendorData, requirements: string[]): number {
-  if (!requirements.length) return 85
-
-  let score = 0
-  const supportedFrameworks = vendor.complianceSupport || {}
-
-  requirements.forEach((req) => {
-    const framework = supportedFrameworks[req as keyof typeof supportedFrameworks]
-    if (framework?.supported) {
-      score += framework.coverage || 80
-    }
-  })
-
-  return Math.round(score / requirements.length)
-}
-
-// Get industry-specific recommendations
-export function getIndustryRecommendations(industry: string): string[] {
-  const recommendations: Record<string, string[]> = {
-    HEALTHCARE: [
-      "Prioritize HIPAA compliance and patient data protection",
-      "Focus on medical device integration and IoT security",
-      "Ensure 24/7 availability for critical healthcare systems",
-    ],
-    FINANCIAL: [
-      "Implement strong PCI DSS and SOX compliance measures",
-      "Focus on fraud prevention and transaction security",
-      "Ensure regulatory reporting capabilities",
-    ],
-    GOVERNMENT: [
-      "Prioritize FedRAMP and FISMA compliance",
-      "Focus on classified data protection",
-      "Ensure citizen data privacy and security",
-    ],
-    EDUCATION: [
-      "Implement FERPA compliance for student data",
-      "Focus on BYOD and guest access management",
-      "Ensure scalable solution for large user populations",
-    ],
+  if (industryData.specificRequirements.otItConvergence) {
+    recommendations.push({
+      priority: "HIGH",
+      title: "OT/IT Convergence",
+      description: "Critical for manufacturing environments with industrial systems",
+      vendors: {
+        recommended: ["PORTNOX", "FORESCOUT", "CISCO_ISE"],
+        avoid: ["FOXPASS", "SECUREW2", "MERAKI_ACCESS_CONTROL"],
+      },
+    })
   }
 
-  return (
-    recommendations[industry] || [
-      "Focus on core NAC capabilities and security",
-      "Ensure scalable and cost-effective solution",
-      "Prioritize ease of deployment and management",
-    ]
-  )
+  if (industryData.specificRequirements.byodManagement) {
+    recommendations.push({
+      priority: "HIGH",
+      title: "BYOD at Scale",
+      description: "Self-service onboarding and certificate management essential",
+      vendors: {
+        recommended: ["PORTNOX", "ARUBA_CLEARPASS"],
+        avoid: ["MICROSOFT_NPS", "PACKETFENCE"],
+      },
+    })
+  }
+
+  return recommendations
 }
 
-// Calculate migration complexity
-export function calculateMigrationComplexity(
-  currentSolution: string,
-  targetVendor: string,
-): { complexity: string; duration: number; risk: string } {
-  const migrationMatrix: Record<string, Record<string, any>> = {
-    none: {
-      portnox: { complexity: "LOW", duration: 7, risk: "MINIMAL" },
-      cisco_ise: { complexity: "HIGH", duration: 180, risk: "HIGH" },
-      aruba_clearpass: { complexity: "MODERATE", duration: 90, risk: "MODERATE" },
-    },
-    cisco_ise: {
-      portnox: { complexity: "MODERATE", duration: 30, risk: "LOW" },
-      aruba_clearpass: { complexity: "HIGH", duration: 120, risk: "MODERATE" },
-    },
-    aruba_clearpass: {
-      portnox: { complexity: "LOW", duration: 21, risk: "LOW" },
-      cisco_ise: { complexity: "HIGH", duration: 150, risk: "HIGH" },
-    },
+// Migration complexity calculator
+export function calculateMigrationComplexity(currentVendor: string | null, targetVendor: string, deviceCount: number) {
+  const complexityFactors = {
+    deviceReEnrollment: 0,
+    policyMigration: 0,
+    integrationRework: 0,
+    userTraining: 0,
+    parallelOperation: 0,
   }
 
-  return migrationMatrix[currentSolution]?.[targetVendor] || { complexity: "MODERATE", duration: 60, risk: "MODERATE" }
-}
-
-// Export the main calculator class for backward compatibility
-export class ComprehensiveTCOCalculator {
-  private config: TCOCalculationConfig
-
-  constructor(config: TCOCalculationConfig) {
-    this.config = config
+  if (!currentVendor) {
+    // Green field deployment
+    complexityFactors.deviceReEnrollment = deviceCount * 0.5 // Hours per device
+    complexityFactors.userTraining = deviceCount * 0.2
+    complexityFactors.integrationRework = 100
+  } else {
+    // Migration from existing
+    complexityFactors.deviceReEnrollment = deviceCount * 1 // Re-enrollment takes longer
+    complexityFactors.policyMigration = 200
+    complexityFactors.integrationRework = 300
+    complexityFactors.userTraining = deviceCount * 0.3
+    complexityFactors.parallelOperation = 500
   }
 
-  calculate(vendorId: string): TCOCalculationResult | null {
-    return calculateComprehensiveTCO(vendorId, this.config)
+  // Portnox reduces complexity significantly
+  if (targetVendor === "PORTNOX") {
+    Object.keys(complexityFactors).forEach((key) => {
+      complexityFactors[key] *= 0.2 // 80% reduction
+    })
   }
 
-  compareVendors(vendorIds: string[]): Record<string, TCOCalculationResult> {
-    return compareVendorsByCategory(vendorIds, this.config)
-  }
+  const totalHours = Object.values(complexityFactors).reduce((a, b) => a + b, 0)
+  const totalDays = Math.ceil(totalHours / 8)
+  const complexity = totalDays > 180 ? "EXTREME" : totalDays > 90 ? "HIGH" : totalDays > 30 ? "MODERATE" : "LOW"
 
-  updateConfig(newConfig: Partial<TCOCalculationConfig>): void {
-    this.config = { ...this.config, ...newConfig }
+  return {
+    complexityFactors,
+    totalHours,
+    totalDays,
+    complexity,
+    estimatedCost: totalHours * 150, // $150/hour professional services
   }
 }

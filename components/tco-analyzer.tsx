@@ -1,773 +1,546 @@
 "use client"
-
-import { useState, useMemo, useRef } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState, useEffect, useCallback } from "react"
+import Image from "next/image"
+import { motion, AnimatePresence } from "framer-motion"
+import { getVendorLogoPath } from "@/lib/comprehensive-vendor-data"
+import { type CalculationResult, compareVendors, type CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
+import { Card } from "@/components/ui/card"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
-import { TrendingUp, DollarSign, Clock, Shield, Download, FileText, Award } from "lucide-react"
+import { cn } from "@/lib/utils"
+import EnhancedVendorSelection from "./enhanced-vendor-selection"
+import SettingsPanel from "./settings-panel"
+import ExecutiveDashboardView from "./executive-dashboard-view"
+import FinancialAnalysisView from "./financial-analysis-view"
+import CybersecurityPostureView from "./cybersecurity-posture-view"
+import BusinessImpactView from "./business-impact-view"
+import OperationalAnalysisView from "./operational-analysis-view"
+import FeatureMatrixView from "./feature-matrix-view"
+import ExecutiveReportView from "./executive-report-view"
+import IntegrationHubView from "./integration-hub-view"
+import ComplianceRiskView from "./compliance-risk-view"
+import SecurityRiskAssessmentView from "./security-risk-assessment-view"
+import IndustryAnalysisView from "./industry-analysis-view"
+import EnhancedFeatureComparisonView from "./enhanced-feature-comparison-view"
+import ImplementationTimelineView from "./implementation-timeline-view"
+import MigrationPlanningView from "./migration-planning-view"
+import ROICalculatorView from "./roi-calculator-view"
 import {
-  BarChart,
-  Bar,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-} from "recharts"
-import { COMPREHENSIVE_VENDOR_DATA, INDUSTRIES } from "@/lib/vendors/comprehensive-vendor-data"
-import { calculateComprehensiveTCO } from "@/lib/calculators/comprehensive-tco-calculator"
-import { IndustryAnalysisDashboard } from "./industry-analysis-view"
-import { ExecutiveReportGenerator } from "./executive-report-view"
-import { VendorScorecard } from "./vendor-comparison-matrix"
-import { exportAnalysis, ExportFormat, NACAnalysisExporter, createExportData } from "@/lib/export/data-export-utilities"
+  BarChart3,
+  Calculator,
+  Shield,
+  TrendingUp,
+  Users,
+  Settings,
+  FileText,
+  Network,
+  AlertTriangle,
+  Building2,
+  Zap,
+  Clock,
+  Download,
+  Calendar,
+  Sun,
+  Moon,
+  Menu,
+  X,
+  Star,
+  CheckCircle2,
+  MapPin,
+  Target,
+} from "lucide-react"
 
-export function TCOAnalyzer() {
-  // Configuration state
-  const [selectedIndustry, setSelectedIndustry] = useState("HEALTHCARE")
-  const [deviceCount, setDeviceCount] = useState([500])
-  const [userCount, setUserCount] = useState([1000])
-  const [timeframe, setTimeframe] = useState<1 | 3 | 5>(3)
-  const [hasExistingNAC, setHasExistingNAC] = useState(false)
-  const [existingVendor, setExistingVendor] = useState("")
-  const [deploymentModel, setDeploymentModel] = useState("CLOUD")
-  const [includeRiskAnalysis, setIncludeRiskAnalysis] = useState(true)
-  const [includeCompliance, setIncludeCompliance] = useState(true)
+const NAVIGATION_ITEMS = [
+  {
+    id: "vendor-selection",
+    label: "Vendor Selection",
+    icon: <Users className="h-4 w-4" />,
+    description: "Choose your comparison vendors",
+  },
+  {
+    id: "tco-analysis",
+    label: "TCO Analysis",
+    icon: <Calculator className="h-4 w-4" />,
+    description: "Total cost of ownership analysis",
+  },
+  {
+    id: "vendor-comparison",
+    label: "Vendor Comparison",
+    icon: <BarChart3 className="h-4 w-4" />,
+    description: "Compare vendors side by side",
+  },
+  {
+    id: "compliance-risk",
+    label: "Compliance & Risk",
+    icon: <Shield className="h-4 w-4" />,
+    description: "Risk assessment and compliance",
+  },
+  {
+    id: "migration-planning",
+    label: "Migration Planning",
+    icon: <MapPin className="h-4 w-4" />,
+    description: "Migration readiness and planning",
+  },
+  {
+    id: "roi-calculator",
+    label: "ROI Calculator",
+    icon: <Target className="h-4 w-4" />,
+    description: "Financial analysis and payback",
+  },
+  {
+    id: "reports",
+    label: "Reports",
+    icon: <FileText className="h-4 w-4" />,
+    description: "Executive reports and analysis",
+  },
+]
 
-  // Selected vendors for comparison
-  const [selectedVendors, setSelectedVendors] = useState(["PORTNOX", "CISCO_ISE", "ARUBA_CLEARPASS", "FORESCOUT"])
+const TCO_VIEWS = [
+  { id: "executive-dashboard", label: "Executive Dashboard", icon: <TrendingUp className="h-4 w-4" /> },
+  { id: "financial-analysis", label: "Financial Analysis", icon: <Calculator className="h-4 w-4" /> },
+  { id: "cybersecurity-posture", label: "Security Posture", icon: <Shield className="h-4 w-4" /> },
+  { id: "business-impact", label: "Business Impact", icon: <Building2 className="h-4 w-4" /> },
+  { id: "operational-analysis", label: "Operational Analysis", icon: <Users className="h-4 w-4" /> },
+]
 
-  // Chart refs for capturing
-  const tcoChartRef = useRef<HTMLDivElement>(null)
-  const costBreakdownChartRef = useRef<HTMLDivElement>(null)
-  const savingsChartRef = useRef<HTMLDivElement>(null)
-  const vendorComparisonChartRef = useRef<HTMLDivElement>(null)
-  const roiChartRef = useRef<HTMLDivElement>(null)
-  const riskChartRef = useRef<HTMLDivElement>(null)
+const VENDOR_COMPARISON_VIEWS = [
+  { id: "feature-matrix", label: "Feature Matrix", icon: <BarChart3 className="h-4 w-4" /> },
+  { id: "enhanced-feature-comparison", label: "Feature Comparison", icon: <Zap className="h-4 w-4" /> },
+  { id: "implementation-timeline", label: "Implementation", icon: <Clock className="h-4 w-4" /> },
+  { id: "industry-analysis", label: "Industry Analysis", icon: <Building2 className="h-4 w-4" /> },
+]
 
-  // Calculate TCO for all selected vendors
-  const tcoAnalysis = useMemo(() => {
-    const results: any = {}
+const COMPLIANCE_VIEWS = [
+  { id: "compliance-risk", label: "Compliance Overview", icon: <Shield className="h-4 w-4" /> },
+  { id: "security-risk-assessment", label: "Security Assessment", icon: <AlertTriangle className="h-4 w-4" /> },
+]
 
-    selectedVendors.forEach((vendorKey) => {
-      const vendor = COMPREHENSIVE_VENDOR_DATA[vendorKey]
-      if (!vendor) return
+const MIGRATION_VIEWS = [
+  { id: "migration-planning", label: "Migration Planning", icon: <MapPin className="h-4 w-4" /> },
+]
 
-      results[vendorKey] = calculateComprehensiveTCO({
-        vendor: vendorKey,
-        deviceCount: deviceCount[0],
-        userCount: userCount[0],
-        timeframe,
-        industry: selectedIndustry,
-        deploymentModel,
-        hasExistingNAC,
-        existingVendor,
-        includeRiskAnalysis,
-        includeCompliance,
-      })
-    })
+const ROI_VIEWS = [{ id: "roi-calculator", label: "ROI Calculator", icon: <Target className="h-4 w-4" /> }]
 
-    return results
-  }, [
-    selectedVendors,
-    deviceCount,
-    userCount,
-    timeframe,
-    selectedIndustry,
-    deploymentModel,
-    hasExistingNAC,
-    existingVendor,
-    includeRiskAnalysis,
-    includeCompliance,
-  ])
+const REPORTS_VIEWS = [
+  { id: "executive-report", label: "Executive Report", icon: <FileText className="h-4 w-4" /> },
+  { id: "integration-hub", label: "Integration Hub", icon: <Network className="h-4 w-4" /> },
+]
 
-  // Prepare comparison data for charts
-  const comparisonData = useMemo(() => {
-    return selectedVendors
-      .map((vendorKey) => {
-        const vendor = COMPREHENSIVE_VENDOR_DATA[vendorKey]
-        const tco = tcoAnalysis[vendorKey]
+export default function TCOAnalyzer() {
+  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco", "fortinet", "aruba"])
+  const [results, setResults] = useState<CalculationResult[]>([])
+  const [isCalculating, setIsCalculating] = useState(false)
+  const [activeTab, setActiveTab] = useState("vendor-selection")
+  const [activeSubView, setActiveSubView] = useState("executive-dashboard")
+  const [showSettings, setShowSettings] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-        return {
-          vendor: vendor?.name || vendorKey,
-          vendorKey,
-          totalCost: tco?.totalCost || 0,
-          year1: tco?.yearlyBreakdown?.[0] || 0,
-          year3: tco?.yearlyBreakdown?.[2] || 0,
-          year5: tco?.yearlyBreakdown?.[4] || 0,
-          software: tco?.software?.total || 0,
-          hardware: tco?.hardware?.total || 0,
-          implementation: tco?.implementation?.total || 0,
-          operational: tco?.operational?.total || 0,
-          hidden: tco?.hidden?.total || 0,
-          roi: tco?.roi || 0,
-          paybackPeriod: tco?.paybackPeriod || 0,
-          riskReduction: tco?.riskReduction || 0,
-        }
-      })
-      .sort((a, b) => a.totalCost - b.totalCost)
-  }, [selectedVendors, tcoAnalysis])
+  const [configuration, setConfiguration] = useState<CalculationConfiguration>({
+    devices: 1000,
+    users: 2500,
+    years: 3,
+    industry: "technology",
+    companySize: "medium",
+    securityLevel: "high",
+    complianceRequirements: ["SOC2", "ISO27001"],
+    currentSolution: "basic",
+    deploymentComplexity: "medium",
+    supportLevel: "premium",
+    integrationRequirements: ["active-directory", "siem"],
+    geographicScope: "multi-region",
+    budgetConstraints: "moderate",
+  })
 
-  // Get Portnox data for highlighting
-  const portnoxData = comparisonData.find((d) => d.vendorKey === "PORTNOX")
-  const competitorAvg =
-    comparisonData.filter((d) => d.vendorKey !== "PORTNOX").reduce((sum, d) => sum + d.totalCost, 0) /
-    Math.max(1, comparisonData.length - 1)
-
-  const savings = competitorAvg - (portnoxData?.totalCost || 0)
-  const percentSavings = Math.round((savings / competitorAvg) * 100)
-
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`
-    } else if (value >= 1000) {
-      return `$${(value / 1000).toFixed(0)}K`
-    }
-    return `$${value.toFixed(0)}`
-  }
-
-  const handleExport = async (format: ExportFormat) => {
-    try {
-      const exportData = createExportData(
-        {
-          industry: selectedIndustry,
-          deviceCount: deviceCount[0],
-          timeframe,
-          vendors: selectedVendors,
-          deploymentModel,
-        },
-        {
-          tcoComparison: tcoAnalysis,
-          roiAnalysis: {
-            portnoxROI: portnoxData?.roi || 5506,
-            savings,
-            percentSavings,
-          },
-          riskAssessment: {
-            currentRisk: 28,
-            projectedRisk: 4,
-            riskReduction: 86,
-          },
-          complianceMapping: {},
-        },
-      )
-
-      const exporter = new NACAnalysisExporter(exportData)
-
-      switch (format) {
-        case ExportFormat.PDF:
-          const pdfBlob = await exporter.exportToPDF()
-          const pdfUrl = URL.createObjectURL(pdfBlob)
-          const pdfLink = document.createElement("a")
-          pdfLink.href = pdfUrl
-          pdfLink.download = `NAC_Analysis_Report_${new Date().toISOString().split("T")[0]}.pdf`
-          document.body.appendChild(pdfLink)
-          pdfLink.click()
-          document.body.removeChild(pdfLink)
-          URL.revokeObjectURL(pdfUrl)
-          break
-        case ExportFormat.EXCEL:
-          const csvContent = await exporter.exportToCSV()
-          const csvBlob = new Blob([csvContent], { type: "text/csv" })
-          const csvUrl = URL.createObjectURL(csvBlob)
-          const csvLink = document.createElement("a")
-          csvLink.href = csvUrl
-          csvLink.download = `NAC_Analysis_Data_${new Date().toISOString().split("T")[0]}.csv`
-          document.body.appendChild(csvLink)
-          csvLink.click()
-          document.body.removeChild(csvLink)
-          URL.revokeObjectURL(csvUrl)
-          break
-        default:
-          await exportAnalysis(exportData, format)
+  const handleVendorToggle = useCallback((vendorId: string) => {
+    setSelectedVendors((prev) => {
+      if (prev.includes(vendorId)) {
+        return prev.filter((id) => id !== vendorId)
+      } else {
+        return [...prev, vendorId]
       }
+    })
+  }, [])
+
+  const handleCalculate = useCallback(async () => {
+    if (selectedVendors.length === 0) return
+
+    setIsCalculating(true)
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const calculationResults = compareVendors(selectedVendors, configuration)
+      setResults(calculationResults)
+      setActiveTab("tco-analysis")
     } catch (error) {
-      console.error("Export failed:", error)
-      alert("Export failed. Please try again.")
+      console.error("Calculation error:", error)
+    } finally {
+      setIsCalculating(false)
+    }
+  }, [selectedVendors, configuration])
+
+  const handleExportPDF = () => {
+    console.log("Exporting PDF...")
+  }
+
+  const handleScheduleDemo = () => {
+    console.log("Scheduling demo...")
+  }
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode)
+    document.documentElement.classList.toggle("dark")
+  }
+
+  useEffect(() => {
+    if (selectedVendors.length > 0 && results.length === 0) {
+      handleCalculate()
+    }
+  }, [selectedVendors, handleCalculate, results.length])
+
+  const getSubViews = (tabId: string) => {
+    switch (tabId) {
+      case "tco-analysis":
+        return TCO_VIEWS
+      case "vendor-comparison":
+        return VENDOR_COMPARISON_VIEWS
+      case "compliance-risk":
+        return COMPLIANCE_VIEWS
+      case "migration-planning":
+        return MIGRATION_VIEWS
+      case "roi-calculator":
+        return ROI_VIEWS
+      case "reports":
+        return REPORTS_VIEWS
+      default:
+        return []
     }
   }
 
-  const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#84cc16", "#f97316"]
+  const renderContent = () => {
+    if (activeTab === "vendor-selection") {
+      return (
+        <EnhancedVendorSelection
+          selectedVendors={selectedVendors}
+          onVendorToggle={handleVendorToggle}
+          onCalculate={handleCalculate}
+          configuration={configuration}
+        />
+      )
+    }
+
+    if (results.length === 0 && activeTab !== "vendor-selection") {
+      return (
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <Calculator className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">No Analysis Available</h3>
+            <p className="text-muted-foreground mb-4">Select vendors and run calculations to view analysis</p>
+            <Button onClick={() => setActiveTab("vendor-selection")}>Select Vendors</Button>
+          </div>
+        </div>
+      )
+    }
+
+    switch (activeTab) {
+      case "tco-analysis":
+        switch (activeSubView) {
+          case "executive-dashboard":
+            return <ExecutiveDashboardView results={results} config={configuration} />
+          case "financial-analysis":
+            return <FinancialAnalysisView results={results} config={configuration} />
+          case "cybersecurity-posture":
+            return <CybersecurityPostureView results={results} config={configuration} />
+          case "business-impact":
+            return <BusinessImpactView results={results} config={configuration} />
+          case "operational-analysis":
+            return (
+              <OperationalAnalysisView
+                selectedVendors={selectedVendors}
+                devices={configuration.devices}
+                users={configuration.users}
+              />
+            )
+          default:
+            return <ExecutiveDashboardView results={results} config={configuration} />
+        }
+
+      case "vendor-comparison":
+        switch (activeSubView) {
+          case "feature-matrix":
+            return <FeatureMatrixView selectedVendors={selectedVendors} />
+          case "enhanced-feature-comparison":
+            return <EnhancedFeatureComparisonView selectedVendors={selectedVendors} />
+          case "implementation-timeline":
+            return <ImplementationTimelineView selectedVendors={selectedVendors} />
+          case "industry-analysis":
+            return <IndustryAnalysisView results={results} config={configuration} />
+          default:
+            return <FeatureMatrixView selectedVendors={selectedVendors} />
+        }
+
+      case "compliance-risk":
+        switch (activeSubView) {
+          case "compliance-risk":
+            return <ComplianceRiskView results={results} config={configuration} />
+          case "security-risk-assessment":
+            return <SecurityRiskAssessmentView results={results} config={configuration} />
+          default:
+            return <ComplianceRiskView results={results} config={configuration} />
+        }
+
+      case "migration-planning":
+        switch (activeSubView) {
+          case "migration-planning":
+            return <MigrationPlanningView selectedVendors={selectedVendors} results={results} config={configuration} />
+          default:
+            return <MigrationPlanningView selectedVendors={selectedVendors} results={results} config={configuration} />
+        }
+
+      case "roi-calculator":
+        switch (activeSubView) {
+          case "roi-calculator":
+            return <ROICalculatorView selectedVendors={selectedVendors} results={results} config={configuration} />
+          default:
+            return <ROICalculatorView selectedVendors={selectedVendors} results={results} config={configuration} />
+        }
+
+      case "reports":
+        switch (activeSubView) {
+          case "executive-report":
+            return <ExecutiveReportView results={results} config={configuration} />
+          case "integration-hub":
+            return <IntegrationHubView selectedVendors={selectedVendors} config={configuration} />
+          default:
+            return <ExecutiveReportView results={results} config={configuration} />
+        }
+
+      default:
+        return <ExecutiveDashboardView results={results} config={configuration} />
+    }
+  }
+
+  const subViews = getSubViews(activeTab)
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-            Portnox TCO Analyzer
-          </h1>
-          <p className="text-muted-foreground">
-            Comprehensive Network Access Control vendor analysis and ROI calculator
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => handleExport(ExportFormat.PDF)}>
-            <FileText className="mr-2 h-4 w-4" />
-            Export PDF
-          </Button>
-          <Button variant="outline" onClick={() => handleExport(ExportFormat.EXCEL)}>
-            <Download className="mr-2 h-4 w-4" />
-            Export Excel
-          </Button>
-        </div>
-      </div>
-
-      {/* Executive Summary Card */}
-      {portnoxData && (
-        <Card className="border-2 border-green-500 bg-gradient-to-r from-green-50 to-blue-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-green-500" />
-              Executive Summary: Why Portnox CLEAR
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">{percentSavings}%</div>
-                <p className="text-sm text-muted-foreground">Lower TCO vs Competition</p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">
-                  {Math.round((portnoxData.paybackPeriod || 195) / 30)} mo
+    <TooltipProvider>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950">
+        {/* Header */}
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container flex h-16 items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
+                <Image src="/portnox-logo.png" alt="Portnox" width={32} height={32} className="rounded-lg" />
+                <div>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
+                    Total Cost Analyzer
+                  </h1>
+                  <p className="text-xs text-muted-foreground">Executive Intelligence Decision Platform</p>
                 </div>
-                <p className="text-sm text-muted-foreground">Payback Period</p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">95%</div>
-                <p className="text-sm text-muted-foreground">Zero Trust Score</p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">{Math.round(portnoxData.roi || 5506)}%</div>
-                <p className="text-sm text-muted-foreground">{timeframe}-Year ROI</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
 
-      {/* Configuration Panel */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Analysis Configuration</CardTitle>
-          <CardDescription>Configure your organization's parameters for accurate TCO analysis</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="industry">Industry</Label>
-              <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select industry" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(INDUSTRIES).map(([key, industry]) => (
-                    <SelectItem key={key} value={key}>
-                      {industry.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="deployment">Deployment Model</Label>
-              <Select value={deploymentModel} onValueChange={setDeploymentModel}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select deployment" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CLOUD">Cloud</SelectItem>
-                  <SelectItem value="ON_PREMISE">On-Premise</SelectItem>
-                  <SelectItem value="HYBRID">Hybrid</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="timeframe">Analysis Timeframe</Label>
-              <Select
-                value={timeframe.toString()}
-                onValueChange={(value) => setTimeframe(Number.parseInt(value) as 1 | 3 | 5)}
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)}>
+                <Settings className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={toggleDarkMode}>
+                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleExportPDF}>
+                <Download className="h-4 w-4 mr-2" />
+                Export PDF
+              </Button>
+              <Button size="sm" onClick={handleScheduleDemo} className="bg-teal-600 hover:bg-teal-700">
+                <Calendar className="h-4 w-4 mr-2" />
+                Schedule Demo
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select timeframe" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 Year</SelectItem>
-                  <SelectItem value="3">3 Years</SelectItem>
-                  <SelectItem value="5">5 Years</SelectItem>
-                </SelectContent>
-              </Select>
+                {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
+        </header>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label>Device Count: {deviceCount[0].toLocaleString()}</Label>
-              <Slider
-                value={deviceCount}
-                onValueChange={setDeviceCount}
-                max={10000}
-                min={50}
-                step={50}
-                className="w-full"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>User Count: {userCount[0].toLocaleString()}</Label>
-              <Slider
-                value={userCount}
-                onValueChange={setUserCount}
-                max={20000}
-                min={100}
-                step={100}
-                className="w-full"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-2">
-              <Switch id="existing-nac" checked={hasExistingNAC} onCheckedChange={setHasExistingNAC} />
-              <Label htmlFor="existing-nac">Has Existing NAC</Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Switch id="risk-analysis" checked={includeRiskAnalysis} onCheckedChange={setIncludeRiskAnalysis} />
-              <Label htmlFor="risk-analysis">Include Risk Analysis</Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Switch id="compliance" checked={includeCompliance} onCheckedChange={setIncludeCompliance} />
-              <Label htmlFor="compliance">Include Compliance</Label>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Main Analysis Tabs */}
-      <Tabs defaultValue="tco-comparison" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="tco-comparison">TCO Analysis</TabsTrigger>
-          <TabsTrigger value="cost-breakdown">Cost Breakdown</TabsTrigger>
-          <TabsTrigger value="roi-analysis">ROI Analysis</TabsTrigger>
-          <TabsTrigger value="vendor-comparison">Vendor Matrix</TabsTrigger>
-          <TabsTrigger value="industry-analysis">Industry Analysis</TabsTrigger>
-          <TabsTrigger value="executive-report">Executive Report</TabsTrigger>
-        </TabsList>
-
-        {/* TCO Comparison Tab */}
-        <TabsContent value="tco-comparison" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* TCO Comparison Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Total Cost of Ownership Comparison</CardTitle>
-                <CardDescription>{timeframe}-Year TCO Analysis</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div ref={tcoChartRef} data-chart="tco-comparison">
-                  <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={comparisonData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="vendor" />
-                      <YAxis tickFormatter={formatCurrency} />
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend />
-                      <Bar dataKey="totalCost" fill="#3b82f6" name="Total Cost">
-                        {comparisonData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.vendorKey === "PORTNOX" ? "#10b981" : "#3b82f6"} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Key Metrics */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Key Financial Metrics</CardTitle>
-                <CardDescription>Portnox CLEAR vs Competition</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-green-600" />
-                      <span className="text-sm font-medium">Cost Savings</span>
-                    </div>
-                    <div className="text-2xl font-bold text-green-600">{formatCurrency(savings)}</div>
-                    <div className="text-sm text-muted-foreground">{percentSavings}% reduction</div>
+        <div className="flex">
+          {/* Sidebar */}
+          <aside
+            className={cn(
+              "fixed inset-y-0 left-0 z-40 w-80 transform bg-background/95 backdrop-blur border-r transition-transform duration-300 ease-in-out md:relative md:translate-x-0",
+              isMobileMenuOpen ? "translate-x-0" : "-translate-x-full",
+            )}
+          >
+            <div className="flex h-full flex-col">
+              <div className="flex-1 overflow-y-auto p-4 pt-20 md:pt-4">
+                {/* Vendor Selection Summary */}
+                <Card className="mb-6 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-sm">Vendor Selection</h3>
+                    <span className="text-xs bg-teal-100 text-teal-800 px-2 py-1 rounded-full">
+                      {selectedVendors.length} selected
+                    </span>
                   </div>
-
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-blue-600" />
-                      <span className="text-sm font-medium">ROI</span>
-                    </div>
-                    <div className="text-2xl font-bold text-blue-600">{Math.round(portnoxData?.roi || 5506)}%</div>
-                    <div className="text-sm text-muted-foreground">{timeframe}-year return</div>
-                  </div>
-
-                  <div className="p-4 bg-orange-50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-orange-600" />
-                      <span className="text-sm font-medium">Payback</span>
-                    </div>
-                    <div className="text-2xl font-bold text-orange-600">
-                      {Math.round((portnoxData?.paybackPeriod || 195) / 30)} mo
-                    </div>
-                    <div className="text-sm text-muted-foreground">Break-even point</div>
-                  </div>
-
-                  <div className="p-4 bg-purple-50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-purple-600" />
-                      <span className="text-sm font-medium">Risk Reduction</span>
-                    </div>
-                    <div className="text-2xl font-bold text-purple-600">92%</div>
-                    <div className="text-sm text-muted-foreground">Security improvement</div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <h4 className="font-semibold">Why Portnox CLEAR Wins:</h4>
-                  <ul className="text-sm space-y-1 text-muted-foreground">
-                    <li>• Zero infrastructure investment required</li>
-                    <li>• 95% faster deployment (7 days vs 6-9 months)</li>
-                    <li>• 90% reduction in administrative overhead</li>
-                    <li>• Cloud-native architecture with automatic updates</li>
-                    <li>• Comprehensive zero-trust security model</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Vendor Comparison Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Detailed Vendor Comparison</CardTitle>
-              <CardDescription>Complete TCO breakdown by vendor</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-2">Vendor</th>
-                      <th className="text-right p-2">Total Cost</th>
-                      <th className="text-right p-2">Software</th>
-                      <th className="text-right p-2">Hardware</th>
-                      <th className="text-right p-2">Implementation</th>
-                      <th className="text-right p-2">Operational</th>
-                      <th className="text-right p-2">ROI</th>
-                      <th className="text-right p-2">Payback</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {comparisonData.map((vendor, index) => (
-                      <tr
-                        key={vendor.vendorKey}
-                        className={`border-b ${vendor.vendorKey === "PORTNOX" ? "bg-green-50 font-semibold" : ""}`}
-                      >
-                        <td className="p-2">
-                          <div className="flex items-center gap-2">
-                            {vendor.vendor}
-                            {vendor.vendorKey === "PORTNOX" && (
-                              <Badge variant="default" className="bg-green-500">
-                                Recommended
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="text-right p-2">{formatCurrency(vendor.totalCost)}</td>
-                        <td className="text-right p-2">{formatCurrency(vendor.software)}</td>
-                        <td className="text-right p-2">{formatCurrency(vendor.hardware)}</td>
-                        <td className="text-right p-2">{formatCurrency(vendor.implementation)}</td>
-                        <td className="text-right p-2">{formatCurrency(vendor.operational)}</td>
-                        <td className="text-right p-2">{Math.round(vendor.roi)}%</td>
-                        <td className="text-right p-2">{Math.round(vendor.paybackPeriod / 30)} mo</td>
-                      </tr>
+                  <div className="space-y-2">
+                    {selectedVendors.slice(0, 4).map((vendorId) => (
+                      <div key={vendorId} className="flex items-center gap-2">
+                        <Image
+                          src={getVendorLogoPath(vendorId) || "/placeholder.svg"}
+                          alt={vendorId}
+                          width={20}
+                          height={20}
+                          className="rounded"
+                        />
+                        <span className="text-sm capitalize flex items-center gap-1">
+                          {vendorId === "portnox" && <Star className="h-3 w-3 text-yellow-500 fill-current" />}
+                          {vendorId}
+                          {vendorId === "portnox" && (
+                            <span className="text-xs bg-yellow-100 text-yellow-800 px-1 rounded">BEST</span>
+                          )}
+                        </span>
+                        <CheckCircle2 className="h-3 w-3 text-green-600 ml-auto" />
+                      </div>
                     ))}
-                  </tbody>
-                </table>
+                    {selectedVendors.length > 4 && (
+                      <div className="text-xs text-muted-foreground">+{selectedVendors.length - 4} more</div>
+                    )}
+                  </div>
+                </Card>
+
+                {/* Navigation */}
+                <nav className="space-y-2">
+                  {NAVIGATION_ITEMS.map((item) => (
+                    <Tooltip key={item.id}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={activeTab === item.id ? "default" : "ghost"}
+                          className={cn(
+                            "w-full justify-start gap-3 h-auto p-3",
+                            activeTab === item.id && "bg-teal-600 hover:bg-teal-700",
+                          )}
+                          onClick={() => {
+                            setActiveTab(item.id)
+                            if (subViews.length > 0) {
+                              setActiveSubView(subViews[0].id)
+                            }
+                            setIsMobileMenuOpen(false)
+                          }}
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            {item.icon}
+                            <div className="text-left">
+                              <div className="font-medium">{item.label}</div>
+                              <div className="text-xs opacity-70">{item.description}</div>
+                            </div>
+                          </div>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p>{item.description}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </nav>
+
+                {/* Sub-navigation */}
+                {subViews.length > 0 && (
+                  <>
+                    <Separator className="my-4" />
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-medium text-muted-foreground px-2 mb-2">Views</h4>
+                      {subViews.map((view) => (
+                        <Button
+                          key={view.id}
+                          variant={activeSubView === view.id ? "secondary" : "ghost"}
+                          size="sm"
+                          className="w-full justify-start gap-2"
+                          onClick={() => setActiveSubView(view.id)}
+                        >
+                          {view.icon}
+                          {view.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
+          </aside>
 
-        {/* Cost Breakdown Tab */}
-        <TabsContent value="cost-breakdown" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Cost Breakdown by Category</CardTitle>
-                <CardDescription>Detailed cost analysis across all vendors</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div ref={costBreakdownChartRef} data-chart="cost-breakdown">
-                  <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={comparisonData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="vendor" />
-                      <YAxis tickFormatter={formatCurrency} />
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend />
-                      <Bar dataKey="software" stackId="a" fill="#3b82f6" name="Software" />
-                      <Bar dataKey="hardware" stackId="a" fill="#ef4444" name="Hardware" />
-                      <Bar dataKey="implementation" stackId="a" fill="#f59e0b" name="Implementation" />
-                      <Bar dataKey="operational" stackId="a" fill="#8b5cf6" name="Operational" />
-                      <Bar dataKey="hidden" stackId="a" fill="#6b7280" name="Hidden Costs" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Portnox Cost Advantage</CardTitle>
-                <CardDescription>Why Portnox delivers superior value</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                    <span className="font-medium">Zero Hardware Costs</span>
-                    <Badge variant="outline" className="bg-green-100 text-green-800">
-                      100% Cloud
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                    <span className="font-medium">Minimal Implementation</span>
-                    <Badge variant="outline" className="bg-blue-100 text-blue-800">
-                      7 Days
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                    <span className="font-medium">Low Operational Overhead</span>
-                    <Badge variant="outline" className="bg-purple-100 text-purple-800">
-                      90% Less
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
-                    <span className="font-medium">No Hidden Costs</span>
-                    <Badge variant="outline" className="bg-orange-100 text-orange-800">
-                      Transparent
-                    </Badge>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <h4 className="font-semibold">Cost Savings Breakdown:</h4>
-                  <div className="text-sm space-y-1">
-                    <div className="flex justify-between">
-                      <span>Hardware Elimination:</span>
-                      <span className="font-medium text-green-600">
-                        {formatCurrency(comparisonData.find((d) => d.vendorKey === "CISCO_ISE")?.hardware || 200000)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Reduced Implementation:</span>
-                      <span className="font-medium text-green-600">
-                        {formatCurrency(
-                          (comparisonData.find((d) => d.vendorKey === "CISCO_ISE")?.implementation || 150000) -
-                            (portnoxData?.implementation || 25000),
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Lower Operational Costs:</span>
-                      <span className="font-medium text-green-600">
-                        {formatCurrency(
-                          (comparisonData.find((d) => d.vendorKey === "CISCO_ISE")?.operational || 100000) -
-                            (portnoxData?.operational || 50000),
-                        )}
-                      </span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between font-semibold">
-                      <span>Total Savings:</span>
-                      <span className="text-green-600">{formatCurrency(savings)}</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* ROI Analysis Tab */}
-        <TabsContent value="roi-analysis" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>ROI Projection Over Time</CardTitle>
-                <CardDescription>Return on investment analysis</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div ref={roiChartRef} data-chart="roi-analysis">
-                  <ResponsiveContainer width="100%" height={350}>
-                    <AreaChart
-                      data={Array.from({ length: timeframe }, (_, i) => ({
-                        year: i + 1,
-                        portnox: ((portnoxData?.roi || 5506) * (i + 1)) / timeframe,
-                        cisco: (285 * (i + 1)) / timeframe,
-                        aruba: (420 * (i + 1)) / timeframe,
-                      }))}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="year" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => `${Math.round(Number(value))}%`} />
-                      <Legend />
-                      <Area
-                        type="monotone"
-                        dataKey="portnox"
-                        stackId="1"
-                        stroke="#10b981"
-                        fill="#10b981"
-                        name="Portnox CLEAR"
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="cisco"
-                        stackId="2"
-                        stroke="#3b82f6"
-                        fill="#3b82f6"
-                        name="Cisco ISE"
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="aruba"
-                        stackId="3"
-                        stroke="#f59e0b"
-                        fill="#f59e0b"
-                        name="Aruba ClearPass"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Cumulative Savings Analysis</CardTitle>
-                <CardDescription>Total savings over time</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div ref={savingsChartRef} data-chart="savings-analysis">
-                  <ResponsiveContainer width="100%" height={350}>
-                    <AreaChart
-                      data={Array.from({ length: timeframe }, (_, i) => ({
-                        year: i + 1,
-                        savings: savings * (i + 1),
-                        investment: ((portnoxData?.totalCost || 230000) * (i + 1)) / timeframe,
-                      }))}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="year" />
-                      <YAxis tickFormatter={formatCurrency} />
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend />
-                      <Area
-                        type="monotone"
-                        dataKey="savings"
-                        stroke="#10b981"
-                        fill="#10b981"
-                        name="Cumulative Savings"
-                      />
-                      <Area type="monotone" dataKey="investment" stroke="#ef4444" fill="#ef4444" name="Investment" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Risk Assessment */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Risk Assessment & Mitigation</CardTitle>
-              <CardDescription>Security risk analysis and financial impact</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div ref={riskChartRef} data-chart="risk-assessment">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center p-6 bg-red-50 rounded-lg">
-                    <div className="text-3xl font-bold text-red-600">28%</div>
-                    <p className="text-sm text-muted-foreground">Current Breach Risk</p>
-                    <p className="text-xs text-red-600 mt-2">Without NAC Protection</p>
-                  </div>
-                  <div className="text-center p-6 bg-green-50 rounded-lg">
-                    <div className="text-3xl font-bold text-green-600">4%</div>
-                    <p className="text-sm text-muted-foreground">Risk with Portnox</p>
-                    <p className="text-xs text-green-600 mt-2">86% Risk Reduction</p>
-                  </div>
-                  <div className="text-center p-6 bg-blue-50 rounded-lg">
-                    <div className="text-3xl font-bold text-blue-600">$4.9M</div>
-                    <p className="text-sm text-muted-foreground">Annual Risk Value</p>
-                    <p className="text-xs text-blue-600 mt-2">Potential Loss Avoided</p>
-                  </div>
-                </div>
+          {/* Main Content */}
+          <main className="flex-1 overflow-hidden">
+            <div className="h-full overflow-y-auto">
+              <div className="container py-6">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${activeTab}-${activeSubView}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {renderContent()}
+                  </motion.div>
+                </AnimatePresence>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
+          </main>
+        </div>
 
-        {/* Vendor Comparison Tab */}
-        <TabsContent value="vendor-comparison">
-          <div ref={vendorComparisonChartRef} data-chart="vendor-comparison">
-            <VendorScorecard
-              selectedVendors={selectedVendors}
-              deviceCount={deviceCount[0]}
-              industry={selectedIndustry}
-            />
-          </div>
-        </TabsContent>
+        {/* Settings Panel */}
+        <AnimatePresence>
+          {showSettings && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/50"
+              onClick={() => setShowSettings(false)}
+            >
+              <motion.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                className="absolute right-0 top-0 h-full w-96 bg-background border-l"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <SettingsPanel
+                  configuration={configuration}
+                  onConfigurationChange={setConfiguration}
+                  onClose={() => setShowSettings(false)}
+                />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Industry Analysis Tab */}
-        <TabsContent value="industry-analysis">
-          <IndustryAnalysisDashboard
-            selectedIndustry={selectedIndustry}
-            deviceCount={deviceCount[0]}
-            timeframe={timeframe}
-          />
-        </TabsContent>
-
-        {/* Executive Report Tab */}
-        <TabsContent value="executive-report">
-          <ExecutiveReportGenerator
-            tcoAnalysis={tcoAnalysis}
-            configuration={{
-              industry: selectedIndustry,
-              deviceCount: deviceCount[0],
-              timeframe,
-              deploymentModel,
-            }}
-            onExport={handleExport}
-          />
-        </TabsContent>
-      </Tabs>
-    </div>
+        {/* Loading Overlay */}
+        <AnimatePresence>
+          {isCalculating && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-background rounded-lg p-8 text-center"
+              >
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
+                <h3 className="text-lg font-semibold mb-2">Analyzing Vendors</h3>
+                <p className="text-muted-foreground">Calculating TCO and generating insights...</p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </TooltipProvider>
   )
 }
