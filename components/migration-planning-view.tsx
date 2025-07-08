@@ -185,11 +185,21 @@ const READINESS_CRITERIA = [
   },
 ]
 
-export default function MigrationPlanningView({ selectedVendors, currentEnvironment }: MigrationPlanningViewProps) {
+export default function MigrationPlanningView({
+  selectedVendors = [],
+  currentEnvironment = {
+    devices: 1000,
+    users: 500,
+    industry: "GENERAL",
+  },
+}: MigrationPlanningViewProps) {
   const [selectedPhase, setSelectedPhase] = useState("assessment")
   const [readinessChecklist, setReadinessChecklist] = useState<Record<string, boolean>>({})
 
-  const primaryVendor = selectedVendors[0] ? ComprehensiveVendorDatabase[selectedVendors[0]] : null
+  const primaryVendor =
+    selectedVendors && selectedVendors.length > 0 && selectedVendors[0]
+      ? ComprehensiveVendorDatabase[selectedVendors[0]]
+      : null
 
   const calculateReadinessScore = () => {
     let totalScore = 0
@@ -308,7 +318,7 @@ export default function MigrationPlanningView({ selectedVendors, currentEnvironm
             </Card>
           </div>
 
-          {primaryVendor && (
+          {primaryVendor && selectedVendors.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>Migration Strategy for {primaryVendor.name}</CardTitle>
