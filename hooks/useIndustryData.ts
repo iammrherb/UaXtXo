@@ -1,159 +1,174 @@
 "use client"
 
-import { useCallback } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useState, useEffect } from "react"
 
-export type IndustryId =
-  | "healthcare"
-  | "financial_services"
-  | "manufacturing"
-  | "retail"
-  | "technology"
-  | "education"
-  | "government"
-  | "energy_utilities"
-
-export interface Industry {
-  id: IndustryId
+export interface IndustryData {
+  id: string
   name: string
   description: string
-  riskLevel: "low" | "medium" | "high" | "critical"
-  avgBreachCost: number
+  riskMultiplier: number
   complianceRequirements: string[]
+  avgBreachCost: number
+  regulatoryFines: number
+  deviceTypes: {
+    endpoints: number
+    iot: number
+    servers: number
+    mobile: number
+  }
   securityPriorities: string[]
-  regulatoryPressure: "low" | "medium" | "high" | "critical"
 }
 
-const industriesList: Industry[] = [
+const INDUSTRY_DATA: IndustryData[] = [
   {
     id: "healthcare",
     name: "Healthcare",
-    description: "Healthcare organizations including hospitals, clinics, and medical practices",
-    riskLevel: "critical",
+    description: "Hospitals, clinics, and healthcare providers",
+    riskMultiplier: 2.5,
+    complianceRequirements: ["HIPAA", "HITECH", "FDA", "State Privacy Laws"],
     avgBreachCost: 10930000,
-    complianceRequirements: ["HIPAA", "HITECH", "PCI DSS"],
-    securityPriorities: ["Patient Data Protection", "Medical Device Security", "Access Controls"],
-    regulatoryPressure: "critical",
+    regulatoryFines: 1600000,
+    deviceTypes: {
+      endpoints: 60,
+      iot: 25,
+      servers: 10,
+      mobile: 5,
+    },
+    securityPriorities: ["Patient Data Protection", "Medical Device Security", "Access Control", "Audit Trails"],
   },
   {
-    id: "financial_services",
+    id: "financial",
     name: "Financial Services",
-    description: "Banks, credit unions, investment firms, and financial institutions",
-    riskLevel: "critical",
-    avgBreachCost: 5850000,
-    complianceRequirements: ["PCI DSS", "SOX", "GDPR", "FFIEC"],
-    securityPriorities: ["Transaction Security", "Customer Data Protection", "Fraud Prevention"],
-    regulatoryPressure: "critical",
-  },
-  {
-    id: "manufacturing",
-    name: "Manufacturing",
-    description: "Manufacturing companies and industrial organizations",
-    riskLevel: "high",
-    avgBreachCost: 4990000,
-    complianceRequirements: ["ISO 27001", "NIST", "ITAR"],
-    securityPriorities: ["OT Security", "Supply Chain Protection", "Intellectual Property"],
-    regulatoryPressure: "high",
-  },
-  {
-    id: "retail",
-    name: "Retail",
-    description: "Retail organizations and e-commerce companies",
-    riskLevel: "medium",
-    avgBreachCost: 3280000,
-    complianceRequirements: ["PCI DSS", "GDPR"],
-    securityPriorities: ["Payment Security", "Customer Data", "Point of Sale Protection"],
-    regulatoryPressure: "medium",
-  },
-  {
-    id: "technology",
-    name: "Technology",
-    description: "Technology companies and software organizations",
-    riskLevel: "medium",
-    avgBreachCost: 5040000,
-    complianceRequirements: ["ISO 27001", "SOC 2", "GDPR"],
-    securityPriorities: ["Intellectual Property", "Customer Data", "Cloud Security"],
-    regulatoryPressure: "medium",
+    description: "Banks, credit unions, and financial institutions",
+    riskMultiplier: 2.8,
+    complianceRequirements: ["PCI DSS", "SOX", "GLBA", "FFIEC"],
+    avgBreachCost: 5720000,
+    regulatoryFines: 5000000,
+    deviceTypes: {
+      endpoints: 70,
+      iot: 10,
+      servers: 15,
+      mobile: 5,
+    },
+    securityPriorities: [
+      "Transaction Security",
+      "Customer Data Protection",
+      "Fraud Prevention",
+      "Regulatory Compliance",
+    ],
   },
   {
     id: "education",
     name: "Education",
-    description: "Educational institutions and universities",
-    riskLevel: "low",
-    avgBreachCost: 3790000,
-    complianceRequirements: ["FERPA", "ISO 27001"],
-    securityPriorities: ["Student Data Protection", "Research Security", "Campus Network"],
-    regulatoryPressure: "low",
+    description: "Schools, universities, and educational institutions",
+    riskMultiplier: 1.8,
+    complianceRequirements: ["FERPA", "COPPA", "State Privacy Laws"],
+    avgBreachCost: 3740000,
+    regulatoryFines: 500000,
+    deviceTypes: {
+      endpoints: 50,
+      iot: 20,
+      servers: 15,
+      mobile: 15,
+    },
+    securityPriorities: ["Student Data Protection", "Research Security", "BYOD Management", "Network Segmentation"],
+  },
+  {
+    id: "manufacturing",
+    name: "Manufacturing",
+    description: "Industrial and manufacturing companies",
+    riskMultiplier: 2.2,
+    complianceRequirements: ["ISO 27001", "NIST", "Industry Standards"],
+    avgBreachCost: 4280000,
+    regulatoryFines: 1000000,
+    deviceTypes: {
+      endpoints: 40,
+      iot: 40,
+      servers: 15,
+      mobile: 5,
+    },
+    securityPriorities: ["OT Security", "IP Protection", "Supply Chain Security", "Industrial IoT"],
+  },
+  {
+    id: "retail",
+    name: "Retail",
+    description: "Retail stores and e-commerce companies",
+    riskMultiplier: 2.0,
+    complianceRequirements: ["PCI DSS", "State Privacy Laws", "CCPA"],
+    avgBreachCost: 3280000,
+    regulatoryFines: 750000,
+    deviceTypes: {
+      endpoints: 55,
+      iot: 25,
+      servers: 15,
+      mobile: 5,
+    },
+    securityPriorities: ["Payment Security", "Customer Data Protection", "POS Security", "E-commerce Protection"],
   },
   {
     id: "government",
     name: "Government",
-    description: "Government agencies and public sector organizations",
-    riskLevel: "critical",
-    avgBreachCost: 4910000,
-    complianceRequirements: ["FedRAMP", "FISMA", "NIST", "CJIS"],
-    securityPriorities: ["Citizen Data Protection", "National Security", "Critical Infrastructure"],
-    regulatoryPressure: "critical",
-  },
-  {
-    id: "energy_utilities",
-    name: "Energy & Utilities",
-    description: "Energy companies and utility providers",
-    riskLevel: "critical",
-    avgBreachCost: 6720000,
-    complianceRequirements: ["NERC CIP", "ISO 27001", "NIST"],
-    securityPriorities: ["Critical Infrastructure", "SCADA Security", "Grid Protection"],
-    regulatoryPressure: "critical",
+    description: "Federal, state, and local government agencies",
+    riskMultiplier: 3.0,
+    complianceRequirements: ["FISMA", "NIST 800-53", "FedRAMP", "CJIS"],
+    avgBreachCost: 4650000,
+    regulatoryFines: 2000000,
+    deviceTypes: {
+      endpoints: 65,
+      iot: 15,
+      servers: 15,
+      mobile: 5,
+    },
+    securityPriorities: ["Classified Data Protection", "Citizen Privacy", "Critical Infrastructure", "Zero Trust"],
   },
 ]
 
-const getIndustryById = (id: IndustryId): Industry | undefined => {
-  return industriesList.find((industry) => industry.id === id)
-}
-
-// Simulate async data fetching
-const fetchAllIndustries = async (): Promise<Industry[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 100))
-  return industriesList
-}
-
-const fetchIndustryById = async (id: IndustryId): Promise<Industry | undefined> => {
-  await new Promise((resolve) => setTimeout(resolve, 50))
-  return getIndustryById(id)
-}
-
 export function useIndustryData() {
-  const {
-    data: allIndustries,
-    isLoading: isLoadingAllIndustries,
-    error: errorAllIndustries,
-  } = useQuery<Industry[], Error>({
-    queryKey: ["allIndustries"],
-    queryFn: fetchAllIndustries,
-    staleTime: Number.POSITIVE_INFINITY,
-  })
+  const [industryData, setIndustryData] = useState<IndustryData[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const getIndustryById = useCallback(
-    (id: IndustryId): Industry | undefined => {
-      return allIndustries?.find((industry) => industry.id === id)
-    },
-    [allIndustries],
-  )
+  useEffect(() => {
+    setTimeout(() => {
+      setIndustryData(INDUSTRY_DATA)
+      setLoading(false)
+    }, 300)
+  }, [])
 
-  const useSingleIndustry = (id: IndustryId | null) => {
-    return useQuery<Industry | undefined, Error>({
-      queryKey: ["industry", id],
-      queryFn: () => (id ? fetchIndustryById(id) : Promise.resolve(undefined)),
-      enabled: !!id,
-      staleTime: Number.POSITIVE_INFINITY,
-    })
+  const getIndustryById = (id: string): IndustryData | undefined => {
+    return INDUSTRY_DATA.find((industry) => industry.id === id)
+  }
+
+  const getIndustryRiskProfile = (industryId: string) => {
+    const industry = getIndustryById(industryId)
+    if (!industry) return null
+
+    return {
+      riskLevel: industry.riskMultiplier > 2.5 ? "High" : industry.riskMultiplier > 2.0 ? "Medium" : "Low",
+      breachProbability: Math.min(industry.riskMultiplier * 15, 85),
+      avgCostPerRecord: industry.avgBreachCost / 25000,
+      complianceComplexity: industry.complianceRequirements.length,
+      regulatoryRisk: industry.regulatoryFines,
+    }
+  }
+
+  const getIndustryBenchmarks = (industryId: string) => {
+    const industry = getIndustryById(industryId)
+    if (!industry) return null
+
+    return {
+      avgSecuritySpend: industry.avgBreachCost * 0.1,
+      nacAdoptionRate: 65,
+      avgDeploymentTime: 120,
+      complianceScore: 75,
+      incidentResponseTime: 24,
+    }
   }
 
   return {
-    allIndustries,
-    isLoadingAllIndustries,
-    errorAllIndustries,
+    industryData,
+    loading,
     getIndustryById,
-    useSingleIndustry,
+    getIndustryRiskProfile,
+    getIndustryBenchmarks,
   }
 }

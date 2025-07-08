@@ -1,225 +1,267 @@
 "use client"
 
-import { useCallback } from "react"
-import { useQuery } from "@tanstack/react-query"
-
-export type VendorId =
-  | "portnox"
-  | "cisco_ise"
-  | "aruba_clearpass"
-  | "fortinac"
-  | "forescout"
-  | "juniper_mist"
-  | "extreme_nac"
-  | "cisco_meraki"
-  | "microsoft_nps"
-  | "packetfence"
-  | "foxpass"
-  | "securew2"
-  | "arista_agni"
+import { useState, useEffect } from "react"
 
 export interface VendorData {
-  id: VendorId
+  id: string
   name: string
-  vendorType: string
-  logoUrl?: string
-  shortDescription?: string
-  description: string
-  marketShare?: number
-  customerSatisfaction?: number
-  deploymentComplexity: "low" | "medium" | "high" | "very_high"
-  avgDeploymentDays: number
-  pricingModel: string
-  basePrice: number
-  tcoFactors: {
-    software: number
-    hardware: number
-    implementation: number
-    operational: number
-    support: number
-    hidden: number
+  category: "cloud-native" | "traditional" | "hybrid"
+  marketShare: number
+  pricing: {
+    model: "per-device" | "per-user" | "tiered" | "quote-based"
+    basePrice: number
+    maxPrice: number
+    currency: "USD"
   }
-  strengths: string[]
-  weaknesses: string[]
-  securityScore: number
-  complianceScore: number
-  usabilityScore: number
-  supportScore: number
+  deployment: {
+    timeToValue: number // days
+    complexity: "low" | "medium" | "high"
+    requiresHardware: boolean
+    cloudNative: boolean
+  }
+  features: {
+    zeroTrust: number // 0-100
+    automation: number
+    scalability: number
+    integration: number
+    usability: number
+  }
+  support: {
+    availability: string
+    responseTime: number // hours
+    satisfaction: number // 0-100
+  }
+  security: {
+    cveCount: number
+    lastCriticalCve: string | null
+    securityScore: number // 0-100
+  }
+  compliance: {
+    standards: string[]
+    certifications: string[]
+    coverage: number // 0-100
+  }
 }
 
-const vendorDataList: VendorData[] = [
+const VENDOR_DATA: VendorData[] = [
   {
-    id: "portnox",
+    id: "portnox-clear",
     name: "Portnox CLEAR",
-    vendorType: "Cloud-Native Zero Trust NAC",
-    logoUrl: "/portnox-logo-color.png",
-    shortDescription: "AI-powered, cloud-native Zero Trust Network Access Control",
-    description:
-      "AI-powered, cloud-native Zero Trust Network Access Control with risk-based authentication and continuous compliance monitoring",
-    marketShare: 5.2,
-    customerSatisfaction: 94,
-    deploymentComplexity: "low",
-    avgDeploymentDays: 7,
-    pricingModel: "Per device/month",
-    basePrice: 4.0,
-    tcoFactors: {
-      software: 45000,
-      hardware: 0,
-      implementation: 5000,
-      operational: 15000,
-      support: 6750,
-      hidden: 2250,
+    category: "cloud-native",
+    marketShare: 8.5,
+    pricing: {
+      model: "per-device",
+      basePrice: 36,
+      maxPrice: 60,
+      currency: "USD",
     },
-    strengths: [
-      "Zero infrastructure requirements",
-      "30-minute deployment",
-      "95% Zero Trust maturity score",
-      "98% automated remediation rate",
-      "67% lower TCO than traditional NAC",
-      "No CVEs - secure by design",
-    ],
-    weaknesses: ["Newer market presence", "May require change management"],
-    securityScore: 95,
-    complianceScore: 95,
-    usabilityScore: 92,
-    supportScore: 91,
+    deployment: {
+      timeToValue: 1,
+      complexity: "low",
+      requiresHardware: false,
+      cloudNative: true,
+    },
+    features: {
+      zeroTrust: 95,
+      automation: 92,
+      scalability: 98,
+      integration: 90,
+      usability: 95,
+    },
+    support: {
+      availability: "24/7",
+      responseTime: 2,
+      satisfaction: 94,
+    },
+    security: {
+      cveCount: 0,
+      lastCriticalCve: null,
+      securityScore: 98,
+    },
+    compliance: {
+      standards: ["PCI DSS", "HIPAA", "SOX", "GDPR", "ISO 27001"],
+      certifications: ["SOC 2 Type II", "FedRAMP Ready"],
+      coverage: 95,
+    },
   },
   {
-    id: "cisco_ise",
+    id: "cisco-ise",
     name: "Cisco Identity Services Engine",
-    vendorType: "Traditional Enterprise NAC",
-    logoUrl: "/cisco-logo.png",
-    shortDescription: "Enterprise-grade identity services engine",
-    description:
-      "Enterprise-grade identity services engine with comprehensive policy management and network access control",
+    category: "traditional",
     marketShare: 25.3,
-    customerSatisfaction: 78,
-    deploymentComplexity: "very_high",
-    avgDeploymentDays: 120,
-    pricingModel: "Per user/month",
-    basePrice: 10.0,
-    tcoFactors: {
-      software: 125000,
-      hardware: 85000,
-      implementation: 50000,
-      operational: 125000,
-      support: 27500,
-      hidden: 43750,
+    pricing: {
+      model: "tiered",
+      basePrice: 100,
+      maxPrice: 200,
+      currency: "USD",
     },
-    strengths: [
-      "Market leader with 25.3% share",
-      "Comprehensive feature set",
-      "Strong Cisco ecosystem integration",
-      "Mature product with extensive documentation",
-    ],
-    weaknesses: [
-      "Complex deployment (6-9 months)",
-      "High total cost of ownership",
-      "Requires dedicated hardware",
-      "47 CVEs in last 3 years",
-      "Requires 2.5 FTE for management",
-    ],
-    securityScore: 85,
-    complianceScore: 80,
-    usabilityScore: 65,
-    supportScore: 82,
+    deployment: {
+      timeToValue: 180,
+      complexity: "high",
+      requiresHardware: true,
+      cloudNative: false,
+    },
+    features: {
+      zeroTrust: 75,
+      automation: 65,
+      scalability: 80,
+      integration: 85,
+      usability: 60,
+    },
+    support: {
+      availability: "Business Hours",
+      responseTime: 24,
+      satisfaction: 72,
+    },
+    security: {
+      cveCount: 47,
+      lastCriticalCve: "2024-01-15",
+      securityScore: 65,
+    },
+    compliance: {
+      standards: ["PCI DSS", "HIPAA", "SOX"],
+      certifications: ["Common Criteria", "FIPS 140-2"],
+      coverage: 78,
+    },
   },
   {
-    id: "aruba_clearpass",
-    name: "Aruba ClearPass Policy Manager",
-    vendorType: "Traditional Enterprise NAC",
-    logoUrl: "/aruba-logo.png",
-    shortDescription: "Comprehensive network access control with policy enforcement",
-    description: "Comprehensive network access control with advanced policy enforcement and device management",
+    id: "aruba-clearpass",
+    name: "Aruba ClearPass",
+    category: "traditional",
     marketShare: 18.7,
-    customerSatisfaction: 88,
-    deploymentComplexity: "high",
-    avgDeploymentDays: 90,
-    pricingModel: "Per device/month",
-    basePrice: 7.5,
-    tcoFactors: {
-      software: 85000,
-      hardware: 55000,
-      implementation: 25500,
-      operational: 75000,
-      support: 17000,
-      hidden: 17000,
+    pricing: {
+      model: "per-device",
+      basePrice: 80,
+      maxPrice: 125,
+      currency: "USD",
     },
-    strengths: [
-      "Best value traditional NAC",
-      "88% customer satisfaction",
-      "Strong policy management",
-      "Good Aruba integration",
-    ],
-    weaknesses: [
-      "3-6 month deployment",
-      "Requires hardware appliances",
-      "Complex policy configuration",
-      "Limited cloud-native features",
-    ],
-    securityScore: 82,
-    complianceScore: 82,
-    usabilityScore: 72,
-    supportScore: 78,
+    deployment: {
+      timeToValue: 90,
+      complexity: "medium",
+      requiresHardware: true,
+      cloudNative: false,
+    },
+    features: {
+      zeroTrust: 78,
+      automation: 70,
+      scalability: 82,
+      integration: 80,
+      usability: 75,
+    },
+    support: {
+      availability: "24/7",
+      responseTime: 8,
+      satisfaction: 88,
+    },
+    security: {
+      cveCount: 12,
+      lastCriticalCve: "2023-11-20",
+      securityScore: 78,
+    },
+    compliance: {
+      standards: ["PCI DSS", "HIPAA", "SOX", "GDPR"],
+      certifications: ["SOC 2 Type II", "ISO 27001"],
+      coverage: 82,
+    },
+  },
+  {
+    id: "forescout",
+    name: "Forescout Platform",
+    category: "hybrid",
+    marketShare: 12.1,
+    pricing: {
+      model: "per-device",
+      basePrice: 35,
+      maxPrice: 50,
+      currency: "USD",
+    },
+    deployment: {
+      timeToValue: 60,
+      complexity: "medium",
+      requiresHardware: true,
+      cloudNative: false,
+    },
+    features: {
+      zeroTrust: 82,
+      automation: 85,
+      scalability: 85,
+      integration: 88,
+      usability: 70,
+    },
+    support: {
+      availability: "24/7",
+      responseTime: 6,
+      satisfaction: 85,
+    },
+    security: {
+      cveCount: 8,
+      lastCriticalCve: "2023-09-12",
+      securityScore: 82,
+    },
+    compliance: {
+      standards: ["PCI DSS", "HIPAA", "SOX", "GDPR", "ISO 27001"],
+      certifications: ["SOC 2 Type II", "Common Criteria"],
+      coverage: 85,
+    },
   },
 ]
 
-const getVendorById = (id: VendorId): VendorData | undefined => {
-  return vendorDataList.find((vendor) => vendor.id === id)
-}
-
-// Simulate async data fetching
-const fetchAllVendors = async (): Promise<VendorData[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 100))
-  return vendorDataList
-}
-
-const fetchVendorById = async (id: VendorId): Promise<VendorData | undefined> => {
-  await new Promise((resolve) => setTimeout(resolve, 50))
-  return getVendorById(id)
-}
-
 export function useVendorData() {
-  const {
-    data: allVendors,
-    isLoading: isLoadingAllVendors,
-    error: errorAllVendors,
-  } = useQuery<VendorData[], Error>({
-    queryKey: ["allVendors"],
-    queryFn: fetchAllVendors,
-    staleTime: Number.POSITIVE_INFINITY,
-  })
+  const [vendorData, setVendorData] = useState<VendorData[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const getVendorById = useCallback(
-    (id: VendorId): VendorData | undefined => {
-      return allVendors?.find((vendor) => vendor.id === id)
-    },
-    [allVendors],
-  )
+  useEffect(() => {
+    setTimeout(() => {
+      setVendorData(VENDOR_DATA)
+      setLoading(false)
+    }, 400)
+  }, [])
 
-  const getVendorsByType = useCallback(
-    (type: string): VendorData[] => {
-      if (!allVendors) return []
-      return allVendors.filter((vendor) => vendor.vendorType === type)
-    },
-    [allVendors],
-  )
+  const getVendorById = (id: string): VendorData | undefined => {
+    return VENDOR_DATA.find((vendor) => vendor.id === id)
+  }
 
-  const useSingleVendor = (id: VendorId | null) => {
-    return useQuery<VendorData | undefined, Error>({
-      queryKey: ["vendor", id],
-      queryFn: () => (id ? fetchVendorById(id) : Promise.resolve(undefined)),
-      enabled: !!id,
-      staleTime: Number.POSITIVE_INFINITY,
-    })
+  const compareVendors = (vendorIds: string[]) => {
+    const vendors = vendorIds.map((id) => getVendorById(id)).filter(Boolean) as VendorData[]
+
+    return {
+      pricing: vendors.map((v) => ({
+        name: v.name,
+        basePrice: v.pricing.basePrice,
+        maxPrice: v.pricing.maxPrice,
+      })),
+      features: vendors.map((v) => ({
+        name: v.name,
+        ...v.features,
+      })),
+      deployment: vendors.map((v) => ({
+        name: v.name,
+        timeToValue: v.deployment.timeToValue,
+        complexity: v.deployment.complexity,
+        requiresHardware: v.deployment.requiresHardware,
+      })),
+      security: vendors.map((v) => ({
+        name: v.name,
+        cveCount: v.security.cveCount,
+        securityScore: v.security.securityScore,
+      })),
+    }
+  }
+
+  const getMarketLeaders = () => {
+    return VENDOR_DATA.sort((a, b) => b.marketShare - a.marketShare).slice(0, 5)
+  }
+
+  const getCloudNativeVendors = () => {
+    return VENDOR_DATA.filter((vendor) => vendor.category === "cloud-native")
   }
 
   return {
-    allVendors,
-    isLoadingAllVendors,
-    errorAllVendors,
+    vendorData,
+    loading,
     getVendorById,
-    getVendorsByType,
-    useSingleVendor,
+    compareVendors,
+    getMarketLeaders,
+    getCloudNativeVendors,
   }
 }
