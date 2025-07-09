@@ -1,121 +1,122 @@
-# Portnox TCO Analyzer
+# Ultimate Portnox TCO Analyzer - Enterprise Edition
 
-A comprehensive Total Cost of Ownership (TCO) analysis tool for Network Access Control (NAC) solutions, featuring Portnox and competitive vendor comparisons.
+## Overview
+The Ultimate Portnox TCO Analyzer is a comprehensive web-based platform for comparing Network Access Control (NAC) solutions across 14 major vendors with advanced cost analysis, compliance mapping, and ROI calculations.
 
-## 🚀 Live Demo
+## Features
 
-Visit the live application: [https://iammrherb.github.io/portnox-tco-analyzer/](https://iammrherb.github.io/portnox-tco-analyzer/)
+### 🏢 Complete Vendor Coverage (14 Vendors)
+- **Cloud NAC**: Portnox, SecureW2, Foxpass, RADIUS-as-a-Service
+- **On-Premise NAC**: Cisco ISE, Aruba ClearPass, Forescout, Fortinet FortiNAC
+- **Hybrid Solutions**: Extreme Networks, Juniper, Arista, Microsoft NPS/NAP, PacketFence
 
-## ✨ Features
+### 💰 Advanced Cost Controls
+- **Per-Device Pricing Tiers**: Automatic calculation based on 100-25,000+ devices
+- **Volume Discounts**: Built-in pricing optimization
+- **Real-time TCO Updates**: Dynamic calculations as you adjust parameters
+- **Comprehensive Cost Factors**: Licensing, implementation, FTE, infrastructure, support
 
-- **Executive Dashboard** - High-level TCO overview and key metrics
-- **Detailed Cost Breakdown** - Comprehensive cost analysis by category
-- **ROI & Business Value** - Return on investment calculations and projections
-- **Compliance & Risk Assessment** - Framework coverage and risk analysis
-- **Operations Impact** - Efficiency gains and operational benefits
-- **Feature Matrix Comparison** - Side-by-side vendor feature comparison
-- **Implementation Roadmap** - Deployment timeline and planning
-- **Vendor Selection Panel** - Easy vendor comparison and selection
+### 📊 Interactive Dashboards
+- **Executive Summary**: Key metrics and savings at a glance
+- **Cost Analysis**: Detailed breakdowns with visual charts
+- **TCO Comparison**: Side-by-side vendor analysis
+- **ROI Calculator**: Advanced return on investment projections
 
-## 🛠️ Technology Stack
+### 🛡️ Compliance & Security
+- **10+ Frameworks**: NIST, ISO 27001, PCI DSS, HIPAA, SOX, GDPR, NERC CIP, CMMC, FedRAMP, CIS
+- **Industry Requirements**: Healthcare, Financial, Retail, Manufacturing, Education, Government, Energy
+- **Security Impact Analysis**: Risk reduction metrics and incident prevention
 
-- **Framework**: Next.js 14 with App Router
-- **Styling**: Tailwind CSS with custom design system
-- **UI Components**: Radix UI primitives with shadcn/ui
-- **Charts**: Recharts for data visualization
-- **Animations**: Framer Motion
-- **Icons**: Lucide React
-- **Deployment**: GitHub Pages with automated CI/CD
+### 🏗️ Organizations & Integrations
+- **Identity Providers**: Azure AD, Google Workspace, Okta, Ping, AWS SSO, OneLogin, JumpCloud
+- **Infrastructure**: Active Directory, LDAP, RADIUS, SAML, OAuth
+- **Cloud Platforms**: AWS, Azure, Google Cloud
 
-## 🏗️ Development
+## Quick Start
 
-### Prerequisites
+1. **Run the Setup Script**:
+   \`\`\`bash
+   chmod +x ultimate_portnox_tco.sh
+   ./ultimate_portnox_tco.sh
+   \`\`\`
 
-- Node.js 18+ 
-- npm or yarn
+2. **Start the Web Server**:
+   \`\`\`bash
+   ./serve.sh
+   \`\`\`
 
-### Installation
+3. **Open in Browser**:
+   Navigate to `http://localhost:8080`
 
-\`\`\`bash
-# Clone the repository
-git clone https://github.com/iammrherb/portnox-tco-analyzer.git
+## Navigation Guide
 
-# Navigate to project directory
-cd portnox-tco-analyzer
+### Dashboard
+- View key metrics and savings summary
+- Adjust device count with interactive slider
+- See real-time pricing tier updates
+- Compare all vendors at a glance
 
-# Install dependencies
-npm install
+### Cost Analysis
+- Detailed cost breakdowns by category
+- Interactive ROI calculator
+- Custom scenario modeling
+- Export capabilities
 
-# Start development server
-npm run dev
-\`\`\`
+### Vendor Comparison
+- Filter by deployment type (Cloud/On-Premise/Hybrid)
+- Click vendor cards for detailed information
+- View supported organizations and integrations
+- Compare feature sets
 
-### Building for Production
+### Compliance
+- Framework coverage analysis
+- Automated vs manual controls comparison
+- Industry-specific compliance mapping
+- Gap analysis reports
 
-\`\`\`bash
-# Build the application
-npm run build
+### ROI Analysis
+- Calculate savings based on current costs
+- Incident reduction projections
+- Payback period calculations
+- Total cost of ownership comparisons
 
-# Export static files (for GitHub Pages)
-npm run export
-\`\`\`
+## Technical Details
 
-## 📊 Vendor Data
+### Architecture
+- **Frontend**: Pure HTML5, CSS3, JavaScript
+- **Charts**: Chart.js for data visualization
+- **Icons**: Font Awesome 6.5.1
+- **Data**: JSON-based vendor and compliance databases
 
-The application includes comprehensive data for major NAC vendors:
+### Browser Support
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
 
-- **Portnox CLEAR** - Cloud-native NAC leader
-- **Cisco ISE** - Traditional enterprise NAC
-- **Aruba ClearPass** - HPE's NAC solution
-- **Cisco Meraki** - Cloud-managed NAC
-- **Forescout** - Agentless device visibility
-- **FortiNAC** - Fortinet's security fabric NAC
-- **Juniper Mist** - AI-driven NAC
-- **Microsoft Intune/NPS** - Hybrid endpoint NAC
-- And more...
+### Performance
+- Optimized animations with GPU acceleration
+- Lazy loading for charts and data
+- Responsive design for all screen sizes
+- Efficient DOM manipulation
 
-## 🔧 Configuration
+## Customization
 
-The application supports various configuration options:
+### Adding Vendors
+Edit `data/vendors/all_vendors_complete.json` to add new vendors with their pricing models.
 
-- Organization size (startup to enterprise)
-- Industry vertical selection
-- Projection timeline (1-5 years)
-- Regional pricing adjustments
-- Compliance framework requirements
+### Updating Compliance Frameworks
+Modify `data/compliance/frameworks_complete.json` to add or update compliance requirements.
 
-## 📈 Analytics & Calculations
+### Styling
+All styling uses CSS variables for easy customization. Edit the `:root` section in index.html.
 
-- **TCO Calculations**: Comprehensive cost modeling including software, hardware, implementation, support, and hidden costs
-- **ROI Analysis**: Payback period, net present value, and annual savings calculations
-- **Risk Assessment**: Security posture scoring and compliance readiness metrics
-- **Operational Impact**: Efficiency gains and labor savings analysis
+## Support
 
-## 🚀 Deployment
-
-The application is automatically deployed to GitHub Pages using GitHub Actions:
-
-1. Push changes to the `main` branch
-2. GitHub Actions builds and deploys the application
-3. Live site updates automatically
-
-## 📝 License
-
-This project is proprietary software owned by Portnox. All rights reserved.
-
-## 🤝 Contributing
-
-This is a private repository. For questions or contributions, please contact the development team.
-
-## 📞 Support
-
-For technical support or questions about the TCO Analyzer:
-
+For questions or support:
+- Visit: https://portnox.com
 - Email: support@portnox.com
-- Website: https://www.portnox.com
-- Documentation: https://docs.portnox.com
+- Schedule Demo: Click the "Schedule Demo" button in the application
 
----
-
-Built with ❤️ by the Portnox team
-\`\`\`
+## License
+© 2024 Portnox. All rights reserved.
