@@ -20,7 +20,7 @@ import {
   Shield,
   FileCheck,
   Users,
-  Grid3X3,
+  LayoutGrid,
   MapPin,
   Building2,
   FileText,
@@ -192,7 +192,7 @@ export default function TcoAnalyzerUltimate() {
     {
       value: "features",
       label: "Feature Matrix",
-      icon: <Grid3X3 className="h-4 w-4" />,
+      icon: <LayoutGrid className="h-4 w-4" />,
       component: <FeatureMatrixView results={results} config={configuration} />,
     },
     {
