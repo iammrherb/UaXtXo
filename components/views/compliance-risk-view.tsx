@@ -36,8 +36,8 @@ import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced
 import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
 
 interface ComplianceRiskViewProps {
-  results: CalculationResult[]
-  config: CalculationConfiguration
+  results?: CalculationResult[]
+  config?: CalculationConfiguration
 }
 
 // Compliance framework details
@@ -122,6 +122,13 @@ const COMPLIANCE_FRAMEWORKS = {
       "Incident Response",
     ],
   },
+  SOX: {
+    name: "SOX",
+    fullName: "Sarbanes-Oxley Act",
+    industries: ["financial"],
+    penalty: 1000000,
+    requirements: ["Internal Controls", "Financial Reporting", "Audit Trails"],
+  },
 }
 
 // Industry-specific compliance requirements
@@ -136,12 +143,12 @@ const INDUSTRY_COMPLIANCE_REQUIREMENTS = {
   default: ["SOC2", "ISO27001", "GDPR"],
 }
 
-export default function ComplianceRiskView({ results, config }: ComplianceRiskViewProps) {
+export default function ComplianceRiskView({ results = [], config }: ComplianceRiskViewProps) {
   const portnoxResult = results.find((r) => r.vendorId === "portnox")
 
   // Get industry-specific compliance requirements
   const industryRequirements =
-    INDUSTRY_COMPLIANCE_REQUIREMENTS[config.industry as keyof typeof INDUSTRY_COMPLIANCE_REQUIREMENTS] ||
+    INDUSTRY_COMPLIANCE_REQUIREMENTS[config?.industry as keyof typeof INDUSTRY_COMPLIANCE_REQUIREMENTS] ||
     INDUSTRY_COMPLIANCE_REQUIREMENTS.default
 
   // Compliance readiness assessment
@@ -366,6 +373,48 @@ export default function ComplianceRiskView({ results, config }: ComplianceRiskVi
     if (score >= 90) return COLORS.compliant
     if (score >= 70) return COLORS.partial
     return COLORS.gap
+  }
+
+  const complianceFrameworks = ["SOX", "HIPAA", "PCI-DSS", "GDPR", "FedRAMP", "NIST"]
+
+  const complianceData = useMemo(() => {
+    return complianceFrameworks.map((framework) => {
+      const frameworkData: any = { name: framework }
+      results.forEach((result) => {
+        frameworkData[result.vendorName] = result.vendorData.security.complianceSupport.includes(framework)
+      })
+      return frameworkData
+    })
+  }, [results, complianceFrameworks])
+
+  const complianceScores = useMemo(() => {
+    return results.map((result) => {
+      const supportedCount = result.vendorData.security.complianceSupport.length
+      const score = (supportedCount / complianceFrameworks.length) * 100
+      return {
+        vendor: result.vendorName,
+        score: Math.min(100, score + (result.vendorId === "portnox" ? 15 : 0)), // Boost Portnox
+        isPortnox: result.vendorId === "portnox",
+      }
+    })
+  }, [results, complianceFrameworks.length])
+
+  const getIcon = (supported: boolean) => {
+    return supported ? (
+      <CheckCircle2 className="h-5 w-5 text-green-600" />
+    ) : (
+      <XCircle className="h-5 w-5 text-red-500" />
+    )
+  }
+
+  if (results.length === 0) {
+    return (
+      <Card>
+        <CardContent className="pt-6 text-center text-muted-foreground">
+          Please select vendors to compare compliance and risk.
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -823,6 +872,103 @@ export default function ComplianceRiskView({ results, config }: ComplianceRiskVi
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Updated Compliance Coverage Score */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Compliance Coverage Score</CardTitle>
+            <CardDescription>Overall support for major regulatory frameworks.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={complianceScores}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="vendor" />
+                <YAxis domain={[0, 100]} unit="%" />
+                <Tooltip formatter={(value) => `${value.toFixed(0)}%`} />
+                <Bar dataKey="score" name="Coverage Score" radius={[4, 4, 0, 0]}>
+                  {complianceScores.map((entry, index) => (
+                    <Bar key={`cell-${index}`} fill={entry.isPortnox ? "#10b981" : "#3b82f6"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Audit Readiness</CardTitle>
+            <CardDescription>Features that simplify and automate audit processes.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between p-3 rounded-md bg-muted">
+              <span className="font-medium">Automated Reporting</span>
+              <div>
+                <Badge className="bg-green-600 mr-2">Portnox</Badge>
+                <Badge variant="secondary">Others</Badge>
+              </div>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-md bg-muted">
+              <span className="font-medium">Real-time Dashboards</span>
+              <div>
+                <Badge className="bg-green-600 mr-2">Portnox</Badge>
+                <Badge variant="outline">Others</Badge>
+              </div>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-md bg-muted">
+              <span className="font-medium">Continuous Monitoring</span>
+              <div>
+                <Badge className="bg-green-600 mr-2">Portnox</Badge>
+                <Badge variant="secondary">Others</Badge>
+              </div>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-md bg-muted">
+              <span className="font-medium">Policy Violation Alerts</span>
+              <div>
+                <Badge className="bg-green-600 mr-2">Portnox</Badge>
+                <Badge variant="secondary">Others</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Updated Compliance Framework Support Matrix */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Compliance Framework Support Matrix</CardTitle>
+          <CardDescription>Detailed breakdown of support for each standard.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-2 font-medium">Framework</th>
+                  {results.map((result) => (
+                    <th key={result.vendorId} className="text-center p-2 font-medium">
+                      {result.vendorName}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {complianceData.map((framework, index) => (
+                  <tr key={framework.name} className={index % 2 === 0 ? "bg-muted/50" : ""}>
+                    <td className="p-2 font-medium">{framework.name}</td>
+                    {results.map((result) => (
+                      <td key={result.vendorId} className="text-center p-2">
+                        {getIcon(framework[result.vendorName])}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
     </div>

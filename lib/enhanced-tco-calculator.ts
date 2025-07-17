@@ -1,4 +1,5 @@
 import { ComprehensiveVendorDatabase } from "./comprehensive-vendor-data"
+import type { VendorData } from "./comprehensive-vendor-data"
 
 export interface CalculationConfiguration {
   orgSize: "small" | "medium" | "large" | "enterprise"
@@ -50,67 +51,92 @@ export interface CalculationResult {
   totalCost: number
   roi: ROIMetrics
   risk: RiskMetrics
-  vendorData: any
+  vendorData: VendorData
 }
 
-// Mock calculation function - replace with actual implementation
+function calculatePortnoxCost(config: CalculationConfiguration, vendor: VendorData): TCOBreakdown {
+  const { devices, years, portnoxBasePrice, portnoxAddons } = config
+  let effectivePrice = portnoxBasePrice
+
+  if (portnoxAddons.atp) effectivePrice += 1.5
+  if (portnoxAddons.compliance) effectivePrice += 1.0
+  if (portnoxAddons.iot) effectivePrice += 2.0
+  if (portnoxAddons.analytics) effectivePrice += 1.5
+
+  const licensing = effectivePrice * devices * 12 * years
+  const total = licensing // Portnox has no other costs
+
+  return {
+    licensing,
+    hardware: 0,
+    implementation: 0,
+    support: 0,
+    training: 0,
+    maintenance: 0,
+    total,
+  }
+}
+
+function calculateTraditionalCost(config: CalculationConfiguration, vendor: VendorData): TCOBreakdown {
+  const { devices, years } = config
+  const { pricing, implementation } = vendor
+
+  const licensing = (pricing.basePrice + pricing.pricePerDevice * devices) * years
+  const hardware = pricing.additionalCosts.hardware
+  const implementationCost = pricing.additionalCosts.services
+  const training = pricing.additionalCosts.training
+  const maintenance = pricing.additionalCosts.maintenance * years
+
+  // Estimate support as 20% of licensing
+  const support = licensing * 0.2
+
+  const total = licensing + hardware + implementationCost + training + maintenance + support
+  return {
+    licensing,
+    hardware,
+    implementation: implementationCost,
+    support,
+    training,
+    maintenance,
+    total,
+  }
+}
+
 export function calculateVendorTCO(vendorId: string, config: CalculationConfiguration): CalculationResult | null {
   const vendor = ComprehensiveVendorDatabase[vendorId]
   if (!vendor) return null
 
-  // Basic TCO calculation
-  const basePrice = vendor.pricing.basePrice
-  const devices = config.devices
-  const years = config.years
+  const breakdown =
+    vendorId === "portnox" ? calculatePortnoxCost(config, vendor) : calculateTraditionalCost(config, vendor)
 
-  const licensing = basePrice * devices * 12 * years
-  const hardware = vendor.implementation.hardwareRequired ? devices * 50 : 0
-  const implementation = vendor.implementation.professionalServices.cost
-  const support = licensing * 0.2 * years
-  const training = vendor.implementation.complexity === "high" ? 25000 : 10000
-  const maintenance = hardware * 0.15 * years
+  const totalCost = breakdown.total
 
-  const total = licensing + hardware + implementation + support + training + maintenance
-
-  // Mock ROI calculation
+  // Mock ROI and Risk metrics for now, can be enhanced later
   const roi: ROIMetrics = {
-    paybackMonths: vendorId === "portnox" ? 6 : 18,
-    percentage: vendorId === "portnox" ? 250 : 150,
-    annualSavings: total * 0.3,
-    breachReduction: vendor.security.breachCostSavings.reduction_percentage,
-    laborSavingsFTE: vendorId === "portnox" ? 2.5 : 1.2,
+    paybackMonths: vendorId === "portnox" ? 6.5 : 24 + Math.random() * 12,
+    percentage: vendorId === "portnox" ? 5506 : 50 + Math.random() * 100,
+    annualSavings: totalCost * (vendorId === "portnox" ? 0.65 : 0.1),
+    breachReduction: vendor.security.cveCount === 0 ? 0.92 : 0.5 - vendor.security.cveCount * 0.01,
+    laborSavingsFTE: vendorId === "portnox" ? 2.5 : 1.0,
   }
 
-  // Mock risk calculation
   const risk: RiskMetrics = {
-    securityScore: vendor.security.overallScore,
-    breachReduction: vendor.security.breachCostSavings.reduction_percentage,
-    vendorRisk: 100 - vendor.security.vulnerabilities.risk_score,
-    complianceScore: vendor.compliance.automationLevel,
+    securityScore: vendor.security.securityRating,
+    breachReduction: roi.breachReduction,
+    vendorRisk: vendor.security.cveCount * 2,
+    complianceScore: vendor.security.complianceSupport.length * 15 + (vendor.id === "portnox" ? 25 : 0),
   }
 
   return {
     vendor: vendorId,
     vendorId,
     vendorName: vendor.name,
-    breakdown: {
-      licensing,
-      hardware,
-      implementation,
-      support,
-      training,
-      maintenance,
-      total,
-    },
-    total,
-    totalCost: total,
+    breakdown,
+    total: totalCost,
+    totalCost,
     roi,
     risk,
-    vendorData: {
-      features: vendor.features,
-      security: vendor.security,
-      scalability: vendor.scalability || { cloudNative: vendor.features.core.cloudNative },
-    },
+    vendorData: vendor,
   }
 }
 
