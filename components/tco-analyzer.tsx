@@ -1,17 +1,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Image from "next/image"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
   Settings,
   Loader2,
   ChevronLeft,
   ChevronRight,
+  Menu,
+  X,
   BarChart3,
   DollarSign,
   TrendingUp,
@@ -22,8 +24,8 @@ import {
   MapPin,
   Building2,
   FileText,
-  Menu,
-  X,
+  Calendar,
+  HelpCircle,
 } from "lucide-react"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
@@ -40,6 +42,7 @@ import FeatureMatrixView from "./views/feature-matrix-view"
 import ImplementationRoadmapView from "./views/implementation-roadmap-view"
 import BusinessImpactView from "./views/business-impact-view"
 import ReportsView from "./views/reports-view"
+import AnimatedPortnoxLogo from "./animated-portnox-logo"
 
 import { compareVendors } from "@/lib/enhanced-tco-calculator"
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
@@ -133,11 +136,17 @@ export default function TcoAnalyzerUltimate() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
         <div className="text-center">
-          <Image src="/portnox-logo.png" alt="Portnox" width={120} height={40} className="mx-auto mb-6" />
-          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
-            Loading Executive Intelligence Platform...
-          </p>
+          <AnimatedPortnoxLogo width={120} height={40} animate={true} />
+          <div className="mt-6 space-y-2">
+            <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+              Executive Intelligence Decision Platform
+            </h2>
+            <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Loading comprehensive analysis...</p>
+            <div className="w-64 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mx-auto mt-4">
+              <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full animate-pulse" />
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -202,7 +211,7 @@ export default function TcoAnalyzerUltimate() {
       value: "reports",
       label: "Reports",
       icon: <FileText className="h-4 w-4" />,
-      component: <ReportsView results={results} config={configuration} />,
+      component: <ReportsView results={results} configuration={configuration} />,
     },
   ]
 
@@ -213,14 +222,7 @@ export default function TcoAnalyzerUltimate() {
         <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-4">
-              <Image
-                src="/portnox-logo.png"
-                alt="Portnox"
-                width={140}
-                height={40}
-                className="object-contain"
-                priority
-              />
+              <AnimatedPortnoxLogo width={140} height={40} showText={true} animate={true} />
               <Separator orientation="vertical" className="h-8" />
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -236,12 +238,38 @@ export default function TcoAnalyzerUltimate() {
               <Badge variant="outline" className="hidden md:flex">
                 v3.0
               </Badge>
-              <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden">
-                {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-              </Button>
+              <Sheet open={!sidebarOpen} onOpenChange={setSidebarOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="md:hidden">
+                    {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-80 p-0">
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <AnimatedPortnoxLogo width={24} height={24} showText={false} animate={false} />
+                      <span className="font-semibold text-sm">Vendor Selection</span>
+                    </div>
+                    <EnhancedVendorSelection
+                      selectedVendors={selectedVendors}
+                      onVendorToggle={handleVendorToggle}
+                      onClearAll={handleClearAll}
+                      onSelectRecommended={handleSelectRecommended}
+                      darkMode={darkMode}
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
               <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
+              </Button>
+              <Button
+                size="sm"
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+              >
+                <Calendar className="h-4 w-4 mr-1" />
+                Schedule Demo
               </Button>
             </div>
           </div>
@@ -263,7 +291,7 @@ export default function TcoAnalyzerUltimate() {
                   <div className="flex items-center justify-between">
                     {!sidebarCollapsed && (
                       <div className="flex items-center gap-2">
-                        <Image src="/portnox-logo.png" alt="Portnox" width={24} height={24} />
+                        <AnimatedPortnoxLogo width={24} height={24} showText={false} animate={false} />
                         <span className="font-semibold text-sm">Vendor Selection</span>
                       </div>
                     )}
@@ -350,7 +378,7 @@ export default function TcoAnalyzerUltimate() {
         <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Image src="/portnox-logo.png" alt="Portnox" width={100} height={28} className="object-contain" />
+              <AnimatedPortnoxLogo width={100} height={28} showText={true} animate={false} />
               <Separator orientation="vertical" className="h-6" />
               <div className="text-sm text-muted-foreground">
                 <span className="font-medium">Executive Intelligence Decision Platform</span>
@@ -372,6 +400,10 @@ export default function TcoAnalyzerUltimate() {
               <Badge variant="outline" className="text-xs">
                 {configuration.years} year analysis
               </Badge>
+              <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
+                <HelpCircle className="h-3 w-3 mr-1" />
+                Help
+              </Button>
             </div>
           </div>
         </footer>
