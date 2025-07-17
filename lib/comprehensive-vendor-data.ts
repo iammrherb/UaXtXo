@@ -746,39 +746,39 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
     marketShare: 0.8,
     deploymentType: "cloud",
     logo: "/securew2-logo.png",
-    description: "Managed PKI and certificate-based authentication with focus on wireless security.",
+    description: "Cloud-based certificate management and WiFi security solution with PKI focus.",
 
     pricing: {
       model: "per-device",
       basePrice: 5000,
-      pricePerDevice: 12.0,
-      minimumDevices: 100,
+      pricePerDevice: 3.5, // Updated to accurate pricing
+      minimumDevices: 500, // Minimum commitment
       additionalCosts: {
-        hardware: 0,
-        services: 15000,
-        training: 8000,
-        maintenance: 5000,
+        hardware: 0, // No hardware required (cloud service)
+        services: 8000, // Implementation services
+        training: 3000, // 8 hours of training
+        maintenance: 0, // Included in subscription
       },
     },
 
     implementation: {
-      timeToDeployDays: 21,
-      complexity: "medium",
-      professionalServicesRequired: true,
-      trainingHours: 16,
+      timeToDeployDays: 14, // Realistic for cloud service
+      complexity: "low", // Cloud service is low complexity
+      professionalServicesRequired: false, // Can be self-deployed
+      trainingHours: 8, // 1 day of training
     },
 
     security: {
       securityRating: 85,
-      cveCount: 1,
+      cveCount: 2, // Low CVE count
       complianceSupport: ["HIPAA", "PCI-DSS", "GDPR"],
       zeroTrustMaturity: 75,
     },
 
     features: {
-      core: ["Managed PKI", "Certificate Management", "Wireless Security"],
-      advanced: ["Dynamic VLAN Assignment", "Policy Enforcement", "Certificate Lifecycle"],
-      integrations: ["Wireless Controllers", "Active Directory", "SCEP", "Cloud Platforms"],
+      core: ["Certificate Management", "WiFi Security", "RADIUS-as-a-Service", "User Onboarding"],
+      advanced: ["Cloud PKI", "BYOD Onboarding", "Certificate Lifecycle Management", "API Integration"],
+      integrations: ["Active Directory", "Azure AD", "Google Workspace", "SAML IdPs", "MDM Solutions"],
     },
 
     support: {
@@ -789,21 +789,21 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
 
     strengths: [
       "Strong certificate management",
-      "Excellent wireless security",
-      "Managed PKI service",
-      "Good compliance support",
+      "Excellent WiFi security",
+      "Cloud-native architecture",
+      "Good BYOD support",
     ],
     weaknesses: [
-      "Premium pricing model",
-      "Limited wired network support",
+      "Limited NAC features beyond WiFi",
+      "Focused on certificate-based auth",
       "Niche market focus",
-      "Requires PKI expertise",
+      "Limited wired network support",
     ],
     bestFor: [
       "Certificate-based authentication",
-      "Wireless-heavy environments",
-      "High-security requirements",
-      "Managed PKI needs",
+      "Educational institutions",
+      "WiFi-focused security",
+      "BYOD environments",
     ],
   },
 

@@ -33,6 +33,9 @@ import {
   Eye,
   FileSpreadsheet,
   Presentation,
+  BarChart3,
+  PieChart,
+  LineChart,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -54,6 +57,7 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
   const [isExporting, setIsExporting] = useState(false)
   const [exportFormat, setExportFormat] = useState<"pdf" | "excel" | "powerpoint">("pdf")
   const [showPreview, setShowPreview] = useState(false)
+  const [generationProgress, setGenerationProgress] = useState(0)
 
   const reportGenerator = new ReportGenerator()
 
@@ -102,10 +106,17 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
 
   const handleGenerateReport = async () => {
     setIsGenerating(true)
+    setGenerationProgress(0)
 
     try {
-      // Simulate report generation delay
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      const progressInterval = setInterval(() => {
+        setGenerationProgress((prev) => {
+          const newProgress = prev + Math.random() * 15
+          return newProgress >= 100 ? 100 : newProgress
+        })
+      }, 300)
+
+      await new Promise((resolve) => setTimeout(resolve, 2500))
 
       let report: GeneratedReport
 
@@ -125,6 +136,11 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
         default:
           report = reportGenerator.generateExecutiveReport(results, configuration)
       }
+
+      clearInterval(progressInterval)
+      setGenerationProgress(100)
+
+      await new Promise((resolve) => setTimeout(resolve, 300))
 
       setGeneratedReport(report)
       toast.success("Report generated successfully!")
@@ -161,7 +177,6 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
           break
       }
 
-      // Create download link
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
@@ -350,6 +365,28 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
                                       ))}
                                     </div>
                                   )}
+                                  {section.charts && section.charts.length > 0 && (
+                                    <div className="mt-4 border rounded-md p-4 bg-gray-50 dark:bg-gray-900">
+                                      <h4 className="text-sm font-medium mb-2">Charts & Visualizations</h4>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {section.charts.map((chart, idx) => (
+                                          <div key={idx} className="border rounded-md p-2 bg-white dark:bg-gray-800">
+                                            <div className="flex items-center justify-between mb-2">
+                                              <span className="text-xs font-medium">{chart.title}</span>
+                                              {chart.type === "bar" && <BarChart3 className="h-3 w-3 text-blue-500" />}
+                                              {chart.type === "pie" && <PieChart className="h-3 w-3 text-green-500" />}
+                                              {chart.type === "line" && (
+                                                <LineChart className="h-3 w-3 text-purple-500" />
+                                              )}
+                                            </div>
+                                            <div className="h-24 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center">
+                                              <span className="text-xs text-muted-foreground">Chart visualization</span>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
                                 </CardContent>
                               </Card>
                             ))}
@@ -398,9 +435,31 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span>Generating {selectedReport?.title}...</span>
-                    <span>Processing data</span>
+                    <span>{Math.round(generationProgress)}% complete</span>
                   </div>
-                  <Progress value={65} className="h-2" />
+                  <Progress value={generationProgress} className="h-2" />
+                  <div className="grid grid-cols-4 gap-2 mt-2">
+                    <div className="text-xs text-center">
+                      <Badge variant={generationProgress >= 25 ? "secondary" : "outline"} className="w-full">
+                        Data Analysis
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-center">
+                      <Badge variant={generationProgress >= 50 ? "secondary" : "outline"} className="w-full">
+                        Content Generation
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-center">
+                      <Badge variant={generationProgress >= 75 ? "secondary" : "outline"} className="w-full">
+                        Chart Rendering
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-center">
+                      <Badge variant={generationProgress >= 100 ? "secondary" : "outline"} className="w-full">
+                        Finalization
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -510,75 +569,14 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
 
               {/* Report Summary */}
               {generatedReport && (
-                <Alert>
-                  <TrendingUp className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>Report Summary:</strong> {generatedReport.summary}
-                  </AlertDescription>
+                <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{generatedReport.summary}</AlertDescription>
                 </Alert>
               )}
             </CardContent>
           </Card>
         </div>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <FileText className="h-4 w-4 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Reports Generated</p>
-                <p className="text-2xl font-bold">1</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Cost Savings</p>
-                <p className="text-2xl font-bold">73%</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Shield className="h-4 w-4 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Risk Reduction</p>
-                <p className="text-2xl font-bold">92%</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Clock className="h-4 w-4 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Deployment Time</p>
-                <p className="text-2xl font-bold">7 days</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )
