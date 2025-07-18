@@ -1,407 +1,370 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { useState, useMemo } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { AlertCircle, Check, ChevronDown, Cloud, Filter, Info, Search, Server, Shield, Star, X } from "lucide-react"
-import Image from "next/image"
+import { Separator } from "@/components/ui/separator"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import {
+  Search,
+  Filter,
+  Star,
+  Shield,
+  Cloud,
+  Building2,
+  AlertTriangle,
+  CheckCircle2,
+  X,
+  Plus,
+  Target,
+  Zap,
+  DollarSign,
+} from "lucide-react"
 
-import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
+import { getAllVendors, type VendorData } from "@/lib/comprehensive-vendor-data"
 
 interface EnhancedVendorSelectionProps {
   selectedVendors: string[]
-  onVendorToggle: (vendorId: string) => void
-  onClearAll: () => void
-  onSelectRecommended: () => void
-  darkMode: boolean
+  onVendorChange: (vendors: string[]) => void
+  maxSelections?: number
 }
 
 export default function EnhancedVendorSelection({
   selectedVendors,
-  onVendorToggle,
-  onClearAll,
-  onSelectRecommended,
-  darkMode,
+  onVendorChange,
+  maxSelections = 4,
 }: EnhancedVendorSelectionProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterCategory, setFilterCategory] = useState<string | null>(null)
-  const [filterDeployment, setFilterDeployment] = useState<string | null>(null)
-  const [sortBy, setSortBy] = useState<"name" | "marketShare" | "securityRating">("marketShare")
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
-  const [activeTab, setActiveTab] = useState("all")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState<string>("all")
+  const [positionFilter, setPositionFilter] = useState<string>("all")
+  const [showFilters, setShowFilters] = useState(false)
 
-  const vendors = Object.values(ComprehensiveVendorDatabase)
+  const allVendors = getAllVendors()
 
-  const filteredVendors = vendors.filter((vendor) => {
-    // Search filter
-    const matchesSearch =
-      searchQuery === "" ||
-      vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vendor.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredVendors = useMemo(() => {
+    return allVendors.filter((vendor) => {
+      const matchesSearch =
+        vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        vendor.description.toLowerCase().includes(searchTerm.toLowerCase())
 
-    // Category filter
-    const matchesCategory = !filterCategory || vendor.category === filterCategory
+      const matchesCategory = categoryFilter === "all" || vendor.category === categoryFilter
+      const matchesPosition = positionFilter === "all" || vendor.marketPosition === positionFilter
 
-    // Deployment filter
-    const matchesDeployment = !filterDeployment || vendor.deploymentType === filterDeployment
+      return matchesSearch && matchesCategory && matchesPosition
+    })
+  }, [allVendors, searchTerm, categoryFilter, positionFilter])
 
-    // Tab filter
-    if (activeTab === "selected") {
-      return matchesSearch && matchesCategory && matchesDeployment && selectedVendors.includes(vendor.id)
-    } else if (activeTab === "cloud") {
-      return matchesSearch && matchesCategory && vendor.deploymentType === "cloud"
-    } else if (activeTab === "onprem") {
-      return matchesSearch && matchesCategory && vendor.deploymentType === "on-premise"
-    } else if (activeTab === "hybrid") {
-      return matchesSearch && matchesCategory && vendor.deploymentType === "hybrid"
-    }
-
-    return matchesSearch && matchesCategory && matchesDeployment
-  })
-
-  const sortedVendors = [...filteredVendors].sort((a, b) => {
-    if (sortBy === "name") {
-      return sortDirection === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
-    } else if (sortBy === "marketShare") {
-      return sortDirection === "asc" ? a.marketShare - b.marketShare : b.marketShare - a.marketShare
+  const handleVendorToggle = (vendorId: string) => {
+    if (selectedVendors.includes(vendorId)) {
+      // Don't allow removing Portnox
+      if (vendorId === "portnox") return
+      onVendorChange(selectedVendors.filter((id) => id !== vendorId))
     } else {
-      return sortDirection === "asc"
-        ? a.security.securityRating - b.security.securityRating
-        : b.security.securityRating - a.security.securityRating
-    }
-  })
-
-  const handleSort = (newSortBy: "name" | "marketShare" | "securityRating") => {
-    if (sortBy === newSortBy) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-    } else {
-      setSortBy(newSortBy)
-      setSortDirection("desc")
+      // Check max selections
+      if (selectedVendors.length >= maxSelections) return
+      onVendorChange([...selectedVendors, vendorId])
     }
   }
 
-  const handleFilterCategory = (category: string | null) => {
-    setFilterCategory(category === filterCategory ? null : category)
+  const handleClearAll = () => {
+    onVendorChange(["portnox"]) // Keep Portnox always selected
   }
 
-  const handleFilterDeployment = (deployment: string | null) => {
-    setFilterDeployment(deployment === filterDeployment ? null : deployment)
+  const handleSelectRecommended = () => {
+    onVendorChange(["portnox", "cisco", "aruba", "forescout"])
   }
 
-  const handleClearFilters = () => {
-    setSearchQuery("")
-    setFilterCategory(null)
-    setFilterDeployment(null)
-    setActiveTab("all")
-  }
-
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "leader":
-        return "bg-blue-500 text-white"
-      case "challenger":
-        return "bg-green-500 text-white"
-      case "visionary":
-        return "bg-purple-500 text-white"
-      case "niche":
-        return "bg-orange-500 text-white"
-      default:
-        return "bg-gray-500 text-white"
-    }
-  }
-
-  const getDeploymentIcon = (deploymentType: string) => {
-    switch (deploymentType) {
-      case "cloud":
-        return <Cloud className="h-3 w-3 text-blue-500" />
-      case "on-premise":
-        return <Server className="h-3 w-3 text-gray-500" />
+  const getVendorIcon = (vendor: VendorData) => {
+    switch (vendor.category) {
+      case "cloud-native":
+        return <Cloud className="h-4 w-4 text-blue-500" />
+      case "traditional":
+        return <Building2 className="h-4 w-4 text-gray-500" />
       case "hybrid":
-        return (
-          <div className="flex">
-            <Cloud className="h-3 w-3 text-blue-500" />
-            <Server className="h-3 w-3 text-gray-500 ml-0.5" />
-          </div>
-        )
+        return <Zap className="h-4 w-4 text-purple-500" />
+      case "open-source":
+        return <Star className="h-4 w-4 text-green-500" />
       default:
-        return <Server className="h-3 w-3" />
+        return <Shield className="h-4 w-4 text-gray-400" />
     }
+  }
+
+  const getSecurityBadge = (vendor: VendorData) => {
+    if (vendor.id === "ivanti") {
+      return (
+        <Badge variant="destructive" className="text-xs">
+          ⚠️ CRITICAL RISK
+        </Badge>
+      )
+    }
+    if (vendor.security.securityRating >= 90) {
+      return <Badge className="bg-green-600 text-xs">Excellent</Badge>
+    }
+    if (vendor.security.securityRating >= 80) {
+      return <Badge className="bg-blue-600 text-xs">Good</Badge>
+    }
+    if (vendor.security.securityRating >= 70) {
+      return (
+        <Badge variant="secondary" className="text-xs">
+          Fair
+        </Badge>
+      )
+    }
+    return (
+      <Badge variant="destructive" className="text-xs">
+        Poor
+      </Badge>
+    )
+  }
+
+  const getMarketPositionBadge = (position: VendorData["marketPosition"]) => {
+    const badges = {
+      leader: <Badge className="bg-green-600 text-xs">Leader</Badge>,
+      challenger: <Badge className="bg-blue-600 text-xs">Challenger</Badge>,
+      visionary: <Badge className="bg-purple-600 text-xs">Visionary</Badge>,
+      niche: (
+        <Badge variant="secondary" className="text-xs">
+          Niche
+        </Badge>
+      ),
+    }
+    return badges[position]
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="p-4 border-b">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-medium text-sm">Vendor Selection</h3>
-          <div className="flex items-center gap-1">
-            <Badge variant="outline" className="text-xs">
-              {selectedVendors.length}/{vendors.length}
-            </Badge>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                    <Info className="h-3 w-3" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-xs">Select vendors to compare</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="relative mb-3">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search vendors..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-1 top-1 h-7 w-7 p-0"
-              onClick={() => setSearchQuery("")}
-            >
-              <X className="h-3 w-3" />
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Target className="h-5 w-5" />
+          Vendor Selection
+          <Badge variant="outline" className="ml-auto">
+            {selectedVendors.length}/{maxSelections} selected
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Search and Filters */}
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search vendors..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button variant="outline" size="icon" onClick={() => setShowFilters(!showFilters)}>
+              <Filter className="h-4 w-4" />
             </Button>
+          </div>
+
+          {showFilters && (
+            <div className="grid gap-4 md:grid-cols-2 p-4 border rounded-lg bg-muted/50">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Category</label>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="cloud-native">Cloud-Native</SelectItem>
+                    <SelectItem value="traditional">Traditional</SelectItem>
+                    <SelectItem value="hybrid">Hybrid</SelectItem>
+                    <SelectItem value="open-source">Open Source</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Market Position</label>
+                <Select value={positionFilter} onValueChange={setPositionFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Positions</SelectItem>
+                    <SelectItem value="leader">Leader</SelectItem>
+                    <SelectItem value="challenger">Challenger</SelectItem>
+                    <SelectItem value="visionary">Visionary</SelectItem>
+                    <SelectItem value="niche">Niche</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 text-xs bg-transparent">
-                  <Filter className="h-3 w-3 mr-1" />
-                  Filter
-                  <ChevronDown className="h-3 w-3 ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48">
-                <div className="p-2">
-                  <h4 className="text-xs font-medium mb-1">Category</h4>
-                  <div className="space-y-1">
-                    {["leader", "challenger", "visionary", "niche"].map((category) => (
-                      <div key={category} className="flex items-center">
-                        <Checkbox
-                          id={`category-${category}`}
-                          checked={filterCategory === category}
-                          onCheckedChange={() => handleFilterCategory(category)}
-                        />
-                        <label
-                          htmlFor={`category-${category}`}
-                          className="text-xs ml-2 flex items-center gap-1 cursor-pointer"
-                        >
-                          <Badge className={`${getCategoryColor(category)} text-[10px] py-0 h-4`}>
-                            {category.charAt(0).toUpperCase() + category.slice(1)}
-                          </Badge>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Separator className="my-2" />
-
-                  <h4 className="text-xs font-medium mb-1">Deployment</h4>
-                  <div className="space-y-1">
-                    {["cloud", "on-premise", "hybrid"].map((deployment) => (
-                      <div key={deployment} className="flex items-center">
-                        <Checkbox
-                          id={`deployment-${deployment}`}
-                          checked={filterDeployment === deployment}
-                          onCheckedChange={() => handleFilterDeployment(deployment)}
-                        />
-                        <label
-                          htmlFor={`deployment-${deployment}`}
-                          className="text-xs ml-2 flex items-center gap-1 cursor-pointer"
-                        >
-                          {getDeploymentIcon(deployment)}
-                          <span>{deployment.charAt(0).toUpperCase() + deployment.slice(1)}</span>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Separator className="my-2" />
-
-                  <Button variant="ghost" size="sm" className="w-full text-xs h-7" onClick={handleClearFilters}>
-                    Clear Filters
-                  </Button>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 text-xs bg-transparent">
-                  <Star className="h-3 w-3 mr-1" />
-                  Sort
-                  <ChevronDown className="h-3 w-3 ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => handleSort("name")}>
-                  <Check className={`mr-2 h-3 w-3 ${sortBy === "name" ? "opacity-100" : "opacity-0"}`} />
-                  <span>Name</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSort("marketShare")}>
-                  <Check className={`mr-2 h-3 w-3 ${sortBy === "marketShare" ? "opacity-100" : "opacity-0"}`} />
-                  <span>Market Share</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSort("securityRating")}>
-                  <Check className={`mr-2 h-3 w-3 ${sortBy === "securityRating" ? "opacity-100" : "opacity-0"}`} />
-                  <span>Security Rating</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={onClearAll}>
-              Clear All
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={onSelectRecommended}>
-              Recommended
-            </Button>
-          </div>
+        {/* Quick Actions */}
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handleSelectRecommended}>
+            <Plus className="h-4 w-4 mr-1" />
+            Recommended
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleClearAll}>
+            <X className="h-4 w-4 mr-1" />
+            Clear All
+          </Button>
         </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 h-8">
-            <TabsTrigger value="all" className="text-xs">
-              All
-            </TabsTrigger>
-            <TabsTrigger value="selected" className="text-xs">
-              Selected
-            </TabsTrigger>
-            <TabsTrigger value="cloud" className="text-xs">
-              Cloud
-            </TabsTrigger>
-            <TabsTrigger value="onprem" className="text-xs">
-              On-Prem
-            </TabsTrigger>
-            <TabsTrigger value="hybrid" className="text-xs">
-              Hybrid
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+        {/* Selected Vendors Summary */}
+        {selectedVendors.length > 0 && (
+          <Alert>
+            <CheckCircle2 className="h-4 w-4" />
+            <AlertDescription>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {selectedVendors.map((vendorId) => {
+                  const vendor = allVendors.find((v) => v.id === vendorId)
+                  if (!vendor) return null
+                  return (
+                    <Badge key={vendorId} variant="secondary" className="flex items-center gap-1">
+                      {vendor.name}
+                      {vendorId !== "portnox" && (
+                        <X
+                          className="h-3 w-3 cursor-pointer hover:text-destructive"
+                          onClick={() => handleVendorToggle(vendorId)}
+                        />
+                      )}
+                    </Badge>
+                  )
+                })}
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
-      {/* Vendor List */}
-      <div className="flex-1 overflow-y-auto p-2">
-        {sortedVendors.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center p-4">
-            <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
-            <h3 className="font-medium mb-1">No vendors found</h3>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
-            <Button variant="outline" size="sm" className="mt-4 bg-transparent" onClick={handleClearFilters}>
-              Clear Filters
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {sortedVendors.map((vendor) => {
-              const isSelected = selectedVendors.includes(vendor.id)
-              const isPortnox = vendor.id === "portnox"
-              const hasWarning = vendor.id === "ivanti"
+        <Separator />
 
-              return (
-                <Card
-                  key={vendor.id}
-                  className={`overflow-hidden transition-all ${
-                    isSelected
-                      ? "ring-2 ring-blue-500 dark:ring-blue-400"
-                      : "hover:border-blue-200 dark:hover:border-blue-800"
-                  } ${isPortnox ? "bg-blue-50 dark:bg-blue-950/20" : ""}`}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-start gap-3">
-                      {/* Logo */}
-                      <div
-                        className={`relative flex-shrink-0 w-10 h-10 rounded-md border overflow-hidden ${
-                          darkMode ? "bg-gray-800" : "bg-white"
-                        }`}
-                      >
-                        <Image
-                          src={vendor.logo || "/placeholder.svg"}
-                          alt={vendor.name}
-                          width={40}
-                          height={40}
-                          className="object-contain p-1"
+        {/* Vendor Grid */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredVendors.map((vendor) => {
+            const isSelected = selectedVendors.includes(vendor.id)
+            const isPortnox = vendor.id === "portnox"
+            const canSelect = selectedVendors.length < maxSelections || isSelected
+            const isIvanti = vendor.id === "ivanti"
+
+            return (
+              <Card
+                key={vendor.id}
+                className={`cursor-pointer transition-all hover:shadow-md ${
+                  isSelected
+                    ? isPortnox
+                      ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                      : "ring-2 ring-green-500 bg-green-50 dark:bg-green-900/20"
+                    : canSelect
+                      ? "hover:ring-1 hover:ring-gray-300"
+                      : "opacity-50 cursor-not-allowed"
+                } ${isIvanti ? "border-red-500 bg-red-50 dark:bg-red-900/20" : ""}`}
+                onClick={() => canSelect && handleVendorToggle(vendor.id)}
+              >
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    {/* Header */}
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        {getVendorIcon(vendor)}
+                        <div>
+                          <h3 className="font-semibold text-sm">{vendor.name}</h3>
+                          <div className="flex items-center gap-1 mt-1">
+                            {getMarketPositionBadge(vendor.marketPosition)}
+                            {getSecurityBadge(vendor)}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {isPortnox && <Badge className="bg-blue-600 text-xs">Required</Badge>}
+                        <Checkbox
+                          checked={isSelected}
+                          disabled={!canSelect || isPortnox}
+                          className="data-[state=checked]:bg-green-600"
                         />
                       </div>
+                    </div>
 
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-medium text-sm flex items-center gap-1">
-                              {vendor.name}
-                              {isPortnox && <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />}
-                              {hasWarning && <AlertCircle className="h-3 w-3 text-red-500" />}
-                            </h3>
-                            <div className="flex items-center gap-1 mt-0.5">
-                              <Badge
-                                className={`${getCategoryColor(vendor.category)} text-[10px] py-0 h-4`}
-                                variant="secondary"
-                              >
-                                {vendor.category.charAt(0).toUpperCase() + vendor.category.slice(1)}
-                              </Badge>
-                              <Badge variant="outline" className="text-[10px] py-0 h-4 flex items-center gap-0.5">
-                                {getDeploymentIcon(vendor.deploymentType)}
-                                <span className="capitalize">{vendor.deploymentType}</span>
-                              </Badge>
-                            </div>
-                          </div>
+                    {/* Description */}
+                    <p className="text-xs text-muted-foreground line-clamp-2">{vendor.description}</p>
 
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={() => onVendorToggle(vendor.id)}
-                            className={`${isPortnox ? "opacity-100" : ""}`}
-                          />
-                        </div>
-
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{vendor.description}</p>
-
-                        <div className="flex items-center justify-between mt-2">
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1">
-                              <Shield className="h-3 w-3 text-green-500" />
-                              <span className="text-xs">{vendor.security.securityRating}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Star className="h-3 w-3 text-yellow-500" />
-                              <span className="text-xs">{vendor.marketShare}%</span>
-                            </div>
-                          </div>
-
-                          <div className="text-xs text-muted-foreground">${vendor.pricing.pricePerDevice}/device</div>
-                        </div>
+                    {/* Key Metrics */}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex items-center gap-1">
+                        <Shield className="h-3 w-3 text-blue-500" />
+                        <span>Security: {vendor.security.securityRating}%</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="h-3 w-3 text-green-500" />
+                        <span>${vendor.pricing.pricePerDevice}/device</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Zap className="h-3 w-3 text-purple-500" />
+                        <span>{vendor.implementation.deploymentDays}d deploy</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3 text-orange-500" />
+                        <span>{vendor.security.cveCount} CVEs</span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
+
+                    {/* Special Warnings */}
+                    {isIvanti && (
+                      <Alert className="border-red-500">
+                        <AlertTriangle className="h-4 w-4 text-red-500" />
+                        <AlertDescription className="text-xs text-red-700">
+                          ⚠️ CRITICAL: Active nation-state exploitation. Immediate migration required.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    {/* Portnox Highlight */}
+                    {isPortnox && (
+                      <div className="text-xs text-blue-700 dark:text-blue-300 font-medium">
+                        ✨ Zero CVEs • 30min deployment • 95% automation
+                      </div>
+                    )}
+
+                    {/* Key Features */}
+                    <div className="flex flex-wrap gap-1">
+                      {vendor.features.zeroTrust && (
+                        <Badge variant="outline" className="text-xs">
+                          Zero Trust
+                        </Badge>
+                      )}
+                      {vendor.features.cloudNative && (
+                        <Badge variant="outline" className="text-xs">
+                          Cloud
+                        </Badge>
+                      )}
+                      {vendor.features.aiMl && (
+                        <Badge variant="outline" className="text-xs">
+                          AI/ML
+                        </Badge>
+                      )}
+                      {vendor.features.iot && (
+                        <Badge variant="outline" className="text-xs">
+                          IoT
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+
+        {filteredVendors.length === 0 && (
+          <div className="text-center py-8">
+            <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold">No vendors found</h3>
+            <p className="text-muted-foreground">Try adjusting your search or filter criteria.</p>
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

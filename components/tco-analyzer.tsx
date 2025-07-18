@@ -18,9 +18,7 @@ import {
   Zap,
 } from "lucide-react"
 
-import { calculateTCO } from "@/lib/enhanced-tco-calculator"
-import { getVendorData } from "@/lib/comprehensive-vendor-data"
-import type { CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { compareVendors, type CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 
 import SettingsPanel from "@/components/settings-panel"
 import EnhancedVendorSelection from "@/components/enhanced-vendor-selection"
@@ -42,19 +40,14 @@ export default function TCOAnalyzer() {
     users: 1200,
     years: 3,
     industry: "technology",
-    organizationSize: "medium",
+    orgSize: "medium",
     region: "north-america",
-    portnoxPricing: {
-      tier: "professional",
-      customPricing: false,
-      annualDiscount: 0.1,
-      multiYearDiscount: 0.15,
-    },
-    portnoxAddOns: {
-      advancedAnalytics: false,
-      premiumSupport: false,
-      professionalServices: false,
-      customIntegration: false,
+    portnoxBasePrice: 60,
+    portnoxAddons: {
+      atp: false,
+      compliance: false,
+      iot: false,
+      analytics: false,
     },
   })
 
@@ -62,13 +55,12 @@ export default function TCOAnalyzer() {
   const [activeTab, setActiveTab] = useState("executive")
 
   const results = useMemo(() => {
-    return selectedVendors.map((vendorId) => {
-      const vendorData = getVendorData(vendorId)
-      if (!vendorData) {
-        throw new Error(`Vendor data not found for ${vendorId}`)
-      }
-      return calculateTCO(vendorData, config)
-    })
+    try {
+      return compareVendors(selectedVendors, config)
+    } catch (error) {
+      console.error("Error calculating vendor comparison:", error)
+      return []
+    }
   }, [selectedVendors, config])
 
   const portnoxResult = results.find((r) => r.vendorId === "portnox")
@@ -205,7 +197,7 @@ export default function TCOAnalyzer() {
 
         {/* Main Analysis Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12">
+          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-11">
             <TabsTrigger value="executive" className="flex items-center gap-1 text-xs">
               <Target className="h-3 w-3" />
               <span className="hidden sm:inline">Executive</span>
