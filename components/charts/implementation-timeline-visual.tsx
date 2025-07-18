@@ -4,9 +4,9 @@ import { useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-import { Clock, Zap, Users, CheckCircle2, AlertTriangle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { Clock, Zap, Users, CheckCircle2 } from "lucide-react"
 import type { CalculationResult } from "@/lib/enhanced-tco-calculator"
 
 interface ImplementationTimelineVisualProps {
@@ -15,76 +15,60 @@ interface ImplementationTimelineVisualProps {
 
 export default function ImplementationTimelineVisual({ results }: ImplementationTimelineVisualProps) {
   const implementationData = useMemo(() => {
-    return results.map((result) => ({
-      vendor: result.vendorName,
-      weeks: result.timeline.implementationWeeks,
-      complexity: result.vendorData.implementation.complexityScore,
-      timeToValue: result.timeline.timeToValue,
-      trainingHours: result.vendorData.implementation.trainingRequired,
-      fteRequired: result.vendorData.implementation.fteRequired,
-      isPortnox: result.vendorId === "portnox",
-      deploymentType:
-        result.timeline.implementationWeeks <= 1
-          ? "Instant"
-          : result.timeline.implementationWeeks <= 4
-            ? "Fast"
-            : result.timeline.implementationWeeks <= 12
-              ? "Standard"
-              : "Complex",
-    }))
+    return results.map((result) => {
+      const vendorData = result.vendorData
+      const deploymentDays = vendorData?.implementation?.deploymentDays || 90
+      const resourcesRequired = vendorData?.implementation?.resourcesRequired || {}
+
+      // Calculate implementation phases
+      const phases = {
+        planning: Math.max(deploymentDays * 0.2, 1),
+        deployment: Math.max(deploymentDays * 0.4, 1),
+        testing: Math.max(deploymentDays * 0.2, 1),
+        rollout: Math.max(deploymentDays * 0.2, 1),
+      }
+
+      return {
+        vendor: result.vendorName,
+        vendorId: result.vendorId,
+        totalDays: deploymentDays,
+        planning: phases.planning,
+        deployment: phases.deployment,
+        testing: phases.testing,
+        rollout: phases.rollout,
+        consultingFTE: resourcesRequired.consultingFTE || 0,
+        internalFTE: resourcesRequired.internalFTE || 0,
+        ongoingFTE: resourcesRequired.ongoingFTE || 0,
+        trainingHours: resourcesRequired.trainingHours || 0,
+        complexityScore: vendorData?.implementation?.complexityScore || 5,
+        isPortnox: result.vendorId === "portnox",
+      }
+    })
   }, [results])
 
-  const timelineOverview = useMemo(() => {
-    const portnox = implementationData.find((d) => d.isPortnox)
+  const portnoxImpl = implementationData.find((d) => d.isPortnox)
+  const competitorAvg = useMemo(() => {
     const competitors = implementationData.filter((d) => !d.isPortnox)
-
-    const fastestCompetitor = competitors.reduce((min, curr) => (curr.weeks < min.weeks ? curr : min), competitors[0])
-    const slowestCompetitor = competitors.reduce((max, curr) => (curr.weeks > max.weeks ? curr : max), competitors[0])
-    const avgCompetitorTime = competitors.reduce((sum, d) => sum + d.weeks, 0) / competitors.length
+    if (competitors.length === 0) return null
 
     return {
-      portnoxTime: portnox?.weeks || 0,
-      fastestCompetitor: fastestCompetitor?.weeks || 0,
-      slowestCompetitor: slowestCompetitor?.weeks || 0,
-      avgCompetitorTime,
-      timeAdvantage: portnox ? ((avgCompetitorTime - portnox.weeks) / avgCompetitorTime) * 100 : 0,
+      totalDays: competitors.reduce((sum, c) => sum + c.totalDays, 0) / competitors.length,
+      consultingFTE: competitors.reduce((sum, c) => sum + c.consultingFTE, 0) / competitors.length,
+      internalFTE: competitors.reduce((sum, c) => sum + c.internalFTE, 0) / competitors.length,
+      trainingHours: competitors.reduce((sum, c) => sum + c.trainingHours, 0) / competitors.length,
     }
   }, [implementationData])
 
-  const phaseBreakdown = useMemo(() => {
-    return [
-      {
-        phase: "Planning & Design",
-        portnox: 0.1,
-        traditional: 4,
-        description: "Architecture planning and design",
-      },
-      {
-        phase: "Hardware Procurement",
-        portnox: 0,
-        traditional: 6,
-        description: "Hardware ordering and delivery",
-      },
-      {
-        phase: "Installation & Setup",
-        portnox: 0.1,
-        traditional: 8,
-        description: "Physical installation and configuration",
-      },
-      {
-        phase: "Integration & Testing",
-        portnox: 0.3,
-        traditional: 12,
-        description: "Network integration and testing",
-      },
-      {
-        phase: "Training & Go-Live",
-        portnox: 0.5,
-        traditional: 6,
-        description: "Staff training and production deployment",
-      },
-    ]
-  }, [])
+  const timelineAdvantage = useMemo(() => {
+    if (!portnoxImpl || !competitorAvg) return null
+
+    return {
+      daysSaved: competitorAvg.totalDays - portnoxImpl.totalDays,
+      percentFaster: ((competitorAvg.totalDays - portnoxImpl.totalDays) / competitorAvg.totalDays) * 100,
+      consultingSaved: competitorAvg.consultingFTE - portnoxImpl.consultingFTE,
+      trainingSaved: competitorAvg.trainingHours - portnoxImpl.trainingHours,
+    }
+  }, [portnoxImpl, competitorAvg])
 
   return (
     <div className="space-y-6">
@@ -94,15 +78,12 @@ export default function ImplementationTimelineVisual({ results }: Implementation
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Zap className="h-4 w-4 text-green-600" />
-              Fastest Deployment
+              Portnox Deployment
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-700">{timelineOverview.portnoxTime}w</div>
-            <p className="text-xs text-green-600 mt-1">Portnox CLEAR</p>
-            <Badge variant="outline" className="mt-2 text-xs border-green-300 text-green-700">
-              30 minutes
-            </Badge>
+            <div className="text-3xl font-bold text-green-700">{portnoxImpl?.totalDays || 0.02}</div>
+            <p className="text-xs text-green-600 mt-1">days to production</p>
           </CardContent>
         </Card>
 
@@ -110,86 +91,101 @@ export default function ImplementationTimelineVisual({ results }: Implementation
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Clock className="h-4 w-4 text-red-600" />
-              Longest Deployment
+              Competitor Average
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-700">{timelineOverview.slowestCompetitor}w</div>
-            <p className="text-xs text-red-600 mt-1">Traditional NAC</p>
-            <div className="text-xs text-muted-foreground mt-1">6-9 months typical</div>
+            <div className="text-3xl font-bold text-red-700">{Math.round(competitorAvg?.totalDays || 90)}</div>
+            <p className="text-xs text-red-600 mt-1">days to production</p>
           </CardContent>
         </Card>
 
         <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-600" />
-              Time Advantage
+              <CheckCircle2 className="h-4 w-4 text-blue-600" />
+              Time Savings
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-700">{timelineOverview.timeAdvantage.toFixed(0)}%</div>
-            <p className="text-xs text-blue-600 mt-1">faster than average</p>
-            <div className="text-xs text-muted-foreground mt-1">
-              vs {timelineOverview.avgCompetitorTime.toFixed(1)}w avg
-            </div>
+            <div className="text-3xl font-bold text-blue-700">{Math.round(timelineAdvantage?.daysSaved || 0)}</div>
+            <p className="text-xs text-blue-600 mt-1">days saved</p>
           </CardContent>
         </Card>
 
         <Card className="border-purple-200 bg-purple-50 dark:bg-purple-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-purple-600" />
-              Time to Value
+              <Users className="h-4 w-4 text-purple-600" />
+              Speed Advantage
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-purple-700">1</div>
-            <p className="text-xs text-purple-600 mt-1">day with Portnox</p>
-            <div className="text-xs text-muted-foreground mt-1">Immediate protection</div>
+            <div className="text-3xl font-bold text-purple-700">
+              {Math.round(timelineAdvantage?.percentFaster || 0)}%
+            </div>
+            <p className="text-xs text-purple-600 mt-1">faster deployment</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Implementation Timeline Bars */}
+      {/* Implementation Alert */}
+      <Alert className="border-green-200 bg-green-50">
+        <Zap className="h-4 w-4 text-green-600" />
+        <AlertDescription className="text-green-800">
+          <div className="space-y-2">
+            <div>
+              <strong>Rapid Deployment Advantage:</strong> Portnox CLEAR deploys in 30 minutes compared to
+              {Math.round(competitorAvg?.totalDays || 90)} days for traditional NAC solutions - that's
+              {Math.round(timelineAdvantage?.percentFaster || 0)}% faster time to value.
+            </div>
+            <div className="text-sm">
+              Cloud-native architecture eliminates complex hardware setup, network redesign, and lengthy integration
+              processes that plague traditional NAC deployments.
+            </div>
+          </div>
+        </AlertDescription>
+      </Alert>
+
+      {/* Implementation Timeline Comparison */}
       <Card>
         <CardHeader>
           <CardTitle>Implementation Timeline Comparison</CardTitle>
-          <CardDescription>Deployment time in weeks across all vendors</CardDescription>
+          <CardDescription>Deployment phases breakdown by vendor</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={implementationData} layout="horizontal">
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" tickFormatter={(value) => `${value}w`} />
-              <YAxis dataKey="vendor" type="category" width={120} tick={{ fontSize: 11 }} />
+              <XAxis type="number" tickFormatter={(value) => `${value} days`} />
+              <YAxis dataKey="vendor" type="category" width={100} tick={{ fontSize: 11 }} />
               <Tooltip
-                formatter={(value: number) => [`${value} weeks`, "Implementation Time"]}
+                formatter={(value: number) => [`${value} days`, ""]}
                 labelFormatter={(label) => `Vendor: ${label}`}
               />
-              <Bar
-                dataKey="weeks"
-                fill={(entry: any) => (entry.isPortnox ? "#10b981" : "#6b7280")}
-                radius={[0, 4, 4, 0]}
-              />
+              <Legend />
+              <Bar dataKey="planning" stackId="a" fill="#3b82f6" name="Planning" />
+              <Bar dataKey="deployment" stackId="a" fill="#10b981" name="Deployment" />
+              <Bar dataKey="testing" stackId="a" fill="#f59e0b" name="Testing" />
+              <Bar dataKey="rollout" stackId="a" fill="#8b5cf6" name="Rollout" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
-      {/* Resource Requirements Comparison */}
+      {/* Resource Requirements and Detailed Timeline */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Resource Requirements</CardTitle>
-            <CardDescription>FTE and training requirements</CardDescription>
+            <CardDescription>FTE and training hours needed</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {implementationData
-                .sort((a, b) => a.fteRequired - b.fteRequired)
+                .sort((a, b) => a.totalDays - b.totalDays)
                 .map((vendor) => (
-                  <div key={vendor.vendor} className="space-y-2">
+                  <div key={vendor.vendorId} className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-sm">{vendor.vendor}</span>
@@ -199,27 +195,28 @@ export default function ImplementationTimelineVisual({ results }: Implementation
                           </Badge>
                         )}
                       </div>
-                      <div className="text-right text-sm">
-                        <div className="font-medium">{vendor.fteRequired} FTE</div>
-                        <div className="text-muted-foreground">{vendor.trainingHours}h training</div>
+                      <div className="text-right">
+                        <div className="font-medium text-sm">{vendor.totalDays} days</div>
+                        <div className="text-xs text-muted-foreground">{vendor.complexityScore}/10 complexity</div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1">FTE Required</div>
-                        <Progress
-                          value={(vendor.fteRequired / 5) * 100}
-                          className={`h-2 ${vendor.isPortnox ? "bg-green-100" : ""}`}
-                        />
+
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="text-center p-2 bg-muted/50 rounded">
+                        <div className="font-medium">{vendor.consultingFTE}</div>
+                        <div className="text-muted-foreground">Consulting FTE</div>
                       </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1">Training Hours</div>
-                        <Progress
-                          value={(vendor.trainingHours / 200) * 100}
-                          className={`h-2 ${vendor.isPortnox ? "bg-green-100" : ""}`}
-                        />
+                      <div className="text-center p-2 bg-muted/50 rounded">
+                        <div className="font-medium">{vendor.internalFTE}</div>
+                        <div className="text-muted-foreground">Internal FTE</div>
+                      </div>
+                      <div className="text-center p-2 bg-muted/50 rounded">
+                        <div className="font-medium">{vendor.trainingHours}h</div>
+                        <div className="text-muted-foreground">Training</div>
                       </div>
                     </div>
+
+                    <Progress value={100 - vendor.complexityScore * 10} className="h-2" />
                   </div>
                 ))}
             </div>
@@ -228,67 +225,100 @@ export default function ImplementationTimelineVisual({ results }: Implementation
 
         <Card>
           <CardHeader>
-            <CardTitle>Deployment Phases</CardTitle>
-            <CardDescription>Portnox vs Traditional NAC phases</CardDescription>
+            <CardTitle>Portnox Deployment Phases</CardTitle>
+            <CardDescription>Detailed breakdown of rapid deployment</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {phaseBreakdown.map((phase, index) => (
-                <div key={phase.phase} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm">{phase.phase}</span>
-                    <div className="text-right text-xs">
-                      <div className="text-green-600">Portnox: {phase.portnox}w</div>
-                      <div className="text-red-600">Traditional: {phase.traditional}w</div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <div className="text-xs text-green-600 mb-1">Portnox</div>
-                      <div className="h-2 bg-green-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-green-500"
-                          style={{ width: `${(phase.portnox / phase.traditional) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-red-600 mb-1">Traditional</div>
-                      <div className="h-2 bg-red-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-red-500" style={{ width: "100%" }} />
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">{phase.description}</p>
+              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                <div>
+                  <div className="font-medium text-sm text-green-800">Phase 1: Account Setup</div>
+                  <div className="text-xs text-green-600">Cloud tenant provisioning</div>
                 </div>
-              ))}
+                <div className="text-right">
+                  <div className="font-bold text-green-700">5 min</div>
+                  <div className="text-xs text-green-600">Automated</div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div>
+                  <div className="font-medium text-sm text-blue-800">Phase 2: Configuration</div>
+                  <div className="text-xs text-blue-600">Policy and network setup</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold text-blue-700">15 min</div>
+                  <div className="text-xs text-blue-600">Guided wizard</div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200">
+                <div>
+                  <div className="font-medium text-sm text-purple-800">Phase 3: Testing</div>
+                  <div className="text-xs text-purple-600">Validation and verification</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold text-purple-700">5 min</div>
+                  <div className="text-xs text-purple-600">Automated tests</div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
+                <div>
+                  <div className="font-medium text-sm text-orange-800">Phase 4: Go Live</div>
+                  <div className="text-xs text-orange-600">Production deployment</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold text-orange-700">5 min</div>
+                  <div className="text-xs text-orange-600">One-click activation</div>
+                </div>
+              </div>
+
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
+                <div className="flex items-center justify-between">
+                  <div className="font-semibold text-gray-800">Total Deployment Time</div>
+                  <div className="font-bold text-2xl text-green-700">30 minutes</div>
+                </div>
+                <div className="text-xs text-gray-600 mt-1">From signup to production-ready NAC solution</div>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Implementation Alerts */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Alert className="border-green-200 bg-green-50 dark:bg-green-950/20">
-          <Zap className="h-4 w-4" />
-          <AlertTitle className="text-green-900 dark:text-green-100">Rapid Deployment Advantage</AlertTitle>
-          <AlertDescription className="text-green-800 dark:text-green-200">
-            <strong>30-minute deployment.</strong> Portnox CLEAR's cloud-native architecture enables instant deployment
-            with zero hardware requirements. Start protecting your network in minutes, not months, with immediate
-            time-to-value and minimal resource requirements.
-          </AlertDescription>
-        </Alert>
-
-        <Alert className="border-red-200 bg-red-50 dark:bg-red-950/20">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle className="text-red-900 dark:text-red-100">Traditional NAC Complexity</AlertTitle>
-          <AlertDescription className="text-red-800 dark:text-red-200">
-            <strong>6-9 month implementations.</strong> Traditional NAC solutions require extensive planning, hardware
-            procurement, complex integrations, and significant training. High resource requirements and extended
-            timelines delay security benefits and increase project risk.
-          </AlertDescription>
-        </Alert>
-      </div>
+      {/* Implementation Advantages */}
+      <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
+        <CardHeader>
+          <CardTitle className="text-green-800">Portnox Implementation Advantages</CardTitle>
+          <CardDescription className="text-green-700">
+            Why Portnox deploys 95% faster than traditional NAC
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="text-center p-4 rounded-lg border border-green-200">
+              <Zap className="h-8 w-8 text-green-600 mx-auto mb-2" />
+              <div className="font-semibold text-green-800">No Hardware</div>
+              <div className="text-xs text-green-600 mt-1">Cloud-native deployment</div>
+            </div>
+            <div className="text-center p-4 rounded-lg border border-green-200">
+              <CheckCircle2 className="h-8 w-8 text-green-600 mx-auto mb-2" />
+              <div className="font-semibold text-green-800">Auto-Discovery</div>
+              <div className="text-xs text-green-600 mt-1">Automatic network mapping</div>
+            </div>
+            <div className="text-center p-4 rounded-lg border border-green-200">
+              <Users className="h-8 w-8 text-green-600 mx-auto mb-2" />
+              <div className="font-semibold text-green-800">No Training</div>
+              <div className="text-xs text-green-600 mt-1">Intuitive interface</div>
+            </div>
+            <div className="text-center p-4 rounded-lg border border-green-200">
+              <Clock className="h-8 w-8 text-green-600 mx-auto mb-2" />
+              <div className="font-semibold text-green-800">Instant Value</div>
+              <div className="text-xs text-green-600 mt-1">Immediate protection</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
