@@ -1,4 +1,4 @@
-import { getVendorData, type VendorData } from "./comprehensive-vendor-data"
+import { ComprehensiveVendorDatabase, type VendorData } from "./comprehensive-vendor-data"
 
 export interface CalculationConfiguration {
   devices: number
@@ -182,7 +182,7 @@ const VENDOR_PRICING = {
 }
 
 export function calculateVendorTCO(vendorId: string, config: CalculationConfiguration): CalculationResult | null {
-  const vendorData = getVendorData(vendorId)
+  const vendorData = ComprehensiveVendorDatabase[vendorId]
   if (!vendorData) return null
 
   const pricing = VENDOR_PRICING[vendorId as keyof typeof VENDOR_PRICING] || {
