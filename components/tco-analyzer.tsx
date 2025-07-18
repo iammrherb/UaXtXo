@@ -1,334 +1,278 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
-  Settings,
-  Loader2,
   BarChart3,
-  DollarSign,
-  TrendingUp,
+  Calculator,
   Shield,
-  FileCheck,
+  TrendingUp,
   Users,
-  LayoutGrid,
-  MapPin,
   Building2,
   FileText,
-  Calendar,
-  HelpCircle,
-  Award,
+  Target,
+  Crown,
+  Zap,
+  CheckCircle2,
 } from "lucide-react"
-import { Toaster } from "@/components/ui/sonner"
-import { toast } from "sonner"
 
-import SettingsPanel from "./settings-panel"
+import { EnhancedVendorSelection } from "./enhanced-vendor-selection"
+import { SettingsPanel } from "./settings-panel"
 import ExecutiveDashboardView from "./views/executive-dashboard-view"
+import CSuiteDashboard from "./views/c-suite-dashboard"
+import PortnoxAdvantageDashboard from "./views/portnox-advantage-dashboard"
 import DetailedCostsView from "./views/detailed-costs-view"
-import ROIView from "./views/roi-view"
 import SecurityPostureView from "./views/security-posture-view"
+import ImplementationRoadmapView from "./views/implementation-roadmap-view"
+import BusinessImpactView from "./views/business-impact-view"
 import ComplianceRiskView from "./views/compliance-risk-view"
 import OperationsImpactView from "./views/operations-impact-view"
 import FeatureMatrixView from "./views/feature-matrix-view"
-import ImplementationRoadmapView from "./views/implementation-roadmap-view"
-import BusinessImpactView from "./views/business-impact-view"
+import ROIView from "./views/roi-view"
 import ReportsView from "./views/reports-view"
-import PortnoxAdvantageDashboard from "./views/portnox-advantage-dashboard"
-import AnimatedPortnoxLogo from "./animated-portnox-logo"
-import { VendorSelectionPopup } from "./vendor-selection-popup"
 
-import { compareVendors } from "@/lib/enhanced-tco-calculator"
-import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { compareVendors, type CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 
-const DEFAULT_VENDORS = ["portnox", "cisco", "aruba"]
-
-export default function TcoAnalyzerUltimate() {
-  const [isClient, setIsClient] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSettingsOpen, setSettingsOpen] = useState(false)
-  const [darkMode, setDarkMode] = useState(false)
-
-  const [configuration, setConfiguration] = useState<CalculationConfiguration>({
-    devices: 2500,
-    users: 1500,
+export default function TCOAnalyzer() {
+  // Configuration state
+  const [config, setConfig] = useState<CalculationConfiguration>({
+    devices: 1000,
+    users: 1200,
+    years: 3,
     industry: "technology",
     orgSize: "medium",
-    years: 3,
     region: "north-america",
-    portnoxBasePrice: 4.0,
-    portnoxAddons: { atp: false, compliance: false, iot: false, analytics: false },
+    portnoxBasePrice: 60,
+    portnoxAddons: {
+      atp: false,
+      compliance: false,
+      iot: false,
+      analytics: false,
+    },
   })
 
-  const [selectedVendors, setSelectedVendors] = useState<string[]>(DEFAULT_VENDORS)
-  const [results, setResults] = useState<CalculationResult[]>([])
+  // Selected vendors state
+  const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco", "aruba"])
 
-  useEffect(() => {
-    setIsClient(true)
-    // Load from localStorage
+  // Active tab state
+  const [activeTab, setActiveTab] = useState("executive")
+
+  // Calculate results
+  const results = useMemo(() => {
     try {
-      const saved = localStorage.getItem("portnox-tco-config")
-      if (saved) {
-        const { configuration: savedConfig, selectedVendors: savedVendors, darkMode: savedDarkMode } = JSON.parse(saved)
-        if (savedConfig) setConfiguration(savedConfig)
-        if (savedVendors) {
-          // Ensure Portnox is always included
-          const vendors = savedVendors.includes("portnox") ? savedVendors : ["portnox", ...savedVendors.slice(0, 2)]
-          setSelectedVendors(vendors)
-        }
-        if (typeof savedDarkMode === "boolean") setDarkMode(savedDarkMode)
-      }
+      return compareVendors(selectedVendors, config)
     } catch (error) {
-      console.error("Failed to load from localStorage", error)
-    } finally {
-      setIsLoading(false)
+      console.error("Error calculating vendor comparison:", error)
+      return []
     }
+  }, [selectedVendors, config])
+
+  // Update configuration
+  const updateConfig = useCallback((updates: Partial<CalculationConfiguration>) => {
+    setConfig((prev) => ({ ...prev, ...updates }))
   }, [])
 
-  useEffect(() => {
-    if (!isLoading) {
-      const newResults = compareVendors(selectedVendors, configuration)
-      setResults(newResults)
-      // Save to localStorage
-      localStorage.setItem("portnox-tco-config", JSON.stringify({ configuration, selectedVendors, darkMode }))
-    }
-  }, [selectedVendors, configuration, darkMode, isLoading])
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-    }
-  }, [darkMode])
-
-  const handleVendorChange = (vendors: string[]) => {
+  // Handle vendor selection
+  const handleVendorChange = useCallback((vendors: string[]) => {
     // Ensure Portnox is always included
-    if (!vendors.includes("portnox")) {
-      vendors = ["portnox", ...vendors.filter((v) => v !== "portnox")]
+    const vendorsWithPortnox = vendors.includes("portnox") ? vendors : ["portnox", ...vendors]
+    setSelectedVendors(vendorsWithPortnox.slice(0, 3)) // Limit to 3 vendors
+  }, [])
+
+  // Get summary metrics
+  const summaryMetrics = useMemo(() => {
+    const portnoxResult = results.find((r) => r.vendorId === "portnox")
+    const competitorResults = results.filter((r) => r.vendorId !== "portnox")
+
+    if (!portnoxResult || competitorResults.length === 0) {
+      return null
     }
-    setSelectedVendors(vendors.slice(0, 3)) // Limit to 3 vendors
-    toast(`Vendor selection updated. ${vendors.length} vendors selected.`)
-  }
 
-  const handleConfigChange = (newConfig: any) => {
-    setConfiguration((prev) => ({ ...prev, ...newConfig }))
-  }
+    const avgCompetitorCost = competitorResults.reduce((sum, r) => sum + r.totalCost, 0) / competitorResults.length
+    const totalSavings = avgCompetitorCost - portnoxResult.totalCost
+    const percentSavings = avgCompetitorCost > 0 ? (totalSavings / avgCompetitorCost) * 100 : 0
 
-  const handleAddonsChange = (newAddons: any) => {
-    setConfiguration((prev) => ({
-      ...prev,
-      portnoxAddons: { ...prev.portnoxAddons, ...newAddons },
-    }))
-  }
+    return {
+      totalSavings,
+      percentSavings,
+      portnoxCost: portnoxResult.totalCost,
+      avgCompetitorCost,
+      roi: portnoxResult.totalCost > 0 ? (totalSavings / portnoxResult.totalCost) * 100 : 0,
+    }
+  }, [results])
 
-  if (!isClient || isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-        <div className="text-center">
-          <AnimatedPortnoxLogo width={120} height={40} animate={true} />
-          <div className="mt-6 space-y-2">
-            <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-              Executive Intelligence Decision Platform
-            </h2>
-            <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Loading comprehensive analysis...</p>
-            <div className="w-64 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mx-auto mt-4">
-              <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full animate-pulse" />
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value)
   }
-
-  const TABS = [
-    {
-      value: "advantage",
-      label: "Portnox Advantage",
-      icon: <Award className="h-4 w-4" />,
-      component: <PortnoxAdvantageDashboard results={results} config={configuration} />,
-    },
-    {
-      value: "executive",
-      label: "Executive Dashboard",
-      icon: <BarChart3 className="h-4 w-4" />,
-      component: <ExecutiveDashboardView results={results} config={configuration} />,
-    },
-    {
-      value: "costs",
-      label: "Detailed Costs",
-      icon: <DollarSign className="h-4 w-4" />,
-      component: <DetailedCostsView results={results} config={configuration} />,
-    },
-    {
-      value: "roi",
-      label: "ROI Analysis",
-      icon: <TrendingUp className="h-4 w-4" />,
-      component: <ROIView results={results} config={configuration} />,
-    },
-    {
-      value: "security",
-      label: "Security Posture",
-      icon: <Shield className="h-4 w-4" />,
-      component: <SecurityPostureView results={results} config={configuration} />,
-    },
-    {
-      value: "compliance",
-      label: "Compliance & Risk",
-      icon: <FileCheck className="h-4 w-4" />,
-      component: <ComplianceRiskView results={results} config={configuration} />,
-    },
-    {
-      value: "operations",
-      label: "Operations Impact",
-      icon: <Users className="h-4 w-4" />,
-      component: <OperationsImpactView results={results} config={configuration} />,
-    },
-    {
-      value: "features",
-      label: "Feature Matrix",
-      icon: <LayoutGrid className="h-4 w-4" />,
-      component: <FeatureMatrixView results={results} config={configuration} />,
-    },
-    {
-      value: "roadmap",
-      label: "Implementation",
-      icon: <MapPin className="h-4 w-4" />,
-      component: <ImplementationRoadmapView results={results} config={configuration} />,
-    },
-    {
-      value: "business",
-      label: "Business Impact",
-      icon: <Building2 className="h-4 w-4" />,
-      component: <BusinessImpactView results={results} config={configuration} />,
-    },
-    {
-      value: "reports",
-      label: "Reports",
-      icon: <FileText className="h-4 w-4" />,
-      component: <ReportsView results={results} configuration={configuration} />,
-    },
-  ]
 
   return (
-    <div className={darkMode ? "dark" : ""}>
-      <div className="bg-background text-foreground min-h-screen flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Header */}
-        <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-          <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-4">
-              <AnimatedPortnoxLogo width={140} height={40} showText={true} animate={true} />
-              <Separator orientation="vertical" className="h-8" />
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  Executive Intelligence Decision Platform
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Data-driven insights for Network Access Control vendor evaluation
-                </p>
-              </div>
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="p-3 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600">
+              <Calculator className="h-8 w-8 text-white" />
             </div>
-
-            <div className="flex items-center gap-4">
-              <Badge variant="outline" className="hidden md:flex">
-                v3.0
-              </Badge>
-              <VendorSelectionPopup selectedVendors={selectedVendors} onVendorChange={handleVendorChange} />
-              <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-              <Button
-                size="sm"
-                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-              >
-                <Calendar className="h-4 w-4 mr-1" />
-                Schedule Demo
-              </Button>
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Ultimate Portnox TCO Analyzer
+              </h1>
+              <p className="text-xl text-muted-foreground">Enterprise Edition</p>
             </div>
           </div>
-        </header>
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            Comprehensive Network Access Control vendor analysis with real-time cost calculations, security assessments,
+            and ROI projections across 14 major vendors.
+          </p>
+        </div>
 
-        {/* Main Content */}
-        <div className="flex-1 overflow-hidden">
-          {/* Tab Navigation - now full width */}
-          <div className="border-b bg-white dark:bg-gray-900 px-6 py-2">
-            <Tabs defaultValue="advantage" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 lg:grid-cols-11 h-auto bg-gray-100 dark:bg-gray-800">
-                {TABS.map((tab) => (
-                  <TabsTrigger
-                    key={tab.value}
-                    value={tab.value}
-                    className="text-xs px-2 py-2 flex items-center gap-1 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
-                  >
-                    {tab.icon}
-                    <span className="hidden sm:inline">{tab.label}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-
-              {/* Tab Content */}
-              <div className="mt-4">
-                {TABS.map((tab) => (
-                  <TabsContent key={tab.value} value={tab.value} className="mt-0">
-                    <div className="h-[calc(100vh-200px)] overflow-y-auto">{tab.component}</div>
-                  </TabsContent>
-                ))}
-              </div>
-            </Tabs>
+        {/* Configuration Panel */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <EnhancedVendorSelection
+              selectedVendors={selectedVendors}
+              onVendorChange={handleVendorChange}
+              maxSelections={3}
+            />
+          </div>
+          <div>
+            <SettingsPanel config={config} onConfigChange={updateConfig} />
           </div>
         </div>
 
-        {/* Footer */}
-        <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <AnimatedPortnoxLogo width={100} height={28} showText={true} animate={false} />
-              <Separator orientation="vertical" className="h-6" />
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium">Executive Intelligence Decision Platform</span>
-                <span className="mx-2">•</span>
-                <span>Powered by Portnox CLEAR</span>
-                <span className="mx-2">•</span>
-                <span>© 2024 Portnox Ltd.</span>
+        {/* Summary Metrics */}
+        {summaryMetrics && (
+          <Alert className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
+            <CheckCircle2 className="h-5 w-5 text-green-600" />
+            <AlertDescription className="text-green-800">
+              <div className="flex flex-wrap items-center gap-6 text-sm">
+                <div>
+                  <strong>Total Savings:</strong> {formatCurrency(summaryMetrics.totalSavings)} (
+                  {summaryMetrics.percentSavings.toFixed(0)}%)
+                </div>
+                <div>
+                  <strong>ROI:</strong> {summaryMetrics.roi.toFixed(0)}%
+                </div>
+                <div>
+                  <strong>Portnox TCO:</strong> {formatCurrency(summaryMetrics.portnoxCost)}
+                </div>
+                <div>
+                  <strong>Competitor Avg:</strong> {formatCurrency(summaryMetrics.avgCompetitorCost)}
+                </div>
               </div>
-            </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span>Last Updated: {new Date().toLocaleDateString()}</span>
-              <Badge variant="outline" className="text-xs">
-                {selectedVendors.length} vendors selected
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                {configuration.devices.toLocaleString()} devices
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                {configuration.years} year analysis
-              </Badge>
-              <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
-                <HelpCircle className="h-3 w-3 mr-1" />
-                Help
-              </Button>
-            </div>
-          </div>
-        </footer>
+        {/* Main Analysis Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12 h-auto p-1">
+            <TabsTrigger value="executive" className="flex flex-col items-center gap-1 p-3">
+              <BarChart3 className="h-4 w-4" />
+              <span className="text-xs">Executive</span>
+            </TabsTrigger>
+            <TabsTrigger value="c-suite" className="flex flex-col items-center gap-1 p-3">
+              <Crown className="h-4 w-4" />
+              <span className="text-xs">C-Suite</span>
+            </TabsTrigger>
+            <TabsTrigger value="portnox-advantage" className="flex flex-col items-center gap-1 p-3">
+              <Zap className="h-4 w-4" />
+              <span className="text-xs">Advantage</span>
+            </TabsTrigger>
+            <TabsTrigger value="detailed-costs" className="flex flex-col items-center gap-1 p-3">
+              <Calculator className="h-4 w-4" />
+              <span className="text-xs">Costs</span>
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex flex-col items-center gap-1 p-3">
+              <Shield className="h-4 w-4" />
+              <span className="text-xs">Security</span>
+            </TabsTrigger>
+            <TabsTrigger value="implementation" className="flex flex-col items-center gap-1 p-3">
+              <Target className="h-4 w-4" />
+              <span className="text-xs">Deploy</span>
+            </TabsTrigger>
+            <TabsTrigger value="business-impact" className="flex flex-col items-center gap-1 p-3">
+              <Building2 className="h-4 w-4" />
+              <span className="text-xs">Business</span>
+            </TabsTrigger>
+            <TabsTrigger value="compliance" className="flex flex-col items-center gap-1 p-3">
+              <FileText className="h-4 w-4" />
+              <span className="text-xs">Compliance</span>
+            </TabsTrigger>
+            <TabsTrigger value="operations" className="flex flex-col items-center gap-1 p-3">
+              <Users className="h-4 w-4" />
+              <span className="text-xs">Operations</span>
+            </TabsTrigger>
+            <TabsTrigger value="features" className="flex flex-col items-center gap-1 p-3">
+              <CheckCircle2 className="h-4 w-4" />
+              <span className="text-xs">Features</span>
+            </TabsTrigger>
+            <TabsTrigger value="roi" className="flex flex-col items-center gap-1 p-3">
+              <TrendingUp className="h-4 w-4" />
+              <span className="text-xs">ROI</span>
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="flex flex-col items-center gap-1 p-3">
+              <FileText className="h-4 w-4" />
+              <span className="text-xs">Reports</span>
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Settings Panel */}
-        <SettingsPanel
-          isOpen={isSettingsOpen}
-          onClose={() => setSettingsOpen(false)}
-          configuration={configuration}
-          onConfigurationChange={handleConfigChange}
-          portnoxAddons={configuration.portnoxAddons}
-          onAddonsChange={handleAddonsChange}
-          darkMode={darkMode}
-          onDarkModeChange={setDarkMode}
-        />
+          {/* Tab Content */}
+          <TabsContent value="executive" className="space-y-6">
+            <ExecutiveDashboardView results={results} config={config} />
+          </TabsContent>
 
-        <Toaster />
+          <TabsContent value="c-suite" className="space-y-6">
+            <CSuiteDashboard results={results} config={config} />
+          </TabsContent>
+
+          <TabsContent value="portnox-advantage" className="space-y-6">
+            <PortnoxAdvantageDashboard results={results} config={config} />
+          </TabsContent>
+
+          <TabsContent value="detailed-costs" className="space-y-6">
+            <DetailedCostsView results={results} config={config} />
+          </TabsContent>
+
+          <TabsContent value="security" className="space-y-6">
+            <SecurityPostureView results={results} config={config} />
+          </TabsContent>
+
+          <TabsContent value="implementation" className="space-y-6">
+            <ImplementationRoadmapView results={results} config={config} />
+          </TabsContent>
+
+          <TabsContent value="business-impact" className="space-y-6">
+            <BusinessImpactView results={results} config={config} />
+          </TabsContent>
+
+          <TabsContent value="compliance" className="space-y-6">
+            <ComplianceRiskView results={results} config={config} />
+          </TabsContent>
+
+          <TabsContent value="operations" className="space-y-6">
+            <OperationsImpactView results={results} config={config} />
+          </TabsContent>
+
+          <TabsContent value="features" className="space-y-6">
+            <FeatureMatrixView results={results} config={config} />
+          </TabsContent>
+
+          <TabsContent value="roi" className="space-y-6">
+            <ROIView results={results} config={config} />
+          </TabsContent>
+
+          <TabsContent value="reports" className="space-y-6">
+            <ReportsView results={results} config={config} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )
