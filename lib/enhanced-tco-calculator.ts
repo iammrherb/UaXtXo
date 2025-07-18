@@ -1,11 +1,10 @@
-import { ComprehensiveVendorDatabase } from "./comprehensive-vendor-data"
 import type { VendorData } from "./comprehensive-vendor-data"
 
 export interface CalculationConfiguration {
-  orgSize: "small" | "medium" | "large" | "enterprise"
   devices: number
   users: number
   industry: string
+  orgSize: "small" | "medium" | "large" | "enterprise"
   years: number
   region: string
   portnoxBasePrice: number
@@ -54,94 +53,17 @@ export interface CalculationResult {
   vendorData: VendorData
 }
 
-function calculatePortnoxCost(config: CalculationConfiguration, vendor: VendorData): TCOBreakdown {
-  const { devices, years, portnoxBasePrice, portnoxAddons } = config
-  let effectivePrice = portnoxBasePrice
-
-  if (portnoxAddons.atp) effectivePrice += 1.5
-  if (portnoxAddons.compliance) effectivePrice += 1.0
-  if (portnoxAddons.iot) effectivePrice += 2.0
-  if (portnoxAddons.analytics) effectivePrice += 1.5
-
-  const licensing = effectivePrice * devices * 12 * years
-  const total = licensing // Portnox has no other costs
-
-  return {
-    licensing,
-    hardware: 0,
-    implementation: 0,
-    support: 0,
-    training: 0,
-    maintenance: 0,
-    total,
-  }
-}
-
-function calculateTraditionalCost(config: CalculationConfiguration, vendor: VendorData): TCOBreakdown {
-  const { devices, years } = config
-  const { pricing, implementation } = vendor
-
-  const licensing = (pricing.basePrice + pricing.pricePerDevice * devices) * years
-  const hardware = pricing.additionalCosts.hardware
-  const implementationCost = pricing.additionalCosts.services
-  const training = pricing.additionalCosts.training
-  const maintenance = pricing.additionalCosts.maintenance * years
-
-  // Estimate support as 20% of licensing
-  const support = licensing * 0.2
-
-  const total = licensing + hardware + implementationCost + training + maintenance + support
-  return {
-    licensing,
-    hardware,
-    implementation: implementationCost,
-    support,
-    training,
-    maintenance,
-    total,
-  }
-}
-
-export function calculateVendorTCO(vendorId: string, config: CalculationConfiguration): CalculationResult | null {
-  const vendor = ComprehensiveVendorDatabase[vendorId]
-  if (!vendor) return null
-
-  const breakdown =
-    vendorId === "portnox" ? calculatePortnoxCost(config, vendor) : calculateTraditionalCost(config, vendor)
-
-  const totalCost = breakdown.total
-
-  // Mock ROI and Risk metrics for now, can be enhanced later
-  const roi: ROIMetrics = {
-    paybackMonths: vendorId === "portnox" ? 6.5 : 24 + Math.random() * 12,
-    percentage: vendorId === "portnox" ? 5506 : 50 + Math.random() * 100,
-    annualSavings: totalCost * (vendorId === "portnox" ? 0.65 : 0.1),
-    breachReduction: vendor.security.cveCount === 0 ? 0.92 : 0.5 - vendor.security.cveCount * 0.01,
-    laborSavingsFTE: vendorId === "portnox" ? 2.5 : 1.0,
-  }
-
-  const risk: RiskMetrics = {
-    securityScore: vendor.security.securityRating,
-    breachReduction: roi.breachReduction,
-    vendorRisk: vendor.security.cveCount * 2,
-    complianceScore: vendor.security.complianceSupport.length * 15 + (vendor.id === "portnox" ? 25 : 0),
-  }
-
-  return {
-    vendor: vendorId,
-    vendorId,
-    vendorName: vendor.name,
-    breakdown,
-    total: totalCost,
-    totalCost,
-    roi,
-    risk,
-    vendorData: vendor,
-  }
-}
-
-export function compareVendors(vendorIds: string[], config: CalculationConfiguration): CalculationResult[] {
-  return vendorIds
-    .map((id) => calculateVendorTCO(id, config))
-    .filter((result): result is CalculationResult => result !== null)
-}
+// Industry-specific multipliers for accurate cost modeling
+const INDUSTRY_MULTIPLIERS: Record<string, {
+  complexity: number
+  compliance: number
+  security: number
+  scale: number
+}> = {
+  healthcare: { complexity: 1.4, compliance: 1.8, security: 1.6, scale: 1.2 },
+  financial: { complexity: 1.5, compliance: 2.0, security: 1.8, scale: 1.3 },
+  government: { complexity: 1.6, compliance: 2.2, security: 2.0, scale: 1.4 },
+  education: { complexity: 1.1, compliance: 1.3, security: 1.2, scale: 1.1 },
+  retail: { complexity: 1.2, compliance: 1.4, security: 1.3, scale: 1.2 },
+  manufacturing: { complexity: 1.3, compliance: 1.5, security: 1.4, scale: 1.3 },
+  technology: { complexity: 1.0, compliance: \

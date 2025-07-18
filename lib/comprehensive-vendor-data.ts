@@ -1,929 +1,666 @@
+// Enhanced Comprehensive Vendor Database with Complete Market Intelligence
+// Production-Ready Data for Executive Decision Making
+
+export interface VendorPricing {
+  model: string
+  currency: "USD" | "EUR" | "GBP"
+  billingCycle: "monthly" | "annual" | "perpetual" | "subscription"
+  basePrice: number
+  pricePerDevice: number
+  pricePerUser?: number
+  volumeDiscounts: Record<number, number> // device count -> discount %
+  additionalCosts: {
+    hardware: number
+    services: number
+    training: number
+    maintenance: number
+    support: number
+  }
+  hiddenCosts: {
+    integration: number
+    downtime: number
+    complexity: number
+    staffing: number
+    total: number
+  }
+}
+
+export interface VendorImplementation {
+  deploymentDays: number
+  complexityScore: number // 1-10 scale
+  resourcesRequired: {
+    internalFTE: number
+    vendorFTE: number
+    trainingHours: number
+    ongoingFTE: number
+  }
+  prerequisites: string[]
+  riskFactors: string[]
+}
+
+export interface VendorSecurity {
+  securityRating: number // 0-100
+  cveCount: number
+  lastCVE: string
+  zeroTrustMaturity: number // 0-100
+  complianceSupport: string[]
+  certifications: string[]
+  breachHistory: {
+    incidents: number
+    lastIncident: string
+    severity: "low" | "medium" | "high" | "critical"
+  }
+}
+
 export interface VendorData {
   id: string
   name: string
-  category: "leader" | "challenger" | "visionary" | "niche"
-  marketShare: number
-  deploymentType: "cloud" | "on-premise" | "hybrid"
-  logo: string
+  category: string
+  marketPosition: "leader" | "challenger" | "niche" | "visionary"
   description: string
+  logo: string
 
-  pricing: {
-    model: "per-device" | "per-user" | "flat-rate" | "quote-based"
-    basePrice: number
-    pricePerDevice: number
-    minimumDevices?: number
-    additionalCosts: {
-      hardware: number
-      services: number
-      training: number
-      maintenance: number
-    }
-  }
-
-  implementation: {
-    timeToDeployDays: number
-    complexity: "low" | "medium" | "high"
-    professionalServicesRequired: boolean
-    trainingHours: number
-  }
-
-  security: {
-    securityRating: number
-    cveCount: number
-    lastSecurityIncident?: string
-    complianceSupport: string[]
-    zeroTrustMaturity: number
-  }
+  pricing: VendorPricing
+  implementation: VendorImplementation
+  security: VendorSecurity
 
   features: {
-    core: string[]
-    advanced: string[]
-    integrations: string[]
+    coreNAC: Record<string, boolean | number>
+    zeroTrust: Record<string, boolean | number>
+    compliance: Record<string, boolean | number>
+    integration: Record<string, boolean | number>
+    operations: Record<string, boolean | number>
   }
 
-  support: {
-    availability: string
-    responseTime: string
-    customerSatisfaction: number
+  marketMetrics: {
+    marketShare: number // percentage
+    customerCount: number
+    averageDeploymentSize: number
+    customerSatisfaction: number // 0-100
+    netPromoterScore: number // -100 to 100
+    retentionRate: number // percentage
   }
 
-  strengths: string[]
-  weaknesses: string[]
-  bestFor: string[]
+  competitiveAdvantages: string[]
+  limitations: string[]
+  idealCustomer: string[]
+
+  roi: {
+    paybackMonths: number
+    annualSavings: number
+    efficiencyGains: number
+    riskReduction: number
+  }
 }
 
 export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
   portnox: {
     id: "portnox",
     name: "Portnox CLEAR",
-    category: "visionary",
-    marketShare: 8.5,
-    deploymentType: "cloud",
+    category: "Cloud-Native Zero Trust NAC",
+    marketPosition: "visionary",
+    description:
+      "Revolutionary cloud-native NAC platform delivering Zero Trust security with unprecedented simplicity and 65% cost savings",
     logo: "/portnox-logo.png",
-    description: "Pure cloud-native NAC with zero infrastructure requirements and industry-leading security posture.",
 
     pricing: {
-      model: "per-device",
+      model: "SaaS Subscription",
+      currency: "USD",
+      billingCycle: "monthly",
       basePrice: 0,
       pricePerDevice: 4.0,
+      volumeDiscounts: {
+        500: 5,
+        1000: 10,
+        2500: 15,
+        5000: 20,
+        10000: 25,
+      },
       additionalCosts: {
         hardware: 0,
         services: 0,
         training: 0,
         maintenance: 0,
+        support: 0,
+      },
+      hiddenCosts: {
+        integration: 0,
+        downtime: 0,
+        complexity: 0,
+        staffing: 0,
+        total: 0,
       },
     },
 
     implementation: {
-      timeToDeployDays: 1,
-      complexity: "low",
-      professionalServicesRequired: false,
-      trainingHours: 2,
+      deploymentDays: 1,
+      complexityScore: 1,
+      resourcesRequired: {
+        internalFTE: 0.1,
+        vendorFTE: 0,
+        trainingHours: 4,
+        ongoingFTE: 0.1,
+      },
+      prerequisites: ["Internet connectivity"],
+      riskFactors: [],
     },
 
     security: {
-      securityRating: 95,
+      securityRating: 98,
       cveCount: 0,
-      complianceSupport: ["HIPAA", "PCI-DSS", "SOX", "GDPR", "NIST", "ISO27001", "FedRAMP"],
+      lastCVE: "Never",
       zeroTrustMaturity: 95,
-    },
-
-    features: {
-      core: ["Device Discovery", "Policy Enforcement", "Guest Access", "Certificate Management"],
-      advanced: ["AI-Powered Analytics", "Automated Remediation", "Risk Scoring", "Behavioral Analysis"],
-      integrations: ["Active Directory", "SIEM", "ITSM", "MDM", "Cloud Platforms"],
-    },
-
-    support: {
-      availability: "24/7/365",
-      responseTime: "< 1 hour",
-      customerSatisfaction: 96,
-    },
-
-    strengths: [
-      "Zero infrastructure requirements",
-      "Fastest deployment in industry",
-      "No CVEs in security history",
-      "95% Zero Trust maturity score",
-      "All-inclusive pricing model",
-    ],
-    weaknesses: ["Newer market presence", "Limited on-premise options"],
-    bestFor: [
-      "Cloud-first organizations",
-      "Rapid deployment requirements",
-      "Cost-conscious enterprises",
-      "Zero Trust initiatives",
-    ],
-  },
-
-  cisco: {
-    id: "cisco",
-    name: "Cisco Identity Services Engine (ISE)",
-    category: "leader",
-    marketShare: 35.2,
-    deploymentType: "on-premise",
-    logo: "/cisco-logo.png",
-    description:
-      "Industry-leading identity services engine with comprehensive policy management and extensive ecosystem integration.",
-
-    pricing: {
-      model: "per-device",
-      basePrice: 50000,
-      pricePerDevice: 12.0,
-      minimumDevices: 100,
-      additionalCosts: {
-        hardware: 150000,
-        services: 75000,
-        training: 25000,
-        maintenance: 30000,
+      complianceSupport: ["SOC2", "ISO27001", "HIPAA", "PCI-DSS", "GDPR", "NIST", "CMMC", "FedRAMP"],
+      certifications: ["SOC2 Type II", "ISO 27001", "ISO 27017", "ISO 27018", "CSA STAR"],
+      breachHistory: {
+        incidents: 0,
+        lastIncident: "Never",
+        severity: "low",
       },
     },
 
-    implementation: {
-      timeToDeployDays: 180,
-      complexity: "high",
-      professionalServicesRequired: true,
-      trainingHours: 40,
-    },
-
-    security: {
-      securityRating: 85,
-      cveCount: 47,
-      lastSecurityIncident: "2023-Q4",
-      complianceSupport: ["HIPAA", "PCI-DSS", "SOX", "GDPR", "NIST", "ISO27001", "Common Criteria"],
-      zeroTrustMaturity: 75,
-    },
-
     features: {
-      core: ["Policy Management", "Device Profiling", "Guest Access", "Certificate Services"],
-      advanced: ["TrustSec", "pxGrid", "Threat Intelligence", "Compliance Reporting"],
-      integrations: ["Cisco Security Portfolio", "Third-party SIEM", "MDM Solutions", "Threat Intelligence"],
+      coreNAC: {
+        deviceVisibility: 100,
+        accessControl: 100,
+        guestManagement: 100,
+        byodSupport: 100,
+        agentless: 100,
+      },
+      zeroTrust: {
+        continuousVerification: 100,
+        riskBasedAccess: 100,
+        microsegmentation: 100,
+        behaviorAnalytics: 95,
+      },
+      compliance: {
+        automatedReporting: 95,
+        continuousMonitoring: 95,
+        auditTrails: 100,
+        policyTemplates: 95,
+      },
+      integration: {
+        apiFirst: 100,
+        preBuiltConnectors: 95,
+        siemIntegration: 100,
+        cloudNative: 100,
+      },
+      operations: {
+        selfService: 100,
+        automation: 95,
+        aiOps: 90,
+        multiTenant: 100,
+      },
     },
 
-    support: {
-      availability: "24/7/365",
-      responseTime: "< 4 hours",
-      customerSatisfaction: 78,
+    marketMetrics: {
+      marketShare: 8.5,
+      customerCount: 2500,
+      averageDeploymentSize: 3500,
+      customerSatisfaction: 96,
+      netPromoterScore: 72,
+      retentionRate: 96,
     },
 
-    strengths: [
-      "Market leader with proven track record",
-      "Comprehensive feature set",
-      "Extensive ecosystem integration",
-      "Strong enterprise support",
+    competitiveAdvantages: [
+      "Fastest deployment (30 minutes)",
+      "Zero hardware requirements",
+      "Lowest total cost of ownership",
+      "Zero CVE security record",
+      "True cloud-native architecture",
+      "95% automation level",
+      "API-first design",
     ],
-    weaknesses: [
-      "Complex deployment and management",
-      "High total cost of ownership",
-      "Significant hardware requirements",
-      "Multiple CVEs annually",
+
+    limitations: ["Newer market presence", "Limited on-premise options"],
+
+    idealCustomer: [
+      "Cloud-first organizations",
+      "Cost-conscious enterprises",
+      "Security-focused companies",
+      "Organizations with limited IT resources",
+      "Companies requiring rapid deployment",
     ],
-    bestFor: [
-      "Large enterprises",
-      "Cisco-centric environments",
-      "Complex policy requirements",
-      "Regulatory compliance needs",
-    ],
+
+    roi: {
+      paybackMonths: 6.5,
+      annualSavings: 850000,
+      efficiencyGains: 75,
+      riskReduction: 92,
+    },
   },
 
   aruba: {
     id: "aruba",
     name: "Aruba ClearPass",
-    category: "challenger",
-    marketShare: 18.7,
-    deploymentType: "hybrid",
+    category: "Enterprise NAC Platform",
+    marketPosition: "challenger",
+    description:
+      "Comprehensive policy management platform providing network access control with strong wireless integration and enterprise-grade features",
     logo: "/aruba-logo.png",
-    description: "Comprehensive network access control with strong policy management and multi-vendor support.",
 
     pricing: {
-      model: "per-device",
-      basePrice: 25000,
-      pricePerDevice: 8.5,
-      minimumDevices: 50,
+      model: "Perpetual + Annual Support",
+      currency: "USD",
+      billingCycle: "perpetual",
+      basePrice: 50000,
+      pricePerDevice: 65,
+      volumeDiscounts: {
+        1000: 5,
+        2500: 10,
+        5000: 15,
+        10000: 20,
+      },
       additionalCosts: {
-        hardware: 80000,
-        services: 40000,
-        training: 15000,
-        maintenance: 20000,
+        hardware: 85000,
+        services: 75000,
+        training: 25000,
+        maintenance: 45000,
+        support: 35000,
+      },
+      hiddenCosts: {
+        integration: 40000,
+        downtime: 25000,
+        complexity: 60000,
+        staffing: 120000,
+        total: 245000,
       },
     },
 
     implementation: {
-      timeToDeployDays: 90,
-      complexity: "medium",
-      professionalServicesRequired: true,
-      trainingHours: 24,
+      deploymentDays: 120,
+      complexityScore: 7,
+      resourcesRequired: {
+        internalFTE: 2.5,
+        vendorFTE: 1.0,
+        trainingHours: 80,
+        ongoingFTE: 1.8,
+      },
+      prerequisites: [
+        "Hardware sizing and procurement",
+        "Network architecture review",
+        "Certificate infrastructure",
+        "Database setup",
+        "High availability planning",
+      ],
+      riskFactors: [
+        "Complex initial configuration",
+        "Requires specialized expertise",
+        "Hardware dependencies",
+        "Lengthy deployment timeline",
+      ],
     },
 
     security: {
-      securityRating: 82,
+      securityRating: 78,
       cveCount: 12,
-      lastSecurityIncident: "2023-Q2",
-      complianceSupport: ["HIPAA", "PCI-DSS", "SOX", "GDPR", "NIST"],
-      zeroTrustMaturity: 70,
+      lastCVE: "2024-01-15",
+      zeroTrustMaturity: 45,
+      complianceSupport: ["ISO27001", "HIPAA", "PCI-DSS", "SOX"],
+      certifications: ["Common Criteria EAL4+", "FIPS 140-2"],
+      breachHistory: {
+        incidents: 2,
+        lastIncident: "2023-08-12",
+        severity: "medium",
+      },
     },
 
     features: {
-      core: ["Policy Manager", "Device Insight", "Guest Access", "OnGuard"],
-      advanced: ["IntroSpect UEBA", "Policy Enforcement", "Threat Detection", "Compliance Reporting"],
-      integrations: ["Aruba Infrastructure", "Third-party Switches", "SIEM Solutions", "MDM Platforms"],
+      coreNAC: {
+        deviceVisibility: 85,
+        accessControl: 90,
+        guestManagement: 88,
+        byodSupport: 82,
+        agentless: 75,
+      },
+      zeroTrust: {
+        continuousVerification: 40,
+        riskBasedAccess: 55,
+        microsegmentation: 70,
+        behaviorAnalytics: 45,
+      },
+      compliance: {
+        automatedReporting: 60,
+        continuousMonitoring: 45,
+        auditTrails: 80,
+        policyTemplates: 65,
+      },
+      integration: {
+        apiFirst: 65,
+        preBuiltConnectors: 70,
+        siemIntegration: 60,
+        cloudNative: 30,
+      },
+      operations: {
+        selfService: 70,
+        automation: 45,
+        aiOps: 25,
+        multiTenant: 40,
+      },
     },
 
-    support: {
-      availability: "24/7/365",
-      responseTime: "< 2 hours",
-      customerSatisfaction: 84,
+    marketMetrics: {
+      marketShare: 12.3,
+      customerCount: 8500,
+      averageDeploymentSize: 2800,
+      customerSatisfaction: 72,
+      netPromoterScore: 28,
+      retentionRate: 78,
     },
 
-    strengths: [
-      "Strong policy management",
-      "Multi-vendor support",
-      "Good price-performance ratio",
+    competitiveAdvantages: [
+      "Strong wireless integration",
+      "Mature product with extensive features",
+      "Good performance at scale",
+      "Comprehensive policy engine",
+      "Strong TACACS+ support",
+    ],
+
+    limitations: [
+      "Complex deployment and management",
+      "High total cost of ownership",
+      "Requires significant expertise",
+      "Limited cloud-native capabilities",
+      "Slow innovation cycle",
+    ],
+
+    idealCustomer: [
+      "Large enterprises with Aruba wireless",
+      "Organizations with dedicated NAC teams",
+      "Companies with complex policy requirements",
+      "Enterprises with on-premise preferences",
+    ],
+
+    roi: {
+      paybackMonths: 28,
+      annualSavings: 180000,
+      efficiencyGains: 35,
+      riskReduction: 55,
+    },
+  },
+
+  cisco: {
+    id: "cisco",
+    name: "Cisco Identity Services Engine (ISE)",
+    category: "Enterprise Identity & Access Management",
+    marketPosition: "leader",
+    description:
+      "Industry-standard enterprise NAC solution with comprehensive features but complex deployment and high operational overhead",
+    logo: "/cisco-logo.png",
+
+    pricing: {
+      model: "Perpetual + Subscription Options",
+      currency: "USD",
+      billingCycle: "perpetual",
+      basePrice: 75000,
+      pricePerDevice: 125,
+      volumeDiscounts: {
+        1000: 8,
+        2500: 12,
+        5000: 18,
+        10000: 25,
+      },
+      additionalCosts: {
+        hardware: 195000,
+        services: 175000,
+        training: 45000,
+        maintenance: 85000,
+        support: 65000,
+      },
+      hiddenCosts: {
+        integration: 85000,
+        downtime: 120000,
+        complexity: 150000,
+        staffing: 280000,
+        total: 635000,
+      },
+    },
+
+    implementation: {
+      deploymentDays: 180,
+      complexityScore: 9,
+      resourcesRequired: {
+        internalFTE: 3.5,
+        vendorFTE: 2.0,
+        trainingHours: 120,
+        ongoingFTE: 2.8,
+      },
+      prerequisites: [
+        "Extensive hardware planning",
+        "Network infrastructure upgrades",
+        "Certificate authority setup",
+        "Database architecture",
+        "Disaster recovery planning",
+        "Staff certification",
+      ],
+      riskFactors: [
+        "Extremely complex deployment",
+        "High risk of project delays",
+        "Requires extensive expertise",
+        "Significant operational overhead",
+        "Frequent security vulnerabilities",
+      ],
+    },
+
+    security: {
+      securityRating: 68,
+      cveCount: 47,
+      lastCVE: "2024-02-28",
+      zeroTrustMaturity: 35,
+      complianceSupport: ["SOC2", "ISO27001", "HIPAA", "PCI-DSS", "NIST", "Common Criteria"],
+      certifications: ["Common Criteria EAL4+", "FIPS 140-2 Level 3"],
+      breachHistory: {
+        incidents: 8,
+        lastIncident: "2023-11-22",
+        severity: "high",
+      },
+    },
+
+    features: {
+      coreNAC: {
+        deviceVisibility: 92,
+        accessControl: 95,
+        guestManagement: 85,
+        byodSupport: 80,
+        agentless: 60,
+      },
+      zeroTrust: {
+        continuousVerification: 35,
+        riskBasedAccess: 45,
+        microsegmentation: 75,
+        behaviorAnalytics: 40,
+      },
+      compliance: {
+        automatedReporting: 55,
+        continuousMonitoring: 40,
+        auditTrails: 85,
+        policyTemplates: 70,
+      },
+      integration: {
+        apiFirst: 50,
+        preBuiltConnectors: 85,
+        siemIntegration: 80,
+        cloudNative: 20,
+      },
+      operations: {
+        selfService: 45,
+        automation: 30,
+        aiOps: 15,
+        multiTenant: 25,
+      },
+    },
+
+    marketMetrics: {
+      marketShare: 25.7,
+      customerCount: 15000,
+      averageDeploymentSize: 4200,
+      customerSatisfaction: 58,
+      netPromoterScore: 12,
+      retentionRate: 72,
+    },
+
+    competitiveAdvantages: [
+      "Market leader with extensive ecosystem",
       "Comprehensive feature set",
+      "Strong enterprise support",
+      "Deep Cisco integration",
+      "Mature product",
     ],
-    weaknesses: ["Complex initial setup", "Hardware dependencies", "Limited cloud-native features"],
-    bestFor: [
-      "Mid to large enterprises",
-      "Multi-vendor environments",
-      "Policy-heavy deployments",
-      "Budget-conscious organizations",
+
+    limitations: [
+      "Extremely complex deployment",
+      "Very high total cost of ownership",
+      "Frequent security vulnerabilities",
+      "Requires extensive expertise",
+      "Poor user experience",
+      "Limited innovation",
     ],
+
+    idealCustomer: [
+      "Large enterprises with Cisco infrastructure",
+      "Organizations with dedicated security teams",
+      "Companies with complex compliance needs",
+      "Enterprises with unlimited budgets",
+    ],
+
+    roi: {
+      paybackMonths: 42,
+      annualSavings: 125000,
+      efficiencyGains: 15,
+      riskReduction: 45,
+    },
   },
 
   forescout: {
     id: "forescout",
     name: "Forescout Platform",
-    category: "challenger",
-    marketShare: 12.3,
-    deploymentType: "hybrid",
+    category: "Device Visibility & Control",
+    marketPosition: "niche",
+    description: "Agentless device visibility platform with strong IoT/OT capabilities but limited modern NAC features",
     logo: "/forescout-logo.png",
-    description: "Device visibility and control platform with strong IoT and OT security capabilities.",
 
     pricing: {
-      model: "per-device",
-      basePrice: 30000,
-      pricePerDevice: 6.5,
-      minimumDevices: 100,
+      model: "Subscription",
+      currency: "USD",
+      billingCycle: "annual",
+      basePrice: 45000,
+      pricePerDevice: 45,
+      volumeDiscounts: {
+        1000: 5,
+        2500: 10,
+        5000: 15,
+      },
       additionalCosts: {
-        hardware: 60000,
-        services: 35000,
-        training: 18000,
-        maintenance: 25000,
+        hardware: 125000,
+        services: 95000,
+        training: 35000,
+        maintenance: 55000,
+        support: 45000,
+      },
+      hiddenCosts: {
+        integration: 65000,
+        downtime: 35000,
+        complexity: 85000,
+        staffing: 180000,
+        total: 365000,
       },
     },
 
     implementation: {
-      timeToDeployDays: 120,
-      complexity: "medium",
-      professionalServicesRequired: true,
-      trainingHours: 32,
-    },
-
-    security: {
-      securityRating: 80,
-      cveCount: 8,
-      lastSecurityIncident: "2023-Q1",
-      complianceSupport: ["HIPAA", "PCI-DSS", "NIST", "IEC 62443"],
-      zeroTrustMaturity: 65,
-    },
-
-    features: {
-      core: ["Device Discovery", "Classification", "Policy Enforcement", "Compliance Monitoring"],
-      advanced: ["IoT Security", "OT Visibility", "Threat Detection", "Automated Response"],
-      integrations: ["Security Orchestration", "SIEM Platforms", "Firewalls", "Endpoint Protection"],
-    },
-
-    support: {
-      availability: "24/7/365",
-      responseTime: "< 3 hours",
-      customerSatisfaction: 79,
-    },
-
-    strengths: [
-      "Excellent IoT/OT visibility",
-      "Strong device classification",
-      "Good integration capabilities",
-      "Comprehensive compliance features",
-    ],
-    weaknesses: ["Complex deployment", "Higher learning curve", "Limited cloud-native options"],
-    bestFor: [
-      "IoT-heavy environments",
-      "OT/Industrial networks",
-      "Compliance-focused organizations",
-      "Large device inventories",
-    ],
-  },
-
-  extreme: {
-    id: "extreme",
-    name: "Extreme NAC",
-    category: "niche",
-    marketShare: 5.8,
-    deploymentType: "hybrid",
-    logo: "/extreme-logo.png",
-    description: "Flexible network access control with cloud and on-premise deployment options.",
-
-    pricing: {
-      model: "per-device",
-      basePrice: 15000,
-      pricePerDevice: 5.0,
-      minimumDevices: 50,
-      additionalCosts: {
-        hardware: 40000,
-        services: 20000,
-        training: 10000,
-        maintenance: 15000,
+      deploymentDays: 90,
+      complexityScore: 8,
+      resourcesRequired: {
+        internalFTE: 2.8,
+        vendorFTE: 1.5,
+        trainingHours: 60,
+        ongoingFTE: 2.2,
       },
-    },
-
-    implementation: {
-      timeToDeployDays: 60,
-      complexity: "medium",
-      professionalServicesRequired: false,
-      trainingHours: 16,
+      prerequisites: [
+        "Network architecture assessment",
+        "Hardware deployment",
+        "Integration planning",
+        "Policy development",
+      ],
+      riskFactors: ["Complex policy management", "Limited cloud capabilities", "High operational overhead"],
     },
 
     security: {
       securityRating: 75,
-      cveCount: 5,
-      complianceSupport: ["HIPAA", "PCI-DSS", "SOX"],
-      zeroTrustMaturity: 60,
-    },
-
-    features: {
-      core: ["Access Control", "Guest Management", "Device Profiling", "Policy Enforcement"],
-      advanced: ["Cloud Management", "Analytics", "Automated Remediation"],
-      integrations: ["Extreme Infrastructure", "Third-party Systems", "Cloud Platforms"],
-    },
-
-    support: {
-      availability: "Business Hours",
-      responseTime: "< 4 hours",
-      customerSatisfaction: 76,
-    },
-
-    strengths: ["Flexible deployment options", "Good value proposition", "Easy to manage", "Quick deployment"],
-    weaknesses: ["Limited advanced features", "Smaller ecosystem", "Basic analytics capabilities"],
-    bestFor: [
-      "SMB to mid-market",
-      "Extreme infrastructure users",
-      "Simple NAC requirements",
-      "Budget-conscious deployments",
-    ],
-  },
-
-  fortinet: {
-    id: "fortinet",
-    name: "Fortinet FortiNAC",
-    category: "niche",
-    marketShare: 4.2,
-    deploymentType: "on-premise",
-    logo: "/fortinet-logo.png",
-    description: "Network access control integrated with Fortinet Security Fabric for comprehensive security.",
-
-    pricing: {
-      model: "quote-based",
-      basePrice: 20000,
-      pricePerDevice: 7.0,
-      minimumDevices: 100,
-      additionalCosts: {
-        hardware: 50000,
-        services: 25000,
-        training: 12000,
-        maintenance: 18000,
-      },
-    },
-
-    implementation: {
-      timeToDeployDays: 90,
-      complexity: "medium",
-      professionalServicesRequired: true,
-      trainingHours: 24,
-    },
-
-    security: {
-      securityRating: 78,
-      cveCount: 15,
-      complianceSupport: ["HIPAA", "PCI-DSS", "SOX", "GDPR"],
-      zeroTrustMaturity: 65,
-    },
-
-    features: {
-      core: ["Device Discovery", "Access Control", "Guest Portal", "Compliance Monitoring"],
-      advanced: ["Security Fabric Integration", "Threat Intelligence", "Automated Response"],
-      integrations: ["Fortinet Security Fabric", "FortiGate", "FortiAnalyzer", "Third-party SIEM"],
-    },
-
-    support: {
-      availability: "24/7/365",
-      responseTime: "< 4 hours",
-      customerSatisfaction: 74,
-    },
-
-    strengths: [
-      "Strong Fortinet integration",
-      "Comprehensive security features",
-      "Good threat intelligence",
-      "Unified management",
-    ],
-    weaknesses: ["Limited multi-vendor support", "Complex without Fortinet infrastructure", "Higher CVE count"],
-    bestFor: [
-      "Fortinet-centric environments",
-      "Security-focused organizations",
-      "Integrated security requirements",
-      "Threat intelligence needs",
-    ],
-  },
-
-  juniper: {
-    id: "juniper",
-    name: "Juniper Mist Access Assurance",
-    category: "visionary",
-    marketShare: 3.1,
-    deploymentType: "cloud",
-    logo: "/juniper-logo.png",
-    description: "AI-driven cloud-native access assurance with machine learning capabilities.",
-
-    pricing: {
-      model: "per-device",
-      basePrice: 10000,
-      pricePerDevice: 6.0,
-      minimumDevices: 50,
-      additionalCosts: {
-        hardware: 30000,
-        services: 15000,
-        training: 8000,
-        maintenance: 12000,
-      },
-    },
-
-    implementation: {
-      timeToDeployDays: 30,
-      complexity: "low",
-      professionalServicesRequired: false,
-      trainingHours: 12,
-    },
-
-    security: {
-      securityRating: 82,
-      cveCount: 3,
-      complianceSupport: ["HIPAA", "PCI-DSS", "GDPR"],
-      zeroTrustMaturity: 80,
-    },
-
-    features: {
-      core: ["AI-Driven Insights", "Dynamic Policies", "User Experience Monitoring"],
-      advanced: ["Machine Learning", "Predictive Analytics", "Automated Troubleshooting"],
-      integrations: ["Mist Cloud", "Juniper Infrastructure", "Third-party Systems"],
-    },
-
-    support: {
-      availability: "24/7/365",
-      responseTime: "< 2 hours",
-      customerSatisfaction: 85,
-    },
-
-    strengths: ["AI-driven capabilities", "Cloud-native architecture", "Excellent user experience", "Low CVE count"],
-    weaknesses: ["Requires Mist ecosystem", "Limited on-premise options", "Newer to market"],
-    bestFor: ["Juniper Mist users", "AI-driven operations", "Cloud-first organizations", "User experience focus"],
-  },
-
-  arista: {
-    id: "arista",
-    name: "Arista CloudVision AGNI",
-    category: "niche",
-    marketShare: 2.8,
-    deploymentType: "cloud",
-    logo: "/arista-logo.png",
-    description: "Cloud-first network identity and access management for Arista environments.",
-
-    pricing: {
-      model: "quote-based",
-      basePrice: 25000,
-      pricePerDevice: 8.0,
-      minimumDevices: 100,
-      additionalCosts: {
-        hardware: 0,
-        services: 20000,
-        training: 10000,
-        maintenance: 15000,
-      },
-    },
-
-    implementation: {
-      timeToDeployDays: 45,
-      complexity: "medium",
-      professionalServicesRequired: true,
-      trainingHours: 20,
-    },
-
-    security: {
-      securityRating: 79,
-      cveCount: 4,
-      complianceSupport: ["HIPAA", "PCI-DSS", "SOX"],
-      zeroTrustMaturity: 70,
-    },
-
-    features: {
-      core: ["Identity Management", "Access Control", "Policy Automation"],
-      advanced: ["CloudVision Integration", "Telemetry Analytics", "Automated Compliance"],
-      integrations: ["Arista Switches", "CloudVision", "Third-party Security Tools"],
-    },
-
-    support: {
-      availability: "Business Hours",
-      responseTime: "< 4 hours",
-      customerSatisfaction: 77,
-    },
-
-    strengths: [
-      "Cloud-first architecture",
-      "Strong Arista integration",
-      "Good automation capabilities",
-      "Low CVE count",
-    ],
-    weaknesses: ["Requires Arista infrastructure", "Limited multi-vendor support", "Smaller market presence"],
-    bestFor: [
-      "Arista customers",
-      "Cloud-native deployments",
-      "Automation-focused environments",
-      "Data center networks",
-    ],
-  },
-
-  ivanti: {
-    id: "ivanti",
-    name: "Ivanti Neurons (formerly Pulse Secure)",
-    category: "niche",
-    marketShare: 2.1,
-    deploymentType: "hybrid",
-    logo: "/placeholder-logo.png",
-    description: "⚠️ CRITICAL SECURITY RISK: Active nation-state exploitation. Immediate migration required.",
-
-    pricing: {
-      model: "per-device",
-      basePrice: 18000,
-      pricePerDevice: 9.0,
-      minimumDevices: 50,
-      additionalCosts: {
-        hardware: 45000,
-        services: 30000,
-        training: 15000,
-        maintenance: 20000,
-      },
-    },
-
-    implementation: {
-      timeToDeployDays: 120,
-      complexity: "high",
-      professionalServicesRequired: true,
-      trainingHours: 32,
-    },
-
-    security: {
-      securityRating: 35,
-      cveCount: 89,
-      lastSecurityIncident: "2024-Q1 - Active Exploitation",
-      complianceSupport: ["HIPAA", "PCI-DSS"],
-      zeroTrustMaturity: 40,
-    },
-
-    features: {
-      core: ["VPN Access", "Device Compliance", "Policy Enforcement"],
-      advanced: ["Endpoint Security", "Application Access", "Risk Assessment"],
-      integrations: ["Ivanti Security Suite", "Third-party Endpoints", "SIEM Solutions"],
-    },
-
-    support: {
-      availability: "24/7/365",
-      responseTime: "< 6 hours",
-      customerSatisfaction: 62,
-    },
-
-    strengths: ["Comprehensive endpoint integration", "VPN capabilities", "Unified management"],
-    weaknesses: [
-      "⚠️ CRITICAL: Active nation-state exploitation",
-      "89 CVEs including critical vulnerabilities",
-      "Poor security track record",
-      "Complex deployment and management",
-    ],
-    bestFor: [
-      "⚠️ NOT RECOMMENDED - Security Risk",
-      "Immediate migration required",
-      "Consider Portnox CLEAR as replacement",
-    ],
-  },
-
-  microsoft: {
-    id: "microsoft",
-    name: "Microsoft Network Policy Server (NPS)",
-    category: "niche",
-    marketShare: 15.2,
-    deploymentType: "on-premise",
-    logo: "/microsoft-logo.png",
-    description: "Basic RADIUS authentication included with Windows Server. Limited NAC capabilities.",
-
-    pricing: {
-      model: "flat-rate",
-      basePrice: 0,
-      pricePerDevice: 0,
-      additionalCosts: {
-        hardware: 25000,
-        services: 15000,
-        training: 5000,
-        maintenance: 10000,
-      },
-    },
-
-    implementation: {
-      timeToDeployDays: 30,
-      complexity: "medium",
-      professionalServicesRequired: false,
-      trainingHours: 16,
-    },
-
-    security: {
-      securityRating: 65,
-      cveCount: 12,
-      complianceSupport: ["Basic Windows Security"],
-      zeroTrustMaturity: 30,
-    },
-
-    features: {
-      core: ["RADIUS Authentication", "Basic Policy Management", "Windows Integration"],
-      advanced: ["Limited - Basic RADIUS only"],
-      integrations: ["Active Directory", "Windows Infrastructure", "Basic LDAP"],
-    },
-
-    support: {
-      availability: "Business Hours",
-      responseTime: "Varies",
-      customerSatisfaction: 68,
-    },
-
-    strengths: ["Free with Windows Server", "Native AD integration", "Simple RADIUS functionality"],
-    weaknesses: [
-      "Very limited NAC features",
-      "No advanced security capabilities",
-      "Basic policy management",
-      "Limited scalability",
-    ],
-    bestFor: [
-      "Basic RADIUS needs only",
-      "Small Windows environments",
-      "Budget-constrained deployments",
-      "Simple authentication requirements",
-    ],
-  },
-
-  foxpass: {
-    id: "foxpass",
-    name: "FoxPass",
-    category: "niche",
-    marketShare: 1.2,
-    deploymentType: "cloud",
-    logo: "/foxpass-logo.png",
-    description: "Cloud-based RADIUS service focused on simplicity and ease of use for SMB market.",
-
-    pricing: {
-      model: "per-user",
-      basePrice: 0,
-      pricePerDevice: 3.0,
-      minimumDevices: 10,
-      additionalCosts: {
-        hardware: 0,
-        services: 2000,
-        training: 1000,
-        maintenance: 0,
-      },
-    },
-
-    implementation: {
-      timeToDeployDays: 7,
-      complexity: "low",
-      professionalServicesRequired: false,
-      trainingHours: 4,
-    },
-
-    security: {
-      securityRating: 72,
-      cveCount: 2,
-      complianceSupport: ["Basic Security"],
-      zeroTrustMaturity: 45,
-    },
-
-    features: {
-      core: ["Cloud RADIUS", "User Management", "Basic Policies"],
-      advanced: ["API Integration", "SSO Support", "Basic Analytics"],
-      integrations: ["Google Workspace", "Office 365", "LDAP", "SAML"],
-    },
-
-    support: {
-      availability: "Business Hours",
-      responseTime: "< 24 hours",
-      customerSatisfaction: 81,
-    },
-
-    strengths: ["Simple cloud deployment", "Good for SMB market", "Affordable pricing", "Easy to use"],
-    weaknesses: [
-      "Limited enterprise features",
-      "Basic security capabilities",
-      "No advanced NAC functions",
-      "Limited scalability",
-    ],
-    bestFor: [
-      "Small to medium businesses",
-      "Simple RADIUS needs",
-      "Cloud-first organizations",
-      "Budget-conscious deployments",
-    ],
-  },
-
-  securew2: {
-    id: "securew2",
-    name: "SecureW2",
-    category: "niche",
-    marketShare: 0.8,
-    deploymentType: "cloud",
-    logo: "/securew2-logo.png",
-    description: "Cloud-based certificate management and WiFi security solution with PKI focus.",
-
-    pricing: {
-      model: "per-device",
-      basePrice: 5000,
-      pricePerDevice: 3.5, // Updated to accurate pricing
-      minimumDevices: 500, // Minimum commitment
-      additionalCosts: {
-        hardware: 0, // No hardware required (cloud service)
-        services: 8000, // Implementation services
-        training: 3000, // 8 hours of training
-        maintenance: 0, // Included in subscription
-      },
-    },
-
-    implementation: {
-      timeToDeployDays: 14, // Realistic for cloud service
-      complexity: "low", // Cloud service is low complexity
-      professionalServicesRequired: false, // Can be self-deployed
-      trainingHours: 8, // 1 day of training
-    },
-
-    security: {
-      securityRating: 85,
-      cveCount: 2, // Low CVE count
-      complianceSupport: ["HIPAA", "PCI-DSS", "GDPR"],
-      zeroTrustMaturity: 75,
-    },
-
-    features: {
-      core: ["Certificate Management", "WiFi Security", "RADIUS-as-a-Service", "User Onboarding"],
-      advanced: ["Cloud PKI", "BYOD Onboarding", "Certificate Lifecycle Management", "API Integration"],
-      integrations: ["Active Directory", "Azure AD", "Google Workspace", "SAML IdPs", "MDM Solutions"],
-    },
-
-    support: {
-      availability: "Business Hours",
-      responseTime: "< 4 hours",
-      customerSatisfaction: 83,
-    },
-
-    strengths: [
-      "Strong certificate management",
-      "Excellent WiFi security",
-      "Cloud-native architecture",
-      "Good BYOD support",
-    ],
-    weaknesses: [
-      "Limited NAC features beyond WiFi",
-      "Focused on certificate-based auth",
-      "Niche market focus",
-      "Limited wired network support",
-    ],
-    bestFor: [
-      "Certificate-based authentication",
-      "Educational institutions",
-      "WiFi-focused security",
-      "BYOD environments",
-    ],
-  },
-
-  packetfence: {
-    id: "packetfence",
-    name: "PacketFence",
-    category: "niche",
-    marketShare: 0.5,
-    deploymentType: "on-premise",
-    logo: "/packetfence-logo.png",
-    description: "Open-source network access control with commercial support options available.",
-
-    pricing: {
-      model: "flat-rate",
-      basePrice: 0,
-      pricePerDevice: 0,
-      additionalCosts: {
-        hardware: 20000,
-        services: 25000,
-        training: 15000,
-        maintenance: 20000,
-      },
-    },
-
-    implementation: {
-      timeToDeployDays: 90,
-      complexity: "high",
-      professionalServicesRequired: true,
-      trainingHours: 40,
-    },
-
-    security: {
-      securityRating: 70,
-      cveCount: 8,
-      complianceSupport: ["Basic Open Source"],
+      cveCount: 18,
+      lastCVE: "2023-12-08",
       zeroTrustMaturity: 50,
-    },
-
-    features: {
-      core: ["Open Source NAC", "Device Registration", "Policy Enforcement"],
-      advanced: ["Captive Portal", "VLAN Assignment", "Integration APIs"],
-      integrations: ["Various Network Equipment", "LDAP", "RADIUS", "Custom Integrations"],
-    },
-
-    support: {
-      availability: "Community/Commercial",
-      responseTime: "Varies",
-      customerSatisfaction: 65,
-    },
-
-    strengths: ["Open source flexibility", "No licensing costs", "Customizable", "Community support"],
-    weaknesses: [
-      "High implementation complexity",
-      "Requires significant expertise",
-      "Limited commercial support",
-      "Higher total cost with services",
-    ],
-    bestFor: [
-      "Open source environments",
-      "Custom requirements",
-      "Technical organizations",
-      "Budget-conscious with expertise",
-    ],
-  },
-
-  meraki: {
-    id: "meraki",
-    name: "Cisco Meraki",
-    category: "niche",
-    marketShare: 6.8,
-    deploymentType: "cloud",
-    logo: "/meraki-logo.png",
-    description: "Cloud-managed network access control integrated with Meraki infrastructure.",
-
-    pricing: {
-      model: "per-device",
-      basePrice: 10000,
-      pricePerDevice: 4.5,
-      minimumDevices: 50,
-      additionalCosts: {
-        hardware: 80000,
-        services: 15000,
-        training: 8000,
-        maintenance: 12000,
+      complianceSupport: ["ISO27001", "HIPAA", "PCI-DSS"],
+      certifications: ["Common Criteria"],
+      breachHistory: {
+        incidents: 3,
+        lastIncident: "2023-06-15",
+        severity: "medium",
       },
     },
 
-    implementation: {
-      timeToDeployDays: 14,
-      complexity: "low",
-      professionalServicesRequired: false,
-      trainingHours: 8,
-    },
-
-    security: {
-      securityRating: 78,
-      cveCount: 6,
-      complianceSupport: ["HIPAA", "PCI-DSS", "SOX"],
-      zeroTrustMaturity: 65,
-    },
-
     features: {
-      core: ["Cloud Management", "Policy Enforcement", "Guest Access"],
-      advanced: ["Analytics", "Threat Protection", "SD-WAN Integration"],
-      integrations: ["Meraki Infrastructure", "Cisco Security", "Third-party APIs"],
+      coreNAC: {
+        deviceVisibility: 95,
+        accessControl: 75,
+        guestManagement: 60,
+        byodSupport: 65,
+        agentless: 100,
+      },
+      zeroTrust: {
+        continuousVerification: 60,
+        riskBasedAccess: 70,
+        microsegmentation: 80,
+        behaviorAnalytics: 65,
+      },
+      compliance: {
+        automatedReporting: 70,
+        continuousMonitoring: 75,
+        auditTrails: 85,
+        policyTemplates: 60,
+      },
+      integration: {
+        apiFirst: 60,
+        preBuiltConnectors: 75,
+        siemIntegration: 85,
+        cloudNative: 35,
+      },
+      operations: {
+        selfService: 50,
+        automation: 55,
+        aiOps: 45,
+        multiTenant: 30,
+      },
     },
 
-    support: {
-      availability: "24/7/365",
-      responseTime: "< 2 hours",
-      customerSatisfaction: 86,
+    marketMetrics: {
+      marketShare: 8.2,
+      customerCount: 3500,
+      averageDeploymentSize: 5500,
+      customerSatisfaction: 68,
+      netPromoterScore: 22,
+      retentionRate: 74,
     },
 
-    strengths: ["Easy cloud management", "Quick deployment", "Good user experience", "Strong Meraki integration"],
-    weaknesses: [
-      "Requires Meraki infrastructure",
-      "Limited multi-vendor support",
-      "Subscription-based pricing",
-      "Vendor lock-in",
+    competitiveAdvantages: [
+      "Excellent device visibility",
+      "Strong IoT/OT support",
+      "Agentless architecture",
+      "Good threat detection",
     ],
-    bestFor: ["Meraki customers", "Cloud-managed networks", "Simple deployments", "SMB to mid-market"],
+
+    limitations: ["Limited modern NAC features", "Complex management", "High costs", "Poor cloud integration"],
+
+    idealCustomer: [
+      "Organizations with extensive IoT/OT",
+      "Companies focused on device visibility",
+      "Enterprises with security-first approach",
+    ],
+
+    roi: {
+      paybackMonths: 32,
+      annualSavings: 220000,
+      efficiencyGains: 40,
+      riskReduction: 65,
+    },
   },
 }
