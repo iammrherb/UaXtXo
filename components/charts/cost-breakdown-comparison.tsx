@@ -22,7 +22,7 @@ import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced
 
 interface CostBreakdownComparisonProps {
   results: CalculationResult[]
-  config: CalculationConfiguration
+  config?: CalculationConfiguration
 }
 
 export default function CostBreakdownComparison({ results, config }: CostBreakdownComparisonProps) {
@@ -41,17 +41,20 @@ export default function CostBreakdownComparison({ results, config }: CostBreakdo
       avgCompetitorCost,
       totalSavings,
       percentSavings,
-      perDeviceSavings: totalSavings / (config.devices || 1000),
+      perDeviceSavings: totalSavings / (config?.devices || 1000),
     }
-  }, [portnoxResult, competitorResults, config.devices])
+  }, [portnoxResult, competitorResults, config?.devices])
 
   const costBreakdownData = useMemo(() => {
     return results.map((result) => ({
       vendor: result.vendorName,
-      software: result.costs.software,
-      hardware: result.costs.hardware,
-      services: result.costs.services,
-      operational: result.costs.operational,
+      licensing: result.breakdown.licensing,
+      hardware: result.breakdown.hardware,
+      implementation: result.breakdown.implementation,
+      support: result.breakdown.support,
+      training: result.breakdown.training,
+      maintenance: result.breakdown.maintenance,
+      operational: result.breakdown.operational,
       total: result.totalCost,
       isPortnox: result.vendorId === "portnox",
     }))
@@ -62,34 +65,48 @@ export default function CostBreakdownComparison({ results, config }: CostBreakdo
 
     const avgCompetitor = competitorResults.reduce(
       (acc, r) => ({
-        software: acc.software + r.costs.software / competitorResults.length,
-        hardware: acc.hardware + r.costs.hardware / competitorResults.length,
-        services: acc.services + r.costs.services / competitorResults.length,
-        operational: acc.operational + r.costs.operational / competitorResults.length,
+        licensing: acc.licensing + r.breakdown.licensing / competitorResults.length,
+        hardware: acc.hardware + r.breakdown.hardware / competitorResults.length,
+        implementation: acc.implementation + r.breakdown.implementation / competitorResults.length,
+        support: acc.support + r.breakdown.support / competitorResults.length,
+        training: acc.training + r.breakdown.training / competitorResults.length,
+        maintenance: acc.maintenance + r.breakdown.maintenance / competitorResults.length,
+        operational: acc.operational + r.breakdown.operational / competitorResults.length,
       }),
-      { software: 0, hardware: 0, services: 0, operational: 0 },
+      { licensing: 0, hardware: 0, implementation: 0, support: 0, training: 0, maintenance: 0, operational: 0 },
     )
 
     return [
       {
         category: "Software Licensing",
-        savings: avgCompetitor.software - portnoxResult.costs.software,
+        savings: avgCompetitor.licensing - portnoxResult.breakdown.licensing,
         color: "#3b82f6",
       },
       {
         category: "Hardware/Infrastructure",
-        savings: avgCompetitor.hardware - portnoxResult.costs.hardware,
+        savings: avgCompetitor.hardware - portnoxResult.breakdown.hardware,
         color: "#10b981",
       },
       {
-        category: "Professional Services",
-        savings: avgCompetitor.services - portnoxResult.costs.services,
+        category: "Implementation Services",
+        savings: avgCompetitor.implementation - portnoxResult.breakdown.implementation,
         color: "#f59e0b",
       },
       {
-        category: "Operational Costs",
-        savings: avgCompetitor.operational - portnoxResult.costs.operational,
+        category: "Support & Maintenance",
+        savings:
+          avgCompetitor.support +
+          avgCompetitor.maintenance -
+          (portnoxResult.breakdown.support + portnoxResult.breakdown.maintenance),
         color: "#ef4444",
+      },
+      {
+        category: "Training & Operational",
+        savings:
+          avgCompetitor.training +
+          avgCompetitor.operational -
+          (portnoxResult.breakdown.training + portnoxResult.breakdown.operational),
+        color: "#8b5cf6",
       },
     ].filter((item) => item.savings > 0)
   }, [portnoxResult, competitorResults])
@@ -137,7 +154,7 @@ export default function CostBreakdownComparison({ results, config }: CostBreakdo
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-700">{formatCurrency(costAnalysis.perDeviceSavings)}</div>
-            <p className="text-xs text-blue-600 mt-1">per device over {config.years} years</p>
+            <p className="text-xs text-blue-600 mt-1">per device over {config?.years || 3} years</p>
           </CardContent>
         </Card>
 
@@ -172,7 +189,7 @@ export default function CostBreakdownComparison({ results, config }: CostBreakdo
       <Card>
         <CardHeader>
           <CardTitle>Detailed Cost Breakdown Comparison</CardTitle>
-          <CardDescription>{config.years}-year total cost breakdown by category</CardDescription>
+          <CardDescription>{config?.years || 3}-year total cost breakdown by category</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
@@ -182,10 +199,13 @@ export default function CostBreakdownComparison({ results, config }: CostBreakdo
               <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
               <Tooltip formatter={(value: number) => formatCurrency(value)} />
               <Legend />
-              <Bar dataKey="software" stackId="a" fill="#3b82f6" name="Software" />
+              <Bar dataKey="licensing" stackId="a" fill="#3b82f6" name="Licensing" />
               <Bar dataKey="hardware" stackId="a" fill="#10b981" name="Hardware" />
-              <Bar dataKey="services" stackId="a" fill="#f59e0b" name="Services" />
-              <Bar dataKey="operational" stackId="a" fill="#ef4444" name="Operational" />
+              <Bar dataKey="implementation" stackId="a" fill="#f59e0b" name="Implementation" />
+              <Bar dataKey="support" stackId="a" fill="#ef4444" name="Support" />
+              <Bar dataKey="training" stackId="a" fill="#8b5cf6" name="Training" />
+              <Bar dataKey="maintenance" stackId="a" fill="#f97316" name="Maintenance" />
+              <Bar dataKey="operational" stackId="a" fill="#06b6d4" name="Operational" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -229,10 +249,10 @@ export default function CostBreakdownComparison({ results, config }: CostBreakdo
           <CardContent>
             <div className="space-y-4">
               {results
-                .sort((a, b) => a.totalCost / (config.devices || 1000) - b.totalCost / (config.devices || 1000))
+                .sort((a, b) => a.totalCost / (config?.devices || 1000) - b.totalCost / (config?.devices || 1000))
                 .map((result) => {
-                  const perDeviceCost = result.totalCost / (config.devices || 1000)
-                  const maxCost = Math.max(...results.map((r) => r.totalCost / (config.devices || 1000)))
+                  const perDeviceCost = result.totalCost / (config?.devices || 1000)
+                  const maxCost = Math.max(...results.map((r) => r.totalCost / (config?.devices || 1000)))
                   const efficiency = ((maxCost - perDeviceCost) / maxCost) * 100
 
                   return (

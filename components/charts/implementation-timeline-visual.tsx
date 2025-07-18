@@ -5,8 +5,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
-import { Clock, Zap, Users, CheckCircle2 } from "lucide-react"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+} from "recharts"
+import { Clock, Zap, Users, CheckCircle2, AlertTriangle } from "lucide-react"
 import type { CalculationResult } from "@/lib/enhanced-tco-calculator"
 
 interface ImplementationTimelineVisualProps {
@@ -15,133 +26,259 @@ interface ImplementationTimelineVisualProps {
 
 export default function ImplementationTimelineVisual({ results }: ImplementationTimelineVisualProps) {
   const implementationData = useMemo(() => {
-    return results.map((result) => {
-      const vendorData = result.vendorData
-      const deploymentDays = vendorData?.implementation?.deploymentDays || 90
-      const resourcesRequired = vendorData?.implementation?.resourcesRequired || {}
-
-      // Calculate implementation phases
-      const phases = {
-        planning: Math.max(deploymentDays * 0.2, 1),
-        deployment: Math.max(deploymentDays * 0.4, 1),
-        testing: Math.max(deploymentDays * 0.2, 1),
-        rollout: Math.max(deploymentDays * 0.2, 1),
+    // Mock implementation phases and timelines based on vendor complexity
+    const vendorTimelines: Record<
+      string,
+      {
+        planning: number
+        procurement: number
+        installation: number
+        configuration: number
+        testing: number
+        deployment: number
+        training: number
+        total: number
+        complexity: "low" | "medium" | "high" | "critical"
+        resourcesRequired: number
       }
+    > = {
+      portnox: {
+        planning: 0.5,
+        procurement: 0,
+        installation: 0,
+        configuration: 0.5,
+        testing: 1,
+        deployment: 0.5,
+        training: 0.5,
+        total: 3,
+        complexity: "low",
+        resourcesRequired: 1,
+      },
+      cisco: {
+        planning: 14,
+        procurement: 21,
+        installation: 7,
+        configuration: 21,
+        testing: 14,
+        deployment: 7,
+        training: 14,
+        total: 98,
+        complexity: "critical",
+        resourcesRequired: 8,
+      },
+      aruba: {
+        planning: 7,
+        procurement: 14,
+        installation: 7,
+        configuration: 14,
+        testing: 7,
+        deployment: 7,
+        training: 7,
+        total: 63,
+        complexity: "high",
+        resourcesRequired: 5,
+      },
+      forescout: {
+        planning: 10,
+        procurement: 14,
+        installation: 7,
+        configuration: 21,
+        testing: 10,
+        deployment: 7,
+        training: 10,
+        total: 79,
+        complexity: "high",
+        resourcesRequired: 6,
+      },
+      juniper: {
+        planning: 5,
+        procurement: 7,
+        installation: 3,
+        configuration: 10,
+        testing: 5,
+        deployment: 3,
+        training: 5,
+        total: 38,
+        complexity: "medium",
+        resourcesRequired: 3,
+      },
+      extreme: {
+        planning: 6,
+        procurement: 10,
+        installation: 5,
+        configuration: 12,
+        testing: 6,
+        deployment: 5,
+        training: 6,
+        total: 50,
+        complexity: "medium",
+        resourcesRequired: 4,
+      },
+      fortinet: {
+        planning: 7,
+        procurement: 10,
+        installation: 5,
+        configuration: 14,
+        testing: 7,
+        deployment: 5,
+        training: 7,
+        total: 55,
+        complexity: "medium",
+        resourcesRequired: 4,
+      },
+      arista: {
+        planning: 3,
+        procurement: 5,
+        installation: 2,
+        configuration: 7,
+        testing: 3,
+        deployment: 2,
+        training: 3,
+        total: 25,
+        complexity: "low",
+        resourcesRequired: 2,
+      },
+      meraki: {
+        planning: 2,
+        procurement: 3,
+        installation: 1,
+        configuration: 5,
+        testing: 2,
+        deployment: 1,
+        training: 2,
+        total: 16,
+        complexity: "low",
+        resourcesRequired: 2,
+      },
+      ivanti: {
+        planning: 21,
+        procurement: 28,
+        installation: 14,
+        configuration: 35,
+        testing: 21,
+        deployment: 14,
+        training: 21,
+        total: 154,
+        complexity: "critical",
+        resourcesRequired: 10,
+      },
+      microsoft: {
+        planning: 10,
+        procurement: 0,
+        installation: 7,
+        configuration: 21,
+        testing: 14,
+        deployment: 10,
+        training: 14,
+        total: 76,
+        complexity: "high",
+        resourcesRequired: 5,
+      },
+      foxpass: {
+        planning: 1,
+        procurement: 0,
+        installation: 0,
+        configuration: 2,
+        testing: 1,
+        deployment: 1,
+        training: 1,
+        total: 6,
+        complexity: "low",
+        resourcesRequired: 1,
+      },
+      securew2: {
+        planning: 4,
+        procurement: 7,
+        installation: 3,
+        configuration: 10,
+        testing: 4,
+        deployment: 3,
+        training: 7,
+        total: 38,
+        complexity: "medium",
+        resourcesRequired: 3,
+      },
+      packetfence: {
+        planning: 21,
+        procurement: 0,
+        installation: 14,
+        configuration: 35,
+        testing: 21,
+        deployment: 14,
+        training: 28,
+        total: 133,
+        complexity: "critical",
+        resourcesRequired: 8,
+      },
+    }
 
-      return {
-        vendor: result.vendorName,
-        vendorId: result.vendorId,
-        totalDays: deploymentDays,
-        planning: phases.planning,
-        deployment: phases.deployment,
-        testing: phases.testing,
-        rollout: phases.rollout,
-        consultingFTE: resourcesRequired.consultingFTE || 0,
-        internalFTE: resourcesRequired.internalFTE || 0,
-        ongoingFTE: resourcesRequired.ongoingFTE || 0,
-        trainingHours: resourcesRequired.trainingHours || 0,
-        complexityScore: vendorData?.implementation?.complexityScore || 5,
-        isPortnox: result.vendorId === "portnox",
-      }
-    })
+    return results
+      .map((result) => {
+        const timeline = vendorTimelines[result.vendorId] || vendorTimelines.cisco
+        return {
+          vendor: result.vendorName,
+          vendorId: result.vendorId,
+          ...timeline,
+          isPortnox: result.vendorId === "portnox",
+        }
+      })
+      .sort((a, b) => a.total - b.total)
   }, [results])
 
-  const portnoxImpl = implementationData.find((d) => d.isPortnox)
-  const competitorAvg = useMemo(() => {
-    const competitors = implementationData.filter((d) => !d.isPortnox)
-    if (competitors.length === 0) return null
-
-    return {
-      totalDays: competitors.reduce((sum, c) => sum + c.totalDays, 0) / competitors.length,
-      consultingFTE: competitors.reduce((sum, c) => sum + c.consultingFTE, 0) / competitors.length,
-      internalFTE: competitors.reduce((sum, c) => sum + c.internalFTE, 0) / competitors.length,
-      trainingHours: competitors.reduce((sum, c) => sum + c.trainingHours, 0) / competitors.length,
-    }
+  const phaseComparisonData = useMemo(() => {
+    const phases = ["planning", "procurement", "installation", "configuration", "testing", "deployment", "training"]
+    return phases.map((phase) => {
+      const phaseData: any = { phase: phase.charAt(0).toUpperCase() + phase.slice(1) }
+      implementationData.forEach((vendor) => {
+        phaseData[vendor.vendorId] = vendor[phase as keyof typeof vendor]
+      })
+      return phaseData
+    })
   }, [implementationData])
 
-  const timelineAdvantage = useMemo(() => {
-    if (!portnoxImpl || !competitorAvg) return null
+  const resourceComparisonData = useMemo(() => {
+    return implementationData.map((vendor) => ({
+      vendor: vendor.vendor,
+      resources: vendor.resourcesRequired,
+      timeline: vendor.total,
+      efficiency: vendor.total > 0 ? (1 / vendor.total) * 100 : 100,
+      isPortnox: vendor.isPortnox,
+    }))
+  }, [implementationData])
 
-    return {
-      daysSaved: competitorAvg.totalDays - portnoxImpl.totalDays,
-      percentFaster: ((competitorAvg.totalDays - portnoxImpl.totalDays) / competitorAvg.totalDays) * 100,
-      consultingSaved: competitorAvg.consultingFTE - portnoxImpl.consultingFTE,
-      trainingSaved: competitorAvg.trainingHours - portnoxImpl.trainingHours,
+  const getComplexityColor = (complexity: string) => {
+    switch (complexity) {
+      case "low":
+        return "#10b981"
+      case "medium":
+        return "#f59e0b"
+      case "high":
+        return "#ef4444"
+      case "critical":
+        return "#dc2626"
+      default:
+        return "#6b7280"
     }
-  }, [portnoxImpl, competitorAvg])
+  }
+
+  const portnoxData = implementationData.find((d) => d.isPortnox)
+  const avgCompetitorTime =
+    implementationData.filter((d) => !d.isPortnox).reduce((sum, d) => sum + d.total, 0) /
+    Math.max(implementationData.filter((d) => !d.isPortnox).length, 1)
 
   return (
     <div className="space-y-6">
-      {/* Implementation Overview Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Zap className="h-4 w-4 text-green-600" />
-              Portnox Deployment
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-700">{portnoxImpl?.totalDays || 0.02}</div>
-            <p className="text-xs text-green-600 mt-1">days to production</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Clock className="h-4 w-4 text-red-600" />
-              Competitor Average
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-red-700">{Math.round(competitorAvg?.totalDays || 90)}</div>
-            <p className="text-xs text-red-600 mt-1">days to production</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-blue-600" />
-              Time Savings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-blue-700">{Math.round(timelineAdvantage?.daysSaved || 0)}</div>
-            <p className="text-xs text-blue-600 mt-1">days saved</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-purple-200 bg-purple-50 dark:bg-purple-950/20">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Users className="h-4 w-4 text-purple-600" />
-              Speed Advantage
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-purple-700">
-              {Math.round(timelineAdvantage?.percentFaster || 0)}%
-            </div>
-            <p className="text-xs text-purple-600 mt-1">faster deployment</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Implementation Alert */}
+      {/* Implementation Overview Alert */}
       <Alert className="border-green-200 bg-green-50">
         <Zap className="h-4 w-4 text-green-600" />
         <AlertDescription className="text-green-800">
           <div className="space-y-2">
-            <div>
-              <strong>Rapid Deployment Advantage:</strong> Portnox CLEAR deploys in 30 minutes compared to
-              {Math.round(competitorAvg?.totalDays || 90)} days for traditional NAC solutions - that's
-              {Math.round(timelineAdvantage?.percentFaster || 0)}% faster time to value.
+            <div className="font-semibold">
+              Portnox CLEAR deploys in 30 minutes vs {Math.round(avgCompetitorTime)} days average
             </div>
             <div className="text-sm">
-              Cloud-native architecture eliminates complex hardware setup, network redesign, and lengthy integration
-              processes that plague traditional NAC deployments.
+              While traditional NAC solutions require months of planning, procurement, and complex configuration,
+              Portnox's cloud-native architecture enables instant deployment with zero infrastructure requirements.
             </div>
           </div>
         </AlertDescription>
@@ -151,136 +288,126 @@ export default function ImplementationTimelineVisual({ results }: Implementation
       <Card>
         <CardHeader>
           <CardTitle>Implementation Timeline Comparison</CardTitle>
-          <CardDescription>Deployment phases breakdown by vendor</CardDescription>
+          <CardDescription>Total deployment time from planning to production (in days)</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={implementationData} layout="horizontal">
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" tickFormatter={(value) => `${value} days`} />
+              <XAxis type="number" label={{ value: "Days", position: "insideBottom", offset: -10 }} />
               <YAxis dataKey="vendor" type="category" width={100} tick={{ fontSize: 11 }} />
-              <Tooltip
-                formatter={(value: number) => [`${value} days`, ""]}
-                labelFormatter={(label) => `Vendor: ${label}`}
+              <Tooltip formatter={(value: number) => `${value} days`} />
+              <Bar
+                dataKey="total"
+                fill={(entry: any) => (entry.isPortnox ? "#10b981" : "#ef4444")}
+                radius={[0, 4, 4, 0]}
               />
-              <Legend />
-              <Bar dataKey="planning" stackId="a" fill="#3b82f6" name="Planning" />
-              <Bar dataKey="deployment" stackId="a" fill="#10b981" name="Deployment" />
-              <Bar dataKey="testing" stackId="a" fill="#f59e0b" name="Testing" />
-              <Bar dataKey="rollout" stackId="a" fill="#8b5cf6" name="Rollout" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
-      {/* Resource Requirements and Detailed Timeline */}
+      {/* Phase Breakdown */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Implementation Phase Breakdown</CardTitle>
+          <CardDescription>Time required for each implementation phase</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart data={phaseComparisonData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="phase" />
+              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft" }} />
+              <Tooltip />
+              <Legend />
+              {results.map((result) => (
+                <Bar
+                  key={result.vendorId}
+                  dataKey={result.vendorId}
+                  stackId="a"
+                  fill={
+                    result.vendorId === "portnox"
+                      ? "#10b981"
+                      : result.vendorId === "cisco"
+                        ? "#ef4444"
+                        : result.vendorId === "ivanti"
+                          ? "#dc2626"
+                          : "#3b82f6"
+                  }
+                  name={result.vendorName}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Resource Requirements vs Timeline */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Resource Requirements</CardTitle>
-            <CardDescription>FTE and training hours needed</CardDescription>
+            <CardDescription>FTE resources needed for implementation</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {implementationData
-                .sort((a, b) => a.totalDays - b.totalDays)
-                .map((vendor) => (
-                  <div key={vendor.vendorId} className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm">{vendor.vendor}</span>
-                        {vendor.isPortnox && (
-                          <Badge variant="outline" className="text-xs border-green-300 text-green-700">
-                            Minimal Resources
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium text-sm">{vendor.totalDays} days</div>
-                        <div className="text-xs text-muted-foreground">{vendor.complexityScore}/10 complexity</div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 text-xs">
-                      <div className="text-center p-2 bg-muted/50 rounded">
-                        <div className="font-medium">{vendor.consultingFTE}</div>
-                        <div className="text-muted-foreground">Consulting FTE</div>
-                      </div>
-                      <div className="text-center p-2 bg-muted/50 rounded">
-                        <div className="font-medium">{vendor.internalFTE}</div>
-                        <div className="text-muted-foreground">Internal FTE</div>
-                      </div>
-                      <div className="text-center p-2 bg-muted/50 rounded">
-                        <div className="font-medium">{vendor.trainingHours}h</div>
-                        <div className="text-muted-foreground">Training</div>
-                      </div>
-                    </div>
-
-                    <Progress value={100 - vendor.complexityScore * 10} className="h-2" />
-                  </div>
-                ))}
-            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={resourceComparisonData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="vendor" angle={-45} textAnchor="end" height={80} />
+                <YAxis label={{ value: "FTE Required", angle: -90, position: "insideLeft" }} />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="resources"
+                  stroke="#3b82f6"
+                  strokeWidth={3}
+                  dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Portnox Deployment Phases</CardTitle>
-            <CardDescription>Detailed breakdown of rapid deployment</CardDescription>
+            <CardTitle>Implementation Complexity</CardTitle>
+            <CardDescription>Complexity rating and timeline analysis</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                <div>
-                  <div className="font-medium text-sm text-green-800">Phase 1: Account Setup</div>
-                  <div className="text-xs text-green-600">Cloud tenant provisioning</div>
+              {implementationData.map((vendor) => (
+                <div key={vendor.vendorId} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">{vendor.vendor}</span>
+                      <Badge
+                        variant="outline"
+                        className="text-xs border-2"
+                        style={{
+                          borderColor: getComplexityColor(vendor.complexity),
+                          color: getComplexityColor(vendor.complexity),
+                        }}
+                      >
+                        {vendor.complexity}
+                      </Badge>
+                      {vendor.isPortnox && (
+                        <Badge variant="outline" className="text-xs border-green-300 text-green-700">
+                          Fastest
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium text-sm">{vendor.total} days</div>
+                      <div className="text-xs text-muted-foreground">{vendor.resourcesRequired} FTE required</div>
+                    </div>
+                  </div>
+                  <Progress
+                    value={Math.min(100, (vendor.total / Math.max(...implementationData.map((d) => d.total))) * 100)}
+                    className="h-2"
+                  />
                 </div>
-                <div className="text-right">
-                  <div className="font-bold text-green-700">5 min</div>
-                  <div className="text-xs text-green-600">Automated</div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <div>
-                  <div className="font-medium text-sm text-blue-800">Phase 2: Configuration</div>
-                  <div className="text-xs text-blue-600">Policy and network setup</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-bold text-blue-700">15 min</div>
-                  <div className="text-xs text-blue-600">Guided wizard</div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200">
-                <div>
-                  <div className="font-medium text-sm text-purple-800">Phase 3: Testing</div>
-                  <div className="text-xs text-purple-600">Validation and verification</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-bold text-purple-700">5 min</div>
-                  <div className="text-xs text-purple-600">Automated tests</div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
-                <div>
-                  <div className="font-medium text-sm text-orange-800">Phase 4: Go Live</div>
-                  <div className="text-xs text-orange-600">Production deployment</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-bold text-orange-700">5 min</div>
-                  <div className="text-xs text-orange-600">One-click activation</div>
-                </div>
-              </div>
-
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
-                <div className="flex items-center justify-between">
-                  <div className="font-semibold text-gray-800">Total Deployment Time</div>
-                  <div className="font-bold text-2xl text-green-700">30 minutes</div>
-                </div>
-                <div className="text-xs text-gray-600 mt-1">From signup to production-ready NAC solution</div>
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -289,32 +416,79 @@ export default function ImplementationTimelineVisual({ results }: Implementation
       {/* Implementation Advantages */}
       <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
         <CardHeader>
-          <CardTitle className="text-green-800">Portnox Implementation Advantages</CardTitle>
+          <CardTitle className="text-green-800 flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5" />
+            Portnox Implementation Advantages
+          </CardTitle>
           <CardDescription className="text-green-700">
-            Why Portnox deploys 95% faster than traditional NAC
+            Why Portnox CLEAR deploys 95% faster than traditional NAC
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="text-center p-4 rounded-lg border border-green-200">
-              <Zap className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <div className="font-semibold text-green-800">No Hardware</div>
-              <div className="text-xs text-green-600 mt-1">Cloud-native deployment</div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-3">
+              <h4 className="font-semibold text-green-800">Zero Infrastructure</h4>
+              <ul className="space-y-2 text-sm text-green-700">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span>No hardware procurement or installation</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span>No network redesign required</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span>Cloud-native scalability</span>
+                </li>
+              </ul>
             </div>
-            <div className="text-center p-4 rounded-lg border border-green-200">
-              <CheckCircle2 className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <div className="font-semibold text-green-800">Auto-Discovery</div>
-              <div className="text-xs text-green-600 mt-1">Automatic network mapping</div>
+            <div className="space-y-3">
+              <h4 className="font-semibold text-green-800">Simplified Deployment</h4>
+              <ul className="space-y-2 text-sm text-green-700">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span>30-minute configuration</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span>Automated policy deployment</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span>No specialized training required</span>
+                </li>
+              </ul>
             </div>
-            <div className="text-center p-4 rounded-lg border border-green-200">
-              <Users className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <div className="font-semibold text-green-800">No Training</div>
-              <div className="text-xs text-green-600 mt-1">Intuitive interface</div>
-            </div>
-            <div className="text-center p-4 rounded-lg border border-green-200">
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Time-to-Value Comparison */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Time-to-Value Analysis</CardTitle>
+          <CardDescription>When you start seeing security benefits</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="text-center p-4 rounded-lg border border-green-200 bg-green-50">
               <Clock className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <div className="font-semibold text-green-800">Instant Value</div>
-              <div className="text-xs text-green-600 mt-1">Immediate protection</div>
+              <div className="text-2xl font-bold text-green-700">30 min</div>
+              <div className="text-sm text-green-600">Portnox CLEAR</div>
+              <div className="text-xs text-muted-foreground mt-1">Production ready</div>
+            </div>
+            <div className="text-center p-4 rounded-lg border border-orange-200 bg-orange-50">
+              <Users className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-orange-700">{Math.round(avgCompetitorTime)} days</div>
+              <div className="text-sm text-orange-600">Traditional NAC</div>
+              <div className="text-xs text-muted-foreground mt-1">Average deployment</div>
+            </div>
+            <div className="text-center p-4 rounded-lg border border-red-200 bg-red-50">
+              <AlertTriangle className="h-8 w-8 text-red-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-red-700">6+ months</div>
+              <div className="text-sm text-red-600">Complex Solutions</div>
+              <div className="text-xs text-muted-foreground mt-1">Enterprise deployments</div>
             </div>
           </div>
         </CardContent>

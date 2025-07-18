@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from "recharts"
 import { AlertTriangle, CheckCircle, Zap, TrendingUp, BarChart3, PieChartIcon, HelpCircle } from "lucide-react"
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 import CostBreakdownComparison from "@/components/charts/cost-breakdown-comparison"
@@ -30,20 +30,6 @@ function HelpTooltip({ title, content, calculation, children }: HelpTooltipProps
       <div className="flex items-center gap-2 cursor-help">
         {children}
         <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
-      </div>
-      {/* Tooltip content is moved outside the Tooltip component */}
-      <div className="max-w-sm p-4 bg-black text-white rounded mt-2">
-        <div className="space-y-2">
-          <div>
-            <strong>{title}</strong>
-          </div>
-          <div>{content}</div>
-          {calculation && (
-            <div className="mt-2 p-2 bg-muted rounded text-xs">
-              <strong>Calculation:</strong> {calculation}
-            </div>
-          )}
-        </div>
       </div>
     </TooltipProvider>
   )
@@ -168,7 +154,7 @@ export default function DetailedCostsView({ results = [], config }: DetailedCost
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="vendor" angle={-45} textAnchor="end" height={80} />
                   <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
-                  {/* Tooltip formatter is corrected */}
+                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
                   <Bar dataKey="total" fill="#3b82f6" />
                 </BarChart>
               </ResponsiveContainer>
