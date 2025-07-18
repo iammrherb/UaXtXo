@@ -19,6 +19,9 @@ import {
 } from "recharts"
 import { TrendingUp, DollarSign, Shield, Clock, CheckCircle2, Target, Zap } from "lucide-react"
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import CostBreakdownComparison from "@/components/charts/cost-breakdown-comparison"
+import SecurityVulnerabilityTimeline from "@/components/charts/security-vulnerability-timeline"
+import ImplementationTimelineVisual from "@/components/charts/implementation-timeline-visual"
 
 interface ExecutiveDashboardViewProps {
   results?: CalculationResult[]
@@ -346,6 +349,39 @@ export default function ExecutiveDashboardView({ results = [], config }: Executi
           </div>
         </CardContent>
       </Card>
+
+      {/* Detailed Visual Comparisons */}
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Cost Analysis Deep Dive</CardTitle>
+            <CardDescription>Comprehensive cost breakdown and savings analysis</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CostBreakdownComparison results={results} config={config} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Security Posture Analysis</CardTitle>
+            <CardDescription>Vulnerability exposure and security track record</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SecurityVulnerabilityTimeline results={results} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Implementation Speed Analysis</CardTitle>
+            <CardDescription>Deployment timeline and resource requirements</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ImplementationTimelineVisual results={results} />
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Executive Summary */}
       <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">

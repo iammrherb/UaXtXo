@@ -24,6 +24,9 @@ import {
 } from "recharts"
 import { DollarSign, Shield, CheckCircle2, Target, Zap, AlertTriangle, Award, Gauge, Users, Rocket } from "lucide-react"
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import CostBreakdownComparison from "@/components/charts/cost-breakdown-comparison"
+import SecurityVulnerabilityTimeline from "@/components/charts/security-vulnerability-timeline"
+import ImplementationTimelineVisual from "@/components/charts/implementation-timeline-visual"
 
 interface PortnoxAdvantageDashboardProps {
   results?: CalculationResult[]
@@ -365,33 +368,12 @@ export default function PortnoxAdvantageDashboard({ results = [], config }: Port
         </Card>
       </div>
 
-      {/* Detailed Cost Breakdown */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Total Cost of Ownership Comparison</CardTitle>
-          <CardDescription>
-            {timeframe}-year TCO analysis for {deviceCount.toLocaleString()} devices
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={costComparisonData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="vendor" tick={{ fontSize: 11 }} angle={-45} textAnchor="end" height={100} />
-              <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
-              <Tooltip
-                formatter={(value: number) => formatCurrency(value)}
-                labelFormatter={(label) => `Vendor: ${label}`}
-              />
-              <Bar
-                dataKey="cost"
-                fill={(entry: any) => (entry.isPortnox ? "#10b981" : "#6b7280")}
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+      {/* Enhanced Visual Comparisons */}
+      <div className="space-y-6">
+        <CostBreakdownComparison results={results} config={config} />
+        <SecurityVulnerabilityTimeline results={results} />
+        <ImplementationTimelineVisual results={results} />
+      </div>
 
       {/* Security Comparison */}
       <Card>
