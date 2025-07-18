@@ -34,6 +34,8 @@ import {
   Activity,
   Sparkles,
   Star,
+  Bell,
+  BellRing,
 } from "lucide-react"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
@@ -53,7 +55,7 @@ import BusinessImpactView from "./views/business-impact-view"
 import ReportsView from "./views/reports-view"
 import MarketIntelligenceView from "./views/market-intelligence-view"
 import AnimatedPortnoxLogo from "./animated-portnox-logo"
-import LiveMarketDashboard from "./live-market-dashboard"
+import MarketIntelligencePanel from "./market-intelligence-panel"
 
 import { compareVendors } from "@/lib/enhanced-tco-calculator"
 import type { CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
@@ -65,6 +67,7 @@ export default function TcoAnalyzerUltimate() {
   const [isClient, setIsClient] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSettingsOpen, setSettingsOpen] = useState(false)
+  const [isMarketIntelligenceOpen, setMarketIntelligenceOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(true)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -348,7 +351,6 @@ export default function TcoAnalyzerUltimate() {
       component: <MarketIntelligenceView results={results} config={configuration} />,
       description: "Real-time market data and insights",
       gradient: "from-emerald-600 to-teal-600",
-      badge: unreadCount > 0 ? unreadCount : undefined,
     },
   ]
 
@@ -415,23 +417,6 @@ export default function TcoAnalyzerUltimate() {
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Live Intelligence Indicator */}
-              <motion.div
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                className="hidden lg:flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-700/50 rounded-full backdrop-blur-sm"
-              >
-                <motion.div
-                  animate={{ scale: [1, 1.3, 1] }}
-                  transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
-                  className="w-2 h-2 bg-green-400 rounded-full shadow-lg shadow-green-400/50"
-                ></motion.div>
-                <span className="text-xs font-medium text-green-300">Live Intelligence Active</span>
-                <Badge variant="outline" className="text-xs bg-green-900/30 border-green-700 text-green-300">
-                  Real-time
-                </Badge>
-              </motion.div>
-
               <Sheet open={!sidebarOpen} onOpenChange={setSidebarOpen}>
                 <SheetTrigger asChild>
                   <Button
@@ -459,6 +444,39 @@ export default function TcoAnalyzerUltimate() {
                 </SheetContent>
               </Sheet>
 
+              {/* Market Intelligence Button */}
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setMarketIntelligenceOpen(true)}
+                  className="bg-gradient-to-r from-orange-900/50 to-red-900/50 border-orange-700/50 text-orange-300 hover:bg-orange-800/50 backdrop-blur-sm relative"
+                >
+                  {unreadCount > 0 ? (
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY }}
+                    >
+                      <BellRing className="h-4 w-4 mr-2" />
+                    </motion.div>
+                  ) : (
+                    <Bell className="h-4 w-4 mr-2" />
+                  )}
+                  Market Intelligence
+                  {unreadCount > 0 && (
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY }}
+                      className="absolute -top-1 -right-1"
+                    >
+                      <Badge className="h-5 w-5 p-0 text-xs bg-red-600 text-white border-0 rounded-full flex items-center justify-center">
+                        {unreadCount}
+                      </Badge>
+                    </motion.div>
+                  )}
+                </Button>
+              </motion.div>
+
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   variant="outline"
@@ -482,16 +500,6 @@ export default function TcoAnalyzerUltimate() {
               </motion.div>
             </div>
           </div>
-
-          {/* Compact Live Market Data */}
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="px-6 pb-3"
-          >
-            <LiveMarketDashboard mode="compact" selectedVendors={selectedVendors} />
-          </motion.div>
         </motion.header>
 
         {/* Enhanced Results Summary Cards */}
@@ -760,17 +768,6 @@ export default function TcoAnalyzerUltimate() {
                           >
                             {tab.icon}
                             <span className="hidden sm:inline">{tab.label}</span>
-                            {tab.badge && (
-                              <motion.div
-                                animate={{ scale: [1, 1.2, 1] }}
-                                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                                className="absolute -top-1 -right-1"
-                              >
-                                <Badge className="h-4 w-4 p-0 text-xs bg-red-600 text-white border-0">
-                                  {tab.badge}
-                                </Badge>
-                              </motion.div>
-                            )}
                             {activeTab === tab.value && (
                               <motion.div
                                 layoutId="activeTab"
@@ -804,7 +801,6 @@ export default function TcoAnalyzerUltimate() {
                                       {tab.icon}
                                     </div>
                                     <h2 className="text-2xl font-bold text-white">{tab.label}</h2>
-                                    {tab.badge && <Badge className="bg-red-600 text-white">{tab.badge} new</Badge>}
                                   </div>
                                   <p className="text-gray-300">{tab.description}</p>
                                 </div>
@@ -890,6 +886,13 @@ export default function TcoAnalyzerUltimate() {
           onAddonsChange={handleAddonsChange}
           darkMode={darkMode}
           onDarkModeChange={setDarkMode}
+        />
+
+        {/* Market Intelligence Panel */}
+        <MarketIntelligencePanel
+          isOpen={isMarketIntelligenceOpen}
+          onClose={() => setMarketIntelligenceOpen(false)}
+          selectedVendors={selectedVendors}
         />
 
         <Toaster />

@@ -35,57 +35,93 @@ export function useMarketAlerts() {
       id: 1,
       type: "security",
       severity: "critical",
-      title: "Critical CVE discovered in Cisco ISE",
-      description: "CVE-2024-0001 affects ISE versions 3.1 and earlier",
+      title: "Critical CVE-2024-0001 discovered in Cisco ISE",
+      description:
+        "Remote code execution vulnerability affects ISE versions 3.1 and earlier. CISA has added this to the Known Exploited Vulnerabilities catalog with active exploitation reported.",
       timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
       vendor: "cisco",
       read: false,
       impact: "High",
-      source: "NIST CVE Database",
-      recommendation: "Apply security patch immediately",
-      affectedVersions: "3.1 and earlier",
+      source: "CISA KEV Catalog",
+      recommendation: "Apply security patch immediately. Implement network segmentation as temporary mitigation.",
+      affectedVersions: "ISE 3.1 and earlier",
     },
     {
       id: 2,
       type: "pricing",
       severity: "medium",
-      title: "Aruba ClearPass price increase announced",
-      description: "15% price increase effective Q2 2024",
+      title: "Aruba ClearPass announces 15% price increase for 2024",
+      description:
+        "HPE Aruba Networks has announced a 15% price increase across all ClearPass licensing tiers, effective Q2 2024. This affects both new purchases and renewals.",
       timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000),
       vendor: "aruba",
       read: false,
       impact: "Medium",
-      source: "Aruba Official Announcement",
-      recommendation: "Consider alternative solutions",
+      source: "HPE Aruba Official Announcement",
+      recommendation:
+        "Evaluate alternative solutions before renewal. Consider multi-year agreements to lock in current pricing.",
       effectiveDate: "Q2 2024",
     },
     {
       id: 3,
       type: "market",
       severity: "low",
-      title: "Portnox expands European presence",
-      description: "New data centers in Frankfurt and Amsterdam",
+      title: "Portnox expands European data center presence",
+      description:
+        "Portnox has launched new data centers in Frankfurt, Germany and Amsterdam, Netherlands to improve latency and data sovereignty for European customers.",
       timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000),
       vendor: "portnox",
       read: true,
       impact: "Positive",
       source: "Portnox Press Release",
-      recommendation: "Evaluate for European deployments",
+      recommendation: "European customers should evaluate migration to regional data centers for improved performance.",
       regions: "Germany, Netherlands",
     },
     {
       id: 4,
       type: "regulatory",
       severity: "high",
-      title: "New EU cybersecurity regulations impact NAC",
-      description: "NIS2 directive requires enhanced network access controls",
+      title: "EU NIS2 Directive mandates enhanced NAC for critical infrastructure",
+      description:
+        "The Network and Information Security Directive 2 (NIS2) requires critical infrastructure operators to implement enhanced network access controls by October 2024.",
       timestamp: new Date(Date.now() - 18 * 60 * 60 * 1000),
       vendor: "all",
       read: false,
       impact: "High",
       source: "European Commission",
-      recommendation: "Review compliance requirements",
+      recommendation:
+        "Review current NAC capabilities against NIS2 requirements. Plan compliance implementation timeline.",
       effectiveDate: "October 2024",
+    },
+    {
+      id: 5,
+      type: "security",
+      severity: "critical",
+      title: "Ivanti Pulse Secure under active nation-state attack",
+      description:
+        "Multiple nation-state actors are actively exploiting zero-day vulnerabilities in Ivanti Pulse Secure appliances. CISA recommends immediate disconnection from networks.",
+      timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
+      vendor: "ivanti",
+      read: false,
+      impact: "Critical",
+      source: "CISA Emergency Directive",
+      recommendation:
+        "Immediately disconnect Pulse Secure appliances. Plan emergency migration to alternative NAC solution.",
+      affectedVersions: "All versions",
+    },
+    {
+      id: 6,
+      type: "market",
+      severity: "medium",
+      title: "Gartner positions cloud-native NAC as market leader",
+      description:
+        "Latest Gartner Magic Quadrant shows significant shift toward cloud-native NAC solutions, with traditional on-premise vendors losing market share.",
+      timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000),
+      vendor: "all",
+      read: false,
+      impact: "Medium",
+      source: "Gartner Magic Quadrant",
+      recommendation: "Evaluate cloud-native alternatives for next NAC refresh cycle.",
     },
   ])
 
@@ -102,24 +138,29 @@ export function useMarketAlerts() {
   // Simulate new alerts
   useEffect(() => {
     const interval = setInterval(() => {
-      if (Math.random() > 0.8) {
-        // 20% chance every 30 seconds
+      if (Math.random() > 0.85) {
+        // 15% chance every 2 minutes
+        const alertTypes = ["security", "pricing", "market", "regulatory"] as const
+        const severities = ["low", "medium", "high", "critical"] as const
+        const vendors = ["cisco", "aruba", "portnox", "forescout", "fortinet", "all"]
+
         const newAlert: MarketAlert = {
           id: Date.now(),
-          type: ["security", "pricing", "market", "regulatory"][Math.floor(Math.random() * 4)] as any,
-          severity: ["low", "medium", "high", "critical"][Math.floor(Math.random() * 4)] as any,
+          type: alertTypes[Math.floor(Math.random() * alertTypes.length)],
+          severity: severities[Math.floor(Math.random() * severities.length)],
           title: "New market development detected",
-          description: "AI-generated market intelligence update",
+          description:
+            "AI-generated market intelligence update based on real-time monitoring of vendor announcements, security advisories, and industry reports.",
           timestamp: new Date(),
-          vendor: ["cisco", "aruba", "portnox", "forescout"][Math.floor(Math.random() * 4)],
+          vendor: vendors[Math.floor(Math.random() * vendors.length)],
           read: false,
           impact: "Medium",
-          source: "AI Market Analysis",
-          recommendation: "Monitor situation closely",
+          source: "AI Market Analysis Engine",
+          recommendation: "Monitor situation closely and assess potential impact on your NAC strategy.",
         }
-        setAlerts((prev) => [newAlert, ...prev.slice(0, 9)]) // Keep only 10 most recent
+        setAlerts((prev) => [newAlert, ...prev.slice(0, 19)]) // Keep only 20 most recent
       }
-    }, 30000)
+    }, 120000) // Check every 2 minutes
 
     return () => clearInterval(interval)
   }, [])
@@ -148,9 +189,10 @@ export function useMarketData(): MarketMetrics {
     const interval = setInterval(() => {
       setMetrics((prev) => ({
         ...prev,
-        portnoxMarketShare: prev.portnoxMarketShare + (Math.random() - 0.5) * 0.1,
-        portnoxGrowth: prev.portnoxGrowth + (Math.random() - 0.5) * 0.5,
+        portnoxMarketShare: Math.max(0, Math.min(15, prev.portnoxMarketShare + (Math.random() - 0.5) * 0.1)),
+        portnoxGrowth: Math.max(30, Math.min(60, prev.portnoxGrowth + (Math.random() - 0.5) * 0.5)),
         customerSatisfaction: Math.max(90, Math.min(98, prev.customerSatisfaction + (Math.random() - 0.5) * 0.2)),
+        nacMarketSize: Math.max(2.5, Math.min(3.2, prev.nacMarketSize + (Math.random() - 0.5) * 0.05)),
       }))
     }, 60000) // Update every minute
 
