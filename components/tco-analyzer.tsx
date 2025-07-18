@@ -32,7 +32,6 @@ import {
   AlertTriangle,
   Clock,
   Activity,
-  Globe,
   Sparkles,
   Star,
 } from "lucide-react"
@@ -66,7 +65,7 @@ export default function TcoAnalyzerUltimate() {
   const [isClient, setIsClient] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSettingsOpen, setSettingsOpen] = useState(false)
-  const [darkMode, setDarkMode] = useState(true) // Default to dark mode
+  const [darkMode, setDarkMode] = useState(true)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [activeTab, setActiveTab] = useState("executive")
@@ -109,7 +108,6 @@ export default function TcoAnalyzerUltimate() {
 
   useEffect(() => {
     setIsClient(true)
-    // Load from localStorage
     try {
       const saved = localStorage.getItem("portnox-tco-config")
       if (saved) {
@@ -127,7 +125,6 @@ export default function TcoAnalyzerUltimate() {
 
   useEffect(() => {
     if (!isLoading) {
-      // Save to localStorage
       localStorage.setItem("portnox-tco-config", JSON.stringify({ configuration, selectedVendors, darkMode }))
     }
   }, [selectedVendors, configuration, darkMode, isLoading])
@@ -168,12 +165,38 @@ export default function TcoAnalyzerUltimate() {
 
   if (!isClient || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0">
+          <motion.div
+            animate={{
+              background: [
+                "radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%)",
+                "radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%)",
+                "radial-gradient(circle at 40% 80%, rgba(119, 198, 255, 0.3) 0%, transparent 50%)",
+                "radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%)",
+              ],
+            }}
+            transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY }}
+            className="absolute inset-0"
+          />
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 50, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+            className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 40, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+            className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-pink-500/10 to-orange-500/10 rounded-full blur-3xl"
+          />
+        </div>
+
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="text-center space-y-8"
+          transition={{ duration: 0.8 }}
+          className="text-center space-y-8 relative z-10"
         >
           <div className="relative">
             <motion.div
@@ -182,7 +205,7 @@ export default function TcoAnalyzerUltimate() {
               className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-full blur-3xl opacity-30"
             ></motion.div>
             <div className="relative z-10">
-              <AnimatedPortnoxLogo width={180} height={70} animate={true} />
+              <AnimatedPortnoxLogo width={200} height={80} animate={true} />
             </div>
           </div>
           <div className="space-y-6">
@@ -192,42 +215,43 @@ export default function TcoAnalyzerUltimate() {
               className="flex items-center justify-center"
             >
               <div className="relative">
-                <Loader2 className="h-12 w-12 text-cyan-400" />
+                <Loader2 className="h-16 w-16 text-cyan-400" />
                 <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
+                  animate={{ scale: [1, 1.3, 1] }}
                   transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                   className="absolute inset-0"
                 >
-                  <Sparkles className="h-12 w-12 text-purple-400" />
+                  <Sparkles className="h-16 w-16 text-purple-400" />
                 </motion.div>
               </div>
             </motion.div>
             <motion.h2
-              initial={{ y: 20, opacity: 0 }}
+              initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+              transition={{ delay: 0.3 }}
+              className="text-5xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
             >
-              Executive Intelligence Decision Platform
+              Executive Intelligence Platform
             </motion.h2>
             <motion.p
-              initial={{ y: 20, opacity: 0 }}
+              initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="text-xl text-gray-300 max-w-md mx-auto"
+              transition={{ delay: 0.5 }}
+              className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed"
             >
-              Loading comprehensive NAC vendor analysis with AI-powered market intelligence...
+              Initializing AI-powered NAC vendor analysis with real-time market intelligence, competitive insights, and
+              predictive analytics...
             </motion.p>
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: "100%" }}
-              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-              className="w-96 h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-full mx-auto overflow-hidden"
+              transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY }}
+              className="w-96 h-2 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-full mx-auto overflow-hidden"
             >
               <motion.div
-                animate={{ x: [-100, 400] }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-                className="h-full w-24 bg-white rounded-full opacity-60"
+                animate={{ x: [-100, 500] }}
+                transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                className="h-full w-32 bg-white rounded-full opacity-80"
               />
             </motion.div>
           </div>
@@ -330,71 +354,83 @@ export default function TcoAnalyzerUltimate() {
 
   return (
     <div className={darkMode ? "dark" : ""}>
-      <div className="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 text-foreground min-h-screen flex flex-col">
+      <div className="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 text-foreground min-h-screen flex flex-col relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <motion.div
+            animate={{
+              background: [
+                "radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%)",
+                "radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%)",
+                "radial-gradient(circle at 40% 80%, rgba(119, 198, 255, 0.1) 0%, transparent 50%)",
+                "radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%)",
+              ],
+            }}
+            transition={{ duration: 10, repeat: Number.POSITIVE_INFINITY }}
+            className="absolute inset-0"
+          />
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 60, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+            className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-r from-cyan-500/5 to-purple-500/5 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 80, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+            className="absolute bottom-0 right-0 w-80 h-80 bg-gradient-to-r from-pink-500/5 to-orange-500/5 rounded-full blur-3xl"
+          />
+        </div>
+
         {/* Ultra Modern Header */}
         <motion.header
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          className="bg-black/40 backdrop-blur-2xl border-b border-gray-800/50 shadow-2xl sticky top-0 z-50"
+          transition={{ duration: 0.8 }}
+          className="bg-black/40 backdrop-blur-2xl border-b border-gray-800/50 shadow-2xl sticky top-0 z-50 relative"
         >
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-6">
-              <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-3">
-                <div className="relative">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                    className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-xl blur opacity-30"
-                  ></motion.div>
-                  <div className="relative bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 p-3 rounded-xl shadow-lg">
-                    <Globe className="h-7 w-7 text-white" />
-                  </div>
-                </div>
-                <AnimatedPortnoxLogo width={160} height={45} showText={true} animate={true} />
+              <motion.div whileHover={{ scale: 1.05 }} className="flex items-center">
+                <AnimatedPortnoxLogo width={180} height={50} showText={true} animate={true} />
               </motion.div>
               <Separator orientation="vertical" className="h-10 bg-gray-700" />
               <div>
                 <motion.h1
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
-                >
-                  Executive Intelligence Decision Platform
-                </motion.h1>
-                <motion.p
-                  initial={{ x: -20, opacity: 0 }}
+                  initial={{ x: -30, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.3 }}
+                  className="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+                >
+                  Executive Intelligence Platform
+                </motion.h1>
+                <motion.p
+                  initial={{ x: -30, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.4 }}
                   className="text-sm text-gray-400"
                 >
-                  AI-powered NAC vendor evaluation with real-time market intelligence
+                  AI-powered NAC vendor evaluation with predictive market analytics
                 </motion.p>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Live Market Data Indicator */}
+              {/* Live Intelligence Indicator */}
               <motion.div
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                className="hidden lg:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-700/50 rounded-full backdrop-blur-sm"
+                className="hidden lg:flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-700/50 rounded-full backdrop-blur-sm"
               >
                 <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY }}
-                  className="w-2 h-2 bg-green-400 rounded-full"
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+                  className="w-2 h-2 bg-green-400 rounded-full shadow-lg shadow-green-400/50"
                 ></motion.div>
-                <span className="text-xs font-medium text-green-300">Live Intelligence</span>
+                <span className="text-xs font-medium text-green-300">Live Intelligence Active</span>
+                <Badge variant="outline" className="text-xs bg-green-900/30 border-green-700 text-green-300">
+                  Real-time
+                </Badge>
               </motion.div>
-
-              <Badge
-                variant="outline"
-                className="hidden md:flex bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-purple-700/50 text-purple-300"
-              >
-                v3.0 Enterprise
-              </Badge>
 
               <Sheet open={!sidebarOpen} onOpenChange={setSidebarOpen}>
                 <SheetTrigger asChild>
@@ -447,12 +483,12 @@ export default function TcoAnalyzerUltimate() {
             </div>
           </div>
 
-          {/* Live Market Data Compact View */}
+          {/* Compact Live Market Data */}
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="px-6 pb-4"
+            transition={{ delay: 0.5 }}
+            className="px-6 pb-3"
           >
             <LiveMarketDashboard mode="compact" selectedVendors={selectedVendors} />
           </motion.div>
@@ -465,8 +501,8 @@ export default function TcoAnalyzerUltimate() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="px-6 py-6 bg-black/20 backdrop-blur-sm border-b border-gray-800/50"
+              transition={{ duration: 0.6 }}
+              className="px-6 py-6 bg-black/20 backdrop-blur-sm border-b border-gray-800/50 relative"
             >
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <motion.div whileHover={{ scale: 1.02, y: -5 }} transition={{ type: "spring", stiffness: 300 }}>
@@ -577,13 +613,13 @@ export default function TcoAnalyzerUltimate() {
                 <motion.div
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
+                  transition={{ delay: 0.3 }}
                   className="mt-6"
                 >
                   <Alert className="border-emerald-700/50 bg-gradient-to-r from-emerald-900/30 to-green-900/30 backdrop-blur-sm">
                     <motion.div
                       animate={{ rotate: [0, 360] }}
-                      transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                      transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
                     >
                       <Star className="h-4 w-4 text-emerald-400" />
                     </motion.div>
@@ -608,12 +644,12 @@ export default function TcoAnalyzerUltimate() {
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.3 }}
+                transition={{ delay: 0.4 }}
                 className="mt-4"
               >
                 <Alert className="border-red-700/50 bg-gradient-to-r from-red-900/30 to-pink-900/30 backdrop-blur-sm">
                   <motion.div
-                    animate={{ scale: [1, 1.1, 1] }}
+                    animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                   >
                     <AlertTriangle className="h-4 w-4 text-red-400" />
@@ -630,7 +666,7 @@ export default function TcoAnalyzerUltimate() {
         </AnimatePresence>
 
         {/* Main Content */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden relative">
           <ResizablePanelGroup direction="horizontal" className="h-full w-full">
             {/* Enhanced Sidebar Panel */}
             <ResizablePanel
@@ -710,7 +746,7 @@ export default function TcoAnalyzerUltimate() {
                 {/* Ultra Modern Tab Navigation */}
                 <div className="border-b border-gray-800/50 bg-black/30 backdrop-blur-sm px-6 py-3">
                   <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-5 lg:grid-cols-11 h-auto bg-gray-900/50 backdrop-blur-sm border border-gray-800/50">
+                    <TabsList className="grid w-full grid-cols-5 lg:grid-cols-11 h-auto bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 p-1">
                       {TABS.map((tab, index) => (
                         <motion.div
                           key={tab.value}
@@ -720,7 +756,7 @@ export default function TcoAnalyzerUltimate() {
                         >
                           <TabsTrigger
                             value={tab.value}
-                            className="text-xs px-2 py-3 flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-gray-800 data-[state=active]:to-gray-700 data-[state=active]:shadow-lg data-[state=active]:text-white relative transition-all duration-200 hover:bg-gray-800/50"
+                            className="text-xs px-3 py-3 flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-gray-800 data-[state=active]:to-gray-700 data-[state=active]:shadow-lg data-[state=active]:text-white relative transition-all duration-200 hover:bg-gray-800/50 rounded-md"
                           >
                             {tab.icon}
                             <span className="hidden sm:inline">{tab.label}</span>
@@ -747,20 +783,21 @@ export default function TcoAnalyzerUltimate() {
                       ))}
                     </TabsList>
 
-                    {/* Enhanced Tab Content */}
-                    <div className="mt-4">
+                    {/* Enhanced Tab Content with proper spacing */}
+                    <div className="mt-6">
                       <AnimatePresence mode="wait">
                         {TABS.map((tab) => (
-                          <TabsContent key={tab.value} value={tab.value} className="mt-0">
+                          <TabsContent key={tab.value} value={tab.value} className="mt-0 focus-visible:outline-none">
                             {activeTab === tab.value && (
                               <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
                                 transition={{ duration: 0.3 }}
+                                className="space-y-6"
                               >
                                 <div
-                                  className={`mb-6 p-6 bg-gradient-to-r ${tab.gradient} bg-opacity-10 rounded-xl border border-gray-800/50 backdrop-blur-sm`}
+                                  className={`p-6 bg-gradient-to-r ${tab.gradient} bg-opacity-10 rounded-xl border border-gray-800/50 backdrop-blur-sm`}
                                 >
                                   <div className="flex items-center gap-3 mb-2">
                                     <div className={`p-2 bg-gradient-to-r ${tab.gradient} rounded-lg shadow-lg`}>
@@ -771,8 +808,8 @@ export default function TcoAnalyzerUltimate() {
                                   </div>
                                   <p className="text-gray-300">{tab.description}</p>
                                 </div>
-                                <div className="h-[calc(100vh-350px)] overflow-y-auto pr-2 custom-scrollbar">
-                                  <div className="space-y-6">{tab.component}</div>
+                                <div className="h-[calc(100vh-400px)] overflow-y-auto pr-2 custom-scrollbar">
+                                  <div className="pb-6">{tab.component}</div>
                                 </div>
                               </motion.div>
                             )}
@@ -791,15 +828,15 @@ export default function TcoAnalyzerUltimate() {
         <motion.footer
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="bg-black/40 backdrop-blur-2xl border-t border-gray-800/50 px-6 py-4"
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="bg-black/40 backdrop-blur-2xl border-t border-gray-800/50 px-6 py-4 relative"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <AnimatedPortnoxLogo width={120} height={32} showText={true} animate={false} />
               <Separator orientation="vertical" className="h-6 bg-gray-700" />
               <div className="text-sm text-gray-400">
-                <span className="font-medium text-gray-300">Executive Intelligence Decision Platform</span>
+                <span className="font-medium text-gray-300">Executive Intelligence Platform</span>
                 <span className="mx-2">•</span>
                 <span>Powered by Portnox CLEAR</span>
                 <span className="mx-2">•</span>
@@ -813,7 +850,7 @@ export default function TcoAnalyzerUltimate() {
                 transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                 className="flex items-center gap-2"
               >
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
                 <span className="text-green-400">Live Intelligence Active</span>
               </motion.div>
               <span>Updated: {new Date().toLocaleDateString()}</span>
