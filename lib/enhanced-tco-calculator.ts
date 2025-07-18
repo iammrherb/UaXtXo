@@ -1,387 +1,297 @@
-import { ComprehensiveVendorDatabase } from "./comprehensive-vendor-data"
-import type { VendorData } from "./comprehensive-vendor-data"
+import { getVendorData, type VendorData } from "./comprehensive-vendor-data"
 
 export interface CalculationConfiguration {
   devices: number
   users: number
-  industry: string
-  orgSize: "small" | "medium" | "large" | "enterprise"
   years: number
-  region: string
-  portnoxBasePrice: number
-  portnoxAddons: {
-    atp: boolean
-    compliance: boolean
-    iot: boolean
-    analytics: boolean
-  }
-}
-
-export interface TCOBreakdown {
-  licensing: number
-  hardware: number
-  implementation: number
-  support: number
-  training: number
-  maintenance: number
-  total: number
-}
-
-export interface ROIMetrics {
-  paybackMonths: number
-  percentage: number
-  annualSavings: number
-  breachReduction: number
-  laborSavingsFTE: number
-}
-
-export interface RiskMetrics {
-  securityScore: number
-  breachReduction: number
-  vendorRisk: number
-  complianceScore: number
+  industry: string
+  companySize: string
+  securityLevel: string
+  complianceRequirements: string[]
+  currentSolution: string
+  deploymentComplexity: string
+  supportLevel: string
+  integrationRequirements: string[]
+  geographicScope: string
+  budgetConstraints: string
 }
 
 export interface CalculationResult {
   vendor: string
   vendorId: string
   vendorName: string
-  breakdown: TCOBreakdown
+  vendorData: VendorData
   total: number
   totalCost: number
-  roi: ROIMetrics
-  risk: RiskMetrics
-  vendorData: VendorData
+  breakdown: {
+    licensing: number
+    hardware: number
+    implementation: number
+    support: number
+    training: number
+    maintenance: number
+    operational: number
+  }
+  roi: {
+    percentage: number
+    annualSavings: number
+    paybackMonths: number
+    netPresentValue: number
+  }
+  risk: {
+    securityScore: number
+    complianceScore: number
+    breachReduction: number
+    operationalRisk: number
+  }
+  ops: {
+    fteSaved: number
+    annualOpsSaving: number
+    automationLevel: number
+    maintenanceHours: number
+  }
+  timeline: {
+    implementationWeeks: number
+    timeToValue: number
+    migrationRisk: string
+  }
 }
 
-// Industry-specific multipliers for accurate cost modeling
-const INDUSTRY_MULTIPLIERS: Record<
-  string,
-  {
-    complexity: number
-    compliance: number
-    security: number
-    scale: number
-  }
-> = {
-  healthcare: { complexity: 1.4, compliance: 1.8, security: 1.6, scale: 1.2 },
-  financial: { complexity: 1.5, compliance: 2.0, security: 1.8, scale: 1.3 },
-  government: { complexity: 1.6, compliance: 2.2, security: 2.0, scale: 1.4 },
-  education: { complexity: 1.1, compliance: 1.3, security: 1.2, scale: 1.1 },
-  retail: { complexity: 1.2, compliance: 1.4, security: 1.3, scale: 1.2 },
-  manufacturing: { complexity: 1.3, compliance: 1.5, security: 1.4, scale: 1.3 },
-  technology: { complexity: 1.0, compliance: 1.1, security: 1.2, scale: 1.0 },
-  default: { complexity: 1.2, compliance: 1.3, security: 1.3, scale: 1.1 },
+// Enhanced pricing models with realistic data
+const VENDOR_PRICING = {
+  portnox: {
+    deviceCost: 60,
+    supportMultiplier: 0.0,
+    implementationBase: 25000,
+    trainingCost: 5000,
+    maintenanceMultiplier: 0.0,
+    automationLevel: 95,
+    fteSavings: 2.5,
+    securityScore: 95,
+    complianceScore: 92,
+    implementationWeeks: 4,
+  },
+  cisco: {
+    deviceCost: 125,
+    supportMultiplier: 0.22,
+    implementationBase: 150000,
+    trainingCost: 25000,
+    maintenanceMultiplier: 0.18,
+    automationLevel: 65,
+    fteSavings: 1.2,
+    securityScore: 88,
+    complianceScore: 90,
+    implementationWeeks: 16,
+  },
+  aruba: {
+    deviceCost: 95,
+    supportMultiplier: 0.2,
+    implementationBase: 75000,
+    trainingCost: 15000,
+    maintenanceMultiplier: 0.16,
+    automationLevel: 75,
+    fteSavings: 1.8,
+    securityScore: 85,
+    complianceScore: 87,
+    implementationWeeks: 12,
+  },
+  fortinet: {
+    deviceCost: 85,
+    supportMultiplier: 0.18,
+    implementationBase: 60000,
+    trainingCost: 12000,
+    maintenanceMultiplier: 0.15,
+    automationLevel: 70,
+    fteSavings: 1.5,
+    securityScore: 82,
+    complianceScore: 85,
+    implementationWeeks: 10,
+  },
+  microsoft: {
+    deviceCost: 45,
+    supportMultiplier: 0.15,
+    implementationBase: 40000,
+    trainingCost: 8000,
+    maintenanceMultiplier: 0.12,
+    automationLevel: 60,
+    fteSavings: 1.0,
+    securityScore: 78,
+    complianceScore: 88,
+    implementationWeeks: 8,
+  },
+  securew2: {
+    deviceCost: 52,
+    supportMultiplier: 0.16,
+    implementationBase: 20000,
+    trainingCost: 6000,
+    maintenanceMultiplier: 0.14,
+    automationLevel: 80,
+    fteSavings: 1.3,
+    securityScore: 75,
+    complianceScore: 80,
+    implementationWeeks: 6,
+  },
+  foxpass: {
+    deviceCost: 35,
+    supportMultiplier: 0.12,
+    implementationBase: 15000,
+    trainingCost: 4000,
+    maintenanceMultiplier: 0.1,
+    automationLevel: 85,
+    fteSavings: 1.1,
+    securityScore: 72,
+    complianceScore: 75,
+    implementationWeeks: 4,
+  },
+  pulse: {
+    deviceCost: 110,
+    supportMultiplier: 0.25,
+    implementationBase: 120000,
+    trainingCost: 20000,
+    maintenanceMultiplier: 0.2,
+    automationLevel: 55,
+    fteSavings: 0.8,
+    securityScore: 80,
+    complianceScore: 83,
+    implementationWeeks: 14,
+  },
+  juniper: {
+    deviceCost: 70,
+    supportMultiplier: 0.2,
+    implementationBase: 55000,
+    trainingCost: 10000,
+    maintenanceMultiplier: 0.15,
+    automationLevel: 78,
+    fteSavings: 1.6,
+    securityScore: 83,
+    complianceScore: 86,
+    implementationWeeks: 11,
+  },
+  arista: {
+    deviceCost: 65,
+    supportMultiplier: 0.18,
+    implementationBase: 45000,
+    trainingCost: 9000,
+    maintenanceMultiplier: 0.13,
+    automationLevel: 75,
+    fteSavings: 1.4,
+    securityScore: 80,
+    complianceScore: 82,
+    implementationWeeks: 9,
+  },
 }
 
-// Organization size multipliers
-const ORG_SIZE_MULTIPLIERS: Record<
-  string,
-  {
-    complexity: number
-    discount: number
-    overhead: number
-  }
-> = {
-  small: { complexity: 0.8, discount: 0.95, overhead: 1.2 },
-  medium: { complexity: 1.0, discount: 0.9, overhead: 1.0 },
-  large: { complexity: 1.2, discount: 0.85, overhead: 0.9 },
-  enterprise: { complexity: 1.4, discount: 0.8, overhead: 0.8 },
-}
+export function calculateVendorTCO(vendorId: string, config: CalculationConfiguration): CalculationResult | null {
+  const vendorData = getVendorData(vendorId)
+  if (!vendorData) return null
 
-export class EnhancedTCOCalculator {
-  private config: CalculationConfiguration
-
-  constructor(config: CalculationConfiguration) {
-    this.config = config
+  const pricing = VENDOR_PRICING[vendorId as keyof typeof VENDOR_PRICING] || {
+    deviceCost: 75,
+    supportMultiplier: 0.18,
+    implementationBase: 50000,
+    trainingCost: 10000,
+    maintenanceMultiplier: 0.15,
+    automationLevel: 65,
+    fteSavings: 1.0,
+    securityScore: 75,
+    complianceScore: 80,
+    implementationWeeks: 12,
   }
 
-  /**
-   * Calculate comprehensive TCO for a specific vendor
-   * Each vendor calculation is completely independent
-   */
-  calculateVendorTCO(vendorId: string): CalculationResult {
-    const vendorData = ComprehensiveVendorDatabase[vendorId]
-    if (!vendorData) {
-      throw new Error(`Vendor ${vendorId} not found in database`)
-    }
+  // Calculate costs
+  const annualLicenseCost = config.devices * pricing.deviceCost
+  const annualSupportCost = annualLicenseCost * pricing.supportMultiplier
+  const implementationCost = pricing.implementationBase + config.devices * 15
+  const trainingCost = pricing.trainingCost
+  const annualMaintenanceCost = annualLicenseCost * pricing.maintenanceMultiplier
 
-    // Get industry and org size multipliers
-    const industryMultiplier = INDUSTRY_MULTIPLIERS[this.config.industry] || INDUSTRY_MULTIPLIERS.default
-    const orgSizeMultiplier = ORG_SIZE_MULTIPLIERS[this.config.orgSize]
+  // Hardware costs (mainly for on-premise solutions)
+  const hardwareCost =
+    vendorId === "portnox" || vendorId === "foxpass" || vendorId === "securew2"
+      ? 0
+      : Math.max(25000, config.devices * 8)
 
-    // Calculate base costs for this specific vendor
-    const breakdown = this.calculateVendorBreakdown(vendorData, industryMultiplier, orgSizeMultiplier)
+  // Operational savings
+  const avgFteCost = 150000
+  const fteSaved = pricing.fteSavings * (config.devices / 1000)
+  const annualOpsSaving = fteSaved * avgFteCost
 
-    // Calculate ROI metrics for this vendor
-    const roi = this.calculateVendorROI(vendorData, breakdown.total)
+  // Total costs
+  const totalLicensing = annualLicenseCost * config.years
+  const totalSupport = annualSupportCost * config.years
+  const totalMaintenance = annualMaintenanceCost * config.years
+  const totalOperational = (avgFteCost * 0.5 - annualOpsSaving) * config.years
 
-    // Calculate risk metrics for this vendor
-    const risk = this.calculateVendorRisk(vendorData)
+  const totalCost =
+    totalLicensing +
+    totalSupport +
+    implementationCost +
+    trainingCost +
+    totalMaintenance +
+    hardwareCost +
+    Math.max(0, totalOperational)
 
-    return {
-      vendor: vendorData.name,
-      vendorId: vendorData.id,
-      vendorName: vendorData.name,
-      breakdown,
-      total: breakdown.total,
-      totalCost: breakdown.total,
-      roi,
-      risk,
-      vendorData,
-    }
-  }
+  // ROI calculations
+  const totalSavings = annualOpsSaving * config.years
+  const netBenefit = totalSavings - totalCost
+  const roiPercentage = totalCost > 0 ? ((totalSavings - totalCost) / totalCost) * 100 : 0
+  const paybackMonths = annualOpsSaving > 0 ? Math.max(1, (totalCost / annualOpsSaving) * 12) : 999
 
-  /**
-   * Calculate detailed cost breakdown for a specific vendor
-   */
-  private calculateVendorBreakdown(
-    vendorData: VendorData,
-    industryMultiplier: any,
-    orgSizeMultiplier: any,
-  ): TCOBreakdown {
-    const { devices, years } = this.config
-    const pricing = vendorData.pricing
+  // Risk calculations
+  const breachReduction = (pricing.securityScore / 100) * 0.85 // Max 85% reduction
 
-    // Base licensing calculation with volume discounts
-    let licensingCost = 0
-    if (pricing.model === "SaaS Subscription") {
-      // Monthly subscription model (like Portnox)
-      const monthlyPerDevice = pricing.pricePerDevice
-      const volumeDiscount = this.getVolumeDiscount(devices, pricing.volumeDiscounts)
-      const discountedPrice = monthlyPerDevice * (1 - volumeDiscount)
-      licensingCost = devices * discountedPrice * 12 * years
-    } else if (pricing.model === "Perpetual + Annual Support") {
-      // Perpetual licensing with annual support
-      const perpetualCost = pricing.basePrice + devices * pricing.pricePerDevice
-      const annualSupport = perpetualCost * 0.22 // 22% annual support
-      licensingCost = perpetualCost + annualSupport * years
-    } else {
-      // Other models
-      licensingCost = pricing.basePrice + devices * pricing.pricePerDevice * years
-    }
-
-    // Apply volume discounts and org size multipliers
-    licensingCost *= orgSizeMultiplier.discount
-
-    // Hardware costs (zero for cloud-native solutions like Portnox)
-    const hardwareCost = pricing.additionalCosts.hardware * industryMultiplier.scale
-
-    // Implementation costs based on complexity
-    const baseImplementation = pricing.additionalCosts.services
-    const complexityMultiplier = vendorData.implementation.complexityScore / 10
-    const implementationCost = baseImplementation * complexityMultiplier * industryMultiplier.complexity
-
-    // Support costs over the timeframe
-    const supportCost = pricing.additionalCosts.support * years * industryMultiplier.compliance
-
-    // Training costs based on complexity and org size
-    const trainingCost =
-      pricing.additionalCosts.training *
-      Math.log(devices / 100) *
-      industryMultiplier.complexity *
-      orgSizeMultiplier.overhead
-
-    // Maintenance costs (ongoing operational overhead)
-    const maintenanceCost =
-      pricing.additionalCosts.maintenance *
-      years *
-      vendorData.implementation.complexityScore *
-      industryMultiplier.complexity
-
-    const total = licensingCost + hardwareCost + implementationCost + supportCost + trainingCost + maintenanceCost
-
-    return {
-      licensing: Math.round(licensingCost),
-      hardware: Math.round(hardwareCost),
-      implementation: Math.round(implementationCost),
-      support: Math.round(supportCost),
-      training: Math.round(trainingCost),
-      maintenance: Math.round(maintenanceCost),
-      total: Math.round(total),
-    }
-  }
-
-  /**
-   * Calculate ROI metrics for a specific vendor
-   */
-  private calculateVendorROI(vendorData: VendorData, totalCost: number): ROIMetrics {
-    const { devices, years } = this.config
-
-    // Calculate annual operational savings based on vendor efficiency
-    const baseOperationalCost = devices * 50 // $50 per device baseline operational cost
-    const efficiencyGain = vendorData.roi.efficiencyGains / 100
-    const annualSavings = baseOperationalCost * efficiencyGain
-
-    // Calculate breach risk reduction value
-    const avgBreachCost = 4.45e6 // Average breach cost $4.45M
-    const breachProbability = 0.28 // 28% annual probability
-    const riskReduction = vendorData.roi.riskReduction / 100
-    const breachReductionValue = avgBreachCost * breachProbability * riskReduction
-
-    // Calculate labor savings
-    const avgITSalary = 95000
-    const laborSavingsFTE = vendorData.implementation.resourcesRequired.ongoingFTE
-    const laborSavings = laborSavingsFTE * avgITSalary
-
-    // Total annual benefits
-    const totalAnnualBenefits = annualSavings + breachReductionValue + laborSavings
-    const totalBenefits = totalAnnualBenefits * years
-
-    // ROI calculation
-    const netBenefit = totalBenefits - totalCost
-    const roiPercentage = (netBenefit / totalCost) * 100
-
-    // Payback period calculation
-    const paybackMonths = totalCost / (totalAnnualBenefits / 12)
-
-    return {
-      paybackMonths: Math.round(paybackMonths * 10) / 10,
-      percentage: Math.round(roiPercentage),
-      annualSavings: Math.round(totalAnnualBenefits),
-      breachReduction: Math.round(breachReductionValue),
-      laborSavingsFTE: Math.round(laborSavingsFTE * 10) / 10,
-    }
-  }
-
-  /**
-   * Calculate risk metrics for a specific vendor
-   */
-  private calculateVendorRisk(vendorData: VendorData): RiskMetrics {
-    const securityScore = vendorData.security.securityRating
-    const breachReduction = vendorData.roi.riskReduction
-
-    // Vendor risk based on CVEs and market position
-    const cveRisk = Math.min(vendorData.security.cveCount * 2, 50)
-    const marketRisk =
-      vendorData.marketPosition === "leader"
-        ? 0
-        : vendorData.marketPosition === "challenger"
-          ? 10
-          : vendorData.marketPosition === "visionary"
-            ? 5
-            : 20
-    const vendorRisk = 100 - cveRisk - marketRisk
-
-    // Compliance score based on supported standards
-    const complianceScore = Math.min(vendorData.security.complianceSupport.length * 12, 100)
-
-    return {
-      securityScore,
+  return {
+    vendor: vendorId,
+    vendorId,
+    vendorName: vendorData.name,
+    vendorData,
+    total: totalCost,
+    totalCost,
+    breakdown: {
+      licensing: totalLicensing,
+      hardware: hardwareCost,
+      implementation: implementationCost,
+      support: totalSupport,
+      training: trainingCost,
+      maintenance: totalMaintenance,
+      operational: Math.max(0, totalOperational),
+    },
+    roi: {
+      percentage: roiPercentage,
+      annualSavings: annualOpsSaving,
+      paybackMonths: Math.round(paybackMonths),
+      netPresentValue: netBenefit,
+    },
+    risk: {
+      securityScore: pricing.securityScore,
+      complianceScore: pricing.complianceScore,
       breachReduction,
-      vendorRisk: Math.max(vendorRisk, 0),
-      complianceScore,
-    }
+      operationalRisk: Math.max(0, 100 - pricing.automationLevel),
+    },
+    ops: {
+      fteSaved,
+      annualOpsSaving,
+      automationLevel: pricing.automationLevel,
+      maintenanceHours: (100 - pricing.automationLevel) * 10,
+    },
+    timeline: {
+      implementationWeeks: pricing.implementationWeeks,
+      timeToValue: pricing.implementationWeeks + 4,
+      migrationRisk: pricing.implementationWeeks > 12 ? "high" : pricing.implementationWeeks > 8 ? "medium" : "low",
+    },
   }
-
-  /**
-   * Get volume discount based on device count
-   */
-  private getVolumeDiscount(devices: number, volumeDiscounts: Record<number, number>): number {
-    const tiers = Object.keys(volumeDiscounts)
-      .map(Number)
-      .sort((a, b) => b - a) // Sort descending
-
-    for (const tier of tiers) {
-      if (devices >= tier) {
-        return volumeDiscounts[tier] / 100 // Convert percentage to decimal
-      }
-    }
-
-    return 0 // No discount
-  }
-
-  /**
-   * Calculate TCO for multiple vendors independently
-   */
-  calculateMultiVendorTCO(vendorIds: string[]): CalculationResult[] {
-    return vendorIds.map((vendorId) => this.calculateVendorTCO(vendorId))
-  }
-
-  /**
-   * Get comparative analysis between vendors
-   */
-  getComparativeAnalysis(vendorIds: string[]): {
-    results: CalculationResult[]
-    savings: Record<string, number>
-    recommendations: string[]
-  } {
-    const results = this.calculateMultiVendorTCO(vendorIds)
-
-    // Find Portnox result for baseline comparison
-    const portnoxResult = results.find((r) => r.vendorId === "portnox")
-    const savings: Record<string, number> = {}
-
-    if (portnoxResult) {
-      results.forEach((result) => {
-        if (result.vendorId !== "portnox") {
-          savings[result.vendorId] = result.totalCost - portnoxResult.totalCost
-        }
-      })
-    }
-
-    // Generate recommendations based on analysis
-    const recommendations = this.generateRecommendations(results)
-
-    return {
-      results,
-      savings,
-      recommendations,
-    }
-  }
-
-  /**
-   * Generate intelligent recommendations based on analysis
-   */
-  private generateRecommendations(results: CalculationResult[]): string[] {
-    const recommendations: string[] = []
-
-    const portnoxResult = results.find((r) => r.vendorId === "portnox")
-    const competitors = results.filter((r) => r.vendorId !== "portnox")
-
-    if (portnoxResult && competitors.length > 0) {
-      const avgCompetitorCost = competitors.reduce((sum, r) => sum + r.totalCost, 0) / competitors.length
-      const savings = avgCompetitorCost - portnoxResult.totalCost
-      const savingsPercentage = (savings / avgCompetitorCost) * 100
-
-      recommendations.push(
-        `Portnox CLEAR delivers ${savingsPercentage.toFixed(1)}% cost savings (${this.formatCurrency(savings)}) compared to traditional NAC solutions.`,
-      )
-
-      recommendations.push(
-        `Deployment time: ${portnoxResult.vendorData.implementation.deploymentDays} days vs ${Math.max(...competitors.map((c) => c.vendorData.implementation.deploymentDays))} days for competitors.`,
-      )
-
-      recommendations.push(
-        `Security advantage: ${portnoxResult.vendorData.security.cveCount} CVEs vs average ${Math.round(competitors.reduce((sum, c) => sum + c.vendorData.security.cveCount, 0) / competitors.length)} CVEs for competitors.`,
-      )
-    }
-
-    return recommendations
-  }
-
-  private formatCurrency(value: number): string {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
-}
-
-// Export factory function for easy usage
-export function createTCOCalculator(config: CalculationConfiguration): EnhancedTCOCalculator {
-  return new EnhancedTCOCalculator(config)
-}
-
-// Export utility functions
-export function calculateIndividualVendorTCO(vendorId: string, config: CalculationConfiguration): CalculationResult {
-  const calculator = new EnhancedTCOCalculator(config)
-  return calculator.calculateVendorTCO(vendorId)
 }
 
 export function compareVendors(vendorIds: string[], config: CalculationConfiguration): CalculationResult[] {
-  const calculator = new EnhancedTCOCalculator(config)
-  return calculator.calculateMultiVendorTCO(vendorIds)
+  return vendorIds
+    .map((vendorId) => {
+      try {
+        return calculateVendorTCO(vendorId, config)
+      } catch (error) {
+        console.warn(`Failed to calculate TCO for ${vendorId}:`, error)
+        return null
+      }
+    })
+    .filter((result): result is CalculationResult => result !== null)
+    .sort((a, b) => a.totalCost - b.totalCost)
 }
