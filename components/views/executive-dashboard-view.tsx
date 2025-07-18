@@ -1,11 +1,12 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
+  BarChart,
   Bar,
   LineChart,
   Line,
@@ -15,28 +16,8 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  ComposedChart,
-  Area,
 } from "recharts"
-import {
-  TrendingUp,
-  DollarSign,
-  Shield,
-  Clock,
-  CheckCircle2,
-  Zap,
-  Users,
-  Building2,
-  Award,
-  Rocket,
-  TrendingDown,
-  Download,
-  Maximize2,
-  Minimize2,
-  RefreshCw,
-  BarChart3,
-  PieChartIcon,
-} from "lucide-react"
+import { TrendingUp, DollarSign, Shield, Clock, CheckCircle2, Target, Zap } from "lucide-react"
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 
 interface ExecutiveDashboardViewProps {
@@ -45,14 +26,10 @@ interface ExecutiveDashboardViewProps {
 }
 
 export default function ExecutiveDashboardView({ results = [], config }: ExecutiveDashboardViewProps) {
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  const [animationEnabled, setAnimationEnabled] = useState(true)
-  const [selectedMetric, setSelectedMetric] = useState("savings")
-
   const portnoxResult = results.find((r) => r.vendorId === "portnox")
   const competitorResults = results.filter((r) => r.vendorId !== "portnox")
 
-  // Enhanced key metrics with more comprehensive data
+  // All hooks are now at the top level, before any conditional returns.
   const keyMetrics = useMemo(() => {
     if (!portnoxResult || competitorResults.length === 0) {
       return {
@@ -63,11 +40,6 @@ export default function ExecutiveDashboardView({ results = [], config }: Executi
         lowestCompetitorCost: 0,
         highestCompetitorCost: 0,
         avgCompetitorCost: 0,
-        riskReduction: 92,
-        deploymentSpeedup: 95,
-        adminEfficiency: 90,
-        complianceScore: 98,
-        securityScore: 95,
       }
     }
 
@@ -89,15 +61,9 @@ export default function ExecutiveDashboardView({ results = [], config }: Executi
       lowestCompetitorCost,
       highestCompetitorCost,
       avgCompetitorCost,
-      riskReduction: 92,
-      deploymentSpeedup: 95,
-      adminEfficiency: 90,
-      complianceScore: 98,
-      securityScore: 95,
     }
   }, [results, config, portnoxResult, competitorResults])
 
-  // Enhanced cost comparison with more detailed breakdown
   const costComparisonData = useMemo(() => {
     return results
       .sort((a, b) => a.totalCost - b.totalCost)
@@ -106,14 +72,9 @@ export default function ExecutiveDashboardView({ results = [], config }: Executi
         cost: result.totalCost,
         savings: keyMetrics ? keyMetrics.avgCompetitorCost - result.totalCost : 0,
         isPortnox: result.vendorId === "portnox",
-        licensing: result.totalCost * (result.vendorId === "portnox" ? 0.82 : 0.45),
-        hardware: result.totalCost * (result.vendorId === "portnox" ? 0 : 0.25),
-        services: result.totalCost * (result.vendorId === "portnox" ? 0.18 : 0.3),
-        efficiency: result.vendorId === "portnox" ? 95 : 35 + Math.random() * 30,
       }))
   }, [results, keyMetrics])
 
-  // Enhanced ROI timeline with quarterly breakdown
   const roiTimelineData = useMemo(() => {
     if (!keyMetrics || !portnoxResult || keyMetrics.totalSavings <= 0) return []
 
@@ -121,135 +82,32 @@ export default function ExecutiveDashboardView({ results = [], config }: Executi
     const monthlyBenefit = keyMetrics.totalSavings / (timeframe * 12)
     const data = []
 
-    for (let quarter = 0; quarter <= timeframe * 4; quarter++) {
-      const month = quarter * 3
+    for (let month = 0; month <= timeframe * 12; month += 6) {
       const cumulativeBenefit = monthlyBenefit * month
       const netValue = cumulativeBenefit - portnoxResult.totalCost
       const roi = portnoxResult.totalCost > 0 ? (netValue / portnoxResult.totalCost) * 100 : 0
 
       data.push({
-        quarter: `Q${(quarter % 4) + 1} Y${Math.floor(quarter / 4) + 1}`,
         month,
         cumulativeBenefit,
         netValue,
-        roi: Math.max(roi, -100),
-        breakeven: month >= keyMetrics.paybackMonths,
+        roi,
       })
     }
 
     return data
   }, [keyMetrics, portnoxResult, config])
 
-  // Enhanced business impact metrics
-  const businessImpactData = useMemo(() => {
+  const riskData = useMemo(() => {
     const categories = [
-      {
-        name: "Security Posture",
-        portnox: 95,
-        competitor: 65,
-        color: "#10B981",
-        description: "Zero CVEs vs industry average",
-        impact: "High",
-      },
-      {
-        name: "Operational Efficiency",
-        portnox: 92,
-        competitor: 45,
-        color: "#3B82F6",
-        description: "90% reduction in admin overhead",
-        impact: "Critical",
-      },
-      {
-        name: "Deployment Speed",
-        portnox: 98,
-        competitor: 25,
-        color: "#F59E0B",
-        description: "30 minutes vs 6-9 months",
-        impact: "High",
-      },
-      {
-        name: "Compliance Readiness",
-        portnox: 96,
-        competitor: 70,
-        color: "#8B5CF6",
-        description: "Built-in compliance frameworks",
-        impact: "Medium",
-      },
-      {
-        name: "Scalability",
-        portnox: 94,
-        competitor: 55,
-        color: "#EC4899",
-        description: "Cloud-native infinite scale",
-        impact: "High",
-      },
-      {
-        name: "Integration Ease",
-        portnox: 90,
-        competitor: 40,
-        color: "#06B6D4",
-        description: "API-first architecture",
-        impact: "Medium",
-      },
+      { name: "Security Breaches", portnox: 8, competitor: 45, color: "#ef4444" },
+      { name: "Compliance Violations", portnox: 5, competitor: 25, color: "#f59e0b" },
+      { name: "Operational Downtime", portnox: 2, competitor: 15, color: "#10b981" },
+      { name: "Integration Issues", portnox: 3, competitor: 35, color: "#3b82f6" },
     ]
 
     return categories
   }, [])
-
-  // Strategic advantage metrics
-  const strategicAdvantages = useMemo(
-    () => [
-      {
-        title: "Zero Infrastructure",
-        value: "100%",
-        description: "Cloud-native, no hardware required",
-        icon: <Rocket className="h-5 w-5" />,
-        color: "emerald",
-        trend: "+100%",
-      },
-      {
-        title: "Deployment Time",
-        value: "30 min",
-        description: "vs 6-9 months traditional",
-        icon: <Zap className="h-5 w-5" />,
-        color: "blue",
-        trend: "95% faster",
-      },
-      {
-        title: "Security Record",
-        value: "0 CVEs",
-        description: "Zero known vulnerabilities",
-        icon: <Shield className="h-5 w-5" />,
-        color: "green",
-        trend: "Industry leading",
-      },
-      {
-        title: "Admin Efficiency",
-        value: "90%",
-        description: "Reduction in operational overhead",
-        icon: <Users className="h-5 w-5" />,
-        color: "purple",
-        trend: "+90% efficiency",
-      },
-      {
-        title: "Zero Trust Maturity",
-        value: "95%",
-        description: "Industry-leading implementation",
-        icon: <Award className="h-5 w-5" />,
-        color: "orange",
-        trend: "Best-in-class",
-      },
-      {
-        title: "Vendor Independence",
-        value: "100%",
-        description: "No vendor lock-in",
-        icon: <Building2 className="h-5 w-5" />,
-        color: "cyan",
-        trend: "Future-proof",
-      },
-    ],
-    [],
-  )
 
   // Conditional return is now after all hooks have been called.
   if (!results || results.length === 0) {
@@ -278,89 +136,11 @@ export default function ExecutiveDashboardView({ results = [], config }: Executi
   const deviceCount = config?.devices || 1000
   const timeframe = config?.years || 3
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl">
-          <p className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} style={{ color: entry.color }} className="text-sm font-medium">
-              {entry.name}:{" "}
-              {typeof entry.value === "number"
-                ? entry.name.includes("$") || entry.name.includes("Cost")
-                  ? formatCurrency(entry.value)
-                  : entry.name.includes("%")
-                    ? `${entry.value.toFixed(1)}%`
-                    : entry.value.toLocaleString()
-                : entry.value}
-            </p>
-          ))}
-        </div>
-      )
-    }
-    return null
-  }
-
   return (
-    <div className={`space-y-6 ${isFullscreen ? "fixed inset-0 z-50 bg-background p-6 overflow-auto" : ""}`}>
-      {/* Enhanced Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent">
-            Executive Intelligence Dashboard
-          </h2>
-          <p className="text-muted-foreground mt-2 text-lg">
-            Strategic insights for C-suite decision making • {deviceCount.toLocaleString()} devices • {timeframe} year
-            analysis
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setAnimationEnabled(!animationEnabled)}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${animationEnabled ? "animate-spin" : ""}`} />
-            {animationEnabled ? "Disable" : "Enable"} Animation
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setIsFullscreen(!isFullscreen)}>
-            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-          </Button>
-        </div>
-      </div>
-
-      {/* Enhanced Strategic Advantages Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {strategicAdvantages.map((advantage, index) => (
-          <Card
-            key={index}
-            className={`border-l-4 border-l-${advantage.color}-500 bg-gradient-to-br from-${advantage.color}-50 via-white to-${advantage.color}-50/30 hover:shadow-lg transition-all duration-300`}
-          >
-            <CardHeader className="pb-3">
-              <CardTitle className={`text-sm font-medium flex items-center gap-2 text-${advantage.color}-700`}>
-                {advantage.icon}
-                {advantage.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold text-${advantage.color}-800 mb-1`}>{advantage.value}</div>
-              <p className={`text-xs text-${advantage.color}-600 mb-2`}>{advantage.description}</p>
-              <Badge variant="outline" className={`text-xs border-${advantage.color}-300 text-${advantage.color}-700`}>
-                {advantage.trend}
-              </Badge>
-              <div className={`mt-2 h-1 bg-${advantage.color}-200 rounded-full overflow-hidden`}>
-                <div
-                  className={`h-full bg-gradient-to-r from-${advantage.color}-400 to-${advantage.color}-600 rounded-full animate-pulse`}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Enhanced Key Metrics Cards */}
+    <div className="space-y-6">
+      {/* Key Metrics Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-green-200 bg-gradient-to-br from-green-50 via-emerald-50 to-white hover:shadow-xl transition-all duration-300">
+        <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-green-600" />
@@ -368,35 +148,30 @@ export default function ExecutiveDashboardView({ results = [], config }: Executi
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-700 mb-2">{formatCurrency(keyMetrics.totalSavings)}</div>
-            <p className="text-sm text-green-600 mb-2">{keyMetrics.percentSavings.toFixed(0)}% cost reduction</p>
-            <Progress value={Math.min(keyMetrics.percentSavings, 100)} className="mb-2 h-3" />
-            <div className="flex items-center gap-1">
-              <TrendingDown className="h-3 w-3 text-green-600" />
-              <span className="text-xs text-green-600 font-medium">vs market average</span>
-            </div>
+            <div className="text-2xl font-bold text-green-700">{formatCurrency(keyMetrics.totalSavings)}</div>
+            <p className="text-xs text-green-600 mt-1">{keyMetrics.percentSavings.toFixed(0)}% cost reduction</p>
+            <Progress value={Math.min(keyMetrics.percentSavings, 100)} className="mt-2 h-2" />
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 via-indigo-50 to-white hover:shadow-xl transition-all duration-300">
+        <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-blue-600" />
-              ROI & Payback
+              ROI
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-700 mb-2">{keyMetrics.roi.toFixed(0)}%</div>
-            <p className="text-sm text-blue-600 mb-2">{keyMetrics.paybackMonths.toFixed(1)} month payback</p>
-            <Progress value={Math.min(keyMetrics.roi / 10, 100)} className="mb-2 h-3" />
-            <div className="flex items-center gap-1">
+            <div className="text-2xl font-bold text-blue-700">{keyMetrics.roi.toFixed(0)}%</div>
+            <p className="text-xs text-blue-600 mt-1">{keyMetrics.paybackMonths.toFixed(1)} month payback</p>
+            <div className="flex items-center gap-1 mt-2">
               <CheckCircle2 className="h-3 w-3 text-blue-600" />
-              <span className="text-xs text-blue-600 font-medium">Industry leading</span>
+              <span className="text-xs text-blue-600">Industry leading</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-purple-200 bg-gradient-to-br from-purple-50 via-violet-50 to-white hover:shadow-xl transition-all duration-300">
+        <Card className="border-purple-200 bg-purple-50 dark:bg-purple-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Shield className="h-4 w-4 text-purple-600" />
@@ -404,101 +179,186 @@ export default function ExecutiveDashboardView({ results = [], config }: Executi
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-purple-700 mb-2">{keyMetrics.riskReduction}%</div>
-            <p className="text-sm text-purple-600 mb-2">breach risk reduction</p>
-            <Progress value={keyMetrics.riskReduction} className="mb-2 h-3" />
-            <Badge variant="outline" className="text-xs border-purple-300 text-purple-700">
+            <div className="text-2xl font-bold text-purple-700">92%</div>
+            <p className="text-xs text-purple-600 mt-1">breach risk reduction</p>
+            <Badge variant="outline" className="mt-2 text-xs border-purple-300 text-purple-700">
               Zero CVEs
             </Badge>
           </CardContent>
         </Card>
 
-        <Card className="border-orange-200 bg-gradient-to-br from-orange-50 via-amber-50 to-white hover:shadow-xl transition-all duration-300">
+        <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Clock className="h-4 w-4 text-orange-600" />
-              Deployment Speed
+              Deployment Time
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-orange-700 mb-2">30 min</div>
-            <p className="text-sm text-orange-600 mb-2">vs 6-9 months typical</p>
-            <Progress value={keyMetrics.deploymentSpeedup} className="mb-2 h-3" />
-            <div className="flex items-center gap-1">
+            <div className="text-2xl font-bold text-orange-700">30 min</div>
+            <p className="text-xs text-orange-600 mt-1">vs 6-9 months typical</p>
+            <div className="flex items-center gap-1 mt-2">
               <Zap className="h-3 w-3 text-orange-600" />
-              <span className="text-xs text-orange-600 font-medium">95% faster</span>
+              <span className="text-xs text-orange-600">95% faster</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Enhanced Charts Section */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Enhanced Cost Comparison */}
-        <Card className="bg-gradient-to-br from-blue-50 to-white">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-blue-600" />
-              Total Cost of Ownership Comparison
-            </CardTitle>
-            <CardDescription>
-              {timeframe}-year TCO analysis for {deviceCount.toLocaleString()} devices with detailed breakdown
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={400}>
-              <ComposedChart data={costComparisonData}>
-                <defs>
-                  <linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#1D4ED8" stopOpacity={0.6} />
-                  </linearGradient>
-                  <linearGradient id="savingsGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#047857" stopOpacity={0.6} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="vendor" />
-                <YAxis />
-                <CartesianGrid strokeDasharray="3 3" />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Bar dataKey="cost" fill="url(#costGradient)" />
-                <Area dataKey="savings" fill="url(#savingsGradient)" />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+      {/* Cost Comparison Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Total Cost of Ownership Comparison</CardTitle>
+          <CardDescription>
+            {timeframe}-year TCO for {deviceCount.toLocaleString()} devices
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={costComparisonData}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis dataKey="vendor" tick={{ fontSize: 12 }} angle={-45} textAnchor="end" height={80} />
+              <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
+              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+              <Legend />
+              <Bar dataKey="cost" fill="#3b82f6" name="Total Cost" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
 
-        {/* Enhanced ROI Timeline */}
-        <Card className="bg-gradient-to-br from-green-50 to-white">
+      {/* ROI Timeline */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PieChartIcon className="h-5 w-5 text-green-600" />
-              ROI Timeline
-            </CardTitle>
-            <CardDescription>Quarterly breakdown of ROI over {timeframe} years</CardDescription>
+            <CardTitle>ROI Timeline</CardTitle>
+            <CardDescription>Cumulative return on investment over time</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height={300}>
               <LineChart data={roiTimelineData}>
-                <defs>
-                  <linearGradient id="roiGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#1D4ED8" stopOpacity={0.6} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="quarter" />
-                <YAxis />
-                <CartesianGrid strokeDasharray="3 3" />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Line dataKey="roi" stroke="url(#roiGradient)" activeDot={{ r: 8 }} />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="month" tickFormatter={(value) => `${value}m`} />
+                <YAxis tickFormatter={(value) => `${value.toFixed(0)}%`} />
+                <Tooltip
+                  formatter={(value: number) => `${value.toFixed(0)}%`}
+                  labelFormatter={(value) => `Month ${value}`}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="roi"
+                  stroke="#3b82f6"
+                  strokeWidth={3}
+                  dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Risk Comparison</CardTitle>
+            <CardDescription>Annual risk exposure by category</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {riskData.map((risk) => (
+                <div key={risk.name} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{risk.name}</span>
+                    <span className="text-muted-foreground">
+                      {risk.portnox}% vs {risk.competitor}%
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <div className="text-xs text-muted-foreground mb-1">Portnox</div>
+                      <Progress value={risk.portnox} className="h-2" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-xs text-muted-foreground mb-1">Competitors</div>
+                      <Progress value={risk.competitor} className="h-2" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Strategic Advantages */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Strategic Advantages</CardTitle>
+          <CardDescription>Why Portnox CLEAR delivers superior value</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="flex items-start gap-3 p-4 rounded-lg border">
+              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+              <div>
+                <h4 className="font-semibold">Cloud-Native Architecture</h4>
+                <p className="text-sm text-muted-foreground mt-1">No hardware, no maintenance, infinite scalability</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 rounded-lg border">
+              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+              <div>
+                <h4 className="font-semibold">Zero CVE Security Record</h4>
+                <p className="text-sm text-muted-foreground mt-1">Unmatched security with no known vulnerabilities</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 rounded-lg border">
+              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+              <div>
+                <h4 className="font-semibold">30-Minute Deployment</h4>
+                <p className="text-sm text-muted-foreground mt-1">Production-ready in minutes, not months</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 rounded-lg border">
+              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+              <div>
+                <h4 className="font-semibold">95% Zero Trust Maturity</h4>
+                <p className="text-sm text-muted-foreground mt-1">Industry-leading Zero Trust implementation</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 rounded-lg border">
+              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+              <div>
+                <h4 className="font-semibold">No Vendor Lock-in</h4>
+                <p className="text-sm text-muted-foreground mt-1">Standards-based, open architecture</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 rounded-lg border">
+              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+              <div>
+                <h4 className="font-semibold">90% Admin Overhead Reduction</h4>
+                <p className="text-sm text-muted-foreground mt-1">Automated operations and self-healing</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Executive Summary */}
+      <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
+        <Target className="h-4 w-4" />
+        <AlertTitle className="text-blue-900 dark:text-blue-100">Executive Summary</AlertTitle>
+        <AlertDescription className="text-blue-800 dark:text-blue-200">
+          <strong>Recommendation:</strong> Portnox CLEAR delivers {keyMetrics.percentSavings.toFixed(0)}% cost savings (
+          {formatCurrency(keyMetrics.totalSavings)}) over {timeframe} years with {keyMetrics.roi.toFixed(0)}% ROI and{" "}
+          {keyMetrics.paybackMonths.toFixed(1)}-month payback. The cloud-native architecture eliminates infrastructure
+          complexity while providing superior security (92% risk reduction) and operational efficiency (90% less admin
+          overhead).
+        </AlertDescription>
+      </Alert>
     </div>
   )
 }
