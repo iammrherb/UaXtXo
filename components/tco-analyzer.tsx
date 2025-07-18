@@ -20,6 +20,7 @@ import {
   FileText,
   Calendar,
   HelpCircle,
+  Award,
 } from "lucide-react"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
@@ -35,6 +36,7 @@ import FeatureMatrixView from "./views/feature-matrix-view"
 import ImplementationRoadmapView from "./views/implementation-roadmap-view"
 import BusinessImpactView from "./views/business-impact-view"
 import ReportsView from "./views/reports-view"
+import PortnoxAdvantageDashboard from "./views/portnox-advantage-dashboard"
 import AnimatedPortnoxLogo from "./animated-portnox-logo"
 import { VendorSelectionPopup } from "./vendor-selection-popup"
 
@@ -144,6 +146,12 @@ export default function TcoAnalyzerUltimate() {
 
   const TABS = [
     {
+      value: "advantage",
+      label: "Portnox Advantage",
+      icon: <Award className="h-4 w-4" />,
+      component: <PortnoxAdvantageDashboard results={results} config={configuration} />,
+    },
+    {
       value: "executive",
       label: "Executive Dashboard",
       icon: <BarChart3 className="h-4 w-4" />,
@@ -248,8 +256,8 @@ export default function TcoAnalyzerUltimate() {
         <div className="flex-1 overflow-hidden">
           {/* Tab Navigation - now full width */}
           <div className="border-b bg-white dark:bg-gray-900 px-6 py-2">
-            <Tabs defaultValue="executive" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 h-auto bg-gray-100 dark:bg-gray-800">
+            <Tabs defaultValue="advantage" className="w-full">
+              <TabsList className="grid w-full grid-cols-5 lg:grid-cols-11 h-auto bg-gray-100 dark:bg-gray-800">
                 {TABS.map((tab) => (
                   <TabsTrigger
                     key={tab.value}
