@@ -1,87 +1,102 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Separator } from "@/components/ui/separator"
 import {
+  Settings,
   BarChart3,
   Shield,
   Users,
-  Building2,
   FileText,
+  Calculator,
   TrendingUp,
-  DollarSign,
-  Clock,
-  Target,
-  Settings,
+  AlertTriangle,
   CheckCircle2,
-  Zap,
+  Target,
+  Award,
 } from "lucide-react"
 
-import { compareVendors, type CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-
+// Import all view components
 import SettingsPanel from "@/components/settings-panel"
 import EnhancedVendorSelection from "@/components/enhanced-vendor-selection"
 import ExecutiveDashboardView from "@/components/views/executive-dashboard-view"
-import CSuiteDashboard from "@/components/views/c-suite-dashboard"
 import PortnoxAdvantageDashboard from "@/components/views/portnox-advantage-dashboard"
 import DetailedCostsView from "@/components/views/detailed-costs-view"
 import SecurityPostureView from "@/components/views/security-posture-view"
 import ImplementationRoadmapView from "@/components/views/implementation-roadmap-view"
-import ComplianceRiskView from "@/components/views/compliance-risk-view"
-import BusinessImpactView from "@/components/views/business-impact-view"
-import OperationsImpactView from "@/components/views/operations-impact-view"
-import ROIView from "@/components/views/roi-view"
 import ReportsView from "@/components/views/reports-view"
+import ROIView from "@/components/views/roi-view"
+import BusinessImpactView from "@/components/views/business-impact-view"
+import ComplianceRiskView from "@/components/views/compliance-risk-view"
+import CybersecurityPostureView from "@/components/views/cybersecurity-posture-view"
+import OperationalAnalysisView from "@/components/views/operational-analysis-view"
 
-export default function TCOAnalyzer() {
+// Import calculation engine
+import { compareVendors } from "@/lib/enhanced-tco-calculator"
+import type { CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+
+// Import animated logo
+import AnimatedPortnoxLogo from "@/components/animated-portnox-logo"
+
+export default function TcoAnalyzerUltimate() {
+  // Configuration state
   const [config, setConfig] = useState<CalculationConfiguration>({
     devices: 1000,
-    users: 1200,
+    users: 800,
     years: 3,
-    industry: "technology",
-    orgSize: "medium",
-    region: "north-america",
-    portnoxBasePrice: 60,
-    portnoxAddons: {
-      atp: false,
-      compliance: false,
-      iot: false,
-      analytics: false,
+    industry: "Technology",
+    organizationSize: "Mid-Market",
+    region: "North America",
+    portnoxPricing: {
+      basePrice: 36,
+      addOns: {
+        advancedThreatProtection: false,
+        iotSecurity: false,
+        complianceReporting: false,
+        premiumSupport: false,
+      },
     },
   })
 
+  // Vendor selection state
   const [selectedVendors, setSelectedVendors] = useState<string[]>(["portnox", "cisco", "aruba"])
   const [activeTab, setActiveTab] = useState("executive")
 
+  // Calculate results
   const results = useMemo(() => {
     try {
       return compareVendors(selectedVendors, config)
     } catch (error) {
-      console.error("Error calculating vendor comparison:", error)
+      console.error("Calculation error:", error)
       return []
     }
   }, [selectedVendors, config])
 
-  const portnoxResult = results.find((r) => r.vendorId === "portnox")
-  const competitorResults = results.filter((r) => r.vendorId !== "portnox")
+  // Calculate key metrics
+  const keyMetrics = useMemo(() => {
+    if (results.length === 0) return null
 
-  const executiveSummary = useMemo(() => {
+    const portnoxResult = results.find((r) => r.vendorId === "portnox")
+    const competitorResults = results.filter((r) => r.vendorId !== "portnox")
+
     if (!portnoxResult || competitorResults.length === 0) return null
 
     const avgCompetitorCost = competitorResults.reduce((sum, r) => sum + r.totalCost, 0) / competitorResults.length
     const totalSavings = avgCompetitorCost - portnoxResult.totalCost
-    const percentSavings = (totalSavings / avgCompetitorCost) * 100
+    const percentSavings = avgCompetitorCost > 0 ? (totalSavings / avgCompetitorCost) * 100 : 0
 
     return {
       totalSavings,
       percentSavings,
-      roi: (totalSavings / portnoxResult.totalCost) * 100,
-      paybackMonths: (portnoxResult.totalCost / (totalSavings / config.years)) * 12,
-      portnoxCost: portnoxResult.totalCost,
-      avgCompetitorCost,
+      roi: portnoxResult.roi.percentage,
+      paybackMonths: portnoxResult.roi.paybackMonths,
+      riskReduction: portnoxResult.risk.breachReduction * 100,
     }
-  }, [portnoxResult, competitorResults, config.years])
+  }, [results])
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -92,208 +107,203 @@ export default function TCOAnalyzer() {
     }).format(value)
   }
 
+  const tabConfig = [
+    {
+      id: "executive",
+      label: "Executive Dashboard",
+      icon: Users,
+      description: "C-Suite focused metrics and strategic insights",
+      component: <ExecutiveDashboardView results={results} config={config} />,
+    },
+    {
+      id: "advantage",
+      label: "Portnox Advantage",
+      icon: Award,
+      description: "Competitive advantages and differentiators",
+      component: <PortnoxAdvantageDashboard results={results} config={config} />,
+    },
+    {
+      id: "costs",
+      label: "Detailed Costs",
+      icon: Calculator,
+      description: "Comprehensive cost breakdown and analysis",
+      component: <DetailedCostsView results={results} config={config} />,
+    },
+    {
+      id: "security",
+      label: "Security Posture",
+      icon: Shield,
+      description: "Security capabilities and risk assessment",
+      component: <SecurityPostureView results={results} config={config} />,
+    },
+    {
+      id: "implementation",
+      label: "Implementation",
+      icon: Target,
+      description: "Deployment timeline and complexity analysis",
+      component: <ImplementationRoadmapView results={results} config={config} />,
+    },
+    {
+      id: "reports",
+      label: "Reports & Analysis",
+      icon: FileText,
+      description: "Executive reports and Portnox advantages",
+      component: <ReportsView results={results} configuration={config} />,
+    },
+    {
+      id: "roi",
+      label: "ROI Analysis",
+      icon: TrendingUp,
+      description: "Return on investment and financial impact",
+      component: <ROIView results={results} config={config} />,
+    },
+    {
+      id: "business",
+      label: "Business Impact",
+      icon: BarChart3,
+      description: "Operational and strategic business impact",
+      component: <BusinessImpactView results={results} config={config} />,
+    },
+    {
+      id: "compliance",
+      label: "Compliance & Risk",
+      icon: AlertTriangle,
+      description: "Regulatory compliance and risk management",
+      component: <ComplianceRiskView results={results} config={config} />,
+    },
+    {
+      id: "cybersecurity",
+      label: "Cybersecurity",
+      icon: Shield,
+      description: "Advanced security analysis and threat protection",
+      component: <CybersecurityPostureView results={results} config={config} />,
+    },
+    {
+      id: "operations",
+      label: "Operations",
+      icon: Settings,
+      description: "Operational efficiency and automation analysis",
+      component: <OperationalAnalysisView results={results} config={config} />,
+    },
+  ]
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
-      <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950">
+      <div className="container mx-auto p-6 space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl">
-              <BarChart3 className="h-8 w-8 text-white" />
-            </div>
+          <div className="flex items-center justify-center gap-4">
+            <AnimatedPortnoxLogo />
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Ultimate Portnox TCO Analyzer
               </h1>
-              <p className="text-lg text-muted-foreground">Enterprise Edition</p>
+              <p className="text-xl text-muted-foreground mt-2">
+                Enterprise Edition - Complete NAC Investment Analysis
+              </p>
             </div>
           </div>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Comprehensive Network Access Control vendor comparison and ROI analysis platform. Compare Portnox CLEAR
-            against 13 major NAC vendors with detailed cost, security, and implementation analysis.
-          </p>
+
+          {keyMetrics && (
+            <Alert className="max-w-4xl mx-auto border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                <strong>Portnox Advantage:</strong> Save {formatCurrency(keyMetrics.totalSavings)} (
+                {keyMetrics.percentSavings.toFixed(0)}% cost reduction) with {keyMetrics.roi.toFixed(0)}% ROI and{" "}
+                {keyMetrics.paybackMonths.toFixed(1)}-month payback period. Reduce security risk by{" "}
+                {keyMetrics.riskReduction.toFixed(0)}% with zero CVEs.
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
 
         {/* Configuration Panel */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-1">
-            <SettingsPanel config={config} onConfigChange={setConfig} />
+        <div className="grid gap-6 lg:grid-cols-4">
+          <div className="lg:col-span-1 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Configuration
+                </CardTitle>
+                <CardDescription>Customize your analysis parameters</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SettingsPanel config={config} onConfigChange={setConfig} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Vendor Selection</CardTitle>
+                <CardDescription>Choose up to 3 vendors to compare</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <EnhancedVendorSelection
+                  selectedVendors={selectedVendors}
+                  onSelectionChange={setSelectedVendors}
+                  maxSelection={3}
+                />
+              </CardContent>
+            </Card>
           </div>
-          <div className="lg:col-span-2">
-            <EnhancedVendorSelection
-              selectedVendors={selectedVendors}
-              onVendorChange={setSelectedVendors}
-              maxSelections={4}
-            />
+
+          {/* Main Analysis Area */}
+          <div className="lg:col-span-3">
+            <Card className="h-full">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>NAC Investment Analysis</CardTitle>
+                    <CardDescription>
+                      Comprehensive analysis for {config.devices.toLocaleString()} devices over {config.years} years
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{config.industry}</Badge>
+                    <Badge variant="outline">{config.organizationSize}</Badge>
+                    <Badge variant="outline">{selectedVendors.length} vendors</Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                  <TabsList className="grid w-full grid-cols-6 lg:grid-cols-11 gap-1">
+                    {tabConfig.map((tab) => (
+                      <TabsTrigger
+                        key={tab.id}
+                        value={tab.id}
+                        className="flex items-center gap-1 text-xs px-2 py-1"
+                        title={tab.description}
+                      >
+                        <tab.icon className="h-3 w-3" />
+                        <span className="hidden sm:inline">{tab.label}</span>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+
+                  {tabConfig.map((tab) => (
+                    <TabsContent key={tab.id} value={tab.id} className="space-y-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <tab.icon className="h-5 w-5 text-primary" />
+                        <div>
+                          <h3 className="text-lg font-semibold">{tab.label}</h3>
+                          <p className="text-sm text-muted-foreground">{tab.description}</p>
+                        </div>
+                      </div>
+                      <Separator />
+                      {tab.component}
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
-        {/* Executive Summary Cards */}
-        {executiveSummary && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-green-600 dark:text-green-400">Total Savings</p>
-                    <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                      {formatCurrency(executiveSummary.totalSavings)}
-                    </p>
-                    <p className="text-xs text-green-700 dark:text-green-300">
-                      {executiveSummary.percentSavings.toFixed(0)}% cost reduction
-                    </p>
-                  </div>
-                  <DollarSign className="h-8 w-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400">ROI</p>
-                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                      {executiveSummary.roi.toFixed(0)}%
-                    </p>
-                    <p className="text-xs text-blue-700 dark:text-blue-300">
-                      {executiveSummary.paybackMonths.toFixed(1)} month payback
-                    </p>
-                  </div>
-                  <TrendingUp className="h-8 w-8 text-blue-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 border-purple-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Portnox Cost</p>
-                    <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
-                      {formatCurrency(executiveSummary.portnoxCost)}
-                    </p>
-                    <p className="text-xs text-purple-700 dark:text-purple-300">All-inclusive pricing</p>
-                  </div>
-                  <Target className="h-8 w-8 text-purple-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Time to Value</p>
-                    <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">30 min</p>
-                    <p className="text-xs text-orange-700 dark:text-orange-300">vs 3-9 months competitors</p>
-                  </div>
-                  <Clock className="h-8 w-8 text-orange-600" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Main Analysis Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-11">
-            <TabsTrigger value="executive" className="flex items-center gap-1 text-xs">
-              <Target className="h-3 w-3" />
-              <span className="hidden sm:inline">Executive</span>
-            </TabsTrigger>
-            <TabsTrigger value="c-suite" className="flex items-center gap-1 text-xs">
-              <Building2 className="h-3 w-3" />
-              <span className="hidden sm:inline">C-Suite</span>
-            </TabsTrigger>
-            <TabsTrigger value="advantage" className="flex items-center gap-1 text-xs">
-              <Zap className="h-3 w-3" />
-              <span className="hidden sm:inline">Advantage</span>
-            </TabsTrigger>
-            <TabsTrigger value="costs" className="flex items-center gap-1 text-xs">
-              <DollarSign className="h-3 w-3" />
-              <span className="hidden sm:inline">Costs</span>
-            </TabsTrigger>
-            <TabsTrigger value="security" className="flex items-center gap-1 text-xs">
-              <Shield className="h-3 w-3" />
-              <span className="hidden sm:inline">Security</span>
-            </TabsTrigger>
-            <TabsTrigger value="implementation" className="flex items-center gap-1 text-xs">
-              <Settings className="h-3 w-3" />
-              <span className="hidden sm:inline">Deploy</span>
-            </TabsTrigger>
-            <TabsTrigger value="compliance" className="flex items-center gap-1 text-xs">
-              <CheckCircle2 className="h-3 w-3" />
-              <span className="hidden sm:inline">Compliance</span>
-            </TabsTrigger>
-            <TabsTrigger value="business" className="flex items-center gap-1 text-xs">
-              <TrendingUp className="h-3 w-3" />
-              <span className="hidden sm:inline">Business</span>
-            </TabsTrigger>
-            <TabsTrigger value="operations" className="flex items-center gap-1 text-xs">
-              <Users className="h-3 w-3" />
-              <span className="hidden sm:inline">Operations</span>
-            </TabsTrigger>
-            <TabsTrigger value="roi" className="flex items-center gap-1 text-xs">
-              <BarChart3 className="h-3 w-3" />
-              <span className="hidden sm:inline">ROI</span>
-            </TabsTrigger>
-            <TabsTrigger value="reports" className="flex items-center gap-1 text-xs">
-              <FileText className="h-3 w-3" />
-              <span className="hidden sm:inline">Reports</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="executive" className="space-y-6">
-            <ExecutiveDashboardView results={results} config={config} />
-          </TabsContent>
-
-          <TabsContent value="c-suite" className="space-y-6">
-            <CSuiteDashboard results={results} config={config} />
-          </TabsContent>
-
-          <TabsContent value="advantage" className="space-y-6">
-            <PortnoxAdvantageDashboard results={results} config={config} />
-          </TabsContent>
-
-          <TabsContent value="costs" className="space-y-6">
-            <DetailedCostsView results={results} config={config} />
-          </TabsContent>
-
-          <TabsContent value="security" className="space-y-6">
-            <SecurityPostureView results={results} config={config} />
-          </TabsContent>
-
-          <TabsContent value="implementation" className="space-y-6">
-            <ImplementationRoadmapView results={results} config={config} />
-          </TabsContent>
-
-          <TabsContent value="compliance" className="space-y-6">
-            <ComplianceRiskView results={results} config={config} />
-          </TabsContent>
-
-          <TabsContent value="business" className="space-y-6">
-            <BusinessImpactView results={results} config={config} />
-          </TabsContent>
-
-          <TabsContent value="operations" className="space-y-6">
-            <OperationsImpactView results={results} config={config} />
-          </TabsContent>
-
-          <TabsContent value="roi" className="space-y-6">
-            <ROIView results={results} config={config} />
-          </TabsContent>
-
-          <TabsContent value="reports" className="space-y-6">
-            <ReportsView results={results} config={config} />
-          </TabsContent>
-        </Tabs>
-
         {/* Footer */}
-        <div className="text-center py-8 border-t">
-          <p className="text-sm text-muted-foreground">
-            © 2024 Portnox TCO Analyzer. Enterprise-grade NAC comparison platform.
-          </p>
+        <div className="text-center text-sm text-muted-foreground">
+          <p>Powered by Portnox CLEAR • Enterprise NAC Analysis • Data updated {new Date().toLocaleDateString()}</p>
         </div>
       </div>
     </div>

@@ -1,135 +1,174 @@
 "use client"
 
-import React from "react"
+import { useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Zap, Shield, DollarSign, Clock, CheckCircle2, TrendingUp, Award, Target } from "lucide-react"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  ScatterChart,
+  Scatter,
+} from "recharts"
+import { DollarSign, Shield, CheckCircle2, Target, Zap, AlertTriangle, Award, Gauge, Users, Rocket } from "lucide-react"
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 import CostBreakdownComparison from "@/components/charts/cost-breakdown-comparison"
 import SecurityVulnerabilityTimeline from "@/components/charts/security-vulnerability-timeline"
 import ImplementationTimelineVisual from "@/components/charts/implementation-timeline-visual"
 
 interface PortnoxAdvantageDashboardProps {
-  results: CalculationResult[]
-  config: CalculationConfiguration
+  results?: CalculationResult[]
+  config?: CalculationConfiguration
 }
 
-export default function PortnoxAdvantageDashboard({ results, config }: PortnoxAdvantageDashboardProps) {
+export default function PortnoxAdvantageDashboard({ results = [], config }: PortnoxAdvantageDashboardProps) {
   const portnoxResult = results.find((r) => r.vendorId === "portnox")
   const competitorResults = results.filter((r) => r.vendorId !== "portnox")
 
-  const advantageMetrics = React.useMemo(() => {
-    if (!portnoxResult || competitorResults.length === 0) return null
+  const advantageMetrics = useMemo(() => {
+    if (!portnoxResult || competitorResults.length === 0) {
+      return {
+        costAdvantage: 0,
+        timeAdvantage: 0,
+        securityAdvantage: 0,
+        riskReduction: 0,
+        operationalAdvantage: 0,
+        totalSavings: 0,
+        roi: 0,
+        paybackMonths: 0,
+      }
+    }
 
     const avgCompetitorCost = competitorResults.reduce((sum, r) => sum + r.totalCost, 0) / competitorResults.length
-    const totalSavings = avgCompetitorCost - portnoxResult.totalCost
-    const percentSavings = avgCompetitorCost > 0 ? (totalSavings / avgCompetitorCost) * 100 : 0
+    const avgCompetitorTime =
+      competitorResults.reduce((sum, r) => sum + r.timeline.implementationWeeks, 0) / competitorResults.length
+    const avgCompetitorSecurity =
+      competitorResults.reduce((sum, r) => sum + r.risk.securityScore, 0) / competitorResults.length
+    const avgCompetitorOps =
+      competitorResults.reduce((sum, r) => sum + r.ops.automationLevel, 0) / competitorResults.length
 
-    const avgCompetitorDeployment =
-      competitorResults.reduce((sum, r) => {
-        return sum + (r.vendorData?.implementation?.deploymentDays || 90)
-      }, 0) / competitorResults.length
-
-    const avgCompetitorCVEs =
-      competitorResults.reduce((sum, r) => {
-        return sum + (r.vendorData?.security?.cveCount || 0)
-      }, 0) / competitorResults.length
+    const costAdvantage =
+      avgCompetitorCost > 0 ? ((avgCompetitorCost - portnoxResult.totalCost) / avgCompetitorCost) * 100 : 0
+    const timeAdvantage =
+      avgCompetitorTime > 0
+        ? ((avgCompetitorTime - portnoxResult.timeline.implementationWeeks) / avgCompetitorTime) * 100
+        : 0
+    const securityAdvantage =
+      avgCompetitorSecurity > 0
+        ? ((portnoxResult.risk.securityScore - avgCompetitorSecurity) / avgCompetitorSecurity) * 100
+        : 0
+    const operationalAdvantage =
+      avgCompetitorOps > 0 ? ((portnoxResult.ops.automationLevel - avgCompetitorOps) / avgCompetitorOps) * 100 : 0
 
     return {
-      costAdvantage: percentSavings,
-      totalSavings,
-      deploymentAdvantage: ((avgCompetitorDeployment - 0.02) / avgCompetitorDeployment) * 100, // 30 minutes vs average
-      securityAdvantage: avgCompetitorCVEs, // Portnox has 0 CVEs
-      automationAdvantage: 95 - 65, // 95% vs 65% average automation
-      maintenanceAdvantage: 100, // 0 maintenance vs regular maintenance
+      costAdvantage,
+      timeAdvantage,
+      securityAdvantage,
+      riskReduction: portnoxResult.risk.breachReduction * 100,
+      operationalAdvantage,
+      totalSavings: avgCompetitorCost - portnoxResult.totalCost,
+      roi: portnoxResult.roi.percentage,
+      paybackMonths: portnoxResult.roi.paybackMonths,
     }
   }, [portnoxResult, competitorResults])
 
-  const competitiveComparison = React.useMemo(() => {
-    return [
-      {
-        metric: "Total Cost",
-        portnox: portnoxResult?.totalCost || 0,
-        competitor: competitorResults.reduce((sum, r) => sum + r.totalCost, 0) / competitorResults.length,
-        unit: "USD",
-        advantage: "Lower",
-      },
-      {
-        metric: "Deployment Time",
-        portnox: 0.02, // 30 minutes in days
-        competitor:
-          competitorResults.reduce((sum, r) => {
-            return sum + (r.vendorData?.implementation?.deploymentDays || 90)
-          }, 0) / competitorResults.length,
-        unit: "Days",
-        advantage: "Faster",
-      },
-      {
-        metric: "CVE Count",
-        portnox: 0,
-        competitor:
-          competitorResults.reduce((sum, r) => {
-            return sum + (r.vendorData?.security?.cveCount || 0)
-          }, 0) / competitorResults.length,
-        unit: "Vulnerabilities",
-        advantage: "Safer",
-      },
-      {
-        metric: "Automation Level",
-        portnox: 95,
-        competitor: 65,
-        unit: "Percent",
-        advantage: "Higher",
-      },
-    ]
-  }, [portnoxResult, competitorResults])
+  const costComparisonData = useMemo(() => {
+    return results
+      .sort((a, b) => a.totalCost - b.totalCost)
+      .map((result, index) => ({
+        vendor: result.vendorName,
+        cost: result.totalCost,
+        savings: results[0]?.totalCost ? result.totalCost - results[0].totalCost : 0,
+        isPortnox: result.vendorId === "portnox",
+        rank: index + 1,
+      }))
+  }, [results])
 
-  const uniqueAdvantages = React.useMemo(() => {
+  const securityComparisonData = useMemo(() => {
+    return results.map((result) => ({
+      vendor: result.vendorName.replace(/\s+/g, "\n"),
+      securityScore: result.risk.securityScore,
+      cveCount: result.vendorData.security.cveCount,
+      zeroTrustMaturity: result.vendorData.security.zeroTrustMaturity,
+      isPortnox: result.vendorId === "portnox",
+    }))
+  }, [results])
+
+  const implementationComparisonData = useMemo(() => {
+    return results.map((result) => ({
+      vendor: result.vendorName,
+      weeks: result.timeline.implementationWeeks,
+      complexity: result.vendorData.implementation.complexityScore,
+      timeToValue: result.timeline.timeToValue,
+      isPortnox: result.vendorId === "portnox",
+    }))
+  }, [results])
+
+  const radarData = useMemo(() => {
+    if (!portnoxResult) return []
+
+    const avgCompetitor = competitorResults.reduce(
+      (acc, r) => ({
+        cost:
+          acc.cost +
+          (100 - (r.totalCost / Math.max(...results.map((res) => res.totalCost))) * 100) / competitorResults.length,
+        security: acc.security + r.risk.securityScore / competitorResults.length,
+        speed:
+          acc.speed +
+          (100 -
+            (r.timeline.implementationWeeks / Math.max(...results.map((res) => res.timeline.implementationWeeks))) *
+              100) /
+            competitorResults.length,
+        automation: acc.automation + r.ops.automationLevel / competitorResults.length,
+        roi: acc.roi + Math.min(r.roi.percentage, 100) / competitorResults.length,
+      }),
+      { cost: 0, security: 0, speed: 0, automation: 0, roi: 0 },
+    )
+
     return [
       {
-        title: "Cloud-Native Architecture",
-        description: "Zero infrastructure, infinite scalability",
-        impact: "Eliminates hardware costs and maintenance",
-        savings: "$150K+ annually",
-        icon: Zap,
-        color: "text-blue-600",
-        bgColor: "bg-blue-50",
-        borderColor: "border-blue-200",
+        metric: "Cost Efficiency",
+        Portnox: 100 - (portnoxResult.totalCost / Math.max(...results.map((r) => r.totalCost))) * 100,
+        "Market Average": avgCompetitor.cost,
       },
       {
-        title: "Zero CVE Security Record",
-        description: "Perfect security track record",
-        impact: "92% breach risk reduction",
-        savings: "$4.1M risk mitigation",
-        icon: Shield,
-        color: "text-green-600",
-        bgColor: "bg-green-50",
-        borderColor: "border-green-200",
+        metric: "Security",
+        Portnox: portnoxResult.risk.securityScore,
+        "Market Average": avgCompetitor.security,
       },
       {
-        title: "30-Minute Deployment",
-        description: "Production-ready in minutes",
-        impact: "95% faster time-to-value",
-        savings: "6 months time savings",
-        icon: Clock,
-        color: "text-orange-600",
-        bgColor: "bg-orange-50",
-        borderColor: "border-orange-200",
+        metric: "Deployment Speed",
+        Portnox:
+          100 -
+          (portnoxResult.timeline.implementationWeeks /
+            Math.max(...results.map((r) => r.timeline.implementationWeeks))) *
+            100,
+        "Market Average": avgCompetitor.speed,
       },
       {
-        title: "95% Automation",
-        description: "Self-healing operations",
-        impact: "90% admin overhead reduction",
-        savings: "2.5 FTE savings",
-        icon: Target,
-        color: "text-purple-600",
-        bgColor: "bg-purple-50",
-        borderColor: "border-purple-200",
+        metric: "Automation",
+        Portnox: portnoxResult.ops.automationLevel,
+        "Market Average": avgCompetitor.automation,
+      },
+      {
+        metric: "ROI",
+        Portnox: Math.min(portnoxResult.roi.percentage, 100),
+        "Market Average": avgCompetitor.roi,
       },
     ]
-  }, [])
+  }, [portnoxResult, competitorResults, results])
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -140,295 +179,369 @@ export default function PortnoxAdvantageDashboard({ results, config }: PortnoxAd
     }).format(value)
   }
 
-  const formatLargeCurrency = (value: number) => {
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`
-    } else if (value >= 1000) {
-      return `$${(value / 1000).toFixed(0)}K`
-    }
-    return formatCurrency(value)
-  }
+  const deviceCount = config?.devices || 1000
+  const timeframe = config?.years || 3
 
-  if (!advantageMetrics) {
+  if (!results || results.length === 0) {
     return (
-      <div className="text-center p-8">
-        <p className="text-muted-foreground">No advantage data available</p>
+      <div className="flex items-center justify-center h-64">
+        <Card className="p-8 text-center">
+          <CardContent>
+            <p className="text-muted-foreground">
+              No vendor data available. Please configure your analysis parameters.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
-      {/* Portnox Advantage Header */}
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-lg border border-green-200">
-        <div className="flex items-center gap-3 mb-4">
-          <Award className="h-8 w-8 text-green-600" />
-          <div>
-            <h1 className="text-2xl font-bold text-green-900">Portnox CLEAR Competitive Advantages</h1>
-            <p className="text-green-700">Why Portnox delivers superior value across all key metrics</p>
-          </div>
-        </div>
-
-        <Alert className="bg-white/50 border-green-300">
-          <CheckCircle2 className="h-5 w-5 text-green-600" />
-          <AlertTitle className="text-green-900">Unmatched Value Proposition</AlertTitle>
-          <AlertDescription className="text-green-800">
-            Portnox CLEAR delivers {advantageMetrics.costAdvantage.toFixed(0)}% cost savings,
-            {advantageMetrics.deploymentAdvantage.toFixed(0)}% faster deployment, and zero security vulnerabilities
-            while providing enterprise-grade Zero Trust security that scales infinitely.
-          </AlertDescription>
-        </Alert>
-      </div>
-
-      {/* Key Advantage Metrics */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+    <div className="space-y-6">
+      {/* Hero Metrics */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-green-600" />
+              <DollarSign className="h-4 w-4 text-green-600" />
               Cost Advantage
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-700">{advantageMetrics.costAdvantage.toFixed(0)}%</div>
-            <p className="text-sm text-green-600 mt-1">Lower total cost</p>
-            <div className="text-xs text-muted-foreground mt-2">
-              {formatLargeCurrency(advantageMetrics.totalSavings)} saved
+            <p className="text-xs text-green-600 mt-1">Lower TCO vs competitors</p>
+            <div className="text-sm font-medium text-green-800 mt-2">
+              {formatCurrency(advantageMetrics.totalSavings)} saved
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50">
+        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-600" />
+              <Rocket className="h-4 w-4 text-blue-600" />
               Speed Advantage
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-700">{advantageMetrics.deploymentAdvantage.toFixed(0)}%</div>
-            <p className="text-sm text-blue-600 mt-1">Faster deployment</p>
-            <div className="text-xs text-muted-foreground mt-2">30 minutes vs months</div>
+            <div className="text-3xl font-bold text-blue-700">{advantageMetrics.timeAdvantage.toFixed(0)}%</div>
+            <p className="text-xs text-blue-600 mt-1">Faster deployment</p>
+            <div className="flex items-center gap-1 mt-2">
+              <Zap className="h-3 w-3 text-blue-600" />
+              <span className="text-xs text-blue-600">30 min vs 6+ months</span>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50">
+        <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Shield className="h-5 w-5 text-purple-600" />
+              <Shield className="h-4 w-4 text-purple-600" />
               Security Advantage
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-purple-700">0</div>
-            <p className="text-sm text-purple-600 mt-1">CVEs vs {Math.round(advantageMetrics.securityAdvantage)}</p>
-            <div className="text-xs text-muted-foreground mt-2">Perfect security record</div>
+            <div className="text-3xl font-bold text-purple-700">{advantageMetrics.securityAdvantage.toFixed(0)}%</div>
+            <p className="text-xs text-purple-600 mt-1">Higher security rating</p>
+            <Badge variant="outline" className="mt-2 text-xs border-purple-300 text-purple-700">
+              Zero CVEs
+            </Badge>
           </CardContent>
         </Card>
 
-        <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50">
+        <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Zap className="h-5 w-5 text-orange-600" />
-              Automation Advantage
+              <Gauge className="h-4 w-4 text-orange-600" />
+              Operational Advantage
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-orange-700">{advantageMetrics.automationAdvantage}%</div>
-            <p className="text-sm text-orange-600 mt-1">Higher automation</p>
-            <div className="text-xs text-muted-foreground mt-2">95% vs 65% average</div>
+            <div className="text-3xl font-bold text-orange-700">
+              {advantageMetrics.operationalAdvantage.toFixed(0)}%
+            </div>
+            <p className="text-xs text-orange-600 mt-1">Higher automation level</p>
+            <div className="flex items-center gap-1 mt-2">
+              <Users className="h-3 w-3 text-orange-600" />
+              <span className="text-xs text-orange-600">90% less admin effort</span>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Unique Advantages Grid */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {uniqueAdvantages.map((advantage, index) => (
-          <Card key={index} className={`${advantage.borderColor} ${advantage.bgColor}`}>
-            <CardHeader>
-              <CardTitle className={`flex items-center gap-3 ${advantage.color}`}>
-                <advantage.icon className="h-6 w-6" />
-                {advantage.title}
-              </CardTitle>
-              <CardDescription className="text-gray-700">{advantage.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Business Impact:</span>
-                  <span className="text-sm text-muted-foreground">{advantage.impact}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Value Creation:</span>
-                  <span className={`text-sm font-bold ${advantage.color}`}>{advantage.savings}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Competitive Comparison Chart */}
+      {/* Competitive Radar Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Head-to-Head Comparison</CardTitle>
-          <CardDescription>Portnox CLEAR vs Average Competitor across key metrics</CardDescription>
+          <CardTitle>Portnox vs Market Average - Competitive Analysis</CardTitle>
+          <CardDescription>Multi-dimensional comparison across key evaluation criteria</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
-            {competitiveComparison.map((metric, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{metric.metric}</span>
-                  <Badge variant="outline" className="text-green-700 border-green-300">
-                    {metric.advantage}
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <div className="text-xs text-muted-foreground">Portnox CLEAR</div>
-                    <div className="text-lg font-bold text-green-700">
-                      {metric.unit === "USD"
-                        ? formatLargeCurrency(metric.portnox)
-                        : metric.unit === "Days"
-                          ? metric.portnox < 1
-                            ? "30 minutes"
-                            : `${metric.portnox} days`
-                          : `${metric.portnox}${metric.unit === "Percent" ? "%" : ""}`}
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-xs text-muted-foreground">Competitor Average</div>
-                    <div className="text-lg font-bold text-red-700">
-                      {metric.unit === "USD"
-                        ? formatLargeCurrency(metric.competitor)
-                        : metric.unit === "Days"
-                          ? `${Math.round(metric.competitor)} days`
-                          : `${Math.round(metric.competitor)}${metric.unit === "Percent" ? "%" : ""}`}
-                    </div>
-                  </div>
-                </div>
-                <Progress
-                  value={
-                    metric.advantage === "Lower" || metric.advantage === "Safer"
-                      ? ((metric.competitor - metric.portnox) / metric.competitor) * 100
-                      : ((metric.portnox - metric.competitor) / Math.max(metric.portnox, metric.competitor)) * 100
-                  }
-                  className="h-2"
-                />
-              </div>
-            ))}
-          </div>
+          <ResponsiveContainer width="100%" height={400}>
+            <RadarChart data={radarData}>
+              <PolarGrid />
+              <PolarAngleAxis dataKey="metric" tick={{ fontSize: 12 }} />
+              <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fontSize: 10 }} />
+              <Radar
+                name="Portnox CLEAR"
+                dataKey="Portnox"
+                stroke="#3b82f6"
+                fill="#3b82f6"
+                fillOpacity={0.3}
+                strokeWidth={3}
+              />
+              <Radar
+                name="Market Average"
+                dataKey="Market Average"
+                stroke="#ef4444"
+                fill="#ef4444"
+                fillOpacity={0.1}
+                strokeWidth={2}
+                strokeDasharray="5 5"
+              />
+              <Legend />
+            </RadarChart>
+          </ResponsiveContainer>
         </CardContent>
       </Card>
 
-      {/* Detailed Visual Comparisons */}
-      <div className="space-y-6">
+      {/* Cost vs Security Scatter Plot */}
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Cost Advantage Analysis</CardTitle>
-            <CardDescription>Comprehensive cost breakdown showing where Portnox delivers savings</CardDescription>
+            <CardTitle>Cost vs Security Analysis</CardTitle>
+            <CardDescription>Total cost of ownership vs security rating</CardDescription>
           </CardHeader>
           <CardContent>
-            <CostBreakdownComparison results={results} config={config} />
+            <ResponsiveContainer width="100%" height={300}>
+              <ScatterChart>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="totalCost"
+                  type="number"
+                  domain={["dataMin", "dataMax"]}
+                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  name="Total Cost"
+                />
+                <YAxis dataKey="securityScore" type="number" domain={[0, 100]} name="Security Score" />
+                <Tooltip
+                  formatter={(value, name) => [
+                    name === "totalCost" ? formatCurrency(value as number) : `${value}%`,
+                    name === "totalCost" ? "Total Cost" : "Security Score",
+                  ]}
+                  labelFormatter={(label) => `Vendor: ${label}`}
+                />
+                <Scatter
+                  name="Vendors"
+                  data={results.map((r) => ({
+                    totalCost: r.totalCost,
+                    securityScore: r.risk.securityScore,
+                    vendor: r.vendorName,
+                    fill: r.vendorId === "portnox" ? "#10b981" : "#6b7280",
+                  }))}
+                  fill="#8884d8"
+                />
+              </ScatterChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Security Superiority</CardTitle>
-            <CardDescription>Zero CVE track record vs competitor vulnerability exposure</CardDescription>
+            <CardTitle>Implementation Timeline Comparison</CardTitle>
+            <CardDescription>Deployment time across vendors</CardDescription>
           </CardHeader>
           <CardContent>
-            <SecurityVulnerabilityTimeline results={results} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Deployment Speed Advantage</CardTitle>
-            <CardDescription>30-minute deployment vs traditional NAC complexity</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ImplementationTimelineVisual results={results} />
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={implementationComparisonData} layout="horizontal">
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" tickFormatter={(value) => `${value}w`} />
+                <YAxis dataKey="vendor" type="category" width={80} tick={{ fontSize: 10 }} />
+                <Tooltip formatter={(value) => [`${value} weeks`, "Implementation Time"]} />
+                <Bar
+                  dataKey="weeks"
+                  fill={(entry: any) => (entry.isPortnox ? "#10b981" : "#6b7280")}
+                  radius={[0, 4, 4, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
 
-      {/* Why Portnox Wins */}
-      <Card className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
+      {/* Enhanced Visual Comparisons */}
+      <div className="space-y-6">
+        <CostBreakdownComparison results={results} config={config} />
+        <SecurityVulnerabilityTimeline results={results} />
+        <ImplementationTimelineVisual results={results} />
+      </div>
+
+      {/* Security Comparison */}
+      <Card>
         <CardHeader>
-          <CardTitle className="text-green-900 flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Why Portnox CLEAR Wins Every Time
-          </CardTitle>
-          <CardDescription className="text-green-700">
-            The fundamental advantages that make Portnox the clear choice
-          </CardDescription>
+          <CardTitle>Security Posture Analysis</CardTitle>
+          <CardDescription>Security ratings and vulnerability exposure</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-4">
-              <h4 className="font-semibold text-green-800">Architectural Advantages</h4>
-              <ul className="space-y-2 text-sm text-green-700">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span>
-                    <strong>Cloud-Native:</strong> No hardware, no maintenance, infinite scale
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span>
-                    <strong>Zero Trust:</strong> 95% maturity vs 45% industry average
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span>
-                    <strong>API-First:</strong> Seamless integration with any infrastructure
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span>
-                    <strong>Vendor Agnostic:</strong> Works with any network equipment
-                  </span>
-                </li>
-              </ul>
-            </div>
-            <div className="space-y-4">
-              <h4 className="font-semibold text-green-800">Operational Advantages</h4>
-              <ul className="space-y-2 text-sm text-green-700">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span>
-                    <strong>30-Minute Deployment:</strong> Production ready in minutes
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span>
-                    <strong>95% Automation:</strong> Self-healing, self-optimizing
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span>
-                    <strong>Zero Maintenance:</strong> Always current, no patches
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <span>
-                    <strong>Global Scale:</strong> Multi-region redundancy included
-                  </span>
-                </li>
-              </ul>
-            </div>
+          <div className="space-y-4">
+            {securityComparisonData
+              .sort((a, b) => b.securityScore - a.securityScore)
+              .map((vendor) => (
+                <div key={vendor.vendor} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="font-medium text-sm min-w-[120px]">{vendor.vendor}</span>
+                      {vendor.isPortnox && (
+                        <Badge variant="outline" className="text-xs border-green-300 text-green-700">
+                          Zero CVEs
+                        </Badge>
+                      )}
+                      {vendor.cveCount > 50 && (
+                        <Badge variant="destructive" className="text-xs">
+                          High Risk
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-right text-sm">
+                      <div className="font-medium">{vendor.securityScore}% Security Score</div>
+                      <div className="text-muted-foreground">{vendor.cveCount} CVEs</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Progress
+                        value={vendor.securityScore}
+                        className={`h-2 ${vendor.isPortnox ? "bg-green-100" : ""}`}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Progress
+                        value={vendor.zeroTrustMaturity}
+                        className={`h-2 ${vendor.isPortnox ? "bg-blue-100" : ""}`}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Security Rating</span>
+                    <span>Zero Trust Maturity: {vendor.zeroTrustMaturity}%</span>
+                  </div>
+                </div>
+              ))}
           </div>
         </CardContent>
       </Card>
+
+      {/* Key Differentiators */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-800">
+              <Award className="h-5 w-5" />
+              Portnox Unique Advantages
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
+                <div>
+                  <div className="font-medium text-sm">Zero CVE Security Record</div>
+                  <div className="text-xs text-muted-foreground">No known vulnerabilities since inception</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
+                <div>
+                  <div className="font-medium text-sm">30-Minute Deployment</div>
+                  <div className="text-xs text-muted-foreground">Production ready in minutes, not months</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
+                <div>
+                  <div className="font-medium text-sm">True Cloud-Native</div>
+                  <div className="text-xs text-muted-foreground">No hardware, no maintenance windows</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
+                <div>
+                  <div className="font-medium text-sm">95% Automation Level</div>
+                  <div className="text-xs text-muted-foreground">Minimal administrative overhead</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
+                <div>
+                  <div className="font-medium text-sm">Vendor Agnostic</div>
+                  <div className="text-xs text-muted-foreground">Works with any network infrastructure</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-800">
+              <AlertTriangle className="h-5 w-5" />
+              Competitor Limitations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
+                <div>
+                  <div className="font-medium text-sm">Complex Deployments</div>
+                  <div className="text-xs text-muted-foreground">6-9 months typical implementation time</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
+                <div>
+                  <div className="font-medium text-sm">High Hidden Costs</div>
+                  <div className="text-xs text-muted-foreground">Hardware, services, training not included</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
+                <div>
+                  <div className="font-medium text-sm">Security Vulnerabilities</div>
+                  <div className="text-xs text-muted-foreground">15+ CVEs annually on average</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
+                <div>
+                  <div className="font-medium text-sm">Vendor Lock-in</div>
+                  <div className="text-xs text-muted-foreground">Proprietary architectures limit flexibility</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
+                <div>
+                  <div className="font-medium text-sm">High Operational Overhead</div>
+                  <div className="text-xs text-muted-foreground">2-4 FTE required for ongoing management</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Executive Summary */}
+      <Alert className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+        <Target className="h-4 w-4" />
+        <AlertTitle className="text-blue-900 dark:text-blue-100">Executive Recommendation</AlertTitle>
+        <AlertDescription className="text-blue-800 dark:text-blue-200">
+          <strong>Portnox CLEAR delivers transformative value:</strong> {advantageMetrics.costAdvantage.toFixed(0)}%
+          cost reduction ({formatCurrency(advantageMetrics.totalSavings)} saved),{" "}
+          {advantageMetrics.timeAdvantage.toFixed(0)}% faster deployment, and{" "}
+          {advantageMetrics.securityAdvantage.toFixed(0)}% superior security posture. With zero CVEs, 95% automation,
+          and {advantageMetrics.paybackMonths}-month payback, Portnox represents the clear choice for modern Zero Trust
+          NAC.
+        </AlertDescription>
+      </Alert>
     </div>
   )
 }
