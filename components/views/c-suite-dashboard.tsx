@@ -19,7 +19,7 @@ import {
   CheckCircle2,
   Zap,
   BarChart3,
-  PieChartIcon as RechartsPieChart,
+  PieChartIcon,
   Calendar,
   Download,
 } from "lucide-react"
@@ -40,6 +40,8 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
+  PieChart,
+  Pie,
 } from "recharts"
 
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
@@ -247,15 +249,15 @@ export default function CSuiteDashboard({ results, config }: CSuiteDashboardProp
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <RechartsPieChart className="h-5 w-5" />
+                  <PieChartIcon className="h-5 w-5" />
                   Business Value Breakdown
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPieChart>
-                      <RechartsPieChart
+                    <PieChart>
+                      <Pie
                         data={businessValueData}
                         cx="50%"
                         cy="50%"
@@ -268,9 +270,9 @@ export default function CSuiteDashboard({ results, config }: CSuiteDashboardProp
                         {businessValueData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
-                      </RechartsPieChart>
+                      </Pie>
                       <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                    </RechartsPieChart>
+                    </PieChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
