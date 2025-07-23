@@ -51,14 +51,12 @@ export default function TcoAnalyzerUltimate() {
     industry: "Technology",
     organizationSize: "Mid-Market",
     region: "North America",
-    portnoxPricing: {
-      basePrice: 36,
-      addOns: {
-        advancedThreatProtection: false,
-        iotSecurity: false,
-        complianceReporting: false,
-        premiumSupport: false,
-      },
+    portnoxBasePrice: 36,
+    portnoxAddons: {
+      atp: false,
+      compliance: false,
+      iot: false,
+      analytics: false,
     },
   })
 
