@@ -824,7 +824,7 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       "Good threat detection and response features",
       "Comprehensive compliance monitoring"
     ]
-  }
+  },
 
   ivanti_neurons: {
     id: "ivanti_neurons",
