@@ -128,16 +128,6 @@ export default function TcoAnalyzerUltimate() {
       setIsLoading(false)
     }
   }
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Failed to load saved data", error)
-      setLoadingError("Failed to load saved configuration")
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const calculateResults = useCallback(async () => {
     if (selectedVendors.length === 0) {
