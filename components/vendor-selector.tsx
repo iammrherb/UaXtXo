@@ -8,18 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { 
-  ChevronDown, 
-  Building2, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Award, 
-  Cloud, 
-  Server, 
-  Hybrid,
-  Info,
-  X
-} from "lucide-react"
+import { ChevronDown, Building2, CheckCircle2, AlertTriangle, Award, Cloud, Server, Grid as Hybrid, Info, X } from "lucide-react"
 import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
 import { motion, AnimatePresence } from "framer-motion"
 
