@@ -44,7 +44,8 @@ import {
   TrendingDown,
   Star,
   Briefcase,
-  Globe
+  Globe,
+  BarChart3
 } from "lucide-react"
 import { motion } from "framer-motion"
 import type { UltimateCalculationResult } from "@/lib/services/enhanced-calculation-service"
