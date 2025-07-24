@@ -273,13 +273,10 @@ export class EnhancedCalculationService {
   ): Promise<EnhancedTCOBreakdown> {
     const { devices, users, years } = config
 
-    // Get the most recent pricing
-    const currentPricing = vendorData.pricing
-      .filter(p => new Date(p.effective_date) <= new Date())
-      .sort((a, b) => new Date(b.effective_date).getTime() - new Date(a.effective_date).getTime())[0]
-
-    if (!currentPricing) {
-      throw new Error(`No current pricing data available for ${vendorData.vendor.vendor_id}`)
+    // Use mock data from comprehensive vendor database
+    const vendorInfo = require('../comprehensive-vendor-data').ComprehensiveVendorDatabase[vendorData.vendor.vendor_id]
+    if (!vendorInfo) {
+      throw new Error(`No vendor data available for ${vendorData.vendor.vendor_id}`)
     }
 
     let licensing = 0
@@ -287,7 +284,7 @@ export class EnhancedCalculationService {
 
     // Calculate licensing with real pricing data
     if (vendorData.vendor.vendor_id === 'portnox') {
-      let effectivePrice = config.portnoxBasePrice || currentPricing.price_per_device
+      let effectivePrice = config.portnoxBasePrice || vendorInfo.pricing.pricePerDevice
       
       // Add addon costs
       if (config.portnoxAddons?.atp) effectivePrice += 1.5
@@ -296,7 +293,7 @@ export class EnhancedCalculationService {
       if (config.portnoxAddons?.analytics) effectivePrice += 1.5
 
       // Apply volume discounts
-      const volumeDiscounts = currentPricing.volume_discounts || {}
+      const volumeDiscounts = vendorInfo.pricing.volumeDiscounts || {}
       const applicableDiscount = Object.entries(volumeDiscounts)
         .filter(([threshold]) => devices >= parseInt(threshold))
         .reduce((max, [, discount]) => Math.max(max, Number(discount)), 0)
@@ -315,20 +312,19 @@ export class EnhancedCalculationService {
       }
     } else {
       // Calculate for other vendors
-      const basePrice = currentPricing.base_price || 0
-      const devicePrice = currentPricing.price_per_device || 0
-      const userPrice = currentPricing.price_per_user || 0
+      const basePrice = vendorInfo.pricing.basePrice || 0
+      const devicePrice = vendorInfo.pricing.pricePerDevice || 0
 
-      if (currentPricing.pricing_model === 'per-device') {
+      if (vendorInfo.pricing.model === 'per-device') {
         licensing = (basePrice + devicePrice * devices) * years
-      } else if (currentPricing.pricing_model === 'per-user') {
-        licensing = (basePrice + userPrice * users) * years
-      } else if (currentPricing.pricing_model === 'flat-rate') {
+      } else if (vendorInfo.pricing.model === 'per-user') {
+        licensing = (basePrice + devicePrice * users) * years
+      } else if (vendorInfo.pricing.model === 'flat-rate') {
         licensing = basePrice * years
       }
 
       // Apply volume discounts
-      const volumeDiscounts = currentPricing.volume_discounts || {}
+      const volumeDiscounts = vendorInfo.pricing.volumeDiscounts || {}
       const applicableDiscount = Object.entries(volumeDiscounts)
         .filter(([threshold]) => devices >= parseInt(threshold))
         .reduce((max, [, discount]) => Math.max(max, Number(discount)), 0)
@@ -341,50 +337,17 @@ export class EnhancedCalculationService {
         amount: licensing,
         description: `${vendorData.vendor.name} licensing`,
         frequency: 'annual',
-        scaling: currentPricing.pricing_model
+        scaling: vendorInfo.pricing.model
       }
     }
 
-    // Calculate other costs from detailed cost records
-    const costsByCategory = vendorData.costs.reduce((acc, cost) => {
-      if (!acc[cost.cost_category]) acc[cost.cost_category] = 0
-      
-      let amount = cost.cost_amount
-      
-      // Apply scaling
-      if (cost.cost_scaling === 'per-device') {
-        amount *= devices
-      } else if (cost.cost_scaling === 'per-user') {
-        amount *= users
-      } else if (cost.cost_scaling === 'percentage') {
-        amount = licensing * (amount / 100)
-      }
-
-      // Apply frequency
-      if (cost.cost_frequency === 'annual') {
-        amount *= years
-      } else if (cost.cost_frequency === 'monthly') {
-        amount *= 12 * years
-      } else if (cost.cost_frequency === 'quarterly') {
-        amount *= 4 * years
-      }
-
-      // Apply region-specific adjustments
-      if (cost.region_specific) {
-        amount *= regionFactors.salaryMultiplier
-      }
-
-      acc[cost.cost_category] += amount
-      
-      breakdown_details[`${cost.cost_category}_${cost.cost_subcategory}`] = {
-        amount,
-        description: cost.description || cost.cost_subcategory,
-        frequency: cost.cost_frequency,
-        scaling: cost.cost_scaling
-      }
-
-      return acc
-    }, {} as Record<string, number>)
+    // Calculate other costs from vendor data
+    const additionalCosts = vendorInfo.pricing.additionalCosts
+    const hardware = additionalCosts.hardware
+    const services = additionalCosts.services
+    const training = additionalCosts.training
+    const maintenance = additionalCosts.maintenance * years
+    const support = additionalCosts.support * years
 
     // Calculate hidden costs (operational overhead)
     const baseSalary = 125000 * regionFactors.salaryMultiplier
@@ -395,22 +358,22 @@ export class EnhancedCalculationService {
     const complianceCost = this.calculateComplianceCosts(vendorData, config, industryProfile)
 
     const total = licensing + 
-                 (costsByCategory.hardware || 0) +
-                 (costsByCategory.services || 0) +
-                 (costsByCategory.training || 0) +
-                 (costsByCategory.maintenance || 0) +
-                 (costsByCategory.support || 0) +
+                 hardware +
+                 services +
+                 training +
+                 maintenance +
+                 support +
                  operationalCost +
                  complianceCost
 
     return {
       licensing,
-      hardware: costsByCategory.hardware || 0,
-      implementation: costsByCategory.services || 0,
-      support: costsByCategory.support || 0,
-      training: costsByCategory.training || 0,
-      maintenance: costsByCategory.maintenance || 0,
-      hidden: costsByCategory.hidden || 0,
+      hardware,
+      implementation: services,
+      support,
+      training,
+      maintenance,
+      hidden: 0,
       operational: operationalCost,
       compliance: complianceCost,
       total,

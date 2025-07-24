@@ -6,50 +6,41 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
   Settings,
   Loader2,
-  ChevronLeft,
-  ChevronRight,
-  Menu,
-  X,
   BarChart3,
   DollarSign,
   TrendingUp,
   Shield,
-  FileCheck,
   Users,
-  LayoutGrid,
-  MapPin,
-  Building2,
-  FileText,
   Calendar,
   HelpCircle,
   RefreshCw,
   Save,
   Download,
-  AlertTriangle
+  Building2
 } from "lucide-react"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
 import { LoadingState, LoadingSpinner, ProgressiveLoading } from "@/components/ui/loading-states"
 
-import EnhancedVendorSelection from "./enhanced-vendor-selection"
+import VendorSelector from "./vendor-selector"
 import SettingsPanel from "./settings-panel"
 import AnimatedPortnoxLogo from "./animated-portnox-logo"
-import AdvancedCostComparison from "./enhanced-charts/advanced-cost-comparison"
-import ComprehensiveROIAnalysis from "./enhanced-charts/comprehensive-roi-analysis"
-import InteractiveSecurityDashboard from "./enhanced-charts/interactive-security-dashboard"
-import OperationalEfficiencyChart from "./enhanced-charts/operational-efficiency-chart"
+import ExecutiveDashboardView from "./views/executive-dashboard-view"
+import DetailedCostsView from "./views/detailed-costs-view"
+import ROIView from "./views/roi-view"
+import SecurityPostureView from "./views/security-posture-view"
+import OperationsImpactView from "./views/operations-impact-view"
 
 import { EnhancedCalculationService } from "@/lib/services/enhanced-calculation-service"
 import { isSupabaseAvailable } from "@/lib/database/enhanced-client"
 import type { UltimateCalculationResult } from "@/lib/services/enhanced-calculation-service"
 import type { CalculationConfiguration } from "@/lib/types"
 
-const DEFAULT_VENDORS = ["portnox", "cisco_ise", "aruba_clearpass", "forescout"]
+const DEFAULT_VENDORS = ["portnox", "cisco_ise", "aruba_clearpass"]
 
 export default function TcoAnalyzerUltimate() {
   const [isClient, setIsClient] = useState(false)
@@ -58,8 +49,6 @@ export default function TcoAnalyzerUltimate() {
   const [loadingError, setLoadingError] = useState<string | null>(null)
   const [isSettingsOpen, setSettingsOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
@@ -181,13 +170,28 @@ export default function TcoAnalyzerUltimate() {
   }, [darkMode])
 
   const handleVendorToggle = (vendorId: string) => {
-    setSelectedVendors((prev) => (prev.includes(vendorId) ? prev.filter((v) => v !== vendorId) : [...prev, vendorId]))
+    // Ensure Portnox is always included
+    const newVendors = vendorId === "portnox" ? 
+      (selectedVendors.includes("portnox") ? selectedVendors : [...selectedVendors, "portnox"]) :
+      (selectedVendors.includes(vendorId) ? selectedVendors.filter((v) => v !== vendorId) : [...selectedVendors, vendorId])
+    
+    // Ensure Portnox is always in the list
+    const finalVendors = newVendors.includes("portnox") ? newVendors : ["portnox", ...newVendors.slice(0, 2)]
+    
+    setSelectedVendors(finalVendors)
+    toast.success(`Vendor selection updated`)
+  }
+
+  const handleVendorChange = (vendors: string[]) => {
+    // Ensure Portnox is always included
+    const finalVendors = vendors.includes("portnox") ? vendors : ["portnox", ...vendors.slice(0, 2)]
+    setSelectedVendors(finalVendors)
     toast.success(`Vendor selection updated`)
   }
 
   const handleClearAll = () => {
-    setSelectedVendors([])
-    toast.info("All vendors cleared")
+    setSelectedVendors(["portnox"]) // Keep Portnox
+    toast.info("Vendors cleared - Portnox retained")
   }
 
   const handleSelectRecommended = () => {
@@ -292,7 +296,7 @@ export default function TcoAnalyzerUltimate() {
         <motion.header 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm"
+          className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-0 z-50"
         >
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-4">
@@ -306,6 +310,15 @@ export default function TcoAnalyzerUltimate() {
                   Real-time data-driven insights for Network Access Control vendor evaluation
                 </p>
               </div>
+            </div>
+
+            {/* Vendor Selection */}
+            <div className="flex-1 max-w-2xl mx-8">
+              <VendorSelector
+                selectedVendors={selectedVendors}
+                onVendorChange={handleVendorChange}
+                maxVendors={3}
+              />
             </div>
 
             <div className="flex items-center gap-4">
@@ -332,29 +345,6 @@ export default function TcoAnalyzerUltimate() {
                 <RefreshCw className={`h-4 w-4 mr-1 ${isCalculating ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
-              
-              <Sheet open={!sidebarOpen} onOpenChange={setSidebarOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="md:hidden">
-                    {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-80 p-0">
-                  <div className="p-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <AnimatedPortnoxLogo width={24} height={24} showText={false} animate={false} />
-                      <span className="font-semibold text-sm">Vendor Selection</span>
-                    </div>
-                    <EnhancedVendorSelection
-                      selectedVendors={selectedVendors}
-                      onVendorToggle={handleVendorToggle}
-                      onClearAll={handleClearAll}
-                      onSelectRecommended={handleSelectRecommended}
-                      darkMode={darkMode}
-                    />
-                  </div>
-                </SheetContent>
-              </Sheet>
               
               <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
                 <Settings className="h-4 w-4 mr-2" />
@@ -384,205 +374,134 @@ export default function TcoAnalyzerUltimate() {
 
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
-          <ResizablePanelGroup direction="horizontal" className="h-full w-full">
-            {/* Sidebar Panel */}
-            <ResizablePanel
-              defaultSize={sidebarCollapsed ? 5 : 28}
-              minSize={5}
-              maxSize={40}
-              className={`${!sidebarOpen ? "hidden md:block" : ""}`}
-            >
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="h-full flex flex-col bg-gray-50 dark:bg-gray-900/50"
-              >
-                {/* Sidebar Header */}
-                <div className="p-4 border-b bg-white dark:bg-gray-900">
-                  <div className="flex items-center justify-between">
-                    {!sidebarCollapsed && (
-                      <div className="flex items-center gap-2">
-                        <AnimatedPortnoxLogo width={24} height={24} showText={false} animate={false} />
-                        <span className="font-semibold text-sm">Vendor Selection</span>
-                        {selectedVendors.length > 0 && (
-                          <Badge variant="outline" className="text-xs">
-                            {selectedVendors.length}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                      className="h-8 w-8 p-0"
-                    >
-                      {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Sidebar Content */}
-                <div className="flex-1 overflow-hidden">
-                  {sidebarCollapsed ? (
-                    <div className="p-2 space-y-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSidebarCollapsed(false)}
-                        className="w-full h-10 p-0"
-                        title="Expand vendor selection"
-                      >
-                        <Menu className="h-4 w-4" />
-                      </Button>
-                      <div className="text-center">
-                        <Badge variant="secondary" className="text-xs">
-                          {selectedVendors.length}
-                        </Badge>
-                      </div>
-                    </div>
-                  ) : (
-                    <EnhancedVendorSelection
-                      selectedVendors={selectedVendors}
-                      onVendorToggle={handleVendorToggle}
-                      onClearAll={handleClearAll}
-                      onSelectRecommended={handleSelectRecommended}
-                      darkMode={darkMode}
-                    />
+          <div className="flex flex-col h-full w-full">
+            {/* Enhanced Tab Navigation */}
+            <div className="border-b bg-white dark:bg-gray-900 px-6 py-3">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-4">
+                  <h2 className="text-lg font-semibold">Executive Analysis Dashboard</h2>
+                  {results.length > 0 && (
+                    <ProgressiveLoading delay={100}>
+                      <Badge variant="outline" className="flex items-center gap-1">
+                        <BarChart3 className="w-3 h-3" />
+                        {results.length} vendors analyzed
+                      </Badge>
+                    </ProgressiveLoading>
                   )}
                 </div>
-              </motion.div>
-            </ResizablePanel>
-
-            <ResizableHandle withHandle className="bg-gray-200 dark:bg-gray-700" />
-
-            {/* Main Content Panel */}
-            <ResizablePanel defaultSize={sidebarCollapsed ? 95 : 72}>
-              <div className="flex flex-col h-full">
-                {/* Enhanced Tab Navigation */}
-                <div className="border-b bg-white dark:bg-gray-900 px-6 py-3">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-4">
-                      <h2 className="text-lg font-semibold">Analysis Dashboard</h2>
-                      {results.length > 0 && (
-                        <ProgressiveLoading delay={100}>
-                          <Badge variant="outline" className="flex items-center gap-1">
-                            <BarChart3 className="w-3 h-3" />
-                            {results.length} vendors analyzed
-                          </Badge>
-                        </ProgressiveLoading>
-                      )}
-                    </div>
-                    
-                    {isCalculating && (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                        <span className="text-sm text-muted-foreground">Updating analysis...</span>
-                      </div>
-                    )}
+                
+                {isCalculating && (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                    <span className="text-sm text-muted-foreground">Updating analysis...</span>
                   </div>
-
-                  <Tabs defaultValue="costs" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4 h-auto bg-gray-100 dark:bg-gray-800">
-                      <TabsTrigger
-                        value="costs"
-                        className="text-sm px-4 py-3 flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
-                      >
-                        <DollarSign className="h-4 w-4" />
-                        <span>Cost Analysis</span>
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="roi"
-                        className="text-sm px-4 py-3 flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
-                      >
-                        <TrendingUp className="h-4 w-4" />
-                        <span>ROI Analysis</span>
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="security"
-                        className="text-sm px-4 py-3 flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
-                      >
-                        <Shield className="h-4 w-4" />
-                        <span>Security</span>
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="operations"
-                        className="text-sm px-4 py-3 flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
-                      >
-                        <Users className="h-4 w-4" />
-                        <span>Operations</span>
-                      </TabsTrigger>
-                    </TabsList>
-
-                    {/* Enhanced Tab Content */}
-                    <div className="mt-6">
-                      <TabsContent value="costs" className="mt-0">
-                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4" role="main" aria-label="Cost analysis content">
-                          <Suspense fallback={
-                            <div className="flex justify-center py-8">
-                              <LoadingSpinner message="Loading cost analysis..." />
-                            </div>
-                          }>
-                          <AdvancedCostComparison 
-                            results={results} 
-                            config={configuration}
-                            onExport={handleExportData}
-                            onShare={() => toast.info("Share functionality coming soon")}
-                          />
-                          </Suspense>
-                        </div>
-                      </TabsContent>
-                      
-                      <TabsContent value="roi" className="mt-0">
-                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4" role="main" aria-label="ROI analysis content">
-                          <Suspense fallback={
-                            <div className="flex justify-center py-8">
-                              <LoadingSpinner message="Loading ROI analysis..." />
-                            </div>
-                          }>
-                          <ComprehensiveROIAnalysis 
-                            results={results} 
-                            config={configuration}
-                          />
-                          </Suspense>
-                        </div>
-                      </TabsContent>
-                      
-                      <TabsContent value="security" className="mt-0">
-                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4" role="main" aria-label="Security analysis content">
-                          <Suspense fallback={
-                            <div className="flex justify-center py-8">
-                              <LoadingSpinner message="Loading security analysis..." />
-                            </div>
-                          }>
-                          <InteractiveSecurityDashboard 
-                            results={results} 
-                            config={configuration}
-                          />
-                          </Suspense>
-                        </div>
-                      </TabsContent>
-                      
-                      <TabsContent value="operations" className="mt-0">
-                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4" role="main" aria-label="Operations analysis content">
-                          <Suspense fallback={
-                            <div className="flex justify-center py-8">
-                              <LoadingSpinner message="Loading operations analysis..." />
-                            </div>
-                          }>
-                          <OperationalEfficiencyChart 
-                            results={results} 
-                            config={configuration}
-                          />
-                          </Suspense>
-                        </div>
-                      </TabsContent>
-                    </div>
-                  </Tabs>
-                </div>
+                )}
               </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+
+              <Tabs defaultValue="executive" className="w-full">
+                <TabsList className="grid w-full grid-cols-5 h-auto bg-gray-100 dark:bg-gray-800">
+                  <TabsTrigger
+                    value="executive"
+                    className="text-sm px-4 py-3 flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+                  >
+                    <Building2 className="h-4 w-4" />
+                    <span>Executive</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="costs"
+                    className="text-sm px-4 py-3 flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+                  >
+                    <DollarSign className="h-4 w-4" />
+                    <span>Costs</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="roi"
+                    className="text-sm px-4 py-3 flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+                  >
+                    <TrendingUp className="h-4 w-4" />
+                    <span>ROI</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="security"
+                    className="text-sm px-4 py-3 flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+                  >
+                    <Shield className="h-4 w-4" />
+                    <span>Security</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="operations"
+                    className="text-sm px-4 py-3 flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+                  >
+                    <Users className="h-4 w-4" />
+                    <span>Operations</span>
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Enhanced Tab Content */}
+                <div className="mt-6">
+                  <TabsContent value="executive" className="mt-0">
+                    <div className="h-[calc(100vh-200px)] overflow-y-auto px-6" role="main" aria-label="Executive dashboard content">
+                      <Suspense fallback={
+                        <div className="flex justify-center py-8">
+                          <LoadingSpinner message="Loading executive dashboard..." />
+                        </div>
+                      }>
+                        <ExecutiveDashboardView results={results} config={configuration} />
+                      </Suspense>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="costs" className="mt-0">
+                    <div className="h-[calc(100vh-200px)] overflow-y-auto px-6" role="main" aria-label="Cost analysis content">
+                      <Suspense fallback={
+                        <div className="flex justify-center py-8">
+                          <LoadingSpinner message="Loading cost analysis..." />
+                        </div>
+                      }>
+                        <DetailedCostsView results={results} config={configuration} />
+                      </Suspense>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="roi" className="mt-0">
+                    <div className="h-[calc(100vh-200px)] overflow-y-auto px-6" role="main" aria-label="ROI analysis content">
+                      <Suspense fallback={
+                        <div className="flex justify-center py-8">
+                          <LoadingSpinner message="Loading ROI analysis..." />
+                        </div>
+                      }>
+                        <ROIView results={results} config={configuration} />
+                      </Suspense>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="security" className="mt-0">
+                    <div className="h-[calc(100vh-200px)] overflow-y-auto px-6" role="main" aria-label="Security analysis content">
+                      <Suspense fallback={
+                        <div className="flex justify-center py-8">
+                          <LoadingSpinner message="Loading security analysis..." />
+                        </div>
+                      }>
+                        <SecurityPostureView results={results} config={configuration} />
+                      </Suspense>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="operations" className="mt-0">
+                    <div className="h-[calc(100vh-200px)] overflow-y-auto px-6" role="main" aria-label="Operations analysis content">
+                      <Suspense fallback={
+                        <div className="flex justify-center py-8">
+                          <LoadingSpinner message="Loading operations analysis..." />
+                        </div>
+                      }>
+                        <OperationsImpactView results={results} config={configuration} />
+                      </Suspense>
+                    </div>
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </div>
+          </div>
         </div>
 
         {/* Enhanced Footer */}
