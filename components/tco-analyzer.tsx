@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -26,42 +26,45 @@ import {
   FileText,
   Calendar,
   HelpCircle,
+  RefreshCw,
+  Save,
+  Download,
+  AlertTriangle
 } from "lucide-react"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
+import { motion, AnimatePresence } from "framer-motion"
 
 import EnhancedVendorSelection from "./enhanced-vendor-selection"
 import SettingsPanel from "./settings-panel"
-import ExecutiveDashboardView from "./views/executive-dashboard-view"
-import DetailedCostsView from "./views/detailed-costs-view"
-import ROIView from "./views/roi-view"
-import SecurityPostureView from "./views/security-posture-view"
-import ComplianceRiskView from "./views/compliance-risk-view"
-import OperationsImpactView from "./views/operations-impact-view"
-import FeatureMatrixView from "./views/feature-matrix-view"
-import ImplementationRoadmapView from "./views/implementation-roadmap-view"
-import BusinessImpactView from "./views/business-impact-view"
-import ReportsView from "./views/reports-view"
 import AnimatedPortnoxLogo from "./animated-portnox-logo"
+import AdvancedCostComparison from "./enhanced-charts/advanced-cost-comparison"
+import ComprehensiveROIAnalysis from "./enhanced-charts/comprehensive-roi-analysis"
+import InteractiveSecurityDashboard from "./enhanced-charts/interactive-security-dashboard"
+import OperationalEfficiencyChart from "./enhanced-charts/operational-efficiency-chart"
 
-import { compareVendors } from "@/lib/enhanced-tco-calculator"
-import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { EnhancedCalculationService } from "@/lib/services/enhanced-calculation-service"
+import type { UltimateCalculationResult } from "@/lib/services/enhanced-calculation-service"
+import type { CalculationConfiguration } from "@/lib/types"
 
-const DEFAULT_VENDORS = ["portnox", "cisco", "aruba", "forescout"]
+const DEFAULT_VENDORS = ["portnox", "cisco_ise", "aruba_clearpass", "forescout"]
 
 export default function TcoAnalyzerUltimate() {
   const [isClient, setIsClient] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isCalculating, setIsCalculating] = useState(false)
   const [isSettingsOpen, setSettingsOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   const [configuration, setConfiguration] = useState<CalculationConfiguration>({
+    orgSize: "medium",
     devices: 2500,
     users: 1500,
     industry: "technology",
-    orgSize: "medium",
     years: 3,
     region: "north-america",
     portnoxBasePrice: 4.0,
@@ -69,34 +72,70 @@ export default function TcoAnalyzerUltimate() {
   })
 
   const [selectedVendors, setSelectedVendors] = useState<string[]>(DEFAULT_VENDORS)
-  const [results, setResults] = useState<CalculationResult[]>([])
+  const [results, setResults] = useState<UltimateCalculationResult[]>([])
 
   useEffect(() => {
     setIsClient(true)
-    // Load from localStorage
+    loadSavedData()
+  }, [])
+
+  const loadSavedData = async () => {
     try {
-      const saved = localStorage.getItem("portnox-tco-config")
+      // Try to load from database first
+      const saved = await EnhancedCalculationService.loadCalculation(sessionId)
       if (saved) {
-        const { configuration: savedConfig, selectedVendors: savedVendors, darkMode: savedDarkMode } = JSON.parse(saved)
-        if (savedConfig) setConfiguration(savedConfig)
-        if (savedVendors) setSelectedVendors(savedVendors)
-        if (typeof savedDarkMode === "boolean") setDarkMode(savedDarkMode)
+        setConfiguration(saved.config)
+        setSelectedVendors(saved.selectedVendors)
+        setResults(saved.results)
+        setLastUpdated(new Date())
+      } else {
+        // Fallback to localStorage
+        const localSaved = localStorage.getItem("portnox-tco-config")
+        if (localSaved) {
+          const { configuration: savedConfig, selectedVendors: savedVendors, darkMode: savedDarkMode } = JSON.parse(localSaved)
+          if (savedConfig) setConfiguration(savedConfig)
+          if (savedVendors) setSelectedVendors(savedVendors)
+          if (typeof savedDarkMode === "boolean") setDarkMode(savedDarkMode)
+        }
       }
     } catch (error) {
-      console.error("Failed to load from localStorage", error)
+      console.error("Failed to load saved data", error)
+      toast.error("Failed to load saved configuration")
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }
+
+  const calculateResults = useCallback(async () => {
+    if (selectedVendors.length === 0) {
+      setResults([])
+      return
+    }
+
+    setIsCalculating(true)
+    try {
+      const newResults = await EnhancedCalculationService.compareVendors(selectedVendors, configuration)
+      setResults(newResults)
+      setLastUpdated(new Date())
+      
+      // Save to database and localStorage
+      await EnhancedCalculationService.saveCalculation(sessionId, configuration, selectedVendors, newResults)
+      localStorage.setItem("portnox-tco-config", JSON.stringify({ configuration, selectedVendors, darkMode }))
+      
+      toast.success(`Analysis updated for ${newResults.length} vendors`)
+    } catch (error) {
+      console.error("Failed to calculate results", error)
+      toast.error("Failed to update analysis. Please try again.")
+    } finally {
+      setIsCalculating(false)
+    }
+  }, [selectedVendors, configuration, darkMode, sessionId])
 
   useEffect(() => {
     if (!isLoading) {
-      const newResults = compareVendors(selectedVendors, configuration)
-      setResults(newResults)
-      // Save to localStorage
-      localStorage.setItem("portnox-tco-config", JSON.stringify({ configuration, selectedVendors, darkMode }))
+      calculateResults()
     }
-  }, [selectedVendors, configuration, darkMode, isLoading])
+  }, [selectedVendors, configuration, isLoading, calculateResults])
 
   useEffect(() => {
     if (darkMode) {
@@ -108,17 +147,17 @@ export default function TcoAnalyzerUltimate() {
 
   const handleVendorToggle = (vendorId: string) => {
     setSelectedVendors((prev) => (prev.includes(vendorId) ? prev.filter((v) => v !== vendorId) : [...prev, vendorId]))
-    toast(`${vendorId} selection updated.`)
+    toast.success(`Vendor selection updated`)
   }
 
   const handleClearAll = () => {
     setSelectedVendors([])
-    toast("All vendors cleared.")
+    toast.info("All vendors cleared")
   }
 
   const handleSelectRecommended = () => {
     setSelectedVendors(DEFAULT_VENDORS)
-    toast("Recommended vendors selected.")
+    toast.success("Recommended vendors selected")
   }
 
   const handleConfigChange = (newConfig: any) => {
@@ -130,6 +169,44 @@ export default function TcoAnalyzerUltimate() {
       ...prev,
       portnoxAddons: { ...prev.portnoxAddons, ...newAddons },
     }))
+  }
+
+  const handleRefreshData = async () => {
+    toast.info("Refreshing vendor data...")
+    await calculateResults()
+  }
+
+  const handleSaveAnalysis = async () => {
+    try {
+      const success = await EnhancedCalculationService.saveCalculation(sessionId, configuration, selectedVendors, results)
+      if (success) {
+        toast.success("Analysis saved successfully")
+      } else {
+        toast.error("Failed to save analysis")
+      }
+    } catch (error) {
+      toast.error("Failed to save analysis")
+    }
+  }
+
+  const handleExportData = () => {
+    const exportData = {
+      configuration,
+      selectedVendors,
+      results,
+      timestamp: new Date().toISOString(),
+      version: "3.0"
+    }
+    
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `tco-analysis-${new Date().toISOString().split('T')[0]}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    
+    toast.success("Analysis exported successfully")
   }
 
   if (!isClient || isLoading) {
@@ -152,74 +229,15 @@ export default function TcoAnalyzerUltimate() {
     )
   }
 
-  const TABS = [
-    {
-      value: "executive",
-      label: "Executive Dashboard",
-      icon: <BarChart3 className="h-4 w-4" />,
-      component: <ExecutiveDashboardView results={results} config={configuration} />,
-    },
-    {
-      value: "costs",
-      label: "Detailed Costs",
-      icon: <DollarSign className="h-4 w-4" />,
-      component: <DetailedCostsView results={results} config={configuration} />,
-    },
-    {
-      value: "roi",
-      label: "ROI Analysis",
-      icon: <TrendingUp className="h-4 w-4" />,
-      component: <ROIView results={results} config={configuration} />,
-    },
-    {
-      value: "security",
-      label: "Security Posture",
-      icon: <Shield className="h-4 w-4" />,
-      component: <SecurityPostureView results={results} config={configuration} />,
-    },
-    {
-      value: "compliance",
-      label: "Compliance & Risk",
-      icon: <FileCheck className="h-4 w-4" />,
-      component: <ComplianceRiskView results={results} config={configuration} />,
-    },
-    {
-      value: "operations",
-      label: "Operations Impact",
-      icon: <Users className="h-4 w-4" />,
-      component: <OperationsImpactView results={results} config={configuration} />,
-    },
-    {
-      value: "features",
-      label: "Feature Matrix",
-      icon: <LayoutGrid className="h-4 w-4" />,
-      component: <FeatureMatrixView results={results} config={configuration} />,
-    },
-    {
-      value: "roadmap",
-      label: "Implementation",
-      icon: <MapPin className="h-4 w-4" />,
-      component: <ImplementationRoadmapView results={results} config={configuration} />,
-    },
-    {
-      value: "business",
-      label: "Business Impact",
-      icon: <Building2 className="h-4 w-4" />,
-      component: <BusinessImpactView results={results} config={configuration} />,
-    },
-    {
-      value: "reports",
-      label: "Reports",
-      icon: <FileText className="h-4 w-4" />,
-      component: <ReportsView results={results} configuration={configuration} />,
-    },
-  ]
-
   return (
     <div className={darkMode ? "dark" : ""}>
       <div className="bg-background text-foreground min-h-screen flex flex-col">
         {/* Header */}
-        <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        <motion.header 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm"
+        >
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-4">
               <AnimatedPortnoxLogo width={140} height={40} showText={true} animate={true} />
@@ -229,15 +247,36 @@ export default function TcoAnalyzerUltimate() {
                   Executive Intelligence Decision Platform
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  Data-driven insights for Network Access Control vendor evaluation
+                  Real-time data-driven insights for Network Access Control vendor evaluation
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
+              {/* Status Indicators */}
+              <div className="hidden md:flex items-center gap-2">
+                {isCalculating && (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                    <span className="text-sm text-muted-foreground">Calculating...</span>
+                  </div>
+                )}
+                {lastUpdated && (
+                  <div className="text-xs text-muted-foreground">
+                    Updated: {lastUpdated.toLocaleTimeString()}
+                  </div>
+                )}
+              </div>
+
               <Badge variant="outline" className="hidden md:flex">
                 v3.0
               </Badge>
+              
+              <Button variant="ghost" size="sm" onClick={handleRefreshData} disabled={isCalculating}>
+                <RefreshCw className={`h-4 w-4 mr-1 ${isCalculating ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              
               <Sheet open={!sidebarOpen} onOpenChange={setSidebarOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="sm" className="md:hidden">
@@ -260,10 +299,22 @@ export default function TcoAnalyzerUltimate() {
                   </div>
                 </SheetContent>
               </Sheet>
+              
               <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </Button>
+              
+              <Button variant="outline" size="sm" onClick={handleSaveAnalysis}>
+                <Save className="h-4 w-4 mr-1" />
+                Save
+              </Button>
+              
+              <Button variant="outline" size="sm" onClick={handleExportData}>
+                <Download className="h-4 w-4 mr-1" />
+                Export
+              </Button>
+              
               <Button
                 size="sm"
                 className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
@@ -273,7 +324,7 @@ export default function TcoAnalyzerUltimate() {
               </Button>
             </div>
           </div>
-        </header>
+        </motion.header>
 
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
@@ -285,7 +336,11 @@ export default function TcoAnalyzerUltimate() {
               maxSize={40}
               className={`${!sidebarOpen ? "hidden md:block" : ""}`}
             >
-              <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900/50">
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="h-full flex flex-col bg-gray-50 dark:bg-gray-900/50"
+              >
                 {/* Sidebar Header */}
                 <div className="p-4 border-b bg-white dark:bg-gray-900">
                   <div className="flex items-center justify-between">
@@ -293,6 +348,11 @@ export default function TcoAnalyzerUltimate() {
                       <div className="flex items-center gap-2">
                         <AnimatedPortnoxLogo width={24} height={24} showText={false} animate={false} />
                         <span className="font-semibold text-sm">Vendor Selection</span>
+                        {selectedVendors.length > 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            {selectedVendors.length}
+                          </Badge>
+                        )}
                       </div>
                     )}
                     <Button
@@ -335,7 +395,7 @@ export default function TcoAnalyzerUltimate() {
                     />
                   )}
                 </div>
-              </div>
+              </motion.div>
             </ResizablePanel>
 
             <ResizableHandle withHandle className="bg-gray-200 dark:bg-gray-700" />
@@ -343,29 +403,98 @@ export default function TcoAnalyzerUltimate() {
             {/* Main Content Panel */}
             <ResizablePanel defaultSize={sidebarCollapsed ? 95 : 72}>
               <div className="flex flex-col h-full">
-                {/* Tab Navigation */}
-                <div className="border-b bg-white dark:bg-gray-900 px-6 py-2">
-                  <Tabs defaultValue="executive" className="w-full">
-                    <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 h-auto bg-gray-100 dark:bg-gray-800">
-                      {TABS.map((tab) => (
-                        <TabsTrigger
-                          key={tab.value}
-                          value={tab.value}
-                          className="text-xs px-2 py-2 flex items-center gap-1 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
-                        >
-                          {tab.icon}
-                          <span className="hidden sm:inline">{tab.label}</span>
-                        </TabsTrigger>
-                      ))}
+                {/* Enhanced Tab Navigation */}
+                <div className="border-b bg-white dark:bg-gray-900 px-6 py-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-4">
+                      <h2 className="text-lg font-semibold">Analysis Dashboard</h2>
+                      {results.length > 0 && (
+                        <Badge variant="outline" className="flex items-center gap-1">
+                          <BarChart3 className="w-3 h-3" />
+                          {results.length} vendors analyzed
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    {isCalculating && (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                        <span className="text-sm text-muted-foreground">Updating analysis...</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <Tabs defaultValue="costs" className="w-full">
+                    <TabsList className="grid w-full grid-cols-4 h-auto bg-gray-100 dark:bg-gray-800">
+                      <TabsTrigger
+                        value="costs"
+                        className="text-sm px-4 py-3 flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+                      >
+                        <DollarSign className="h-4 w-4" />
+                        <span>Cost Analysis</span>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="roi"
+                        className="text-sm px-4 py-3 flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+                      >
+                        <TrendingUp className="h-4 w-4" />
+                        <span>ROI Analysis</span>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="security"
+                        className="text-sm px-4 py-3 flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+                      >
+                        <Shield className="h-4 w-4" />
+                        <span>Security</span>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="operations"
+                        className="text-sm px-4 py-3 flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+                      >
+                        <Users className="h-4 w-4" />
+                        <span>Operations</span>
+                      </TabsTrigger>
                     </TabsList>
 
-                    {/* Tab Content */}
-                    <div className="mt-4">
-                      {TABS.map((tab) => (
-                        <TabsContent key={tab.value} value={tab.value} className="mt-0">
-                          <div className="h-[calc(100vh-200px)] overflow-y-auto">{tab.component}</div>
-                        </TabsContent>
-                      ))}
+                    {/* Enhanced Tab Content */}
+                    <div className="mt-6">
+                      <TabsContent value="costs" className="mt-0">
+                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4">
+                          <AdvancedCostComparison 
+                            results={results} 
+                            config={configuration}
+                            onExport={handleExportData}
+                            onShare={() => toast.info("Share functionality coming soon")}
+                          />
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="roi" className="mt-0">
+                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4">
+                          <ComprehensiveROIAnalysis 
+                            results={results} 
+                            config={configuration}
+                          />
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="security" className="mt-0">
+                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4">
+                          <InteractiveSecurityDashboard 
+                            results={results} 
+                            config={configuration}
+                          />
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="operations" className="mt-0">
+                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4">
+                          <OperationalEfficiencyChart 
+                            results={results} 
+                            config={configuration}
+                          />
+                        </div>
+                      </TabsContent>
                     </div>
                   </Tabs>
                 </div>
@@ -374,8 +503,12 @@ export default function TcoAnalyzerUltimate() {
           </ResizablePanelGroup>
         </div>
 
-        {/* Footer */}
-        <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+        {/* Enhanced Footer */}
+        <motion.footer 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4"
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <AnimatedPortnoxLogo width={100} height={28} showText={true} animate={false} />
@@ -390,7 +523,9 @@ export default function TcoAnalyzerUltimate() {
             </div>
 
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span>Last Updated: {new Date().toLocaleDateString()}</span>
+              {lastUpdated && (
+                <span>Last Updated: {lastUpdated.toLocaleDateString()}</span>
+              )}
               <Badge variant="outline" className="text-xs">
                 {selectedVendors.length} vendors selected
               </Badge>
@@ -400,13 +535,19 @@ export default function TcoAnalyzerUltimate() {
               <Badge variant="outline" className="text-xs">
                 {configuration.years} year analysis
               </Badge>
+              {results.length > 0 && (
+                <Badge variant="outline" className="text-xs flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3" />
+                  {((results.find(r => r.vendorId === 'portnox')?.roi.percentage || 0)).toFixed(0)}% ROI
+                </Badge>
+              )}
               <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
                 <HelpCircle className="h-3 w-3 mr-1" />
                 Help
               </Button>
             </div>
           </div>
-        </footer>
+        </motion.footer>
 
         {/* Settings Panel */}
         <SettingsPanel
