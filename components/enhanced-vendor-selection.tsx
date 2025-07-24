@@ -11,26 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AccessibleDropdown } from "@/components/ui/accessible-dropdown"
 import { LoadingState, SkeletonCard } from "@/components/ui/loading-states"
-import {
-  Search,
-  Filter,
-  X,
-  CheckCircle2,
-  AlertTriangle,
-  Cloud,
-  Server,
-  Hybrid,
-  Star,
-  TrendingUp,
-  Shield,
-  DollarSign,
-  Users,
-  Building,
-  Zap,
-  Award,
-  AlertCircle,
-  Info
-} from "lucide-react"
+import { Search, Filter, X, CheckCircle2, AlertTriangle, Cloud, Server, Grid as Hybrid, Star, TrendingUp, Shield, DollarSign, Users, Building, Zap, Award, AlertCircle, Info } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
 
