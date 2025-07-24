@@ -116,8 +116,8 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
     ],
   },
 
-  cisco: {
-    id: "cisco",
+  cisco_ise: {
+    id: "cisco_ise",
     name: "Cisco Identity Services Engine (ISE)",
     category: "leader",
     marketShare: 35.2,
