@@ -1,5 +1,5 @@
 import { EnhancedVendorService, type CompleteVendorData } from './enhanced-vendor-service'
-import { EnhancedDatabaseService } from '../database/enhanced-client'
+import { EnhancedDatabaseService, isSupabaseAvailable, mockDataService } from '../database/enhanced-client'
 import type { CalculationConfiguration } from '../types'
 
 export interface EnhancedTCOBreakdown {
@@ -425,7 +425,12 @@ export class EnhancedCalculationService {
     industryProfile: any
   ): Promise<ComprehensiveROIMetrics> {
     // Get industry benchmarks for accurate calculations
-    const benchmarks = await EnhancedDatabaseService.getIndustryBenchmarks(config.industry, config.orgSize)
+    let benchmarks = []
+    if (isSupabaseAvailable()) {
+      benchmarks = await EnhancedDatabaseService.getIndustryBenchmarks(config.industry, config.orgSize)
+    } else {
+      benchmarks = await mockDataService.getIndustryBenchmarks(config.industry, config.orgSize)
+    }
     
     const avgBreachCost = benchmarks.find(b => b.metric_name === 'average_breach_cost')?.metric_value || 
                          industryProfile.breachCostMultiplier * 4000000
@@ -973,7 +978,11 @@ export class EnhancedCalculationService {
         throw new Error('Missing required parameters for saving calculation')
       }
       
-      return await EnhancedDatabaseService.saveCalculation(sessionId, config, selectedVendors, results)
+      if (isSupabaseAvailable()) {
+        return await EnhancedDatabaseService.saveCalculation(sessionId, config, selectedVendors, results)
+      } else {
+        return await mockDataService.saveCalculation()
+      }
     } catch (error) {
       console.error('Error in saveCalculation:', error)
       return false
@@ -990,7 +999,11 @@ export class EnhancedCalculationService {
         throw new Error('Session ID is required')
       }
       
-      return await EnhancedDatabaseService.loadCalculation(sessionId)
+      if (isSupabaseAvailable()) {
+        return await EnhancedDatabaseService.loadCalculation(sessionId)
+      } else {
+        return await mockDataService.loadCalculation()
+      }
     } catch (error) {
       console.error('Error in loadCalculation:', error)
       return null

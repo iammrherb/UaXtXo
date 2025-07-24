@@ -1,9 +1,202 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Create Supabase client with fallback for missing environment variables
+export const supabase = supabaseUrl && supabaseAnonKey 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null
+
+// Helper function to check if Supabase is available
+export const isSupabaseAvailable = () => {
+  return supabase !== null && supabaseUrl && supabaseAnonKey
+}
+
+// Mock data service for when Supabase is not available
+export const mockDataService = {
+  async getVendors() {
+    // Return mock vendor data from the comprehensive database
+    return Object.values(require('../comprehensive-vendor-data').ComprehensiveVendorDatabase)
+      .map(vendor => ({
+        id: vendor.id,
+        vendor_id: vendor.id,
+        name: vendor.name,
+        category: vendor.category,
+        market_share: vendor.marketShare,
+        deployment_type: vendor.deploymentType,
+        logo_url: vendor.logo,
+        description: vendor.description,
+        website_url: vendor.description,
+        founded_year: vendor.implementation?.timeToDeployDays || 2000,
+        headquarters: 'N/A',
+        employee_count: null,
+        annual_revenue: null,
+        gartner_rating: null,
+        forrester_rating: null,
+        customer_count: null,
+        geographic_presence: [],
+        last_updated: new Date().toISOString(),
+        created_at: new Date().toISOString()
+      }))
+  },
+  
+  async getVendorPricing(vendorId: string) {
+    const vendor = require('../comprehensive-vendor-data').ComprehensiveVendorDatabase[vendorId]
+    if (!vendor) return []
+    
+    return [{
+      id: `${vendorId}_pricing`,
+      vendor_id: vendorId,
+      pricing_model: vendor.pricing.model,
+      base_price: vendor.pricing.basePrice,
+      price_per_device: vendor.pricing.pricePerDevice,
+      price_per_user: 0,
+      minimum_devices: vendor.pricing.minimumDevices || 0,
+      volume_discounts: {},
+      contract_terms: {},
+      currency: 'USD',
+      effective_date: new Date().toISOString(),
+      expiry_date: null,
+      pricing_source: 'mock',
+      confidence_level: 80,
+      last_updated: new Date().toISOString()
+    }]
+  },
+  
+  async getVendorCosts(vendorId: string) {
+    const vendor = require('../comprehensive-vendor-data').ComprehensiveVendorDatabase[vendorId]
+    if (!vendor) return []
+    
+    const costs = []
+    const additionalCosts = vendor.pricing.additionalCosts
+    
+    if (additionalCosts.hardware > 0) {
+      costs.push({
+        id: `${vendorId}_hardware`,
+        vendor_id: vendorId,
+        cost_category: 'hardware',
+        cost_subcategory: 'infrastructure',
+        cost_amount: additionalCosts.hardware,
+        cost_frequency: 'one-time',
+        cost_scaling: 'fixed',
+        description: 'Hardware and infrastructure costs',
+        region_specific: false,
+        industry_specific: null,
+        last_updated: new Date().toISOString()
+      })
+    }
+    
+    if (additionalCosts.services > 0) {
+      costs.push({
+        id: `${vendorId}_services`,
+        vendor_id: vendorId,
+        cost_category: 'services',
+        cost_subcategory: 'implementation',
+        cost_amount: additionalCosts.services,
+        cost_frequency: 'one-time',
+        cost_scaling: 'fixed',
+        description: 'Professional services and implementation',
+        region_specific: false,
+        industry_specific: null,
+        last_updated: new Date().toISOString()
+      })
+    }
+    
+    return costs
+  },
+  
+  async getVendorSecurity(vendorId: string) {
+    const vendor = require('../comprehensive-vendor-data').ComprehensiveVendorDatabase[vendorId]
+    if (!vendor) return null
+    
+    return {
+      id: `${vendorId}_security`,
+      vendor_id: vendorId,
+      security_rating: vendor.security.securityRating,
+      cve_count_total: vendor.security.cveCount,
+      cve_count_critical: Math.floor(vendor.security.cveCount * 0.3),
+      cve_count_high: Math.floor(vendor.security.cveCount * 0.2),
+      cve_count_medium: Math.floor(vendor.security.cveCount * 0.3),
+      cve_count_low: Math.floor(vendor.security.cveCount * 0.2),
+      last_cve_date: vendor.security.lastSecurityIncident || null,
+      security_incidents: [],
+      zero_trust_maturity: vendor.security.zeroTrustMaturity,
+      compliance_frameworks: vendor.security.complianceSupport,
+      certifications: [],
+      security_audits: [],
+      penetration_test_results: [],
+      bug_bounty_program: false,
+      responsible_disclosure: true,
+      security_team_size: null,
+      last_security_assessment: null,
+      last_updated: new Date().toISOString()
+    }
+  },
+  
+  async getVendorFeatures(vendorId: string) {
+    const vendor = require('../comprehensive-vendor-data').ComprehensiveVendorDatabase[vendorId]
+    if (!vendor) return []
+    
+    const features = []
+    
+    // Add core features
+    vendor.features.core.forEach((feature: string) => {
+      features.push({
+        id: `${vendorId}_${feature}`,
+        vendor_id: vendorId,
+        feature_category: 'core',
+        feature_name: feature,
+        feature_description: feature,
+        support_level: 'native',
+        maturity_level: 'ga',
+        additional_cost: null,
+        implementation_complexity: 'low',
+        api_available: true,
+        automation_level: 80,
+        last_updated: new Date().toISOString()
+      })
+    })
+    
+    // Add advanced features
+    vendor.features.advanced.forEach((feature: string) => {
+      features.push({
+        id: `${vendorId}_${feature}`,
+        vendor_id: vendorId,
+        feature_category: 'advanced',
+        feature_name: feature,
+        feature_description: feature,
+        support_level: 'native',
+        maturity_level: 'ga',
+        additional_cost: null,
+        implementation_complexity: 'medium',
+        api_available: true,
+        automation_level: 90,
+        last_updated: new Date().toISOString()
+      })
+    })
+    
+    return features
+  },
+  
+  async getMarketIntelligence(vendorId?: string) {
+    return []
+  },
+  
+  async getIndustryBenchmarks(industry: string, orgSize?: string) {
+    return []
+  },
+  
+  async saveCalculation() {
+    console.warn('Supabase not available - calculation not saved to database')
+    return false
+  },
+  
+  async loadCalculation() {
+    console.warn('Supabase not available - cannot load from database')
+    return null
+  }
+}
 
 // Enhanced database types with real-world data structures
 export interface EnhancedVendorRecord {

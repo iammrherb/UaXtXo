@@ -45,6 +45,7 @@ import InteractiveSecurityDashboard from "./enhanced-charts/interactive-security
 import OperationalEfficiencyChart from "./enhanced-charts/operational-efficiency-chart"
 
 import { EnhancedCalculationService } from "@/lib/services/enhanced-calculation-service"
+import { isSupabaseAvailable } from "@/lib/database/enhanced-client"
 import type { UltimateCalculationResult } from "@/lib/services/enhanced-calculation-service"
 import type { CalculationConfiguration } from "@/lib/types"
 
@@ -87,26 +88,46 @@ export default function TcoAnalyzerUltimate() {
 
   const loadSavedData = async () => {
     try {
-      // Try to load from database first
-      const saved = await EnhancedCalculationService.loadCalculation(sessionId)
-      if (saved) {
-        setConfiguration(saved.config)
-        setSelectedVendors(saved.selectedVendors)
-        setResults(saved.results)
-        setLastUpdated(new Date())
-      } else {
-        // Fallback to localStorage
-        const localSaved = localStorage.getItem("portnox-tco-config")
-        if (localSaved) {
-          try {
-            const { configuration: savedConfig, selectedVendors: savedVendors, darkMode: savedDarkMode } = JSON.parse(localSaved)
-            if (savedConfig) setConfiguration(savedConfig)
-            if (savedVendors) setSelectedVendors(savedVendors)
-            if (typeof savedDarkMode === "boolean") setDarkMode(savedDarkMode)
-          } catch (parseError) {
-            console.error('Failed to parse saved configuration:', parseError)
-            // Clear corrupted data
-            localStorage.removeItem("portnox-tco-config")
+      // Check if Supabase is available
+      if (isSupabaseAvailable()) {
+        // Try to load from database first
+        const saved = await EnhancedCalculationService.loadCalculation(sessionId)
+        if (saved) {
+          setConfiguration(saved.config)
+          setSelectedVendors(saved.selectedVendors)
+          setResults(saved.results)
+          setLastUpdated(new Date())
+          return
+        }
+      }
+      
+      // Fallback to localStorage
+      const localSaved = localStorage.getItem("portnox-tco-config")
+      if (localSaved) {
+        try {
+          const { configuration: savedConfig, selectedVendors: savedVendors, darkMode: savedDarkMode } = JSON.parse(localSaved)
+          if (savedConfig) setConfiguration(savedConfig)
+          if (savedVendors) setSelectedVendors(savedVendors)
+          if (typeof savedDarkMode === "boolean") setDarkMode(savedDarkMode)
+        } catch (parseError) {
+          console.error('Failed to parse saved configuration:', parseError)
+          // Clear corrupted data
+          localStorage.removeItem("portnox-tco-config")
+        }
+      }
+      
+      // Show warning if Supabase is not configured
+      if (!isSupabaseAvailable()) {
+        console.warn('Supabase not configured - using mock data. Some features may be limited.')
+        toast.info("Running in demo mode - database features unavailable")
+      }
+    } catch (error) {
+      console.error("Failed to load saved data", error)
+      setLoadingError("Failed to load saved configuration")
+    } finally {
+      setIsLoading(false)
+    }
+  }
           }
         }
       }
@@ -135,7 +156,9 @@ export default function TcoAnalyzerUltimate() {
       
       // Save to database and localStorage
       try {
-        await EnhancedCalculationService.saveCalculation(sessionId, configuration, selectedVendors, newResults)
+        if (isSupabaseAvailable()) {
+          await EnhancedCalculationService.saveCalculation(sessionId, configuration, selectedVendors, newResults)
+        }
         localStorage.setItem("portnox-tco-config", JSON.stringify({ configuration, selectedVendors, darkMode }))
       } catch (saveError) {
         console.warn('Failed to save calculation:', saveError)
@@ -200,11 +223,16 @@ export default function TcoAnalyzerUltimate() {
 
   const handleSaveAnalysis = async () => {
     try {
-      const success = await EnhancedCalculationService.saveCalculation(sessionId, configuration, selectedVendors, results)
-      if (success) {
-        toast.success("Analysis saved successfully")
+      if (isSupabaseAvailable()) {
+        const success = await EnhancedCalculationService.saveCalculation(sessionId, configuration, selectedVendors, results)
+        if (success) {
+          toast.success("Analysis saved successfully")
+        } else {
+          toast.error("Failed to save analysis")
+        }
       } else {
-        toast.error("Failed to save analysis")
+        toast.info("Database not available - analysis saved locally only")
+        localStorage.setItem("portnox-tco-config", JSON.stringify({ configuration, selectedVendors, results, darkMode }))
       }
     } catch (error) {
       toast.error("Failed to save analysis")

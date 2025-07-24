@@ -1,4 +1,4 @@
-import { EnhancedDatabaseService } from '../database/enhanced-client'
+import { EnhancedDatabaseService, isSupabaseAvailable, mockDataService } from '../database/enhanced-client'
 import type {
   EnhancedVendorRecord,
   RealTimePricingRecord,
@@ -53,7 +53,11 @@ export class EnhancedVendorService {
 
   static async getAllVendors(): Promise<EnhancedVendorRecord[]> {
     try {
-      return await EnhancedDatabaseService.getVendors()
+      if (isSupabaseAvailable()) {
+        return await EnhancedDatabaseService.getVendors()
+      } else {
+        return await mockDataService.getVendors()
+      }
     } catch (error) {
       console.error('Error fetching vendors:', error)
       throw new Error('Failed to fetch vendor data')
@@ -62,16 +66,29 @@ export class EnhancedVendorService {
 
   static async getCompleteVendorData(vendorId: string): Promise<CompleteVendorData | null> {
     try {
-      const [vendor, pricing, costs, security, features, intelligence] = await Promise.all([
-        EnhancedDatabaseService.getVendors().then(vendors => 
-          vendors.find(v => v.vendor_id === vendorId)
-        ),
-        EnhancedDatabaseService.getVendorPricing(vendorId),
-        EnhancedDatabaseService.getVendorCosts(vendorId),
-        EnhancedDatabaseService.getVendorSecurity(vendorId),
-        EnhancedDatabaseService.getVendorFeatures(vendorId),
-        EnhancedDatabaseService.getMarketIntelligence(vendorId)
-      ])
+      let vendor, pricing, costs, security, features, intelligence
+      
+      if (isSupabaseAvailable()) {
+        [vendor, pricing, costs, security, features, intelligence] = await Promise.all([
+          EnhancedDatabaseService.getVendors().then(vendors => 
+            vendors.find(v => v.vendor_id === vendorId)
+          ),
+          EnhancedDatabaseService.getVendorPricing(vendorId),
+          EnhancedDatabaseService.getVendorCosts(vendorId),
+          EnhancedDatabaseService.getVendorSecurity(vendorId),
+          EnhancedDatabaseService.getVendorFeatures(vendorId),
+          EnhancedDatabaseService.getMarketIntelligence(vendorId)
+        ])
+      } else {
+        // Use mock data service
+        const vendors = await mockDataService.getVendors()
+        vendor = vendors.find(v => v.vendor_id === vendorId)
+        pricing = await mockDataService.getVendorPricing(vendorId)
+        costs = await mockDataService.getVendorCosts(vendorId)
+        security = await mockDataService.getVendorSecurity(vendorId)
+        features = await mockDataService.getVendorFeatures(vendorId)
+        intelligence = await mockDataService.getMarketIntelligence(vendorId)
+      }
 
       if (!vendor) return null
 
