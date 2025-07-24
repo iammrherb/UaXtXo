@@ -1,3 +1,19 @@
+export interface CalculationConfiguration {
+  orgSize: 'small' | 'medium' | 'large' | 'enterprise'
+  devices: number
+  users: number
+  industry: string
+  years: number
+  region: string
+  portnoxBasePrice: number
+  portnoxAddons: {
+    atp: boolean
+    compliance: boolean
+    iot: boolean
+    analytics: boolean
+  }
+}
+
 export interface TCOConfig {
   industry: string
   users: number

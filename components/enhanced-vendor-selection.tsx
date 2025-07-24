@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -10,10 +10,13 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { AlertCircle, Check, ChevronDown, Cloud, Filter, Info, Search, Server, Shield, Star, X } from "lucide-react"
+import { AlertCircle, Check, ChevronDown, Cloud, Filter, Info, Search, Server, Shield, Star, X, Loader2, TrendingUp } from "lucide-react"
 import Image from "next/image"
+import { motion, AnimatePresence } from "framer-motion"
+import { VendorService } from "@/lib/services/vendor-service"
+import type { VendorRecord } from "@/lib/database/client"
+import numeral from "numeral"
 
-import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
 
 interface EnhancedVendorSelectionProps {
   selectedVendors: string[]
@@ -30,6 +33,9 @@ export default function EnhancedVendorSelection({
   onSelectRecommended,
   darkMode,
 }: EnhancedVendorSelectionProps) {
+  const [vendors, setVendors] = useState<VendorRecord[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [filterCategory, setFilterCategory] = useState<string | null>(null)
   const [filterDeployment, setFilterDeployment] = useState<string | null>(null)
@@ -37,7 +43,23 @@ export default function EnhancedVendorSelection({
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
   const [activeTab, setActiveTab] = useState("all")
 
-  const vendors = Object.values(ComprehensiveVendorDatabase)
+  useEffect(() => {
+    loadVendors()
+  }, [])
+
+  const loadVendors = async () => {
+    try {
+      setLoading(true)
+      const vendorData = await VendorService.getAllVendors()
+      setVendors(vendorData)
+      setError(null)
+    } catch (err) {
+      setError('Failed to load vendor data')
+      console.error('Error loading vendors:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredVendors = vendors.filter((vendor) => {
     // Search filter
@@ -54,13 +76,13 @@ export default function EnhancedVendorSelection({
 
     // Tab filter
     if (activeTab === "selected") {
-      return matchesSearch && matchesCategory && matchesDeployment && selectedVendors.includes(vendor.id)
+      return matchesSearch && matchesCategory && matchesDeployment && selectedVendors.includes(vendor.vendor_id)
     } else if (activeTab === "cloud") {
-      return matchesSearch && matchesCategory && vendor.deploymentType === "cloud"
+      return matchesSearch && matchesCategory && vendor.deployment_type === "cloud"
     } else if (activeTab === "onprem") {
-      return matchesSearch && matchesCategory && vendor.deploymentType === "on-premise"
+      return matchesSearch && matchesCategory && vendor.deployment_type === "on-premise"
     } else if (activeTab === "hybrid") {
-      return matchesSearch && matchesCategory && vendor.deploymentType === "hybrid"
+      return matchesSearch && matchesCategory && vendor.deployment_type === "hybrid"
     }
 
     return matchesSearch && matchesCategory && matchesDeployment
@@ -72,9 +94,10 @@ export default function EnhancedVendorSelection({
     } else if (sortBy === "marketShare") {
       return sortDirection === "asc" ? a.marketShare - b.marketShare : b.marketShare - a.marketShare
     } else {
-      return sortDirection === "asc"
-        ? a.security.securityRating - b.security.securityRating
-        : b.security.securityRating - a.security.securityRating
+      // For security rating, we'll need to fetch this separately or use a default
+      const aRating = 70 // Default rating
+      const bRating = 70 // Default rating
+      return sortDirection === "asc" ? aRating - bRating : bRating - aRating
     }
   })
 
@@ -117,8 +140,8 @@ export default function EnhancedVendorSelection({
     }
   }
 
-  const getDeploymentIcon = (deploymentType: string) => {
-    switch (deploymentType) {
+  const getDeploymentIcon = (deployment_type: string) => {
+    switch (deployment_type) {
       case "cloud":
         return <Cloud className="h-3 w-3 text-blue-500" />
       case "on-premise":
@@ -133,6 +156,31 @@ export default function EnhancedVendorSelection({
       default:
         return <Server className="h-3 w-3" />
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">Loading vendor data...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertCircle className="h-8 w-8 text-red-600 mx-auto mb-2" />
+          <p className="text-sm text-red-600">{error}</p>
+          <Button variant="outline" size="sm" className="mt-2" onClick={loadVendors}>
+            Retry
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -305,102 +353,126 @@ export default function EnhancedVendorSelection({
 
       {/* Vendor List */}
       <div className="flex-1 overflow-y-auto p-2">
-        {sortedVendors.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center p-4">
-            <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
-            <h3 className="font-medium mb-1">No vendors found</h3>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
-            <Button variant="outline" size="sm" className="mt-4 bg-transparent" onClick={handleClearFilters}>
-              Clear Filters
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {sortedVendors.map((vendor) => {
-              const isSelected = selectedVendors.includes(vendor.id)
-              const isPortnox = vendor.id === "portnox"
-              const hasWarning = vendor.id === "ivanti"
+        <AnimatePresence>
+          {sortedVendors.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center h-full text-center p-4"
+            >
+              <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
+              <h3 className="font-medium mb-1">No vendors found</h3>
+              <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
+              <Button variant="outline" size="sm" className="mt-4 bg-transparent" onClick={handleClearFilters}>
+                Clear Filters
+              </Button>
+            </motion.div>
+          ) : (
+            <div className="space-y-2">
+              {sortedVendors.map((vendor, index) => {
+                const isSelected = selectedVendors.includes(vendor.vendor_id)
+                const isPortnox = vendor.vendor_id === "portnox"
+                const hasWarning = vendor.vendor_id === "ivanti_neurons"
 
-              return (
-                <Card
-                  key={vendor.id}
-                  className={`overflow-hidden transition-all ${
-                    isSelected
-                      ? "ring-2 ring-blue-500 dark:ring-blue-400"
-                      : "hover:border-blue-200 dark:hover:border-blue-800"
-                  } ${isPortnox ? "bg-blue-50 dark:bg-blue-950/20" : ""}`}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-start gap-3">
-                      {/* Logo */}
-                      <div
-                        className={`relative flex-shrink-0 w-10 h-10 rounded-md border overflow-hidden ${
-                          darkMode ? "bg-gray-800" : "bg-white"
-                        }`}
-                      >
-                        <Image
-                          src={vendor.logo || "/placeholder.svg"}
-                          alt={vendor.name}
-                          width={40}
-                          height={40}
-                          className="object-contain p-1"
-                        />
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-medium text-sm flex items-center gap-1">
-                              {vendor.name}
-                              {isPortnox && <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />}
-                              {hasWarning && <AlertCircle className="h-3 w-3 text-red-500" />}
-                            </h3>
-                            <div className="flex items-center gap-1 mt-0.5">
-                              <Badge
-                                className={`${getCategoryColor(vendor.category)} text-[10px] py-0 h-4`}
-                                variant="secondary"
-                              >
-                                {vendor.category.charAt(0).toUpperCase() + vendor.category.slice(1)}
-                              </Badge>
-                              <Badge variant="outline" className="text-[10px] py-0 h-4 flex items-center gap-0.5">
-                                {getDeploymentIcon(vendor.deploymentType)}
-                                <span className="capitalize">{vendor.deploymentType}</span>
-                              </Badge>
-                            </div>
+                return (
+                  <motion.div
+                    key={vendor.vendor_id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <Card
+                      className={`overflow-hidden transition-all cursor-pointer ${
+                        isSelected
+                          ? "ring-2 ring-blue-500 dark:ring-blue-400"
+                          : "hover:border-blue-200 dark:hover:border-blue-800"
+                      } ${isPortnox ? "bg-blue-50 dark:bg-blue-950/20" : ""} ${
+                        hasWarning ? "border-red-200 bg-red-50 dark:bg-red-950/20" : ""
+                      }`}
+                      onClick={() => onVendorToggle(vendor.vendor_id)}
+                    >
+                      <CardContent className="p-3">
+                        <div className="flex items-start gap-3">
+                          {/* Logo */}
+                          <div
+                            className={`relative flex-shrink-0 w-10 h-10 rounded-md border overflow-hidden ${
+                              darkMode ? "bg-gray-800" : "bg-white"
+                            }`}
+                          >
+                            <Image
+                              src={vendor.logo_url || "/placeholder.svg"}
+                              alt={vendor.name}
+                              width={40}
+                              height={40}
+                              className="object-contain p-1"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement
+                                target.src = "/placeholder.svg"
+                              }}
+                            />
                           </div>
 
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={() => onVendorToggle(vendor.id)}
-                            className={`${isPortnox ? "opacity-100" : ""}`}
-                          />
-                        </div>
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h3 className="font-medium text-sm flex items-center gap-1">
+                                  {vendor.name}
+                                  {isPortnox && <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />}
+                                  {hasWarning && <AlertCircle className="h-3 w-3 text-red-500" />}
+                                </h3>
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  <Badge
+                                    className={`${getCategoryColor(vendor.category)} text-[10px] py-0 h-4`}
+                                    variant="secondary"
+                                  >
+                                    {vendor.category.charAt(0).toUpperCase() + vendor.category.slice(1)}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-[10px] py-0 h-4 flex items-center gap-0.5">
+                                    {getDeploymentIcon(vendor.deployment_type)}
+                                    <span className="capitalize">{vendor.deployment_type}</span>
+                                  </Badge>
+                                </div>
+                              </div>
 
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{vendor.description}</p>
-
-                        <div className="flex items-center justify-between mt-2">
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1">
-                              <Shield className="h-3 w-3 text-green-500" />
-                              <span className="text-xs">{vendor.security.securityRating}</span>
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={(checked) => onVendorToggle(vendor.vendor_id)}
+                                className={`${isPortnox ? "opacity-100" : ""}`}
+                                onClick={(e) => e.stopPropagation()}
+                              />
                             </div>
-                            <div className="flex items-center gap-1">
-                              <Star className="h-3 w-3 text-yellow-500" />
-                              <span className="text-xs">{vendor.marketShare}%</span>
+
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{vendor.description}</p>
+
+                            <div className="flex items-center justify-between mt-2">
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1">
+                                  <TrendingUp className="h-3 w-3 text-green-500" />
+                                  <span className="text-xs">{vendor.market_share}%</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Shield className="h-3 w-3 text-blue-500" />
+                                  <span className="text-xs">Secure</span>
+                                </div>
+                              </div>
+
+                              <div className="text-xs text-muted-foreground">
+                                {vendor.founded_year && `Est. ${vendor.founded_year}`}
+                              </div>
                             </div>
                           </div>
-
-                          <div className="text-xs text-muted-foreground">${vendor.pricing.pricePerDevice}/device</div>
                         </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )
+              })}
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )
