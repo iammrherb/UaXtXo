@@ -825,6 +825,169 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
       "Comprehensive compliance monitoring"
     ]
   }
+
+  ivanti_neurons: {
+    id: "ivanti_neurons",
+    name: "Ivanti Neurons for NAC",
+    category: "niche",
+    marketShare: 2.1,
+    deploymentType: "on-premise",
+    logo: "/ivanti-logo.png",
+    description: "Legacy NAC solution with known security vulnerabilities. End-of-life product with active nation-state exploitation. Immediate migration strongly recommended.",
+
+    pricing: {
+      model: "per-device",
+      basePrice: 15000,
+      pricePerDevice: 7.0,
+      minimumDevices: 100,
+      volumeDiscounts: {
+        "500": 5,
+        "2000": 10,
+        "5000": 15
+      },
+      contractTerms: {
+        "annual_discount": 8,
+        "multi_year_discount": 15
+      },
+      additionalCosts: {
+        hardware: 45000,
+        services: 30000,
+        training: 12000,
+        maintenance: 18000,
+        support: 20000,
+      },
+      addOns: {
+        "Advanced Reporting": { perDevice: 1.0, description: "Enhanced reporting capabilities" },
+        "Mobile Device Support": { perDevice: 1.5, description: "Mobile device management" }
+      }
+    },
+
+    implementation: {
+      timeToDeployDays: 120,
+      complexity: "high",
+      professionalServicesRequired: true,
+      trainingHours: 40,
+      onboardingComplexity: "complex",
+      migrationSupport: false,
+      resourcesRequired: {
+        technical: 2.5,
+        administrative: 1.2,
+        ongoing: 2.0
+      }
+    },
+
+    security: {
+      securityRating: 25, // Very low due to active exploitation
+      cveCount: 89, // High number of vulnerabilities
+      lastSecurityIncident: "2024-01-15", // Recent active exploitation
+      complianceSupport: ["PCI-DSS", "HIPAA"],
+      zeroTrustMaturity: 20,
+      certifications: []
+    },
+
+    features: {
+      core: ["Basic NAC", "Device Discovery", "Policy Enforcement"],
+      advanced: [],
+      integrations: ["Active Directory", "SIEM"],
+      includedFeatures: ["Basic RADIUS", "Policy Engine"],
+      additionalLicenses: ["Advanced Features", "Mobile Support"]
+    },
+
+    infrastructure: {
+      hardwareRequired: true,
+      scalabilityScore: 40,
+      highAvailability: 95.0,
+      maintenanceWindows: 8, // High maintenance
+      cloudNative: false,
+      infrastructureCosts: 60000
+    },
+
+    support: {
+      availability: "Business Hours",
+      responseTime: "< 24 hours",
+      customerSatisfaction: 45, // Very low
+      professionalServices: {
+        implementation: 30000,
+        training: 12000,
+        ongoing: 20000
+      }
+    },
+
+    operationalMetrics: {
+      adminEffort: 10, // Very high
+      upgradeComplexity: "complex",
+      reportingCapabilities: "basic",
+      apiAvailability: false,
+      cloudManagement: false,
+      staffingRequirements: {
+        administrators: 2.5,
+        specialists: 1.5,
+        trainingDays: 15
+      },
+      operationalCosts: {
+        monthlyMaintenance: 12000,
+        annualSupport: 20000
+      }
+    },
+
+    roi: {
+      breachRiskReduction: 0.10, // Very low - actually increases risk
+      laborSavings: -1.0, // Negative - requires more staff
+      complianceSavings: 10000,
+      downtimeReduction: 0.30,
+      operationalEfficiency: 0.20,
+      timeToValue: 120,
+      yearlyBenefit: -50000 // Negative value
+    },
+
+    riskMetrics: {
+      securityPostureScore: 25,
+      vendorStability: 30, // Low due to security issues
+      technologyRisk: 95, // Very high
+      complianceRisk: 80 // High risk
+    },
+
+    complianceSummary: {
+      automationLevel: 20,
+      frameworksCovered: ["PCI-DSS", "HIPAA"],
+      auditReadiness: 40,
+      automatedCompliance: false,
+      certifications: []
+    },
+
+    scalability: {
+      cloudNative: false,
+      maxDevices: 10000,
+      globalDeployment: false,
+      multiTenant: false
+    },
+
+    strengths: [
+      "Legacy compatibility with older systems"
+    ],
+    weaknesses: [
+      "89 known CVEs including critical vulnerabilities",
+      "Active nation-state exploitation in the wild",
+      "End-of-life product with limited support",
+      "High operational overhead and complexity",
+      "Poor security posture and vendor stability",
+      "No cloud-native capabilities",
+      "Expensive maintenance and support costs"
+    ],
+    bestFor: [
+      "Organizations requiring immediate migration away from this platform"
+    ],
+    challenges: [
+      "Critical security vulnerabilities with active exploitation",
+      "End-of-life status with limited vendor support",
+      "High total cost of ownership",
+      "Complex migration to modern alternatives required",
+      "Significant security and compliance risks"
+    ],
+    advantages: [
+      "None - immediate migration recommended"
+    ]
+  }
 }
 
 export const AllVendorData = ComprehensiveVendorDatabase

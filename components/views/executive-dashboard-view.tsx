@@ -195,11 +195,11 @@ export default function ExecutiveDashboardView({ results = [], config }: Executi
       vendorId: result.vendorId,
       deploymentDays: result.timeline.timeToValue,
       complexity: result.recommendations.implementationComplexity,
-      professionalServices: result.vendorData.implementation.professionalServicesRequired,
-      trainingHours: result.vendorData.implementation.trainingHours,
-      hardwareRequired: result.vendorData.infrastructure.hardwareRequired,
-      maintenanceWindows: result.vendorData.infrastructure.maintenanceWindows,
-      ongoingFTE: result.vendorData.implementation.resourcesRequired.ongoing,
+      professionalServices: result.vendorData?.implementation?.professionalServicesRequired || false,
+      trainingHours: result.vendorData?.implementation?.trainingHours || 0,
+      hardwareRequired: result.vendorData?.infrastructure?.hardwareRequired || false,
+      maintenanceWindows: result.vendorData?.infrastructure?.maintenanceWindows || 0,
+      ongoingFTE: result.vendorData?.implementation?.resourcesRequired?.ongoing || 0,
       isPortnox: result.vendorId === "portnox"
     }))
   }, [results])
@@ -622,7 +622,7 @@ export default function ExecutiveDashboardView({ results = [], config }: Executi
                       <div className="text-xs text-muted-foreground">Training</div>
                     </div>
                     <div className="text-center p-3 rounded-lg bg-muted/50">
-                      <div className="text-lg font-bold">{impl.ongoingFTE}</div>
+                      <div className="text-lg font-bold">{impl.ongoingFTE.toFixed(1)}</div>
                       <div className="text-xs text-muted-foreground">Ongoing FTE</div>
                     </div>
                     <div className="text-center p-3 rounded-lg bg-muted/50">
@@ -792,15 +792,15 @@ export default function ExecutiveDashboardView({ results = [], config }: Executi
                     </td>
                     <td className="text-center p-3">
                       <div className={`font-bold ${
-                        results.find(r => r.vendorId === vendor.vendorId)?.vendorData.security.cveCount === 0 
+                        results.find(r => r.vendorId === vendor.vendorId)?.vendorData?.security?.cveCount === 0 
                           ? 'text-green-600' 
                           : 'text-red-600'
                       }`}>
-                        {results.find(r => r.vendorId === vendor.vendorId)?.vendorData.security.cveCount || 0}
+                        {results.find(r => r.vendorId === vendor.vendorId)?.vendorData?.security?.cveCount || 0}
                       </div>
                     </td>
                     <td className="text-center p-3">
-                      {results.find(r => r.vendorId === vendor.vendorId)?.vendorData.infrastructure.hardwareRequired ? (
+                      {results.find(r => r.vendorId === vendor.vendorId)?.vendorData?.infrastructure?.hardwareRequired ? (
                         <AlertTriangle className="h-5 w-5 text-red-500 mx-auto" />
                       ) : (
                         <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
@@ -808,7 +808,7 @@ export default function ExecutiveDashboardView({ results = [], config }: Executi
                     </td>
                     <td className="text-center p-3">
                       <div className="font-medium">
-                        {results.find(r => r.vendorId === vendor.vendorId)?.vendorData.infrastructure.maintenanceWindows || 0}/year
+                        {results.find(r => r.vendorId === vendor.vendorId)?.vendorData?.infrastructure?.maintenanceWindows || 0}/year
                       </div>
                     </td>
                     <td className="text-center p-3">

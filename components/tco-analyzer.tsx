@@ -96,7 +96,16 @@ export default function TcoAnalyzerUltimate() {
         try {
           const { configuration: savedConfig, selectedVendors: savedVendors, darkMode: savedDarkMode } = JSON.parse(localSaved)
           if (savedConfig) setConfiguration(savedConfig)
-          if (savedVendors) setSelectedVendors(savedVendors)
+          if (savedVendors) {
+            // Filter out invalid vendor IDs and ensure Portnox is always included
+            const validVendors = savedVendors.filter((vendorId: string) => 
+              require('../lib/comprehensive-vendor-data').ComprehensiveVendorDatabase[vendorId]
+            )
+            if (!validVendors.includes('portnox')) {
+              validVendors.unshift('portnox')
+            }
+            setSelectedVendors(validVendors.length > 0 ? validVendors : DEFAULT_VENDORS)
+          }
           if (typeof savedDarkMode === "boolean") setDarkMode(savedDarkMode)
         } catch (parseError) {
           console.error('Failed to parse saved configuration:', parseError)
