@@ -186,8 +186,8 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
     ],
   },
 
-  aruba: {
-    id: "aruba",
+  aruba_clearpass: {
+    id: "aruba_clearpass",
     name: "Aruba ClearPass",
     category: "challenger",
     marketShare: 18.7,
