@@ -280,6 +280,11 @@ export class EnhancedDatabaseService {
     results: any[]
   ): Promise<boolean> {
     try {
+      if (!sessionId || !config || !selectedVendors || !results) {
+        console.error('Missing required parameters for saving calculation')
+        return false
+      }
+      
       const { error } = await supabase
         .from('user_calculations')
         .upsert({
@@ -312,6 +317,11 @@ export class EnhancedDatabaseService {
     results: any[]
   } | null> {
     try {
+      if (!sessionId) {
+        console.error('Session ID is required for loading calculation')
+        return null
+      }
+      
       const { data, error } = await supabase
         .from('user_calculations')
         .select('*')
@@ -320,7 +330,10 @@ export class EnhancedDatabaseService {
         .limit(1)
         .single()
 
-      if (error || !data) return null
+      if (error || !data) {
+        console.warn('No saved calculation found for session:', sessionId)
+        return null
+      }
 
       return {
         config: data.configuration,

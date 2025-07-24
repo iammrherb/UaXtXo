@@ -1,426 +1,504 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState, useMemo } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AccessibleDropdown } from "@/components/ui/accessible-dropdown"
+import { LoadingState, SkeletonCard } from "@/components/ui/loading-states"
 import {
-  Settings,
-  Loader2,
-  ChevronLeft,
-  ChevronRight,
-  Menu,
+  Search,
+  Filter,
   X,
-  BarChart3,
-  DollarSign,
+  CheckCircle2,
+  AlertTriangle,
+  Cloud,
+  Server,
+  Hybrid,
+  Star,
   TrendingUp,
   Shield,
-  FileCheck,
+  DollarSign,
   Users,
-  LayoutGrid,
-  MapPin,
-  Building2,
-  FileText,
-  Calendar,
-  HelpCircle,
+  Building,
+  Zap,
+  Award,
+  AlertCircle,
+  Info
 } from "lucide-react"
-import { Toaster } from "@/components/ui/sonner"
-import { toast } from "sonner"
+import { motion, AnimatePresence } from "framer-motion"
+import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
 
-import EnhancedVendorSelection from "./enhanced-vendor-selection"
-import SettingsPanel from "./settings-panel"
-import ExecutiveDashboardView from "./views/executive-dashboard-view"
-import DetailedCostsView from "./views/detailed-costs-view"
-import ROIView from "./views/roi-view"
-import SecurityPostureView from "./views/security-posture-view"
-import ComplianceRiskView from "./views/compliance-risk-view"
-import OperationsImpactView from "./views/operations-impact-view"
-import FeatureMatrixView from "./views/feature-matrix-view"
-import ImplementationRoadmapView from "./views/implementation-roadmap-view"
-import BusinessImpactView from "./views/business-impact-view"
-import ReportsView from "./views/reports-view"
-import AnimatedPortnoxLogo from "./animated-portnox-logo"
+interface EnhancedVendorSelectionProps {
+  selectedVendors: string[]
+  onVendorToggle: (vendorId: string) => void
+  onClearAll: () => void
+  onSelectRecommended: () => void
+  darkMode: boolean
+}
 
-import { compareVendors } from "@/lib/enhanced-tco-calculator"
-import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+const VENDOR_CATEGORIES = {
+  leader: { icon: Star, color: "text-yellow-600", bg: "bg-yellow-50", label: "Market Leader" },
+  challenger: { icon: TrendingUp, color: "text-blue-600", bg: "bg-blue-50", label: "Strong Challenger" },
+  visionary: { icon: Zap, color: "text-purple-600", bg: "bg-purple-50", label: "Visionary" },
+  niche: { icon: Building, color: "text-gray-600", bg: "bg-gray-50", label: "Niche Player" }
+}
 
-const DEFAULT_VENDORS = ["portnox", "cisco", "aruba", "forescout"]
+const DEPLOYMENT_TYPES = {
+  cloud: { icon: Cloud, color: "text-green-600", label: "Cloud" },
+  "on-premise": { icon: Server, color: "text-red-600", label: "On-Premise" },
+  hybrid: { icon: Hybrid, color: "text-orange-600", label: "Hybrid" }
+}
 
-export default function TcoAnalyzerUltimate() {
-  const [isClient, setIsClient] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSettingsOpen, setSettingsOpen] = useState(false)
-  const [darkMode, setDarkMode] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+export default function EnhancedVendorSelection({
+  selectedVendors,
+  onVendorToggle,
+  onClearAll,
+  onSelectRecommended,
+  darkMode
+}: EnhancedVendorSelectionProps) {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState<string>("")
+  const [selectedDeployment, setSelectedDeployment] = useState<string>("")
+  const [showOnlySelected, setShowOnlySelected] = useState(false)
+  const [sortBy, setSortBy] = useState<string>("marketShare")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const [configuration, setConfiguration] = useState<CalculationConfiguration>({
-    devices: 2500,
-    users: 1500,
-    industry: "technology",
-    orgSize: "medium",
-    years: 3,
-    region: "north-america",
-    portnoxBasePrice: 4.0,
-    portnoxAddons: { atp: false, compliance: false, iot: false, analytics: false },
-  })
+  const vendors = useMemo(() => Object.values(ComprehensiveVendorDatabase), [])
 
-  const [selectedVendors, setSelectedVendors] = useState<string[]>(DEFAULT_VENDORS)
-  const [results, setResults] = useState<CalculationResult[]>([])
+  const filteredAndSortedVendors = useMemo(() => {
+    let filtered = vendors.filter(vendor => {
+      const matchesSearch = !searchQuery || 
+        vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        vendor.description.toLowerCase().includes(searchQuery.toLowerCase())
+      
+      const matchesCategory = !selectedCategory || vendor.category === selectedCategory
+      const matchesDeployment = !selectedDeployment || vendor.deploymentType === selectedDeployment
+      const matchesSelected = !showOnlySelected || selectedVendors.includes(vendor.id)
 
-  useEffect(() => {
-    setIsClient(true)
-    // Load from localStorage
-    try {
-      const saved = localStorage.getItem("portnox-tco-config")
-      if (saved) {
-        const { configuration: savedConfig, selectedVendors: savedVendors, darkMode: savedDarkMode } = JSON.parse(saved)
-        if (savedConfig) setConfiguration(savedConfig)
-        if (savedVendors) setSelectedVendors(savedVendors)
-        if (typeof savedDarkMode === "boolean") setDarkMode(savedDarkMode)
+      return matchesSearch && matchesCategory && matchesDeployment && matchesSelected
+    })
+
+    // Sort vendors
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "marketShare":
+          return b.marketShare - a.marketShare
+        case "name":
+          return a.name.localeCompare(b.name)
+        case "security":
+          return b.security.securityRating - a.security.securityRating
+        case "price":
+          return a.pricing.pricePerDevice - b.pricing.pricePerDevice
+        default:
+          return 0
       }
-    } catch (error) {
-      console.error("Failed to load from localStorage", error)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+    })
 
-  useEffect(() => {
-    if (!isLoading) {
-      const newResults = compareVendors(selectedVendors, configuration)
-      setResults(newResults)
-      // Save to localStorage
-      localStorage.setItem("portnox-tco-config", JSON.stringify({ configuration, selectedVendors, darkMode }))
-    }
-  }, [selectedVendors, configuration, darkMode, isLoading])
+    return filtered
+  }, [vendors, searchQuery, selectedCategory, selectedDeployment, showOnlySelected, sortBy, selectedVendors])
 
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-    }
-  }, [darkMode])
-
-  const handleVendorToggle = (vendorId: string) => {
-    setSelectedVendors((prev) => (prev.includes(vendorId) ? prev.filter((v) => v !== vendorId) : [...prev, vendorId]))
-    toast(`${vendorId} selection updated.`)
-  }
-
-  const handleClearAll = () => {
-    setSelectedVendors([])
-    toast("All vendors cleared.")
-  }
-
-  const handleSelectRecommended = () => {
-    setSelectedVendors(DEFAULT_VENDORS)
-    toast("Recommended vendors selected.")
-  }
-
-  const handleConfigChange = (newConfig: any) => {
-    setConfiguration((prev) => ({ ...prev, ...newConfig }))
-  }
-
-  const handleAddonsChange = (newAddons: any) => {
-    setConfiguration((prev) => ({
-      ...prev,
-      portnoxAddons: { ...prev.portnoxAddons, ...newAddons },
-    }))
-  }
-
-  if (!isClient || isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-        <div className="text-center">
-          <AnimatedPortnoxLogo width={120} height={40} animate={true} />
-          <div className="mt-6 space-y-2">
-            <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-              Executive Intelligence Decision Platform
-            </h2>
-            <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Loading comprehensive analysis...</p>
-            <div className="w-64 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mx-auto mt-4">
-              <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full animate-pulse" />
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const TABS = [
-    {
-      value: "executive",
-      label: "Executive Dashboard",
-      icon: <BarChart3 className="h-4 w-4" />,
-      component: <ExecutiveDashboardView results={results} config={configuration} />,
-    },
-    {
-      value: "costs",
-      label: "Detailed Costs",
-      icon: <DollarSign className="h-4 w-4" />,
-      component: <DetailedCostsView results={results} config={configuration} />,
-    },
-    {
-      value: "roi",
-      label: "ROI Analysis",
-      icon: <TrendingUp className="h-4 w-4" />,
-      component: <ROIView results={results} config={configuration} />,
-    },
-    {
-      value: "security",
-      label: "Security Posture",
-      icon: <Shield className="h-4 w-4" />,
-      component: <SecurityPostureView results={results} config={configuration} />,
-    },
-    {
-      value: "compliance",
-      label: "Compliance & Risk",
-      icon: <FileCheck className="h-4 w-4" />,
-      component: <ComplianceRiskView results={results} config={configuration} />,
-    },
-    {
-      value: "operations",
-      label: "Operations Impact",
-      icon: <Users className="h-4 w-4" />,
-      component: <OperationsImpactView results={results} config={configuration} />,
-    },
-    {
-      value: "features",
-      label: "Feature Matrix",
-      icon: <LayoutGrid className="h-4 w-4" />,
-      component: <FeatureMatrixView results={results} config={configuration} />,
-    },
-    {
-      value: "roadmap",
-      label: "Implementation",
-      icon: <MapPin className="h-4 w-4" />,
-      component: <ImplementationRoadmapView results={results} config={configuration} />,
-    },
-    {
-      value: "business",
-      label: "Business Impact",
-      icon: <Building2 className="h-4 w-4" />,
-      component: <BusinessImpactView results={results} config={configuration} />,
-    },
-    {
-      value: "reports",
-      label: "Reports",
-      icon: <FileText className="h-4 w-4" />,
-      component: <ReportsView results={results} configuration={configuration} />,
-    },
+  const categoryOptions = [
+    { value: "", label: "All Categories" },
+    { value: "leader", label: "Market Leaders" },
+    { value: "challenger", label: "Strong Challengers" },
+    { value: "visionary", label: "Visionaries" },
+    { value: "niche", label: "Niche Players" }
   ]
 
+  const deploymentOptions = [
+    { value: "", label: "All Deployment Types" },
+    { value: "cloud", label: "Cloud-Native" },
+    { value: "on-premise", label: "On-Premise" },
+    { value: "hybrid", label: "Hybrid" }
+  ]
+
+  const sortOptions = [
+    { value: "marketShare", label: "Market Share" },
+    { value: "name", label: "Name" },
+    { value: "security", label: "Security Rating" },
+    { value: "price", label: "Price" }
+  ]
+
+  const getVendorIcon = (vendor: any) => {
+    if (vendor.id === "portnox") return <Award className="h-5 w-5 text-green-600" />
+    if (vendor.security.cveCount === 0) return <Shield className="h-5 w-5 text-blue-600" />
+    if (vendor.security.cveCount > 20) return <AlertTriangle className="h-5 w-5 text-red-600" />
+    return <CheckCircle2 className="h-5 w-5 text-gray-600" />
+  }
+
+  const getVendorStatus = (vendor: any) => {
+    if (vendor.id === "ivanti") {
+      return { type: "critical", message: "Security Risk - Migration Required", color: "text-red-600" }
+    }
+    if (vendor.id === "portnox") {
+      return { type: "recommended", message: "Recommended Solution", color: "text-green-600" }
+    }
+    if (vendor.security.cveCount === 0) {
+      return { type: "secure", message: "Zero CVE Record", color: "text-blue-600" }
+    }
+    if (vendor.security.cveCount > 20) {
+      return { type: "warning", message: "High CVE Count", color: "text-orange-600" }
+    }
+    return { type: "standard", message: "Standard Option", color: "text-gray-600" }
+  }
+
+  const clearFilters = () => {
+    setSearchQuery("")
+    setSelectedCategory("")
+    setSelectedDeployment("")
+    setShowOnlySelected(false)
+    setSortBy("marketShare")
+  }
+
+  const hasActiveFilters = searchQuery || selectedCategory || selectedDeployment || showOnlySelected
+
   return (
-    <div className={darkMode ? "dark" : ""}>
-      <div className="bg-background text-foreground min-h-screen flex flex-col">
-        {/* Header */}
-        <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-          <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-4">
-              <AnimatedPortnoxLogo width={140} height={40} showText={true} animate={true} />
-              <Separator orientation="vertical" className="h-8" />
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  Executive Intelligence Decision Platform
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Data-driven insights for Network Access Control vendor evaluation
-                </p>
-              </div>
-            </div>
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="p-4 border-b bg-white dark:bg-gray-900">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-lg">Vendor Selection</h3>
+          <Badge variant="outline" className="text-xs">
+            {selectedVendors.length} selected
+          </Badge>
+        </div>
 
-            <div className="flex items-center gap-4">
-              <Badge variant="outline" className="hidden md:flex">
-                v3.0
-              </Badge>
-              <Sheet open={!sidebarOpen} onOpenChange={setSidebarOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="md:hidden">
-                    {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-80 p-0">
-                  <div className="p-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <AnimatedPortnoxLogo width={24} height={24} showText={false} animate={false} />
-                      <span className="font-semibold text-sm">Vendor Selection</span>
-                    </div>
-                    <EnhancedVendorSelection
-                      selectedVendors={selectedVendors}
-                      onVendorToggle={handleVendorToggle}
-                      onClearAll={handleClearAll}
-                      onSelectRecommended={handleSelectRecommended}
-                      darkMode={darkMode}
-                    />
-                  </div>
-                </SheetContent>
-              </Sheet>
-              <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-              <Button
-                size="sm"
-                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-              >
-                <Calendar className="h-4 w-4 mr-1" />
-                Schedule Demo
-              </Button>
-            </div>
-          </div>
-        </header>
+        {/* Quick Actions */}
+        <div className="flex gap-2 mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onSelectRecommended}
+            className="flex-1 text-xs"
+            aria-label="Select recommended vendors"
+          >
+            <Star className="h-3 w-3 mr-1" />
+            Recommended
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onClearAll}
+            className="flex-1 text-xs"
+            aria-label="Clear all selections"
+            disabled={selectedVendors.length === 0}
+          >
+            <X className="h-3 w-3 mr-1" />
+            Clear All
+          </Button>
+        </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex overflow-hidden">
-          <ResizablePanelGroup direction="horizontal" className="h-full w-full">
-            {/* Sidebar Panel */}
-            <ResizablePanel
-              defaultSize={sidebarCollapsed ? 5 : 28}
-              minSize={5}
-              maxSize={40}
-              className={`${!sidebarOpen ? "hidden md:block" : ""}`}
+        {/* Search */}
+        <div className="relative mb-3">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search vendors..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 text-sm"
+            aria-label="Search vendors"
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+              onClick={() => setSearchQuery("")}
+              aria-label="Clear search"
             >
-              <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900/50">
-                {/* Sidebar Header */}
-                <div className="p-4 border-b bg-white dark:bg-gray-900">
-                  <div className="flex items-center justify-between">
-                    {!sidebarCollapsed && (
-                      <div className="flex items-center gap-2">
-                        <AnimatedPortnoxLogo width={24} height={24} showText={false} animate={false} />
-                        <span className="font-semibold text-sm">Vendor Selection</span>
-                      </div>
-                    )}
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+
+        {/* Filters */}
+        <Tabs defaultValue="filters" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 h-8">
+            <TabsTrigger value="filters" className="text-xs">
+              <Filter className="h-3 w-3 mr-1" />
+              Filters
+            </TabsTrigger>
+            <TabsTrigger value="sort" className="text-xs">
+              Sort
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="filters" className="space-y-3 mt-3">
+            <AccessibleDropdown
+              options={categoryOptions}
+              value={selectedCategory}
+              onValueChange={(value) => setSelectedCategory(value as string)}
+              placeholder="All Categories"
+              ariaLabel="Filter by vendor category"
+              showSearch={false}
+            />
+
+            <AccessibleDropdown
+              options={deploymentOptions}
+              value={selectedDeployment}
+              onValueChange={(value) => setSelectedDeployment(value as string)}
+              placeholder="All Deployment Types"
+              ariaLabel="Filter by deployment type"
+              showSearch={false}
+            />
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="show-selected"
+                checked={showOnlySelected}
+                onCheckedChange={setShowOnlySelected}
+                aria-describedby="show-selected-desc"
+              />
+              <label
+                htmlFor="show-selected"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Show only selected
+              </label>
+            </div>
+            <p id="show-selected-desc" className="text-xs text-muted-foreground">
+              Filter to show only currently selected vendors
+            </p>
+
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="w-full text-xs"
+                aria-label="Clear all filters"
+              >
+                <X className="h-3 w-3 mr-1" />
+                Clear Filters
+              </Button>
+            )}
+          </TabsContent>
+
+          <TabsContent value="sort" className="mt-3">
+            <AccessibleDropdown
+              options={sortOptions}
+              value={sortBy}
+              onValueChange={(value) => setSortBy(value as string)}
+              placeholder="Sort by..."
+              ariaLabel="Sort vendors by"
+              showSearch={false}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Vendor List */}
+      <ScrollArea className="flex-1">
+        <div className="p-4 space-y-3">
+          <LoadingState
+            loading={isLoading}
+            error={error}
+            onRetry={() => setError(null)}
+            isEmpty={filteredAndSortedVendors.length === 0}
+            emptyState={
+              <div className="text-center py-8">
+                <Info className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  {hasActiveFilters ? "No vendors match your filters" : "No vendors available"}
+                </p>
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="mt-2"
+                  >
+                    Clear Filters
+                  </Button>
+                )}
+              </div>
+            }
+            loadingComponent={
+              <div className="space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <SkeletonCard key={i} showAvatar lines={2} />
+                ))}
+              </div>
+            }
+          >
+            <AnimatePresence mode="popLayout">
+              {filteredAndSortedVendors.map((vendor, index) => {
+                const isSelected = selectedVendors.includes(vendor.id)
+                const categoryInfo = VENDOR_CATEGORIES[vendor.category]
+                const deploymentInfo = DEPLOYMENT_TYPES[vendor.deploymentType]
+                const status = getVendorStatus(vendor)
+
+                return (
+                  <motion.div
+                    key={vendor.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ delay: index * 0.05 }}
+                    layout
+                  >
+                    <Card
+                      className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                        isSelected
+                          ? "ring-2 ring-primary bg-primary/5"
+                          : "hover:bg-muted/50"
+                      } ${
+                        vendor.id === "ivanti" ? "border-red-300 bg-red-50 dark:bg-red-950/20" : ""
+                      }`}
+                      onClick={() => onVendorToggle(vendor.id)}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={isSelected}
+                      aria-label={`${isSelected ? 'Deselect' : 'Select'} ${vendor.name}`}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          onVendorToggle(vendor.id)
+                        }
+                      }}
+                    >
+                      <CardHeader className="pb-2">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-2 flex-1">
+                            {getVendorIcon(vendor)}
+                            <div className="flex-1 min-w-0">
+                              <CardTitle className="text-sm font-medium truncate">
+                                {vendor.name}
+                              </CardTitle>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge
+                                  variant="outline"
+                                  className={`text-xs ${categoryInfo.color} border-current`}
+                                >
+                                  {categoryInfo.label}
+                                </Badge>
+                                <Badge
+                                  variant="outline"
+                                  className={`text-xs ${deploymentInfo.color} border-current`}
+                                >
+                                  <deploymentInfo.icon className="h-3 w-3 mr-1" />
+                                  {deploymentInfo.label}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            {isSelected && (
+                              <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden="true" />
+                            )}
+                          </div>
+                        </div>
+                      </CardHeader>
+
+                      <CardContent className="pt-0">
+                        <CardDescription className="text-xs line-clamp-2 mb-3">
+                          {vendor.description}
+                        </CardDescription>
+
+                        {/* Key Metrics */}
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="flex items-center gap-1">
+                            <Users className="h-3 w-3 text-muted-foreground" />
+                            <span>{vendor.marketShare.toFixed(1)}% market</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <DollarSign className="h-3 w-3 text-muted-foreground" />
+                            <span>${vendor.pricing.pricePerDevice}/device</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Shield className="h-3 w-3 text-muted-foreground" />
+                            <span>{vendor.security.securityRating}/100 security</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Zap className="h-3 w-3 text-muted-foreground" />
+                            <span>{vendor.implementation.timeToDeployDays}d deploy</span>
+                          </div>
+                        </div>
+
+                        {/* Status indicator */}
+                        <div className={`mt-2 text-xs ${status.color} flex items-center gap-1`}>
+                          {status.type === "critical" && <AlertCircle className="h-3 w-3" />}
+                          {status.type === "recommended" && <Award className="h-3 w-3" />}
+                          {status.type === "secure" && <Shield className="h-3 w-3" />}
+                          {status.type === "warning" && <AlertTriangle className="h-3 w-3" />}
+                          <span>{status.message}</span>
+                        </div>
+
+                        {/* Critical vendor warning */}
+                        {vendor.id === "ivanti" && (
+                          <Alert className="mt-2 border-red-300 bg-red-50 dark:bg-red-950/20">
+                            <AlertTriangle className="h-3 w-3" />
+                            <AlertDescription className="text-xs">
+                              Active exploitation - immediate migration required
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )
+              })}
+            </AnimatePresence>
+          </LoadingState>
+        </div>
+      </ScrollArea>
+
+      {/* Footer Summary */}
+      <div className="p-4 border-t bg-muted/30">
+        <div className="text-xs text-muted-foreground space-y-1">
+          <div className="flex justify-between">
+            <span>Total vendors:</span>
+            <span>{vendors.length}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Filtered results:</span>
+            <span>{filteredAndSortedVendors.length}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Selected:</span>
+            <span className="font-medium text-primary">{selectedVendors.length}</span>
+          </div>
+        </div>
+
+        {selectedVendors.length > 0 && (
+          <div className="mt-3 pt-3 border-t">
+            <p className="text-xs text-muted-foreground mb-2">Selected vendors:</p>
+            <div className="flex flex-wrap gap-1">
+              {selectedVendors.map(vendorId => {
+                const vendor = vendors.find(v => v.id === vendorId)
+                return vendor ? (
+                  <Badge
+                    key={vendorId}
+                    variant="secondary"
+                    className="text-xs flex items-center gap-1"
+                  >
+                    {vendor.name}
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                      className="h-8 w-8 p-0"
+                      className="h-3 w-3 p-0 hover:bg-transparent"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onVendorToggle(vendorId)
+                      }}
+                      aria-label={`Remove ${vendor.name}`}
                     >
-                      {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                      <X className="h-2 w-2" />
                     </Button>
-                  </div>
-                </div>
-
-                {/* Sidebar Content */}
-                <div className="flex-1 overflow-hidden">
-                  {sidebarCollapsed ? (
-                    <div className="p-2 space-y-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSidebarCollapsed(false)}
-                        className="w-full h-10 p-0"
-                        title="Expand vendor selection"
-                      >
-                        <Menu className="h-4 w-4" />
-                      </Button>
-                      <div className="text-center">
-                        <Badge variant="secondary" className="text-xs">
-                          {selectedVendors.length}
-                        </Badge>
-                      </div>
-                    </div>
-                  ) : (
-                    <EnhancedVendorSelection
-                      selectedVendors={selectedVendors}
-                      onVendorToggle={handleVendorToggle}
-                      onClearAll={handleClearAll}
-                      onSelectRecommended={handleSelectRecommended}
-                      darkMode={darkMode}
-                    />
-                  )}
-                </div>
-              </div>
-            </ResizablePanel>
-
-            <ResizableHandle withHandle className="bg-gray-200 dark:bg-gray-700" />
-
-            {/* Main Content Panel */}
-            <ResizablePanel defaultSize={sidebarCollapsed ? 95 : 72}>
-              <div className="flex flex-col h-full">
-                {/* Tab Navigation */}
-                <div className="border-b bg-white dark:bg-gray-900 px-6 py-2">
-                  <Tabs defaultValue="executive" className="w-full">
-                    <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 h-auto bg-gray-100 dark:bg-gray-800">
-                      {TABS.map((tab) => (
-                        <TabsTrigger
-                          key={tab.value}
-                          value={tab.value}
-                          className="text-xs px-2 py-2 flex items-center gap-1 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
-                        >
-                          {tab.icon}
-                          <span className="hidden sm:inline">{tab.label}</span>
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-
-                    {/* Tab Content */}
-                    <div className="mt-4">
-                      {TABS.map((tab) => (
-                        <TabsContent key={tab.value} value={tab.value} className="mt-0">
-                          <div className="h-[calc(100vh-200px)] overflow-y-auto">{tab.component}</div>
-                        </TabsContent>
-                      ))}
-                    </div>
-                  </Tabs>
-                </div>
-              </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </div>
-
-        {/* Footer */}
-        <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <AnimatedPortnoxLogo width={100} height={28} showText={true} animate={false} />
-              <Separator orientation="vertical" className="h-6" />
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium">Executive Intelligence Decision Platform</span>
-                <span className="mx-2">•</span>
-                <span>Powered by Portnox CLEAR</span>
-                <span className="mx-2">•</span>
-                <span>© 2024 Portnox Ltd.</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span>Last Updated: {new Date().toLocaleDateString()}</span>
-              <Badge variant="outline" className="text-xs">
-                {selectedVendors.length} vendors selected
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                {configuration.devices.toLocaleString()} devices
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                {configuration.years} year analysis
-              </Badge>
-              <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
-                <HelpCircle className="h-3 w-3 mr-1" />
-                Help
-              </Button>
+                  </Badge>
+                ) : null
+              })}
             </div>
           </div>
-        </footer>
-
-        {/* Settings Panel */}
-        <SettingsPanel
-          isOpen={isSettingsOpen}
-          onClose={() => setSettingsOpen(false)}
-          configuration={configuration}
-          onConfigurationChange={handleConfigChange}
-          portnoxAddons={configuration.portnoxAddons}
-          onAddonsChange={handleAddonsChange}
-          darkMode={darkMode}
-          onDarkModeChange={setDarkMode}
-        />
-
-        <Toaster />
+        )}
       </div>
     </div>
   )

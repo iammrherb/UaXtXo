@@ -213,8 +213,19 @@ export class EnhancedCalculationService {
     config: CalculationConfiguration
   ): Promise<UltimateCalculationResult | null> {
     try {
+      // Add input validation
+      if (!vendorId || !config) {
+        throw new Error('Invalid input parameters')
+      }
+      
+      if (config.devices <= 0 || config.users <= 0 || config.years <= 0) {
+        throw new Error('Configuration values must be positive numbers')
+      }
+
       const vendorData = await EnhancedVendorService.getCompleteVendorData(vendorId)
-      if (!vendorData) return null
+      if (!vendorData) {
+        throw new Error(`Vendor data not found for ${vendorId}`)
+      }
 
       const regionFactors = this.REGION_FACTORS[config.region as keyof typeof this.REGION_FACTORS] || this.REGION_FACTORS['north-america']
       const industryProfile = this.INDUSTRY_PROFILES[config.industry as keyof typeof this.INDUSTRY_PROFILES] || this.INDUSTRY_PROFILES.technology
@@ -927,8 +938,23 @@ export class EnhancedCalculationService {
     vendorIds: string[],
     config: CalculationConfiguration
   ): Promise<UltimateCalculationResult[]> {
+    if (!vendorIds || vendorIds.length === 0) {
+      return []
+    }
+    
+    if (!config) {
+      throw new Error('Configuration is required')
+    }
+
     const results = await Promise.all(
-      vendorIds.map(id => this.calculateComprehensiveTCO(id, config))
+      vendorIds.map(async (id) => {
+        try {
+          return await this.calculateComprehensiveTCO(id, config)
+        } catch (error) {
+          console.error(`Failed to calculate TCO for vendor ${id}:`, error)
+          return null
+        }
+      })
     )
 
     return results
@@ -942,7 +968,16 @@ export class EnhancedCalculationService {
     selectedVendors: string[],
     results: UltimateCalculationResult[]
   ): Promise<boolean> {
-    return EnhancedDatabaseService.saveCalculation(sessionId, config, selectedVendors, results)
+    try {
+      if (!sessionId || !config || !selectedVendors || !results) {
+        throw new Error('Missing required parameters for saving calculation')
+      }
+      
+      return await EnhancedDatabaseService.saveCalculation(sessionId, config, selectedVendors, results)
+    } catch (error) {
+      console.error('Error in saveCalculation:', error)
+      return false
+    }
   }
 
   static async loadCalculation(sessionId: string): Promise<{
@@ -950,6 +985,15 @@ export class EnhancedCalculationService {
     selectedVendors: string[]
     results: UltimateCalculationResult[]
   } | null> {
-    return EnhancedDatabaseService.loadCalculation(sessionId)
+    try {
+      if (!sessionId) {
+        throw new Error('Session ID is required')
+      }
+      
+      return await EnhancedDatabaseService.loadCalculation(sessionId)
+    } catch (error) {
+      console.error('Error in loadCalculation:', error)
+      return null
+    }
   }
 }

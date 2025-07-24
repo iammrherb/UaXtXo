@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, Suspense } from "react"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -34,6 +34,7 @@ import {
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
+import { LoadingState, LoadingSpinner, ProgressiveLoading } from "@/components/ui/loading-states"
 
 import EnhancedVendorSelection from "./enhanced-vendor-selection"
 import SettingsPanel from "./settings-panel"
@@ -53,6 +54,7 @@ export default function TcoAnalyzerUltimate() {
   const [isClient, setIsClient] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isCalculating, setIsCalculating] = useState(false)
+  const [loadingError, setLoadingError] = useState<string | null>(null)
   const [isSettingsOpen, setSettingsOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -76,7 +78,11 @@ export default function TcoAnalyzerUltimate() {
 
   useEffect(() => {
     setIsClient(true)
-    loadSavedData()
+    loadSavedData().catch(error => {
+      console.error('Failed to load initial data:', error)
+      setLoadingError('Failed to load application data. Please refresh the page.')
+      setIsLoading(false)
+    })
   }, [])
 
   const loadSavedData = async () => {
@@ -92,15 +98,21 @@ export default function TcoAnalyzerUltimate() {
         // Fallback to localStorage
         const localSaved = localStorage.getItem("portnox-tco-config")
         if (localSaved) {
-          const { configuration: savedConfig, selectedVendors: savedVendors, darkMode: savedDarkMode } = JSON.parse(localSaved)
-          if (savedConfig) setConfiguration(savedConfig)
-          if (savedVendors) setSelectedVendors(savedVendors)
-          if (typeof savedDarkMode === "boolean") setDarkMode(savedDarkMode)
+          try {
+            const { configuration: savedConfig, selectedVendors: savedVendors, darkMode: savedDarkMode } = JSON.parse(localSaved)
+            if (savedConfig) setConfiguration(savedConfig)
+            if (savedVendors) setSelectedVendors(savedVendors)
+            if (typeof savedDarkMode === "boolean") setDarkMode(savedDarkMode)
+          } catch (parseError) {
+            console.error('Failed to parse saved configuration:', parseError)
+            // Clear corrupted data
+            localStorage.removeItem("portnox-tco-config")
+          }
         }
       }
     } catch (error) {
       console.error("Failed to load saved data", error)
-      toast.error("Failed to load saved configuration")
+      setLoadingError("Failed to load saved configuration")
     } finally {
       setIsLoading(false)
     }
@@ -115,17 +127,27 @@ export default function TcoAnalyzerUltimate() {
     setIsCalculating(true)
     try {
       const newResults = await EnhancedCalculationService.compareVendors(selectedVendors, configuration)
+      if (!newResults || newResults.length === 0) {
+        throw new Error('No calculation results returned')
+      }
       setResults(newResults)
       setLastUpdated(new Date())
       
       // Save to database and localStorage
-      await EnhancedCalculationService.saveCalculation(sessionId, configuration, selectedVendors, newResults)
-      localStorage.setItem("portnox-tco-config", JSON.stringify({ configuration, selectedVendors, darkMode }))
+      try {
+        await EnhancedCalculationService.saveCalculation(sessionId, configuration, selectedVendors, newResults)
+        localStorage.setItem("portnox-tco-config", JSON.stringify({ configuration, selectedVendors, darkMode }))
+      } catch (saveError) {
+        console.warn('Failed to save calculation:', saveError)
+        // Continue without saving - don't block the user
+      }
       
       toast.success(`Analysis updated for ${newResults.length} vendors`)
     } catch (error) {
       console.error("Failed to calculate results", error)
-      toast.error("Failed to update analysis. Please try again.")
+      const errorMessage = error instanceof Error ? error.message : "Failed to update analysis"
+      toast.error(errorMessage)
+      setLoadingError(errorMessage)
     } finally {
       setIsCalculating(false)
     }
@@ -211,21 +233,37 @@ export default function TcoAnalyzerUltimate() {
 
   if (!isClient || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-        <div className="text-center">
-          <AnimatedPortnoxLogo width={120} height={40} animate={true} />
-          <div className="mt-6 space-y-2">
-            <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-              Executive Intelligence Decision Platform
-            </h2>
-            <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Loading comprehensive analysis...</p>
-            <div className="w-64 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mx-auto mt-4">
-              <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full animate-pulse" />
+      <LoadingState
+        loading={isLoading && !loadingError}
+        error={loadingError}
+        onRetry={() => {
+          setLoadingError(null)
+          setIsLoading(true)
+          loadSavedData().catch(error => {
+            setLoadingError('Failed to load application data')
+            setIsLoading(false)
+          })
+        }}
+        loadingComponent={
+          <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+            <div className="text-center">
+              <AnimatedPortnoxLogo width={120} height={40} animate={true} />
+              <div className="mt-6 space-y-2">
+                <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                  Executive Intelligence Decision Platform
+                </h2>
+                <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Loading comprehensive analysis...</p>
+                <div className="w-64 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mx-auto mt-4">
+                  <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full animate-pulse" />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        }
+      >
+        {null}
+      </LoadingState>
     )
   }
 
@@ -409,10 +447,12 @@ export default function TcoAnalyzerUltimate() {
                     <div className="flex items-center gap-4">
                       <h2 className="text-lg font-semibold">Analysis Dashboard</h2>
                       {results.length > 0 && (
-                        <Badge variant="outline" className="flex items-center gap-1">
-                          <BarChart3 className="w-3 h-3" />
-                          {results.length} vendors analyzed
-                        </Badge>
+                        <ProgressiveLoading delay={100}>
+                          <Badge variant="outline" className="flex items-center gap-1">
+                            <BarChart3 className="w-3 h-3" />
+                            {results.length} vendors analyzed
+                          </Badge>
+                        </ProgressiveLoading>
                       )}
                     </div>
                     
@@ -459,40 +499,64 @@ export default function TcoAnalyzerUltimate() {
                     {/* Enhanced Tab Content */}
                     <div className="mt-6">
                       <TabsContent value="costs" className="mt-0">
-                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4">
+                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4" role="main" aria-label="Cost analysis content">
+                          <Suspense fallback={
+                            <div className="flex justify-center py-8">
+                              <LoadingSpinner message="Loading cost analysis..." />
+                            </div>
+                          }>
                           <AdvancedCostComparison 
                             results={results} 
                             config={configuration}
                             onExport={handleExportData}
                             onShare={() => toast.info("Share functionality coming soon")}
                           />
+                          </Suspense>
                         </div>
                       </TabsContent>
                       
                       <TabsContent value="roi" className="mt-0">
-                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4">
+                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4" role="main" aria-label="ROI analysis content">
+                          <Suspense fallback={
+                            <div className="flex justify-center py-8">
+                              <LoadingSpinner message="Loading ROI analysis..." />
+                            </div>
+                          }>
                           <ComprehensiveROIAnalysis 
                             results={results} 
                             config={configuration}
                           />
+                          </Suspense>
                         </div>
                       </TabsContent>
                       
                       <TabsContent value="security" className="mt-0">
-                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4">
+                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4" role="main" aria-label="Security analysis content">
+                          <Suspense fallback={
+                            <div className="flex justify-center py-8">
+                              <LoadingSpinner message="Loading security analysis..." />
+                            </div>
+                          }>
                           <InteractiveSecurityDashboard 
                             results={results} 
                             config={configuration}
                           />
+                          </Suspense>
                         </div>
                       </TabsContent>
                       
                       <TabsContent value="operations" className="mt-0">
-                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4">
+                        <div className="h-[calc(100vh-240px)] overflow-y-auto pr-4" role="main" aria-label="Operations analysis content">
+                          <Suspense fallback={
+                            <div className="flex justify-center py-8">
+                              <LoadingSpinner message="Loading operations analysis..." />
+                            </div>
+                          }>
                           <OperationalEfficiencyChart 
                             results={results} 
                             config={configuration}
                           />
+                          </Suspense>
                         </div>
                       </TabsContent>
                     </div>
