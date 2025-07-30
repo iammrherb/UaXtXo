@@ -6,14 +6,20 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Portnox TCO Analyzer - Executive Intelligence Decision Platform',
   description: 'Comprehensive Total Cost of Ownership analysis for Network Access Control solutions',
-  generator: 'v0.dev',
   keywords: 'NAC, Network Access Control, TCO, ROI, Security, Portnox',
   authors: [{ name: 'Portnox' }],
-  viewport: 'width=device-width, initial-scale=1',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+  },
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#ffffff' },
     { media: '(prefers-color-scheme: dark)', color: '#000000' }
-  ]
+  ],
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export default function RootLayout({

@@ -1,15 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
-  trailingSlash: true,
+  trailingSlash: false,
+  skipTrailingSlashRedirect: true,
   images: {
     unoptimized: true,
   },
+  assetPrefix: '',
+  basePath: '',
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  experimental: {
+    esmExternals: false,
   },
 }
 

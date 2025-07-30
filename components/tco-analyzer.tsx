@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, Suspense } from "react"
+import { useState, useEffect, useCallback, Suspense, useMemo } from "react"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -31,14 +31,17 @@ import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
 import { LoadingState, LoadingSpinner, ProgressiveLoading } from "@/components/ui/loading-states"
 
-import VendorSelector from "./vendor-selector"
-import SettingsPanel from "./settings-panel"
-import AnimatedPortnoxLogo from "./animated-portnox-logo"
-import ExecutiveDashboardView from "./views/executive-dashboard-view"
-import DetailedCostsView from "./views/detailed-costs-view"
-import ROIView from "./views/roi-view"
-import SecurityPostureView from "./views/security-posture-view"
-import OperationsImpactView from "./views/operations-impact-view"
+// Dynamic imports to prevent SSR issues
+import dynamic from "next/dynamic"
+
+const VendorSelector = dynamic(() => import("./vendor-selector"), { ssr: false })
+const SettingsPanel = dynamic(() => import("./settings-panel"), { ssr: false })
+const AnimatedPortnoxLogo = dynamic(() => import("./animated-portnox-logo"), { ssr: false })
+const ExecutiveDashboardView = dynamic(() => import("./views/executive-dashboard-view"), { ssr: false })
+const DetailedCostsView = dynamic(() => import("./views/detailed-costs-view"), { ssr: false })
+const ROIView = dynamic(() => import("./views/roi-view"), { ssr: false })
+const SecurityPostureView = dynamic(() => import("./views/security-posture-view"), { ssr: false })
+const OperationsImpactView = dynamic(() => import("./views/operations-impact-view"), { ssr: false })
 
 import { EnhancedCalculationService } from "@/lib/services/enhanced-calculation-service"
 import { AIDataService } from "@/lib/services/ai-data-service"
@@ -55,7 +58,14 @@ export default function TcoAnalyzerUltimate() {
   const [loadingError, setLoadingError] = useState<string | null>(null)
   const [isSettingsOpen, setSettingsOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
-  const [sessionId] = useState(() => typeof window !== 'undefined' ? `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` : 'session_default')
+  
+  const sessionId = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    }
+    return 'session_default'
+  }, [])
+  
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [realTimeUpdates, setRealTimeUpdates] = useState<any[]>([])
   const [aiInsights, setAiInsights] = useState<any[]>([])
