@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   Settings,
   Loader2,
@@ -19,7 +20,11 @@ import {
   RefreshCw,
   Save,
   Download,
-  Building2
+  Building2,
+  Wifi,
+  AlertTriangle,
+  CheckCircle2,
+  Activity
 } from "lucide-react"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
@@ -36,7 +41,7 @@ import SecurityPostureView from "./views/security-posture-view"
 import OperationsImpactView from "./views/operations-impact-view"
 
 import { EnhancedCalculationService } from "@/lib/services/enhanced-calculation-service"
-import { RealTimeDataService } from "@/lib/services/real-time-data-service"
+import { AIDataService } from "@/lib/services/ai-data-service"
 import { isSupabaseAvailable } from "@/lib/database/enhanced-client"
 import type { UltimateCalculationResult } from "@/lib/services/enhanced-calculation-service"
 import type { CalculationConfiguration } from "@/lib/types"
@@ -53,6 +58,8 @@ export default function TcoAnalyzerUltimate() {
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [realTimeUpdates, setRealTimeUpdates] = useState<any[]>([])
+  const [aiInsights, setAiInsights] = useState<any[]>([])
+  const [isRealTimeActive, setIsRealTimeActive] = useState(false)
 
   const [configuration, setConfiguration] = useState<CalculationConfiguration>({
     orgSize: "medium",
@@ -68,6 +75,9 @@ export default function TcoAnalyzerUltimate() {
   const [selectedVendors, setSelectedVendors] = useState<string[]>(DEFAULT_VENDORS)
   const [results, setResults] = useState<UltimateCalculationResult[]>([])
 
+  // Real-time monitoring cleanup function
+  const [cleanupRealTime, setCleanupRealTime] = useState<(() => void) | null>(null)
+
   useEffect(() => {
     setIsClient(true)
     loadSavedData().catch(error => {
@@ -76,6 +86,13 @@ export default function TcoAnalyzerUltimate() {
       setIsLoading(false)
     })
   }, [])
+
+  // Initialize AI service and start real-time monitoring
+  useEffect(() => {
+    if (selectedVendors.length > 0) {
+      startRealTimeMonitoring()
+    }
+  }, [selectedVendors])
 
   const loadSavedData = async () => {
     try {
@@ -129,6 +146,32 @@ export default function TcoAnalyzerUltimate() {
     }
   }
 
+  const startRealTimeMonitoring = async () => {
+    try {
+      // Initialize AI service
+      await AIDataService.initialize()
+      
+      // Start real-time monitoring
+      const cleanup = await EnhancedCalculationService.startRealTimeMonitoring(
+        selectedVendors,
+        (data) => {
+          setRealTimeUpdates(prev => [...prev.slice(-4), data]) // Keep last 5 updates
+          setIsRealTimeActive(true)
+          
+          if (data.type === 'vendor_updates') {
+            toast.info(`Real-time data updated for ${data.data.length} vendors`)
+            // Trigger recalculation with new data
+            calculateResults()
+          }
+        }
+      )
+      
+      setCleanupRealTime(() => cleanup)
+    } catch (error) {
+      console.error('Failed to start real-time monitoring:', error)
+    }
+  }
+
   const calculateResults = useCallback(async () => {
     if (selectedVendors.length === 0) {
       setResults([])
@@ -137,9 +180,15 @@ export default function TcoAnalyzerUltimate() {
 
     setIsCalculating(true)
     try {
-      // Get real-time data updates
-      const realTimeData = await RealTimeDataService.getPricingUpdates(selectedVendors)
-      setRealTimeUpdates(realTimeData)
+      // Get AI insights
+      try {
+        const insights = await Promise.all(
+          selectedVendors.map(id => AIDataService.getVendorIntelligence(id))
+        )
+        setAiInsights(insights.filter(i => i !== null))
+      } catch (error) {
+        console.warn('AI insights unavailable:', error)
+      }
       
       const newResults = await EnhancedCalculationService.compareVendors(selectedVendors, configuration)
       if (!newResults || newResults.length === 0) {
@@ -169,6 +218,13 @@ export default function TcoAnalyzerUltimate() {
       setIsCalculating(false)
     }
   }, [selectedVendors, configuration, darkMode, sessionId])
+
+  // Cleanup real-time monitoring on unmount
+  useEffect(() => {
+    return () => {
+      if (cleanupRealTime) cleanupRealTime()
+    }
+  }, [cleanupRealTime])
 
   useEffect(() => {
     if (!isLoading) {
@@ -253,6 +309,7 @@ export default function TcoAnalyzerUltimate() {
       configuration,
       selectedVendors,
       results,
+      aiInsights,
       timestamp: new Date().toISOString(),
       version: "3.0"
     }
@@ -339,6 +396,25 @@ export default function TcoAnalyzerUltimate() {
             <div className="flex items-center gap-4">
               {/* Status Indicators */}
               <div className="hidden md:flex items-center gap-2">
+                {isRealTimeActive && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="text-xs text-green-600">Live Data</span>
+                  </div>
+                )}
+                {aiInsights.length > 0 && (
+                  <Badge variant="outline" className="text-xs">
+                    <Activity className="w-3 h-3 mr-1" />
+                    AI Enhanced
+                  </Badge>
+                )}
+                {realTimeUpdates.length > 0 && (
+                  <Badge variant="outline" className="text-xs">
+                    <Wifi className="w-3 h-3 mr-1" />
+                    {realTimeUpdates.length} updates
+                  </Badge>
+                )}
+                
                 {isCalculating && (
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
@@ -390,6 +466,26 @@ export default function TcoAnalyzerUltimate() {
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
           <div className="flex flex-col h-full w-full">
+            {/* Real-time Status Bar */}
+            {(isRealTimeActive || aiInsights.length > 0) && (
+              <div className="bg-blue-50 dark:bg-blue-950/20 border-b border-blue-200 dark:border-blue-800 px-6 py-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-4">
+                    {isRealTimeActive && (
+                      <span className="flex items-center gap-1 text-green-600">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                        Real-time monitoring active
+                      </span>
+                    )}
+                    {aiInsights.length > 0 && (
+                      <span className="text-blue-600">AI insights: {aiInsights.length} vendors analyzed</span>
+                    )}
+                  </div>
+                  <span className="text-muted-foreground">Last update: {lastUpdated?.toLocaleTimeString()}</span>
+                </div>
+              </div>
+            )}
+
             {/* Enhanced Tab Navigation */}
             <div className="border-b bg-white dark:bg-gray-900 px-6 py-3">
               <div className="flex items-center justify-between mb-3">
@@ -404,6 +500,19 @@ export default function TcoAnalyzerUltimate() {
                     </ProgressiveLoading>
                   )}
                 </div>
+                
+                {/* Critical Alerts */}
+                {results.some(r => r.recommendations.riskLevel === 'critical') && (
+                  <Alert className="mb-4 border-red-200 bg-red-50 dark:bg-red-950/20">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription className="text-red-800 dark:text-red-200">
+                      <strong>CRITICAL SECURITY ALERT:</strong> {
+                        results.filter(r => r.recommendations.riskLevel === 'critical')
+                          .map(r => r.vendorName).join(', ')
+                      } identified as high-risk vendor(s) requiring immediate attention.
+                    </AlertDescription>
+                  </Alert>
+                )}
                 
                 {isCalculating && (
                   <div className="flex items-center gap-2">
@@ -546,9 +655,6 @@ export default function TcoAnalyzerUltimate() {
                     <span className="ml-2 text-green-600">• Real-time data active</span>
                   )}
               <Badge variant="outline" className="text-xs">
-                {selectedVendors.length} vendors selected
-              </Badge>
-              <Badge variant="outline" className="text-xs">
                 {configuration.devices.toLocaleString()} devices
               </Badge>
               <Badge variant="outline" className="text-xs">
@@ -560,6 +666,15 @@ export default function TcoAnalyzerUltimate() {
                   {((results.find(r => r.vendorId === 'portnox')?.roi.percentage || 0)).toFixed(0)}% ROI
                 </Badge>
               )}
+              {aiInsights.length > 0 && (
+                <Badge variant="outline" className="text-xs flex items-center gap-1">
+                  <Activity className="w-3 h-3" />
+                  AI Enhanced
+                </Badge>
+              )}
+              <Badge variant="outline" className="text-xs">
+                {selectedVendors.length} vendors selected
+              </Badge>
               <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
                 <HelpCircle className="h-3 w-3 mr-1" />
                 Help
