@@ -36,6 +36,7 @@ import SecurityPostureView from "./views/security-posture-view"
 import OperationsImpactView from "./views/operations-impact-view"
 
 import { EnhancedCalculationService } from "@/lib/services/enhanced-calculation-service"
+import { RealTimeDataService } from "@/lib/services/real-time-data-service"
 import { isSupabaseAvailable } from "@/lib/database/enhanced-client"
 import type { UltimateCalculationResult } from "@/lib/services/enhanced-calculation-service"
 import type { CalculationConfiguration } from "@/lib/types"
@@ -51,6 +52,7 @@ export default function TcoAnalyzerUltimate() {
   const [darkMode, setDarkMode] = useState(false)
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [realTimeUpdates, setRealTimeUpdates] = useState<any[]>([])
 
   const [configuration, setConfiguration] = useState<CalculationConfiguration>({
     orgSize: "medium",
@@ -135,6 +137,10 @@ export default function TcoAnalyzerUltimate() {
 
     setIsCalculating(true)
     try {
+      // Get real-time data updates
+      const realTimeData = await RealTimeDataService.getPricingUpdates(selectedVendors)
+      setRealTimeUpdates(realTimeData)
+      
       const newResults = await EnhancedCalculationService.compareVendors(selectedVendors, configuration)
       if (!newResults || newResults.length === 0) {
         throw new Error('No calculation results returned')
@@ -536,6 +542,9 @@ export default function TcoAnalyzerUltimate() {
               {lastUpdated && (
                 <span>Last Updated: {lastUpdated.toLocaleDateString()}</span>
               )}
+                  {realTimeUpdates.length > 0 && (
+                    <span className="ml-2 text-green-600">• Real-time data active</span>
+                  )}
               <Badge variant="outline" className="text-xs">
                 {selectedVendors.length} vendors selected
               </Badge>
