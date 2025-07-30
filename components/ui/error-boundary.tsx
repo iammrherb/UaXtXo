@@ -40,7 +40,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     this.props.onError?.(error, errorInfo)
     
     // Log error for debugging
-    console.error('ErrorBoundary caught an error:', error, errorInfo)
+    if (typeof window !== 'undefined') {
+      console.error('ErrorBoundary caught an error:', error, errorInfo)
+    }
   }
 
   handleRetry = () => {

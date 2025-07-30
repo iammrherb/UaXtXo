@@ -55,7 +55,7 @@ export default function TcoAnalyzerUltimate() {
   const [loadingError, setLoadingError] = useState<string | null>(null)
   const [isSettingsOpen, setSettingsOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
-  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
+  const [sessionId] = useState(() => typeof window !== 'undefined' ? `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` : 'session_default')
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [realTimeUpdates, setRealTimeUpdates] = useState<any[]>([])
   const [aiInsights, setAiInsights] = useState<any[]>([])

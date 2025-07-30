@@ -74,9 +74,9 @@ export interface MarketIntelligence {
 export class AIDataService {
   private static isInitialized = false
   private static apiKeys = {
-    openai: process.env.NEXT_PUBLIC_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
-    anthropic: process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY,
-    gemini: process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY
+    openai: typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_OPENAI_API_KEY : undefined,
+    anthropic: typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY : undefined,
+    gemini: typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_GEMINI_API_KEY : undefined
   }
   
   private static cache = new Map<string, { data: any; timestamp: number; ttl: number }>()
