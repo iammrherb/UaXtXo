@@ -1,18 +1,18 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AccessibleDropdown } from "@/components/ui/accessible-dropdown"
-import { LoadingState, SkeletonCard } from "@/components/ui/loading-states"
-import { Search, Filter, X, CheckCircle2, AlertTriangle, Cloud, Server, Grid as Hybrid, Star, TrendingUp, Shield, DollarSign, Users, Building, Zap, Award, AlertCircle, Info } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { AlertCircle, Check, ChevronDown, Cloud, Filter, Info, Search, Server, Shield, Star, X } from "lucide-react"
+import Image from "next/image"
+
 import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
 
 interface EnhancedVendorSelectionProps {
@@ -23,461 +23,382 @@ interface EnhancedVendorSelectionProps {
   darkMode: boolean
 }
 
-const VENDOR_CATEGORIES = {
-  leader: { icon: Star, color: "text-yellow-600", bg: "bg-yellow-50", label: "Market Leader" },
-  challenger: { icon: TrendingUp, color: "text-blue-600", bg: "bg-blue-50", label: "Strong Challenger" },
-  visionary: { icon: Zap, color: "text-purple-600", bg: "bg-purple-50", label: "Visionary" },
-  niche: { icon: Building, color: "text-gray-600", bg: "bg-gray-50", label: "Niche Player" }
-}
-
-const DEPLOYMENT_TYPES = {
-  cloud: { icon: Cloud, color: "text-green-600", label: "Cloud" },
-  "on-premise": { icon: Server, color: "text-red-600", label: "On-Premise" },
-  hybrid: { icon: Hybrid, color: "text-orange-600", label: "Hybrid" }
-}
-
 export default function EnhancedVendorSelection({
   selectedVendors,
   onVendorToggle,
   onClearAll,
   onSelectRecommended,
-  darkMode
+  darkMode,
 }: EnhancedVendorSelectionProps) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<string>("")
-  const [selectedDeployment, setSelectedDeployment] = useState<string>("")
-  const [showOnlySelected, setShowOnlySelected] = useState(false)
-  const [sortBy, setSortBy] = useState<string>("marketShare")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [filterCategory, setFilterCategory] = useState<string | null>(null)
+  const [filterDeployment, setFilterDeployment] = useState<string | null>(null)
+  const [sortBy, setSortBy] = useState<"name" | "marketShare" | "securityRating">("marketShare")
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
+  const [activeTab, setActiveTab] = useState("all")
 
-  const vendors = useMemo(() => Object.values(ComprehensiveVendorDatabase), [])
+  const vendors = Object.values(ComprehensiveVendorDatabase)
 
-  const filteredAndSortedVendors = useMemo(() => {
-    let filtered = vendors.filter(vendor => {
-      const matchesSearch = !searchQuery || 
-        vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        vendor.description.toLowerCase().includes(searchQuery.toLowerCase())
-      
-      const matchesCategory = !selectedCategory || vendor.category === selectedCategory
-      const matchesDeployment = !selectedDeployment || vendor.deploymentType === selectedDeployment
-      const matchesSelected = !showOnlySelected || selectedVendors.includes(vendor.id)
+  const filteredVendors = vendors.filter((vendor) => {
+    // Search filter
+    const matchesSearch =
+      searchQuery === "" ||
+      vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      vendor.description.toLowerCase().includes(searchQuery.toLowerCase())
 
-      return matchesSearch && matchesCategory && matchesDeployment && matchesSelected
-    })
+    // Category filter
+    const matchesCategory = !filterCategory || vendor.category === filterCategory
 
-    // Sort vendors
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "marketShare":
-          return b.marketShare - a.marketShare
-        case "name":
-          return a.name.localeCompare(b.name)
-        case "security":
-          return b.security.securityRating - a.security.securityRating
-        case "price":
-          return a.pricing.pricePerDevice - b.pricing.pricePerDevice
-        default:
-          return 0
-      }
-    })
+    // Deployment filter
+    const matchesDeployment = !filterDeployment || vendor.deploymentType === filterDeployment
 
-    return filtered
-  }, [vendors, searchQuery, selectedCategory, selectedDeployment, showOnlySelected, sortBy, selectedVendors])
+    // Tab filter
+    if (activeTab === "selected") {
+      return matchesSearch && matchesCategory && matchesDeployment && selectedVendors.includes(vendor.id)
+    } else if (activeTab === "cloud") {
+      return matchesSearch && matchesCategory && vendor.deploymentType === "cloud"
+    } else if (activeTab === "onprem") {
+      return matchesSearch && matchesCategory && vendor.deploymentType === "on-premise"
+    } else if (activeTab === "hybrid") {
+      return matchesSearch && matchesCategory && vendor.deploymentType === "hybrid"
+    }
 
-  const categoryOptions = [
-    { value: "", label: "All Categories" },
-    { value: "leader", label: "Market Leaders" },
-    { value: "challenger", label: "Strong Challengers" },
-    { value: "visionary", label: "Visionaries" },
-    { value: "niche", label: "Niche Players" }
-  ]
+    return matchesSearch && matchesCategory && matchesDeployment
+  })
 
-  const deploymentOptions = [
-    { value: "", label: "All Deployment Types" },
-    { value: "cloud", label: "Cloud-Native" },
-    { value: "on-premise", label: "On-Premise" },
-    { value: "hybrid", label: "Hybrid" }
-  ]
+  const sortedVendors = [...filteredVendors].sort((a, b) => {
+    if (sortBy === "name") {
+      return sortDirection === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+    } else if (sortBy === "marketShare") {
+      return sortDirection === "asc" ? a.marketShare - b.marketShare : b.marketShare - a.marketShare
+    } else {
+      return sortDirection === "asc"
+        ? a.security.securityRating - b.security.securityRating
+        : b.security.securityRating - a.security.securityRating
+    }
+  })
 
-  const sortOptions = [
-    { value: "marketShare", label: "Market Share" },
-    { value: "name", label: "Name" },
-    { value: "security", label: "Security Rating" },
-    { value: "price", label: "Price" }
-  ]
-
-  const getVendorIcon = (vendor: any) => {
-    if (vendor.id === "portnox") return <Award className="h-5 w-5 text-green-600" />
-    if (vendor.security.cveCount === 0) return <Shield className="h-5 w-5 text-blue-600" />
-    if (vendor.security.cveCount > 20) return <AlertTriangle className="h-5 w-5 text-red-600" />
-    return <CheckCircle2 className="h-5 w-5 text-gray-600" />
+  const handleSort = (newSortBy: "name" | "marketShare" | "securityRating") => {
+    if (sortBy === newSortBy) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+    } else {
+      setSortBy(newSortBy)
+      setSortDirection("desc")
+    }
   }
 
-  const getVendorStatus = (vendor: any) => {
-    if (vendor.id === "ivanti") {
-      return { type: "critical", message: "Security Risk - Migration Required", color: "text-red-600" }
-    }
-    if (vendor.id === "portnox") {
-      return { type: "recommended", message: "Recommended Solution", color: "text-green-600" }
-    }
-    if (vendor.security.cveCount === 0) {
-      return { type: "secure", message: "Zero CVE Record", color: "text-blue-600" }
-    }
-    if (vendor.security.cveCount > 20) {
-      return { type: "warning", message: "High CVE Count", color: "text-orange-600" }
-    }
-    return { type: "standard", message: "Standard Option", color: "text-gray-600" }
+  const handleFilterCategory = (category: string | null) => {
+    setFilterCategory(category === filterCategory ? null : category)
   }
 
-  const clearFilters = () => {
+  const handleFilterDeployment = (deployment: string | null) => {
+    setFilterDeployment(deployment === filterDeployment ? null : deployment)
+  }
+
+  const handleClearFilters = () => {
     setSearchQuery("")
-    setSelectedCategory("")
-    setSelectedDeployment("")
-    setShowOnlySelected(false)
-    setSortBy("marketShare")
+    setFilterCategory(null)
+    setFilterDeployment(null)
+    setActiveTab("all")
   }
 
-  const hasActiveFilters = searchQuery || selectedCategory || selectedDeployment || showOnlySelected
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "leader":
+        return "bg-blue-500 text-white"
+      case "challenger":
+        return "bg-green-500 text-white"
+      case "visionary":
+        return "bg-purple-500 text-white"
+      case "niche":
+        return "bg-orange-500 text-white"
+      default:
+        return "bg-gray-500 text-white"
+    }
+  }
+
+  const getDeploymentIcon = (deploymentType: string) => {
+    switch (deploymentType) {
+      case "cloud":
+        return <Cloud className="h-3 w-3 text-blue-500" />
+      case "on-premise":
+        return <Server className="h-3 w-3 text-gray-500" />
+      case "hybrid":
+        return (
+          <div className="flex">
+            <Cloud className="h-3 w-3 text-blue-500" />
+            <Server className="h-3 w-3 text-gray-500 ml-0.5" />
+          </div>
+        )
+      default:
+        return <Server className="h-3 w-3" />
+    }
+  }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b bg-white dark:bg-gray-900">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-lg">Vendor Selection</h3>
-          <Badge variant="outline" className="text-xs">
-            {selectedVendors.length} selected
-          </Badge>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="flex gap-2 mb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onSelectRecommended}
-            className="flex-1 text-xs"
-            aria-label="Select recommended vendors"
-          >
-            <Star className="h-3 w-3 mr-1" />
-            Recommended
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onClearAll}
-            className="flex-1 text-xs"
-            aria-label="Clear all selections"
-            disabled={selectedVendors.length === 0}
-          >
-            <X className="h-3 w-3 mr-1" />
-            Clear All
-          </Button>
+      <div className="p-4 border-b">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-medium text-sm">Vendor Selection</h3>
+          <div className="flex items-center gap-1">
+            <Badge variant="outline" className="text-xs">
+              {selectedVendors.length}/{vendors.length}
+            </Badge>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                    <Info className="h-3 w-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">Select vendors to compare</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
 
         {/* Search */}
         <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search vendors..."
+            className="pl-8"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 text-sm"
-            aria-label="Search vendors"
           />
           {searchQuery && (
             <Button
               variant="ghost"
               size="sm"
-              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+              className="absolute right-1 top-1 h-7 w-7 p-0"
               onClick={() => setSearchQuery("")}
-              aria-label="Clear search"
             >
               <X className="h-3 w-3" />
             </Button>
           )}
         </div>
 
-        {/* Filters */}
-        <Tabs defaultValue="filters" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-8">
-            <TabsTrigger value="filters" className="text-xs">
-              <Filter className="h-3 w-3 mr-1" />
-              Filters
+        {/* Actions */}
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 text-xs bg-transparent">
+                  <Filter className="h-3 w-3 mr-1" />
+                  Filter
+                  <ChevronDown className="h-3 w-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <div className="p-2">
+                  <h4 className="text-xs font-medium mb-1">Category</h4>
+                  <div className="space-y-1">
+                    {["leader", "challenger", "visionary", "niche"].map((category) => (
+                      <div key={category} className="flex items-center">
+                        <Checkbox
+                          id={`category-${category}`}
+                          checked={filterCategory === category}
+                          onCheckedChange={() => handleFilterCategory(category)}
+                        />
+                        <label
+                          htmlFor={`category-${category}`}
+                          className="text-xs ml-2 flex items-center gap-1 cursor-pointer"
+                        >
+                          <Badge className={`${getCategoryColor(category)} text-[10px] py-0 h-4`}>
+                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                          </Badge>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Separator className="my-2" />
+
+                  <h4 className="text-xs font-medium mb-1">Deployment</h4>
+                  <div className="space-y-1">
+                    {["cloud", "on-premise", "hybrid"].map((deployment) => (
+                      <div key={deployment} className="flex items-center">
+                        <Checkbox
+                          id={`deployment-${deployment}`}
+                          checked={filterDeployment === deployment}
+                          onCheckedChange={() => handleFilterDeployment(deployment)}
+                        />
+                        <label
+                          htmlFor={`deployment-${deployment}`}
+                          className="text-xs ml-2 flex items-center gap-1 cursor-pointer"
+                        >
+                          {getDeploymentIcon(deployment)}
+                          <span>{deployment.charAt(0).toUpperCase() + deployment.slice(1)}</span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Separator className="my-2" />
+
+                  <Button variant="ghost" size="sm" className="w-full text-xs h-7" onClick={handleClearFilters}>
+                    Clear Filters
+                  </Button>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 text-xs bg-transparent">
+                  <Star className="h-3 w-3 mr-1" />
+                  Sort
+                  <ChevronDown className="h-3 w-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={() => handleSort("name")}>
+                  <Check className={`mr-2 h-3 w-3 ${sortBy === "name" ? "opacity-100" : "opacity-0"}`} />
+                  <span>Name</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleSort("marketShare")}>
+                  <Check className={`mr-2 h-3 w-3 ${sortBy === "marketShare" ? "opacity-100" : "opacity-0"}`} />
+                  <span>Market Share</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleSort("securityRating")}>
+                  <Check className={`mr-2 h-3 w-3 ${sortBy === "securityRating" ? "opacity-100" : "opacity-0"}`} />
+                  <span>Security Rating</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={onClearAll}>
+              Clear All
+            </Button>
+            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={onSelectRecommended}>
+              Recommended
+            </Button>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-5 h-8">
+            <TabsTrigger value="all" className="text-xs">
+              All
             </TabsTrigger>
-            <TabsTrigger value="sort" className="text-xs">
-              Sort
+            <TabsTrigger value="selected" className="text-xs">
+              Selected
+            </TabsTrigger>
+            <TabsTrigger value="cloud" className="text-xs">
+              Cloud
+            </TabsTrigger>
+            <TabsTrigger value="onprem" className="text-xs">
+              On-Prem
+            </TabsTrigger>
+            <TabsTrigger value="hybrid" className="text-xs">
+              Hybrid
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="filters" className="space-y-3 mt-3">
-            <AccessibleDropdown
-              options={categoryOptions}
-              value={selectedCategory}
-              onValueChange={(value) => setSelectedCategory(value as string)}
-              placeholder="All Categories"
-              ariaLabel="Filter by vendor category"
-              showSearch={false}
-            />
-
-            <AccessibleDropdown
-              options={deploymentOptions}
-              value={selectedDeployment}
-              onValueChange={(value) => setSelectedDeployment(value as string)}
-              placeholder="All Deployment Types"
-              ariaLabel="Filter by deployment type"
-              showSearch={false}
-            />
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="show-selected"
-                checked={showOnlySelected}
-                onCheckedChange={setShowOnlySelected}
-                aria-describedby="show-selected-desc"
-              />
-              <label
-                htmlFor="show-selected"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Show only selected
-              </label>
-            </div>
-            <p id="show-selected-desc" className="text-xs text-muted-foreground">
-              Filter to show only currently selected vendors
-            </p>
-
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearFilters}
-                className="w-full text-xs"
-                aria-label="Clear all filters"
-              >
-                <X className="h-3 w-3 mr-1" />
-                Clear Filters
-              </Button>
-            )}
-          </TabsContent>
-
-          <TabsContent value="sort" className="mt-3">
-            <AccessibleDropdown
-              options={sortOptions}
-              value={sortBy}
-              onValueChange={(value) => setSortBy(value as string)}
-              placeholder="Sort by..."
-              ariaLabel="Sort vendors by"
-              showSearch={false}
-            />
-          </TabsContent>
         </Tabs>
       </div>
 
       {/* Vendor List */}
-      <ScrollArea className="flex-1">
-        <div className="p-4 space-y-3">
-          <LoadingState
-            loading={isLoading}
-            error={error}
-            onRetry={() => setError(null)}
-            isEmpty={filteredAndSortedVendors.length === 0}
-            emptyState={
-              <div className="text-center py-8">
-                <Info className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  {hasActiveFilters ? "No vendors match your filters" : "No vendors available"}
-                </p>
-                {hasActiveFilters && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearFilters}
-                    className="mt-2"
-                  >
-                    Clear Filters
-                  </Button>
-                )}
-              </div>
-            }
-            loadingComponent={
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <SkeletonCard key={i} showAvatar lines={2} />
-                ))}
-              </div>
-            }
-          >
-            <AnimatePresence mode="popLayout">
-              {filteredAndSortedVendors.map((vendor, index) => {
-                const isSelected = selectedVendors.includes(vendor.id)
-                const categoryInfo = VENDOR_CATEGORIES[vendor.category]
-                const deploymentInfo = DEPLOYMENT_TYPES[vendor.deploymentType]
-                const status = getVendorStatus(vendor)
+      <div className="flex-1 overflow-y-auto p-2">
+        {sortedVendors.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center p-4">
+            <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
+            <h3 className="font-medium mb-1">No vendors found</h3>
+            <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
+            <Button variant="outline" size="sm" className="mt-4 bg-transparent" onClick={handleClearFilters}>
+              Clear Filters
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {sortedVendors.map((vendor) => {
+              const isSelected = selectedVendors.includes(vendor.id)
+              const isPortnox = vendor.id === "portnox"
+              const hasWarning = vendor.id === "ivanti"
 
-                return (
-                  <motion.div
-                    key={vendor.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ delay: index * 0.05 }}
-                    layout
-                  >
-                    <Card
-                      className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
-                        isSelected
-                          ? "ring-2 ring-primary bg-primary/5"
-                          : "hover:bg-muted/50"
-                      } ${
-                        vendor.id === "ivanti" ? "border-red-300 bg-red-50 dark:bg-red-950/20" : ""
-                      }`}
-                      onClick={() => onVendorToggle(vendor.id)}
-                      role="button"
-                      tabIndex={0}
-                      aria-pressed={isSelected}
-                      aria-label={`${isSelected ? 'Deselect' : 'Select'} ${vendor.name}`}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          onVendorToggle(vendor.id)
-                        }
-                      }}
-                    >
-                      <CardHeader className="pb-2">
+              return (
+                <Card
+                  key={vendor.id}
+                  className={`overflow-hidden transition-all ${
+                    isSelected
+                      ? "ring-2 ring-blue-500 dark:ring-blue-400"
+                      : "hover:border-blue-200 dark:hover:border-blue-800"
+                  } ${isPortnox ? "bg-blue-50 dark:bg-blue-950/20" : ""}`}
+                >
+                  <CardContent className="p-3">
+                    <div className="flex items-start gap-3">
+                      {/* Logo */}
+                      <div
+                        className={`relative flex-shrink-0 w-10 h-10 rounded-md border overflow-hidden ${
+                          darkMode ? "bg-gray-800" : "bg-white"
+                        }`}
+                      >
+                        <Image
+                          src={vendor.logo || "/placeholder.svg"}
+                          alt={vendor.name}
+                          width={40}
+                          height={40}
+                          className="object-contain p-1"
+                        />
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-2 flex-1">
-                            {getVendorIcon(vendor)}
-                            <div className="flex-1 min-w-0">
-                              <CardTitle className="text-sm font-medium truncate">
-                                {vendor.name}
-                              </CardTitle>
-                              <div className="flex items-center gap-2 mt-1">
-                                <Badge
-                                  variant="outline"
-                                  className={`text-xs ${categoryInfo.color} border-current`}
-                                >
-                                  {categoryInfo.label}
-                                </Badge>
-                                <Badge
-                                  variant="outline"
-                                  className={`text-xs ${deploymentInfo.color} border-current`}
-                                >
-                                  <deploymentInfo.icon className="h-3 w-3 mr-1" />
-                                  {deploymentInfo.label}
-                                </Badge>
-                              </div>
+                          <div>
+                            <h3 className="font-medium text-sm flex items-center gap-1">
+                              {vendor.name}
+                              {isPortnox && <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />}
+                              {hasWarning && <AlertCircle className="h-3 w-3 text-red-500" />}
+                            </h3>
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <Badge
+                                className={`${getCategoryColor(vendor.category)} text-[10px] py-0 h-4`}
+                                variant="secondary"
+                              >
+                                {vendor.category.charAt(0).toUpperCase() + vendor.category.slice(1)}
+                              </Badge>
+                              <Badge variant="outline" className="text-[10px] py-0 h-4 flex items-center gap-0.5">
+                                {getDeploymentIcon(vendor.deploymentType)}
+                                <span className="capitalize">{vendor.deploymentType}</span>
+                              </Badge>
                             </div>
                           </div>
-                          
+
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => onVendorToggle(vendor.id)}
+                            className={`${isPortnox ? "opacity-100" : ""}`}
+                          />
+                        </div>
+
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{vendor.description}</p>
+
+                        <div className="flex items-center justify-between mt-2">
                           <div className="flex items-center gap-2">
-                            {isSelected && (
-                              <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden="true" />
-                            )}
+                            <div className="flex items-center gap-1">
+                              <Shield className="h-3 w-3 text-green-500" />
+                              <span className="text-xs">{vendor.security.securityRating}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Star className="h-3 w-3 text-yellow-500" />
+                              <span className="text-xs">{vendor.marketShare}%</span>
+                            </div>
                           </div>
+
+                          <div className="text-xs text-muted-foreground">${vendor.pricing.pricePerDevice}/device</div>
                         </div>
-                      </CardHeader>
-
-                      <CardContent className="pt-0">
-                        <CardDescription className="text-xs line-clamp-2 mb-3">
-                          {vendor.description}
-                        </CardDescription>
-
-                        {/* Key Metrics */}
-                        <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className="flex items-center gap-1">
-                            <Users className="h-3 w-3 text-muted-foreground" />
-                            <span>{vendor.marketShare.toFixed(1)}% market</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <DollarSign className="h-3 w-3 text-muted-foreground" />
-                            <span>${vendor.pricing.pricePerDevice}/device</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Shield className="h-3 w-3 text-muted-foreground" />
-                            <span>{vendor.security.securityRating}/100 security</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Zap className="h-3 w-3 text-muted-foreground" />
-                            <span>{vendor.implementation.timeToDeployDays}d deploy</span>
-                          </div>
-                        </div>
-
-                        {/* Status indicator */}
-                        <div className={`mt-2 text-xs ${status.color} flex items-center gap-1`}>
-                          {status.type === "critical" && <AlertCircle className="h-3 w-3" />}
-                          {status.type === "recommended" && <Award className="h-3 w-3" />}
-                          {status.type === "secure" && <Shield className="h-3 w-3" />}
-                          {status.type === "warning" && <AlertTriangle className="h-3 w-3" />}
-                          <span>{status.message}</span>
-                        </div>
-
-                        {/* Critical vendor warning */}
-                        {vendor.id === "ivanti" && (
-                          <Alert className="mt-2 border-red-300 bg-red-50 dark:bg-red-950/20">
-                            <AlertTriangle className="h-3 w-3" />
-                            <AlertDescription className="text-xs">
-                              Active exploitation - immediate migration required
-                            </AlertDescription>
-                          </Alert>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                )
-              })}
-            </AnimatePresence>
-          </LoadingState>
-        </div>
-      </ScrollArea>
-
-      {/* Footer Summary */}
-      <div className="p-4 border-t bg-muted/30">
-        <div className="text-xs text-muted-foreground space-y-1">
-          <div className="flex justify-between">
-            <span>Total vendors:</span>
-            <span>{vendors.length}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Filtered results:</span>
-            <span>{filteredAndSortedVendors.length}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Selected:</span>
-            <span className="font-medium text-primary">{selectedVendors.length}</span>
-          </div>
-        </div>
-
-        {selectedVendors.length > 0 && (
-          <div className="mt-3 pt-3 border-t">
-            <p className="text-xs text-muted-foreground mb-2">Selected vendors:</p>
-            <div className="flex flex-wrap gap-1">
-              {selectedVendors.map(vendorId => {
-                const vendor = vendors.find(v => v.id === vendorId)
-                return vendor ? (
-                  <Badge
-                    key={vendorId}
-                    variant="secondary"
-                    className="text-xs flex items-center gap-1"
-                  >
-                    {vendor.name}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-3 w-3 p-0 hover:bg-transparent"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onVendorToggle(vendorId)
-                      }}
-                      aria-label={`Remove ${vendor.name}`}
-                    >
-                      <X className="h-2 w-2" />
-                    </Button>
-                  </Badge>
-                ) : null
-              })}
-            </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         )}
       </div>
