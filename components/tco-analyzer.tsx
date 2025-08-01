@@ -31,21 +31,19 @@ import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
 import { LoadingState, LoadingSpinner, ProgressiveLoading } from "@/components/ui/loading-states"
 
-// Dynamic imports to prevent SSR issues
-import dynamic from "next/dynamic"
-
-const VendorSelector = dynamic(() => import("./vendor-selector"), { ssr: false })
-const SettingsPanel = dynamic(() => import("./settings-panel"), { ssr: false })
-const AnimatedPortnoxLogo = dynamic(() => import("./animated-portnox-logo"), { ssr: false })
-const ExecutiveDashboardView = dynamic(() => import("./views/executive-dashboard-view"), { ssr: false })
-const DetailedCostsView = dynamic(() => import("./views/detailed-costs-view"), { ssr: false })
-const ROIView = dynamic(() => import("./views/roi-view"), { ssr: false })
-const SecurityPostureView = dynamic(() => import("./views/security-posture-view"), { ssr: false })
-const OperationsImpactView = dynamic(() => import("./views/operations-impact-view"), { ssr: false })
+// Import components directly for static export
+import VendorSelector from "./vendor-selector"
+import SettingsPanel from "./settings-panel"
+import AnimatedPortnoxLogo from "./animated-portnox-logo"
+import ExecutiveDashboardView from "./views/executive-dashboard-view"
+import DetailedCostsView from "./views/detailed-costs-view"
+import ROIView from "./views/roi-view"
+import SecurityPostureView from "./views/security-posture-view"
+import OperationsImpactView from "./views/operations-impact-view"
 
 import { EnhancedCalculationService } from "@/lib/services/enhanced-calculation-service"
 import { AIDataService } from "@/lib/services/ai-data-service"
-import { isSupabaseAvailable } from "@/lib/database/enhanced-client"
+import { isSupabaseAvailable, mockDataService } from "@/lib/database/enhanced-client"
 import type { UltimateCalculationResult } from "@/lib/services/enhanced-calculation-service"
 import type { CalculationConfiguration } from "@/lib/types"
 
@@ -106,48 +104,25 @@ export default function TcoAnalyzerUltimate() {
 
   const loadSavedData = async () => {
     try {
-      // Check if Supabase is available
-      if (isSupabaseAvailable()) {
-        // Try to load from database first
-        const saved = await EnhancedCalculationService.loadCalculation(sessionId)
-        if (saved) {
-          setConfiguration(saved.config)
-          setSelectedVendors(saved.selectedVendors)
-          setResults(saved.results)
-          setLastUpdated(new Date())
-          return
-        }
-      }
-      
       // Fallback to localStorage
-      const localSaved = localStorage.getItem("portnox-tco-config")
-      if (localSaved) {
-        try {
-          const { configuration: savedConfig, selectedVendors: savedVendors, darkMode: savedDarkMode } = JSON.parse(localSaved)
-          if (savedConfig) setConfiguration(savedConfig)
-          if (savedVendors) {
-            // Filter out invalid vendor IDs and ensure Portnox is always included
-            const validVendors = savedVendors.filter((vendorId: string) => 
-              require('../lib/comprehensive-vendor-data').ComprehensiveVendorDatabase[vendorId]
-            )
-            if (!validVendors.includes('portnox')) {
-              validVendors.unshift('portnox')
+      if (typeof window !== 'undefined') {
+        const localSaved = localStorage.getItem("portnox-tco-config")
+        if (localSaved) {
+          try {
+            const { configuration: savedConfig, selectedVendors: savedVendors, darkMode: savedDarkMode } = JSON.parse(localSaved)
+            if (savedConfig) setConfiguration(savedConfig)
+            if (savedVendors && Array.isArray(savedVendors)) {
+              setSelectedVendors(savedVendors.length > 0 ? savedVendors : DEFAULT_VENDORS)
             }
-            setSelectedVendors(validVendors.length > 0 ? validVendors : DEFAULT_VENDORS)
+            if (typeof savedDarkMode === "boolean") setDarkMode(savedDarkMode)
+          } catch (parseError) {
+            console.error('Failed to parse saved configuration:', parseError)
+            localStorage.removeItem("portnox-tco-config")
           }
-          if (typeof savedDarkMode === "boolean") setDarkMode(savedDarkMode)
-        } catch (parseError) {
-          console.error('Failed to parse saved configuration:', parseError)
-          // Clear corrupted data
-          localStorage.removeItem("portnox-tco-config")
         }
       }
       
-      // Show warning if Supabase is not configured
-      if (!isSupabaseAvailable()) {
-        console.warn('Supabase not configured - using mock data. Some features may be limited.')
-        toast.info("Running in demo mode - database features unavailable")
-      }
+      console.log('TCO Analyzer loaded successfully with mock data')
     } catch (error) {
       console.error("Failed to load saved data", error)
       setLoadingError("Failed to load saved configuration")
@@ -158,25 +133,25 @@ export default function TcoAnalyzerUltimate() {
 
   const startRealTimeMonitoring = async () => {
     try {
-      // Initialize AI service
-      await AIDataService.initialize()
-      
-      // Start real-time monitoring
-      const cleanup = await EnhancedCalculationService.startRealTimeMonitoring(
-        selectedVendors,
-        (data) => {
-          setRealTimeUpdates(prev => [...prev.slice(-4), data]) // Keep last 5 updates
-          setIsRealTimeActive(true)
-          
-          if (data.type === 'vendor_updates') {
-            toast.info(`Real-time data updated for ${data.data.length} vendors`)
-            // Trigger recalculation with new data
-            calculateResults()
+      // Only start real-time monitoring in browser environment
+      if (typeof window !== 'undefined') {
+        await AIDataService.initialize()
+        
+        const cleanup = await EnhancedCalculationService.startRealTimeMonitoring(
+          selectedVendors,
+          (data) => {
+            setRealTimeUpdates(prev => [...prev.slice(-4), data])
+            setIsRealTimeActive(true)
+            
+            if (data.type === 'vendor_updates') {
+              toast.info(`Real-time data updated for ${data.data.length} vendors`)
+              calculateResults()
+            }
           }
-        }
-      )
-      
-      setCleanupRealTime(() => cleanup)
+        )
+        
+        setCleanupRealTime(() => cleanup)
+      }
     } catch (error) {
       console.error('Failed to start real-time monitoring:', error)
     }
@@ -195,34 +170,42 @@ export default function TcoAnalyzerUltimate() {
         const insights = await Promise.all(
           selectedVendors.map(id => AIDataService.getVendorIntelligence(id))
         )
-        setAiInsights(insights.filter(i => i !== null))
+        const validInsights = insights.filter(i => i !== null)
+        setAiInsights(validInsights)
       } catch (error) {
         console.warn('AI insights unavailable:', error)
       }
       
       const newResults = await EnhancedCalculationService.compareVendors(selectedVendors, configuration)
       if (!newResults || newResults.length === 0) {
-        throw new Error('No calculation results returned')
+        console.warn('No calculation results returned')
+        return
       }
       setResults(newResults)
       setLastUpdated(new Date())
       
       // Save to database and localStorage
       try {
-        if (isSupabaseAvailable()) {
+        if (typeof window !== 'undefined' && isSupabaseAvailable()) {
           await EnhancedCalculationService.saveCalculation(sessionId, configuration, selectedVendors, newResults)
         }
-        localStorage.setItem("portnox-tco-config", JSON.stringify({ configuration, selectedVendors, darkMode }))
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("portnox-tco-config", JSON.stringify({ configuration, selectedVendors, darkMode }))
+        }
       } catch (saveError) {
         console.warn('Failed to save calculation:', saveError)
         // Continue without saving - don't block the user
       }
       
-      toast.success(`Analysis updated for ${newResults.length} vendors`)
+      if (typeof window !== 'undefined') {
+        toast.success(`Analysis updated for ${newResults.length} vendors`)
+      }
     } catch (error) {
       console.error("Failed to calculate results", error)
       const errorMessage = error instanceof Error ? error.message : "Failed to update analysis"
-      toast.error(errorMessage)
+      if (typeof window !== 'undefined') {
+        toast.error(errorMessage)
+      }
       setLoadingError(errorMessage)
     } finally {
       setIsCalculating(false)
@@ -243,10 +226,12 @@ export default function TcoAnalyzerUltimate() {
   }, [selectedVendors, configuration, isLoading, calculateResults])
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
+    if (typeof window !== 'undefined') {
+      if (darkMode) {
+        document.documentElement.classList.add("dark")
+      } else {
+        document.documentElement.classList.remove("dark")
+      }
     }
   }, [darkMode])
 

@@ -345,6 +345,11 @@ export class EnhancedDatabaseService {
   private static readonly CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
   static async getCachedData<T>(key: string, fetcher: () => Promise<T>, ttl = this.CACHE_TTL): Promise<T> {
+    if (!isSupabaseAvailable()) {
+      // Use mock data when Supabase is not available
+      return fetcher()
+    }
+    
     const cached = this.cache.get(key)
     if (cached && Date.now() - cached.timestamp < cached.ttl) {
       return cached.data
@@ -369,7 +374,11 @@ export class EnhancedDatabaseService {
 
   static async getVendors(): Promise<EnhancedVendorRecord[]> {
     return this.getCachedData('vendors', async () => {
-      const { data, error } = await supabase
+      if (!isSupabaseAvailable()) {
+        return mockDataService.getVendors()
+      }
+      
+      const { data, error } = await supabase!
         .from('vendors')
         .select('*')
         .order('market_share', { ascending: false })
@@ -473,12 +482,16 @@ export class EnhancedDatabaseService {
     results: any[]
   ): Promise<boolean> {
     try {
+      if (!isSupabaseAvailable()) {
+        return mockDataService.saveCalculation()
+      }
+      
       if (!sessionId || !config || !selectedVendors || !results) {
         console.error('Missing required parameters for saving calculation')
         return false
       }
       
-      const { error } = await supabase
+      const { error } = await supabase!
         .from('user_calculations')
         .upsert({
           session_id: sessionId,
@@ -510,12 +523,16 @@ export class EnhancedDatabaseService {
     results: any[]
   } | null> {
     try {
+      if (!isSupabaseAvailable()) {
+        return mockDataService.loadCalculation()
+      }
+      
       if (!sessionId) {
         console.error('Session ID is required for loading calculation')
         return null
       }
       
-      const { data, error } = await supabase
+      const { data, error } = await supabase!
         .from('user_calculations')
         .select('*')
         .eq('session_id', sessionId)

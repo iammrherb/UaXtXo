@@ -74,9 +74,9 @@ export interface MarketIntelligence {
 export class AIDataService {
   private static isInitialized = false
   private static apiKeys = {
-    openai: typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_OPENAI_API_KEY : undefined,
-    anthropic: typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY : undefined,
-    gemini: typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_GEMINI_API_KEY : undefined
+    openai: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+    anthropic: process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY,
+    gemini: process.env.NEXT_PUBLIC_GEMINI_API_KEY
   }
   
   private static cache = new Map<string, { data: any; timestamp: number; ttl: number }>()
@@ -598,6 +598,10 @@ export class AIDataService {
     vendorIds: string[],
     onUpdate: (data: any) => void
   ): Promise<() => void> {
+    if (typeof window === 'undefined') {
+      return () => {} // No-op for server-side
+    }
+    
     const updateInterval = setInterval(async () => {
       try {
         // Get latest vendor intelligence
@@ -615,14 +619,16 @@ export class AIDataService {
           })
         }
 
-        // Get market intelligence
-        const marketIntel = await this.getMarketIntelligence()
-        onUpdate({
-          type: 'market_intelligence',
-          data: marketIntel,
-          timestamp: new Date().toISOString(),
-          source: 'ai_service'
-        })
+        // Get market intelligence (less frequently)
+        if (Math.random() > 0.8) { // 20% chance each cycle
+          const marketIntel = await this.getMarketIntelligence()
+          onUpdate({
+            type: 'market_intelligence',
+            data: marketIntel,
+            timestamp: new Date().toISOString(),
+            source: 'ai_service'
+          })
+        }
       } catch (error) {
         console.error('Real-time update error:', error)
       }

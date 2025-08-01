@@ -1,5 +1,5 @@
 import { ComprehensiveVendorDatabase, type VendorData } from '../comprehensive-vendor-data'
-import { supabase } from '../database/client'
+import { isSupabaseAvailable, mockDataService } from '../database/enhanced-client'
 
 export interface CalculationConfiguration {
   orgSize: "startup" | "smb" | "medium" | "enterprise" | "xlarge"
@@ -737,8 +737,7 @@ export class EnhancedCalculationService {
     results: UltimateCalculationResult[]
   ): Promise<boolean> {
     try {
-      if (!supabase) {
-        console.warn('Supabase not available - saving to localStorage only')
+      if (typeof window !== 'undefined') {
         localStorage.setItem('tco-calculation', JSON.stringify({
           sessionId,
           config,
@@ -746,17 +745,58 @@ export class EnhancedCalculationService {
           results,
           timestamp: new Date().toISOString()
         }))
-        return true
       }
+      return true
+    } catch (error) {
+      console.error('Error saving calculation:', error)
+      return false
+    }
+  }
 
-      const { error } = await supabase
-        .from('user_calculations')
-        .upsert({
-          session_id: sessionId,
-          configuration: config,
-          selected_vendors: selectedVendors,
-          results: results,
-          updated_at: new Date().toISOString()
+  static async loadCalculation(sessionId: string): Promise<{
+    config: CalculationConfiguration
+    selectedVendors: string[]
+    results: UltimateCalculationResult[]
+  } | null> {
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('tco-calculation')
+        if (saved) {
+          const data = JSON.parse(saved)
+          return {
+            config: data.config,
+            selectedVendors: data.selectedVendors,
+            results: data.results
+          }
+        }
+      }
+      return null
+    } catch (error) {
+      console.error('Error loading calculation:', error)
+      return null
+    }
+  }
+
+  static async startRealTimeMonitoring(
+    vendorIds: string[],
+    onUpdate: (data: any) => void
+  ): Promise<() => void> {
+    try {
+      if (typeof window === 'undefined') {
+        return () => {} // No-op for server-side
+      }
+      
+      // Import AI service dynamically to avoid circular dependencies
+      const { AIDataService } = await import('./ai-data-service')
+      
+      // Start AI-powered real-time monitoring
+      return AIDataService.startRealTimeUpdates(vendorIds, onUpdate)
+    } catch (error) {
+      console.error('Error starting real-time monitoring:', error)
+      return () => {}
+    }
+  }
+}
         })
 
       return !error

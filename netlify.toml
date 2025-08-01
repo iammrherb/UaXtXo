@@ -1,6 +1,6 @@
 [build]
   publish = "out"
-  command = "npm run build && npm run export"
+  command = "npm run build"
 
 [build.environment]
   NODE_VERSION = "18"
@@ -8,7 +8,7 @@
 
 [[redirects]]
   from = "/*"
-  to = "/"
+  to = "/index.html"
   status = 200
 
 [[headers]]
@@ -31,4 +31,4 @@
   minify = true
 
 [build.processing.html]
-  pretty_urls = true
+  pretty_urls = false
