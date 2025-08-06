@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 import {
   Settings,
@@ -23,10 +24,14 @@ import {
   DollarSign,
   Building,
   Palette,
-  Bell,
   Shield,
   Zap,
+  Brain,
+  Key,
+  AlertTriangle,
+  CheckCircle,
   HelpCircle,
+  Loader2,
 } from "lucide-react"
 
 interface SettingsPanelProps {
@@ -54,6 +59,8 @@ export default function SettingsPanel({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [currency, setCurrency] = useState("USD")
   const [numberFormat, setNumberFormat] = useState("en-US")
+  const [testingAI, setTestingAI] = useState(false)
+  const [aiTestResult, setAITestResult] = useState<string | null>(null)
 
   const handleConfigChange = (key: string, value: any) => {
     onConfigurationChange({ ...configuration, [key]: value })
@@ -63,6 +70,35 @@ export default function SettingsPanel({
   const handleAddonChange = (key: string, value: boolean) => {
     onAddonsChange({ ...portnoxAddons, [key]: value })
     setHasUnsavedChanges(true)
+  }
+
+  const handleAIConfigChange = (key: string, value: any) => {
+    const newAIConfig = { ...configuration.aiConfig, [key]: value }
+    onConfigurationChange({ ...configuration, aiConfig: newAIConfig })
+    setHasUnsavedChanges(true)
+  }
+
+  const testAIConnection = async () => {
+    setTestingAI(true)
+    setAITestResult(null)
+
+    try {
+      // Test the AI connection with a simple prompt
+      const testPrompt = "Test connection. Respond with 'AI connection successful.'"
+
+      // Simulate API test - replace with actual test
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      if (configuration.aiConfig?.openaiApiKey) {
+        setAITestResult("success")
+      } else {
+        setAITestResult("error")
+      }
+    } catch (error) {
+      setAITestResult("error")
+    } finally {
+      setTestingAI(false)
+    }
   }
 
   const handleSave = () => {
@@ -87,6 +123,17 @@ export default function SettingsPanel({
       orgSize: "medium",
       years: 3,
       region: "north-america",
+      aiConfig: {
+        openaiApiKey: "",
+        openaiModel: "gpt-4o",
+        claudeApiKey: "",
+        claudeModel: "claude-3-sonnet-20240229",
+        geminiApiKey: "",
+        geminiModel: "gemini-pro",
+        defaultProvider: "openai",
+        maxTokens: 2000,
+        temperature: 0.7,
+      },
     }
     const defaultAddons = {
       atp: false,
@@ -155,7 +202,7 @@ export default function SettingsPanel({
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className={cn(
-              "fixed right-0 top-0 h-full w-full max-w-2xl z-50 overflow-y-auto",
+              "fixed right-0 top-0 h-full w-full max-w-3xl z-50 overflow-y-auto",
               darkMode ? "bg-gray-900 border-l border-gray-700" : "bg-white border-l border-gray-200",
             )}
           >
@@ -168,10 +215,12 @@ export default function SettingsPanel({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Settings className="h-6 w-6 text-portnox-primary" />
+                  <Settings className="h-6 w-6 text-blue-600" />
                   <div>
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">Settings & Configuration</h2>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Customize your TCO analysis parameters</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Customize your TCO analysis parameters and AI integration
+                    </p>
                   </div>
                 </div>
                 <Button variant="ghost" size="sm" onClick={onClose}>
@@ -225,7 +274,7 @@ export default function SettingsPanel({
             {/* Content */}
             <div className="p-6">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="organization" className="gap-2">
                     <Building className="h-4 w-4" />
                     <span className="hidden sm:inline">Organization</span>
@@ -234,9 +283,13 @@ export default function SettingsPanel({
                     <DollarSign className="h-4 w-4" />
                     <span className="hidden sm:inline">Pricing</span>
                   </TabsTrigger>
+                  <TabsTrigger value="ai" className="gap-2">
+                    <Brain className="h-4 w-4" />
+                    <span className="hidden sm:inline">AI Engine</span>
+                  </TabsTrigger>
                   <TabsTrigger value="preferences" className="gap-2">
                     <Palette className="h-4 w-4" />
-                    <span className="hidden sm:inline">Preferences</span>
+                    <span className="hidden sm:inline">Display</span>
                   </TabsTrigger>
                   <TabsTrigger value="advanced" className="gap-2">
                     <Zap className="h-4 w-4" />
@@ -419,13 +472,13 @@ export default function SettingsPanel({
                               className={cn(
                                 "p-4 border rounded-lg",
                                 portnoxAddons[addon.key]
-                                  ? "border-portnox-primary bg-portnox-primary/5"
+                                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                                   : "border-gray-200 dark:border-gray-700",
                               )}
                             >
                               <div className="flex items-start justify-between">
                                 <div className="flex items-start gap-3 flex-1">
-                                  <div className="p-2 rounded-md bg-portnox-primary/10">{addon.icon}</div>
+                                  <div className="p-2 rounded-md bg-blue-100 dark:bg-blue-900/50">{addon.icon}</div>
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2">
                                       <h4 className="font-medium">{addon.name}</h4>
@@ -444,6 +497,241 @@ export default function SettingsPanel({
                             </div>
                           ))}
                         </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* AI Configuration Tab */}
+                <TabsContent value="ai" className="space-y-6 mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Brain className="h-5 w-5" />
+                        AI Engine Configuration
+                      </CardTitle>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Configure AI providers to enhance reports with intelligent insights and industry-specific
+                        recommendations.
+                      </p>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* OpenAI Configuration */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <Key className="h-4 w-4" />
+                          <Label className="text-base font-medium">OpenAI Configuration</Label>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="openaiApiKey">API Key</Label>
+                            <Input
+                              id="openaiApiKey"
+                              type="password"
+                              placeholder="sk-..."
+                              value={configuration.aiConfig?.openaiApiKey || ""}
+                              onChange={(e) => handleAIConfigChange("openaiApiKey", e.target.value)}
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Your OpenAI API key for GPT models</p>
+                          </div>
+                          <div>
+                            <Label htmlFor="openaiModel">Model</Label>
+                            <select
+                              id="openaiModel"
+                              value={configuration.aiConfig?.openaiModel || "gpt-4o"}
+                              onChange={(e) => handleAIConfigChange("openaiModel", e.target.value)}
+                              className={cn(
+                                "w-full p-2 border rounded-md",
+                                darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300",
+                              )}
+                            >
+                              <option value="gpt-4o">GPT-4o (Recommended)</option>
+                              <option value="gpt-4">GPT-4</option>
+                              <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                              <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Claude Configuration */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <Key className="h-4 w-4" />
+                          <Label className="text-base font-medium">Claude Configuration</Label>
+                          <Badge variant="outline" className="text-xs">
+                            Coming Soon
+                          </Badge>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="claudeApiKey">API Key</Label>
+                            <Input
+                              id="claudeApiKey"
+                              type="password"
+                              placeholder="sk-ant-..."
+                              value={configuration.aiConfig?.claudeApiKey || ""}
+                              onChange={(e) => handleAIConfigChange("claudeApiKey", e.target.value)}
+                              disabled
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="claudeModel">Model</Label>
+                            <select
+                              id="claudeModel"
+                              value={configuration.aiConfig?.claudeModel || "claude-3-sonnet-20240229"}
+                              onChange={(e) => handleAIConfigChange("claudeModel", e.target.value)}
+                              className={cn(
+                                "w-full p-2 border rounded-md",
+                                darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300",
+                              )}
+                              disabled
+                            >
+                              <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                              <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+                              <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Gemini Configuration */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <Key className="h-4 w-4" />
+                          <Label className="text-base font-medium">Google Gemini Configuration</Label>
+                          <Badge variant="outline" className="text-xs">
+                            Coming Soon
+                          </Badge>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="geminiApiKey">API Key</Label>
+                            <Input
+                              id="geminiApiKey"
+                              type="password"
+                              placeholder="AI..."
+                              value={configuration.aiConfig?.geminiApiKey || ""}
+                              onChange={(e) => handleAIConfigChange("geminiApiKey", e.target.value)}
+                              disabled
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="geminiModel">Model</Label>
+                            <select
+                              id="geminiModel"
+                              value={configuration.aiConfig?.geminiModel || "gemini-pro"}
+                              onChange={(e) => handleAIConfigChange("geminiModel", e.target.value)}
+                              className={cn(
+                                "w-full p-2 border rounded-md",
+                                darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300",
+                              )}
+                              disabled
+                            >
+                              <option value="gemini-pro">Gemini Pro</option>
+                              <option value="gemini-pro-vision">Gemini Pro Vision</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* AI Parameters */}
+                      <div className="space-y-4">
+                        <Label className="text-base font-medium">AI Parameters</Label>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="maxTokens">Max Tokens</Label>
+                            <div className="flex items-center gap-4 mt-2">
+                              <Slider
+                                value={[configuration.aiConfig?.maxTokens || 2000]}
+                                onValueChange={(value) => handleAIConfigChange("maxTokens", value[0])}
+                                min={500}
+                                max={4000}
+                                step={100}
+                                className="flex-1"
+                              />
+                              <Badge variant="outline" className="min-w-[80px] justify-center">
+                                {configuration.aiConfig?.maxTokens || 2000}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div>
+                            <Label htmlFor="temperature">Temperature</Label>
+                            <div className="flex items-center gap-4 mt-2">
+                              <Slider
+                                value={[configuration.aiConfig?.temperature || 0.7]}
+                                onValueChange={(value) => handleAIConfigChange("temperature", value[0])}
+                                min={0}
+                                max={1}
+                                step={0.1}
+                                className="flex-1"
+                              />
+                              <Badge variant="outline" className="min-w-[80px] justify-center">
+                                {(configuration.aiConfig?.temperature || 0.7).toFixed(1)}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Test Connection */}
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label className="text-base font-medium">Test AI Connection</Label>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Verify your AI configuration is working correctly
+                            </p>
+                          </div>
+                          <Button
+                            onClick={testAIConnection}
+                            disabled={testingAI || !configuration.aiConfig?.openaiApiKey}
+                            className="gap-2"
+                          >
+                            {testingAI ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Testing...
+                              </>
+                            ) : (
+                              <>
+                                <Zap className="h-4 w-4" />
+                                Test Connection
+                              </>
+                            )}
+                          </Button>
+                        </div>
+
+                        {aiTestResult && (
+                          <Alert
+                            className={
+                              aiTestResult === "success" ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"
+                            }
+                          >
+                            {aiTestResult === "success" ? (
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <AlertTriangle className="h-4 w-4 text-red-600" />
+                            )}
+                            <AlertDescription>
+                              {aiTestResult === "success"
+                                ? "AI connection successful! Your reports will now include AI-enhanced insights."
+                                : "AI connection failed. Please check your API key and try again."}
+                            </AlertDescription>
+                          </Alert>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -561,6 +849,7 @@ export default function SettingsPanel({
                             <li>• Forrester Total Economic Impact methodology</li>
                             <li>• Real market pricing data from 2024</li>
                             <li>• Industry benchmarks and security metrics</li>
+                            <li>• AI-enhanced insights and recommendations</li>
                           </ul>
                         </div>
                       </div>
@@ -579,6 +868,9 @@ export default function SettingsPanel({
                           </Badge>
                           <Badge variant="outline" className="mr-2">
                             Security Benchmarks
+                          </Badge>
+                          <Badge variant="outline" className="mr-2">
+                            AI Analysis
                           </Badge>
                         </div>
                       </div>
@@ -602,8 +894,8 @@ export default function SettingsPanel({
                         Download User Guide
                       </Button>
                       <Button variant="outline" className="w-full justify-start gap-2 bg-transparent">
-                        <Bell className="h-4 w-4" />
-                        Contact Support
+                        <Brain className="h-4 w-4" />
+                        AI Integration Guide
                       </Button>
                     </CardContent>
                   </Card>

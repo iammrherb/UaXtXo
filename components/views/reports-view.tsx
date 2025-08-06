@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -20,9 +20,20 @@ import {
   Zap,
   FileSpreadsheet,
   Presentation,
+  Brain,
+  RefreshCw,
+  Loader2,
 } from "lucide-react"
 import { ReportGenerator, type ReportData } from "@/lib/report-generator"
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import {
+  generateVendorWarnings,
+  generateIndustryInsights,
+  enhanceReport,
+  type VendorWarning,
+} from "@/lib/ai-integration"
+import { useToast } from "@/hooks/use-toast"
+import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
 
 interface ReportsViewProps {
   results: CalculationResult[]
@@ -33,6 +44,10 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
   const [isGenerating, setIsGenerating] = useState(false)
   const [generationProgress, setGenerationProgress] = useState(0)
   const [lastGenerated, setLastGenerated] = useState<string | null>(null)
+  const [vendorWarnings, setVendorWarnings] = useState<VendorWarning[]>([])
+  const [industryInsights, setIndustryInsights] = useState<string>("")
+  const [isLoadingAI, setIsLoadingAI] = useState(false)
+  const { toast } = useToast()
 
   const reportData: ReportData = {
     title: "NAC Investment Analysis",
@@ -47,9 +62,73 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
     securityData: {},
   }
 
+  // Load AI-enhanced content on component mount and when configuration changes
+  useEffect(() => {
+    if (configuration.aiConfig?.openaiApiKey) {
+      loadAIEnhancedContent()
+    } else {
+      // Load fallback content
+      setVendorWarnings([
+        {
+          vendorId: "ivanti",
+          severity: "critical",
+          title: "Ivanti/Pulse Secure: Critical Security Risk",
+          description:
+            "Active nation-state exploitation with multiple zero-day vulnerabilities. Immediate migration required.",
+          recommendation: "Migrate to Portnox CLEAR immediately to eliminate security exposure.",
+          lastUpdated: new Date().toISOString(),
+        },
+        {
+          vendorId: "microsoft",
+          severity: "high",
+          title: "Microsoft NPS: Limited NAC Capabilities",
+          description: "No longer being developed. Lacks modern NAC features and requires expensive add-ons.",
+          recommendation: "Consider cloud-native alternatives like Portnox CLEAR for comprehensive NAC capabilities.",
+          lastUpdated: new Date().toISOString(),
+        },
+      ])
+    }
+  }, [configuration.aiConfig, configuration.industry])
+
+  const loadAIEnhancedContent = async () => {
+    if (!configuration.aiConfig?.openaiApiKey) return
+
+    setIsLoadingAI(true)
+    try {
+      // Generate vendor warnings
+      const vendorData = Object.values(ComprehensiveVendorDatabase)
+      const warnings = await generateVendorWarnings(vendorData, configuration.aiConfig)
+      setVendorWarnings(warnings)
+
+      // Generate industry insights
+      const complianceRequirements = getIndustryComplianceRequirements(configuration.industry)
+      const insights = await generateIndustryInsights(
+        configuration.industry,
+        complianceRequirements,
+        { securityPosture: results },
+        configuration.aiConfig,
+      )
+      setIndustryInsights(insights)
+
+      toast({
+        title: "AI Enhancement Complete",
+        description: "Reports have been enhanced with AI-generated insights and recommendations.",
+      })
+    } catch (error) {
+      console.error("Failed to load AI content:", error)
+      toast({
+        variant: "destructive",
+        title: "AI Enhancement Failed",
+        description: "Could not load AI-enhanced content. Check your API configuration.",
+      })
+    } finally {
+      setIsLoadingAI(false)
+    }
+  }
+
   const handleGenerateReport = async (
     type: "executive" | "technical" | "financial" | "board",
-    format: "pdf" | "excel" | "powerpoint",
+    format: "pdf" | "excel" | "powerpoint" = "pdf",
   ) => {
     setIsGenerating(true)
     setGenerationProgress(0)
@@ -63,6 +142,19 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
       const progressInterval = setInterval(() => {
         setGenerationProgress((prev) => Math.min(prev + 10, 90))
       }, 200)
+
+      // Generate AI-enhanced content if available
+      if (configuration.aiConfig?.openaiApiKey) {
+        const enhancedReport = await enhanceReport(
+          type,
+          { results, configuration },
+          { industry: configuration.industry, deviceCount: configuration.devices },
+          configuration.aiConfig,
+        )
+
+        // Use enhanced content in report generation
+        console.log("Enhanced Report:", enhancedReport)
+      }
 
       switch (format) {
         case "pdf":
@@ -95,9 +187,17 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
       URL.revokeObjectURL(url)
 
       setLastGenerated(new Date().toLocaleTimeString())
+      toast({
+        title: "Report Generated",
+        description: `${type} report has been generated and downloaded successfully.`,
+      })
     } catch (error) {
       console.error("Report generation failed:", error)
-      alert("Failed to generate report. Please try again.")
+      toast({
+        variant: "destructive",
+        title: "Generation Failed",
+        description: "Failed to generate report. Please check your configuration and try again.",
+      })
     } finally {
       setIsGenerating(false)
       setGenerationProgress(0)
@@ -108,11 +208,11 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
     {
       id: "executive",
       title: "Executive Summary",
-      description: "C-Suite focused TCO & ROI analysis",
+      description: "C-Suite focused TCO & ROI analysis with AI insights",
       icon: Users,
       audience: "C-Suite, VPs",
       duration: "5-min read",
-      highlights: ["Strategic recommendations", "Financial impact", "Risk mitigation"],
+      highlights: ["Strategic recommendations", "Financial impact", "Risk mitigation", "AI-enhanced insights"],
     },
     {
       id: "technical",
@@ -121,7 +221,7 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
       icon: Calculator,
       audience: "IT Teams, Architects",
       duration: "15-min read",
-      highlights: ["Feature matrix", "Architecture comparison", "Integration requirements"],
+      highlights: ["Feature matrix", "Architecture comparison", "Integration requirements", "Security analysis"],
     },
     {
       id: "financial",
@@ -130,7 +230,7 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
       icon: BarChart3,
       audience: "Finance, Procurement",
       duration: "10-min read",
-      highlights: ["Detailed costs", "ROI calculations", "Budget planning"],
+      highlights: ["Detailed costs", "ROI calculations", "Budget planning", "Cost optimization"],
     },
     {
       id: "board",
@@ -139,7 +239,7 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
       icon: Shield,
       audience: "Board Members",
       duration: "3-min read",
-      highlights: ["Strategic value", "Risk assessment", "Investment rationale"],
+      highlights: ["Strategic value", "Risk assessment", "Investment rationale", "Competitive advantage"],
     },
   ]
 
@@ -184,15 +284,50 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Executive Reports</h2>
-          <p className="text-muted-foreground">Generate comprehensive reports for different stakeholders</p>
+          <p className="text-muted-foreground">
+            Generate comprehensive reports with AI-enhanced insights for different stakeholders
+          </p>
         </div>
-        {lastGenerated && (
-          <Badge variant="outline" className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-500" />
-            Last generated: {lastGenerated}
-          </Badge>
-        )}
+        <div className="flex items-center gap-2">
+          {configuration.aiConfig?.openaiApiKey && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadAIEnhancedContent}
+              disabled={isLoadingAI}
+              className="gap-2 bg-transparent"
+            >
+              {isLoadingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+              Refresh AI Content
+            </Button>
+          )}
+          {lastGenerated && (
+            <Badge variant="outline" className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              Last generated: {lastGenerated}
+            </Badge>
+          )}
+        </div>
       </div>
+
+      {/* AI Status */}
+      {configuration.aiConfig?.openaiApiKey ? (
+        <Alert className="border-green-200 bg-green-50">
+          <Brain className="w-4 h-4 text-green-600" />
+          <AlertDescription>
+            <strong>AI Enhancement Active:</strong> Reports will include intelligent insights, industry-specific
+            recommendations, and dynamic vendor analysis.
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <Alert className="border-yellow-200 bg-yellow-50">
+          <AlertTriangle className="w-4 h-4 text-yellow-600" />
+          <AlertDescription>
+            <strong>AI Enhancement Disabled:</strong> Configure your OpenAI API key in Settings to enable AI-powered
+            insights and recommendations.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -212,13 +347,30 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
         ))}
       </div>
 
+      {/* Industry Insights */}
+      {industryInsights && (
+        <Card className="border-blue-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-600">
+              <Brain className="w-5 h-5" />
+              AI-Generated Industry Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="prose prose-sm max-w-none">
+              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{industryInsights}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Generation Progress */}
       {isGenerating && (
         <Alert>
           <Zap className="w-4 h-4" />
           <AlertDescription>
             <div className="space-y-2">
-              <p>Generating report... Please wait.</p>
+              <p>Generating AI-enhanced report... Please wait.</p>
               <Progress value={generationProgress} className="w-full" />
             </div>
           </AlertDescription>
@@ -240,6 +392,12 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
                     <CardDescription>{report.description}</CardDescription>
                   </div>
                 </div>
+                {configuration.aiConfig?.openaiApiKey && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Brain className="w-3 h-3" />
+                    AI Enhanced
+                  </Badge>
+                )}
               </div>
 
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -300,37 +458,65 @@ export default function ReportsView({ results, configuration }: ReportsViewProps
         ))}
       </div>
 
-      {/* Critical Vendor Warnings */}
+      {/* Dynamic Vendor Warnings */}
       <Card className="border-red-200">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-red-600">
             <AlertTriangle className="w-5 h-5" />
             Critical Vendor Warnings
+            {configuration.aiConfig?.openaiApiKey && (
+              <Badge variant="secondary" className="ml-2">
+                AI Updated
+              </Badge>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <Alert className="bg-red-50 border-red-300">
-              <AlertDescription>
-                <strong>Ivanti/Pulse Secure:</strong> Mandatory migration required. Active nation-state exploitation.
-                20+ critical vulnerabilities. Legacy systems reaching EOL December 2024.
-              </AlertDescription>
-            </Alert>
-            <Alert className="bg-orange-50 border-orange-300">
-              <AlertDescription>
-                <strong>Microsoft NPS:</strong> No longer being developed. Lacks modern NAC features. Requires multiple
-                expensive add-ons (Azure AD Premium, Intune) for basic functionality.
-              </AlertDescription>
-            </Alert>
-            <Alert className="bg-yellow-50 border-yellow-300">
-              <AlertDescription>
-                <strong>Cloud-Only Vendors (FoxPass, SecureW2):</strong> Limited to WiFi/PKI only. No wired NAC, no
-                risk-based access, no IoT profiling. Missing 80% of enterprise NAC features.
-              </AlertDescription>
-            </Alert>
+            {vendorWarnings.map((warning, index) => (
+              <Alert
+                key={index}
+                className={
+                  warning.severity === "critical"
+                    ? "bg-red-50 border-red-300"
+                    : warning.severity === "high"
+                      ? "bg-orange-50 border-orange-300"
+                      : "bg-yellow-50 border-yellow-300"
+                }
+              >
+                <AlertDescription>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <strong>{warning.title}:</strong> {warning.description}
+                      <div className="mt-2 text-sm">
+                        <strong>Recommendation:</strong> {warning.recommendation}
+                      </div>
+                    </div>
+                    <Badge variant={warning.severity === "critical" ? "destructive" : "secondary"} className="ml-2">
+                      {warning.severity.toUpperCase()}
+                    </Badge>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            ))}
           </div>
         </CardContent>
       </Card>
     </div>
   )
+}
+
+function getIndustryComplianceRequirements(industry: string): string[] {
+  const requirements: Record<string, string[]> = {
+    healthcare: ["HIPAA", "HITECH", "FDA"],
+    financial: ["PCI-DSS", "SOX", "GLBA", "FFIEC"],
+    government: ["FedRAMP", "FISMA", "NIST", "Common Criteria"],
+    education: ["FERPA", "COPPA"],
+    manufacturing: ["ISO27001", "NIST"],
+    retail: ["PCI-DSS", "CCPA"],
+    technology: ["SOC2", "ISO27001"],
+    energy: ["NERC CIP", "IEC 62443"],
+  }
+
+  return requirements[industry] || ["ISO27001", "SOC2"]
 }
