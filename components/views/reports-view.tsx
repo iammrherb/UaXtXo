@@ -1,522 +1,530 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import {
-  FileText,
-  BarChart3,
-  Shield,
-  Calculator,
-  Users,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  TrendingUp,
-  DollarSign,
-  Zap,
-  FileSpreadsheet,
-  Presentation,
-  Brain,
-  RefreshCw,
-  Loader2,
-} from "lucide-react"
-import { ReportGenerator, type ReportData } from "@/lib/report-generator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Download, FileText, Mail, Calendar, Settings, Eye, Share2, Printer, Save, Clock, User, Building } from 'lucide-react'
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-import {
-  generateVendorWarnings,
-  generateIndustryInsights,
-  enhanceReport,
-  type VendorWarning,
-} from "@/lib/ai-integration"
-import { useToast } from "@/hooks/use-toast"
-import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
 
 interface ReportsViewProps {
-  results: CalculationResult[]
-  configuration: CalculationConfiguration
+  results?: CalculationResult[]
+  config?: CalculationConfiguration
 }
 
-export default function ReportsView({ results, configuration }: ReportsViewProps) {
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [generationProgress, setGenerationProgress] = useState(0)
-  const [lastGenerated, setLastGenerated] = useState<string | null>(null)
-  const [vendorWarnings, setVendorWarnings] = useState<VendorWarning[]>([])
-  const [industryInsights, setIndustryInsights] = useState<string>("")
-  const [isLoadingAI, setIsLoadingAI] = useState(false)
-  const { toast } = useToast()
+export default function ReportsView({ results = [], config }: ReportsViewProps) {
+  const [selectedTemplate, setSelectedTemplate] = useState("executive")
+  const [reportTitle, setReportTitle] = useState("NAC Vendor Analysis Report")
+  const [reportDescription, setReportDescription] = useState("")
+  const [includeCharts, setIncludeCharts] = useState(true)
+  const [includeDetails, setIncludeDetails] = useState(true)
+  const [recipientEmail, setRecipientEmail] = useState("")
+  const [scheduleFrequency, setScheduleFrequency] = useState("none")
 
-  const reportData: ReportData = {
-    title: "NAC Investment Analysis",
-    subtitle: `${configuration.industry} | ${configuration.devices} Devices | ${configuration.years}-Year Analysis`,
-    generatedAt: new Date(),
-    industry: configuration.industry,
-    deviceCount: configuration.devices,
-    timeframe: configuration.years,
-    tcoData: results,
-    roiData: {},
-    complianceData: {},
-    securityData: {},
-  }
-
-  // Load AI-enhanced content on component mount and when configuration changes
-  useEffect(() => {
-    if (configuration.aiConfig?.openaiApiKey) {
-      loadAIEnhancedContent()
-    } else {
-      // Load fallback content
-      setVendorWarnings([
-        {
-          vendorId: "ivanti",
-          severity: "critical",
-          title: "Ivanti/Pulse Secure: Critical Security Risk",
-          description:
-            "Active nation-state exploitation with multiple zero-day vulnerabilities. Immediate migration required.",
-          recommendation: "Migrate to Portnox CLEAR immediately to eliminate security exposure.",
-          lastUpdated: new Date().toISOString(),
-        },
-        {
-          vendorId: "microsoft",
-          severity: "high",
-          title: "Microsoft NPS: Limited NAC Capabilities",
-          description: "No longer being developed. Lacks modern NAC features and requires expensive add-ons.",
-          recommendation: "Consider cloud-native alternatives like Portnox CLEAR for comprehensive NAC capabilities.",
-          lastUpdated: new Date().toISOString(),
-        },
-      ])
-    }
-  }, [configuration.aiConfig, configuration.industry])
-
-  const loadAIEnhancedContent = async () => {
-    if (!configuration.aiConfig?.openaiApiKey) return
-
-    setIsLoadingAI(true)
-    try {
-      // Generate vendor warnings
-      const vendorData = Object.values(ComprehensiveVendorDatabase)
-      const warnings = await generateVendorWarnings(vendorData, configuration.aiConfig)
-      setVendorWarnings(warnings)
-
-      // Generate industry insights
-      const complianceRequirements = getIndustryComplianceRequirements(configuration.industry)
-      const insights = await generateIndustryInsights(
-        configuration.industry,
-        complianceRequirements,
-        { securityPosture: results },
-        configuration.aiConfig,
-      )
-      setIndustryInsights(insights)
-
-      toast({
-        title: "AI Enhancement Complete",
-        description: "Reports have been enhanced with AI-generated insights and recommendations.",
-      })
-    } catch (error) {
-      console.error("Failed to load AI content:", error)
-      toast({
-        variant: "destructive",
-        title: "AI Enhancement Failed",
-        description: "Could not load AI-enhanced content. Check your API configuration.",
-      })
-    } finally {
-      setIsLoadingAI(false)
-    }
-  }
-
-  const handleGenerateReport = async (
-    type: "executive" | "technical" | "financial" | "board",
-    format: "pdf" | "excel" | "powerpoint" = "pdf",
-  ) => {
-    setIsGenerating(true)
-    setGenerationProgress(0)
-
-    try {
-      const generator = new ReportGenerator(reportData)
-      let blob: Blob
-      let filename: string
-
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setGenerationProgress((prev) => Math.min(prev + 10, 90))
-      }, 200)
-
-      // Generate AI-enhanced content if available
-      if (configuration.aiConfig?.openaiApiKey) {
-        const enhancedReport = await enhanceReport(
-          type,
-          { results, configuration },
-          { industry: configuration.industry, deviceCount: configuration.devices },
-          configuration.aiConfig,
-        )
-
-        // Use enhanced content in report generation
-        console.log("Enhanced Report:", enhancedReport)
-      }
-
-      switch (format) {
-        case "pdf":
-          blob = await generator.generatePDF(type)
-          filename = `${type}-report-${Date.now()}.pdf`
-          break
-        case "excel":
-          blob = await generator.generateExcel(type)
-          filename = `${type}-report-${Date.now()}.xlsx`
-          break
-        case "powerpoint":
-          blob = await generator.generatePowerPoint(type)
-          filename = `${type}-presentation-${Date.now()}.pptx`
-          break
-        default:
-          throw new Error("Unsupported format")
-      }
-
-      clearInterval(progressInterval)
-      setGenerationProgress(100)
-
-      // Download the file
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = filename
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-
-      setLastGenerated(new Date().toLocaleTimeString())
-      toast({
-        title: "Report Generated",
-        description: `${type} report has been generated and downloaded successfully.`,
-      })
-    } catch (error) {
-      console.error("Report generation failed:", error)
-      toast({
-        variant: "destructive",
-        title: "Generation Failed",
-        description: "Failed to generate report. Please check your configuration and try again.",
-      })
-    } finally {
-      setIsGenerating(false)
-      setGenerationProgress(0)
-    }
-  }
-
-  const reportTypes = [
+  // Report templates
+  const reportTemplates = [
     {
       id: "executive",
-      title: "Executive Summary",
-      description: "C-Suite focused TCO & ROI analysis with AI insights",
-      icon: Users,
-      audience: "C-Suite, VPs",
-      duration: "5-min read",
-      highlights: ["Strategic recommendations", "Financial impact", "Risk mitigation", "AI-enhanced insights"],
+      name: "Executive Summary",
+      description: "High-level overview for C-suite decision makers",
+      pages: "2-3 pages",
+      audience: "Executives, Decision Makers",
     },
     {
       id: "technical",
-      title: "Technical Analysis",
-      description: "Detailed architecture and feature comparison",
-      icon: Calculator,
+      name: "Technical Analysis",
+      description: "Detailed technical comparison and implementation details",
+      pages: "8-12 pages", 
       audience: "IT Teams, Architects",
-      duration: "15-min read",
-      highlights: ["Feature matrix", "Architecture comparison", "Integration requirements", "Security analysis"],
     },
     {
       id: "financial",
-      title: "Financial Analysis",
-      description: "Comprehensive cost breakdown and ROI",
-      icon: BarChart3,
+      name: "Financial Deep Dive",
+      description: "Comprehensive cost analysis and ROI calculations",
+      pages: "6-8 pages",
       audience: "Finance, Procurement",
-      duration: "10-min read",
-      highlights: ["Detailed costs", "ROI calculations", "Budget planning", "Cost optimization"],
     },
     {
-      id: "board",
-      title: "Board Presentation",
-      description: "Strategic overview for board meetings",
-      icon: Shield,
-      audience: "Board Members",
-      duration: "3-min read",
-      highlights: ["Strategic value", "Risk assessment", "Investment rationale", "Competitive advantage"],
+      id: "compliance",
+      name: "Compliance & Risk Assessment",
+      description: "Security posture and regulatory compliance analysis",
+      pages: "5-7 pages",
+      audience: "Security, Compliance Teams",
+    },
+    {
+      id: "comprehensive",
+      name: "Complete Analysis",
+      description: "All sections combined for thorough evaluation",
+      pages: "15-20 pages",
+      audience: "All Stakeholders",
     },
   ]
 
-  const portnoxResult = results.find((r) => r.vendorId === "portnox")
-  const ciscoResult = results.find((r) => r.vendorId === "cisco")
-  const totalSavings = ciscoResult && portnoxResult ? ciscoResult.totalCost - portnoxResult.totalCost : 570000
+  // Generate report preview data
+  const reportPreview = useMemo(() => {
+    if (results.length === 0) return null
 
-  const keyMetrics = [
-    {
-      label: "Total Savings",
-      value: `$${Math.round(totalSavings / 1000)}K`,
-      change: "+65%",
-      icon: DollarSign,
-      color: "text-green-600",
-    },
-    {
-      label: "ROI",
-      value: "5,506%",
-      change: "+5,506%",
-      icon: TrendingUp,
-      color: "text-blue-600",
-    },
-    {
-      label: "Payback Period",
-      value: "6.5 months",
-      change: "6.5 months",
-      icon: Clock,
-      color: "text-purple-600",
-    },
-    {
-      label: "Risk Reduction",
-      value: "92%",
-      change: "vs baseline",
-      icon: Shield,
-      color: "text-orange-600",
-    },
-  ]
+    const lowestCost = Math.min(...results.map(r => r.totalCost))
+    const highestCost = Math.max(...results.map(r => r.totalCost))
+    const savings = highestCost - lowestCost
+    const savingsPercent = ((savings / highestCost) * 100).toFixed(0)
+    
+    const bestROI = Math.max(...results.map(r => r.financialMetrics.roi))
+    const avgPayback = results.reduce((sum, r) => sum + r.financialMetrics.paybackPeriod, 0) / results.length
+    
+    const lowestCostVendor = results.find(r => r.totalCost === lowestCost)
+    const bestROIVendor = results.find(r => r.financialMetrics.roi === bestROI)
+
+    return {
+      totalVendors: results.length,
+      analysisDevices: config?.devices || 0,
+      analysisPeriod: config?.years || 3,
+      maxSavings: savings,
+      savingsPercent,
+      lowestCostVendor: lowestCostVendor?.vendorName,
+      lowestCost,
+      bestROI,
+      bestROIVendor: bestROIVendor?.vendorName,
+      avgPayback: avgPayback.toFixed(1),
+      industry: config?.industry || "technology",
+      orgSize: config?.orgSize || "medium",
+    }
+  }, [results, config])
+
+  // Handle report generation
+  const handleGenerateReport = (format: string) => {
+    // In a real implementation, this would generate and download the report
+    console.log(`Generating ${selectedTemplate} report in ${format} format`)
+    
+    // Simulate report generation
+    const reportData = {
+      template: selectedTemplate,
+      format,
+      title: reportTitle,
+      description: reportDescription,
+      includeCharts,
+      includeDetails,
+      results,
+      config,
+      preview: reportPreview,
+    }
+    
+    // Create a blob with report data (simplified)
+    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${reportTitle.replace(/\s+/g, '_')}_${selectedTemplate}.${format.toLowerCase()}`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  // Handle email scheduling
+  const handleScheduleEmail = () => {
+    console.log(`Scheduling ${scheduleFrequency} email reports to ${recipientEmail}`)
+    // In a real implementation, this would set up email scheduling
+  }
+
+  if (results.length === 0) {
+    return (
+      <Card>
+        <CardContent className="pt-6 text-center text-muted-foreground">
+          Please complete your vendor analysis to generate reports.
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Executive Reports</h2>
-          <p className="text-muted-foreground">
-            Generate comprehensive reports with AI-enhanced insights for different stakeholders
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {configuration.aiConfig?.openaiApiKey && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={loadAIEnhancedContent}
-              disabled={isLoadingAI}
-              className="gap-2 bg-transparent"
-            >
-              {isLoadingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-              Refresh AI Content
-            </Button>
-          )}
-          {lastGenerated && (
-            <Badge variant="outline" className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              Last generated: {lastGenerated}
-            </Badge>
-          )}
-        </div>
-      </div>
+      {/* Report Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Report Configuration</CardTitle>
+          <CardDescription>Customize your analysis report settings</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="report-title">Report Title</Label>
+              <Input
+                id="report-title"
+                value={reportTitle}
+                onChange={(e) => setReportTitle(e.target.value)}
+                placeholder="Enter report title"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="report-template">Report Template</Label>
+              <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select template" />
+                </SelectTrigger>
+                <SelectContent>
+                  {reportTemplates.map((template) => (
+                    <SelectItem key={template.id} value={template.id}>
+                      {template.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="report-description">Report Description (Optional)</Label>
+            <Textarea
+              id="report-description"
+              value={reportDescription}
+              onChange={(e) => setReportDescription(e.target.value)}
+              placeholder="Add a custom description or executive summary..."
+              rows={3}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* AI Status */}
-      {configuration.aiConfig?.openaiApiKey ? (
-        <Alert className="border-green-200 bg-green-50">
-          <Brain className="w-4 h-4 text-green-600" />
-          <AlertDescription>
-            <strong>AI Enhancement Active:</strong> Reports will include intelligent insights, industry-specific
-            recommendations, and dynamic vendor analysis.
-          </AlertDescription>
-        </Alert>
-      ) : (
-        <Alert className="border-yellow-200 bg-yellow-50">
-          <AlertTriangle className="w-4 h-4 text-yellow-600" />
-          <AlertDescription>
-            <strong>AI Enhancement Disabled:</strong> Configure your OpenAI API key in Settings to enable AI-powered
-            insights and recommendations.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {keyMetrics.map((metric) => (
-          <Card key={metric.label}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{metric.label}</p>
-                  <p className="text-2xl font-bold">{metric.value}</p>
-                  <p className={`text-sm ${metric.color}`}>{metric.change}</p>
+      {/* Report Templates */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Available Report Templates</CardTitle>
+          <CardDescription>Choose the right template for your audience</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {reportTemplates.map((template) => (
+              <div
+                key={template.id}
+                className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                  selectedTemplate === template.id
+                    ? "border-primary bg-primary/5"
+                    : "border-muted hover:border-primary/50"
+                }`}
+                onClick={() => setSelectedTemplate(template.id)}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="font-semibold">{template.name}</h4>
+                  <Badge variant="outline" className="text-xs">
+                    {template.pages}
+                  </Badge>
                 </div>
-                <metric.icon className={`w-8 h-8 ${metric.color}`} />
+                <p className="text-sm text-muted-foreground mb-3">
+                  {template.description}
+                </p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <User className="h-3 w-3" />
+                  {template.audience}
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Industry Insights */}
-      {industryInsights && (
-        <Card className="border-blue-200">
+      {/* Report Preview and Generation */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Report Preview */}
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-600">
-              <Brain className="w-5 h-5" />
-              AI-Generated Industry Insights
+            <CardTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Report Preview
             </CardTitle>
+            <CardDescription>
+              Preview of your {reportTemplates.find(t => t.id === selectedTemplate)?.name} report
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="prose prose-sm max-w-none">
-              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{industryInsights}</p>
+          <CardContent className="space-y-4">
+            {reportPreview && (
+              <>
+                <div className="p-4 rounded-lg bg-muted/50">
+                  <h3 className="font-bold text-lg mb-2">{reportTitle}</h3>
+                  {reportDescription && (
+                    <p className="text-sm text-muted-foreground mb-3">{reportDescription}</p>
+                  )}
+                  
+                  <div className="grid gap-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Analysis Scope:</span>
+                      <span>{reportPreview.totalVendors} vendors, {reportPreview.analysisDevices.toLocaleString()} devices</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Time Period:</span>
+                      <span>{reportPreview.analysisPeriod} years</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Industry:</span>
+                      <span className="capitalize">{reportPreview.industry}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Organization Size:</span>
+                      <span className="capitalize">{reportPreview.orgSize}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-semibold">Key Findings:</h4>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
+                      <span>
+                        Maximum cost savings of ${reportPreview.maxSavings.toLocaleString()} 
+                        ({reportPreview.savingsPercent}%) with {reportPreview.lowestCostVendor}
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
+                      <span>
+                        Best ROI of {reportPreview.bestROI.toFixed(0)}% achieved by {reportPreview.bestROIVendor}
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-2 h-2 rounded-full bg-purple-500 mt-2"></div>
+                      <span>
+                        Average payback period of {reportPreview.avgPayback} years across all vendors
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Generation Options */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Generation Options
+            </CardTitle>
+            <CardDescription>Configure report output and delivery</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Export Formats */}
+            <div className="space-y-3">
+              <h4 className="font-semibold">Export Formats</h4>
+              <div className="grid gap-2">
+                <Button 
+                  onClick={() => handleGenerateReport('PDF')}
+                  className="justify-start"
+                  variant="outline"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Generate PDF Report
+                </Button>
+                <Button 
+                  onClick={() => handleGenerateReport('DOCX')}
+                  className="justify-start"
+                  variant="outline"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Generate Word Document
+                </Button>
+                <Button 
+                  onClick={() => handleGenerateReport('PPTX')}
+                  className="justify-start"
+                  variant="outline"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Generate PowerPoint
+                </Button>
+                <Button 
+                  onClick={() => handleGenerateReport('XLSX')}
+                  className="justify-start"
+                  variant="outline"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Generate Excel Workbook
+                </Button>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="space-y-3">
+              <h4 className="font-semibold">Quick Actions</h4>
+              <div className="grid gap-2">
+                <Button variant="outline" className="justify-start">
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print Report
+                </Button>
+                <Button variant="outline" className="justify-start">
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share Link
+                </Button>
+                <Button variant="outline" className="justify-start">
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Template
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {/* Generation Progress */}
-      {isGenerating && (
-        <Alert>
-          <Zap className="w-4 h-4" />
-          <AlertDescription>
-            <div className="space-y-2">
-              <p>Generating AI-enhanced report... Please wait.</p>
-              <Progress value={generationProgress} className="w-full" />
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Report Types */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {reportTypes.map((report) => (
-          <Card key={report.id} className="relative">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <report.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">{report.title}</CardTitle>
-                    <CardDescription>{report.description}</CardDescription>
-                  </div>
-                </div>
-                {configuration.aiConfig?.openaiApiKey && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <Brain className="w-3 h-3" />
-                    AI Enhanced
-                  </Badge>
-                )}
-              </div>
-
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Users className="w-4 h-4" />
-                  {report.audience}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {report.duration}
-                </span>
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              <div>
-                <h4 className="font-medium mb-2">Key Highlights:</h4>
-                <ul className="space-y-1">
-                  {report.highlights.map((highlight, index) => (
-                    <li key={index} className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      {highlight}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => handleGenerateReport(report.id as any, "pdf")}
-                  disabled={isGenerating}
-                  className="flex-1"
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  PDF
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleGenerateReport(report.id as any, "excel")}
-                  disabled={isGenerating}
-                  className="flex-1"
-                >
-                  <FileSpreadsheet className="w-4 h-4 mr-2" />
-                  Excel
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleGenerateReport(report.id as any, "powerpoint")}
-                  disabled={isGenerating}
-                  className="flex-1"
-                >
-                  <Presentation className="w-4 h-4 mr-2" />
-                  PPT
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
       </div>
 
-      {/* Dynamic Vendor Warnings */}
-      <Card className="border-red-200">
+      {/* Email Scheduling */}
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-red-600">
-            <AlertTriangle className="w-5 h-5" />
-            Critical Vendor Warnings
-            {configuration.aiConfig?.openaiApiKey && (
-              <Badge variant="secondary" className="ml-2">
-                AI Updated
-              </Badge>
-            )}
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Email Reports
           </CardTitle>
+          <CardDescription>Schedule automatic report delivery</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="manual" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="manual">Send Now</TabsTrigger>
+              <TabsTrigger value="schedule">Schedule Reports</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="manual" className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="recipient-email">Recipient Email</Label>
+                  <Input
+                    id="recipient-email"
+                    type="email"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    placeholder="Enter email address"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <Button className="w-full">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Send Report Now
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="schedule" className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="schedule-email">Email Address</Label>
+                  <Input
+                    id="schedule-email"
+                    type="email"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    placeholder="Enter email address"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="schedule-frequency">Frequency</Label>
+                  <Select value={scheduleFrequency} onValueChange={setScheduleFrequency}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select frequency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No Schedule</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="quarterly">Quarterly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-end">
+                  <Button 
+                    onClick={handleScheduleEmail}
+                    disabled={scheduleFrequency === "none" || !recipientEmail}
+                    className="w-full"
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Schedule Reports
+                  </Button>
+                </div>
+              </div>
+              
+              {scheduleFrequency !== "none" && (
+                <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                    <Clock className="h-4 w-4" />
+                    <span className="text-sm">
+                      Reports will be sent {scheduleFrequency} to {recipientEmail}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* Report History */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Reports</CardTitle>
+          <CardDescription>Previously generated reports and templates</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {vendorWarnings.map((warning, index) => (
-              <Alert
-                key={index}
-                className={
-                  warning.severity === "critical"
-                    ? "bg-red-50 border-red-300"
-                    : warning.severity === "high"
-                      ? "bg-orange-50 border-orange-300"
-                      : "bg-yellow-50 border-yellow-300"
-                }
-              >
-                <AlertDescription>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <strong>{warning.title}:</strong> {warning.description}
-                      <div className="mt-2 text-sm">
-                        <strong>Recommendation:</strong> {warning.recommendation}
-                      </div>
-                    </div>
-                    <Badge variant={warning.severity === "critical" ? "destructive" : "secondary"} className="ml-2">
-                      {warning.severity.toUpperCase()}
-                    </Badge>
-                  </div>
-                </AlertDescription>
-              </Alert>
-            ))}
+            {/* Mock report history */}
+            <div className="flex items-center justify-between p-3 rounded-lg border">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="font-medium">Executive Summary - NAC Analysis</p>
+                  <p className="text-sm text-muted-foreground">Generated 2 hours ago • PDF • 3 pages</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline">
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button size="sm" variant="outline">
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-lg border">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="font-medium">Technical Analysis - Full Comparison</p>
+                  <p className="text-sm text-muted-foreground">Generated yesterday • DOCX • 12 pages</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline">
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button size="sm" variant="outline">
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-lg border">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="font-medium">Financial Deep Dive - Cost Analysis</p>
+                  <p className="text-sm text-muted-foreground">Generated 3 days ago • XLSX • Data + Charts</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline">
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button size="sm" variant="outline">
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
     </div>
   )
-}
-
-function getIndustryComplianceRequirements(industry: string): string[] {
-  const requirements: Record<string, string[]> = {
-    healthcare: ["HIPAA", "HITECH", "FDA"],
-    financial: ["PCI-DSS", "SOX", "GLBA", "FFIEC"],
-    government: ["FedRAMP", "FISMA", "NIST", "Common Criteria"],
-    education: ["FERPA", "COPPA"],
-    manufacturing: ["ISO27001", "NIST"],
-    retail: ["PCI-DSS", "CCPA"],
-    technology: ["SOC2", "ISO27001"],
-    energy: ["NERC CIP", "IEC 62443"],
-  }
-
-  return requirements[industry] || ["ISO27001", "SOC2"]
 }
