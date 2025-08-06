@@ -1,6 +1,3 @@
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
-
 export interface AIConfig {
   openaiApiKey?: string
   openaiModel?: string
@@ -38,19 +35,44 @@ class AIIntegrationEngine {
     this.config = config
   }
 
-  private getModel() {
-    const provider = this.config.defaultProvider || "openai"
+  private async callOpenAI(prompt: string): Promise<string> {
+    if (!this.config.openaiApiKey) {
+      throw new Error("OpenAI API key not configured")
+    }
 
-    switch (provider) {
-      case "openai":
-        return openai(this.config.openaiModel || "gpt-4o", {
-          apiKey: this.config.openaiApiKey,
-        })
-      // Add Claude and Gemini support when available
-      default:
-        return openai(this.config.openaiModel || "gpt-4o", {
-          apiKey: this.config.openaiApiKey,
-        })
+    try {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.config.openaiApiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.config.openaiModel || "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: "You are an expert in Network Access Control (NAC) solutions and enterprise IT analysis.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          max_tokens: this.config.maxTokens || 2000,
+          temperature: this.config.temperature || 0.7,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data.choices[0]?.message?.content || ""
+    } catch (error) {
+      console.error("OpenAI API call failed:", error)
+      throw error
     }
   }
 
@@ -89,14 +111,7 @@ FORMAT:
 
 Make it compelling for ${industry} industry executives.`
 
-      const { text } = await generateText({
-        model: this.getModel(),
-        prompt,
-        maxTokens: this.config.maxTokens || 2000,
-        temperature: this.config.temperature || 0.7,
-      })
-
-      return text
+      return await this.callOpenAI(prompt)
     } catch (error) {
       console.error("Error generating executive summary:", error)
       return this.getFallbackExecutiveSummary(industry, deviceCount, timeframe)
@@ -124,14 +139,8 @@ For each warning, provide:
 
 Focus on actionable intelligence for IT decision makers.`
 
-      const { text } = await generateText({
-        model: this.getModel(),
-        prompt,
-        maxTokens: this.config.maxTokens || 1500,
-        temperature: this.config.temperature || 0.3,
-      })
-
-      return this.parseVendorWarnings(text)
+      const response = await this.callOpenAI(prompt)
+      return this.parseVendorWarnings(response)
     } catch (error) {
       console.error("Error generating vendor warnings:", error)
       return this.getFallbackVendorWarnings()
@@ -158,14 +167,7 @@ Provide insights on:
 
 Make it actionable and relevant to ${industry} IT leaders.`
 
-      const { text } = await generateText({
-        model: this.getModel(),
-        prompt,
-        maxTokens: this.config.maxTokens || 1200,
-        temperature: this.config.temperature || 0.6,
-      })
-
-      return text
+      return await this.callOpenAI(prompt)
     } catch (error) {
       console.error("Error generating industry insights:", error)
       return this.getFallbackIndustryInsights(industry)
@@ -194,14 +196,7 @@ Provide analysis on:
 
 Focus on technical decision criteria for IT architects and engineers.`
 
-      const { text } = await generateText({
-        model: this.getModel(),
-        prompt,
-        maxTokens: this.config.maxTokens || 2000,
-        temperature: this.config.temperature || 0.5,
-      })
-
-      return text
+      return await this.callOpenAI(prompt)
     } catch (error) {
       console.error("Error generating technical analysis:", error)
       return this.getFallbackTechnicalAnalysis()
@@ -229,14 +224,8 @@ Generate enhanced content for:
 
 Make it compelling and actionable for ${reportType} stakeholders.`
 
-      const { text } = await generateText({
-        model: this.getModel(),
-        prompt,
-        maxTokens: this.config.maxTokens || 2500,
-        temperature: this.config.temperature || 0.6,
-      })
-
-      return this.parseEnhancedReport(text)
+      const response = await this.callOpenAI(prompt)
+      return this.parseEnhancedReport(response)
     } catch (error) {
       console.error("Error enhancing report:", error)
       return this.getFallbackEnhancedReport(reportType)
@@ -286,20 +275,20 @@ Make it compelling and actionable for ${reportType} stakeholders.`
   private getFallbackExecutiveSummary(industry: string, deviceCount: number, timeframe: number): string {
     return `Executive Summary: NAC Investment Analysis for ${industry}
 
-Based on our comprehensive analysis of ${deviceCount.toLocaleString()} devices over ${timeframe} years, Portnox CLEAR emerges as the optimal Network Access Control solution, delivering:
+Based on our comprehensive analysis of ${deviceCount.toLocaleString()} devices over ${timeframe} years, Portnox CLEAR emerges as a competitive Network Access Control solution, delivering:
 
-• 65-75% cost reduction compared to traditional NAC solutions
-• 92% risk reduction through zero-infrastructure cloud architecture
-• 5,506% ROI over ${timeframe} years with 6.5-month payback period
-• Zero CVEs in security history vs. 47+ for leading competitors
+• Significant cost reduction compared to traditional NAC solutions
+• Enhanced security through cloud-native architecture
+• Strong ROI over ${timeframe} years with reasonable payback period
+• Excellent security track record with minimal vulnerabilities
 
 Strategic Advantages:
 - Cloud-native architecture eliminates hardware dependencies
-- 30-minute deployment vs. 6-9 months for traditional solutions
-- All-inclusive pricing model with no hidden costs
-- Industry-leading Zero Trust maturity score of 95%
+- Rapid deployment compared to traditional solutions
+- Transparent pricing model with predictable costs
+- Strong Zero Trust capabilities
 
-Recommendation: Immediate implementation of Portnox CLEAR to achieve rapid ROI while significantly reducing security risk and operational complexity.`
+Recommendation: Consider Portnox CLEAR for rapid implementation and strong security posture while reducing operational complexity.`
   }
 
   private getFallbackVendorWarnings(): VendorWarning[] {
@@ -310,7 +299,7 @@ Recommendation: Immediate implementation of Portnox CLEAR to achieve rapid ROI w
         title: "Ivanti/Pulse Secure: Critical Security Risk",
         description:
           "Active nation-state exploitation with multiple zero-day vulnerabilities. Immediate migration required.",
-        recommendation: "Migrate to Portnox CLEAR immediately to eliminate security exposure.",
+        recommendation: "Migrate to a more secure NAC solution immediately to eliminate security exposure.",
         lastUpdated: new Date().toISOString(),
       },
     ]

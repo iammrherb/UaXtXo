@@ -3,39 +3,37 @@ export interface CalculationConfiguration {
   devices: number
   users: number
   industry: string
-  orgSize: 'small' | 'medium' | 'large' | 'enterprise'
+  orgSize: "small" | "medium" | "large" | "enterprise"
   years: number
   region: string
-  portnoxBasePrice?: number
-  portnoxAddons?: {
+  portnoxBasePrice: number
+  portnoxAddons: {
     atp: boolean
     compliance: boolean
     iot: boolean
     analytics: boolean
   }
   aiConfig?: {
-    openaiApiKey: string
-    openaiModel: string
-    claudeApiKey: string
-    claudeModel: string
-    geminiApiKey: string
-    geminiModel: string
-    defaultProvider: string
-    maxTokens: number
-    temperature: number
+    openaiApiKey?: string
+    openaiModel?: string
+    claudeApiKey?: string
+    claudeModel?: string
+    geminiApiKey?: string
+    geminiModel?: string
+    defaultProvider?: "openai" | "claude" | "gemini"
+    maxTokens?: number
+    temperature?: number
   }
-  discountRate?: number
-  inflationRate?: number
-  taxRate?: number
 }
 
 export interface CostBreakdown {
-  licensing: number
+  software: number
   hardware: number
   services: number
   training: number
-  maintenance: number
   operational: number
+  maintenance: number
+  total: number
 }
 
 export interface FinancialMetrics {
@@ -70,11 +68,25 @@ export interface CalculationResult {
   vendorId: string
   vendorName: string
   totalCost: number
+  yearlyBreakdown: YearlyBreakdown[]
   costBreakdown: CostBreakdown
-  financialMetrics: FinancialMetrics
-  riskAssessment: RiskAssessment
-  businessImpact: BusinessImpact
-  implementation: Implementation
+  roi: number
+  paybackMonths: number
+  npv: number
+  irr: number
+  riskScore: number
+  complianceScore: number
+  deploymentTime: number
+  maintenanceEffort: number
+}
+
+export interface YearlyBreakdown {
+  year: number
+  softwareCost: number
+  hardwareCost: number
+  servicesCost: number
+  operationalCost: number
+  totalCost: number
 }
 
 // Input validation utilities
@@ -142,9 +154,7 @@ class ValidationUtils {
         iot: Boolean(config?.portnoxAddons?.iot),
         analytics: Boolean(config?.portnoxAddons?.analytics)
       },
-      discountRate: Math.max(0.01, Math.min(1.0, Number(config?.discountRate) || 0.10)),
-      inflationRate: Math.max(0, Math.min(0.20, Number(config?.inflationRate) || 0.03)),
-      taxRate: Math.max(0, Math.min(0.60, Number(config?.taxRate) || 0.25))
+      aiConfig: config?.aiConfig || {}
     }
 
     return sanitized
@@ -170,775 +180,479 @@ class ValidationUtils {
   }
 }
 
-// Accurate vendor database based on real market pricing
+// Realistic vendor data based on actual market pricing
 const VENDOR_DATABASE = {
   portnox: {
-    name: 'Portnox CLEAR',
-    category: 'cloud-native',
-    pricing: {
-      basePrice: 4.0, // $4/device/month = $48/device/year
-      hardwareRequired: false,
-      hardwareCost: 0,
-      servicesMultiplier: 0.0, // No professional services required
-      trainingCost: 0, // Included in subscription
-      maintenanceMultiplier: 0.0, // Included in SaaS
-      operationalEfficiency: 0.15 // 15% reduction in operational costs
+    name: "Portnox CLEAR",
+    type: "cloud-native",
+    basePricePerDevice: 4.0, // $4/device/month = $48/year
+    hardwareRequired: false,
+    servicesPercentage: 0.15, // 15% of software cost
+    trainingCostPerUser: 200,
+    deploymentDays: 7,
+    maintenanceHoursPerMonth: 8,
+    riskScore: 95, // Excellent security track record
+    complianceScore: 92,
+    cveCount: 0,
+    addons: {
+      atp: 1.0, // $1/device/month additional
+      compliance: 0.5,
+      iot: 0.75,
+      analytics: 0.25,
     },
-    implementation: {
-      timelineDays: 1,
-      complexity: 'Low' as const,
-      resourcesRequired: 0.25, // 0.25 FTE for deployment
-      ongoingResources: 0.1 // 0.1 FTE for ongoing management
-    },
-    risks: {
-      securityScore: 95, // High security (lower risk)
-      operationalScore: 90, // High operational reliability
-      financialScore: 85 // Predictable SaaS pricing
-    },
-    benefits: {
-      productivityPerDevice: 25, // $25/device/year productivity gain
-      riskMitigationTotal: 15000, // $15K total risk mitigation
-      complianceTotal: 8000 // $8K compliance benefits
-    }
   },
   cisco: {
-    name: 'Cisco Identity Services Engine (ISE)',
-    category: 'traditional',
-    pricing: {
-      basePrice: 12.0, // $12/device/month = $144/device/year (includes base + plus licenses)
-      hardwareRequired: true,
-      hardwareCost: 75000, // Average appliance cost for medium deployment
-      servicesMultiplier: 0.30, // 30% of software cost for professional services
-      trainingCost: 15000, // Training costs
-      maintenanceMultiplier: 0.22, // 22% annual maintenance
-      operationalEfficiency: -0.10 // 10% increase in operational costs due to complexity
-    },
-    implementation: {
-      timelineDays: 180, // 6 months typical deployment
-      complexity: 'High' as const,
-      resourcesRequired: 2.5, // 2.5 FTE for deployment
-      ongoingResources: 1.5 // 1.5 FTE for ongoing management
-    },
-    risks: {
-      securityScore: 75, // Good security but with CVEs
-      operationalScore: 65, // Complex operations
-      financialScore: 60 // Complex licensing, potential cost overruns
-    },
-    benefits: {
-      productivityPerDevice: 15, // $15/device/year productivity gain
-      riskMitigationTotal: 25000, // $25K total risk mitigation
-      complianceTotal: 12000 // $12K compliance benefits
-    }
+    name: "Cisco Identity Services Engine (ISE)",
+    type: "on-premise",
+    basePricePerDevice: 12.0, // $12/device/month = $144/year
+    hardwareRequired: true,
+    hardwareCostPer1000Devices: 45000, // $45K per 1000 devices
+    servicesPercentage: 0.35, // 35% of total cost
+    trainingCostPerUser: 3500,
+    deploymentDays: 180, // 6 months
+    maintenanceHoursPerMonth: 40,
+    riskScore: 72, // Multiple CVEs
+    complianceScore: 88,
+    cveCount: 47,
+    supportCostPercentage: 0.22, // 22% annually
   },
   aruba: {
-    name: 'Aruba ClearPass',
-    category: 'traditional',
-    pricing: {
-      basePrice: 8.5, // $8.50/device/month = $102/device/year
-      hardwareRequired: true,
-      hardwareCost: 45000, // Average appliance cost
-      servicesMultiplier: 0.25, // 25% of software cost for professional services
-      trainingCost: 8000, // Training costs
-      maintenanceMultiplier: 0.18, // 18% annual maintenance
-      operationalEfficiency: -0.05 // 5% increase in operational costs
-    },
-    implementation: {
-      timelineDays: 120, // 4 months typical deployment
-      complexity: 'Medium' as const,
-      resourcesRequired: 1.5, // 1.5 FTE for deployment
-      ongoingResources: 1.0 // 1.0 FTE for ongoing management
-    },
-    risks: {
-      securityScore: 80, // Good security
-      operationalScore: 75, // Moderate operational complexity
-      financialScore: 70 // Reasonable cost predictability
-    },
-    benefits: {
-      productivityPerDevice: 18, // $18/device/year productivity gain
-      riskMitigationTotal: 20000, // $20K total risk mitigation
-      complianceTotal: 10000 // $10K compliance benefits
-    }
+    name: "Aruba ClearPass",
+    type: "hybrid",
+    basePricePerDevice: 8.5, // $8.50/device/month = $102/year
+    hardwareRequired: true,
+    hardwareCostPer1000Devices: 25000, // $25K per 1000 devices
+    servicesPercentage: 0.25,
+    trainingCostPerUser: 2500,
+    deploymentDays: 90, // 3 months
+    maintenanceHoursPerMonth: 24,
+    riskScore: 85,
+    complianceScore: 86,
+    cveCount: 12,
+    supportCostPercentage: 0.18,
   },
   forescout: {
-    name: 'Forescout Platform',
-    category: 'traditional',
-    pricing: {
-      basePrice: 3.5, // $3.50/device/month = $42/device/year (eyeSight tier)
-      hardwareRequired: true,
-      hardwareCost: 55000, // Average appliance cost
-      servicesMultiplier: 0.35, // 35% of total for professional services
-      trainingCost: 12000, // Training costs
-      maintenanceMultiplier: 0.20, // 20% annual maintenance
-      operationalEfficiency: -0.08 // 8% increase in operational costs
-    },
-    implementation: {
-      timelineDays: 150, // 5 months typical deployment
-      complexity: 'High' as const,
-      resourcesRequired: 2.0, // 2.0 FTE for deployment
-      ongoingResources: 1.2 // 1.2 FTE for ongoing management
-    },
-    risks: {
-      securityScore: 85, // Strong security focus
-      operationalScore: 70, // Moderate operational complexity
-      financialScore: 65 // Moderate cost predictability
-    },
-    benefits: {
-      productivityPerDevice: 20, // $20/device/year productivity gain
-      riskMitigationTotal: 22000, // $22K total risk mitigation
-      complianceTotal: 11000 // $11K compliance benefits
-    }
-  },
-  extreme: {
-    name: 'Extreme Networks NAC',
-    category: 'traditional',
-    pricing: {
-      basePrice: 10.0, // $10/device/month = $120/device/year
-      hardwareRequired: true,
-      hardwareCost: 35000, // Controller cost
-      servicesMultiplier: 0.20, // 20% of software cost for services
-      trainingCost: 6000, // Training costs
-      maintenanceMultiplier: 0.15, // 15% annual maintenance
-      operationalEfficiency: -0.03 // 3% increase in operational costs
-    },
-    implementation: {
-      timelineDays: 90, // 3 months typical deployment
-      complexity: 'Medium' as const,
-      resourcesRequired: 1.0, // 1.0 FTE for deployment
-      ongoingResources: 0.8 // 0.8 FTE for ongoing management
-    },
-    risks: {
-      securityScore: 78, // Good security
-      operationalScore: 80, // Simpler operations
-      financialScore: 75 // Good cost predictability
-    },
-    benefits: {
-      productivityPerDevice: 16, // $16/device/year productivity gain
-      riskMitigationTotal: 18000, // $18K total risk mitigation
-      complianceTotal: 9000 // $9K compliance benefits
-    }
-  },
-  fortinet: {
-    name: 'Fortinet FortiNAC',
-    category: 'traditional',
-    pricing: {
-      basePrice: 7.0, // $7/device/month = $84/device/year
-      hardwareRequired: true,
-      hardwareCost: 40000, // Appliance cost
-      servicesMultiplier: 0.25, // 25% of software cost for services
-      trainingCost: 10000, // Training costs
-      maintenanceMultiplier: 0.20, // 20% annual maintenance
-      operationalEfficiency: -0.06 // 6% increase in operational costs
-    },
-    implementation: {
-      timelineDays: 120, // 4 months typical deployment
-      complexity: 'Medium' as const,
-      resourcesRequired: 1.5, // 1.5 FTE for deployment
-      ongoingResources: 1.0 // 1.0 FTE for ongoing management
-    },
-    risks: {
-      securityScore: 82, // Good security with Fortinet integration
-      operationalScore: 75, // Moderate operational complexity
-      financialScore: 70 // Reasonable cost predictability
-    },
-    benefits: {
-      productivityPerDevice: 17, // $17/device/year productivity gain
-      riskMitigationTotal: 19000, // $19K total risk mitigation
-      complianceTotal: 9500 // $9.5K compliance benefits
-    }
+    name: "Forescout Platform",
+    type: "on-premise",
+    basePricePerDevice: 3.5, // $3.50/device/month = $42/year
+    hardwareRequired: true,
+    hardwareCostPer1000Devices: 35000,
+    servicesPercentage: 0.30,
+    trainingCostPerUser: 3000,
+    deploymentDays: 120, // 4 months
+    maintenanceHoursPerMonth: 32,
+    riskScore: 78,
+    complianceScore: 82,
+    cveCount: 8,
+    supportCostPercentage: 0.20,
   },
   juniper: {
-    name: 'Juniper Mist Access Assurance',
-    category: 'cloud-native',
-    pricing: {
-      basePrice: 6.0, // $6/device/month = $72/device/year
-      hardwareRequired: false, // Cloud-native but requires Mist infrastructure
-      hardwareCost: 25000, // Mist infrastructure investment
-      servicesMultiplier: 0.15, // 15% of software cost for services
-      trainingCost: 4000, // Training costs
-      maintenanceMultiplier: 0.0, // Included in SaaS
-      operationalEfficiency: 0.08 // 8% reduction in operational costs
-    },
-    implementation: {
-      timelineDays: 30, // 1 month typical deployment
-      complexity: 'Low' as const,
-      resourcesRequired: 0.5, // 0.5 FTE for deployment
-      ongoingResources: 0.3 // 0.3 FTE for ongoing management
-    },
-    risks: {
-      securityScore: 88, // Good cloud-native security
-      operationalScore: 85, // AI-driven operations
-      financialScore: 80 // Predictable SaaS pricing
-    },
-    benefits: {
-      productivityPerDevice: 22, // $22/device/year productivity gain
-      riskMitigationTotal: 16000, // $16K total risk mitigation
-      complianceTotal: 8500 // $8.5K compliance benefits
-    }
+    name: "Juniper Mist Access Assurance",
+    type: "cloud-managed",
+    basePricePerDevice: 6.0, // $6/device/month = $72/year
+    hardwareRequired: false, // Cloud-managed but requires Mist infrastructure
+    infrastructureCost: 15000, // Base infrastructure cost
+    servicesPercentage: 0.20,
+    trainingCostPerUser: 2000,
+    deploymentDays: 45,
+    maintenanceHoursPerMonth: 16,
+    riskScore: 88,
+    complianceScore: 84,
+    cveCount: 3,
+    supportCostPercentage: 0.15,
   },
-  arista: {
-    name: 'Arista CloudVision AGNI',
-    category: 'cloud-native',
-    pricing: {
-      basePrice: 8.0, // $8/device/month = $96/device/year
-      hardwareRequired: false, // Cloud-native but requires Arista switches
-      hardwareCost: 30000, // Arista infrastructure investment
-      servicesMultiplier: 0.20, // 20% of software cost for services
-      trainingCost: 8000, // Training costs
-      maintenanceMultiplier: 0.0, // Included in SaaS
-      operationalEfficiency: 0.05 // 5% reduction in operational costs
-    },
-    implementation: {
-      timelineDays: 45, // 1.5 months typical deployment
-      complexity: 'Medium' as const,
-      resourcesRequired: 0.8, // 0.8 FTE for deployment
-      ongoingResources: 0.5 // 0.5 FTE for ongoing management
-    },
-    risks: {
-      securityScore: 85, // Good security
-      operationalScore: 82, // Good operations with CloudVision
-      financialScore: 78 // Good cost predictability
-    },
-    benefits: {
-      productivityPerDevice: 19, // $19/device/year productivity gain
-      riskMitigationTotal: 17000, // $17K total risk mitigation
-      complianceTotal: 9000 // $9K compliance benefits
-    }
+  extreme: {
+    name: "Extreme NAC",
+    type: "on-premise",
+    basePricePerDevice: 1.0, // $1/device/month = $12/year
+    hardwareRequired: true,
+    hardwareCostPer1000Devices: 20000,
+    servicesPercentage: 0.25,
+    trainingCostPerUser: 1800,
+    deploymentDays: 60,
+    maintenanceHoursPerMonth: 20,
+    riskScore: 80,
+    complianceScore: 78,
+    cveCount: 5,
+    supportCostPercentage: 0.16,
+  },
+  fortinet: {
+    name: "Fortinet FortiNAC",
+    type: "on-premise",
+    basePricePerDevice: 2.5, // $2.50/device/month = $30/year
+    hardwareRequired: true,
+    hardwareCostPer1000Devices: 30000,
+    servicesPercentage: 0.28,
+    trainingCostPerUser: 2200,
+    deploymentDays: 75,
+    maintenanceHoursPerMonth: 28,
+    riskScore: 82,
+    complianceScore: 85,
+    cveCount: 15,
+    supportCostPercentage: 0.18,
   },
   microsoft: {
-    name: 'Microsoft Network Policy Server (NPS)',
-    category: 'basic',
-    pricing: {
-      basePrice: 0.0, // Free with Windows Server
-      hardwareRequired: true,
-      hardwareCost: 15000, // Windows Server infrastructure
-      servicesMultiplier: 0.15, // 15% for basic setup services
-      trainingCost: 3000, // Basic training
-      maintenanceMultiplier: 0.10, // 10% for Windows Server maintenance
-      operationalEfficiency: -0.15 // 15% increase due to manual processes
-    },
-    implementation: {
-      timelineDays: 30, // 1 month for basic setup
-      complexity: 'Medium' as const,
-      resourcesRequired: 1.0, // 1.0 FTE for deployment
-      ongoingResources: 1.5 // 1.5 FTE for ongoing management (manual processes)
-    },
-    risks: {
-      securityScore: 60, // Basic security capabilities
-      operationalScore: 50, // Manual processes, limited automation
-      financialScore: 85 // Predictable Windows licensing
-    },
-    benefits: {
-      productivityPerDevice: 5, // $5/device/year productivity gain (limited)
-      riskMitigationTotal: 8000, // $8K total risk mitigation
-      complianceTotal: 4000 // $4K compliance benefits
-    }
+    name: "Microsoft NPS",
+    type: "on-premise",
+    basePricePerDevice: 0, // Free with Windows Server
+    hardwareRequired: true,
+    hardwareCostPer1000Devices: 8000, // Server hardware
+    servicesPercentage: 0.40, // High services cost due to complexity
+    trainingCostPerUser: 1500,
+    deploymentDays: 30,
+    maintenanceHoursPerMonth: 35, // High maintenance
+    riskScore: 65, // Limited features
+    complianceScore: 60, // Basic compliance only
+    cveCount: 25,
+    supportCostPercentage: 0.25,
+    additionalLicensing: 15000, // Azure AD Premium, etc.
   },
   foxpass: {
-    name: 'FoxPass',
-    category: 'cloud-radius',
-    pricing: {
-      basePrice: 1.5, // $1.50/user/month = $18/user/year
-      hardwareRequired: false,
-      hardwareCost: 0,
-      servicesMultiplier: 0.05, // 5% for minimal setup services
-      trainingCost: 1000, // Minimal training
-      maintenanceMultiplier: 0.0, // Included in SaaS
-      operationalEfficiency: 0.05 // 5% reduction in operational costs
-    },
-    implementation: {
-      timelineDays: 7, // 1 week deployment
-      complexity: 'Low' as const,
-      resourcesRequired: 0.1, // 0.1 FTE for deployment
-      ongoingResources: 0.1 // 0.1 FTE for ongoing management
-    },
-    risks: {
-      securityScore: 70, // Basic cloud security
-      operationalScore: 85, // Simple operations
-      financialScore: 90 // Very predictable pricing
-    },
-    benefits: {
-      productivityPerDevice: 8, // $8/device/year productivity gain (limited NAC)
-      riskMitigationTotal: 5000, // $5K total risk mitigation
-      complianceTotal: 3000 // $3K compliance benefits
-    }
+    name: "FoxPass",
+    type: "cloud-radius",
+    basePricePerDevice: 3.0, // $3/device/month = $36/year
+    hardwareRequired: false,
+    servicesPercentage: 0.10,
+    trainingCostPerUser: 500,
+    deploymentDays: 14,
+    maintenanceHoursPerMonth: 4,
+    riskScore: 75, // Limited to WiFi/RADIUS
+    complianceScore: 70,
+    cveCount: 1,
+    supportCostPercentage: 0.12,
+    limitations: "WiFi/PKI only - no wired NAC",
   },
   securew2: {
-    name: 'SecureW2',
-    category: 'cloud-radius',
-    pricing: {
-      basePrice: 2.5, // $2.50/user/month = $30/user/year
-      hardwareRequired: false,
-      hardwareCost: 0,
-      servicesMultiplier: 0.10, // 10% for setup services
-      trainingCost: 2000, // Training costs
-      maintenanceMultiplier: 0.0, // Included in SaaS
-      operationalEfficiency: 0.03 // 3% reduction in operational costs
-    },
-    implementation: {
-      timelineDays: 14, // 2 weeks deployment
-      complexity: 'Low' as const,
-      resourcesRequired: 0.2, // 0.2 FTE for deployment
-      ongoingResources: 0.15 // 0.15 FTE for ongoing management
-    },
-    risks: {
-      securityScore: 75, // Good certificate-based security
-      operationalScore: 80, // Simple operations
-      financialScore: 85 // Predictable pricing
-    },
-    benefits: {
-      productivityPerDevice: 10, // $10/device/year productivity gain
-      riskMitigationTotal: 6000, // $6K total risk mitigation
-      complianceTotal: 4000 // $4K compliance benefits
-    }
+    name: "SecureW2",
+    type: "cloud-pki",
+    basePricePerDevice: 15.0, // $15/device/month = $180/year (premium pricing)
+    hardwareRequired: false,
+    servicesPercentage: 0.20,
+    trainingCostPerUser: 1000,
+    deploymentDays: 21,
+    maintenanceHoursPerMonth: 6,
+    riskScore: 78,
+    complianceScore: 75,
+    cveCount: 2,
+    supportCostPercentage: 0.15,
+    limitations: "PKI-focused, limited NAC features",
   },
-  packetfence: {
-    name: 'PacketFence',
-    category: 'open-source',
-    pricing: {
-      basePrice: 0.0, // Open source
-      hardwareRequired: true,
-      hardwareCost: 20000, // Server infrastructure
-      servicesMultiplier: 0.50, // 50% for extensive professional services
-      trainingCost: 15000, // Significant training required
-      maintenanceMultiplier: 0.25, // 25% for support contracts
-      operationalEfficiency: -0.20 // 20% increase due to complexity
-    },
-    implementation: {
-      timelineDays: 180, // 6 months for proper deployment
-      complexity: 'High' as const,
-      resourcesRequired: 3.0, // 3.0 FTE for deployment
-      ongoingResources: 2.0 // 2.0 FTE for ongoing management
-    },
-    risks: {
-      securityScore: 70, // Good security but requires expertise
-      operationalScore: 45, // High operational complexity
-      financialScore: 60 // Unpredictable total costs
-    },
-    benefits: {
-      productivityPerDevice: 12, // $12/device/year productivity gain
-      riskMitigationTotal: 15000, // $15K total risk mitigation
-      complianceTotal: 8000 // $8K compliance benefits
-    }
+}
+
+// Industry-specific factors
+const INDUSTRY_FACTORS = {
+  healthcare: {
+    complianceMultiplier: 1.3,
+    riskMultiplier: 1.4,
+    trainingMultiplier: 1.2,
   },
-  meraki: {
-    name: 'Cisco Meraki',
-    category: 'cloud-managed',
-    pricing: {
-      basePrice: 15.0, // $15/device/month = $180/device/year (includes hardware amortization)
-      hardwareRequired: true,
-      hardwareCost: 50000, // Meraki infrastructure investment
-      servicesMultiplier: 0.15, // 15% for setup services
-      trainingCost: 5000, // Training costs
-      maintenanceMultiplier: 0.0, // Included in subscription
-      operationalEfficiency: 0.02 // 2% reduction in operational costs
-    },
-    implementation: {
-      timelineDays: 60, // 2 months deployment
-      complexity: 'Medium' as const,
-      resourcesRequired: 1.0, // 1.0 FTE for deployment
-      ongoingResources: 0.5 // 0.5 FTE for ongoing management
-    },
-    risks: {
-      securityScore: 78, // Good security
-      operationalScore: 85, // Simple cloud management
-      financialScore: 75 // Subscription-based predictability
-    },
-    benefits: {
-      productivityPerDevice: 14, // $14/device/year productivity gain
-      riskMitigationTotal: 12000, // $12K total risk mitigation
-      complianceTotal: 7000 // $7K compliance benefits
-    }
-  }
+  financial: {
+    complianceMultiplier: 1.4,
+    riskMultiplier: 1.5,
+    trainingMultiplier: 1.3,
+  },
+  government: {
+    complianceMultiplier: 1.5,
+    riskMultiplier: 1.6,
+    trainingMultiplier: 1.4,
+  },
+  education: {
+    complianceMultiplier: 1.1,
+    riskMultiplier: 1.1,
+    trainingMultiplier: 0.9,
+  },
+  manufacturing: {
+    complianceMultiplier: 1.2,
+    riskMultiplier: 1.3,
+    trainingMultiplier: 1.1,
+  },
+  retail: {
+    complianceMultiplier: 1.2,
+    riskMultiplier: 1.2,
+    trainingMultiplier: 1.0,
+  },
+  technology: {
+    complianceMultiplier: 1.1,
+    riskMultiplier: 1.1,
+    trainingMultiplier: 0.8,
+  },
+  energy: {
+    complianceMultiplier: 1.4,
+    riskMultiplier: 1.5,
+    trainingMultiplier: 1.3,
+  },
 }
 
-// Industry-specific multipliers (realistic adjustments)
-const INDUSTRY_MULTIPLIERS = {
-  healthcare: { cost: 1.15, risk: 1.3, compliance: 1.8 },
-  financial: { cost: 1.20, risk: 1.4, compliance: 2.0 },
-  government: { cost: 1.10, risk: 1.2, compliance: 2.2 },
-  education: { cost: 0.85, risk: 0.9, compliance: 1.1 },
-  manufacturing: { cost: 1.05, risk: 1.1, compliance: 1.3 },
-  retail: { cost: 0.95, risk: 1.0, compliance: 1.2 },
-  technology: { cost: 1.00, risk: 1.0, compliance: 1.0 },
-  energy: { cost: 1.25, risk: 1.3, compliance: 1.9 }
+// Regional cost factors
+const REGIONAL_FACTORS = {
+  "north-america": {
+    laborCostMultiplier: 1.0,
+    hardwareCostMultiplier: 1.0,
+  },
+  "europe": {
+    laborCostMultiplier: 0.9,
+    hardwareCostMultiplier: 1.1,
+  },
+  "asia-pacific": {
+    laborCostMultiplier: 0.7,
+    hardwareCostMultiplier: 1.05,
+  },
+  "latin-america": {
+    laborCostMultiplier: 0.6,
+    hardwareCostMultiplier: 1.15,
+  },
 }
 
-// Organization size multipliers (realistic scaling)
-const ORG_SIZE_MULTIPLIERS = {
-  small: { cost: 1.15, complexity: 0.8, resources: 0.6 },
-  medium: { cost: 1.00, complexity: 1.0, resources: 1.0 },
-  large: { cost: 0.92, complexity: 1.1, resources: 1.3 },
-  enterprise: { cost: 0.85, complexity: 1.2, resources: 1.6 }
-}
-
-// Regional multipliers (realistic labor and cost differences)
-const REGIONAL_MULTIPLIERS = {
-  'north-america': { cost: 1.00, labor: 1.00 },
-  'europe': { cost: 1.08, labor: 1.15 },
-  'asia-pacific': { cost: 0.85, labor: 0.75 },
-  'latin-america': { cost: 0.75, labor: 0.65 },
-  'middle-east': { cost: 1.12, labor: 0.85 }
-}
-
-// Financial calculator with accurate calculations
-class FinancialCalculator {
-  private static validateCashFlows(cashFlows: number[]): boolean {
-    if (!Array.isArray(cashFlows) || cashFlows.length < 2) return false
-    
-    const validFlows = cashFlows.filter(flow => 
-      typeof flow === 'number' && 
-      isFinite(flow) && 
-      Math.abs(flow) > 0.01
-    )
-    
-    return validFlows.length >= 2
+export function calculateVendorTCO(vendorId: string, config: CalculationConfiguration): CalculationResult {
+  const vendor = VENDOR_DATABASE[vendorId as keyof typeof VENDOR_DATABASE]
+  if (!vendor) {
+    throw new Error(`Unknown vendor: ${vendorId}`)
   }
 
-  private static calculateNPV(cashFlows: number[], discountRate: number): number {
-    try {
-      if (!this.validateCashFlows(cashFlows)) return 0
-      
-      const rate = ValidationUtils.sanitizeNumber(discountRate, 0.01, 0.50, 0.10)
-      
-      return cashFlows.reduce((npv, cashFlow, index) => {
-        const sanitizedCashFlow = ValidationUtils.sanitizeNumber(cashFlow, -1e10, 1e10, 0)
-        const discountFactor = Math.pow(1 + rate, index)
-        
-        if (!isFinite(discountFactor) || discountFactor === 0) return npv
-        
-        const presentValue = sanitizedCashFlow / discountFactor
-        return isFinite(presentValue) ? npv + presentValue : npv
-      }, 0)
-    } catch (error) {
-      console.warn('NPV calculation error:', error)
-      return 0
-    }
+  const industryFactor = INDUSTRY_FACTORS[config.industry as keyof typeof INDUSTRY_FACTORS] || {
+    complianceMultiplier: 1.0,
+    riskMultiplier: 1.0,
+    trainingMultiplier: 1.0,
   }
 
-  private static calculateIRR(cashFlows: number[]): number {
-    try {
-      if (!this.validateCashFlows(cashFlows)) return 0
-      
-      // Use bisection method for stability
-      let lowerBound = -0.99
-      let upperBound = 5.0
-      
-      const lowerNPV = this.calculateNPV(cashFlows, lowerBound)
-      const upperNPV = this.calculateNPV(cashFlows, upperBound)
-      
-      if (!isFinite(lowerNPV) || !isFinite(upperNPV)) return 0
-      if (lowerNPV * upperNPV > 0) return 0 // No solution in range
-      
-      const maxIterations = 100
-      const tolerance = 1e-6
-      
-      for (let i = 0; i < maxIterations; i++) {
-        const midPoint = (lowerBound + upperBound) / 2
-        const midNPV = this.calculateNPV(cashFlows, midPoint)
-        
-        if (!isFinite(midNPV)) break
-        if (Math.abs(midNPV) < tolerance) return midPoint
-        
-        if (lowerNPV * midNPV < 0) {
-          upperBound = midPoint
-        } else {
-          lowerBound = midPoint
-        }
-        
-        if (Math.abs(upperBound - lowerBound) < tolerance) {
-          return (lowerBound + upperBound) / 2
-        }
-      }
-      
-      return 0
-    } catch (error) {
-      console.warn('IRR calculation error:', error)
-      return 0
-    }
+  const regionalFactor = REGIONAL_FACTORS[config.region as keyof typeof REGIONAL_FACTORS] || {
+    laborCostMultiplier: 1.0,
+    hardwareCostMultiplier: 1.0,
   }
 
-  static calculateFinancialMetrics(
-    initialInvestment: number,
-    annualCashFlows: number[],
-    discountRate: number = 0.10
-  ): FinancialMetrics {
-    try {
-      const sanitizedInvestment = ValidationUtils.sanitizeNumber(initialInvestment, 0, 1e10, 0)
-      const sanitizedCashFlows = Array.isArray(annualCashFlows) 
-        ? annualCashFlows.map(flow => ValidationUtils.sanitizeNumber(flow, -1e10, 1e10, 0))
-        : []
-      const sanitizedDiscountRate = ValidationUtils.sanitizeNumber(discountRate, 0.01, 0.50, 0.10)
+  // Calculate base software cost
+  let baseSoftwareCost = vendor.basePricePerDevice * config.devices * 12 // Annual cost
 
-      if (sanitizedInvestment === 0 || sanitizedCashFlows.length === 0) {
-        return {
-          npv: 0,
-          irr: 0,
-          roi: 0,
-          paybackPeriod: 0,
-          profitabilityIndex: 0
-        }
-      }
-
-      // Create cash flow array (initial investment is negative)
-      const cashFlows = [-sanitizedInvestment, ...sanitizedCashFlows]
-      
-      // Calculate NPV
-      const npv = this.calculateNPV(cashFlows, sanitizedDiscountRate)
-      
-      // Calculate IRR
-      const irr = this.calculateIRR(cashFlows)
-      
-      // Calculate ROI
-      const totalCashFlows = sanitizedCashFlows.reduce((sum, flow) => sum + flow, 0)
-      const roi = sanitizedInvestment > 0 ? ((totalCashFlows - sanitizedInvestment) / sanitizedInvestment) * 100 : 0
-      
-      // Calculate Payback Period
-      const paybackPeriod = this.calculatePaybackPeriod(sanitizedInvestment, sanitizedCashFlows)
-      
-      // Calculate Profitability Index
-      const presentValueOfCashFlows = this.calculateNPV([0, ...sanitizedCashFlows], sanitizedDiscountRate)
-      const profitabilityIndex = sanitizedInvestment > 0 ? presentValueOfCashFlows / sanitizedInvestment : 0
-      
-      return {
-        npv: ValidationUtils.sanitizeNumber(npv, -1e10, 1e10, 0),
-        irr: ValidationUtils.sanitizeNumber(irr * 100, -1000, 1000, 0),
-        roi: ValidationUtils.sanitizeNumber(roi, -1000, 1000, 0),
-        paybackPeriod: ValidationUtils.sanitizeNumber(paybackPeriod, 0, 50, 0),
-        profitabilityIndex: ValidationUtils.sanitizeNumber(profitabilityIndex, 0, 50, 0)
-      }
-    } catch (error) {
-      console.warn('Financial metrics calculation error:', error)
-      return {
-        npv: 0,
-        irr: 0,
-        roi: 0,
-        paybackPeriod: 0,
-        profitabilityIndex: 0
-      }
-    }
+  // Add Portnox addons if applicable
+  if (vendorId === "portnox" && vendor.addons) {
+    if (config.portnoxAddons.atp) baseSoftwareCost += vendor.addons.atp * config.devices * 12
+    if (config.portnoxAddons.compliance) baseSoftwareCost += vendor.addons.compliance * config.devices * 12
+    if (config.portnoxAddons.iot) baseSoftwareCost += vendor.addons.iot * config.devices * 12
+    if (config.portnoxAddons.analytics) baseSoftwareCost += vendor.addons.analytics * config.devices * 12
   }
 
-  private static calculatePaybackPeriod(initialInvestment: number, annualCashFlows: number[]): number {
-    if (initialInvestment <= 0 || annualCashFlows.length === 0) return 0
-    
-    let cumulativeCashFlow = 0
-    
-    for (let i = 0; i < annualCashFlows.length; i++) {
-      const cashFlow = ValidationUtils.sanitizeNumber(annualCashFlows[i], -1e10, 1e10, 0)
-      cumulativeCashFlow += cashFlow
-      
-      if (cumulativeCashFlow >= initialInvestment) {
-        const previousCumulative = cumulativeCashFlow - cashFlow
-        const remainingAmount = initialInvestment - previousCumulative
-        const fractionOfYear = cashFlow > 0 ? remainingAmount / cashFlow : 0
-        
-        return ValidationUtils.sanitizeNumber(i + fractionOfYear, 0, 50, 0)
-      }
-    }
-    
-    return annualCashFlows.length + 1
+  // Calculate hardware cost
+  let hardwareCost = 0
+  if (vendor.hardwareRequired && vendor.hardwareCostPer1000Devices) {
+    const hardwareUnits = Math.ceil(config.devices / 1000)
+    hardwareCost = hardwareUnits * vendor.hardwareCostPer1000Devices * regionalFactor.hardwareCostMultiplier
   }
-}
-
-function calculateVendorCosts(
-  vendorId: string,
-  config: CalculationConfiguration
-): CalculationResult {
-  try {
-    const vendor = VENDOR_DATABASE[vendorId as keyof typeof VENDOR_DATABASE]
-    if (!vendor) {
-      console.warn(`Unknown vendor: ${vendorId}, using default values`)
-      return createDefaultResult(vendorId)
-    }
-
-    // Get multipliers with fallbacks
-    const industryMult = INDUSTRY_MULTIPLIERS[config.industry as keyof typeof INDUSTRY_MULTIPLIERS] || INDUSTRY_MULTIPLIERS.technology
-    const orgSizeMult = ORG_SIZE_MULTIPLIERS[config.orgSize] || ORG_SIZE_MULTIPLIERS.medium
-    const regionalMult = REGIONAL_MULTIPLIERS[config.region as keyof typeof REGIONAL_MULTIPLIERS] || REGIONAL_MULTIPLIERS['north-america']
-
-    // Calculate realistic costs
-    let licensingCost: number
-    
-    // Handle per-user pricing for cloud RADIUS solutions
-    if (vendor.category === 'cloud-radius') {
-      licensingCost = vendor.pricing.basePrice * config.users * 12 * config.years * industryMult.cost * regionalMult.cost
-    } else {
-      licensingCost = vendor.pricing.basePrice * config.devices * 12 * config.years * industryMult.cost * regionalMult.cost
-    }
-    
-    const hardwareCost = vendor.pricing.hardwareCost * orgSizeMult.cost * regionalMult.cost
-    
-    const totalSoftwareHardware = licensingCost + hardwareCost
-    const servicesCost = totalSoftwareHardware * vendor.pricing.servicesMultiplier
-    
-    const trainingCost = vendor.pricing.trainingCost * orgSizeMult.resources * regionalMult.labor
-    
-    const maintenanceCost = totalSoftwareHardware * vendor.pricing.maintenanceMultiplier * config.years
-    
-    // Calculate operational costs based on IT staff requirements
-    const avgItSalary = 95000 * regionalMult.labor // Average IT salary
-    const baseOperationalCost = avgItSalary * vendor.implementation.ongoingResources * config.years
-    
-    // Apply operational efficiency (positive = cost reduction, negative = cost increase)
-    const operationalEfficiencyImpact = baseOperationalCost * vendor.pricing.operationalEfficiency
-    const operationalCost = baseOperationalCost - operationalEfficiencyImpact
-
-    const totalCost = licensingCost + hardwareCost + servicesCost + trainingCost + maintenanceCost + operationalCost
-
-    // Calculate realistic benefits
-    const productivityGains = vendor.benefits.productivityPerDevice * config.devices * config.years
-    const riskReduction = vendor.benefits.riskMitigationTotal * industryMult.risk
-    const complianceSavings = vendor.benefits.complianceTotal * industryMult.compliance
-
-    // Calculate financial metrics
-    const initialInvestment = licensingCost + hardwareCost + servicesCost + trainingCost
-    const annualBenefit = (productivityGains + riskReduction + complianceSavings) / config.years
-    const annualCost = (maintenanceCost + operationalCost) / config.years
-    const annualCashFlows = Array(config.years).fill(Math.max(0, annualBenefit - annualCost))
-
-    const financialMetrics = FinancialCalculator.calculateFinancialMetrics(
-      initialInvestment,
-      annualCashFlows,
-      config.discountRate || 0.10
-    )
-
-    // Calculate risk scores (convert security scores to risk percentages)
-    const securityRisk = Math.max(0, 100 - vendor.risks.securityScore)
-    const operationalRisk = Math.max(0, 100 - vendor.risks.operationalScore)
-    const financialRisk = Math.max(0, 100 - vendor.risks.financialScore)
-    const overallRisk = (securityRisk + operationalRisk + financialRisk) / 3
-
-    return {
-      vendorId,
-      vendorName: vendor.name,
-      totalCost: ValidationUtils.sanitizeNumber(totalCost, 0, 1e10, 0),
-      costBreakdown: {
-        licensing: ValidationUtils.sanitizeNumber(licensingCost, 0, 1e10, 0),
-        hardware: ValidationUtils.sanitizeNumber(hardwareCost, 0, 1e10, 0),
-        services: ValidationUtils.sanitizeNumber(servicesCost, 0, 1e10, 0),
-        training: ValidationUtils.sanitizeNumber(trainingCost, 0, 1e10, 0),
-        maintenance: ValidationUtils.sanitizeNumber(maintenanceCost, 0, 1e10, 0),
-        operational: ValidationUtils.sanitizeNumber(operationalCost, 0, 1e10, 0)
-      },
-      financialMetrics,
-      riskAssessment: {
-        overallRisk: ValidationUtils.sanitizeNumber(overallRisk, 0, 100, 50),
-        securityRisk: ValidationUtils.sanitizeNumber(securityRisk, 0, 100, 50),
-        operationalRisk: ValidationUtils.sanitizeNumber(operationalRisk, 0, 100, 50),
-        financialRisk: ValidationUtils.sanitizeNumber(financialRisk, 0, 100, 50)
-      },
-      businessImpact: {
-        productivityGains: ValidationUtils.sanitizeNumber(productivityGains, 0, 1e10, 0),
-        riskReduction: ValidationUtils.sanitizeNumber(riskReduction, 0, 1e10, 0),
-        complianceSavings: ValidationUtils.sanitizeNumber(complianceSavings, 0, 1e10, 0),
-        totalBenefits: ValidationUtils.sanitizeNumber(productivityGains + riskReduction + complianceSavings, 0, 1e10, 0)
-      },
-      implementation: {
-        timeline: `${vendor.implementation.timelineDays} days`,
-        complexity: vendor.implementation.complexity,
-        resources: ValidationUtils.sanitizeNumber(vendor.implementation.resourcesRequired * orgSizeMult.resources, 0, 50, 1)
-      }
-    }
-  } catch (error) {
-    console.error(`Error calculating costs for vendor ${vendorId}:`, error)
-    return createDefaultResult(vendorId)
+  if (vendor.infrastructureCost) {
+    hardwareCost += vendor.infrastructureCost * regionalFactor.hardwareCostMultiplier
   }
-}
+  if (vendor.additionalLicensing) {
+    hardwareCost += vendor.additionalLicensing
+  }
 
-function createDefaultResult(vendorId: string): CalculationResult {
+  // Calculate services cost
+  const servicesCost = (baseSoftwareCost + hardwareCost) * vendor.servicesPercentage * regionalFactor.laborCostMultiplier
+
+  // Calculate training cost
+  const estimatedUsers = Math.min(config.users, Math.ceil(config.devices * 0.1)) // 10% of devices or actual users
+  const trainingCost = estimatedUsers * vendor.trainingCostPerUser * industryFactor.trainingMultiplier * regionalFactor.laborCostMultiplier
+
+  // Calculate operational cost (maintenance)
+  const avgHourlyRate = 85 // Average IT hourly rate
+  const annualMaintenanceCost = vendor.maintenanceHoursPerMonth * 12 * avgHourlyRate * regionalFactor.laborCostMultiplier
+
+  // Calculate support cost
+  const supportCost = vendor.supportCostPercentage ? baseSoftwareCost * vendor.supportCostPercentage : 0
+
+  // Build yearly breakdown
+  const yearlyBreakdown: YearlyBreakdown[] = []
+  let totalCost = 0
+
+  for (let year = 1; year <= config.years; year++) {
+    const yearSoftwareCost = baseSoftwareCost
+    const yearHardwareCost = year === 1 ? hardwareCost : 0 // Hardware only in year 1
+    const yearServicesCost = year === 1 ? servicesCost + trainingCost : supportCost // Services in year 1, support thereafter
+    const yearOperationalCost = annualMaintenanceCost
+
+    const yearTotal = yearSoftwareCost + yearHardwareCost + yearServicesCost + yearOperationalCost
+
+    yearlyBreakdown.push({
+      year,
+      softwareCost: yearSoftwareCost,
+      hardwareCost: yearHardwareCost,
+      servicesCost: yearServicesCost,
+      operationalCost: yearOperationalCost,
+      totalCost: yearTotal,
+    })
+
+    totalCost += yearTotal
+  }
+
+  // Calculate cost breakdown
+  const costBreakdown: CostBreakdown = {
+    software: baseSoftwareCost * config.years,
+    hardware: hardwareCost,
+    services: servicesCost,
+    training: trainingCost,
+    operational: annualMaintenanceCost * config.years,
+    maintenance: supportCost * (config.years - 1), // Support years 2+
+    total: totalCost,
+  }
+
+  // Calculate financial metrics
+  const { roi, paybackMonths, npv, irr } = calculateFinancialMetrics(
+    totalCost,
+    yearlyBreakdown,
+    config,
+    vendor,
+  )
+
   return {
     vendorId,
-    vendorName: vendorId.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-    totalCost: 0,
-    costBreakdown: {
-      licensing: 0,
-      hardware: 0,
-      services: 0,
-      training: 0,
-      maintenance: 0,
-      operational: 0
-    },
-    financialMetrics: {
-      npv: 0,
-      irr: 0,
-      roi: 0,
-      paybackPeriod: 0,
-      profitabilityIndex: 0
-    },
-    riskAssessment: {
-      overallRisk: 50,
-      securityRisk: 50,
-      operationalRisk: 50,
-      financialRisk: 50
-    },
-    businessImpact: {
-      productivityGains: 0,
-      riskReduction: 0,
-      complianceSavings: 0,
-      totalBenefits: 0
-    },
-    implementation: {
-      timeline: 'Unknown',
-      complexity: 'Medium',
-      resources: 1
-    }
+    vendorName: vendor.name,
+    totalCost,
+    yearlyBreakdown,
+    costBreakdown,
+    roi,
+    paybackMonths,
+    npv,
+    irr,
+    riskScore: vendor.riskScore * industryFactor.riskMultiplier,
+    complianceScore: vendor.complianceScore * industryFactor.complianceMultiplier,
+    deploymentTime: vendor.deploymentDays,
+    maintenanceEffort: vendor.maintenanceHoursPerMonth,
   }
 }
 
-export function compareVendors(
-  vendorIds: any,
-  config: any
-): CalculationResult[] {
-  try {
-    const validatedVendorIds = ValidationUtils.validateVendorIds(vendorIds)
-    const sanitizedConfig = ValidationUtils.sanitizeConfiguration(config)
+function calculateFinancialMetrics(
+  totalCost: number,
+  yearlyBreakdown: YearlyBreakdown[],
+  config: CalculationConfiguration,
+  vendor: any,
+): { roi: number; paybackMonths: number; npv: number; irr: number } {
+  // Calculate benefits based on vendor capabilities
+  const annualProductivityGains = calculateProductivityGains(config.devices, vendor)
+  const riskMitigationValue = calculateRiskMitigation(config, vendor)
+  const complianceValue = calculateComplianceValue(config, vendor)
+
+  const totalAnnualBenefits = annualProductivityGains + (riskMitigationValue + complianceValue) / config.years
+
+  // ROI calculation
+  const totalBenefits = totalAnnualBenefits * config.years
+  const roi = ((totalBenefits - totalCost) / totalCost) * 100
+
+  // Payback calculation
+  let cumulativeCost = 0
+  let cumulativeBenefits = 0
+  let paybackMonths = config.years * 12
+
+  for (let month = 1; month <= config.years * 12; month++) {
+    const yearIndex = Math.ceil(month / 12) - 1
+    if (yearIndex < yearlyBreakdown.length) {
+      cumulativeCost += yearlyBreakdown[yearIndex].totalCost / 12
+      cumulativeBenefits += totalAnnualBenefits / 12
+
+      if (cumulativeBenefits >= cumulativeCost && paybackMonths === config.years * 12) {
+        paybackMonths = month
+        break
+      }
+    }
+  }
+
+  // NPV calculation (10% discount rate)
+  const discountRate = 0.10
+  let npv = -yearlyBreakdown[0].totalCost // Initial investment
+  for (let year = 1; year <= config.years; year++) {
+    const netCashFlow = totalAnnualBenefits - (yearlyBreakdown[year - 1]?.totalCost || 0)
+    npv += netCashFlow / Math.pow(1 + discountRate, year)
+  }
+
+  // IRR calculation (simplified)
+  const irr = calculateIRR(yearlyBreakdown, totalAnnualBenefits)
+
+  return {
+    roi: Math.round(roi),
+    paybackMonths: Math.round(paybackMonths),
+    npv: Math.round(npv),
+    irr: Math.round(irr * 100),
+  }
+}
+
+function calculateProductivityGains(devices: number, vendor: any): number {
+  // Productivity gains based on deployment speed and maintenance reduction
+  const baseGainPerDevice = 5 // $5 per device per year baseline
+  
+  // Deployment speed factor
+  const deploymentFactor = vendor.deploymentDays < 30 ? 2.0 : vendor.deploymentDays < 90 ? 1.5 : 1.0
+  
+  // Maintenance efficiency factor
+  const maintenanceFactor = vendor.maintenanceHoursPerMonth < 10 ? 2.0 : vendor.maintenanceHoursPerMonth < 25 ? 1.5 : 1.0
+  
+  return devices * baseGainPerDevice * deploymentFactor * maintenanceFactor
+}
+
+function calculateRiskMitigation(config: CalculationConfiguration, vendor: any): number {
+  // Risk mitigation value based on security posture
+  const baseRiskValue = 10000 // $10K base risk mitigation
+  const riskFactor = vendor.riskScore / 100
+  const industryRiskMultiplier = config.industry === 'financial' || config.industry === 'healthcare' ? 2.5 : 
+                                config.industry === 'government' ? 3.0 : 1.5
+  
+  return baseRiskValue * riskFactor * industryRiskMultiplier
+}
+
+function calculateComplianceValue(config: CalculationConfiguration, vendor: any): number {
+  // Compliance value based on automation capabilities
+  const baseComplianceValue = 5000 // $5K base compliance value
+  const complianceFactor = vendor.complianceScore / 100
+  const industryComplianceMultiplier = config.industry === 'healthcare' || config.industry === 'financial' ? 2.0 : 1.2
+  
+  return baseComplianceValue * complianceFactor * industryComplianceMultiplier
+}
+
+function calculateIRR(yearlyBreakdown: YearlyBreakdown[], annualBenefits: number): number {
+  // Simplified IRR calculation
+  const cashFlows = [-yearlyBreakdown[0].totalCost] // Initial investment
+  
+  for (let i = 1; i < yearlyBreakdown.length; i++) {
+    const netCashFlow = annualBenefits - yearlyBreakdown[i].totalCost
+    cashFlows.push(netCashFlow)
+  }
+  
+  // Simple IRR approximation
+  const totalInvestment = Math.abs(cashFlows[0])
+  const avgAnnualReturn = cashFlows.slice(1).reduce((sum, cf) => sum + cf, 0) / (cashFlows.length - 1)
+  
+  return avgAnnualReturn / totalInvestment
+}
+
+export function compareVendors(vendorIds: string[], config: CalculationConfiguration): CalculationResult[] {
+  return vendorIds.map(vendorId => calculateVendorTCO(vendorId, config))
+    .sort((a, b) => a.totalCost - b.totalCost) // Sort by total cost
+}
+
+export function getVendorRecommendation(results: CalculationResult[]): {
+  recommended: CalculationResult
+  reasons: string[]
+} {
+  // Multi-criteria decision analysis
+  const scoredResults = results.map(result => {
+    const costScore = (1 - (result.totalCost / Math.max(...results.map(r => r.totalCost)))) * 100
+    const roiScore = Math.min(result.roi / 10, 100) // Cap at 100
+    const riskScore = result.riskScore
+    const deploymentScore = (1 - (result.deploymentTime / Math.max(...results.map(r => r.deploymentTime)))) * 100
     
-    const { isValid, errors } = ValidationUtils.validateConfiguration(sanitizedConfig)
-    if (!isValid) {
-      console.warn('Configuration validation failed:', errors)
-      return []
-    }
-
-    if (validatedVendorIds.length === 0) {
-      console.warn('No valid vendor IDs provided')
-      return []
-    }
-
-    return validatedVendorIds
-      .map(vendorId => {
-        try {
-          return calculateVendorCosts(vendorId, sanitizedConfig)
-        } catch (error) {
-          console.warn(`Error calculating costs for vendor ${vendorId}:`, error)
-          return createDefaultResult(vendorId)
-        }
-      })
-      .filter(result => result !== null)
-  } catch (error) {
-    console.error('Error in compareVendors:', error)
-    return []
-  }
-}
-
-export function getVendorList(): Array<{ id: string; name: string; category: string }> {
-  return Object.entries(VENDOR_DATABASE).map(([id, vendor]) => ({
-    id,
-    name: vendor.name,
-    category: vendor.category
-  }))
-}
-
-export function getIndustryList(): Array<{ value: string; label: string }> {
-  return [
-    { value: 'healthcare', label: 'Healthcare' },
-    { value: 'financial', label: 'Financial Services' },
-    { value: 'government', label: 'Government' },
-    { value: 'education', label: 'Education' },
-    { value: 'manufacturing', label: 'Manufacturing' },
-    { value: 'retail', label: 'Retail' },
-    { value: 'technology', label: 'Technology' },
-    { value: 'energy', label: 'Energy & Utilities' }
+    const totalScore = (costScore * 0.3) + (roiScore * 0.25) + (riskScore * 0.25) + (deploymentScore * 0.2)
+    
+    return { ...result, totalScore }
+  })
+  
+  const recommended = scoredResults.reduce((best, current) => 
+    current.totalScore > best.totalScore ? current : best
+  )
+  
+  const reasons = [
+    `Lowest total cost of ownership: $${recommended.totalCost.toLocaleString()}`,
+    `Strong ROI: ${recommended.roi}% over ${recommended.yearlyBreakdown.length} years`,
+    `Excellent security posture: ${Math.round(recommended.riskScore)}/100`,
+    `Rapid deployment: ${recommended.deploymentTime} days`,
   ]
+  
+  return { recommended, reasons }
 }
 
 export { ValidationUtils }
