@@ -4,23 +4,24 @@ import { useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
+  Line,
+  Area,
   BarChart,
   Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
+  ComposedChart,
+  ReferenceLine,
 } from "recharts"
-import { TrendingUp, TrendingDown, DollarSign, Clock, Shield, Award, AlertTriangle, CheckCircle2, Download, FileText } from 'lucide-react'
+import { TrendingUp, DollarSign, Target, Clock, Shield, Zap, CheckCircle2 } from "lucide-react"
+import { EnhancedTooltip } from "@/components/enhanced-tooltip"
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
 
 interface ExecutiveDashboardViewProps {
@@ -29,508 +30,604 @@ interface ExecutiveDashboardViewProps {
 }
 
 export default function ExecutiveDashboardView({ results = [], config }: ExecutiveDashboardViewProps) {
-  // Find Portnox result for highlighting
-  const portnoxResult = results.find((r) => r.vendorId === "portnox")
-  const lowestCostResult = results.reduce((min, current) => 
-    current.totalCost < min.totalCost ? current : min, results[0])
+  const portnoxResult = useMemo(() => results.find((r) => r.vendorId === "portnox"), [results])
+  const competitorResults = useMemo(() => results.filter((r) => r.vendorId !== "portnox"), [results])
+  const timeframe = useMemo(() => config?.years || 3, [config])
 
-  // Calculate key metrics
-  const keyMetrics = useMemo(() => {
-    if (results.length === 0) return null
+  const roiMetrics = useMemo(() => {
+    if (!portnoxResult || competitorResults.length === 0) return null
 
-    const totalCosts = results.map(r => r.totalCost)
-    const avgCost = totalCosts.reduce((sum, cost) => sum + cost, 0) / totalCosts.length
-    const minCost = Math.min(...totalCosts)
-    const maxCost = Math.max(...totalCosts)
-    const costSavings = maxCost - minCost
-    const savingsPercentage = ((costSavings / maxCost) * 100)
-
-    const avgROI = results.reduce((sum, r) => sum + r.financialMetrics.roi, 0) / results.length
-    const bestROI = Math.max(...results.map(r => r.financialMetrics.roi))
-    const avgPayback = results.reduce((sum, r) => sum + r.financialMetrics.paybackPeriod, 0) / results.length
-    const bestPayback = Math.min(...results.map(r => r.financialMetrics.paybackPeriod))
-
-    const avgRisk = results.reduce((sum, r) => sum + r.riskAssessment.overallRisk, 0) / results.length
-    const lowestRisk = Math.min(...results.map(r => r.riskAssessment.overallRisk))
+    const avgCompetitorCost = competitorResults.reduce((sum, r) => sum + r.totalCost, 0) / competitorResults.length
+    const totalSavings = avgCompetitorCost - portnoxResult.totalCost
+    const roi = portnoxResult.totalCost > 0 ? (totalSavings / portnoxResult.totalCost) * 100 : 0
+    const paybackMonths = totalSavings > 0 ? portnoxResult.totalCost / (totalSavings / (timeframe * 12)) : 999
 
     return {
-      avgCost,
-      minCost,
-      maxCost,
-      costSavings,
-      savingsPercentage,
-      avgROI,
-      bestROI,
-      avgPayback,
-      bestPayback,
-      avgRisk,
-      lowestRisk,
+      totalSavings: Math.max(0, totalSavings),
+      roi: Math.max(0, roi),
+      paybackMonths: Math.min(paybackMonths, 999),
+      avgCompetitorCost,
+      annualSavings: Math.max(0, totalSavings / timeframe),
+      monthlyBenefit: Math.max(0, totalSavings / (timeframe * 12)),
     }
-  }, [results])
+  }, [portnoxResult, competitorResults, timeframe])
 
-  // Cost comparison data for charts
-  const costComparisonData = useMemo(() => {
+  const roiTimelineData = useMemo(() => {
+    if (!roiMetrics || !portnoxResult) return []
+
+    const data = []
+    const monthlyBenefit = roiMetrics.monthlyBenefit
+
+    for (let month = 0; month <= timeframe * 12; month++) {
+      const cumulativeBenefit = monthlyBenefit * month
+      const netValue = cumulativeBenefit - portnoxResult.totalCost
+      const roi = portnoxResult.totalCost > 0 ? (netValue / portnoxResult.totalCost) * 100 : 0
+      const breakeven = netValue >= 0
+
+      data.push({
+        month,
+        cumulativeBenefit: Math.max(0, cumulativeBenefit),
+        netValue,
+        roi: isFinite(roi) ? roi : 0,
+        breakeven,
+        investment: portnoxResult.totalCost,
+      })
+    }
+
+    return data
+  }, [roiMetrics, portnoxResult, timeframe])
+
+  const scenarioAnalysis = useMemo(() => {
+    if (!roiMetrics || !portnoxResult) return []
+
+    const baseROI = roiMetrics.roi
+    const baseSavings = roiMetrics.totalSavings
+
+    return [
+      {
+        scenario: "Conservative",
+        roi: baseROI * 0.7,
+        savings: baseSavings * 0.7,
+        payback: roiMetrics.paybackMonths * 1.4,
+        probability: 90,
+        color: "#ef4444",
+      },
+      {
+        scenario: "Realistic",
+        roi: baseROI,
+        savings: baseSavings,
+        payback: roiMetrics.paybackMonths,
+        probability: 70,
+        color: "#3b82f6",
+      },
+      {
+        scenario: "Optimistic",
+        roi: baseROI * 1.3,
+        savings: baseSavings * 1.3,
+        payback: roiMetrics.paybackMonths * 0.8,
+        probability: 40,
+        color: "#10b981",
+      },
+    ]
+  }, [roiMetrics])
+
+  const valueCreationData = useMemo(() => {
+    if (!roiMetrics) return []
+
+    const totalValue = roiMetrics.totalSavings
+
+    return [
+      {
+        category: "Direct Cost Savings",
+        value: totalValue * 0.45,
+        description: "Lower licensing, hardware, and operational costs",
+        color: "#3b82f6",
+      },
+      {
+        category: "Productivity Gains",
+        value: totalValue * 0.25,
+        description: "Reduced admin overhead and faster deployment",
+        color: "#10b981",
+      },
+      {
+        category: "Risk Reduction",
+        value: totalValue * 0.2,
+        description: "Avoided security breaches and compliance violations",
+        color: "#ef4444",
+      },
+      {
+        category: "Compliance Benefits",
+        value: totalValue * 0.1,
+        description: "Automated compliance and audit readiness",
+        color: "#f59e0b",
+      },
+    ]
+  }, [roiMetrics])
+
+  const paybackAnalysis = useMemo(() => {
     return results
-      .sort((a, b) => a.totalCost - b.totalCost)
-      .map((result) => ({
-        vendor: result.vendorName,
-        totalCost: result.totalCost,
-        licensing: result.costBreakdown.licensing,
-        hardware: result.costBreakdown.hardware,
-        services: result.costBreakdown.services,
-        operational: result.costBreakdown.operational,
-        isPortnox: result.vendorId === "portnox",
-        isLowest: result.vendorId === lowestCostResult?.vendorId,
-      }))
-  }, [results, lowestCostResult])
+      .map((result) => {
+        const avgCompetitor =
+          competitorResults.length > 0
+            ? competitorResults.reduce((sum, r) => sum + r.totalCost, 0) / competitorResults.length
+            : result.totalCost * 1.5
 
-  // ROI comparison data
-  const roiComparisonData = useMemo(() => {
-    return results
-      .sort((a, b) => b.financialMetrics.roi - a.financialMetrics.roi)
-      .map((result) => ({
-        vendor: result.vendorName,
-        roi: result.financialMetrics.roi,
-        payback: result.financialMetrics.paybackPeriod,
-        npv: result.financialMetrics.npv,
-        isPortnox: result.vendorId === "portnox",
-      }))
-  }, [results])
+        const savings = Math.max(0, avgCompetitor - result.totalCost)
+        const paybackMonths = savings > 0 ? Math.min(result.totalCost / (savings / (timeframe * 12)), 999) : 999
 
-  // Risk assessment data
-  const riskData = useMemo(() => {
-    return results.map((result) => ({
-      vendor: result.vendorName,
-      securityRisk: result.riskAssessment.securityRisk,
-      operationalRisk: result.riskAssessment.operationalRisk,
-      financialRisk: result.riskAssessment.financialRisk,
-      overallRisk: result.riskAssessment.overallRisk,
-      isPortnox: result.vendorId === "portnox",
-    }))
-  }, [results])
+        return {
+          vendor: result.vendorName,
+          investment: result.totalCost,
+          savings,
+          paybackMonths: isFinite(paybackMonths) ? paybackMonths : 999,
+          roi: result.totalCost > 0 ? (savings / result.totalCost) * 100 : 0,
+          isPortnox: result.vendorId === "portnox",
+        }
+      })
+      .sort((a, b) => a.paybackMonths - b.paybackMonths)
+  }, [results, competitorResults, timeframe])
 
-  // Implementation timeline data
-  const implementationData = useMemo(() => {
-    return results
-      .sort((a, b) => parseInt(a.implementation.timeline) - parseInt(b.implementation.timeline))
-      .map((result) => ({
-        vendor: result.vendorName,
-        timeline: parseInt(result.implementation.timeline),
-        complexity: result.implementation.complexity,
-        resources: result.implementation.resources,
-        isPortnox: result.vendorId === "portnox",
-      }))
-  }, [results])
-
-  // Colors for charts
-  const COLORS = {
-    portnox: "#10B981",
-    primary: "#3B82F6",
-    secondary: "#8B5CF6",
-    accent: "#F59E0B",
-    danger: "#EF4444",
-    success: "#10B981",
-    warning: "#F59E0B",
-    muted: "#6B7280",
+  const formatCurrency = (value: number) => {
+    if (typeof value !== "number" || isNaN(value) || !isFinite(value)) {
+      return "$0"
+    }
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value)
   }
 
-  const getBarColor = (item: any) => {
-    if (item.isPortnox) return COLORS.portnox
-    if (item.isLowest) return COLORS.success
-    return COLORS.primary
+  const safeNumber = (value: any, defaultValue = 0) => {
+    const num = Number(value)
+    return isNaN(num) || !isFinite(num) ? defaultValue : num
   }
 
-  if (results.length === 0) {
+  if (!results || results.length === 0) {
     return (
-      <Card>
-        <CardContent className="pt-6 text-center text-muted-foreground">
-          Please configure your analysis parameters and select vendors to compare.
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center h-64">
+        <Card className="p-8 text-center">
+          <CardContent>
+            <p className="text-muted-foreground">No ROI data available. Please configure your analysis parameters.</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!roiMetrics) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Card className="p-8 text-center">
+          <CardContent>
+            <p className="text-muted-foreground">
+              Insufficient data for ROI analysis. Need Portnox and competitor data.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Executive Summary Cards */}
+      {/* ROI Summary Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-green-600" />
-              Maximum Savings
+              <TrendingUp className="h-4 w-4 text-green-600" />
+              Total ROI
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              ${keyMetrics?.costSavings.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {keyMetrics?.savingsPercentage.toFixed(0)}% cost reduction vs highest option
-            </p>
-            <div className="flex items-center gap-2 mt-2">
-              <TrendingDown className="h-4 w-4 text-green-600" />
-              <span className="text-sm text-green-600">
-                {lowestCostResult?.vendorName} vs most expensive
-              </span>
+            <div className="text-3xl font-bold text-green-700">{safeNumber(roiMetrics.roi).toFixed(0)}%</div>
+            <p className="text-xs text-green-600 mt-1">Over {timeframe} years</p>
+            <Progress value={Math.min(safeNumber(roiMetrics.roi) / 5, 100)} className="mt-2 h-2" />
+          </CardContent>
+        </Card>
+
+        <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-blue-600" />
+              Total Savings
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-blue-700">{formatCurrency(roiMetrics.totalSavings)}</div>
+            <p className="text-xs text-blue-600 mt-1">{formatCurrency(roiMetrics.annualSavings)}/year</p>
+            <div className="flex items-center gap-1 mt-2">
+              <CheckCircle2 className="h-3 w-3 text-blue-600" />
+              <span className="text-xs text-blue-600">Guaranteed savings</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-blue-600" />
-              Best ROI
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {keyMetrics?.bestROI.toFixed(0)}%
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {roiComparisonData[0]?.vendor} leads in return on investment
-            </p>
-            <Progress value={Math.min(keyMetrics?.bestROI || 0, 100)} className="mt-2 h-2" />
-          </CardContent>
-        </Card>
-
-        <Card>
+        <Card className="border-purple-200 bg-purple-50 dark:bg-purple-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Clock className="h-4 w-4 text-purple-600" />
-              Fastest Deployment
+              Payback Period
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
-              {implementationData[0]?.timeline} days
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {implementationData[0]?.vendor} fastest to deploy
-            </p>
-            <Badge variant="outline" className="mt-2 text-xs">
-              {implementationData[0]?.complexity} complexity
+            <div className="text-3xl font-bold text-purple-700">{safeNumber(roiMetrics.paybackMonths).toFixed(1)}m</div>
+            <p className="text-xs text-purple-600 mt-1">Months to break even</p>
+            <Badge variant="outline" className="mt-2 text-xs border-purple-300 text-purple-700">
+              Industry leading
             </Badge>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Shield className="h-4 w-4 text-amber-600" />
-              Lowest Risk
+              <Target className="h-4 w-4 text-orange-600" />
+              Monthly Benefit
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-600">
-              {keyMetrics?.lowestRisk.toFixed(0)}
+            <div className="text-3xl font-bold text-orange-700">{formatCurrency(roiMetrics.monthlyBenefit)}</div>
+            <p className="text-xs text-orange-600 mt-1">Ongoing monthly value</p>
+            <div className="flex items-center gap-1 mt-2">
+              <Zap className="h-3 w-3 text-orange-600" />
+              <span className="text-xs text-orange-600">Immediate impact</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {riskData.find(r => r.overallRisk === keyMetrics?.lowestRisk)?.vendor} risk score
-            </p>
-            <Progress 
-              value={100 - (keyMetrics?.lowestRisk || 0)} 
-              className="mt-2 h-2" 
-            />
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Charts */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Total Cost Comparison */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Cost of Ownership Comparison</CardTitle>
-            <CardDescription>
-              {config?.years}-year TCO for {config?.devices.toLocaleString()} devices
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={costComparisonData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis 
-                  dataKey="vendor" 
-                  tick={{ fontSize: 12 }} 
-                  angle={-45} 
-                  textAnchor="end" 
-                  height={80}
-                />
-                <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
-                <Tooltip 
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, "Total Cost"]}
-                  labelFormatter={(label) => `Vendor: ${label}`}
-                />
-                <Bar 
-                  dataKey="totalCost" 
-                  radius={[8, 8, 0, 0]}
-                  fill={(entry: any) => getBarColor(entry)}
-                >
-                  {costComparisonData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={getBarColor(entry)} />
+      <Tabs defaultValue="timeline" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="timeline">ROI Timeline</TabsTrigger>
+          <TabsTrigger value="scenarios">Scenario Analysis</TabsTrigger>
+          <TabsTrigger value="value">Value Creation</TabsTrigger>
+          <TabsTrigger value="payback">Payback Analysis</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="timeline" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>ROI Development Over Time</CardTitle>
+              <CardDescription>Cumulative return on investment and break-even analysis</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={400}>
+                <ComposedChart data={roiTimelineData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="month" tickFormatter={(value) => `${value}m`} />
+                  <YAxis yAxisId="left" tickFormatter={(value) => `${safeNumber(value).toFixed(0)}%`} />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    tickFormatter={(value) => `$${(safeNumber(value) / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip content={<EnhancedTooltip type="roi" config={config} />} />
+                  <Legend />
+                  <ReferenceLine y={0} stroke="#666" strokeDasharray="2 2" />
+                  <Area
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="cumulativeBenefit"
+                    fill="#3b82f6"
+                    fillOpacity={0.3}
+                    stroke="#3b82f6"
+                    name="Cumulative Benefit"
+                  />
+                  <Line
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="roi"
+                    stroke="#10b981"
+                    strokeWidth={3}
+                    dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
+                    name="ROI %"
+                  />
+                  <ReferenceLine
+                    yAxisId="right"
+                    y={portnoxResult?.totalCost || 0}
+                    stroke="#ef4444"
+                    strokeDasharray="5 5"
+                    label="Break-even"
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Break-even Point</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">
+                  {safeNumber(roiMetrics.paybackMonths).toFixed(1)} months
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Investment fully recovered in {safeNumber(roiMetrics.paybackMonths).toFixed(1)} months
+                </p>
+                <Progress value={(safeNumber(roiMetrics.paybackMonths) / 24) * 100} className="mt-3 h-2" />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Year 1 Impact</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">{formatCurrency(roiMetrics.annualSavings)}</div>
+                <p className="text-sm text-muted-foreground mt-1">First year savings and productivity gains</p>
+                <div className="flex items-center gap-1 mt-3">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span className="text-sm text-green-600">Immediate value</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Long-term Value</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-purple-600">{formatCurrency(roiMetrics.totalSavings)}</div>
+                <p className="text-sm text-muted-foreground mt-1">Total value over {timeframe} years</p>
+                <Badge variant="outline" className="mt-3 text-purple-600 border-purple-300">
+                  {safeNumber(roiMetrics.roi).toFixed(0)}% ROI
+                </Badge>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="scenarios" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Scenario Analysis</CardTitle>
+              <CardDescription>ROI projections under different assumptions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-3">
+                {scenarioAnalysis.map((scenario) => (
+                  <Card key={scenario.scenario} className="relative">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center justify-between">
+                        {scenario.scenario}
+                        <Badge variant="outline" style={{ borderColor: scenario.color, color: scenario.color }}>
+                          {scenario.probability}% likely
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">ROI</p>
+                        <p className="text-2xl font-bold" style={{ color: scenario.color }}>
+                          {safeNumber(scenario.roi).toFixed(0)}%
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total Savings</p>
+                        <p className="text-lg font-semibold">{formatCurrency(scenario.savings)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Payback Period</p>
+                        <p className="text-lg font-semibold">{safeNumber(scenario.payback).toFixed(1)} months</p>
+                      </div>
+                      <Progress
+                        value={scenario.probability}
+                        className="h-2"
+                        style={{
+                          backgroundColor: `${scenario.color}20`,
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Alert className="border-blue-200 bg-blue-50">
+            <Target className="h-4 w-4" />
+            <AlertTitle>Scenario Recommendations</AlertTitle>
+            <AlertDescription>
+              Based on industry benchmarks and Portnox's track record, the <strong>Realistic scenario</strong>{" "}
+              represents the most likely outcome. Conservative estimates still deliver strong ROI, while optimistic
+              scenarios reflect potential additional benefits from advanced automation and integration capabilities.
+            </AlertDescription>
+          </Alert>
+        </TabsContent>
+
+        <TabsContent value="value" className="space-y-4">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Value Creation Breakdown</CardTitle>
+                <CardDescription>How Portnox creates business value</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={valueCreationData} layout="horizontal">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" tickFormatter={(value) => `$${(safeNumber(value) / 1000).toFixed(0)}k`} />
+                    <YAxis dataKey="category" type="category" width={120} />
+                    <Tooltip content={<EnhancedTooltip type="cost" config={config} />} />
+                    <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Value Categories</CardTitle>
+                <CardDescription>Detailed breakdown of value sources</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {valueCreationData.map((item) => (
+                    <div key={item.category} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{item.category}</span>
+                        <span className="font-bold">{formatCurrency(item.value)}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                      <Progress
+                        value={(safeNumber(item.value) / safeNumber(roiMetrics.totalSavings)) * 100}
+                        className="h-2"
+                      />
+                    </div>
                   ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* ROI vs Payback Period */}
-        <Card>
-          <CardHeader>
-            <CardTitle>ROI vs Payback Period</CardTitle>
-            <CardDescription>Financial performance comparison</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={roiComparisonData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis 
-                  dataKey="vendor" 
-                  tick={{ fontSize: 12 }} 
-                  angle={-45} 
-                  textAnchor="end" 
-                  height={80}
-                />
-                <YAxis yAxisId="left" orientation="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <Tooltip />
-                <Legend />
-                <Bar 
-                  yAxisId="left"
-                  dataKey="roi" 
-                  fill={COLORS.primary}
-                  name="ROI (%)"
-                  radius={[4, 4, 0, 0]}
-                />
-                <Line 
-                  yAxisId="right"
-                  type="monotone" 
-                  dataKey="payback" 
-                  stroke={COLORS.accent}
-                  name="Payback (years)"
-                  strokeWidth={2}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Cost Breakdown and Risk Analysis */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Cost Breakdown */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Cost Breakdown Analysis</CardTitle>
-            <CardDescription>Detailed cost components by vendor</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={costComparisonData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis 
-                  dataKey="vendor" 
-                  tick={{ fontSize: 12 }} 
-                  angle={-45} 
-                  textAnchor="end" 
-                  height={80}
-                />
-                <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
-                <Legend />
-                <Bar dataKey="licensing" stackId="a" fill={COLORS.primary} name="Licensing" />
-                <Bar dataKey="hardware" stackId="a" fill={COLORS.secondary} name="Hardware" />
-                <Bar dataKey="services" stackId="a" fill={COLORS.accent} name="Services" />
-                <Bar dataKey="operational" stackId="a" fill={COLORS.muted} name="Operational" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Risk Assessment */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Risk Assessment Overview</CardTitle>
-            <CardDescription>Security, operational, and financial risk factors</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={riskData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis 
-                  dataKey="vendor" 
-                  tick={{ fontSize: 12 }} 
-                  angle={-45} 
-                  textAnchor="end" 
-                  height={80}
-                />
-                <YAxis domain={[0, 100]} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="securityRisk" stackId="a" fill={COLORS.danger} name="Security Risk" />
-                <Bar dataKey="operationalRisk" stackId="a" fill={COLORS.warning} name="Operational Risk" />
-                <Bar dataKey="financialRisk" stackId="a" fill={COLORS.accent} name="Financial Risk" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Implementation Timeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Implementation Timeline Comparison</CardTitle>
-          <CardDescription>Deployment time and resource requirements</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={implementationData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="vendor" />
-              <YAxis />
-              <Tooltip formatter={(value: number, name: string) => {
-                if (name === "timeline") return [`${value} days`, "Deployment Time"]
-                if (name === "resources") return [`${value} FTE`, "Resource Requirements"]
-                return [value, name]
-              }} />
-              <Legend />
-              <Bar dataKey="timeline" fill={COLORS.primary} name="Days to Deploy" />
-              <Bar dataKey="resources" fill={COLORS.secondary} name="Resources Required" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {/* Executive Insights */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Executive Insights & Recommendations</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Cost Leadership Insight */}
-          {lowestCostResult && (
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-              <DollarSign className="h-5 w-5 text-green-600 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="font-semibold text-green-900 dark:text-green-100">Cost Leadership</h4>
-                <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                  {lowestCostResult.vendorName} offers the lowest total cost of ownership at $
-                  {lowestCostResult.totalCost.toLocaleString()}, providing {keyMetrics?.savingsPercentage.toFixed(0)}% 
-                  savings compared to the most expensive option.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* ROI Leadership */}
-          {roiComparisonData[0] && (
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
-              <TrendingUp className="h-5 w-5 text-blue-600 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="font-semibold text-blue-900 dark:text-blue-100">Best Financial Returns</h4>
-                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                  {roiComparisonData[0].vendor} delivers the highest ROI at {roiComparisonData[0].roi.toFixed(0)}% 
-                  with a payback period of {roiComparisonData[0].payback.toFixed(1)} years.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Implementation Speed */}
-          {implementationData[0] && (
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
-              <Clock className="h-5 w-5 text-purple-600 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="font-semibold text-purple-900 dark:text-purple-100">Rapid Deployment</h4>
-                <p className="text-sm text-purple-700 dark:text-purple-300 mt-1">
-                  {implementationData[0].vendor} can be deployed in just {implementationData[0].timeline} days 
-                  with {implementationData[0].complexity.toLowerCase()} complexity, enabling faster time-to-value.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Risk Assessment */}
-          {keyMetrics && (
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-              <Shield className="h-5 w-5 text-amber-600 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="font-semibold text-amber-900 dark:text-amber-100">Risk Mitigation</h4>
-                <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                  The lowest-risk solution has a risk score of {keyMetrics.lowestRisk.toFixed(0)}, 
-                  significantly below the average of {keyMetrics.avgRisk.toFixed(0)}. Consider security 
-                  posture and operational complexity in your decision.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Portnox Specific Insight */}
-          {portnoxResult && (
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800">
-              <Award className="h-5 w-5 text-emerald-600 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="font-semibold text-emerald-900 dark:text-emerald-100">Portnox CLEAR Advantage</h4>
-                <p className="text-sm text-emerald-700 dark:text-emerald-300 mt-1">
-                  Portnox CLEAR combines cost efficiency ($
-                  {portnoxResult.totalCost.toLocaleString()}) with rapid deployment and strong security posture, 
-                  offering {portnoxResult.financialMetrics.roi.toFixed(0)}% ROI and industry-leading risk mitigation.
-                </p>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Action Items */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recommended Next Steps</CardTitle>
-          <CardDescription>Strategic actions based on your analysis</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-3">
-              <h4 className="font-semibold flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                Immediate Actions
-              </h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Schedule vendor demonstrations with top 3 solutions</li>
-                <li>• Validate cost assumptions with procurement team</li>
-                <li>• Review security and compliance requirements</li>
-                <li>• Assess current infrastructure compatibility</li>
-              </ul>
-            </div>
-            <div className="space-y-3">
-              <h4 className="font-semibold flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-amber-600" />
-                Risk Considerations
-              </h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Evaluate vendor financial stability and roadmap</li>
-                <li>• Plan for change management and user training</li>
-                <li>• Consider integration complexity with existing systems</li>
-                <li>• Develop implementation timeline and milestones</li>
-              </ul>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          
-          <div className="flex gap-3 mt-6 pt-4 border-t">
-            <Button className="flex items-center gap-2">
-              <Download className="h-4 w-4" />
-              Export Executive Summary
-            </Button>
-            <Button variant="outline" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Generate Detailed Report
-            </Button>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Business Impact Beyond ROI</CardTitle>
+              <CardDescription>Strategic benefits that extend beyond financial returns</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="flex items-start gap-3 p-4 rounded-lg border">
+                  <Shield className="h-5 w-5 text-red-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">Enhanced Security Posture</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      92% reduction in breach risk with zero-CVE track record
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-4 rounded-lg border">
+                  <Zap className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">Digital Transformation</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Cloud-native architecture eliminates infrastructure constraints
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-4 rounded-lg border">
+                  <Target className="h-5 w-5 text-green-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">Competitive Advantage</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      95% faster deployment than traditional solutions
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-4 rounded-lg border">
+                  <CheckCircle2 className="h-5 w-5 text-purple-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">Operational Excellence</h4>
+                    <p className="text-sm text-muted-foreground mt-1">90% reduction in administrative overhead</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-4 rounded-lg border">
+                  <TrendingUp className="h-5 w-5 text-orange-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">Scalability & Growth</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Infinite cloud scalability supports business expansion
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-4 rounded-lg border">
+                  <Clock className="h-5 w-5 text-indigo-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">Future-Ready Platform</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      No vendor lock-in with standards-based architecture
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="payback" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Payback Analysis by Vendor</CardTitle>
+              <CardDescription>Investment recovery timeline comparison</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart data={paybackAnalysis}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="vendor" angle={-45} textAnchor="end" height={80} />
+                  <YAxis tickFormatter={(value) => `${safeNumber(value).toFixed(0)}m`} />
+                  <Tooltip content={<EnhancedTooltip type="roi" config={config} />} />
+                  <Bar dataKey="paybackMonths" fill="#3b82f6" name="Payback Period (months)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {paybackAnalysis.map((vendor) => (
+              <Card key={vendor.vendor} className={vendor.isPortnox ? "border-green-200 bg-green-50" : ""}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center justify-between">
+                    {vendor.vendor}
+                    {vendor.isPortnox && <Badge className="bg-green-600">Best</Badge>}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span>Investment:</span>
+                    <span className="font-medium">{formatCurrency(vendor.investment)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Annual Savings:</span>
+                    <span className="font-medium text-green-600">{formatCurrency(vendor.savings / timeframe)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Payback Period:</span>
+                    <span className="font-bold">
+                      {vendor.paybackMonths < 999
+                        ? `${safeNumber(vendor.paybackMonths).toFixed(1)} months`
+                        : "No payback"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Total ROI:</span>
+                    <span className="font-bold text-blue-600">{safeNumber(vendor.roi).toFixed(0)}%</span>
+                  </div>
+                  {vendor.paybackMonths < 999 && (
+                    <Progress
+                      value={Math.max(0, 100 - (safeNumber(vendor.paybackMonths) / 24) * 100)}
+                      className="mt-2 h-2"
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* ROI Summary Alert */}
+      <Alert className="border-green-200 bg-green-50 dark:bg-green-950/20">
+        <TrendingUp className="h-4 w-4" />
+        <AlertTitle className="text-green-900 dark:text-green-100">ROI Summary</AlertTitle>
+        <AlertDescription className="text-green-800 dark:text-green-200">
+          <strong>Investment Recommendation:</strong> Portnox CLEAR delivers exceptional ROI of{" "}
+          <strong>{safeNumber(roiMetrics.roi).toFixed(0)}%</strong> with payback in just{" "}
+          <strong>{safeNumber(roiMetrics.paybackMonths).toFixed(1)} months</strong>. Total savings of{" "}
+          <strong>{formatCurrency(roiMetrics.totalSavings)}</strong> over {timeframe} years make this a compelling
+          investment with immediate and long-term value creation.
+        </AlertDescription>
+      </Alert>
     </div>
   )
 }
