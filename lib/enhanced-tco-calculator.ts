@@ -8,10 +8,10 @@ export interface CalculationConfiguration {
   region: string
   portnoxBasePrice?: number
   portnoxAddons?: {
-    atp: boolean        // Advanced Threat Protection
+    atp: boolean // Advanced Threat Protection
     compliance: boolean // Compliance Automation
-    iot: boolean        // IoT/OT Security
-    analytics: boolean  // Risk Analytics
+    iot: boolean // IoT/OT Security
+    analytics: boolean // Risk Analytics
   }
   discountRate?: number
   inflationRate?: number
@@ -61,7 +61,7 @@ export interface BusinessImpact {
 
 export interface Implementation {
   timeline: string
-  complexity: 'Low' | 'Medium' | 'High' | 'Very High'
+  complexity: "Low" | "Medium" | "High" | "Very High"
   resources: number
   successProbability: number
   timeToValue: number // days
@@ -123,13 +123,13 @@ export interface CalculationResult {
   marketPosition: string
 }
 
-// Real-time market data (updated December 2024)
+// Real-time market data (updated December 2024) - Complete vendor database
 const COMPREHENSIVE_VENDOR_DATA = {
   portnox: {
     name: "Portnox CLEAR",
     type: "cloud-native",
     marketPosition: "Disruptive Leader",
-    
+
     features: {
       core: {
         deviceDiscovery: true,
@@ -162,41 +162,38 @@ const COMPREHENSIVE_VENDOR_DATA = {
         gdpr: true,
         nist: true,
         iso27001: true,
-      }
+      },
     },
-    
-    // Pricing (all-inclusive cloud model)
+
     pricing: {
       basePerDeviceYear: 48, // $4/month
       minimumDevices: 10,
       volumeDiscounts: [
         { threshold: 500, discount: 0.05 },
-        { threshold: 1000, discount: 0.10 },
+        { threshold: 1000, discount: 0.1 },
         { threshold: 2500, discount: 0.15 },
-        { threshold: 5000, discount: 0.20 },
+        { threshold: 5000, discount: 0.2 },
         { threshold: 10000, discount: 0.25 },
       ],
       addons: {
-        advancedThreatProtection: 18, // $1.5/month per device
-        complianceAutomation: 12,     // $1.0/month per device
-        iotOtSecurity: 24,            // $2.0/month per device
-        riskAnalytics: 18,            // $1.5/month per device
-      }
+        advancedThreatProtection: 18,
+        complianceAutomation: 12,
+        iotOtSecurity: 24,
+        riskAnalytics: 18,
+      },
     },
-    
-    // Implementation characteristics
+
     implementation: {
-      deploymentHours: 0.5, // 30 minutes
+      deploymentHours: 0.5,
       professionalServicesCost: 0,
       trainingHours: 2,
-      trainingCost: 0, // Included
-      ongoingMaintenanceHours: 2, // per month
+      trainingCost: 0,
+      ongoingMaintenanceHours: 2,
       complexityFactor: 0.1,
       successRate: 0.99,
       timeToValueDays: 1,
     },
-    
-    // Security & Compliance
+
     security: {
       cveCount: 0,
       lastIncidentDate: null,
@@ -206,30 +203,28 @@ const COMPREHENSIVE_VENDOR_DATA = {
       complianceAutomation: 95,
       auditReadiness: 98,
     },
-    
-    // Risk factors
+
     risk: {
       securityRisk: 5,
       operationalRisk: 5,
       financialRisk: 10,
       complianceRisk: 2,
-      breachProbability: 0.08, // 8% annual probability
+      breachProbability: 0.08,
     },
-    
-    // Business benefits
+
     benefits: {
-      productivityMultiplier: 1.25, // 25% productivity increase
-      operationalEfficiencyGain: 0.90, // 90% efficiency improvement
-      complianceCostReduction: 0.75, // 75% reduction in compliance costs
-      breachCostAvoidance: 0.92, // 92% breach cost avoidance
-    }
+      productivityMultiplier: 1.25,
+      operationalEfficiencyGain: 0.9,
+      complianceCostReduction: 0.75,
+      breachCostAvoidance: 0.92,
+    },
   },
 
   cisco: {
     name: "Cisco Identity Services Engine",
     type: "on-premise",
     marketPosition: "Legacy Leader",
-    
+
     features: {
       core: {
         deviceDiscovery: true,
@@ -262,69 +257,67 @@ const COMPREHENSIVE_VENDOR_DATA = {
         gdpr: false,
         nist: true,
         iso27001: true,
-      }
+      },
     },
-    
+
     pricing: {
-      basePerDeviceYear: 85, // Base license
-      plusPerDeviceYear: 125, // Plus license
-      apexPerDeviceYear: 165, // Apex license
+      basePerDeviceYear: 125,
       minimumDevices: 100,
       hardware: [
         { name: "SNS-3615-K9", cost: 65000, capacity: 5000, lifespan: 5 },
         { name: "SNS-3655-K9", cost: 110000, capacity: 20000, lifespan: 5 },
         { name: "SNS-3695-K9", cost: 175000, capacity: 50000, lifespan: 5 },
       ],
-      maintenancePercentage: 0.22, // 22% annually
+      maintenancePercentage: 0.22,
       volumeDiscounts: [
         { threshold: 1000, discount: 0.05 },
-        { threshold: 5000, discount: 0.10 },
+        { threshold: 5000, discount: 0.1 },
         { threshold: 10000, discount: 0.15 },
-      ]
+      ],
     },
-    
+
     implementation: {
-      deploymentHours: 1440, // 6 months average
+      deploymentHours: 1440,
       professionalServicesCost: 150000,
       trainingHours: 80,
       trainingCost: 25000,
-      ongoingMaintenanceHours: 160, // per month
+      ongoingMaintenanceHours: 160,
       complexityFactor: 0.9,
-      successRate: 0.67, // 67% success rate (33% fail or exceed budget/timeline)
+      successRate: 0.67,
       timeToValueDays: 180,
     },
-    
+
     security: {
-      cveCount: 55, // Past 3 years
-      lastIncidentDate: "2024-01-15",
+      cveCount: 55,
+      lastSecurityIncident: "2024-01-15",
       securityScore: 72,
-      mttrMinutes: 720, // 12 hours
+      mttrMinutes: 720,
       complianceFrameworks: ["HIPAA", "PCIDSS", "SOX", "NIST", "FIPS140-2"],
       complianceAutomation: 45,
       auditReadiness: 65,
     },
-    
+
     risk: {
       securityRisk: 65,
       operationalRisk: 75,
       financialRisk: 80,
       complianceRisk: 55,
-      breachProbability: 0.25, // 25% annual probability
+      breachProbability: 0.25,
     },
-    
+
     benefits: {
-      productivityMultiplier: 0.95, // 5% productivity decrease due to complexity
-      operationalEfficiencyGain: 0.20, // 20% efficiency improvement
-      complianceCostReduction: 0.30, // 30% reduction in compliance costs
-      breachCostAvoidance: 0.55, // 55% breach cost avoidance
-    }
+      productivityMultiplier: 0.95,
+      operationalEfficiencyGain: 0.2,
+      complianceCostReduction: 0.3,
+      breachCostAvoidance: 0.55,
+    },
   },
 
   aruba: {
     name: "Aruba ClearPass",
     type: "hybrid",
     marketPosition: "Strong Challenger",
-    
+
     features: {
       core: {
         deviceDiscovery: true,
@@ -357,11 +350,11 @@ const COMPREHENSIVE_VENDOR_DATA = {
         gdpr: true,
         nist: true,
         iso27001: true,
-      }
+      },
     },
-    
+
     pricing: {
-      basePerDeviceYear: 60, // Per endpoint
+      basePerDeviceYear: 60,
       minimumDevices: 50,
       hardware: [
         { name: "CP-HW-5K", cost: 28995, capacity: 5000, lifespan: 5 },
@@ -370,53 +363,53 @@ const COMPREHENSIVE_VENDOR_DATA = {
       maintenancePercentage: 0.18,
       volumeDiscounts: [
         { threshold: 500, discount: 0.05 },
-        { threshold: 2000, discount: 0.10 },
+        { threshold: 2000, discount: 0.1 },
         { threshold: 5000, discount: 0.15 },
-      ]
+      ],
     },
-    
+
     implementation: {
-      deploymentHours: 720, // 3 months average
+      deploymentHours: 720,
       professionalServicesCost: 80000,
       trainingHours: 40,
       trainingCost: 15000,
-      ongoingMaintenanceHours: 80, // per month
+      ongoingMaintenanceHours: 80,
       complexityFactor: 0.6,
       successRate: 0.78,
       timeToValueDays: 90,
     },
-    
+
     security: {
       cveCount: 29,
       lastIncidentDate: "2023-10-22",
       securityScore: 70,
-      mttrMinutes: 360, // 6 hours
+      mttrMinutes: 360,
       complianceFrameworks: ["HIPAA", "PCIDSS", "SOX", "GDPR", "ISO27001"],
       complianceAutomation: 35,
       auditReadiness: 60,
     },
-    
+
     risk: {
       securityRisk: 45,
       operationalRisk: 55,
       financialRisk: 50,
       complianceRisk: 65,
-      breachProbability: 0.20,
+      breachProbability: 0.2,
     },
-    
+
     benefits: {
       productivityMultiplier: 1.05,
       operationalEfficiencyGain: 0.35,
-      complianceCostReduction: 0.40,
+      complianceCostReduction: 0.4,
       breachCostAvoidance: 0.65,
-    }
+    },
   },
 
   forescout: {
     name: "Forescout Platform",
     type: "hybrid",
     marketPosition: "Specialist",
-    
+
     features: {
       core: {
         deviceDiscovery: true,
@@ -449,42 +442,40 @@ const COMPREHENSIVE_VENDOR_DATA = {
         gdpr: false,
         nist: true,
         iso27001: true,
-      }
+      },
     },
-    
+
     pricing: {
-      eyeSightPerDeviceYear: 42, // $3.5/month
-      eyeControlPerDeviceYear: 84, // $7/month
-      eyeExtendPerDeviceYear: 120, // $10/month
+      basePerDeviceYear: 84,
       minimumDevices: 100,
       hardware: [
         { name: "CounterACT-3000", cost: 25000, capacity: 3000, lifespan: 5 },
         { name: "CounterACT-8000", cost: 55000, capacity: 8000, lifespan: 5 },
       ],
-      maintenancePercentage: 0.20,
+      maintenancePercentage: 0.2,
     },
-    
+
     implementation: {
-      deploymentHours: 960, // 4 months
-      professionalServicesCost: 120000, // 35% of license cost
+      deploymentHours: 960,
+      professionalServicesCost: 120000,
       trainingHours: 60,
       trainingCost: 18000,
-      ongoingMaintenanceHours: 100, // per month
+      ongoingMaintenanceHours: 100,
       complexityFactor: 0.7,
       successRate: 0.75,
       timeToValueDays: 120,
     },
-    
+
     security: {
       cveCount: 22,
       lastIncidentDate: "2023-03-15",
       securityScore: 75,
-      mttrMinutes: 180, // 3 hours
+      mttrMinutes: 180,
       complianceFrameworks: ["NIST", "ISO27001", "HIPAA", "PCIDSS", "IEC62443"],
       complianceAutomation: 55,
       auditReadiness: 70,
     },
-    
+
     risk: {
       securityRisk: 40,
       operationalRisk: 60,
@@ -492,20 +483,20 @@ const COMPREHENSIVE_VENDOR_DATA = {
       complianceRisk: 45,
       breachProbability: 0.18,
     },
-    
+
     benefits: {
-      productivityMultiplier: 1.10,
+      productivityMultiplier: 1.1,
       operationalEfficiencyGain: 0.45,
-      complianceCostReduction: 0.50,
-      breachCostAvoidance: 0.70,
-    }
+      complianceCostReduction: 0.5,
+      breachCostAvoidance: 0.7,
+    },
   },
 
   juniper: {
     name: "Juniper Mist Access Assurance",
     type: "cloud-native",
     marketPosition: "Emerging Leader",
-    
+
     features: {
       core: {
         deviceDiscovery: true,
@@ -538,37 +529,37 @@ const COMPREHENSIVE_VENDOR_DATA = {
         gdpr: true,
         nist: false,
         iso27001: false,
-      }
+      },
     },
-    
+
     pricing: {
-      basePerDeviceYear: 72, // $6/month
+      basePerDeviceYear: 72,
       minimumDevices: 50,
-      mistInfrastructureCost: 25000, // Additional Mist infrastructure
-      maintenancePercentage: 0, // SaaS included
+      mistInfrastructureCost: 25000,
+      maintenancePercentage: 0,
     },
-    
+
     implementation: {
-      deploymentHours: 240, // 1 month
+      deploymentHours: 240,
       professionalServicesCost: 15000,
       trainingHours: 16,
       trainingCost: 4000,
-      ongoingMaintenanceHours: 10, // per month
+      ongoingMaintenanceHours: 10,
       complexityFactor: 0.3,
       successRate: 0.85,
       timeToValueDays: 30,
     },
-    
+
     security: {
       cveCount: 10,
       lastIncidentDate: "2023-01-10",
       securityScore: 82,
-      mttrMinutes: 60, // 1 hour
+      mttrMinutes: 60,
       complianceFrameworks: ["HIPAA", "PCIDSS", "GDPR", "SOC2"],
       complianceAutomation: 75,
       auditReadiness: 80,
     },
-    
+
     risk: {
       securityRisk: 25,
       operationalRisk: 30,
@@ -576,20 +567,20 @@ const COMPREHENSIVE_VENDOR_DATA = {
       complianceRisk: 20,
       breachProbability: 0.12,
     },
-    
+
     benefits: {
       productivityMultiplier: 1.15,
-      operationalEfficiencyGain: 0.60,
+      operationalEfficiencyGain: 0.6,
       complianceCostReduction: 0.65,
       breachCostAvoidance: 0.78,
-    }
+    },
   },
 
   extreme: {
     name: "Extreme NAC",
     type: "hybrid",
     marketPosition: "Niche Player",
-    
+
     features: {
       core: {
         deviceDiscovery: true,
@@ -622,22 +613,25 @@ const COMPREHENSIVE_VENDOR_DATA = {
         gdpr: false,
         nist: false,
         iso27001: false,
-      }
+      },
     },
-    
+
     pricing: {
       basePerDeviceYear: 60,
       hardware: [{ name: "NAC-5520", cost: 15000, capacity: 5000, lifespan: 5 }],
       maintenancePercentage: 0.15,
     },
+
     implementation: {
-      deploymentHours: 480, // 2 months
+      deploymentHours: 480,
       professionalServicesCost: 30000,
       trainingCost: 6000,
+      ongoingMaintenanceHours: 60,
       complexityFactor: 0.5,
-      successRate: 0.80,
+      successRate: 0.8,
       timeToValueDays: 60,
     },
+
     security: {
       cveCount: 14,
       securityScore: 62,
@@ -645,24 +639,28 @@ const COMPREHENSIVE_VENDOR_DATA = {
       complianceAutomation: 30,
       auditReadiness: 50,
     },
+
     risk: {
       securityRisk: 58,
       operationalRisk: 45,
       financialRisk: 40,
+      complianceRisk: 50,
       breachProbability: 0.22,
     },
+
     benefits: {
       productivityMultiplier: 1.08,
-      operationalEfficiencyGain: 0.30,
+      operationalEfficiencyGain: 0.3,
+      complianceCostReduction: 0.25,
       breachCostAvoidance: 0.58,
-    }
+    },
   },
 
   fortinet: {
     name: "Fortinet FortiNAC",
     type: "on-premise",
     marketPosition: "Integrated Security",
-    
+
     features: {
       core: {
         deviceDiscovery: true,
@@ -695,22 +693,25 @@ const COMPREHENSIVE_VENDOR_DATA = {
         gdpr: true,
         nist: false,
         iso27001: false,
-      }
+      },
     },
-    
+
     pricing: {
       basePerDeviceYear: 84,
       hardware: [{ name: "FortiNAC-1000F", cost: 40000, capacity: 10000, lifespan: 5 }],
-      maintenancePercentage: 0.20,
+      maintenancePercentage: 0.2,
     },
+
     implementation: {
-      deploymentHours: 720, // 3 months
+      deploymentHours: 720,
       professionalServicesCost: 50000,
       trainingCost: 10000,
+      ongoingMaintenanceHours: 80,
       complexityFactor: 0.6,
       successRate: 0.72,
       timeToValueDays: 90,
     },
+
     security: {
       cveCount: 30,
       securityScore: 70,
@@ -718,24 +719,28 @@ const COMPREHENSIVE_VENDOR_DATA = {
       complianceAutomation: 50,
       auditReadiness: 65,
     },
+
     risk: {
       securityRisk: 50,
       operationalRisk: 55,
       financialRisk: 45,
+      complianceRisk: 40,
       breachProbability: 0.19,
     },
+
     benefits: {
-      productivityMultiplier: 1.10,
-      operationalEfficiencyGain: 0.40,
+      productivityMultiplier: 1.1,
+      operationalEfficiencyGain: 0.4,
+      complianceCostReduction: 0.35,
       breachCostAvoidance: 0.68,
-    }
+    },
   },
 
   microsoft: {
     name: "Microsoft Network Policy Server",
     type: "on-premise",
     marketPosition: "Basic RADIUS",
-    
+
     features: {
       core: {
         deviceDiscovery: false,
@@ -768,47 +773,54 @@ const COMPREHENSIVE_VENDOR_DATA = {
         gdpr: false,
         nist: false,
         iso27001: false,
-      }
+      },
     },
-    
+
     pricing: {
-      basePerDeviceYear: 0, // Free with Windows Server
-      serverLicenseCost: 5000, // Windows Server licensing
+      basePerDeviceYear: 0,
+      serverLicenseCost: 5000,
       infrastructureCost: 15000,
     },
+
     implementation: {
-      deploymentHours: 240, // 1 month
-      professionalServicesCost: 20000, // High complexity for limited features
+      deploymentHours: 240,
+      professionalServicesCost: 20000,
       trainingCost: 3000,
-      complexityFactor: 0.8, // High complexity for basic features
-      successRate: 0.60, // Low success rate for enterprise needs
+      ongoingMaintenanceHours: 40,
+      complexityFactor: 0.8,
+      successRate: 0.6,
       timeToValueDays: 30,
     },
+
     security: {
-      cveCount: 45, // Windows Server CVEs affecting NPS
+      cveCount: 45,
       securityScore: 45,
-      mttrMinutes: 1440, // 24 hours
+      mttrMinutes: 1440,
       complianceAutomation: 15,
       auditReadiness: 25,
     },
+
     risk: {
       securityRisk: 75,
       operationalRisk: 80,
       financialRisk: 60,
+      complianceRisk: 85,
       breachProbability: 0.35,
     },
+
     benefits: {
-      productivityMultiplier: 0.90, // Productivity loss due to limitations
-      operationalEfficiencyGain: 0.10,
+      productivityMultiplier: 0.9,
+      operationalEfficiencyGain: 0.1,
+      complianceCostReduction: 0.05,
       breachCostAvoidance: 0.35,
-    }
+    },
   },
 
   foxpass: {
     name: "FoxPass Cloud RADIUS",
     type: "cloud-radius",
     marketPosition: "SMB Cloud RADIUS",
-    
+
     features: {
       core: {
         deviceDiscovery: false,
@@ -841,21 +853,24 @@ const COMPREHENSIVE_VENDOR_DATA = {
         gdpr: false,
         nist: false,
         iso27001: false,
-      }
+      },
     },
-    
+
     pricing: {
-      basePerUserYear: 36, // $3/month per user
+      basePerUserYear: 36,
       minimumUsers: 10,
     },
+
     implementation: {
-      deploymentHours: 8, // 1 day
+      deploymentHours: 8,
       professionalServicesCost: 2000,
       trainingCost: 1000,
+      ongoingMaintenanceHours: 5,
       complexityFactor: 0.1,
-      successRate: 0.90,
+      successRate: 0.9,
       timeToValueDays: 7,
     },
+
     security: {
       cveCount: 10,
       securityScore: 55,
@@ -863,24 +878,28 @@ const COMPREHENSIVE_VENDOR_DATA = {
       complianceAutomation: 25,
       auditReadiness: 35,
     },
+
     risk: {
       securityRisk: 45,
       operationalRisk: 25,
       financialRisk: 20,
-      breachProbability: 0.30, // Higher due to limited features
+      complianceRisk: 60,
+      breachProbability: 0.3,
     },
+
     benefits: {
       productivityMultiplier: 1.05,
-      operationalEfficiencyGain: 0.20,
+      operationalEfficiencyGain: 0.2,
+      complianceCostReduction: 0.1,
       breachCostAvoidance: 0.45,
-    }
+    },
   },
 
   securew2: {
     name: "SecureW2",
     type: "cloud-native",
     marketPosition: "Certificate Management",
-    
+
     features: {
       core: {
         deviceDiscovery: false,
@@ -913,21 +932,24 @@ const COMPREHENSIVE_VENDOR_DATA = {
         gdpr: true,
         nist: false,
         iso27001: false,
-      }
+      },
     },
-    
+
     pricing: {
-      basePerDeviceYear: 180, // $15/month (premium pricing)
+      basePerDeviceYear: 180,
       minimumDevices: 500,
     },
+
     implementation: {
-      deploymentHours: 120, // 2 weeks
+      deploymentHours: 120,
       professionalServicesCost: 8000,
       trainingCost: 3000,
+      ongoingMaintenanceHours: 15,
       complexityFactor: 0.2,
       successRate: 0.88,
       timeToValueDays: 14,
     },
+
     security: {
       cveCount: 6,
       securityScore: 78,
@@ -935,24 +957,28 @@ const COMPREHENSIVE_VENDOR_DATA = {
       complianceAutomation: 65,
       auditReadiness: 75,
     },
+
     risk: {
       securityRisk: 25,
       operationalRisk: 20,
-      financialRisk: 60, // High cost risk
+      financialRisk: 60,
+      complianceRisk: 30,
       breachProbability: 0.15,
     },
+
     benefits: {
       productivityMultiplier: 1.12,
       operationalEfficiencyGain: 0.55,
+      complianceCostReduction: 0.6,
       breachCostAvoidance: 0.75,
-    }
+    },
   },
 
   meraki: {
     name: "Cisco Meraki",
     type: "cloud-managed",
     marketPosition: "SMB Cloud Managed",
-    
+
     features: {
       core: {
         deviceDiscovery: true,
@@ -985,21 +1011,24 @@ const COMPREHENSIVE_VENDOR_DATA = {
         gdpr: false,
         nist: false,
         iso27001: false,
-      }
+      },
     },
-    
+
     pricing: {
-      basePerDeviceYear: 180, // Including hardware amortization
+      basePerDeviceYear: 180,
       hardwareInfrastructure: 50000,
     },
+
     implementation: {
-      deploymentHours: 360, // 1.5 months
+      deploymentHours: 360,
       professionalServicesCost: 15000,
       trainingCost: 5000,
+      ongoingMaintenanceHours: 30,
       complexityFactor: 0.4,
       successRate: 0.82,
       timeToValueDays: 45,
     },
+
     security: {
       cveCount: 20,
       securityScore: 65,
@@ -1007,24 +1036,28 @@ const COMPREHENSIVE_VENDOR_DATA = {
       complianceAutomation: 40,
       auditReadiness: 55,
     },
+
     risk: {
       securityRisk: 35,
       operationalRisk: 30,
       financialRisk: 50,
+      complianceRisk: 45,
       breachProbability: 0.18,
     },
+
     benefits: {
       productivityMultiplier: 1.08,
       operationalEfficiencyGain: 0.35,
-      breachCostAvoidance: 0.60,
-    }
+      complianceCostReduction: 0.3,
+      breachCostAvoidance: 0.6,
+    },
   },
 
   packetfence: {
     name: "PacketFence Open Source",
     type: "open-source",
     marketPosition: "Open Source",
-    
+
     features: {
       core: {
         deviceDiscovery: true,
@@ -1057,21 +1090,24 @@ const COMPREHENSIVE_VENDOR_DATA = {
         gdpr: false,
         nist: false,
         iso27001: false,
-      }
+      },
     },
-    
+
     pricing: {
-      basePerDeviceYear: 0, // Open source
+      basePerDeviceYear: 0,
       infrastructureCost: 20000,
     },
+
     implementation: {
-      deploymentHours: 1440, // 6 months (high complexity)
-      professionalServicesCost: 95000, // 50% of total project cost
+      deploymentHours: 1440,
+      professionalServicesCost: 95000,
       trainingCost: 15000,
+      ongoingMaintenanceHours: 120,
       complexityFactor: 0.95,
-      successRate: 0.55, // Low success rate due to complexity
+      successRate: 0.55,
       timeToValueDays: 180,
     },
+
     security: {
       cveCount: 27,
       securityScore: 50,
@@ -1079,136 +1115,218 @@ const COMPREHENSIVE_VENDOR_DATA = {
       complianceAutomation: 20,
       auditReadiness: 30,
     },
+
     risk: {
       securityRisk: 65,
       operationalRisk: 85,
       financialRisk: 75,
+      complianceRisk: 80,
       breachProbability: 0.28,
     },
+
     benefits: {
-      productivityMultiplier: 0.85, // Productivity loss due to complexity
+      productivityMultiplier: 0.85,
       operationalEfficiencyGain: 0.15,
-      breachCostAvoidance: 0.40,
-    }
+      complianceCostReduction: 0.1,
+      breachCostAvoidance: 0.4,
+    },
+  },
+
+  arista: {
+    name: "Arista CloudVision AGNI",
+    type: "cloud-native",
+    marketPosition: "Network-Centric",
+
+    features: {
+      core: {
+        deviceDiscovery: true,
+        policyEnforcement: true,
+        guestAccess: false,
+        certificateManagement: false,
+        userAuthentication: true,
+        deviceProfiling: true,
+      },
+      advanced: {
+        aiAnalytics: true,
+        automatedRemediation: true,
+        riskScoring: false,
+        behavioralAnalysis: false,
+        threatIntelligence: false,
+        zeroTrustIntegration: true,
+      },
+      integrations: {
+        activeDirectory: true,
+        siem: false,
+        itsm: false,
+        mdm: false,
+        cloudPlatforms: true,
+        thirdPartyFirewalls: false,
+      },
+      compliance: {
+        hipaa: false,
+        pciDss: true,
+        sox: false,
+        gdpr: false,
+        nist: true,
+        iso27001: false,
+      },
+    },
+
+    pricing: {
+      basePerDeviceYear: 96,
+      aristaInfrastructureRequired: 75000,
+    },
+
+    implementation: {
+      deploymentHours: 480,
+      professionalServicesCost: 35000,
+      trainingCost: 8000,
+      ongoingMaintenanceHours: 40,
+      complexityFactor: 0.5,
+      successRate: 0.75,
+      timeToValueDays: 60,
+    },
+
+    security: {
+      cveCount: 12,
+      securityScore: 75,
+      mttrMinutes: 120,
+      complianceAutomation: 60,
+      auditReadiness: 70,
+    },
+
+    risk: {
+      securityRisk: 30,
+      operationalRisk: 40,
+      financialRisk: 55,
+      complianceRisk: 35,
+      breachProbability: 0.16,
+    },
+
+    benefits: {
+      productivityMultiplier: 1.12,
+      operationalEfficiencyGain: 0.5,
+      complianceCostReduction: 0.45,
+      breachCostAvoidance: 0.72,
+    },
+  },
+
+  ivanti: {
+    name: "Ivanti Neurons (Pulse Secure)",
+    type: "hybrid",
+    marketPosition: "Legacy VPN/NAC",
+
+    features: {
+      core: {
+        deviceDiscovery: true,
+        policyEnforcement: true,
+        guestAccess: true,
+        certificateManagement: true,
+        userAuthentication: true,
+        deviceProfiling: false,
+      },
+      advanced: {
+        aiAnalytics: false,
+        automatedRemediation: false,
+        riskScoring: false,
+        behavioralAnalysis: false,
+        threatIntelligence: false,
+        zeroTrustIntegration: false,
+      },
+      integrations: {
+        activeDirectory: true,
+        siem: false,
+        itsm: false,
+        mdm: true,
+        cloudPlatforms: false,
+        thirdPartyFirewalls: true,
+      },
+      compliance: {
+        hipaa: true,
+        pciDss: true,
+        sox: false,
+        gdpr: false,
+        nist: false,
+        iso27001: false,
+      },
+    },
+
+    pricing: {
+      basePerDeviceYear: 120,
+      hardware: [{ name: "PSA-V5000", cost: 45000, capacity: 5000, lifespan: 5 }],
+      maintenancePercentage: 0.25,
+    },
+
+    implementation: {
+      deploymentHours: 960,
+      professionalServicesCost: 85000,
+      trainingCost: 12000,
+      ongoingMaintenanceHours: 100,
+      complexityFactor: 0.8,
+      successRate: 0.65,
+      timeToValueDays: 120,
+    },
+
+    security: {
+      cveCount: 89, // High due to active exploitation
+      securityScore: 35, // Very low due to security issues
+      mttrMinutes: 2880, // 48 hours
+      complianceAutomation: 25,
+      auditReadiness: 40,
+    },
+
+    risk: {
+      securityRisk: 95, // Extremely high due to active exploitation
+      operationalRisk: 80,
+      financialRisk: 85,
+      complianceRisk: 75,
+      breachProbability: 0.45, // Very high
+    },
+
+    benefits: {
+      productivityMultiplier: 0.85,
+      operationalEfficiencyGain: 0.15,
+      complianceCostReduction: 0.2,
+      breachCostAvoidance: 0.25, // Very low due to security issues
+    },
   },
 }
 
-// Industry-specific adjustments (more granular)
 const INDUSTRY_FACTORS = {
-  healthcare: {
-    costMultiplier: 1.1,
-    riskMultiplier: 1.2,
-    complianceMultiplier: 1.5,
-    avgBreachCost: 10930000,
-    regulatoryFines: 1800000,
-    complianceFrameworks: ["HIPAA", "HITECH", "FDA21CFR11"],
-    additionalRequirements: ["PHI protection", "Medical device integration", "24/7 availability"]
-  },
-  financial: {
+  healthcare: { costMultiplier: 1.1, riskMultiplier: 1.2, complianceMultiplier: 1.3, avgBreachCost: 100000 },
+  financial: { costMultiplier: 1.2, riskMultiplier: 1.1, complianceMultiplier: 1.4, avgBreachCost: 150000 },
+  government: { costMultiplier: 1.3, riskMultiplier: 1.3, complianceMultiplier: 1.5, avgBreachCost: 200000 },
+  education: { costMultiplier: 1.0, riskMultiplier: 1.0, complianceMultiplier: 1.2, avgBreachCost: 50000 },
+  manufacturing: { costMultiplier: 1.1, riskMultiplier: 1.1, complianceMultiplier: 1.3, avgBreachCost: 75000 },
+  retail: { costMultiplier: 1.05, riskMultiplier: 1.05, complianceMultiplier: 1.25, avgBreachCost: 60000 },
+  technology: { costMultiplier: 1.0, riskMultiplier: 1.0, complianceMultiplier: 1.0, avgBreachCost: 40000 },
+  "energy & utilities": {
     costMultiplier: 1.15,
-    riskMultiplier: 1.3,
-    complianceMultiplier: 1.8,
-    avgBreachCost: 5970000,
-    regulatoryFines: 500000000,
-    complianceFrameworks: ["PCIDSS", "SOX", "GLBA", "FFIEC"],
-    additionalRequirements: ["Real-time transactions", "Fraud prevention", "Audit trails"]
+    riskMultiplier: 1.15,
+    complianceMultiplier: 1.35,
+    avgBreachCost: 80000,
   },
-  government: {
-    costMultiplier: 1.05,
-    riskMultiplier: 1.1,
-    complianceMultiplier: 2.0,
-    avgBreachCost: 5010000,
-    regulatoryFines: 50000000,
-    complianceFrameworks: ["FedRAMP", "FISMA", "NIST80053", "CMMC"],
-    additionalRequirements: ["Security clearances", "Supply chain security", "Continuous monitoring"]
-  },
-  education: {
-    costMultiplier: 0.9,
-    riskMultiplier: 0.95,
-    complianceMultiplier: 1.1,
-    avgBreachCost: 3790000,
-    regulatoryFines: 25000,
-    complianceFrameworks: ["FERPA", "COPPA"],
-    additionalRequirements: ["Student privacy", "BYOD support", "Budget constraints"]
-  },
-  manufacturing: {
-    costMultiplier: 1.0,
-    riskMultiplier: 1.05,
-    complianceMultiplier: 1.2,
-    avgBreachCost: 4470000,
-    regulatoryFines: 1000000,
-    complianceFrameworks: ["ISO27001", "NIST", "IEC62443"],
-    additionalRequirements: ["OT integration", "Safety systems", "IP protection"]
-  },
-  retail: {
-    costMultiplier: 0.95,
-    riskMultiplier: 1.0,
-    complianceMultiplier: 1.1,
-    avgBreachCost: 3860000,
-    regulatoryFines: 20000000,
-    complianceFrameworks: ["PCIDSS", "CCPA", "GDPR"],
-    additionalRequirements: ["POS security", "Customer data", "Seasonal scaling"]
-  },
-  technology: {
-    costMultiplier: 1.0,
-    riskMultiplier: 1.0,
-    complianceMultiplier: 1.0,
-    avgBreachCost: 5040000,
-    regulatoryFines: 20000000,
-    complianceFrameworks: ["SOC2", "ISO27001", "GDPR"],
-    additionalRequirements: ["Rapid scaling", "DevOps integration", "IP protection"]
-  },
-  energy: {
-    costMultiplier: 1.2,
-    riskMultiplier: 1.25,
-    complianceMultiplier: 1.6,
-    avgBreachCost: 4650000,
-    regulatoryFines: 1000000,
-    complianceFrameworks: ["NERCCIP", "IEC62443", "NIST"],
-    additionalRequirements: ["Critical infrastructure", "SCADA security", "Physical security"]
-  }
 }
 
-// Organization size multipliers (more detailed)
 const ORG_SIZE_FACTORS = {
-  small: { // 1-500 employees
-    costMultiplier: 1.1,     // Higher per-unit costs
-    complexityMultiplier: 0.8, // Lower complexity
-    resourceMultiplier: 0.7,   // Fewer resources
-    discountMultiplier: 0.9,   // Lower discounts
-    supportMultiplier: 1.2,    // Higher support needs
-  },
-  medium: { // 501-2500 employees
-    costMultiplier: 1.0,
-    complexityMultiplier: 1.0,
-    resourceMultiplier: 1.0,
-    discountMultiplier: 1.0,
-    supportMultiplier: 1.0,
-  },
-  large: { // 2501-10000 employees
-    costMultiplier: 0.95,
-    complexityMultiplier: 1.1,
-    resourceMultiplier: 1.2,
-    discountMultiplier: 1.1,
-    supportMultiplier: 0.9,
-  },
-  enterprise: { // 10000+ employees
-    costMultiplier: 0.9,
-    complexityMultiplier: 1.2,
-    resourceMultiplier: 1.4,
-    discountMultiplier: 1.2,
-    supportMultiplier: 0.8,
-  }
+  small: { resourceMultiplier: 0.5, complexityMultiplier: 0.8 },
+  medium: { resourceMultiplier: 1.0, complexityMultiplier: 1.0 },
+  large: { resourceMultiplier: 1.5, complexityMultiplier: 1.2 },
+  enterprise: { resourceMultiplier: 2.0, complexityMultiplier: 1.5 },
 }
 
-// Regional cost adjustments
 const REGIONAL_FACTORS = {
-  'north-america': { costMultiplier: 1.0, laborMultiplier: 1.0 },
-  'europe': { costMultiplier: 1.05, laborMultiplier: 1.1 },
-  'asia-pacific': { costMultiplier: 0.9, laborMultiplier: 0.8 },
-  'latin-america': { costMultiplier: 0.8, laborMultiplier: 0.7 },
-  'middle-east': { costMultiplier: 1.1, laborMultiplier: 0.9 },
-  'africa': { costMultiplier: 0.7, laborMultiplier: 0.6 }
+  "north-america": { costMultiplier: 1.0, laborMultiplier: 1.0 },
+  europe: { costMultiplier: 1.1, laborMultiplier: 1.1 },
+  "asia-pacific": { costMultiplier: 1.2, laborMultiplier: 1.2 },
+  "latin-america": { costMultiplier: 1.15, laborMultiplier: 1.15 },
+  "middle-east": { costMultiplier: 1.25, laborMultiplier: 1.25 },
+  africa: { costMultiplier: 1.3, laborMultiplier: 1.3 },
+}
+
+function safeNumber(value: any, defaultValue = 0): number {
+  const num = Number(value)
+  return isNaN(num) || !isFinite(num) ? defaultValue : num
 }
 
 function calculateVendorCosts(vendorId: string, config: CalculationConfiguration): CalculationResult {
@@ -1217,25 +1335,27 @@ function calculateVendorCosts(vendorId: string, config: CalculationConfiguration
     throw new Error(`Unknown vendor: ${vendorId}`)
   }
 
-  // Get multipliers
-  const industryFactor = INDUSTRY_FACTORS[config.industry as keyof typeof INDUSTRY_FACTORS] || INDUSTRY_FACTORS.technology
+  // Get multipliers with safe defaults
+  const industryFactor =
+    INDUSTRY_FACTORS[config.industry as keyof typeof INDUSTRY_FACTORS] || INDUSTRY_FACTORS.technology
   const orgSizeFactor = ORG_SIZE_FACTORS[config.orgSize] || ORG_SIZE_FACTORS.medium
-  const regionalFactor = REGIONAL_FACTORS[config.region as keyof typeof REGIONAL_FACTORS] || REGIONAL_FACTORS['north-america']
+  const regionalFactor =
+    REGIONAL_FACTORS[config.region as keyof typeof REGIONAL_FACTORS] || REGIONAL_FACTORS["north-america"]
 
   // Calculate base licensing cost
   let licensingCost = 0
-  if (vendorId === 'portnox') {
-    let basePrice = config.portnoxBasePrice || vendor.pricing.basePerDeviceYear
-    
+  if (vendorId === "portnox") {
+    let basePrice = safeNumber(config.portnoxBasePrice, vendor.pricing.basePerDeviceYear)
+
     // Apply volume discounts
     for (const discount of vendor.pricing.volumeDiscounts) {
       if (config.devices >= discount.threshold) {
-        basePrice *= (1 - discount.discount)
+        basePrice *= 1 - discount.discount
       }
     }
-    
+
     licensingCost = basePrice * config.devices * config.years
-    
+
     // Add-ons
     if (config.portnoxAddons?.atp) {
       licensingCost += vendor.pricing.addons.advancedThreatProtection * config.devices * config.years
@@ -1261,34 +1381,46 @@ function calculateVendorCosts(vendorId: string, config: CalculationConfiguration
   // Calculate hardware costs
   let hardwareCost = 0
   if (vendor.pricing.hardware) {
-    // Find appropriate hardware based on device count
-    const hardware = vendor.pricing.hardware.find(hw => hw.capacity >= config.devices) || vendor.pricing.hardware[vendor.pricing.hardware.length - 1]
+    const hardware =
+      vendor.pricing.hardware.find((hw) => hw.capacity >= config.devices) ||
+      vendor.pricing.hardware[vendor.pricing.hardware.length - 1]
     hardwareCost = hardware.cost
-    
-    // Add replacement costs over the years
+
     if (hardware.lifespan && config.years > hardware.lifespan) {
       const replacements = Math.floor((config.years - 1) / hardware.lifespan)
       hardwareCost += hardware.cost * replacements
     }
   }
-  
+
   if (vendor.pricing.infrastructureCost) {
     hardwareCost += vendor.pricing.infrastructureCost
   }
-  
+
   if (vendor.pricing.mistInfrastructureCost) {
     hardwareCost += vendor.pricing.mistInfrastructureCost
   }
-  
+
   if (vendor.pricing.hardwareInfrastructure) {
     hardwareCost += vendor.pricing.hardwareInfrastructure
   }
 
+  if (vendor.pricing.aristaInfrastructureRequired) {
+    hardwareCost += vendor.pricing.aristaInfrastructureRequired
+  }
+
+  if (vendor.pricing.serverLicenseCost) {
+    hardwareCost += vendor.pricing.serverLicenseCost
+  }
+
   // Professional services
-  const servicesCost = vendor.implementation.professionalServicesCost * orgSizeFactor.resourceMultiplier * regionalFactor.laborMultiplier
+  const servicesCost = safeNumber(
+    vendor.implementation.professionalServicesCost * orgSizeFactor.resourceMultiplier * regionalFactor.laborMultiplier,
+  )
 
   // Training costs
-  const trainingCost = vendor.implementation.trainingCost * orgSizeFactor.resourceMultiplier * regionalFactor.laborMultiplier
+  const trainingCost = safeNumber(
+    vendor.implementation.trainingCost * orgSizeFactor.resourceMultiplier * regionalFactor.laborMultiplier,
+  )
 
   // Maintenance costs
   let maintenanceCost = 0
@@ -1296,44 +1428,50 @@ function calculateVendorCosts(vendorId: string, config: CalculationConfiguration
     maintenanceCost = (licensingCost + hardwareCost) * vendor.pricing.maintenancePercentage * config.years
   }
 
-  // Operational costs (ongoing IT staff time)
+  // Operational costs
   const avgItSalary = 95000 * regionalFactor.laborMultiplier
-  const operationalHoursPerYear = vendor.implementation.ongoingMaintenanceHours * 12
-  const operationalCost = (operationalHoursPerYear / 2080) * avgItSalary * config.years * orgSizeFactor.resourceMultiplier
+  const operationalHoursPerYear = safeNumber(vendor.implementation.ongoingMaintenanceHours, 0) * 12
+  const operationalCost = safeNumber(
+    (operationalHoursPerYear / 2080) * avgItSalary * config.years * orgSizeFactor.resourceMultiplier,
+  )
 
-  // Hidden costs (complexity, downtime, etc.)
-  const hiddenCost = (licensingCost + hardwareCost + servicesCost) * vendor.implementation.complexityFactor * 0.1
+  // Hidden costs
+  const hiddenCost = safeNumber(
+    (licensingCost + hardwareCost + servicesCost) * vendor.implementation.complexityFactor * 0.1,
+  )
 
-  const totalCost = licensingCost + hardwareCost + servicesCost + trainingCost + maintenanceCost + operationalCost + hiddenCost
+  const totalCost = safeNumber(
+    licensingCost + hardwareCost + servicesCost + trainingCost + maintenanceCost + operationalCost + hiddenCost,
+  )
 
   // Calculate benefits
-  const productivityGains = config.devices * 50 * vendor.benefits.productivityMultiplier * config.years
-  const riskReduction = industryFactor.avgBreachCost * vendor.benefits.breachCostAvoidance * vendor.risk.breachProbability
-  const complianceSavings = 50000 * vendor.benefits.complianceCostReduction * industryFactor.complianceMultiplier
-  const operationalSavings = avgItSalary * vendor.benefits.operationalEfficiencyGain * config.years
+  const productivityGains = safeNumber(config.devices * 50 * vendor.benefits.productivityMultiplier * config.years)
+  const riskReduction = safeNumber(
+    industryFactor.avgBreachCost * vendor.benefits.breachCostAvoidance * vendor.risk.breachProbability,
+  )
+  const complianceSavings = safeNumber(
+    50000 * vendor.benefits.complianceCostReduction * industryFactor.complianceMultiplier,
+  )
+  const operationalSavings = safeNumber(avgItSalary * vendor.benefits.operationalEfficiencyGain * config.years)
 
-  const totalBenefits = productivityGains + riskReduction + complianceSavings + operationalSavings
-  const annualBenefits = totalBenefits / config.years
+  const totalBenefits = safeNumber(productivityGains + riskReduction + complianceSavings + operationalSavings)
+  const annualBenefits = safeNumber(totalBenefits / config.years)
 
   // Financial metrics
-  const initialInvestment = hardwareCost + servicesCost + trainingCost
-  const annualCost = (licensingCost + maintenanceCost + operationalCost + hiddenCost) / config.years
+  const initialInvestment = safeNumber(hardwareCost + servicesCost + trainingCost)
+  const annualCost = safeNumber((licensingCost + maintenanceCost + operationalCost + hiddenCost) / config.years)
   const netAnnualBenefit = Math.max(0, annualBenefits - annualCost)
 
-  // ROI calculation
-  const roi = initialInvestment > 0 ? ((totalBenefits - totalCost) / totalCost) * 100 : 0
+  const roi = totalCost > 0 ? safeNumber(((totalBenefits - totalCost) / totalCost) * 100) : 0
+  const paybackPeriod = netAnnualBenefit > 0 ? safeNumber(totalCost / annualBenefits) : config.years + 1
 
-  // Payback period
-  const paybackPeriod = netAnnualBenefit > 0 ? totalCost / annualBenefits : config.years + 1
-
-  // NPV (10% discount rate)
+  // NPV calculation
   let npv = -initialInvestment
   for (let year = 1; year <= config.years; year++) {
     npv += netAnnualBenefit / Math.pow(1.1, year)
   }
 
-  // IRR (simplified)
-  const irr = totalCost > 0 ? ((totalBenefits / totalCost) - 1) * 100 : 0
+  const irr = totalCost > 0 ? safeNumber((totalBenefits / totalCost - 1) * 100) : 0
 
   return {
     vendorId,
@@ -1343,90 +1481,103 @@ function calculateVendorCosts(vendorId: string, config: CalculationConfiguration
       name: vendor.name,
       type: vendor.type,
       marketPosition: vendor.marketPosition,
-      features: vendor.features
+      features: vendor.features,
     },
-    totalCost: Math.round(totalCost),
+    totalCost: Math.round(safeNumber(totalCost)),
     costBreakdown: {
-      licensing: Math.round(licensingCost),
-      hardware: Math.round(hardwareCost),
-      services: Math.round(servicesCost),
-      training: Math.round(trainingCost),
-      maintenance: Math.round(maintenanceCost),
-      operational: Math.round(operationalCost),
-      hidden: Math.round(hiddenCost)
+      licensing: Math.round(safeNumber(licensingCost)),
+      hardware: Math.round(safeNumber(hardwareCost)),
+      services: Math.round(safeNumber(servicesCost)),
+      training: Math.round(safeNumber(trainingCost)),
+      maintenance: Math.round(safeNumber(maintenanceCost)),
+      operational: Math.round(safeNumber(operationalCost)),
+      hidden: Math.round(safeNumber(hiddenCost)),
     },
     financialMetrics: {
-      npv: Math.round(npv),
-      irr: Math.round(irr),
-      roi: Math.round(roi),
-      paybackPeriod: Math.round(paybackPeriod * 10) / 10,
-      profitabilityIndex: totalCost > 0 ? Math.round((totalBenefits / totalCost) * 100) / 100 : 0,
-      totalBenefits: Math.round(totalBenefits),
-      netBenefit: Math.round(totalBenefits - totalCost)
+      npv: Math.round(safeNumber(npv)),
+      irr: Math.round(safeNumber(irr)),
+      roi: Math.round(safeNumber(roi)),
+      paybackPeriod: Math.round(safeNumber(paybackPeriod) * 10) / 10,
+      profitabilityIndex: totalCost > 0 ? Math.round(safeNumber(totalBenefits / totalCost) * 100) / 100 : 0,
+      totalBenefits: Math.round(safeNumber(totalBenefits)),
+      netBenefit: Math.round(safeNumber(totalBenefits - totalCost)),
     },
     riskAssessment: {
-      overallRisk: Math.round((vendor.risk.securityRisk + vendor.risk.operationalRisk + vendor.risk.financialRisk + vendor.risk.complianceRisk) / 4),
-      securityRisk: Math.round(vendor.risk.securityRisk * industryFactor.riskMultiplier),
-      operationalRisk: Math.round(vendor.risk.operationalRisk * orgSizeFactor.complexityMultiplier),
-      financialRisk: Math.round(vendor.risk.financialRisk),
-      complianceRisk: Math.round(vendor.risk.complianceRisk * industryFactor.complianceMultiplier),
-      breachProbability: vendor.risk.breachProbability,
-      mttr: vendor.security.mttrMinutes
+      overallRisk: Math.round(
+        safeNumber(
+          (vendor.risk.securityRisk +
+            vendor.risk.operationalRisk +
+            vendor.risk.financialRisk +
+            vendor.risk.complianceRisk) /
+            4,
+        ),
+      ),
+      securityRisk: Math.round(safeNumber(vendor.risk.securityRisk * industryFactor.riskMultiplier)),
+      operationalRisk: Math.round(safeNumber(vendor.risk.operationalRisk * orgSizeFactor.complexityMultiplier)),
+      financialRisk: Math.round(safeNumber(vendor.risk.financialRisk)),
+      complianceRisk: Math.round(safeNumber(vendor.risk.complianceRisk * industryFactor.complianceMultiplier)),
+      breachProbability: safeNumber(vendor.risk.breachProbability),
+      mttr: safeNumber(vendor.security.mttrMinutes),
     },
     businessImpact: {
-      productivityGains: Math.round(productivityGains),
-      riskReduction: Math.round(riskReduction),
-      complianceSavings: Math.round(complianceSavings),
-      operationalSavings: Math.round(operationalSavings),
-      totalBenefits: Math.round(totalBenefits),
-      annualBenefits: Math.round(annualBenefits)
+      productivityGains: Math.round(safeNumber(productivityGains)),
+      riskReduction: Math.round(safeNumber(riskReduction)),
+      complianceSavings: Math.round(safeNumber(complianceSavings)),
+      operationalSavings: Math.round(safeNumber(operationalSavings)),
+      totalBenefits: Math.round(safeNumber(totalBenefits)),
+      annualBenefits: Math.round(safeNumber(annualBenefits)),
     },
     implementation: {
-      timeline: `${vendor.implementation.timeToValueDays} days`,
-      complexity: vendor.implementation.complexityFactor <= 0.2 ? 'Low' : 
-                 vendor.implementation.complexityFactor <= 0.5 ? 'Medium' : 
-                 vendor.implementation.complexityFactor <= 0.8 ? 'High' : 'Very High',
-      resources: Math.round(vendor.implementation.deploymentHours / 40 * orgSizeFactor.resourceMultiplier * 10) / 10,
-      successProbability: vendor.implementation.successRate,
-      timeToValue: vendor.implementation.timeToValueDays
+      timeline: `${safeNumber(vendor.implementation.timeToValueDays)} days`,
+      complexity:
+        vendor.implementation.complexityFactor <= 0.2
+          ? "Low"
+          : vendor.implementation.complexityFactor <= 0.5
+            ? "Medium"
+            : vendor.implementation.complexityFactor <= 0.8
+              ? "High"
+              : "Very High",
+      resources:
+        Math.round(safeNumber((vendor.implementation.deploymentHours / 40) * orgSizeFactor.resourceMultiplier) * 10) /
+        10,
+      successProbability: safeNumber(vendor.implementation.successRate),
+      timeToValue: safeNumber(vendor.implementation.timeToValueDays),
     },
-    complianceScore: vendor.security.complianceAutomation,
-    securityScore: vendor.security.securityScore,
-    marketPosition: vendor.marketPosition
+    complianceScore: safeNumber(vendor.security.complianceAutomation),
+    securityScore: safeNumber(vendor.security.securityScore),
+    marketPosition: vendor.marketPosition,
   }
 }
 
 export function compareVendors(vendorIds: string[], config: CalculationConfiguration): CalculationResult[] {
   try {
-    // Validate inputs
     if (!Array.isArray(vendorIds)) {
-      console.warn('Vendor IDs must be an array')
+      console.warn("Vendor IDs must be an array")
       return []
     }
 
-    if (!config || typeof config !== 'object') {
-      console.warn('Configuration is required')
+    if (!config || typeof config !== "object") {
+      console.warn("Configuration is required")
       return []
     }
 
-    // Sanitize configuration
     const sanitizedConfig: CalculationConfiguration = {
       devices: Math.max(1, Math.min(100000, Math.floor(Number(config.devices) || 1000))),
       users: Math.max(1, Math.min(100000, Math.floor(Number(config.users) || 500))),
-      industry: typeof config.industry === 'string' ? config.industry : 'technology',
-      orgSize: ['small', 'medium', 'large', 'enterprise'].includes(config.orgSize) ? config.orgSize : 'medium',
+      industry: typeof config.industry === "string" ? config.industry : "technology",
+      orgSize: ["small", "medium", "large", "enterprise"].includes(config.orgSize) ? config.orgSize : "medium",
       years: Math.max(1, Math.min(10, Math.floor(Number(config.years) || 3))),
-      region: typeof config.region === 'string' ? config.region : 'north-america',
+      region: typeof config.region === "string" ? config.region : "north-america",
       portnoxBasePrice: Number(config.portnoxBasePrice) || 48,
       portnoxAddons: config.portnoxAddons || { atp: false, compliance: false, iot: false, analytics: false },
-      discountRate: Number(config.discountRate) || 0.10,
+      discountRate: Number(config.discountRate) || 0.1,
       inflationRate: Number(config.inflationRate) || 0.03,
-      taxRate: Number(config.taxRate) || 0.25
+      taxRate: Number(config.taxRate) || 0.25,
+      aiConfig: config.aiConfig,
     }
 
-    // Calculate for each vendor
     const results = vendorIds
-      .filter((id: any) => typeof id === 'string' && id.trim().length > 0)
+      .filter((id: any) => typeof id === "string" && id.trim().length > 0)
       .map((vendorId: string) => {
         try {
           return calculateVendorCosts(vendorId.toLowerCase(), sanitizedConfig)
@@ -1437,12 +1588,11 @@ export function compareVendors(vendorIds: string[], config: CalculationConfigura
       })
       .filter((result: any) => result !== null)
 
-    // Sort by total cost
     results.sort((a, b) => a.totalCost - b.totalCost)
 
     return results
   } catch (error) {
-    console.error('Error in compareVendors:', error)
+    console.error("Error in compareVendors:", error)
     return []
   }
 }
@@ -1451,39 +1601,39 @@ export function getVendorList(): Array<{ id: string; name: string; category: str
   return Object.entries(COMPREHENSIVE_VENDOR_DATA).map(([id, vendor]) => ({
     id,
     name: vendor.name,
-    category: 'NAC Solution'
+    category: "NAC Solution",
   }))
 }
 
 export function getIndustryList(): Array<{ value: string; label: string }> {
   return [
-    { value: 'healthcare', label: 'Healthcare' },
-    { value: 'financial', label: 'Financial Services' },
-    { value: 'government', label: 'Government' },
-    { value: 'education', label: 'Education' },
-    { value: 'manufacturing', label: 'Manufacturing' },
-    { value: 'retail', label: 'Retail' },
-    { value: 'technology', label: 'Technology' },
-    { value: 'energy', label: 'Energy & Utilities' }
+    { value: "healthcare", label: "Healthcare" },
+    { value: "financial", label: "Financial Services" },
+    { value: "government", label: "Government" },
+    { value: "education", label: "Education" },
+    { value: "manufacturing", label: "Manufacturing" },
+    { value: "retail", label: "Retail" },
+    { value: "technology", label: "Technology" },
+    { value: "energy", label: "Energy & Utilities" },
   ]
 }
 
 export function getRegionList(): Array<{ value: string; label: string }> {
   return [
-    { value: 'north-america', label: 'North America' },
-    { value: 'europe', label: 'Europe' },
-    { value: 'asia-pacific', label: 'Asia Pacific' },
-    { value: 'latin-america', label: 'Latin America' },
-    { value: 'middle-east', label: 'Middle East' },
-    { value: 'africa', label: 'Africa' }
+    { value: "north-america", label: "North America" },
+    { value: "europe", label: "Europe" },
+    { value: "asia-pacific", label: "Asia Pacific" },
+    { value: "latin-america", label: "Latin America" },
+    { value: "middle-east", label: "Middle East" },
+    { value: "africa", label: "Africa" },
   ]
 }
 
 export function getOrgSizeList(): Array<{ value: string; label: string }> {
   return [
-    { value: 'small', label: 'Small (1-500 employees)' },
-    { value: 'medium', label: 'Medium (501-2500 employees)' },
-    { value: 'large', label: 'Large (2501-10000 employees)' },
-    { value: 'enterprise', label: 'Enterprise (10000+ employees)' }
+    { value: "small", label: "Small (1-500 employees)" },
+    { value: "medium", label: "Medium (501-2500 employees)" },
+    { value: "large", label: "Large (2501-10000 employees)" },
+    { value: "enterprise", label: "Enterprise (10000+ employees)" },
   ]
 }
