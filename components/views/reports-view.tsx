@@ -1,1116 +1,1000 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Progress } from "@/components/ui/progress"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Clock, Settings, Eye, Sparkles, Download, Mail, Share2, FileText, BarChart3 } from "lucide-react"
+import { toast } from "@/components/ui/toast"
 import {
-  Download,
-  FileText,
-  Mail,
-  Calendar,
-  Settings,
-  Eye,
-  Share2,
-  Printer,
-  Save,
-  Clock,
-  Building,
-  BarChart3,
-  TrendingUp,
-  Shield,
-  DollarSign,
-  Zap,
-  Award,
-  CheckCircle2,
-  AlertTriangle,
-  Sparkles,
-  Brain,
-  Target,
-  Globe,
-  Users,
-  Lock,
-  Loader2,
-} from "lucide-react"
-import AnimatedPortnoxLogo from "@/components/animated-portnox-logo"
-import { EnhancedReportGenerator } from "@/lib/report-generator"
-import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+  generateWorldClassReport,
+  createSampleReportData,
+  type WorldClassReportData,
+  type ReportTemplate,
+  type ReportFormat,
+  type OrganizationSize,
+  type DeploymentModel,
+} from "@/lib/world-class-report-generator"
 
 interface ReportsViewProps {
-  results?: CalculationResult[]
-  config?: CalculationConfiguration
+  results?: any[]
+  config?: any
 }
 
-// Safe utility functions
-function safeString(value: any): string {
-  if (value === null || value === undefined) return ""
-  if (typeof value === "string") return value
-  if (typeof value === "number") return value.toString()
-  if (typeof value === "boolean") return value.toString()
-  if (typeof value === "object") return JSON.stringify(value)
-  return String(value)
+interface CompanyDetails {
+  companyName: string
+  industry: string
+  companySize: OrganizationSize
+  employeeCount: number
+  deviceCount: number
+  locations: number
+  headquarters: string
+  website: string
+  annualRevenue: string
+  marketCap: string
+  publiclyTraded: boolean
+  cyberInsurancePremium: number
+  primaryContact: string
+  contactTitle: string
+  contactEmail: string
+  contactPhone: string
+  incumbentVendor: string
+  currentSecurityStack: string[]
+  deploymentType: DeploymentModel
+  businessPriorities: string[]
+  securityChallenges: string[]
+  transformationGoals: string[]
+  industryThreats: string[]
+  regulatoryDeadlines: string[]
+  recentIncidents: string
+  ceo: string
+  cfo: string
+  ciso: string
+  cio: string
+  itDirector: string
+  complianceOfficer: string[]
+  boardMembers: string[]
+  executiveMessage: string
+  valueProposition: string
+  competitiveDifferentiators: string[]
+  implementationTimeline: string
 }
 
-function safeNumber(value: any, defaultValue = 0): number {
-  if (value === null || value === undefined) return defaultValue
-  const num = Number(value)
-  return isNaN(num) || !isFinite(num) ? defaultValue : num
+interface ReportConfig {
+  reportType: ReportTemplate
+  format: ReportFormat
+  personalizationLevel: "maximum" | "high" | "medium" | "basic"
+  includeCharts: boolean
+  includeFinancials: boolean
+  includeCompliance: boolean
+  includeRoadmap: boolean
+  includeAIEnhancement: boolean
+  includeBenchmarks: boolean
+  targetAudience: string[]
+  deliveryMethod: "download" | "email" | "scheduled"
+  scheduledDate?: Date
 }
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(safeNumber(value))
-}
+const INDUSTRIES = [
+  "Healthcare",
+  "Financial Services",
+  "Manufacturing",
+  "Technology",
+  "Education",
+  "Government",
+  "Retail",
+  "Energy & Utilities",
+  "Transportation",
+  "Telecommunications",
+  "Pharmaceuticals",
+  "Defense",
+  "Media & Entertainment",
+  "Real Estate",
+  "Other",
+]
 
-export default function ReportsView({ results = [], config }: ReportsViewProps) {
-  const [selectedTemplate, setSelectedTemplate] = useState("executive")
-  const [reportTitle, setReportTitle] = useState("Enterprise Network Access Control Strategic Analysis")
-  const [reportDescription, setReportDescription] = useState(
-    "Comprehensive evaluation and strategic recommendations for NAC vendor selection with AI-enhanced insights and competitive intelligence.",
-  )
-  const [includeCharts, setIncludeCharts] = useState(true)
-  const [includeDetails, setIncludeDetails] = useState(true)
-  const [includeAIEnhancement, setIncludeAIEnhancement] = useState(true)
-  const [includeBenchmarks, setIncludeBenchmarks] = useState(true)
-  const [includeRoadmap, setIncludeRoadmap] = useState(true)
-  const [includeCompliance, setIncludeCompliance] = useState(true)
-  const [recipientEmail, setRecipientEmail] = useState("")
-  const [scheduleFrequency, setScheduleFrequency] = useState("none")
-  const [executiveSummary, setExecutiveSummary] = useState("")
-  const [keyRecommendations, setKeyRecommendations] = useState("")
+const COMPANY_SIZES: { label: string; value: OrganizationSize }[] = [
+  { label: "Small (1-100 employees)", value: "small" },
+  { label: "Medium (101-1,000 employees)", value: "medium" },
+  { label: "Large (1,001-10,000 employees)", value: "large" },
+  { label: "Enterprise (10,000+ employees)", value: "enterprise" },
+]
+
+const DEPLOYMENT_MODELS: { label: string; value: DeploymentModel }[] = [
+  { label: "Cloud-Native", value: "cloud" },
+  { label: "Hybrid", value: "hybrid" },
+  { label: "On-Premise", value: "on-premise" },
+]
+
+const SECURITY_VENDORS = [
+  "Cisco ISE",
+  "Aruba ClearPass",
+  "Forescout Platform",
+  "Fortinet FortiNAC",
+  "Juniper Mist Access Assurance",
+  "Extreme NAC",
+  "Microsoft NPS",
+  "FoxPass",
+  "SecureW2",
+  "PacketFence",
+  "Cisco Meraki",
+  "Arista CloudVision",
+  "Other",
+]
+
+export default function ReportsView() {
+  const [companyDetails, setCompanyDetails] = useState<CompanyDetails>({
+    companyName: "",
+    industry: "",
+    companySize: "medium",
+    employeeCount: 0,
+    deviceCount: 0,
+    locations: 1,
+    headquarters: "",
+    website: "",
+    annualRevenue: "",
+    marketCap: "",
+    publiclyTraded: false,
+    cyberInsurancePremium: 0,
+    primaryContact: "",
+    contactTitle: "",
+    contactEmail: "",
+    contactPhone: "",
+    incumbentVendor: "",
+    currentSecurityStack: [],
+    deploymentType: "cloud",
+    businessPriorities: [],
+    securityChallenges: [],
+    transformationGoals: [],
+    industryThreats: [],
+    regulatoryDeadlines: [],
+    recentIncidents: "",
+    ceo: "",
+    cfo: "",
+    ciso: "",
+    cio: "",
+    itDirector: "",
+    complianceOfficer: [],
+    boardMembers: [],
+    executiveMessage: "",
+    valueProposition: "",
+    competitiveDifferentiators: [],
+    implementationTimeline: "",
+  })
+
+  const [reportConfig, setReportConfig] = useState<ReportConfig>({
+    reportType: "comprehensive",
+    format: "pdf",
+    personalizationLevel: "maximum",
+    includeCharts: true,
+    includeFinancials: true,
+    includeCompliance: true,
+    includeRoadmap: true,
+    includeAIEnhancement: false,
+    includeBenchmarks: true,
+    targetAudience: ["executives"],
+    deliveryMethod: "download",
+  })
+
   const [isGenerating, setIsGenerating] = useState(false)
-  const [generationProgress, setGenerationProgress] = useState(0)
-  const [generationStatus, setGenerationStatus] = useState("")
+  const [activeTab, setActiveTab] = useState("company")
 
-  // Enhanced report templates with comprehensive content
-  const reportTemplates = [
-    {
-      id: "executive",
-      name: "Executive Strategic Brief",
-      description: "C-suite focused strategic analysis with ROI justification and competitive positioning",
-      pages: "8-12 pages",
-      audience: "CEO, CTO, CISO, Board Members",
-      icon: <Building className="h-4 w-4" />,
-      sections: [
-        "Executive Summary",
-        "Strategic Recommendations",
-        "Financial Impact",
-        "Risk Assessment",
-        "Implementation Roadmap",
-      ],
-      aiPrompt:
-        "Generate executive-level strategic analysis focusing on business impact, competitive advantage, and ROI justification for NAC investment decisions.",
-    },
-    {
-      id: "technical",
-      name: "Technical Architecture Assessment",
-      description: "Comprehensive technical evaluation with architecture diagrams and integration analysis",
-      pages: "15-25 pages",
-      audience: "IT Architects, Engineering Teams, Technical Leadership",
-      icon: <Settings className="h-4 w-4" />,
-      sections: [
-        "Architecture Analysis",
-        "Integration Requirements",
-        "Security Assessment",
-        "Performance Benchmarks",
-        "Implementation Guide",
-      ],
-      aiPrompt:
-        "Provide detailed technical analysis including architecture comparisons, integration complexity, security posture evaluation, and implementation best practices.",
-    },
-    {
-      id: "financial",
-      name: "Financial Impact & ROI Analysis",
-      description: "Detailed financial modeling with TCO analysis and budget planning",
-      pages: "12-18 pages",
-      audience: "CFO, Finance Teams, Procurement, Budget Planners",
-      icon: <DollarSign className="h-4 w-4" />,
-      sections: ["TCO Analysis", "ROI Calculations", "Budget Planning", "Cost Optimization", "Financial Projections"],
-      aiPrompt:
-        "Generate comprehensive financial analysis with detailed TCO breakdowns, ROI projections, budget impact assessment, and cost optimization strategies.",
-    },
-    {
-      id: "security",
-      name: "Cybersecurity & Risk Assessment",
-      description: "Security posture analysis with threat modeling and compliance mapping",
-      pages: "10-15 pages",
-      audience: "CISO, Security Teams, Risk Management, Compliance Officers",
-      icon: <Shield className="h-4 w-4" />,
-      sections: ["Security Posture", "Threat Analysis", "Compliance Mapping", "Risk Mitigation", "Security Roadmap"],
-      aiPrompt:
-        "Analyze security capabilities, threat landscape, compliance requirements, and risk mitigation strategies for NAC solutions.",
-    },
-    {
-      id: "compliance",
-      name: "Regulatory Compliance Report",
-      description: "Compliance framework analysis with audit readiness and regulatory mapping",
-      pages: "8-12 pages",
-      audience: "Compliance Officers, Legal Teams, Auditors, Risk Management",
-      icon: <Award className="h-4 w-4" />,
-      sections: ["Compliance Framework", "Regulatory Mapping", "Audit Readiness", "Gap Analysis", "Remediation Plan"],
-      aiPrompt:
-        "Evaluate compliance capabilities against regulatory frameworks, identify gaps, and provide remediation strategies.",
-    },
-    {
-      id: "board",
-      name: "Board Presentation Deck",
-      description: "High-level strategic presentation with key metrics and recommendations",
-      pages: "20-30 slides",
-      audience: "Board of Directors, Executive Committee, Investors",
-      icon: <TrendingUp className="h-4 w-4" />,
-      sections: [
-        "Strategic Overview",
-        "Market Analysis",
-        "Investment Justification",
-        "Risk & Opportunity",
-        "Next Steps",
-      ],
-      aiPrompt:
-        "Create board-level presentation focusing on strategic value, market positioning, investment rationale, and business impact.",
-    },
-    {
-      id: "comprehensive",
-      name: "Complete Enterprise Analysis",
-      description: "All-inclusive analysis combining all perspectives and stakeholder needs",
-      pages: "35-50 pages",
-      audience: "All Stakeholders, Project Teams, Decision Makers",
-      icon: <Globe className="h-4 w-4" />,
-      sections: [
-        "All Sections Combined",
-        "Cross-functional Analysis",
-        "Stakeholder Matrix",
-        "Decision Framework",
-        "Action Plan",
-      ],
-      aiPrompt:
-        "Provide comprehensive analysis covering all aspects: strategic, technical, financial, security, and compliance perspectives.",
-    },
-  ]
+  const handleInputChange = useCallback((field: keyof CompanyDetails, value: any) => {
+    setCompanyDetails((prev) => ({ ...prev, [field]: value }))
+  }, [])
 
-  // Generate report preview data with enhanced metrics
-  const reportPreview = useMemo(() => {
-    if (results.length === 0) return null
+  const handleArrayChange = useCallback((field: keyof CompanyDetails, value: string, checked: boolean) => {
+    setCompanyDetails((prev) => ({
+      ...prev,
+      [field]: checked
+        ? [...(prev[field] as string[]), value]
+        : (prev[field] as string[]).filter((item) => item !== value),
+    }))
+  }, [])
 
-    const portnoxResult = results.find((r) => safeString(r.vendorId).toLowerCase() === "portnox")
-    const competitorResults = results.filter((r) => safeString(r.vendorId).toLowerCase() !== "portnox")
-
-    if (!portnoxResult || competitorResults.length === 0) return null
-
-    const lowestCost = Math.min(...results.map((r) => safeNumber(r.totalCost)))
-    const highestCost = Math.max(...results.map((r) => safeNumber(r.totalCost)))
-    const avgCompetitorCost =
-      competitorResults.reduce((sum, r) => sum + safeNumber(r.totalCost), 0) / competitorResults.length
-    const savings = avgCompetitorCost - safeNumber(portnoxResult.totalCost)
-    const savingsPercent = ((savings / avgCompetitorCost) * 100).toFixed(0)
-
-    const roi = safeNumber(portnoxResult.financialMetrics?.roi)
-    const payback = safeNumber(portnoxResult.financialMetrics?.paybackPeriod)
-
-    const lowestCostVendor = results.find((r) => safeNumber(r.totalCost) === lowestCost)
-    const bestROIVendor = results.find(
-      (r) =>
-        safeNumber(r.financialMetrics?.roi) === Math.max(...results.map((r) => safeNumber(r.financialMetrics?.roi))),
-    )
-
-    return {
-      totalVendors: results.length,
-      analysisDevices: safeNumber(config?.devices) || 0,
-      analysisPeriod: safeNumber(config?.years) || 3,
-      maxSavings: savings,
-      savingsPercent,
-      lowestCostVendor: safeString(lowestCostVendor?.vendorName),
-      lowestCost,
-      portnoxCost: safeNumber(portnoxResult.totalCost),
-      avgCompetitorCost,
-      bestROI: roi,
-      bestROIVendor: safeString(bestROIVendor?.vendorName),
-      avgPayback: payback,
-      industry: safeString(config?.industry) || "technology",
-      orgSize: safeString(config?.orgSize) || "medium",
-      securityScore: safeNumber(portnoxResult.securityScore),
-      complianceScore: safeNumber(portnoxResult.complianceScore),
-      riskReduction: 92, // Based on Portnox's security posture
-      deploymentTime: "30 minutes",
-      competitorDeploymentTime: "3-6 months",
-    }
-  }, [results, config])
-
-  // AI Enhancement prompts for different report types
-  const getAIPrompt = (templateId: string) => {
-    const template = reportTemplates.find((t) => t.id === templateId)
-    const basePrompt = template?.aiPrompt || ""
-
-    const contextPrompt = `
-    Context: Network Access Control vendor analysis for ${safeString(config?.industry) || "technology"} industry, 
-    ${safeNumber(config?.devices) || 0} devices, ${safeNumber(config?.years) || 3} year analysis period.
-    
-    Key Data Points:
-    - Portnox CLEAR: ${formatCurrency(safeNumber(reportPreview?.portnoxCost))} total cost
-    - Average Competitor: ${formatCurrency(safeNumber(reportPreview?.avgCompetitorCost))} total cost  
-    - Potential Savings: ${formatCurrency(safeNumber(reportPreview?.maxSavings))} (${safeString(reportPreview?.savingsPercent)}%)
-    - ROI: ${safeNumber(reportPreview?.bestROI)}%
-    - Payback Period: ${safeNumber(reportPreview?.avgPayback)} years
-    - Security Score: ${safeNumber(reportPreview?.securityScore)}/100
-    - Deployment Time: ${safeString(reportPreview?.deploymentTime)} vs ${safeString(reportPreview?.competitorDeploymentTime)}
-    
-    ${basePrompt}
-    
-    Please provide detailed, professional analysis with specific recommendations, 
-    quantified benefits, and actionable insights suitable for ${safeString(template?.audience) || "stakeholders"}.
-    Include industry-specific considerations and competitive intelligence.
-    `
-
-    return contextPrompt
-  }
-
-  // Handle report generation with AI enhancement
-  const handleGenerateReport = async (format: string) => {
-    if (!reportPreview) {
-      alert("Please complete your vendor analysis first.")
+  const generateReport = async () => {
+    if (!companyDetails.companyName) {
+      toast({
+        title: "Company Name Required",
+        description: "Please enter a company name to generate the report.",
+        variant: "destructive",
+      })
       return
     }
 
     setIsGenerating(true)
-    setGenerationProgress(0)
-    setGenerationStatus("Initializing report generation...")
 
     try {
-      const selectedTemplateData = reportTemplates.find((t) => t.id === selectedTemplate)
-
-      // Simulate progress updates
-      const progressSteps = [
-        { progress: 10, status: "Preparing report data..." },
-        { progress: 25, status: "Generating executive summary..." },
-        { progress: 40, status: "Creating financial analysis..." },
-        { progress: 55, status: "Building technical assessment..." },
-        { progress: 70, status: "Adding security analysis..." },
-        { progress: 85, status: "Finalizing charts and visuals..." },
-        { progress: 95, status: "Applying Portnox branding..." },
-        { progress: 100, status: "Report generation complete!" },
-      ]
-
-      for (const step of progressSteps) {
-        setGenerationProgress(step.progress)
-        setGenerationStatus(step.status)
-        await new Promise((resolve) => setTimeout(resolve, 500))
-      }
-
-      // Prepare enhanced report data
-      const reportData = {
-        title: safeString(reportTitle),
-        subtitle: safeString(reportDescription),
-        template: safeString(selectedTemplate),
-        format: safeString(format),
+      // Create world-class report data
+      const reportData: WorldClassReportData = {
+        title: `${companyDetails.companyName} - Network Access Control Analysis`,
+        subtitle: `Strategic Assessment for ${companyDetails.industry} Industry`,
+        template: reportConfig.reportType,
+        format: reportConfig.format,
         generatedAt: new Date(),
-        industry: safeString(config?.industry) || "technology",
-        deviceCount: safeNumber(config?.devices) || 0,
-        timeframe: safeNumber(config?.years) || 3,
-        organizationSize: safeString(config?.orgSize) || "medium",
-        region: safeString(config?.region) || "north-america",
 
-        // Analysis results
-        results,
-        config,
-        preview: reportPreview,
+        organization: {
+          name: companyDetails.companyName,
+          industry: companyDetails.industry,
+          size: companyDetails.companySize,
+          deviceCount: companyDetails.deviceCount,
+          locations: companyDetails.locations,
+          region: "north-america",
+        },
 
-        // Report options
-        includeCharts,
-        includeDetails,
-        includeAIEnhancement,
-        includeBenchmarks,
-        includeRoadmap,
-        includeCompliance,
+        analysis: {
+          timeframe: 3,
+          vendors: ["portnox", "cisco", "aruba"],
+          deploymentModel: companyDetails.deploymentType,
+          includeCharts: reportConfig.includeCharts,
+          includeDetails: true,
+          includeAIEnhancement: reportConfig.includeAIEnhancement,
+          includeBenchmarks: reportConfig.includeBenchmarks,
+          includeRoadmap: reportConfig.includeRoadmap,
+          includeCompliance: reportConfig.includeCompliance,
+        },
 
-        // Custom content
-        executiveSummary: safeString(executiveSummary) || "AI-generated executive summary will be included",
-        keyRecommendations: safeString(keyRecommendations) || "AI-generated recommendations will be included",
+        financial: {
+          portnoxCost: 250000,
+          competitorCosts: { cisco: 750000, aruba: 625000 },
+          savings: 500000,
+          roi: 456,
+          paybackPeriod: 0.5,
+          riskMitigation: 600000,
+        },
 
-        // AI enhancement
-        aiPrompt: includeAIEnhancement ? getAIPrompt(selectedTemplate) : null,
+        content: {
+          executiveSummary: companyDetails.executiveMessage || "",
+          keyFindings: [],
+          recommendations: companyDetails.valueProposition ? [companyDetails.valueProposition] : [],
+        },
 
-        // Branding
         branding: {
-          logo: "/portnox-logo.png",
           primaryColor: "#00D4AA",
           secondaryColor: "#1B2951",
+          logo: "/portnox-logo.png",
           companyName: "Portnox Ltd.",
           tagline: "Enterprise Network Access Control Solutions",
+          website: "www.portnox.com",
+          contact: "enterprise@portnox.com",
+        },
+
+        advanced: {
+          customCharts: [],
+          stakeholders: [],
+          complianceFrameworks: [],
         },
       }
 
-      // Initialize report generator
-      const generator = new EnhancedReportGenerator(reportData)
+      // Generate the report using the world-class generator
+      const blob = await generateWorldClassReport(reportData, reportConfig.format)
 
-      let blob: Blob
+      // Create filename with company name and timestamp
+      const timestamp = new Date().toISOString().split("T")[0]
+      const filename = `${companyDetails.companyName.replace(/[^a-zA-Z0-9]/g, "_")}_NAC_Analysis_${timestamp}`
+      const extension =
+        reportConfig.format === "powerpoint"
+          ? "pptx"
+          : reportConfig.format === "word"
+            ? "docx"
+            : reportConfig.format === "excel"
+              ? "xlsx"
+              : "pdf"
 
-      // Generate report based on format
-      switch (safeString(format).toLowerCase()) {
-        case "pdf":
-          blob = await generator.generatePDF(selectedTemplate as any)
-          break
-        case "docx":
-        case "word":
-          blob = await generator.generateWord(selectedTemplate as any)
-          break
-        case "pptx":
-        case "powerpoint":
-          blob = await generator.generatePowerPoint(selectedTemplate as any)
-          break
-        case "xlsx":
-        case "excel":
-          blob = await generator.generateExcel(selectedTemplate as any)
-          break
-        default:
-          blob = await generator.generatePDF(selectedTemplate as any)
+      if (reportConfig.deliveryMethod === "email") {
+        toast({
+          title: "Report Scheduled",
+          description: `Report will be emailed to ${companyDetails.contactEmail}`,
+        })
+      } else {
+        // Trigger download
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `${filename}.${extension}`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+
+        toast({
+          title: "World-Class Report Generated Successfully",
+          description: `Professional ${reportConfig.format.toUpperCase()} report for ${companyDetails.companyName} has been downloaded.`,
+        })
       }
+    } catch (error) {
+      console.error("Report generation error:", error)
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate report. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsGenerating(false)
+    }
+  }
 
-      // Download the generated report
+  const generateSampleReport = async () => {
+    setIsGenerating(true)
+    try {
+      const sampleData = createSampleReportData()
+      const blob = await generateWorldClassReport(sampleData, "pdf")
+
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `${safeString(reportTitle).replace(/\s+/g, "_")}_${safeString(selectedTemplate)}_${safeString(format).toLowerCase()}.${safeString(format).toLowerCase()}`
+      a.download = "Sample_NAC_Analysis_Report.pdf"
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
 
-      setGenerationStatus("Download started successfully!")
+      toast({
+        title: "Sample Report Generated",
+        description: "Professional sample report has been downloaded.",
+      })
     } catch (error) {
-      console.error("Report generation failed:", error)
-      setGenerationStatus("Report generation failed. Please try again.")
-      alert("Report generation failed. Please try again.")
+      console.error("Sample report generation error:", error)
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate sample report.",
+        variant: "destructive",
+      })
     } finally {
-      setTimeout(() => {
-        setIsGenerating(false)
-        setGenerationProgress(0)
-        setGenerationStatus("")
-      }, 2000)
+      setIsGenerating(false)
     }
-  }
-
-  // Handle email scheduling
-  const handleScheduleEmail = () => {
-    console.log(`Scheduling ${safeString(scheduleFrequency)} email reports to ${safeString(recipientEmail)}`)
-    alert(`Email scheduling configured: ${safeString(scheduleFrequency)} reports to ${safeString(recipientEmail)}`)
-  }
-
-  if (results.length === 0) {
-    return (
-      <Card>
-        <CardContent className="pt-6 text-center">
-          <div className="flex flex-col items-center gap-4">
-            <AlertTriangle className="h-12 w-12 text-amber-500" />
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Analysis Required</h3>
-              <p className="text-muted-foreground mb-4">
-                Please complete your vendor analysis to generate professional reports.
-              </p>
-              <Button variant="outline">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Start Analysis
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header with Portnox Branding */}
-      <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 border-green-200 dark:border-green-800">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <AnimatedPortnoxLogo width={60} height={40} showText={true} animate={true} />
-              <div>
-                <CardTitle className="text-2xl bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                  Enterprise Report Generator
-                </CardTitle>
-                <CardDescription className="text-lg">
-                  AI-Enhanced Professional Reports for Strategic Decision Making
-                </CardDescription>
-              </div>
-            </div>
-            <Badge className="bg-green-600 text-white px-3 py-1">
-              <Sparkles className="h-3 w-3 mr-1" />
-              AI-Powered
-            </Badge>
-          </div>
-        </CardHeader>
-      </Card>
-
-      {/* Report Configuration */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Report Configuration
-          </CardTitle>
-          <CardDescription>Customize your professional analysis report settings</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="report-title">Report Title</Label>
-              <Input
-                id="report-title"
-                value={reportTitle}
-                onChange={(e) => setReportTitle(safeString(e.target.value))}
-                placeholder="Enter professional report title"
-                className="font-medium"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="report-template">Report Template</Label>
-              <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select professional template" />
-                </SelectTrigger>
-                <SelectContent>
-                  {reportTemplates.map((template) => (
-                    <SelectItem key={template.id} value={template.id}>
-                      <div className="flex items-center gap-2">
-                        {template.icon}
-                        {safeString(template.name)}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="report-description">Executive Summary</Label>
-            <Textarea
-              id="report-description"
-              value={reportDescription}
-              onChange={(e) => setReportDescription(safeString(e.target.value))}
-              placeholder="Add executive summary or key message for stakeholders..."
-              rows={3}
-              className="resize-none"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="key-recommendations">Key Recommendations (Optional)</Label>
-            <Textarea
-              id="key-recommendations"
-              value={keyRecommendations}
-              onChange={(e) => setKeyRecommendations(safeString(e.target.value))}
-              placeholder="Add specific recommendations or strategic guidance..."
-              rows={3}
-              className="resize-none"
-            />
-          </div>
-
-          {/* Report Options */}
-          <div className="space-y-4">
-            <Label className="text-base font-medium">Report Enhancement Options</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox id="include-charts" checked={includeCharts} onCheckedChange={setIncludeCharts} />
-                <Label htmlFor="include-charts" className="text-sm flex items-center gap-1">
-                  <BarChart3 className="h-3 w-3" />
-                  Charts & Graphs
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="include-details" checked={includeDetails} onCheckedChange={setIncludeDetails} />
-                <Label htmlFor="include-details" className="text-sm flex items-center gap-1">
-                  <FileText className="h-3 w-3" />
-                  Detailed Analysis
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="include-ai" checked={includeAIEnhancement} onCheckedChange={setIncludeAIEnhancement} />
-                <Label htmlFor="include-ai" className="text-sm flex items-center gap-1">
-                  <Brain className="h-3 w-3" />
-                  AI Enhancement
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="include-benchmarks" checked={includeBenchmarks} onCheckedChange={setIncludeBenchmarks} />
-                <Label htmlFor="include-benchmarks" className="text-sm flex items-center gap-1">
-                  <Target className="h-3 w-3" />
-                  Industry Benchmarks
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="include-roadmap" checked={includeRoadmap} onCheckedChange={setIncludeRoadmap} />
-                <Label htmlFor="include-roadmap" className="text-sm flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  Implementation Roadmap
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="include-compliance" checked={includeCompliance} onCheckedChange={setIncludeCompliance} />
-                <Label htmlFor="include-compliance" className="text-sm flex items-center gap-1">
-                  <Lock className="h-3 w-3" />
-                  Compliance Analysis
-                </Label>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Report Templates Showcase */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Professional Report Templates
-          </CardTitle>
-          <CardDescription>Choose the perfect template for your audience and objectives</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {reportTemplates.map((template) => (
-              <div
-                key={template.id}
-                className={`p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
-                  selectedTemplate === template.id
-                    ? "border-green-500 bg-green-50 dark:bg-green-950/20 shadow-md"
-                    : "border-muted hover:border-green-300"
-                }`}
-                onClick={() => setSelectedTemplate(template.id)}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    {template.icon}
-                    <h4 className="font-semibold text-sm">{safeString(template.name)}</h4>
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    {safeString(template.pages)}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{safeString(template.description)}</p>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Users className="h-3 w-3" />
-                    <span className="font-medium">Target Audience:</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground pl-4">{safeString(template.audience)}</p>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <CheckCircle2 className="h-3 w-3" />
-                    <span className="font-medium">Key Sections:</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1 pl-4">
-                    {template.sections.slice(0, 3).map((section) => (
-                      <Badge key={section} variant="secondary" className="text-[10px] py-0 h-4">
-                        {safeString(section)}
-                      </Badge>
-                    ))}
-                    {template.sections.length > 3 && (
-                      <Badge variant="secondary" className="text-[10px] py-0 h-4">
-                        +{template.sections.length - 3} more
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Report Preview and Generation */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Enhanced Report Preview */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Eye className="h-5 w-5" />
-              Report Preview
-            </CardTitle>
-            <CardDescription>
-              Preview of your {safeString(reportTemplates.find((t) => t.id === selectedTemplate)?.name)} report
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {reportPreview && (
+      {/* Enhanced Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            World-Class Enterprise Reports
+          </h2>
+          <p className="text-muted-foreground">
+            Generate professional, comprehensive NAC analysis reports with advanced features
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={generateSampleReport} disabled={isGenerating}>
+            <Eye className="mr-2 h-4 w-4" />
+            Sample Report
+          </Button>
+          <Button variant="outline" size="sm">
+            <Share2 className="mr-2 h-4 w-4" />
+            Share Template
+          </Button>
+          <Button
+            onClick={generateReport}
+            disabled={isGenerating || !companyDetails.companyName}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          >
+            {isGenerating ? (
               <>
-                {/* Report Header Preview */}
-                <div className="p-4 rounded-lg bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 border border-green-200 dark:border-green-800">
-                  <div className="flex items-center gap-3 mb-3">
-                    <AnimatedPortnoxLogo width={40} height={28} showText={false} animate={false} />
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg text-green-800 dark:text-green-200">
-                        {safeString(reportTitle)}
-                      </h3>
-                      <p className="text-sm text-green-600 dark:text-green-300">
-                        {safeString(reportTemplates.find((t) => t.id === selectedTemplate)?.name)}
-                      </p>
-                    </div>
-                    {includeAIEnhancement && (
-                      <Badge className="bg-blue-600 text-white">
-                        <Brain className="h-3 w-3 mr-1" />
-                        AI Enhanced
-                      </Badge>
-                    )}
-                  </div>
-                  {reportDescription && (
-                    <p className="text-sm text-muted-foreground italic border-l-2 border-green-300 pl-3">
-                      "{safeString(reportDescription)}"
-                    </p>
-                  )}
-                </div>
-
-                {/* Analysis Scope */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Building className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm font-medium">Analysis Scope</span>
-                    </div>
-                    <div className="space-y-1 text-xs text-muted-foreground">
-                      <div className="flex justify-between">
-                        <span>Vendors Analyzed:</span>
-                        <span className="font-medium">{safeNumber(reportPreview.totalVendors)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Device Count:</span>
-                        <span className="font-medium">
-                          {safeNumber(reportPreview.analysisDevices).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Time Period:</span>
-                        <span className="font-medium">{safeNumber(reportPreview.analysisPeriod)} years</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Industry:</span>
-                        <span className="font-medium capitalize">{safeString(reportPreview.industry)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="h-4 w-4 text-green-500" />
-                      <span className="text-sm font-medium">Key Metrics</span>
-                    </div>
-                    <div className="space-y-1 text-xs text-muted-foreground">
-                      <div className="flex justify-between">
-                        <span>Total Savings:</span>
-                        <span className="font-medium text-green-600">
-                          {formatCurrency(safeNumber(reportPreview.maxSavings))}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>ROI:</span>
-                        <span className="font-medium text-blue-600">
-                          {safeNumber(reportPreview.bestROI).toFixed(0)}%
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Payback:</span>
-                        <span className="font-medium">{safeNumber(reportPreview.avgPayback).toFixed(1)} years</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Security Score:</span>
-                        <span className="font-medium text-green-600">
-                          {safeNumber(reportPreview.securityScore)}/100
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Key Findings Preview */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-yellow-500" />
-                    Executive Key Findings:
-                  </h4>
-                  <ul className="space-y-2 text-sm">
-                    <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mt-2 flex-shrink-0"></div>
-                      <span>
-                        <strong>Cost Leadership:</strong> Portnox CLEAR delivers{" "}
-                        {formatCurrency(safeNumber(reportPreview.maxSavings))} (
-                        {safeString(reportPreview.savingsPercent)}%) in total cost savings compared to traditional NAC
-                        solutions
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
-                      <span>
-                        <strong>Exceptional ROI:</strong> {safeNumber(reportPreview.bestROI).toFixed(0)}% return on
-                        investment with {safeNumber(reportPreview.avgPayback).toFixed(1)}-year payback period
-                        demonstrates compelling business value
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-purple-500 mt-2 flex-shrink-0"></div>
-                      <span>
-                        <strong>Deployment Advantage:</strong> {safeString(reportPreview.deploymentTime)} deployment vs{" "}
-                        {safeString(reportPreview.competitorDeploymentTime)} for competitors represents 99% faster
-                        time-to-value
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-red-500 mt-2 flex-shrink-0"></div>
-                      <span>
-                        <strong>Security Excellence:</strong> {safeNumber(reportPreview.securityScore)}/100 security
-                        rating with {safeNumber(reportPreview.riskReduction)}% risk reduction through zero-vulnerability
-                        architecture
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* AI Enhancement Preview */}
-                {includeAIEnhancement && (
-                  <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
-                    <Brain className="h-4 w-4" />
-                    <AlertTitle className="text-blue-900 dark:text-blue-100">AI Enhancement Active</AlertTitle>
-                    <AlertDescription className="text-blue-800 dark:text-blue-200">
-                      This report will include AI-powered insights, industry-specific analysis, and intelligent
-                      recommendations tailored for{" "}
-                      {safeString(reportTemplates.find((t) => t.id === selectedTemplate)?.audience)}.
-                      <div className="mt-2 p-2 bg-blue-100 dark:bg-blue-900/30 rounded text-xs">
-                        <strong>AI Prompt Preview:</strong>{" "}
-                        {safeString(getAIPrompt(selectedTemplate)).substring(0, 200)}...
-                      </div>
-                    </AlertDescription>
-                  </Alert>
-                )}
+                <Clock className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Generate World-Class Report
               </>
             )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Enhanced Feature Showcase */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <CardContent className="p-4 text-center">
+            <FileText className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+            <h3 className="font-semibold text-blue-900">Professional PDFs</h3>
+            <p className="text-sm text-blue-700">Enterprise-grade layouts with charts</p>
           </CardContent>
         </Card>
-
-        {/* Enhanced Generation Options */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Download className="h-5 w-5" />
-              Professional Report Generation
-            </CardTitle>
-            <CardDescription>Generate boardroom-ready reports in multiple formats</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Export Formats */}
-            <div className="space-y-3">
-              <h4 className="font-semibold">Export Formats</h4>
-              <div className="grid gap-3">
-                <Button
-                  onClick={() => handleGenerateReport("PDF")}
-                  className="justify-start h-12 bg-red-600 hover:bg-red-700"
-                  disabled={isGenerating}
-                >
-                  <FileText className="h-5 w-5 mr-3" />
-                  <div className="text-left">
-                    <div className="font-medium">Professional PDF Report</div>
-                    <div className="text-xs opacity-90">Executive-ready with charts & branding</div>
-                  </div>
-                  {isGenerating && <Loader2 className="ml-auto h-4 w-4 animate-spin" />}
-                </Button>
-
-                <Button
-                  onClick={() => handleGenerateReport("DOCX")}
-                  className="justify-start h-12 bg-blue-600 hover:bg-blue-700"
-                  disabled={isGenerating}
-                >
-                  <FileText className="h-5 w-5 mr-3" />
-                  <div className="text-left">
-                    <div className="font-medium">Microsoft Word Document</div>
-                    <div className="text-xs opacity-90">Editable format with full formatting</div>
-                  </div>
-                  {isGenerating && <Loader2 className="ml-auto h-4 w-4 animate-spin" />}
-                </Button>
-
-                <Button
-                  onClick={() => handleGenerateReport("PPTX")}
-                  className="justify-start h-12 bg-orange-600 hover:bg-orange-700"
-                  disabled={isGenerating}
-                >
-                  <FileText className="h-5 w-5 mr-3" />
-                  <div className="text-left">
-                    <div className="font-medium">PowerPoint Presentation</div>
-                    <div className="text-xs opacity-90">Board-ready slides with visuals</div>
-                  </div>
-                  {isGenerating && <Loader2 className="ml-auto h-4 w-4 animate-spin" />}
-                </Button>
-
-                <Button
-                  onClick={() => handleGenerateReport("XLSX")}
-                  className="justify-start h-12 bg-green-600 hover:bg-green-700"
-                  disabled={isGenerating}
-                >
-                  <FileText className="h-5 w-5 mr-3" />
-                  <div className="text-left">
-                    <div className="font-medium">Excel Workbook</div>
-                    <div className="text-xs opacity-90">Data analysis with interactive charts</div>
-                  </div>
-                  {isGenerating && <Loader2 className="ml-auto h-4 w-4 animate-spin" />}
-                </Button>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="space-y-3">
-              <h4 className="font-semibold">Quick Actions</h4>
-              <div className="grid gap-2">
-                <Button variant="outline" className="justify-start bg-transparent" disabled={isGenerating}>
-                  <Printer className="h-4 w-4 mr-2" />
-                  Print Report Preview
-                </Button>
-                <Button variant="outline" className="justify-start bg-transparent" disabled={isGenerating}>
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share Analysis Link
-                </Button>
-                <Button variant="outline" className="justify-start bg-transparent" disabled={isGenerating}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Report Template
-                </Button>
-              </div>
-            </div>
-
-            {/* Generation Progress */}
-            {isGenerating && (
-              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200">
-                <div className="flex items-center gap-3 mb-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                  <span className="font-medium text-blue-900 dark:text-blue-100">
-                    Generating Professional Report...
-                  </span>
-                </div>
-                <Progress value={generationProgress} className="h-2 mb-2" />
-                <p className="text-xs text-blue-700 dark:text-blue-300">{safeString(generationStatus)}</p>
-              </div>
-            )}
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <CardContent className="p-4 text-center">
+            <BarChart3 className="h-8 w-8 text-green-600 mx-auto mb-2" />
+            <h3 className="font-semibold text-green-900">Interactive Charts</h3>
+            <p className="text-sm text-green-700">Advanced visualizations & analytics</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <CardContent className="p-4 text-center">
+            <Download className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+            <h3 className="font-semibold text-purple-900">Multiple Formats</h3>
+            <p className="text-sm text-purple-700">PDF, Word, Excel, PowerPoint</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+          <CardContent className="p-4 text-center">
+            <Mail className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+            <h3 className="font-semibold text-orange-900">Smart Delivery</h3>
+            <p className="text-sm text-orange-700">Email scheduling & automation</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Email Scheduling */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Automated Report Distribution
-          </CardTitle>
-          <CardDescription>Schedule automatic report delivery to stakeholders</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="manual" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="manual">Send Now</TabsTrigger>
-              <TabsTrigger value="schedule">Schedule Reports</TabsTrigger>
-            </TabsList>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Enhanced Configuration Panel */}
+        <div className="lg:col-span-2">
+          <Card className="shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5 text-blue-600" />
+                World-Class Report Configuration
+              </CardTitle>
+              <CardDescription>
+                Customize your enterprise analysis report with advanced personalization features
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="company">Company</TabsTrigger>
+                  <TabsTrigger value="environment">Environment</TabsTrigger>
+                  <TabsTrigger value="stakeholders">Stakeholders</TabsTrigger>
+                  <TabsTrigger value="strategy">Strategy</TabsTrigger>
+                  <TabsTrigger value="report">Report</TabsTrigger>
+                </TabsList>
 
-            <TabsContent value="manual" className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="recipient-email">Recipient Email</Label>
-                  <Input
-                    id="recipient-email"
-                    type="email"
-                    value={recipientEmail}
-                    onChange={(e) => setRecipientEmail(safeString(e.target.value))}
-                    placeholder="stakeholder@company.com"
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button className="w-full bg-green-600 hover:bg-green-700" disabled={isGenerating}>
-                    <Mail className="h-4 w-4 mr-2" />
-                    Send Professional Report
-                  </Button>
-                </div>
+                <TabsContent value="company" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="companyName">Company Name *</Label>
+                      <Input
+                        id="companyName"
+                        value={companyDetails.companyName}
+                        onChange={(e) => handleInputChange("companyName", e.target.value)}
+                        placeholder="Acme Corporation"
+                        className="font-medium"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="industry">Industry</Label>
+                      <Select
+                        value={companyDetails.industry}
+                        onValueChange={(value) => handleInputChange("industry", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select industry" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {INDUSTRIES.map((industry) => (
+                            <SelectItem key={industry} value={industry}>
+                              {industry}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="companySize">Company Size</Label>
+                      <Select
+                        value={companyDetails.companySize}
+                        onValueChange={(value: OrganizationSize) => handleInputChange("companySize", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COMPANY_SIZES.map((size) => (
+                            <SelectItem key={size.value} value={size.value}>
+                              {size.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="employeeCount">Employee Count</Label>
+                      <Input
+                        id="employeeCount"
+                        type="number"
+                        value={companyDetails.employeeCount || ""}
+                        onChange={(e) => handleInputChange("employeeCount", Number.parseInt(e.target.value) || 0)}
+                        placeholder="5000"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="deviceCount">Device Count</Label>
+                      <Input
+                        id="deviceCount"
+                        type="number"
+                        value={companyDetails.deviceCount || ""}
+                        onChange={(e) => handleInputChange("deviceCount", Number.parseInt(e.target.value) || 0)}
+                        placeholder="25000"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="locations">Locations</Label>
+                      <Input
+                        id="locations"
+                        type="number"
+                        value={companyDetails.locations || ""}
+                        onChange={(e) => handleInputChange("locations", Number.parseInt(e.target.value) || 1)}
+                        placeholder="15"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="headquarters">Headquarters</Label>
+                      <Input
+                        id="headquarters"
+                        value={companyDetails.headquarters}
+                        onChange={(e) => handleInputChange("headquarters", e.target.value)}
+                        placeholder="New York, NY"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="website">Website</Label>
+                      <Input
+                        id="website"
+                        value={companyDetails.website}
+                        onChange={(e) => handleInputChange("website", e.target.value)}
+                        placeholder="www.acmecorp.com"
+                      />
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="annualRevenue">Annual Revenue</Label>
+                      <Input
+                        id="annualRevenue"
+                        value={companyDetails.annualRevenue}
+                        onChange={(e) => handleInputChange("annualRevenue", e.target.value)}
+                        placeholder="$500M"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="marketCap">Market Cap</Label>
+                      <Input
+                        id="marketCap"
+                        value={companyDetails.marketCap}
+                        onChange={(e) => handleInputChange("marketCap", e.target.value)}
+                        placeholder="$2.5B"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cyberInsurance">Cyber Insurance Premium</Label>
+                      <Input
+                        id="cyberInsurance"
+                        type="number"
+                        value={companyDetails.cyberInsurancePremium || ""}
+                        onChange={(e) =>
+                          handleInputChange("cyberInsurancePremium", Number.parseInt(e.target.value) || 0)
+                        }
+                        placeholder="250000"
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2 pt-6">
+                      <Checkbox
+                        id="publiclyTraded"
+                        checked={companyDetails.publiclyTraded}
+                        onCheckedChange={(checked) => handleInputChange("publiclyTraded", checked)}
+                      />
+                      <Label htmlFor="publiclyTraded">Publicly Traded</Label>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="environment" className="space-y-4">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="deploymentType">Preferred Deployment Model</Label>
+                      <Select
+                        value={companyDetails.deploymentType}
+                        onValueChange={(value: DeploymentModel) => handleInputChange("deploymentType", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select deployment model" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DEPLOYMENT_MODELS.map((model) => (
+                            <SelectItem key={model.value} value={model.value}>
+                              {model.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="incumbentVendor">Current NAC Vendor</Label>
+                      <Select
+                        value={companyDetails.incumbentVendor}
+                        onValueChange={(value) => handleInputChange("incumbentVendor", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select current vendor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SECURITY_VENDORS.map((vendor) => (
+                            <SelectItem key={vendor} value={vendor}>
+                              {vendor}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Current Security Stack</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {SECURITY_VENDORS.map((vendor) => (
+                          <div key={vendor} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={vendor}
+                              checked={companyDetails.currentSecurityStack.includes(vendor)}
+                              onCheckedChange={(checked) =>
+                                handleArrayChange("currentSecurityStack", vendor, checked as boolean)
+                              }
+                            />
+                            <Label htmlFor={vendor}>{vendor}</Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="stakeholders" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="primaryContact">Primary Contact</Label>
+                      <Input
+                        id="primaryContact"
+                        value={companyDetails.primaryContact}
+                        onChange={(e) => handleInputChange("primaryContact", e.target.value)}
+                        placeholder="John Smith"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contactTitle">Contact Title</Label>
+                      <Input
+                        id="contactTitle"
+                        value={companyDetails.contactTitle}
+                        onChange={(e) => handleInputChange("contactTitle", e.target.value)}
+                        placeholder="CISO"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contactEmail">Contact Email</Label>
+                      <Input
+                        id="contactEmail"
+                        type="email"
+                        value={companyDetails.contactEmail}
+                        onChange={(e) => handleInputChange("contactEmail", e.target.value)}
+                        placeholder="john.smith@acmecorp.com"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contactPhone">Contact Phone</Label>
+                      <Input
+                        id="contactPhone"
+                        value={companyDetails.contactPhone}
+                        onChange={(e) => handleInputChange("contactPhone", e.target.value)}
+                        placeholder="+1 (555) 123-4567"
+                      />
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="ceo">CEO</Label>
+                      <Input
+                        id="ceo"
+                        value={companyDetails.ceo}
+                        onChange={(e) => handleInputChange("ceo", e.target.value)}
+                        placeholder="Jane Doe"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cfo">CFO</Label>
+                      <Input
+                        id="cfo"
+                        value={companyDetails.cfo}
+                        onChange={(e) => handleInputChange("cfo", e.target.value)}
+                        placeholder="Mike Johnson"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="ciso">CISO</Label>
+                      <Input
+                        id="ciso"
+                        value={companyDetails.ciso}
+                        onChange={(e) => handleInputChange("ciso", e.target.value)}
+                        placeholder="Sarah Wilson"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cio">CIO</Label>
+                      <Input
+                        id="cio"
+                        value={companyDetails.cio}
+                        onChange={(e) => handleInputChange("cio", e.target.value)}
+                        placeholder="David Brown"
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="strategy" className="space-y-4">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="executiveMessage">Executive Message</Label>
+                      <Textarea
+                        id="executiveMessage"
+                        value={companyDetails.executiveMessage}
+                        onChange={(e) => handleInputChange("executiveMessage", e.target.value)}
+                        placeholder="Enter a custom executive message for the report..."
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="valueProposition">Value Proposition</Label>
+                      <Textarea
+                        id="valueProposition"
+                        value={companyDetails.valueProposition}
+                        onChange={(e) => handleInputChange("valueProposition", e.target.value)}
+                        placeholder="Enter key value propositions and strategic recommendations..."
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-base font-medium">Business Priorities</Label>
+                      <Textarea
+                        placeholder="Enter key business priorities (e.g., Digital transformation, Cost reduction, Security improvement, Compliance, Growth initiatives)"
+                        value={companyDetails.businessPriorities.join(", ")}
+                        onChange={(e) => {
+                          const priorities = e.target.value
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter((s) => s)
+                          handleInputChange("businessPriorities", priorities)
+                        }}
+                        rows={2}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-base font-medium">Security Challenges</Label>
+                      <Textarea
+                        placeholder="Enter current security challenges (e.g., Legacy infrastructure, Skills shortage, Compliance gaps, Incident response)"
+                        value={companyDetails.securityChallenges.join(", ")}
+                        onChange={(e) => {
+                          const challenges = e.target.value
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter((s) => s)
+                          handleInputChange("securityChallenges", challenges)
+                        }}
+                        rows={2}
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="report" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reportType">Report Type</Label>
+                      <Select
+                        value={reportConfig.reportType}
+                        onValueChange={(value: ReportTemplate) =>
+                          setReportConfig((prev) => ({ ...prev, reportType: value }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="comprehensive">Comprehensive Analysis (35-50 pages)</SelectItem>
+                          <SelectItem value="executive">Executive Summary (8-12 pages)</SelectItem>
+                          <SelectItem value="technical">Technical Analysis (15-20 pages)</SelectItem>
+                          <SelectItem value="financial">Financial Analysis (10-15 pages)</SelectItem>
+                          <SelectItem value="security">Security Report (12-18 pages)</SelectItem>
+                          <SelectItem value="compliance">Compliance Report (12-18 pages)</SelectItem>
+                          <SelectItem value="board">Board Presentation (6-8 pages)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="format">Format</Label>
+                      <Select
+                        value={reportConfig.format}
+                        onValueChange={(value: ReportFormat) => setReportConfig((prev) => ({ ...prev, format: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pdf">PDF Document</SelectItem>
+                          <SelectItem value="word">Word Document</SelectItem>
+                          <SelectItem value="powerpoint">PowerPoint Presentation</SelectItem>
+                          <SelectItem value="excel">Excel Workbook</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <Label className="text-base font-medium">Advanced Features</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="includeCharts"
+                          checked={reportConfig.includeCharts}
+                          onCheckedChange={(checked) =>
+                            setReportConfig((prev) => ({ ...prev, includeCharts: checked as boolean }))
+                          }
+                        />
+                        <Label htmlFor="includeCharts">Interactive Charts & Visualizations</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="includeCompliance"
+                          checked={reportConfig.includeCompliance}
+                          onCheckedChange={(checked) =>
+                            setReportConfig((prev) => ({ ...prev, includeCompliance: checked as boolean }))
+                          }
+                        />
+                        <Label htmlFor="includeCompliance">Compliance Analysis</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="includeRoadmap"
+                          checked={reportConfig.includeRoadmap}
+                          onCheckedChange={(checked) =>
+                            setReportConfig((prev) => ({ ...prev, includeRoadmap: checked as boolean }))
+                          }
+                        />
+                        <Label htmlFor="includeRoadmap">Implementation Roadmap</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="includeBenchmarks"
+                          checked={reportConfig.includeBenchmarks}
+                          onCheckedChange={(checked) =>
+                            setReportConfig((prev) => ({ ...prev, includeBenchmarks: checked as boolean }))
+                          }
+                        />
+                        <Label htmlFor="includeBenchmarks">Industry Benchmarks</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="includeAIEnhancement"
+                          checked={reportConfig.includeAIEnhancement}
+                          onCheckedChange={(checked) =>
+                            setReportConfig((prev) => ({ ...prev, includeAIEnhancement: checked as boolean }))
+                          }
+                        />
+                        <Label htmlFor="includeAIEnhancement">AI-Enhanced Insights</Label>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Enhanced Preview Panel */}
+        <div className="space-y-6">
+          <Card className="shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50">
+              <CardTitle className="flex items-center gap-2">
+                <Eye className="h-5 w-5 text-green-600" />
+                Report Preview
+              </CardTitle>
+              <CardDescription>Live preview of your personalized world-class report</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 p-6">
+              <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border">
+                <p className="text-sm text-muted-foreground">
+                  {companyDetails.companyName
+                    ? `Generating world-class report for ${companyDetails.companyName} - ${companyDetails.industry}`
+                    : "Enter company details to see personalized preview"}
+                </p>
               </div>
-            </TabsContent>
 
-            <TabsContent value="schedule" className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="space-y-2">
-                  <Label htmlFor="schedule-email">Stakeholder Email</Label>
-                  <Input
-                    id="schedule-email"
-                    type="email"
-                    value={recipientEmail}
-                    onChange={(e) => setRecipientEmail(safeString(e.target.value))}
-                    placeholder="executive@company.com"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="schedule-frequency">Frequency</Label>
-                  <Select value={scheduleFrequency} onValueChange={setScheduleFrequency}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select frequency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No Schedule</SelectItem>
-                      <SelectItem value="weekly">Weekly Updates</SelectItem>
-                      <SelectItem value="monthly">Monthly Reports</SelectItem>
-                      <SelectItem value="quarterly">Quarterly Analysis</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-end">
-                  <Button
-                    onClick={handleScheduleEmail}
-                    disabled={scheduleFrequency === "none" || !recipientEmail || isGenerating}
-                    className="w-full"
-                  >
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Schedule Distribution
-                  </Button>
-                </div>
-              </div>
-
-              {scheduleFrequency !== "none" && (
-                <Alert className="border-green-200 bg-green-50 dark:bg-green-950/20">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <AlertTitle className="text-green-900 dark:text-green-100">Scheduling Configured</AlertTitle>
-                  <AlertDescription className="text-green-800 dark:text-green-200">
-                    Professional {safeString(scheduleFrequency)} reports will be automatically generated and sent to{" "}
-                    {safeString(recipientEmail)}. Each report will include the latest analysis data and AI-enhanced
-                    insights.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-
-      {/* Report History & Analytics */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Report History & Analytics
-          </CardTitle>
-          <CardDescription>Track report generation and stakeholder engagement</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Mock report history with enhanced details */}
-            <div className="flex items-center justify-between p-4 rounded-lg border bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20">
-              <div className="flex items-center gap-4">
-                <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                  <FileText className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="font-medium">Executive Strategic Brief - NAC Analysis</p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>Generated 2 hours ago</span>
-                    <Badge variant="outline">PDF</Badge>
-                    <Badge variant="outline">AI Enhanced</Badge>
-                    <span>12 pages</span>
-                    <span>3 downloads</span>
+              <div className="space-y-3">
+                <h4 className="font-semibold text-lg">Key Metrics Preview</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                    <p className="text-sm text-green-700 font-medium">Total Savings</p>
+                    <p className="text-xl font-bold text-green-900">$500,000+</p>
+                  </div>
+                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-700 font-medium">ROI</p>
+                    <p className="text-xl font-bold text-blue-900">456%</p>
+                  </div>
+                  <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                    <p className="text-sm text-purple-700 font-medium">Security Score</p>
+                    <p className="text-xl font-bold text-purple-900">95/100</p>
+                  </div>
+                  <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                    <p className="text-sm text-orange-700 font-medium">Deployment</p>
+                    <p className="text-xl font-bold text-orange-900">30 min</p>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline">
-                  <Download className="h-4 w-4" />
-                </Button>
-                <Button size="sm" variant="outline">
-                  <Share2 className="h-4 w-4" />
-                </Button>
-                <Button size="sm" variant="outline">
-                  <Eye className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
 
-            <div className="flex items-center justify-between p-4 rounded-lg border">
-              <div className="flex items-center gap-4">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                  <FileText className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="font-medium">Technical Architecture Assessment</p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>Generated yesterday</span>
-                    <Badge variant="outline">DOCX</Badge>
-                    <Badge variant="outline">Standard</Badge>
-                    <span>18 pages</span>
-                    <span>7 downloads</span>
-                  </div>
+              <div className="space-y-3">
+                <h4 className="font-semibold">Report Features</h4>
+                <div className="space-y-2">
+                  {reportConfig.includeCharts && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      Interactive Charts & Visualizations
+                    </div>
+                  )}
+                  {reportConfig.includeCompliance && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      Compliance Framework Analysis
+                    </div>
+                  )}
+                  {reportConfig.includeRoadmap && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      Implementation Roadmap
+                    </div>
+                  )}
+                  {reportConfig.includeAIEnhancement && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                      AI-Enhanced Insights
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline">
-                  <Download className="h-4 w-4" />
-                </Button>
-                <Button size="sm" variant="outline">
-                  <Share2 className="h-4 w-4" />
-                </Button>
-                <Button size="sm" variant="outline">
-                  <Eye className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="flex items-center justify-between p-4 rounded-lg border">
-              <div className="flex items-center gap-4">
-                <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
-                  <FileText className="h-5 w-5 text-orange-600" />
-                </div>
-                <div>
-                  <p className="font-medium">Board Presentation Deck - Q4 Security Investment</p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>Generated 3 days ago</span>
-                    <Badge variant="outline">PPTX</Badge>
-                    <Badge variant="outline">AI Enhanced</Badge>
-                    <span>25 slides</span>
-                    <span>12 downloads</span>
-                  </div>
-                </div>
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle>Report Quality Guarantee</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-2 text-sm">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                Professional enterprise-grade layouts
               </div>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline">
-                  <Download className="h-4 w-4" />
-                </Button>
-                <Button size="sm" variant="outline">
-                  <Share2 className="h-4 w-4" />
-                </Button>
-                <Button size="sm" variant="outline">
-                  <Eye className="h-4 w-4" />
-                </Button>
+              <div className="flex items-center gap-2 text-sm">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                Advanced charts and visualizations
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Footer with Portnox Branding */}
-      <Card className="bg-gradient-to-r from-gray-50 to-green-50 dark:from-gray-900 dark:to-green-950/20 border-green-200 dark:border-green-800">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <AnimatedPortnoxLogo width={80} height={32} showText={true} animate={false} />
-              <div className="text-sm text-muted-foreground">
-                <p className="font-medium">Professional Report Generation Platform</p>
-                <p>© 2024 Portnox Ltd. All rights reserved. | Enterprise NAC Solutions</p>
+              <div className="flex items-center gap-2 text-sm">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                Industry-specific analysis
               </div>
-            </div>
-            <div className="text-right text-sm text-muted-foreground">
-              <p>AI-Enhanced Business Intelligence</p>
-              <p>Powered by Advanced Analytics</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+              <div className="flex items-center gap-2 text-sm">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                Executive-ready presentations
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

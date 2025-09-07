@@ -1,52 +1,41 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { useState, useMemo } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
+import { Separator } from "@/components/ui/separator"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
-  AlertCircle,
-  Check,
-  ChevronDown,
-  ChevronRight,
-  Cloud,
-  Filter,
-  Info,
   Search,
-  Server,
-  Shield,
+  Filter,
   Star,
-  X,
-  AlertTriangle,
+  TrendingUp,
+  Shield,
   DollarSign,
   Clock,
   Users,
-  Zap,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Info,
+  Sparkles,
   Award,
-  Database,
-  Lock,
-  Network,
-  Settings,
-  TrendingUp,
-  Phone,
-  Mail,
+  Target,
 } from "lucide-react"
-import Image from "next/image"
 
 interface EnhancedVendorSelectionProps {
   selectedVendors: string[]
   onVendorToggle: (vendorId: string) => void
   onClearAll: () => void
   onSelectRecommended: () => void
-  darkMode: boolean
+  darkMode?: boolean
 }
 
 // Safe string conversion utility
@@ -55,7 +44,13 @@ function safeString(value: any): string {
   if (typeof value === "string") return value
   if (typeof value === "number") return value.toString()
   if (typeof value === "boolean") return value.toString()
-  if (typeof value === "object") return JSON.stringify(value)
+  if (typeof value === "object") {
+    try {
+      return JSON.stringify(value)
+    } catch {
+      return String(value)
+    }
+  }
   return String(value)
 }
 
@@ -66,1120 +61,696 @@ function safeNumber(value: any, defaultValue = 0): number {
   return isNaN(num) || !isFinite(num) ? defaultValue : num
 }
 
-// Comprehensive vendor data with detailed specifications and pricing
-const VENDOR_DISPLAY_DATA = {
+// Comprehensive vendor database - using the same structure as the existing data
+const COMPREHENSIVE_VENDOR_DATA = {
   portnox: {
+    id: "portnox",
     name: "Portnox CLEAR",
-    description: "Cloud-native NAC with AI-powered automation and zero-trust architecture",
-    category: "leader",
-    deploymentType: "cloud",
+    category: "visionary",
     marketShare: 8.5,
-    securityRating: 95,
+    deploymentType: "cloud",
     logo: "/portnox-logo.png",
-    isRecommended: true,
-    isDefault: true,
+    description: "Pure cloud-native NAC with zero infrastructure requirements and industry-leading security posture.",
 
     pricing: {
-      model: "Per Device/Month",
-      startingPrice: "$4.00",
-      enterprisePrice: "$3.00",
-      minimumDevices: 10,
-      contractTerms: ["Monthly", "Annual", "Multi-year"],
-      volumeDiscounts: [
-        { threshold: 500, discount: "5%" },
-        { threshold: 1000, discount: "10%" },
-        { threshold: 2500, discount: "15%" },
-        { threshold: 5000, discount: "20%" },
-        { threshold: 10000, discount: "25%" },
-      ],
-      includedFeatures: [
-        "Unlimited policies",
-        "24/7 support",
-        "All integrations",
-        "Advanced analytics",
-        "Compliance reporting",
-      ],
+      model: "per-device",
+      basePrice: 0,
+      pricePerDevice: 4.0,
       additionalCosts: {
-        implementation: "$0",
-        training: "Included",
-        support: "Included",
-        hardware: "$0",
-      },
-    },
-
-    technical: {
-      protocols: ["RADIUS", "802.1X", "TACACS+", "LDAP", "SAML", "OAuth", "OpenID Connect"],
-      integrations: [
-        "Active Directory",
-        "Azure AD",
-        "Okta",
-        "Ping Identity",
-        "Splunk",
-        "QRadar",
-        "ArcSight",
-        "Elastic",
-        "ServiceNow",
-        "Jira",
-        "PagerDuty",
-        "Intune",
-        "VMware Workspace ONE",
-        "MobileIron",
-        "AWS",
-        "Azure",
-        "GCP",
-        "Oracle Cloud",
-      ],
-      supportedDevices: ["Windows", "macOS", "iOS", "Android", "Linux", "IoT devices", "Network equipment"],
-      networkEquipment: [
-        "Cisco",
-        "Aruba",
-        "Juniper",
-        "Extreme",
-        "Fortinet",
-        "Meraki",
-        "Ubiquiti",
-        "All 802.1X capable",
-      ],
-      scalability: {
-        maxDevices: "Unlimited",
-        maxPolicies: "Unlimited",
-        maxSites: "Unlimited",
-        performance: "Sub-second response",
-      },
-      compliance: ["SOC 2 Type II", "ISO 27001", "HIPAA", "PCI DSS", "GDPR", "FedRAMP Ready", "NIST", "CMMC"],
-      security: {
-        encryption: "AES-256",
-        dataResidency: "Customer choice",
-        sso: "Full SSO support",
-        mfa: "Built-in MFA",
-        zeroTrust: "95% maturity",
+        hardware: 0,
+        services: 0,
+        training: 0,
+        maintenance: 0,
       },
     },
 
     implementation: {
-      deploymentTime: "30 minutes",
-      complexity: "Low",
-      professionalServices: "Optional",
-      trainingRequired: "2 hours",
-      successRate: "99%",
-      timeToValue: "Same day",
+      timeToDeployDays: 1,
+      complexity: "low",
+      professionalServicesRequired: false,
+      trainingHours: 2,
+    },
+
+    security: {
+      securityRating: 95,
+      cveCount: 0,
+      complianceSupport: ["HIPAA", "PCI-DSS", "SOX", "GDPR", "NIST", "ISO27001", "FedRAMP"],
+      zeroTrustMaturity: 95,
+    },
+
+    features: {
+      core: ["Device Discovery", "Policy Enforcement", "Guest Access", "Certificate Management"],
+      advanced: ["AI-Powered Analytics", "Automated Remediation", "Risk Scoring", "Behavioral Analysis"],
+      integrations: ["Active Directory", "SIEM", "ITSM", "MDM", "Cloud Platforms"],
     },
 
     support: {
       availability: "24/7/365",
       responseTime: "< 1 hour",
-      channels: ["Phone", "Email", "Chat", "Portal"],
-      satisfaction: "96%",
-      documentation: "Comprehensive",
-      community: "Active forum",
+      customerSatisfaction: 96,
     },
 
-    performance: {
-      uptime: "99.99%",
-      latency: "< 50ms",
-      throughput: "Unlimited",
-      cveCount: 0,
-      mttr: "15 minutes",
-    },
+    strengths: [
+      "Zero infrastructure requirements",
+      "Fastest deployment in industry",
+      "No CVEs in security history",
+      "95% Zero Trust maturity score",
+      "All-inclusive pricing model",
+    ],
+    weaknesses: ["Newer market presence", "Limited on-premise options"],
+    bestFor: [
+      "Cloud-first organizations",
+      "Rapid deployment requirements",
+      "Cost-conscious enterprises",
+      "Zero Trust initiatives",
+    ],
+    isRecommended: true,
   },
 
   cisco: {
-    name: "Cisco Identity Services Engine",
-    description: "Enterprise NAC solution with comprehensive policy enforcement",
+    id: "cisco",
+    name: "Cisco Identity Services Engine (ISE)",
     category: "leader",
+    marketShare: 35.2,
     deploymentType: "on-premise",
-    marketShare: 25.3,
-    securityRating: 72,
     logo: "/cisco-logo.png",
-    isRecommended: true,
+    description:
+      "Industry-leading identity services engine with comprehensive policy management and extensive ecosystem integration.",
 
     pricing: {
-      model: "Per Device/Year + Hardware",
-      startingPrice: "$125",
-      enterprisePrice: "$165",
+      model: "per-device",
+      basePrice: 50000,
+      pricePerDevice: 12.0,
       minimumDevices: 100,
-      contractTerms: ["3-year", "5-year"],
-      volumeDiscounts: [
-        { threshold: 1000, discount: "5%" },
-        { threshold: 5000, discount: "10%" },
-        { threshold: 10000, discount: "15%" },
-      ],
-      includedFeatures: ["Base license features", "Standard support", "Basic reporting"],
       additionalCosts: {
-        implementation: "$150,000",
-        training: "$25,000",
-        support: "22% annually",
-        hardware: "$65,000 - $175,000",
-      },
-    },
-
-    technical: {
-      protocols: ["RADIUS", "802.1X", "TACACS+", "LDAP", "Active Directory"],
-      integrations: [
-        "Cisco Security Portfolio",
-        "pxGrid",
-        "TrustSec",
-        "Third-party SIEM",
-        "MDM Solutions",
-        "Threat Intelligence Feeds",
-      ],
-      supportedDevices: ["Windows", "macOS", "iOS", "Android", "Linux", "Network devices"],
-      networkEquipment: ["Cisco (optimized)", "Multi-vendor support"],
-      scalability: {
-        maxDevices: "500,000",
-        maxPolicies: "10,000",
-        maxSites: "1,000",
-        performance: "2-5 second response",
-      },
-      compliance: ["HIPAA", "PCI DSS", "SOX", "NIST", "Common Criteria", "FIPS 140-2"],
-      security: {
-        encryption: "AES-256",
-        dataResidency: "On-premise",
-        sso: "Limited SSO",
-        mfa: "Third-party required",
-        zeroTrust: "75% maturity",
+        hardware: 150000,
+        services: 75000,
+        training: 25000,
+        maintenance: 30000,
       },
     },
 
     implementation: {
-      deploymentTime: "6 months",
-      complexity: "High",
-      professionalServices: "Required",
-      trainingRequired: "80 hours",
-      successRate: "67%",
-      timeToValue: "6-9 months",
+      timeToDeployDays: 180,
+      complexity: "high",
+      professionalServicesRequired: true,
+      trainingHours: 40,
+    },
+
+    security: {
+      securityRating: 85,
+      cveCount: 47,
+      lastSecurityIncident: "2023-Q4",
+      complianceSupport: ["HIPAA", "PCI-DSS", "SOX", "GDPR", "NIST", "ISO27001", "Common Criteria"],
+      zeroTrustMaturity: 75,
+    },
+
+    features: {
+      core: ["Policy Management", "Device Profiling", "Guest Access", "Certificate Services"],
+      advanced: ["TrustSec", "pxGrid", "Threat Intelligence", "Compliance Reporting"],
+      integrations: ["Cisco Security Portfolio", "Third-party SIEM", "MDM Solutions", "Threat Intelligence"],
     },
 
     support: {
       availability: "24/7/365",
       responseTime: "< 4 hours",
-      channels: ["Phone", "Email", "Portal"],
-      satisfaction: "78%",
-      documentation: "Extensive but complex",
-      community: "Large community",
+      customerSatisfaction: 78,
     },
 
-    performance: {
-      uptime: "99.5%",
-      latency: "200-500ms",
-      throughput: "Hardware dependent",
-      cveCount: 55,
-      mttr: "12 hours",
-    },
+    strengths: [
+      "Market leader with proven track record",
+      "Comprehensive feature set",
+      "Extensive ecosystem integration",
+      "Strong enterprise support",
+    ],
+    weaknesses: [
+      "Complex deployment and management",
+      "High total cost of ownership",
+      "Significant hardware requirements",
+      "Multiple CVEs annually",
+    ],
+    bestFor: [
+      "Large enterprises",
+      "Cisco-centric environments",
+      "Complex policy requirements",
+      "Regulatory compliance needs",
+    ],
+    isRecommended: true,
   },
 
   aruba: {
+    id: "aruba",
     name: "Aruba ClearPass",
-    description: "Policy management platform with network access control",
     category: "challenger",
+    marketShare: 18.7,
     deploymentType: "hybrid",
-    marketShare: 15.2,
-    securityRating: 70,
     logo: "/aruba-logo.png",
-    isRecommended: true,
+    description: "Comprehensive network access control with strong policy management and multi-vendor support.",
 
     pricing: {
-      model: "Per Device/Year + Hardware",
-      startingPrice: "$60",
-      enterprisePrice: "$85",
+      model: "per-device",
+      basePrice: 25000,
+      pricePerDevice: 8.5,
       minimumDevices: 50,
-      contractTerms: ["1-year", "3-year", "5-year"],
-      volumeDiscounts: [
-        { threshold: 500, discount: "5%" },
-        { threshold: 2000, discount: "10%" },
-        { threshold: 5000, discount: "15%" },
-      ],
-      includedFeatures: ["Policy Manager", "Device Insight", "Guest Access", "OnGuard"],
       additionalCosts: {
-        implementation: "$80,000",
-        training: "$15,000",
-        support: "18% annually",
-        hardware: "$29,000 - $70,000",
-      },
-    },
-
-    technical: {
-      protocols: ["RADIUS", "802.1X", "TACACS+", "LDAP", "SAML"],
-      integrations: [
-        "Aruba Infrastructure",
-        "Third-party Switches",
-        "SIEM Solutions",
-        "MDM Platforms",
-        "IntroSpect UEBA",
-      ],
-      supportedDevices: ["Windows", "macOS", "iOS", "Android", "Linux", "IoT"],
-      networkEquipment: ["Aruba (optimized)", "Multi-vendor"],
-      scalability: {
-        maxDevices: "100,000",
-        maxPolicies: "5,000",
-        maxSites: "500",
-        performance: "1-3 second response",
-      },
-      compliance: ["HIPAA", "PCI DSS", "SOX", "GDPR", "ISO 27001"],
-      security: {
-        encryption: "AES-256",
-        dataResidency: "Hybrid options",
-        sso: "SAML support",
-        mfa: "Third-party integration",
-        zeroTrust: "70% maturity",
+        hardware: 80000,
+        services: 40000,
+        training: 15000,
+        maintenance: 20000,
       },
     },
 
     implementation: {
-      deploymentTime: "3 months",
-      complexity: "Medium",
-      professionalServices: "Recommended",
-      trainingRequired: "40 hours",
-      successRate: "78%",
-      timeToValue: "3-4 months",
+      timeToDeployDays: 90,
+      complexity: "medium",
+      professionalServicesRequired: true,
+      trainingHours: 24,
+    },
+
+    security: {
+      securityRating: 82,
+      cveCount: 12,
+      lastSecurityIncident: "2023-Q2",
+      complianceSupport: ["HIPAA", "PCI-DSS", "SOX", "GDPR", "NIST"],
+      zeroTrustMaturity: 70,
+    },
+
+    features: {
+      core: ["Policy Manager", "Device Insight", "Guest Access", "OnGuard"],
+      advanced: ["IntroSpect UEBA", "Policy Enforcement", "Threat Detection", "Compliance Reporting"],
+      integrations: ["Aruba Infrastructure", "Third-party Switches", "SIEM Solutions", "MDM Platforms"],
     },
 
     support: {
       availability: "24/7/365",
       responseTime: "< 2 hours",
-      channels: ["Phone", "Email", "Chat", "Portal"],
-      satisfaction: "84%",
-      documentation: "Good",
-      community: "Active",
+      customerSatisfaction: 84,
     },
 
-    performance: {
-      uptime: "99.7%",
-      latency: "100-300ms",
-      throughput: "Hardware dependent",
-      cveCount: 29,
-      mttr: "6 hours",
-    },
+    strengths: [
+      "Strong policy management",
+      "Multi-vendor support",
+      "Good price-performance ratio",
+      "Comprehensive feature set",
+    ],
+    weaknesses: ["Complex initial setup", "Hardware dependencies", "Limited cloud-native features"],
+    bestFor: [
+      "Mid to large enterprises",
+      "Multi-vendor environments",
+      "Policy-heavy deployments",
+      "Budget-conscious organizations",
+    ],
+    isRecommended: true,
   },
 
   forescout: {
+    id: "forescout",
     name: "Forescout Platform",
-    description: "Device visibility and control for enterprise networks",
-    category: "specialist",
+    category: "challenger",
+    marketShare: 12.3,
     deploymentType: "hybrid",
-    marketShare: 12.1,
-    securityRating: 75,
     logo: "/forescout-logo.png",
-    isRecommended: true,
+    description: "Device visibility and control platform with strong IoT and OT security capabilities.",
 
     pricing: {
-      model: "Per Device/Year",
-      startingPrice: "$84",
-      enterprisePrice: "$65",
+      model: "per-device",
+      basePrice: 30000,
+      pricePerDevice: 6.5,
       minimumDevices: 100,
-      contractTerms: ["1-year", "3-year"],
-      volumeDiscounts: [
-        { threshold: 1000, discount: "10%" },
-        { threshold: 5000, discount: "20%" },
-      ],
-      includedFeatures: ["Device Discovery", "Classification", "Policy Enforcement", "Compliance Monitoring"],
       additionalCosts: {
-        implementation: "$120,000",
-        training: "$18,000",
-        support: "20% annually",
-        hardware: "$25,000 - $55,000",
-      },
-    },
-
-    technical: {
-      protocols: ["RADIUS", "802.1X", "SNMP", "WMI", "SSH"],
-      integrations: [
-        "Security Orchestration",
-        "SIEM Platforms",
-        "Firewalls",
-        "Endpoint Protection",
-        "Threat Intelligence",
-      ],
-      supportedDevices: ["All IP devices", "IoT", "OT", "Medical devices", "Printers"],
-      networkEquipment: ["Agentless discovery", "Multi-vendor"],
-      scalability: {
-        maxDevices: "1,000,000",
-        maxPolicies: "Unlimited",
-        maxSites: "Unlimited",
-        performance: "Real-time discovery",
-      },
-      compliance: ["HIPAA", "PCI DSS", "NIST", "IEC 62443", "NERC CIP"],
-      security: {
-        encryption: "AES-256",
-        dataResidency: "On-premise/Cloud",
-        sso: "SAML/LDAP",
-        mfa: "Supported",
-        zeroTrust: "65% maturity",
+        hardware: 60000,
+        services: 35000,
+        training: 18000,
+        maintenance: 25000,
       },
     },
 
     implementation: {
-      deploymentTime: "4 months",
-      complexity: "Medium-High",
-      professionalServices: "Required",
-      trainingRequired: "60 hours",
-      successRate: "75%",
-      timeToValue: "4-5 months",
+      timeToDeployDays: 120,
+      complexity: "medium",
+      professionalServicesRequired: true,
+      trainingHours: 32,
+    },
+
+    security: {
+      securityRating: 80,
+      cveCount: 8,
+      lastSecurityIncident: "2023-Q1",
+      complianceSupport: ["HIPAA", "PCI-DSS", "NIST", "IEC 62443"],
+      zeroTrustMaturity: 65,
+    },
+
+    features: {
+      core: ["Device Discovery", "Classification", "Policy Enforcement", "Compliance Monitoring"],
+      advanced: ["IoT Security", "OT Visibility", "Threat Detection", "Automated Response"],
+      integrations: ["Security Orchestration", "SIEM Platforms", "Firewalls", "Endpoint Protection"],
     },
 
     support: {
       availability: "24/7/365",
       responseTime: "< 3 hours",
-      channels: ["Phone", "Email", "Portal"],
-      satisfaction: "79%",
-      documentation: "Comprehensive",
-      community: "Specialized",
+      customerSatisfaction: 79,
     },
 
-    performance: {
-      uptime: "99.6%",
-      latency: "< 100ms",
-      throughput: "High",
-      cveCount: 22,
-      mttr: "3 hours",
-    },
+    strengths: [
+      "Excellent IoT/OT visibility",
+      "Strong device classification",
+      "Good integration capabilities",
+      "Comprehensive compliance features",
+    ],
+    weaknesses: ["Complex deployment", "Higher learning curve", "Limited cloud-native options"],
+    bestFor: [
+      "IoT-heavy environments",
+      "OT/Industrial networks",
+      "Compliance-focused organizations",
+      "Large device inventories",
+    ],
+    isRecommended: true,
   },
 
   juniper: {
+    id: "juniper",
     name: "Juniper Mist Access Assurance",
-    description: "AI-driven network access control with cloud management",
     category: "visionary",
+    marketShare: 3.1,
     deploymentType: "cloud",
-    marketShare: 6.8,
-    securityRating: 82,
     logo: "/juniper-logo.png",
+    description: "AI-driven cloud-native access assurance with machine learning capabilities.",
 
     pricing: {
-      model: "Per Device/Year + Mist Infrastructure",
-      startingPrice: "$72",
-      enterprisePrice: "$60",
+      model: "per-device",
+      basePrice: 10000,
+      pricePerDevice: 6.0,
       minimumDevices: 50,
-      contractTerms: ["1-year", "3-year"],
-      volumeDiscounts: [
-        { threshold: 500, discount: "8%" },
-        { threshold: 2000, discount: "15%" },
-      ],
-      includedFeatures: ["AI-Driven Insights", "Dynamic Policies", "User Experience Monitoring", "Cloud Management"],
       additionalCosts: {
-        implementation: "$15,000",
-        training: "$4,000",
-        support: "Included",
-        hardware: "$25,000 (Mist required)",
-      },
-    },
-
-    technical: {
-      protocols: ["RADIUS", "802.1X", "SAML", "OAuth"],
-      integrations: ["Mist Cloud", "Juniper Infrastructure", "Third-party Systems", "AI/ML Analytics"],
-      supportedDevices: ["Windows", "macOS", "iOS", "Android", "IoT"],
-      networkEquipment: ["Juniper Mist (required)", "Limited third-party"],
-      scalability: {
-        maxDevices: "Unlimited",
-        maxPolicies: "AI-driven",
-        maxSites: "Unlimited",
-        performance: "AI-optimized",
-      },
-      compliance: ["HIPAA", "PCI DSS", "GDPR", "SOC 2"],
-      security: {
-        encryption: "AES-256",
-        dataResidency: "Cloud regions",
-        sso: "Full SSO",
-        mfa: "Built-in",
-        zeroTrust: "80% maturity",
+        hardware: 30000,
+        services: 15000,
+        training: 8000,
+        maintenance: 12000,
       },
     },
 
     implementation: {
-      deploymentTime: "1 month",
-      complexity: "Low-Medium",
-      professionalServices: "Optional",
-      trainingRequired: "16 hours",
-      successRate: "85%",
-      timeToValue: "1-2 months",
+      timeToDeployDays: 30,
+      complexity: "low",
+      professionalServicesRequired: false,
+      trainingHours: 12,
+    },
+
+    security: {
+      securityRating: 82,
+      cveCount: 3,
+      complianceSupport: ["HIPAA", "PCI-DSS", "GDPR"],
+      zeroTrustMaturity: 80,
+    },
+
+    features: {
+      core: ["AI-Driven Insights", "Dynamic Policies", "User Experience Monitoring"],
+      advanced: ["Machine Learning", "Predictive Analytics", "Automated Troubleshooting"],
+      integrations: ["Mist Cloud", "Juniper Infrastructure", "Third-party Systems"],
     },
 
     support: {
       availability: "24/7/365",
       responseTime: "< 2 hours",
-      channels: ["Phone", "Email", "Chat"],
-      satisfaction: "85%",
-      documentation: "AI-enhanced",
-      community: "Growing",
+      customerSatisfaction: 85,
     },
 
-    performance: {
-      uptime: "99.9%",
-      latency: "< 60ms",
-      throughput: "Cloud-scale",
-      cveCount: 10,
-      mttr: "1 hour",
-    },
+    strengths: ["AI-driven capabilities", "Cloud-native architecture", "Excellent user experience", "Low CVE count"],
+    weaknesses: ["Requires Mist ecosystem", "Limited on-premise options", "Newer to market"],
+    bestFor: ["Juniper Mist users", "AI-driven operations", "Cloud-first organizations", "User experience focus"],
   },
 
   extreme: {
+    id: "extreme",
     name: "Extreme NAC",
-    description: "Network access control for campus and data center environments",
     category: "niche",
+    marketShare: 5.8,
     deploymentType: "hybrid",
-    marketShare: 4.2,
-    securityRating: 62,
     logo: "/extreme-logo.png",
+    description: "Flexible network access control with cloud and on-premise deployment options.",
 
     pricing: {
-      model: "Per Device/Year",
-      startingPrice: "$60",
-      enterprisePrice: "$45",
-      minimumDevices: 25,
-      contractTerms: ["1-year", "3-year"],
-      volumeDiscounts: [
-        { threshold: 500, discount: "10%" },
-        { threshold: 2000, discount: "20%" },
-      ],
-      includedFeatures: ["Access Control", "Guest Management", "Device Profiling", "Policy Enforcement"],
+      model: "per-device",
+      basePrice: 15000,
+      pricePerDevice: 5.0,
+      minimumDevices: 50,
       additionalCosts: {
-        implementation: "$30,000",
-        training: "$6,000",
-        support: "15% annually",
-        hardware: "$15,000",
-      },
-    },
-
-    technical: {
-      protocols: ["RADIUS", "802.1X", "LDAP"],
-      integrations: ["Extreme Infrastructure", "Third-party Systems", "Cloud Platforms", "Basic SIEM"],
-      supportedDevices: ["Windows", "macOS", "iOS", "Android", "Basic IoT"],
-      networkEquipment: ["Extreme (optimized)", "Limited third-party"],
-      scalability: {
-        maxDevices: "50,000",
-        maxPolicies: "1,000",
-        maxSites: "100",
-        performance: "Standard",
-      },
-      compliance: ["HIPAA", "PCI DSS", "SOX"],
-      security: {
-        encryption: "AES-128/256",
-        dataResidency: "On-premise/Cloud",
-        sso: "Basic LDAP",
-        mfa: "Third-party",
-        zeroTrust: "60% maturity",
+        hardware: 40000,
+        services: 20000,
+        training: 10000,
+        maintenance: 15000,
       },
     },
 
     implementation: {
-      deploymentTime: "2 months",
-      complexity: "Medium",
-      professionalServices: "Optional",
-      trainingRequired: "24 hours",
-      successRate: "80%",
-      timeToValue: "2-3 months",
+      timeToDeployDays: 60,
+      complexity: "medium",
+      professionalServicesRequired: false,
+      trainingHours: 16,
+    },
+
+    security: {
+      securityRating: 75,
+      cveCount: 5,
+      complianceSupport: ["HIPAA", "PCI-DSS", "SOX"],
+      zeroTrustMaturity: 60,
+    },
+
+    features: {
+      core: ["Access Control", "Guest Management", "Device Profiling", "Policy Enforcement"],
+      advanced: ["Cloud Management", "Analytics", "Automated Remediation"],
+      integrations: ["Extreme Infrastructure", "Third-party Systems", "Cloud Platforms"],
     },
 
     support: {
       availability: "Business Hours",
       responseTime: "< 4 hours",
-      channels: ["Phone", "Email"],
-      satisfaction: "76%",
-      documentation: "Basic",
-      community: "Small",
+      customerSatisfaction: 76,
     },
 
-    performance: {
-      uptime: "99.3%",
-      latency: "200-400ms",
-      throughput: "Medium",
-      cveCount: 14,
-      mttr: "5 hours",
-    },
+    strengths: ["Flexible deployment options", "Good value proposition", "Easy to manage", "Quick deployment"],
+    weaknesses: ["Limited advanced features", "Smaller ecosystem", "Basic analytics capabilities"],
+    bestFor: [
+      "SMB to mid-market",
+      "Extreme infrastructure users",
+      "Simple NAC requirements",
+      "Budget-conscious deployments",
+    ],
   },
 
   fortinet: {
+    id: "fortinet",
     name: "Fortinet FortiNAC",
-    description: "Integrated security fabric with network access control",
-    category: "challenger",
+    category: "niche",
+    marketShare: 4.2,
     deploymentType: "on-premise",
-    marketShare: 8.9,
-    securityRating: 70,
     logo: "/fortinet-logo.png",
+    description: "Network access control integrated with Fortinet Security Fabric for comprehensive security.",
 
     pricing: {
-      model: "Quote-based + Hardware",
-      startingPrice: "$84",
-      enterprisePrice: "Quote",
+      model: "quote-based",
+      basePrice: 20000,
+      pricePerDevice: 7.0,
       minimumDevices: 100,
-      contractTerms: ["1-year", "3-year", "5-year"],
-      volumeDiscounts: [{ threshold: 1000, discount: "Negotiable" }],
-      includedFeatures: ["Device Discovery", "Access Control", "Guest Portal", "Compliance Monitoring"],
       additionalCosts: {
-        implementation: "$50,000",
-        training: "$10,000",
-        support: "20% annually",
-        hardware: "$40,000",
-      },
-    },
-
-    technical: {
-      protocols: ["RADIUS", "802.1X", "TACACS+", "LDAP"],
-      integrations: ["Fortinet Security Fabric", "FortiGate", "FortiAnalyzer", "Third-party SIEM"],
-      supportedDevices: ["Windows", "macOS", "iOS", "Android", "Linux"],
-      networkEquipment: ["Fortinet (optimized)", "Limited third-party"],
-      scalability: {
-        maxDevices: "100,000",
-        maxPolicies: "5,000",
-        maxSites: "200",
-        performance: "Fabric-integrated",
-      },
-      compliance: ["HIPAA", "PCI DSS", "SOX", "GDPR"],
-      security: {
-        encryption: "AES-256",
-        dataResidency: "On-premise",
-        sso: "FortiAuthenticator",
-        mfa: "Fortinet MFA",
-        zeroTrust: "65% maturity",
+        hardware: 50000,
+        services: 25000,
+        training: 12000,
+        maintenance: 18000,
       },
     },
 
     implementation: {
-      deploymentTime: "3 months",
-      complexity: "Medium-High",
-      professionalServices: "Required",
-      trainingRequired: "32 hours",
-      successRate: "72%",
-      timeToValue: "3-4 months",
+      timeToDeployDays: 90,
+      complexity: "medium",
+      professionalServicesRequired: true,
+      trainingHours: 24,
+    },
+
+    security: {
+      securityRating: 78,
+      cveCount: 15,
+      complianceSupport: ["HIPAA", "PCI-DSS", "SOX", "GDPR"],
+      zeroTrustMaturity: 65,
+    },
+
+    features: {
+      core: ["Device Discovery", "Access Control", "Guest Portal", "Compliance Monitoring"],
+      advanced: ["Security Fabric Integration", "Threat Intelligence", "Automated Response"],
+      integrations: ["Fortinet Security Fabric", "FortiGate", "FortiAnalyzer", "Third-party SIEM"],
     },
 
     support: {
       availability: "24/7/365",
       responseTime: "< 4 hours",
-      channels: ["Phone", "Email", "Portal"],
-      satisfaction: "74%",
-      documentation: "Good",
-      community: "Fortinet ecosystem",
+      customerSatisfaction: 74,
     },
 
-    performance: {
-      uptime: "99.4%",
-      latency: "150-400ms",
-      throughput: "Hardware dependent",
-      cveCount: 30,
-      mttr: "8 hours",
-    },
+    strengths: [
+      "Strong Fortinet integration",
+      "Comprehensive security features",
+      "Good threat intelligence",
+      "Unified management",
+    ],
+    weaknesses: ["Limited multi-vendor support", "Complex without Fortinet infrastructure", "Higher CVE count"],
+    bestFor: [
+      "Fortinet-centric environments",
+      "Security-focused organizations",
+      "Integrated security requirements",
+      "Threat intelligence needs",
+    ],
   },
 
   microsoft: {
-    name: "Microsoft Network Policy Server",
-    description: "Basic RADIUS authentication for Windows environments",
+    id: "microsoft",
+    name: "Microsoft Network Policy Server (NPS)",
     category: "niche",
+    marketShare: 15.2,
     deploymentType: "on-premise",
-    marketShare: 18.5,
-    securityRating: 45,
     logo: "/microsoft-logo.png",
+    description: "Basic RADIUS authentication included with Windows Server. Limited NAC capabilities.",
 
     pricing: {
-      model: "Windows Server License",
-      startingPrice: "$0",
-      enterprisePrice: "$0",
-      minimumDevices: 1,
-      contractTerms: ["Server license dependent"],
-      volumeDiscounts: [],
-      includedFeatures: ["Basic RADIUS", "Windows Integration", "Simple Policies"],
+      model: "flat-rate",
+      basePrice: 0,
+      pricePerDevice: 0,
       additionalCosts: {
-        implementation: "$20,000",
-        training: "$3,000",
-        support: "Microsoft support",
-        hardware: "$15,000",
-      },
-    },
-
-    technical: {
-      protocols: ["RADIUS", "LDAP", "Kerberos"],
-      integrations: ["Active Directory", "Windows Infrastructure", "Basic LDAP", "Limited third-party"],
-      supportedDevices: ["Windows (optimized)", "Basic support for others"],
-      networkEquipment: ["Any RADIUS-capable"],
-      scalability: {
-        maxDevices: "10,000",
-        maxPolicies: "Limited",
-        maxSites: "Limited",
-        performance: "Basic",
-      },
-      compliance: ["Basic Windows Security"],
-      security: {
-        encryption: "Basic",
-        dataResidency: "On-premise",
-        sso: "Windows SSO only",
-        mfa: "Third-party required",
-        zeroTrust: "30% maturity",
+        hardware: 25000,
+        services: 15000,
+        training: 5000,
+        maintenance: 10000,
       },
     },
 
     implementation: {
-      deploymentTime: "1 month",
-      complexity: "Medium",
-      professionalServices: "Optional",
-      trainingRequired: "16 hours",
-      successRate: "60%",
-      timeToValue: "1-2 months",
+      timeToDeployDays: 30,
+      complexity: "medium",
+      professionalServicesRequired: false,
+      trainingHours: 16,
+    },
+
+    security: {
+      securityRating: 65,
+      cveCount: 12,
+      complianceSupport: ["Basic Windows Security"],
+      zeroTrustMaturity: 30,
+    },
+
+    features: {
+      core: ["RADIUS Authentication", "Basic Policy Management", "Windows Integration"],
+      advanced: ["Limited - Basic RADIUS only"],
+      integrations: ["Active Directory", "Windows Infrastructure", "Basic LDAP"],
     },
 
     support: {
       availability: "Business Hours",
       responseTime: "Varies",
-      channels: ["Microsoft Support"],
-      satisfaction: "68%",
-      documentation: "Microsoft docs",
-      community: "Windows community",
+      customerSatisfaction: 68,
     },
 
-    performance: {
-      uptime: "99.0%",
-      latency: "Variable",
-      throughput: "Limited",
-      cveCount: 45,
-      mttr: "24 hours",
-    },
+    strengths: ["Free with Windows Server", "Native AD integration", "Simple RADIUS functionality"],
+    weaknesses: [
+      "Very limited NAC features",
+      "No advanced security capabilities",
+      "Basic policy management",
+      "Limited scalability",
+    ],
+    bestFor: [
+      "Basic RADIUS needs only",
+      "Small Windows environments",
+      "Budget-constrained deployments",
+      "Simple authentication requirements",
+    ],
   },
 
   foxpass: {
-    name: "FoxPass Cloud RADIUS",
-    description: "Cloud-based RADIUS service for SMB environments",
+    id: "foxpass",
+    name: "FoxPass",
     category: "niche",
+    marketShare: 1.2,
     deploymentType: "cloud",
-    marketShare: 2.1,
-    securityRating: 55,
     logo: "/foxpass-logo.png",
+    description: "Cloud-based RADIUS service focused on simplicity and ease of use for SMB market.",
 
     pricing: {
-      model: "Per User/Month",
-      startingPrice: "$3.00",
-      enterprisePrice: "$2.50",
+      model: "per-user",
+      basePrice: 0,
+      pricePerDevice: 3.0,
       minimumDevices: 10,
-      contractTerms: ["Monthly", "Annual"],
-      volumeDiscounts: [
-        { threshold: 100, discount: "10%" },
-        { threshold: 500, discount: "20%" },
-      ],
-      includedFeatures: ["Cloud RADIUS", "User Management", "Basic Policies", "API Access"],
       additionalCosts: {
-        implementation: "$2,000",
-        training: "$1,000",
-        support: "Email only",
-        hardware: "$0",
-      },
-    },
-
-    technical: {
-      protocols: ["RADIUS", "LDAP", "SAML"],
-      integrations: ["Google Workspace", "Office 365", "LDAP", "SAML IdPs"],
-      supportedDevices: ["All devices with RADIUS support"],
-      networkEquipment: ["Any RADIUS-capable"],
-      scalability: {
-        maxDevices: "10,000",
-        maxPolicies: "Basic",
-        maxSites: "Unlimited",
-        performance: "Cloud-based",
-      },
-      compliance: ["Basic Security"],
-      security: {
-        encryption: "TLS",
-        dataResidency: "US-based",
-        sso: "SAML/LDAP",
-        mfa: "Third-party",
-        zeroTrust: "45% maturity",
+        hardware: 0,
+        services: 2000,
+        training: 1000,
+        maintenance: 0,
       },
     },
 
     implementation: {
-      deploymentTime: "1 week",
-      complexity: "Low",
-      professionalServices: "Not required",
-      trainingRequired: "4 hours",
-      successRate: "90%",
-      timeToValue: "1 week",
+      timeToDeployDays: 7,
+      complexity: "low",
+      professionalServicesRequired: false,
+      trainingHours: 4,
+    },
+
+    security: {
+      securityRating: 72,
+      cveCount: 2,
+      complianceSupport: ["Basic Security"],
+      zeroTrustMaturity: 45,
+    },
+
+    features: {
+      core: ["Cloud RADIUS", "User Management", "Basic Policies"],
+      advanced: ["API Integration", "SSO Support", "Basic Analytics"],
+      integrations: ["Google Workspace", "Office 365", "LDAP", "SAML"],
     },
 
     support: {
       availability: "Business Hours",
       responseTime: "< 24 hours",
-      channels: ["Email"],
-      satisfaction: "81%",
-      documentation: "Basic",
-      community: "Small",
+      customerSatisfaction: 81,
     },
 
-    performance: {
-      uptime: "99.5%",
-      latency: "< 100ms",
-      throughput: "Cloud-scale",
-      cveCount: 10,
-      mttr: "2 hours",
-    },
+    strengths: ["Simple cloud deployment", "Good for SMB market", "Affordable pricing", "Easy to use"],
+    weaknesses: [
+      "Limited enterprise features",
+      "Basic security capabilities",
+      "No advanced NAC functions",
+      "Limited scalability",
+    ],
+    bestFor: [
+      "Small to medium businesses",
+      "Simple RADIUS needs",
+      "Cloud-first organizations",
+      "Budget-conscious deployments",
+    ],
   },
 
   securew2: {
+    id: "securew2",
     name: "SecureW2",
-    description: "Certificate-based authentication and onboarding platform",
     category: "niche",
+    marketShare: 0.8,
     deploymentType: "cloud",
-    marketShare: 1.8,
-    securityRating: 78,
     logo: "/securew2-logo.png",
+    description: "Cloud-based certificate management and WiFi security solution with PKI focus.",
 
     pricing: {
-      model: "Per Device/Year",
-      startingPrice: "$180",
-      enterprisePrice: "$150",
+      model: "per-device",
+      basePrice: 5000,
+      pricePerDevice: 3.5,
       minimumDevices: 500,
-      contractTerms: ["1-year", "3-year"],
-      volumeDiscounts: [
-        { threshold: 2000, discount: "10%" },
-        { threshold: 5000, discount: "15%" },
-      ],
-      includedFeatures: ["Certificate Management", "WiFi Security", "RADIUS-as-a-Service", "User Onboarding"],
       additionalCosts: {
-        implementation: "$8,000",
-        training: "$3,000",
-        support: "Included",
-        hardware: "$0",
-      },
-    },
-
-    technical: {
-      protocols: ["802.1X", "EAP-TLS", "RADIUS", "SCEP"],
-      integrations: ["Active Directory", "Azure AD", "Google Workspace", "SAML IdPs", "MDM Solutions"],
-      supportedDevices: ["Windows", "macOS", "iOS", "Android", "ChromeOS"],
-      networkEquipment: ["Any 802.1X capable"],
-      scalability: {
-        maxDevices: "Unlimited",
-        maxPolicies: "Certificate-based",
-        maxSites: "Unlimited",
-        performance: "Cloud PKI",
-      },
-      compliance: ["HIPAA", "PCI DSS", "GDPR"],
-      security: {
-        encryption: "EAP-TLS",
-        dataResidency: "Global",
-        sso: "Full SSO",
-        mfa: "Certificate-based",
-        zeroTrust: "75% maturity",
+        hardware: 0,
+        services: 8000,
+        training: 3000,
+        maintenance: 0,
       },
     },
 
     implementation: {
-      deploymentTime: "2 weeks",
-      complexity: "Low-Medium",
-      professionalServices: "Optional",
-      trainingRequired: "8 hours",
-      successRate: "88%",
-      timeToValue: "2-3 weeks",
+      timeToDeployDays: 14,
+      complexity: "low",
+      professionalServicesRequired: false,
+      trainingHours: 8,
+    },
+
+    security: {
+      securityRating: 85,
+      cveCount: 2,
+      complianceSupport: ["HIPAA", "PCI-DSS", "GDPR"],
+      zeroTrustMaturity: 75,
+    },
+
+    features: {
+      core: ["Certificate Management", "WiFi Security", "RADIUS-as-a-Service", "User Onboarding"],
+      advanced: ["Cloud PKI", "BYOD Onboarding", "Certificate Lifecycle Management", "API Integration"],
+      integrations: ["Active Directory", "Azure AD", "Google Workspace", "SAML IdPs", "MDM Solutions"],
     },
 
     support: {
       availability: "Business Hours",
       responseTime: "< 4 hours",
-      channels: ["Phone", "Email", "Chat"],
-      satisfaction: "83%",
-      documentation: "Good",
-      community: "Education-focused",
+      customerSatisfaction: 83,
     },
 
-    performance: {
-      uptime: "99.8%",
-      latency: "< 75ms",
-      throughput: "High",
-      cveCount: 6,
-      mttr: "1.5 hours",
-    },
+    strengths: [
+      "Strong certificate management",
+      "Excellent WiFi security",
+      "Cloud-native architecture",
+      "Good BYOD support",
+    ],
+    weaknesses: [
+      "Limited NAC features beyond WiFi",
+      "Focused on certificate-based auth",
+      "Niche market focus",
+      "Limited wired network support",
+    ],
+    bestFor: [
+      "Certificate-based authentication",
+      "Educational institutions",
+      "WiFi-focused security",
+      "BYOD environments",
+    ],
   },
 
   meraki: {
+    id: "meraki",
     name: "Cisco Meraki",
-    description: "Cloud-managed networking with basic access control",
     category: "niche",
+    marketShare: 6.8,
     deploymentType: "cloud",
-    marketShare: 7.3,
-    securityRating: 65,
     logo: "/meraki-logo.png",
+    description: "Cloud-managed network access control integrated with Meraki infrastructure.",
 
     pricing: {
-      model: "Per Device/Year + Hardware",
-      startingPrice: "$180",
-      enterprisePrice: "$150",
-      minimumDevices: 25,
-      contractTerms: ["1-year", "3-year", "5-year", "7-year", "10-year"],
-      volumeDiscounts: [
-        { threshold: 100, discount: "5%" },
-        { threshold: 500, discount: "10%" },
-      ],
-      includedFeatures: ["Cloud Management", "Policy Enforcement", "Guest Access", "Basic Analytics"],
+      model: "per-device",
+      basePrice: 10000,
+      pricePerDevice: 4.5,
+      minimumDevices: 50,
       additionalCosts: {
-        implementation: "$15,000",
-        training: "$5,000",
-        support: "Included",
-        hardware: "$50,000",
-      },
-    },
-
-    technical: {
-      protocols: ["RADIUS", "802.1X", "LDAP"],
-      integrations: ["Meraki Infrastructure", "Cisco Security", "Third-party APIs", "SIEM (limited)"],
-      supportedDevices: ["Windows", "macOS", "iOS", "Android"],
-      networkEquipment: ["Meraki (required)", "No third-party"],
-      scalability: {
-        maxDevices: "50,000",
-        maxPolicies: "Meraki-defined",
-        maxSites: "Unlimited",
-        performance: "Cloud-managed",
-      },
-      compliance: ["HIPAA", "PCI DSS", "SOX"],
-      security: {
-        encryption: "WPA2/WPA3",
-        dataResidency: "Cisco cloud",
-        sso: "SAML",
-        mfa: "Third-party",
-        zeroTrust: "65% maturity",
+        hardware: 80000,
+        services: 15000,
+        training: 8000,
+        maintenance: 12000,
       },
     },
 
     implementation: {
-      deploymentTime: "6 weeks",
-      complexity: "Low-Medium",
-      professionalServices: "Optional",
-      trainingRequired: "12 hours",
-      successRate: "82%",
-      timeToValue: "6-8 weeks",
+      timeToDeployDays: 14,
+      complexity: "low",
+      professionalServicesRequired: false,
+      trainingHours: 8,
+    },
+
+    security: {
+      securityRating: 78,
+      cveCount: 6,
+      complianceSupport: ["HIPAA", "PCI-DSS", "SOX"],
+      zeroTrustMaturity: 65,
+    },
+
+    features: {
+      core: ["Cloud Management", "Policy Enforcement", "Guest Access"],
+      advanced: ["Analytics", "Threat Protection", "SD-WAN Integration"],
+      integrations: ["Meraki Infrastructure", "Cisco Security", "Third-party APIs"],
     },
 
     support: {
       availability: "24/7/365",
       responseTime: "< 2 hours",
-      channels: ["Phone", "Email", "Chat"],
-      satisfaction: "86%",
-      documentation: "Excellent",
-      community: "Large Meraki community",
+      customerSatisfaction: 86,
     },
 
-    performance: {
-      uptime: "99.9%",
-      latency: "< 100ms",
-      throughput: "Hardware dependent",
-      cveCount: 20,
-      mttr: "4 hours",
-    },
-  },
-
-  packetfence: {
-    name: "PacketFence Open Source",
-    description: "Open source network access control solution",
-    category: "niche",
-    deploymentType: "on-premise",
-    marketShare: 3.2,
-    securityRating: 50,
-    logo: "/packetfence-logo.png",
-
-    pricing: {
-      model: "Open Source + Support",
-      startingPrice: "$0",
-      enterprisePrice: "Support contract",
-      minimumDevices: 1,
-      contractTerms: ["Open source", "Support contracts available"],
-      volumeDiscounts: [],
-      includedFeatures: ["Open Source NAC", "Device Registration", "Policy Enforcement", "Captive Portal"],
-      additionalCosts: {
-        implementation: "$95,000",
-        training: "$15,000",
-        support: "$50,000/year",
-        hardware: "$20,000",
-      },
-    },
-
-    technical: {
-      protocols: ["RADIUS", "802.1X", "DHCP", "DNS"],
-      integrations: ["Various Network Equipment", "LDAP", "RADIUS", "Custom Integrations"],
-      supportedDevices: ["All IP devices"],
-      networkEquipment: ["Multi-vendor", "Extensive compatibility"],
-      scalability: {
-        maxDevices: "Unlimited",
-        maxPolicies: "Unlimited",
-        maxSites: "Unlimited",
-        performance: "Hardware dependent",
-      },
-      compliance: ["Basic Open Source"],
-      security: {
-        encryption: "Configurable",
-        dataResidency: "On-premise",
-        sso: "LDAP/RADIUS",
-        mfa: "Third-party",
-        zeroTrust: "50% maturity",
-      },
-    },
-
-    implementation: {
-      deploymentTime: "6 months",
-      complexity: "Very High",
-      professionalServices: "Required",
-      trainingRequired: "80 hours",
-      successRate: "55%",
-      timeToValue: "6-12 months",
-    },
-
-    support: {
-      availability: "Community/Commercial",
-      responseTime: "Varies",
-      channels: ["Community", "Commercial support"],
-      satisfaction: "65%",
-      documentation: "Community-driven",
-      community: "Open source community",
-    },
-
-    performance: {
-      uptime: "Variable",
-      latency: "Configurable",
-      throughput: "Hardware dependent",
-      cveCount: 27,
-      mttr: "Variable",
-    },
-  },
-
-  arista: {
-    name: "Arista CloudVision AGNI",
-    description: "Network-centric access control with AI analytics",
-    category: "visionary",
-    deploymentType: "cloud",
-    marketShare: 2.9,
-    securityRating: 75,
-    logo: "/arista-logo.png",
-
-    pricing: {
-      model: "Quote-based + Arista Infrastructure",
-      startingPrice: "$96",
-      enterprisePrice: "Quote",
-      minimumDevices: 100,
-      contractTerms: ["1-year", "3-year"],
-      volumeDiscounts: [{ threshold: 1000, discount: "Negotiable" }],
-      includedFeatures: ["Identity Management", "Access Control", "Policy Automation", "CloudVision Integration"],
-      additionalCosts: {
-        implementation: "$35,000",
-        training: "$8,000",
-        support: "Included",
-        hardware: "$75,000 (Arista required)",
-      },
-    },
-
-    technical: {
-      protocols: ["RADIUS", "802.1X", "TACACS+"],
-      integrations: ["Arista Switches", "CloudVision", "Third-party Security Tools", "Telemetry"],
-      supportedDevices: ["Network-focused", "Limited endpoint support"],
-      networkEquipment: ["Arista (required)", "No third-party"],
-      scalability: {
-        maxDevices: "Data center scale",
-        maxPolicies: "AI-driven",
-        maxSites: "Unlimited",
-        performance: "High-performance",
-      },
-      compliance: ["HIPAA", "PCI DSS", "SOX"],
-      security: {
-        encryption: "AES-256",
-        dataResidency: "Cloud regions",
-        sso: "SAML",
-        mfa: "Third-party",
-        zeroTrust: "70% maturity",
-      },
-    },
-
-    implementation: {
-      deploymentTime: "2 months",
-      complexity: "Medium-High",
-      professionalServices: "Required",
-      trainingRequired: "24 hours",
-      successRate: "75%",
-      timeToValue: "2-3 months",
-    },
-
-    support: {
-      availability: "Business Hours",
-      responseTime: "< 4 hours",
-      channels: ["Phone", "Email"],
-      satisfaction: "77%",
-      documentation: "Technical",
-      community: "Arista ecosystem",
-    },
-
-    performance: {
-      uptime: "99.8%",
-      latency: "< 50ms",
-      throughput: "Very high",
-      cveCount: 12,
-      mttr: "2 hours",
-    },
-  },
-
-  ivanti: {
-    name: "Ivanti Neurons (Pulse Secure)",
-    description: "Legacy VPN/NAC solution with known security vulnerabilities",
-    category: "legacy",
-    deploymentType: "hybrid",
-    marketShare: 5.4,
-    securityRating: 35,
-    logo: "/default-logo.png",
-    hasWarning: true,
-    warningMessage: "⚠️ CRITICAL: Active security vulnerabilities - immediate migration recommended",
-
-    pricing: {
-      model: "Per Device/Year + Hardware",
-      startingPrice: "$120",
-      enterprisePrice: "$100",
-      minimumDevices: 50,
-      contractTerms: ["1-year", "3-year"],
-      volumeDiscounts: [{ threshold: 500, discount: "5%" }],
-      includedFeatures: ["VPN Access", "Device Compliance", "Policy Enforcement", "Legacy Features"],
-      additionalCosts: {
-        implementation: "$85,000",
-        training: "$12,000",
-        support: "25% annually",
-        hardware: "$45,000",
-      },
-    },
-
-    technical: {
-      protocols: ["RADIUS", "802.1X", "SSL VPN", "IPSec"],
-      integrations: ["Ivanti Security Suite", "Third-party Endpoints", "SIEM Solutions", "Legacy Systems"],
-      supportedDevices: ["Windows", "macOS", "iOS", "Android", "Legacy"],
-      networkEquipment: ["Multi-vendor", "Legacy support"],
-      scalability: {
-        maxDevices: "50,000",
-        maxPolicies: "5,000",
-        maxSites: "500",
-        performance: "Legacy performance",
-      },
-      compliance: ["HIPAA", "PCI DSS"],
-      security: {
-        encryption: "Legacy encryption",
-        dataResidency: "On-premise/Cloud",
-        sso: "Limited",
-        mfa: "Third-party",
-        zeroTrust: "40% maturity",
-      },
-    },
-
-    implementation: {
-      deploymentTime: "4 months",
-      complexity: "High",
-      professionalServices: "Required",
-      trainingRequired: "40 hours",
-      successRate: "65%",
-      timeToValue: "4-6 months",
-    },
-
-    support: {
-      availability: "24/7/365",
-      responseTime: "< 6 hours",
-      channels: ["Phone", "Email"],
-      satisfaction: "62%",
-      documentation: "Legacy",
-      community: "Declining",
-    },
-
-    performance: {
-      uptime: "98.5%",
-      latency: "Variable",
-      throughput: "Limited",
-      cveCount: 89,
-      mttr: "48 hours",
-    },
+    strengths: ["Easy cloud management", "Quick deployment", "Good user experience", "Strong Meraki integration"],
+    weaknesses: [
+      "Requires Meraki infrastructure",
+      "Limited multi-vendor support",
+      "Subscription-based pricing",
+      "Vendor lock-in",
+    ],
+    bestFor: ["Meraki customers", "Cloud-managed networks", "Simple deployments", "SMB to mid-market"],
   },
 }
 
@@ -1188,854 +759,695 @@ export default function EnhancedVendorSelection({
   onVendorToggle,
   onClearAll,
   onSelectRecommended,
-  darkMode,
+  darkMode = false,
 }: EnhancedVendorSelectionProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterCategory, setFilterCategory] = useState<string | null>(null)
-  const [filterDeployment, setFilterDeployment] = useState<string | null>(null)
-  const [sortBy, setSortBy] = useState<"name" | "marketShare" | "securityRating" | "pricing">("marketShare")
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
-  const [activeTab, setActiveTab] = useState("all")
-  const [expandedVendor, setExpandedVendor] = useState<string | null>(null)
-  const [detailView, setDetailView] = useState<"overview" | "pricing" | "technical" | "support">("overview")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [deploymentFilter, setDeploymentFilter] = useState("all")
+  const [priceRangeFilter, setPriceRangeFilter] = useState("all")
+  const [showOnlyRecommended, setShowOnlyRecommended] = useState(false)
+  const [sortBy, setSortBy] = useState("recommendation")
 
-  const vendors = Object.entries(VENDOR_DISPLAY_DATA).map(([id, data]) => ({ id, ...data }))
+  // Enhanced vendor data processing with comprehensive error handling
+  const processedVendors = useMemo(() => {
+    try {
+      return Object.entries(COMPREHENSIVE_VENDOR_DATA).map(([id, vendor]) => {
+        // Safe data extraction with fallbacks
+        const vendorData = vendor || {}
+        const pricing = vendorData.pricing || {}
+        const features = vendorData.features || {}
+        const implementation = vendorData.implementation || {}
+        const support = vendorData.support || {}
+        const security = vendorData.security || {}
 
-  const filteredVendors = vendors.filter((vendor) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      safeString(vendor.name).toLowerCase().includes(safeString(searchQuery).toLowerCase()) ||
-      safeString(vendor.description).toLowerCase().includes(safeString(searchQuery).toLowerCase())
+        return {
+          id: safeString(id),
+          name: safeString(vendorData.name) || safeString(id).toUpperCase(),
+          category: safeString(vendorData.category) || "niche",
+          description: safeString(vendorData.description) || "Network Access Control Solution",
+          logo: safeString(vendorData.logo) || "/placeholder-logo.png",
 
-    const matchesCategory = !filterCategory || safeString(vendor.category) === safeString(filterCategory)
-    const matchesDeployment = !filterDeployment || safeString(vendor.deploymentType) === safeString(filterDeployment)
+          // Pricing information with safe conversion
+          pricing: {
+            model: safeString(pricing.model) || "per-device",
+            range: `$${safeNumber(pricing.pricePerDevice, 50)}-${safeNumber(pricing.pricePerDevice * 1.5, 75)}/device/year`,
+            minPrice: safeNumber(pricing.pricePerDevice, 50),
+            maxPrice: safeNumber(pricing.pricePerDevice * 1.5, 75),
+            currency: "USD",
+            billingCycle: "annual",
+          },
 
-    if (activeTab === "selected") {
-      return matchesSearch && matchesCategory && matchesDeployment && selectedVendors.includes(vendor.id)
-    } else if (activeTab === "cloud") {
-      return matchesSearch && matchesCategory && safeString(vendor.deploymentType) === "cloud"
-    } else if (activeTab === "onprem") {
-      return matchesSearch && matchesCategory && safeString(vendor.deploymentType) === "on-premise"
-    } else if (activeTab === "hybrid") {
-      return matchesSearch && matchesCategory && safeString(vendor.deploymentType) === "hybrid"
-    } else if (activeTab === "recommended") {
-      return matchesSearch && matchesCategory && matchesDeployment && vendor.isRecommended
+          // Feature scores with safe conversion (convert to 1-10 scale)
+          features: {
+            easeOfUse: implementation.complexity === "low" ? 9 : implementation.complexity === "medium" ? 7 : 5,
+            scalability: Math.min(safeNumber(vendorData.marketShare, 5) / 5, 10), // Convert market share to scalability score
+            integration: Array.isArray(vendorData.features?.integrations)
+              ? Math.min(vendorData.features.integrations.length / 2, 10)
+              : 6,
+            security: Math.round(safeNumber(security.securityRating, 70) / 10),
+            support: Math.round(safeNumber(support.customerSatisfaction, 75) / 10),
+            innovation:
+              vendorData.category === "visionary"
+                ? 9
+                : vendorData.category === "leader"
+                  ? 8
+                  : vendorData.category === "challenger"
+                    ? 7
+                    : 6,
+          },
+
+          // Deployment information
+          deployment: {
+            type: safeString(vendorData.deploymentType) || "hybrid",
+            timeToValue: safeString(implementation.timeToDeployDays)
+              ? `${implementation.timeToDeployDays} days`
+              : "3-6 months",
+            complexity: safeString(implementation.complexity) || "medium",
+            requirements: ["Standard infrastructure"],
+          },
+
+          // Support and maintenance
+          support: {
+            availability: safeString(support.availability) || "business-hours",
+            channels: Array.isArray(support.channels) ? support.channels : ["email", "phone"],
+            documentation: "good",
+            community: "moderate",
+          },
+
+          // Security and compliance
+          security: {
+            certifications: Array.isArray(security.complianceSupport) ? security.complianceSupport : [],
+            vulnerabilities: safeNumber(security.cveCount, 5),
+            lastAudit: "2024",
+            complianceScore: safeNumber(security.securityRating, 75),
+          },
+
+          // Market position
+          marketShare: safeNumber(vendorData.marketShare, 5),
+          customerSatisfaction: safeNumber(support.customerSatisfaction, 75),
+          yearFounded: 2010,
+          employeeCount: 1000,
+
+          // Recommendation data
+          isRecommended: Boolean(
+            vendorData.isRecommended || vendorData.category === "leader" || vendorData.category === "visionary",
+          ),
+          recommendationReason:
+            Array.isArray(vendorData.strengths) && vendorData.strengths.length > 0 ? vendorData.strengths[0] : "",
+          pros: Array.isArray(vendorData.strengths) ? vendorData.strengths.slice(0, 3) : [],
+          cons: Array.isArray(vendorData.weaknesses) ? vendorData.weaknesses.slice(0, 3) : [],
+
+          // Status and availability
+          status: "active",
+          availability: "global",
+          lastUpdated: new Date().toISOString(),
+        }
+      })
+    } catch (error) {
+      console.error("Error processing vendor data:", error)
+      return []
     }
+  }, [])
 
-    return matchesSearch && matchesCategory && matchesDeployment
-  })
+  // Enhanced filtering logic with comprehensive error handling
+  const filteredVendors = useMemo(() => {
+    try {
+      let filtered = [...processedVendors]
 
-  const sortedVendors = [...filteredVendors].sort((a, b) => {
-    if (sortBy === "name") {
-      return sortDirection === "asc"
-        ? safeString(a.name).localeCompare(safeString(b.name))
-        : safeString(b.name).localeCompare(safeString(a.name))
-    } else if (sortBy === "marketShare") {
-      return sortDirection === "asc"
-        ? safeNumber(a.marketShare) - safeNumber(b.marketShare)
-        : safeNumber(b.marketShare) - safeNumber(a.marketShare)
-    } else if (sortBy === "pricing") {
-      const aPrice = Number.parseFloat(safeString(a.pricing.startingPrice).replace("$", ""))
-      const bPrice = Number.parseFloat(safeString(b.pricing.startingPrice).replace("$", ""))
-      return sortDirection === "asc" ? aPrice - bPrice : bPrice - aPrice
-    } else {
-      return sortDirection === "asc"
-        ? safeNumber(a.securityRating) - safeNumber(b.securityRating)
-        : safeNumber(b.securityRating) - safeNumber(a.securityRating)
-    }
-  })
-
-  const handleSort = (newSortBy: "name" | "marketShare" | "securityRating" | "pricing") => {
-    if (sortBy === newSortBy) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-    } else {
-      setSortBy(newSortBy)
-      setSortDirection("desc")
-    }
-  }
-
-  const handleFilterCategory = (category: string | null) => {
-    setFilterCategory(category === filterCategory ? null : category)
-  }
-
-  const handleFilterDeployment = (deployment: string | null) => {
-    setFilterDeployment(deployment === filterDeployment ? null : deployment)
-  }
-
-  const handleClearFilters = () => {
-    setSearchQuery("")
-    setFilterCategory(null)
-    setFilterDeployment(null)
-    setActiveTab("all")
-  }
-
-  const getCategoryColor = (category: string) => {
-    switch (safeString(category).toLowerCase()) {
-      case "leader":
-        return "bg-blue-500 text-white"
-      case "challenger":
-        return "bg-green-500 text-white"
-      case "visionary":
-        return "bg-purple-500 text-white"
-      case "specialist":
-        return "bg-orange-500 text-white"
-      case "niche":
-        return "bg-gray-500 text-white"
-      case "legacy":
-        return "bg-red-500 text-white"
-      default:
-        return "bg-gray-500 text-white"
-    }
-  }
-
-  const getDeploymentIcon = (deploymentType: string) => {
-    switch (safeString(deploymentType).toLowerCase()) {
-      case "cloud":
-        return <Cloud className="h-3 w-3 text-blue-500" />
-      case "on-premise":
-        return <Server className="h-3 w-3 text-gray-500" />
-      case "hybrid":
-        return (
-          <div className="flex">
-            <Cloud className="h-3 w-3 text-blue-500" />
-            <Server className="h-3 w-3 text-gray-500 ml-0.5" />
-          </div>
+      // Search filter
+      if (searchTerm.trim()) {
+        const searchLower = safeString(searchTerm).toLowerCase()
+        filtered = filtered.filter(
+          (vendor) =>
+            safeString(vendor.name).toLowerCase().includes(searchLower) ||
+            safeString(vendor.description).toLowerCase().includes(searchLower) ||
+            safeString(vendor.category).toLowerCase().includes(searchLower),
         )
-      default:
-        return <Server className="h-3 w-3" />
+      }
+
+      // Category filter
+      if (categoryFilter !== "all") {
+        filtered = filtered.filter(
+          (vendor) => safeString(vendor.category).toLowerCase() === safeString(categoryFilter).toLowerCase(),
+        )
+      }
+
+      // Deployment filter
+      if (deploymentFilter !== "all") {
+        filtered = filtered.filter(
+          (vendor) => safeString(vendor.deployment.type).toLowerCase() === safeString(deploymentFilter).toLowerCase(),
+        )
+      }
+
+      // Price range filter
+      if (priceRangeFilter !== "all") {
+        filtered = filtered.filter((vendor) => {
+          const maxPrice = safeNumber(vendor.pricing.maxPrice, 0)
+          switch (priceRangeFilter) {
+            case "low":
+              return maxPrice <= 50
+            case "medium":
+              return maxPrice > 50 && maxPrice <= 100
+            case "high":
+              return maxPrice > 100
+            default:
+              return true
+          }
+        })
+      }
+
+      // Recommended filter
+      if (showOnlyRecommended) {
+        filtered = filtered.filter((vendor) => Boolean(vendor.isRecommended))
+      }
+
+      // Sorting with safe comparison
+      filtered.sort((a, b) => {
+        try {
+          switch (sortBy) {
+            case "name":
+              return safeString(a.name).localeCompare(safeString(b.name))
+            case "price":
+              return safeNumber(a.pricing.minPrice, 0) - safeNumber(b.pricing.minPrice, 0)
+            case "rating":
+              return safeNumber(b.customerSatisfaction, 0) - safeNumber(a.customerSatisfaction, 0)
+            case "marketShare":
+              return safeNumber(b.marketShare, 0) - safeNumber(a.marketShare, 0)
+            case "recommendation":
+            default:
+              // Portnox first, then recommended, then by market share
+              if (safeString(a.id) === "portnox") return -1
+              if (safeString(b.id) === "portnox") return 1
+              if (Boolean(a.isRecommended) !== Boolean(b.isRecommended)) {
+                return Boolean(b.isRecommended) ? 1 : -1
+              }
+              return safeNumber(b.marketShare, 0) - safeNumber(a.marketShare, 0)
+          }
+        } catch (error) {
+          console.error("Error sorting vendors:", error)
+          return 0
+        }
+      })
+
+      return filtered
+    } catch (error) {
+      console.error("Error filtering vendors:", error)
+      return processedVendors
     }
-  }
+  }, [processedVendors, searchTerm, categoryFilter, deploymentFilter, priceRangeFilter, showOnlyRecommended, sortBy])
 
-  const canSelectVendor = (vendorId: string) => {
-    if (vendorId === "portnox") return true
-    if (!selectedVendors.includes("portnox")) return false
-    if (selectedVendors.includes(vendorId)) return true
-    return selectedVendors.length < 2
-  }
+  // Enhanced vendor card component with comprehensive error handling
+  const VendorCard = ({ vendor }: { vendor: any }) => {
+    try {
+      const isSelected = selectedVendors.includes(safeString(vendor.id))
+      const isPortnox = safeString(vendor.id) === "portnox"
 
-  const formatCurrency = (value: string) => {
-    if (safeString(value) === "$0") return "Free"
-    return safeString(value)
-  }
+      // Safe feature calculation
+      const avgFeatureScore =
+        Object.values(vendor.features || {})
+          .map((score) => safeNumber(score, 0))
+          .reduce((sum, score) => sum + score, 0) / 6
 
-  const getSecurityColor = (rating: number) => {
-    const safeRating = safeNumber(rating)
-    if (safeRating >= 90) return "text-green-600"
-    if (safeRating >= 70) return "text-yellow-600"
-    return "text-red-600"
+      return (
+        <Card
+          className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
+            isSelected
+              ? isPortnox
+                ? "ring-2 ring-green-500 bg-green-50 dark:bg-green-950/20"
+                : "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/20"
+              : "hover:shadow-md"
+          } ${isPortnox ? "border-green-200 dark:border-green-800" : ""}`}
+          onClick={() => onVendorToggle(safeString(vendor.id))}
+        >
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <img
+                    src={safeString(vendor.logo) || "/placeholder.svg"}
+                    alt={`${safeString(vendor.name)} logo`}
+                    className="w-12 h-12 object-contain rounded-lg bg-white p-1 border"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement
+                      target.src = "/placeholder-logo.png"
+                    }}
+                  />
+                  {isPortnox && (
+                    <div className="absolute -top-1 -right-1">
+                      <Badge className="bg-green-600 text-white text-xs px-1 py-0">
+                        <Star className="h-3 w-3 mr-1" />
+                        BEST
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    {safeString(vendor.name)}
+                    {Boolean(vendor.isRecommended) && (
+                      <Badge variant="secondary" className="text-xs">
+                        <Award className="h-3 w-3 mr-1" />
+                        Recommended
+                      </Badge>
+                    )}
+                  </CardTitle>
+                  <CardDescription className="text-sm mt-1">{safeString(vendor.description)}</CardDescription>
+                </div>
+              </div>
+              <Checkbox checked={isSelected} onChange={() => onVendorToggle(safeString(vendor.id))} className="mt-1" />
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            {/* Pricing Information */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-green-600" />
+                <span className="font-medium text-sm">Pricing</span>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-sm">{safeString(vendor.pricing.range)}</div>
+                <div className="text-xs text-muted-foreground capitalize">
+                  {safeString(vendor.pricing.model)} • {safeString(vendor.pricing.billingCycle)}
+                </div>
+              </div>
+            </div>
+
+            {/* Feature Scores */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Overall Score</span>
+                <div className="flex items-center gap-2">
+                  <Progress value={avgFeatureScore * 10} className="w-16 h-2" />
+                  <span className="text-sm font-semibold">{avgFeatureScore.toFixed(1)}/10</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex justify-between">
+                  <span>Security:</span>
+                  <span className="font-medium">{safeNumber(vendor.features.security, 0)}/10</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Ease of Use:</span>
+                  <span className="font-medium">{safeNumber(vendor.features.easeOfUse, 0)}/10</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Scalability:</span>
+                  <span className="font-medium">{safeNumber(vendor.features.scalability, 0)}/10</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Integration:</span>
+                  <span className="font-medium">{safeNumber(vendor.features.integration, 0)}/10</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Deployment Information */}
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-blue-600" />
+                <span>Deployment:</span>
+              </div>
+              <div className="text-right">
+                <div className="font-medium">{safeString(vendor.deployment.timeToValue)}</div>
+                <div className="text-xs text-muted-foreground capitalize">
+                  {safeString(vendor.deployment.type)} • {safeString(vendor.deployment.complexity)}
+                </div>
+              </div>
+            </div>
+
+            {/* Market Position */}
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-purple-600" />
+                <span>Market Share:</span>
+              </div>
+              <div className="text-right">
+                <div className="font-medium">{safeNumber(vendor.marketShare, 0)}%</div>
+                <div className="text-xs text-muted-foreground">
+                  {safeNumber(vendor.customerSatisfaction, 0)}% satisfaction
+                </div>
+              </div>
+            </div>
+
+            {/* Security Status */}
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-red-600" />
+                <span>Security:</span>
+              </div>
+              <div className="text-right">
+                <div className="font-medium">
+                  {safeNumber(vendor.security.vulnerabilities, 0) === 0 ? (
+                    <span className="text-green-600 flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Zero CVEs
+                    </span>
+                  ) : (
+                    <span className="text-red-600 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      {safeNumber(vendor.security.vulnerabilities, 0)} CVEs
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {safeNumber(vendor.security.complianceScore, 0)}% compliance
+                </div>
+              </div>
+            </div>
+
+            {/* Recommendation Reason */}
+            {Boolean(vendor.isRecommended) && safeString(vendor.recommendationReason) && (
+              <Alert className="border-green-200 bg-green-50 dark:bg-green-950/20">
+                <Sparkles className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  <strong>Why recommended:</strong> {safeString(vendor.recommendationReason)}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Pros and Cons */}
+            {(Array.isArray(vendor.pros) && vendor.pros.length > 0) ||
+            (Array.isArray(vendor.cons) && vendor.cons.length > 0) ? (
+              <div className="grid grid-cols-1 gap-2 text-xs">
+                {Array.isArray(vendor.pros) && vendor.pros.length > 0 && (
+                  <div>
+                    <div className="font-medium text-green-600 mb-1">Strengths:</div>
+                    <ul className="space-y-1">
+                      {vendor.pros.slice(0, 2).map((pro: any, index: number) => (
+                        <li key={index} className="flex items-start gap-1">
+                          <CheckCircle2 className="h-3 w-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span>{safeString(pro)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {Array.isArray(vendor.cons) && vendor.cons.length > 0 && (
+                  <div>
+                    <div className="font-medium text-red-600 mb-1">Considerations:</div>
+                    <ul className="space-y-1">
+                      {vendor.cons.slice(0, 2).map((con: any, index: number) => (
+                        <li key={index} className="flex items-start gap-1">
+                          <XCircle className="h-3 w-3 text-red-500 mt-0.5 flex-shrink-0" />
+                          <span>{safeString(con)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+      )
+    } catch (error) {
+      console.error("Error rendering vendor card:", error)
+      return (
+        <Card className="p-4">
+          <div className="text-center text-muted-foreground">
+            <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
+            <p>Error loading vendor information</p>
+          </div>
+        </Card>
+      )
+    }
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="p-4 border-b">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-medium text-sm">Vendor Selection & Comparison</h3>
-          <div className="flex items-center gap-1">
-            <Badge variant="outline" className="text-xs">
-              {selectedVendors.length}/2 max
-            </Badge>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                    <Info className="h-3 w-3" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-xs">Compare Portnox with one other vendor</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+    <div className="space-y-6">
+      {/* Enhanced Header */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">Vendor Selection</h2>
+            <p className="text-muted-foreground">Compare and select NAC vendors for your analysis</p>
           </div>
-        </div>
-
-        {/* Search */}
-        <div className="relative mb-3">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search vendors, features, or pricing..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-1 top-1 h-7 w-7 p-0"
-              onClick={() => setSearchQuery("")}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 text-xs bg-transparent">
-                  <Filter className="h-3 w-3 mr-1" />
-                  Filter
-                  <ChevronDown className="h-3 w-3 ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48">
-                <div className="p-2">
-                  <h4 className="text-xs font-medium mb-1">Category</h4>
-                  <div className="space-y-1">
-                    {["leader", "challenger", "visionary", "specialist", "niche", "legacy"].map((category) => (
-                      <div key={category} className="flex items-center">
-                        <Checkbox
-                          id={`category-${category}`}
-                          checked={filterCategory === category}
-                          onCheckedChange={() => handleFilterCategory(category)}
-                        />
-                        <label
-                          htmlFor={`category-${category}`}
-                          className="text-xs ml-2 flex items-center gap-1 cursor-pointer"
-                        >
-                          <Badge className={`${getCategoryColor(category)} text-[10px] py-0 h-4`}>
-                            {safeString(category).charAt(0).toUpperCase() + safeString(category).slice(1)}
-                          </Badge>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Separator className="my-2" />
-
-                  <h4 className="text-xs font-medium mb-1">Deployment</h4>
-                  <div className="space-y-1">
-                    {["cloud", "on-premise", "hybrid"].map((deployment) => (
-                      <div key={deployment} className="flex items-center">
-                        <Checkbox
-                          id={`deployment-${deployment}`}
-                          checked={filterDeployment === deployment}
-                          onCheckedChange={() => handleFilterDeployment(deployment)}
-                        />
-                        <label
-                          htmlFor={`deployment-${deployment}`}
-                          className="text-xs ml-2 flex items-center gap-1 cursor-pointer"
-                        >
-                          {getDeploymentIcon(deployment)}
-                          <span>
-                            {safeString(deployment).charAt(0).toUpperCase() + safeString(deployment).slice(1)}
-                          </span>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Separator className="my-2" />
-
-                  <Button variant="ghost" size="sm" className="w-full text-xs h-7" onClick={handleClearFilters}>
-                    Clear Filters
-                  </Button>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 text-xs bg-transparent">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  Sort
-                  <ChevronDown className="h-3 w-3 ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => handleSort("name")}>
-                  <Check className={`mr-2 h-3 w-3 ${sortBy === "name" ? "opacity-100" : "opacity-0"}`} />
-                  <span>Name</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSort("marketShare")}>
-                  <Check className={`mr-2 h-3 w-3 ${sortBy === "marketShare" ? "opacity-100" : "opacity-0"}`} />
-                  <span>Market Share</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSort("securityRating")}>
-                  <Check className={`mr-2 h-3 w-3 ${sortBy === "securityRating" ? "opacity-100" : "opacity-0"}`} />
-                  <span>Security Rating</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSort("pricing")}>
-                  <Check className={`mr-2 h-3 w-3 ${sortBy === "pricing" ? "opacity-100" : "opacity-0"}`} />
-                  <span>Starting Price</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={onClearAll}>
-              Reset
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={onSelectRecommended}>
-              Recommended
-            </Button>
+            <Badge variant="outline">{selectedVendors.length} selected</Badge>
+            <Badge variant="outline">{filteredVendors.length} available</Badge>
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 h-8">
-            <TabsTrigger value="all" className="text-xs">
-              All
-            </TabsTrigger>
-            <TabsTrigger value="recommended" className="text-xs">
-              Top
-            </TabsTrigger>
-            <TabsTrigger value="selected" className="text-xs">
-              Selected
-            </TabsTrigger>
-            <TabsTrigger value="cloud" className="text-xs">
-              Cloud
-            </TabsTrigger>
-            <TabsTrigger value="onprem" className="text-xs">
-              On-Prem
-            </TabsTrigger>
-            <TabsTrigger value="hybrid" className="text-xs">
-              Hybrid
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        {/* Quick Actions */}
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={onSelectRecommended} size="sm" className="bg-green-600 hover:bg-green-700">
+            <Target className="h-4 w-4 mr-2" />
+            Select Recommended
+          </Button>
+          <Button onClick={onClearAll} variant="outline" size="sm">
+            Clear All
+          </Button>
+          <Button
+            onClick={() => setShowOnlyRecommended(!showOnlyRecommended)}
+            variant={showOnlyRecommended ? "default" : "outline"}
+            size="sm"
+          >
+            <Award className="h-4 w-4 mr-2" />
+            Recommended Only
+          </Button>
+        </div>
       </div>
 
-      {/* Vendor List */}
-      <div className="flex-1 overflow-y-auto p-2">
-        {sortedVendors.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center p-4">
-            <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
-            <h3 className="font-medium mb-1">No vendors found</h3>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
-            <Button variant="outline" size="sm" className="mt-4 bg-transparent" onClick={handleClearFilters}>
-              Clear Filters
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {sortedVendors.map((vendor) => {
-              const isSelected = selectedVendors.includes(vendor.id)
-              const isPortnox = vendor.id === "portnox"
-              const hasWarning = vendor.hasWarning
-              const canSelect = canSelectVendor(vendor.id)
-              const isExpanded = expandedVendor === vendor.id
+      {/* Enhanced Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Advanced Filters
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="basic" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="basic">Basic Filters</TabsTrigger>
+              <TabsTrigger value="advanced">Advanced Criteria</TabsTrigger>
+            </TabsList>
 
-              return (
-                <Card
-                  key={vendor.id}
-                  className={`overflow-hidden transition-all ${
-                    isSelected
-                      ? "ring-2 ring-blue-500 dark:ring-blue-400"
-                      : "hover:border-blue-200 dark:hover:border-blue-800"
-                  } ${isPortnox ? "bg-blue-50 dark:bg-blue-950/20" : ""} ${
-                    hasWarning ? "border-red-200 dark:border-red-800" : ""
-                  } ${!canSelect && !isSelected ? "opacity-50" : ""}`}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-start gap-3">
-                      {/* Logo */}
-                      <div
-                        className={`relative flex-shrink-0 w-10 h-10 rounded-md border overflow-hidden ${
-                          darkMode ? "bg-gray-800" : "bg-white"
-                        }`}
-                      >
-                        <Image
-                          src={safeString(vendor.logo) || "/placeholder.svg"}
-                          alt={safeString(vendor.name)}
-                          width={40}
-                          height={40}
-                          className="object-contain p-1"
-                        />
-                      </div>
+            <TabsContent value="basic" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Search */}
+                <div className="space-y-2">
+                  <Label htmlFor="search">Search Vendors</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="search"
+                      placeholder="Search by name or description..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
 
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <h3 className="font-medium text-sm flex items-center gap-1">
-                                {safeString(vendor.name)}
-                                {isPortnox && <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />}
-                                {hasWarning && <AlertTriangle className="h-3 w-3 text-red-500" />}
-                                {vendor.isDefault && (
-                                  <Badge variant="secondary" className="text-[10px] py-0 h-4">
-                                    Default
-                                  </Badge>
-                                )}
-                              </h3>
-                              <div className="flex items-center gap-2">
-                                <Checkbox
-                                  checked={isSelected}
-                                  disabled={!canSelect && !isSelected}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    if (canSelect) onVendorToggle(vendor.id)
-                                  }}
-                                />
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0"
-                                  onClick={() => setExpandedVendor(isExpanded ? null : vendor.id)}
-                                >
-                                  <ChevronRight
-                                    className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-90" : ""}`}
-                                  />
-                                </Button>
-                              </div>
-                            </div>
+                {/* Category Filter */}
+                <div className="space-y-2">
+                  <Label>Category</Label>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      <SelectItem value="leader">Leader</SelectItem>
+                      <SelectItem value="challenger">Challenger</SelectItem>
+                      <SelectItem value="visionary">Visionary</SelectItem>
+                      <SelectItem value="niche">Niche</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                            <div className="flex items-center gap-1 mt-0.5">
-                              <Badge
-                                className={`${getCategoryColor(vendor.category)} text-[10px] py-0 h-4`}
-                                variant="secondary"
-                              >
-                                {safeString(vendor.category).charAt(0).toUpperCase() +
-                                  safeString(vendor.category).slice(1)}
-                              </Badge>
-                              <Badge variant="outline" className="text-[10px] py-0 h-4 flex items-center gap-0.5">
-                                {getDeploymentIcon(vendor.deploymentType)}
-                                <span className="capitalize">{safeString(vendor.deploymentType)}</span>
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
+                {/* Deployment Filter */}
+                <div className="space-y-2">
+                  <Label>Deployment</Label>
+                  <Select value={deploymentFilter} onValueChange={setDeploymentFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Deployments" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Deployments</SelectItem>
+                      <SelectItem value="cloud">Cloud</SelectItem>
+                      <SelectItem value="on-premise">On-Premise</SelectItem>
+                      <SelectItem value="hybrid">Hybrid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                          {safeString(vendor.description)}
-                        </p>
+                {/* Price Range Filter */}
+                <div className="space-y-2">
+                  <Label>Price Range</Label>
+                  <Select value={priceRangeFilter} onValueChange={setPriceRangeFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Prices" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Prices</SelectItem>
+                      <SelectItem value="low">Low (&lt;=$50/device)</SelectItem>
+                      <SelectItem value="medium">Medium ($50-100/device)</SelectItem>
+                      <SelectItem value="high">High (&gt;$100/device)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </TabsContent>
 
-                        {hasWarning && (
-                          <div className="mt-2 p-2 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
-                            <p className="text-xs text-red-600 dark:text-red-400">
-                              {safeString(vendor.warningMessage)}
-                            </p>
-                          </div>
-                        )}
+            <TabsContent value="advanced" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Sort Options */}
+                <div className="space-y-2">
+                  <Label>Sort By</Label>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="recommendation">Recommendation</SelectItem>
+                      <SelectItem value="name">Name (A-Z)</SelectItem>
+                      <SelectItem value="price">Price (Low to High)</SelectItem>
+                      <SelectItem value="rating">Customer Rating</SelectItem>
+                      <SelectItem value="marketShare">Market Share</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                        {/* Quick Stats */}
-                        <div className="grid grid-cols-4 gap-2 mt-2">
-                          <div className="text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              <Shield className={`h-3 w-3 ${getSecurityColor(vendor.securityRating)}`} />
-                              <span className={`text-xs font-medium ${getSecurityColor(vendor.securityRating)}`}>
-                                {safeNumber(vendor.securityRating)}
-                              </span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground">Security</p>
-                          </div>
-                          <div className="text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              <TrendingUp className="h-3 w-3 text-blue-500" />
-                              <span className="text-xs font-medium">{safeNumber(vendor.marketShare)}%</span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground">Market</p>
-                          </div>
-                          <div className="text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              <DollarSign className="h-3 w-3 text-green-500" />
-                              <span className="text-xs font-medium">
-                                {formatCurrency(vendor.pricing.startingPrice)}
-                              </span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground">Starting</p>
-                          </div>
-                          <div className="text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              <Clock className="h-3 w-3 text-orange-500" />
-                              <span className="text-xs font-medium">
-                                {safeString(vendor.implementation.deploymentTime)}
-                              </span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground">Deploy</p>
-                          </div>
-                        </div>
-
-                        {vendor.isRecommended && (
-                          <div className="mt-2">
-                            <Badge variant="outline" className="text-[10px] py-0 h-4">
-                              Recommended
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
+                {/* Additional Filters */}
+                <div className="space-y-3">
+                  <Label>Additional Criteria</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="recommended-only"
+                        checked={showOnlyRecommended}
+                        onCheckedChange={setShowOnlyRecommended}
+                      />
+                      <Label htmlFor="recommended-only" className="text-sm">
+                        Show only recommended vendors
+                      </Label>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
 
-                    {/* Expanded Details */}
-                    <Collapsible open={isExpanded}>
-                      <CollapsibleContent className="mt-3">
-                        <Separator className="mb-3" />
+      {/* Results Summary */}
+      {filteredVendors.length > 0 && (
+        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          <div className="flex items-center gap-4">
+            <Info className="h-5 w-5 text-blue-600" />
+            <span className="font-medium">
+              Showing {filteredVendors.length} vendor{filteredVendors.length !== 1 ? "s" : ""}
+              {searchTerm && ` matching "${searchTerm}"`}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Users className="h-4 w-4" />
+            <span>{selectedVendors.length} selected for comparison</span>
+          </div>
+        </div>
+      )}
 
-                        <Tabs value={detailView} onValueChange={setDetailView} className="w-full">
-                          <TabsList className="grid w-full grid-cols-4 h-8 mb-3">
-                            <TabsTrigger value="overview" className="text-xs">
-                              Overview
-                            </TabsTrigger>
-                            <TabsTrigger value="pricing" className="text-xs">
-                              Pricing
-                            </TabsTrigger>
-                            <TabsTrigger value="technical" className="text-xs">
-                              Technical
-                            </TabsTrigger>
-                            <TabsTrigger value="support" className="text-xs">
-                              Support
-                            </TabsTrigger>
-                          </TabsList>
-
-                          <TabsContent value="overview" className="mt-0">
-                            <div className="space-y-3">
-                              <div>
-                                <h4 className="text-xs font-medium mb-1 flex items-center gap-1">
-                                  <Info className="h-3 w-3" />
-                                  Key Metrics
-                                </h4>
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div className="p-2 bg-gray-50 dark:bg-gray-900 rounded">
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-xs text-muted-foreground">Security Score</span>
-                                      <span
-                                        className={`text-xs font-medium ${getSecurityColor(vendor.securityRating)}`}
-                                      >
-                                        {safeNumber(vendor.securityRating)}/100
-                                      </span>
-                                    </div>
-                                    <Progress value={safeNumber(vendor.securityRating)} className="h-1 mt-1" />
-                                  </div>
-                                  <div className="p-2 bg-gray-50 dark:bg-gray-900 rounded">
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-xs text-muted-foreground">Market Share</span>
-                                      <span className="text-xs font-medium">{safeNumber(vendor.marketShare)}%</span>
-                                    </div>
-                                    <Progress value={safeNumber(vendor.marketShare)} className="h-1 mt-1" />
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-xs font-medium mb-1 flex items-center gap-1">
-                                  <Zap className="h-3 w-3" />
-                                  Implementation
-                                </h4>
-                                <div className="grid grid-cols-3 gap-2 text-xs">
-                                  <div>
-                                    <span className="text-muted-foreground">Time:</span>
-                                    <p className="font-medium">{safeString(vendor.implementation.deploymentTime)}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">Complexity:</span>
-                                    <p className="font-medium">{safeString(vendor.implementation.complexity)}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">Success Rate:</span>
-                                    <p className="font-medium">
-                                      {Math.round(safeNumber(vendor.implementation.successRate) * 100)}%
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-xs font-medium mb-1 flex items-center gap-1">
-                                  <Award className="h-3 w-3" />
-                                  Compliance
-                                </h4>
-                                <div className="flex flex-wrap gap-1">
-                                  {vendor.technical.compliance.slice(0, 6).map((cert) => (
-                                    <Badge key={cert} variant="outline" className="text-[10px] py-0 h-4">
-                                      {safeString(cert)}
-                                    </Badge>
-                                  ))}
-                                  {vendor.technical.compliance.length > 6 && (
-                                    <Badge variant="outline" className="text-[10px] py-0 h-4">
-                                      +{vendor.technical.compliance.length - 6} more
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </TabsContent>
-
-                          <TabsContent value="pricing" className="mt-0">
-                            <div className="space-y-3">
-                              <div>
-                                <h4 className="text-xs font-medium mb-2 flex items-center gap-1">
-                                  <DollarSign className="h-3 w-3" />
-                                  Pricing Model
-                                </h4>
-                                <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded">
-                                  <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium">{safeString(vendor.pricing.model)}</span>
-                                    <div className="text-right">
-                                      <div className="text-lg font-bold text-green-600">
-                                        {formatCurrency(vendor.pricing.startingPrice)}
-                                      </div>
-                                      <div className="text-xs text-muted-foreground">Starting price</div>
-                                    </div>
-                                  </div>
-
-                                  {safeNumber(vendor.pricing.minimumDevices) > 1 && (
-                                    <p className="text-xs text-muted-foreground">
-                                      Minimum: {safeNumber(vendor.pricing.minimumDevices)} devices
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-xs font-medium mb-1">Volume Discounts</h4>
-                                <div className="space-y-1">
-                                  {vendor.pricing.volumeDiscounts.map((discount, index) => (
-                                    <div key={index} className="flex justify-between text-xs">
-                                      <span>{safeNumber(discount.threshold)}+ devices:</span>
-                                      <span className="font-medium text-green-600">
-                                        {safeString(discount.discount)} off
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-xs font-medium mb-1">Additional Costs</h4>
-                                <div className="space-y-1">
-                                  <div className="flex justify-between text-xs">
-                                    <span>Implementation:</span>
-                                    <span className="font-medium">
-                                      {safeString(vendor.pricing.additionalCosts.implementation)}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between text-xs">
-                                    <span>Training:</span>
-                                    <span className="font-medium">
-                                      {safeString(vendor.pricing.additionalCosts.training)}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between text-xs">
-                                    <span>Hardware:</span>
-                                    <span className="font-medium">
-                                      {safeString(vendor.pricing.additionalCosts.hardware)}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between text-xs">
-                                    <span>Support:</span>
-                                    <span className="font-medium">
-                                      {safeString(vendor.pricing.additionalCosts.support)}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-xs font-medium mb-1">Included Features</h4>
-                                <div className="space-y-1">
-                                  {vendor.pricing.includedFeatures.map((feature, index) => (
-                                    <div key={index} className="flex items-center gap-1 text-xs">
-                                      <Check className="h-3 w-3 text-green-500" />
-                                      <span>{safeString(feature)}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          </TabsContent>
-
-                          <TabsContent value="technical" className="mt-0">
-                            <div className="space-y-3">
-                              <div>
-                                <h4 className="text-xs font-medium mb-1 flex items-center gap-1">
-                                  <Network className="h-3 w-3" />
-                                  Protocols & Standards
-                                </h4>
-                                <div className="flex flex-wrap gap-1">
-                                  {vendor.technical.protocols.map((protocol) => (
-                                    <Badge key={protocol} variant="outline" className="text-[10px] py-0 h-4">
-                                      {safeString(protocol)}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-xs font-medium mb-1 flex items-center gap-1">
-                                  <Database className="h-3 w-3" />
-                                  Scalability
-                                </h4>
-                                <div className="grid grid-cols-2 gap-2 text-xs">
-                                  <div>
-                                    <span className="text-muted-foreground">Max Devices:</span>
-                                    <p className="font-medium">{safeString(vendor.technical.scalability.maxDevices)}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">Max Policies:</span>
-                                    <p className="font-medium">
-                                      {safeString(vendor.technical.scalability.maxPolicies)}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">Max Sites:</span>
-                                    <p className="font-medium">{safeString(vendor.technical.scalability.maxSites)}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">Performance:</span>
-                                    <p className="font-medium">
-                                      {safeString(vendor.technical.scalability.performance)}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-xs font-medium mb-1 flex items-center gap-1">
-                                  <Lock className="h-3 w-3" />
-                                  Security Features
-                                </h4>
-                                <div className="grid grid-cols-2 gap-2 text-xs">
-                                  <div>
-                                    <span className="text-muted-foreground">Encryption:</span>
-                                    <p className="font-medium">{safeString(vendor.technical.security.encryption)}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">Zero Trust:</span>
-                                    <p className="font-medium">{safeString(vendor.technical.security.zeroTrust)}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">SSO:</span>
-                                    <p className="font-medium">{safeString(vendor.technical.security.sso)}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">MFA:</span>
-                                    <p className="font-medium">{safeString(vendor.technical.security.mfa)}</p>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-xs font-medium mb-1 flex items-center gap-1">
-                                  <Settings className="h-3 w-3" />
-                                  Key Integrations
-                                </h4>
-                                <div className="flex flex-wrap gap-1">
-                                  {vendor.technical.integrations.slice(0, 8).map((integration) => (
-                                    <Badge key={integration} variant="secondary" className="text-[10px] py-0 h-4">
-                                      {safeString(integration)}
-                                    </Badge>
-                                  ))}
-                                  {vendor.technical.integrations.length > 8 && (
-                                    <Badge variant="secondary" className="text-[10px] py-0 h-4">
-                                      +{vendor.technical.integrations.length - 8} more
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </TabsContent>
-
-                          <TabsContent value="support" className="mt-0">
-                            <div className="space-y-3">
-                              <div>
-                                <h4 className="text-xs font-medium mb-1 flex items-center gap-1">
-                                  <Phone className="h-3 w-3" />
-                                  Support Details
-                                </h4>
-                                <div className="grid grid-cols-2 gap-2 text-xs">
-                                  <div>
-                                    <span className="text-muted-foreground">Availability:</span>
-                                    <p className="font-medium">{safeString(vendor.support.availability)}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">Response Time:</span>
-                                    <p className="font-medium">{safeString(vendor.support.responseTime)}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">Satisfaction:</span>
-                                    <p className="font-medium">{safeString(vendor.support.satisfaction)}%</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">Documentation:</span>
-                                    <p className="font-medium">{safeString(vendor.support.documentation)}</p>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-xs font-medium mb-1 flex items-center gap-1">
-                                  <Mail className="h-3 w-3" />
-                                  Support Channels
-                                </h4>
-                                <div className="flex flex-wrap gap-1">
-                                  {vendor.support.channels.map((channel) => (
-                                    <Badge key={channel} variant="outline" className="text-[10px] py-0 h-4">
-                                      {safeString(channel)}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-xs font-medium mb-1 flex items-center gap-1">
-                                  <TrendingUp className="h-3 w-3" />
-                                  Performance Metrics
-                                </h4>
-                                <div className="grid grid-cols-2 gap-2 text-xs">
-                                  <div>
-                                    <span className="text-muted-foreground">Uptime:</span>
-                                    <p className="font-medium">{safeString(vendor.performance.uptime)}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">Latency:</span>
-                                    <p className="font-medium">{safeString(vendor.performance.latency)}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">CVE Count:</span>
-                                    <p
-                                      className={`font-medium ${safeNumber(vendor.performance.cveCount) === 0 ? "text-green-600" : safeNumber(vendor.performance.cveCount) > 50 ? "text-red-600" : "text-yellow-600"}`}
-                                    >
-                                      {safeNumber(vendor.performance.cveCount)}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">MTTR:</span>
-                                    <p className="font-medium">{safeString(vendor.performance.mttr)}</p>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-xs font-medium mb-1 flex items-center gap-1">
-                                  <Users className="h-3 w-3" />
-                                  Community & Resources
-                                </h4>
-                                <p className="text-xs text-muted-foreground">{safeString(vendor.support.community)}</p>
-                              </div>
-                            </div>
-                          </TabsContent>
-                        </Tabs>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </CardContent>
-                </Card>
-              )
-            })}
+      {/* Vendor Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {filteredVendors.length > 0 ? (
+          filteredVendors.map((vendor) => <VendorCard key={safeString(vendor.id)} vendor={vendor} />)
+        ) : (
+          <div className="col-span-full">
+            <Card className="p-8">
+              <div className="text-center space-y-4">
+                <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center">
+                  <Search className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">No vendors found</h3>
+                  <p className="text-muted-foreground">
+                    Try adjusting your filters or search terms to find more vendors.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => {
+                    setSearchTerm("")
+                    setCategoryFilter("all")
+                    setDeploymentFilter("all")
+                    setPriceRangeFilter("all")
+                    setShowOnlyRecommended(false)
+                  }}
+                  variant="outline"
+                >
+                  Clear All Filters
+                </Button>
+              </div>
+            </Card>
           </div>
         )}
       </div>
 
-      {/* Selection Info */}
-      <div className="p-4 border-t bg-gray-50 dark:bg-gray-900/50">
-        <div className="text-xs text-muted-foreground">
-          <p className="mb-1">
-            <strong>Selection Rules:</strong>
-          </p>
-          <ul className="space-y-0.5 ml-2">
-            <li>• Portnox CLEAR is always included for comparison</li>
-            <li>• Select one additional vendor to compare</li>
-            <li>• Maximum 2 vendors can be compared at once</li>
-            <li>• Click the arrow to expand detailed specifications</li>
-          </ul>
-        </div>
-      </div>
+      {/* Selection Summary */}
+      {selectedVendors.length > 0 && (
+        <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2 text-green-800 dark:text-green-200">
+              <CheckCircle2 className="h-5 w-5" />
+              Selected Vendors ({selectedVendors.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {selectedVendors.map((vendorId) => {
+                const vendor = processedVendors.find((v) => safeString(v.id) === vendorId)
+                if (!vendor) return null
+
+                return (
+                  <Badge key={vendorId} variant="secondary" className="flex items-center gap-2 px-3 py-1">
+                    <img
+                      src={safeString(vendor.logo) || "/placeholder.svg"}
+                      alt={safeString(vendor.name)}
+                      className="w-4 h-4 object-contain"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.src = "/placeholder-logo.png"
+                      }}
+                    />
+                    {safeString(vendor.name)}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onVendorToggle(vendorId)
+                      }}
+                      className="ml-1 hover:bg-red-100 rounded-full p-0.5"
+                    >
+                      <XCircle className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )
+              })}
+            </div>
+
+            <Separator className="my-4" />
+
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Ready to analyze {selectedVendors.length} vendor{selectedVendors.length !== 1 ? "s" : ""}
+                for your NAC requirements
+              </p>
+              <div className="flex gap-2">
+                <Button onClick={onClearAll} variant="outline" size="sm">
+                  Clear Selection
+                </Button>
+                <Button onClick={onSelectRecommended} size="sm" className="bg-green-600 hover:bg-green-700">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Use Recommended
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

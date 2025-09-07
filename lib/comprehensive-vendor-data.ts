@@ -927,3 +927,6 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
     bestFor: ["Meraki customers", "Cloud-managed networks", "Simple deployments", "SMB to mid-market"],
   },
 }
+
+// Export alias for backward compatibility
+export const COMPREHENSIVE_VENDOR_DATA = ComprehensiveVendorDatabase
