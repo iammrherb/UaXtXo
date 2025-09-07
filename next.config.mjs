@@ -42,43 +42,43 @@ const nextConfig = {
         "node:assert": false,
       }
 
-      // Add null-loader for problematic packages
-      config.module.rules.push({
-        test: /node_modules[\/\\](pptxgenjs|docx)[\/\\]/,
-        use: "null-loader",
-      })
-
-      // Exclude packages that use Node.js modules
+      // Completely exclude problematic packages from client bundle
       config.externals = config.externals || []
       config.externals.push({
-        "pptxgenjs": "commonjs pptxgenjs",
-        "docx": "commonjs docx",
-        "fs": "commonjs fs",
-        "path": "commonjs path",
-        "crypto": "commonjs crypto",
-        "stream": "commonjs stream",
-        "util": "commonjs util",
-        "url": "commonjs url",
-        "zlib": "commonjs zlib",
-        "http": "commonjs http",
-        "https": "commonjs https",
-        "net": "commonjs net",
-        "tls": "commonjs tls",
-        "os": "commonjs os",
-        "events": "commonjs events",
-        "buffer": "commonjs buffer",
-        "querystring": "commonjs querystring",
-        "punycode": "commonjs punycode",
-        "assert": "commonjs assert",
+        "pptxgenjs": "pptxgenjs",
+        "docx": "docx",
+        "fs": "fs",
+        "path": "path",
+        "crypto": "crypto",
+        "stream": "stream",
+        "util": "util",
+        "url": "url",
+        "zlib": "zlib",
+        "http": "http",
+        "https": "https",
+        "net": "net",
+        "tls": "tls",
+        "os": "os",
+        "events": "events",
+        "buffer": "buffer",
+        "querystring": "querystring",
+        "punycode": "punycode",
+        "assert": "assert",
       })
     }
 
-    // Ignore dynamic requires that cause issues
+    // Add ignore plugin for Node.js modules
     config.plugins.push(
       new webpack.IgnorePlugin({
         resourceRegExp: /^(pptxgenjs|docx|fs|path|crypto|stream|util|url|zlib|http|https|net|tls|os|events|buffer|querystring|punycode|assert)$/,
       })
     )
+
+    // Add null-loader for problematic packages
+    config.module.rules.push({
+      test: /node_modules[\/\\](pptxgenjs|docx)[\/\\]/,
+      use: "null-loader",
+    })
 
     return config
   },

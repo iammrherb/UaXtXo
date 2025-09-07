@@ -1,11 +1,12 @@
 // Legacy Report Generator - Browser Compatible
-// Maintains backward compatibility while using new advanced chart library
+// Maintains backward compatibility while avoiding Node.js dependencies
 
 import {
-  WorldClassReportGenerator,
+  generateWorldClassReport,
   createSampleReportData,
-  type ReportData,
-  type ReportOptions,
+  type WorldClassReportData,
+  type ReportTemplate,
+  type ReportFormat,
 } from "./world-class-report-generator"
 
 // Legacy interface for backward compatibility
@@ -37,86 +38,102 @@ export interface LegacyReportData {
 }
 
 // Convert legacy data to new format
-function convertLegacyData(legacyData: LegacyReportData): ReportData {
+function convertLegacyData(legacyData: LegacyReportData): WorldClassReportData {
   return {
-    metadata: {
-      title: legacyData.title,
-      subtitle: legacyData.subtitle,
-      generatedAt: new Date(),
-      generatedBy: "Portnox TCO Analyzer",
+    title: legacyData.title,
+    subtitle: legacyData.subtitle,
+    template: "comprehensive",
+    format: "pdf",
+    generatedAt: new Date(),
+
+    organization: {
+      name: "Sample Organization",
+      industry: "Technology",
+      size: "medium",
+      deviceCount: 5000,
+      locations: 10,
+      region: "north-america",
     },
-    executiveSummary: legacyData.executiveSummary,
-    tcoComparison: legacyData.tcoComparison,
-    riskAnalysis: [
-      { category: "Breach Risk", reduction: 92, value: 920000 },
-      { category: "Compliance Risk", reduction: 94, value: 470000 },
-      { category: "Operational Risk", reduction: 86, value: 215000 },
-      { category: "Reputation Risk", reduction: 85, value: 850000 },
-    ],
-    recommendations: [
-      "Initiate Portnox CLEAR proof of concept within 30 days",
-      "Develop comprehensive migration strategy for legacy NAC replacement",
-      "Secure executive sponsorship for digital transformation initiative",
-      "Establish success metrics and ROI tracking mechanisms",
-      "Plan phased deployment to minimize operational disruption",
-    ],
+
+    analysis: {
+      timeframe: 3,
+      vendors: ["portnox", "cisco", "aruba"],
+      deploymentModel: "cloud",
+      includeCharts: true,
+      includeDetails: true,
+      includeAIEnhancement: false,
+      includeBenchmarks: true,
+      includeRoadmap: true,
+      includeCompliance: true,
+    },
+
+    financial: {
+      portnoxCost: 250000,
+      competitorCosts: { cisco: 750000, aruba: 625000 },
+      savings: legacyData.executiveSummary.totalSavings,
+      roi: legacyData.executiveSummary.roi,
+      paybackPeriod: legacyData.executiveSummary.paybackPeriod,
+      riskMitigation: 600000,
+    },
+
+    content: {
+      executiveSummary: "Strategic analysis for network access control vendor evaluation.",
+      keyFindings: [
+        "65% cost reduction compared to traditional NAC solutions",
+        "92% reduction in security breach risk",
+        "30-minute deployment vs 6-month traditional implementations",
+      ],
+      recommendations: [
+        "Initiate Portnox CLEAR proof of concept within 30 days",
+        "Develop comprehensive migration strategy for legacy NAC replacement",
+        "Secure executive sponsorship for digital transformation initiative",
+      ],
+    },
+
+    branding: {
+      primaryColor: "#00D4AA",
+      secondaryColor: "#1B2951",
+      logo: "/portnox-logo.png",
+      companyName: "Portnox Ltd.",
+      tagline: "Enterprise Network Access Control Solutions",
+      website: "www.portnox.com",
+      contact: "enterprise@portnox.com",
+    },
+
+    advanced: {
+      customCharts: [],
+      stakeholders: [],
+      complianceFrameworks: [],
+    },
   }
 }
 
-// Legacy report generator class for backward compatibility
+// Browser-compatible report generator class
 export class BrowserCompatibleReportGenerator {
   private data: LegacyReportData
-  private generator: WorldClassReportGenerator
 
   constructor(data: LegacyReportData) {
     this.data = data
-    const convertedData = convertLegacyData(data)
-    this.generator = new WorldClassReportGenerator(convertedData, {
-      format: "pdf",
-      includeCharts: true,
-      includeBranding: true,
-      template: "executive",
-    })
   }
 
   async generatePDF(): Promise<Blob> {
-    this.generator = new WorldClassReportGenerator(convertLegacyData(this.data), {
-      format: "pdf",
-      includeCharts: true,
-      includeBranding: true,
-      template: "executive",
-    })
-    return this.generator.generateReport()
+    const convertedData = convertLegacyData(this.data)
+    return generateWorldClassReport(convertedData, "pdf")
   }
 
   async generateExcel(): Promise<Blob> {
-    this.generator = new WorldClassReportGenerator(convertLegacyData(this.data), {
-      format: "excel",
-      includeCharts: true,
-      includeBranding: true,
-      template: "executive",
-    })
-    return this.generator.generateReport()
+    const convertedData = convertLegacyData(this.data)
+    return generateWorldClassReport(convertedData, "excel")
   }
 
   async generateWord(): Promise<Blob> {
-    this.generator = new WorldClassReportGenerator(convertLegacyData(this.data), {
-      format: "word",
-      includeCharts: true,
-      includeBranding: true,
-      template: "executive",
-    })
-    return this.generator.generateReport()
+    const convertedData = convertLegacyData(this.data)
+    return generateWorldClassReport(convertedData, "word")
   }
 
   async generatePowerPoint(): Promise<Blob> {
-    this.generator = new WorldClassReportGenerator(convertLegacyData(this.data), {
-      format: "powerpoint",
-      includeCharts: true,
-      includeBranding: true,
-      template: "executive",
-    })
-    return this.generator.generateReport()
+    const convertedData = convertLegacyData(this.data)
+    return generateWorldClassReport(convertedData, "powerpoint")
   }
 
   // Utility method to download files
@@ -133,5 +150,5 @@ export class BrowserCompatibleReportGenerator {
 }
 
 // Export for backward compatibility
-export { WorldClassReportGenerator, createSampleReportData }
-export type { ReportData, ReportOptions }
+export { generateWorldClassReport, createSampleReportData }
+export type { WorldClassReportData, ReportTemplate, ReportFormat }
