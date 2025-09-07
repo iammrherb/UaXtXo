@@ -36,12 +36,70 @@ export interface ReportData {
   }
 }
 
+// Safe string conversion utility
+function safeString(value: any): string {
+  if (value === null || value === undefined) return ""
+  if (typeof value === "string") return value
+  if (typeof value === "number") return value.toString()
+  if (typeof value === "boolean") return value.toString()
+  if (typeof value === "object") return JSON.stringify(value)
+  return String(value)
+}
+
+// Safe number conversion utility
+function safeNumber(value: any, defaultValue = 0): number {
+  if (value === null || value === undefined) return defaultValue
+  const num = Number(value)
+  return isNaN(num) || !isFinite(num) ? defaultValue : num
+}
+
+// Safe array conversion utility
+function safeArray(value: any): any[] {
+  if (Array.isArray(value)) return value
+  if (value === null || value === undefined) return []
+  return [value]
+}
+
 export class EnhancedReportGenerator {
   private data: ReportData
   private aiService?: AIIntegrationService
 
   constructor(data: ReportData) {
-    this.data = data
+    // Sanitize all input data to prevent type errors
+    this.data = {
+      ...data,
+      title: safeString(data.title) || "Network Access Control Analysis",
+      subtitle: safeString(data.subtitle) || "Professional Strategic Assessment",
+      template: safeString(data.template) || "executive",
+      format: safeString(data.format) || "PDF",
+      industry: safeString(data.industry) || "technology",
+      deviceCount: safeNumber(data.deviceCount, 1000),
+      timeframe: safeNumber(data.timeframe, 3),
+      organizationSize: safeString(data.organizationSize) || "medium",
+      region: safeString(data.region) || "north-america",
+      results: safeArray(data.results),
+      executiveSummary: safeString(data.executiveSummary),
+      keyRecommendations: safeString(data.keyRecommendations),
+      generatedAt: data.generatedAt instanceof Date ? data.generatedAt : new Date(),
+      preview: data.preview || {},
+      config: data.config || {},
+      templateData: data.templateData || {},
+      branding: {
+        logo: safeString(data.branding?.logo) || "/portnox-logo.png",
+        primaryColor: safeString(data.branding?.primaryColor) || "#00D4AA",
+        secondaryColor: safeString(data.branding?.secondaryColor) || "#1B2951",
+        companyName: safeString(data.branding?.companyName) || "Portnox Ltd.",
+        tagline: safeString(data.branding?.tagline) || "Enterprise Network Access Control Solutions",
+      },
+      includeCharts: Boolean(data.includeCharts),
+      includeDetails: Boolean(data.includeDetails),
+      includeAIEnhancement: Boolean(data.includeAIEnhancement),
+      includeBenchmarks: Boolean(data.includeBenchmarks),
+      includeRoadmap: Boolean(data.includeRoadmap),
+      includeCompliance: Boolean(data.includeCompliance),
+      aiPrompt: data.aiPrompt ? safeString(data.aiPrompt) : null,
+    }
+
     if (
       data.config?.aiConfig &&
       (data.config.aiConfig.openaiApiKey || data.config.aiConfig.claudeApiKey || data.config.aiConfig.geminiApiKey)
@@ -59,7 +117,7 @@ export class EnhancedReportGenerator {
       if (this.aiService && this.data.includeAIEnhancement && this.data.aiPrompt) {
         try {
           enhancement = await enhanceReport(
-            type,
+            safeString(type),
             { tco: this.data.results, roi: this.data.preview },
             { industry: this.data.industry, devices: this.data.deviceCount, timeframe: this.data.timeframe },
             this.data.config.aiConfig,
@@ -77,7 +135,7 @@ export class EnhancedReportGenerator {
       yPosition += 70
 
       // Add executive summary
-      this.addExecutiveSummary(doc, yPosition, type, enhancement)
+      this.addExecutiveSummary(doc, yPosition, safeString(type), enhancement)
       yPosition += 90
 
       // Add page break if needed
@@ -89,7 +147,7 @@ export class EnhancedReportGenerator {
       }
 
       // Add key findings section
-      this.addKeyFindings(doc, yPosition, type, enhancement)
+      this.addKeyFindings(doc, yPosition, safeString(type), enhancement)
       yPosition += 80
 
       // Add financial analysis section
@@ -99,7 +157,7 @@ export class EnhancedReportGenerator {
         this.addPageHeader(doc)
         yPosition += 35
       }
-      this.addFinancialAnalysis(doc, yPosition, type, enhancement)
+      this.addFinancialAnalysis(doc, yPosition, safeString(type), enhancement)
       yPosition += 90
 
       // Add strategic recommendations
@@ -109,7 +167,7 @@ export class EnhancedReportGenerator {
         this.addPageHeader(doc)
         yPosition += 35
       }
-      this.addStrategicRecommendations(doc, yPosition, type, enhancement)
+      this.addStrategicRecommendations(doc, yPosition, safeString(type), enhancement)
       yPosition += 80
 
       // Add visual charts and graphs
@@ -171,7 +229,7 @@ export class EnhancedReportGenerator {
       return pdfBlob
     } catch (error) {
       console.error("PDF generation failed:", error)
-      return this.generateFallbackPDF(type)
+      return this.generateFallbackPDF(safeString(type))
     }
   }
 
@@ -207,15 +265,15 @@ export class EnhancedReportGenerator {
     doc.setFontSize(22)
     doc.setTextColor(255, 255, 255)
     doc.setFont("helvetica", "bold")
-    doc.text(this.data.title, 85, yPosition + 15)
+    doc.text(safeString(this.data.title), 85, yPosition + 15)
 
     doc.setFontSize(12)
     doc.setFont("helvetica", "normal")
-    doc.text(this.data.subtitle, 85, yPosition + 25)
+    doc.text(safeString(this.data.subtitle), 85, yPosition + 25)
 
     // Template type and AI enhancement indicator
     doc.setFontSize(10)
-    doc.text(`${this.data.templateData?.name || "Professional Report"}`, 85, yPosition + 35)
+    doc.text(safeString(this.data.templateData?.name) || "Professional Report", 85, yPosition + 35)
     if (this.data.includeAIEnhancement) {
       doc.setFontSize(9)
       doc.text("🤖 AI-Enhanced Analysis", 85, yPosition + 42)
@@ -224,8 +282,8 @@ export class EnhancedReportGenerator {
     // Analysis parameters in footer area
     doc.setFontSize(9)
     doc.setTextColor(255, 255, 255)
-    const leftInfo = `Industry: ${this.data.industry.charAt(0).toUpperCase() + this.data.industry.slice(1)} | Devices: ${this.data.deviceCount.toLocaleString()}`
-    const rightInfo = `Period: ${this.data.timeframe} years | Generated: ${this.data.generatedAt.toLocaleDateString()}`
+    const leftInfo = `Industry: ${safeString(this.data.industry).charAt(0).toUpperCase() + safeString(this.data.industry).slice(1)} | Devices: ${safeNumber(this.data.deviceCount).toLocaleString()}`
+    const rightInfo = `Period: ${safeNumber(this.data.timeframe)} years | Generated: ${this.data.generatedAt.toLocaleDateString()}`
 
     doc.text(leftInfo, 25, yPosition + 62)
     doc.text(rightInfo, 190 - doc.getTextWidth(rightInfo), yPosition + 62)
@@ -245,7 +303,7 @@ export class EnhancedReportGenerator {
 
     doc.setFontSize(10)
     doc.setFont("helvetica", "normal")
-    doc.text(this.data.title, 75, 22)
+    doc.text(safeString(this.data.title), 75, 22)
     doc.text(`Page ${doc.getCurrentPageInfo().pageNumber}`, 165, 22)
   }
 
@@ -314,7 +372,10 @@ export class EnhancedReportGenerator {
     doc.setFont("helvetica", "normal")
     doc.setTextColor(60, 60, 60)
 
-    const summary = enhancement?.executiveSummary || this.data.executiveSummary || this.getDefaultExecutiveSummary(type)
+    const summary =
+      safeString(enhancement?.executiveSummary) ||
+      safeString(this.data.executiveSummary) ||
+      this.getDefaultExecutiveSummary(type)
     const summaryLines = doc.splitTextToSize(summary, 170)
     doc.text(summaryLines, 20, yPosition)
 
@@ -338,17 +399,17 @@ export class EnhancedReportGenerator {
     doc.setFont("helvetica", "normal")
     doc.setTextColor(0, 0, 0)
 
-    const portnoxCost = this.data.preview?.portnoxCost || 250000
-    const savings = this.data.preview?.maxSavings || 500000
-    const roi = this.data.preview?.bestROI || 456
-    const payback = this.data.preview?.avgPayback || 0.5
+    const portnoxCost = safeNumber(this.data.preview?.portnoxCost, 250000)
+    const savings = safeNumber(this.data.preview?.maxSavings, 500000)
+    const roi = safeNumber(this.data.preview?.bestROI, 456)
+    const payback = safeNumber(this.data.preview?.avgPayback, 0.5)
 
     // Left column metrics with green indicators
     const metrics = [
       { label: "Total Investment", value: `$${Math.round(portnoxCost / 1000)}K`, y: yPosition + 22 },
       {
         label: "Total Savings",
-        value: `$${Math.round(savings / 1000)}K (${this.data.preview?.savingsPercent || "67"}%)`,
+        value: `$${Math.round(savings / 1000)}K (${safeString(this.data.preview?.savingsPercent) || "67"}%)`,
         y: yPosition + 30,
       },
       { label: "Return on Investment", value: `${Math.round(roi)}%`, y: yPosition + 38 },
@@ -364,10 +425,18 @@ export class EnhancedReportGenerator {
 
     // Right column metrics
     const rightMetrics = [
-      { label: "Security Score", value: `${this.data.preview?.securityScore || "95"}/100`, y: yPosition + 22 },
-      { label: "Deployment Time", value: `${this.data.preview?.deploymentTime || "30 minutes"}`, y: yPosition + 30 },
-      { label: "Risk Reduction", value: `${this.data.preview?.riskReduction || "92"}%`, y: yPosition + 38 },
-      { label: "Compliance Score", value: `${this.data.preview?.complianceScore || "95"}/100`, y: yPosition + 46 },
+      { label: "Security Score", value: `${safeNumber(this.data.preview?.securityScore, 95)}/100`, y: yPosition + 22 },
+      {
+        label: "Deployment Time",
+        value: safeString(this.data.preview?.deploymentTime) || "30 minutes",
+        y: yPosition + 30,
+      },
+      { label: "Risk Reduction", value: `${safeNumber(this.data.preview?.riskReduction, 92)}%`, y: yPosition + 38 },
+      {
+        label: "Compliance Score",
+        value: `${safeNumber(this.data.preview?.complianceScore, 95)}/100`,
+        y: yPosition + 46,
+      },
     ]
 
     rightMetrics.forEach((metric) => {
@@ -404,7 +473,10 @@ export class EnhancedReportGenerator {
     doc.setFont("helvetica", "normal")
     doc.setTextColor(60, 60, 60)
 
-    const findings = enhancement?.keyInsights || this.getDefaultKeyFindings(type)
+    const findings =
+      safeArray(enhancement?.keyInsights).length > 0
+        ? safeArray(enhancement?.keyInsights)
+        : this.getDefaultKeyFindings(type)
 
     findings.slice(0, 5).forEach((finding, index) => {
       // Professional numbered bullet with Portnox styling
@@ -419,7 +491,7 @@ export class EnhancedReportGenerator {
       doc.setFontSize(10)
       doc.setTextColor(0, 0, 0)
       doc.setFont("helvetica", "normal")
-      const findingLines = doc.splitTextToSize(finding, 155)
+      const findingLines = doc.splitTextToSize(safeString(finding), 155)
       doc.text(findingLines, 32, yPosition)
       yPosition += Math.max(findingLines.length * 5, 12) + 3
     })
@@ -442,10 +514,10 @@ export class EnhancedReportGenerator {
     yPosition += 25
 
     // Create comprehensive financial comparison table
-    const portnoxCost = this.data.preview?.portnoxCost || 250000
-    const avgCompetitorCost = this.data.preview?.avgCompetitorCost || 750000
-    const savings = this.data.preview?.maxSavings || 500000
-    const roi = this.data.preview?.bestROI || 456
+    const portnoxCost = safeNumber(this.data.preview?.portnoxCost, 250000)
+    const avgCompetitorCost = safeNumber(this.data.preview?.avgCompetitorCost, 750000)
+    const savings = safeNumber(this.data.preview?.maxSavings, 500000)
+    const roi = safeNumber(this.data.preview?.bestROI, 456)
 
     const tableData = [
       ["Financial Metric", "Portnox CLEAR", "Industry Average", "Advantage"],
@@ -457,12 +529,17 @@ export class EnhancedReportGenerator {
       ],
       [
         "Annual Operating Cost",
-        `$${Math.round(portnoxCost / (this.data.timeframe * 1000))}K`,
-        `$${Math.round(avgCompetitorCost / (this.data.timeframe * 1000))}K`,
+        `$${Math.round(portnoxCost / (safeNumber(this.data.timeframe, 3) * 1000))}K`,
+        `$${Math.round(avgCompetitorCost / (safeNumber(this.data.timeframe, 3) * 1000))}K`,
         `${Math.round((savings / avgCompetitorCost) * 100)}% Lower`,
       ],
       ["Return on Investment", `${Math.round(roi)}%`, "145%", `${Math.round(roi - 145)}% Higher`],
-      ["Payback Period", `${(this.data.preview?.avgPayback || 0.5).toFixed(1)} years`, "2.8 years", "75% Faster"],
+      [
+        "Payback Period",
+        `${safeNumber(this.data.preview?.avgPayback, 0.5).toFixed(1)} years`,
+        "2.8 years",
+        "75% Faster",
+      ],
       ["Deployment Time", "30 minutes", "3-6 months", "99% Faster"],
       ["Security Vulnerabilities", "0 CVEs", "15+ CVEs", "Zero Risk"],
     ]
@@ -528,10 +605,17 @@ export class EnhancedReportGenerator {
     doc.setFont("helvetica", "normal")
     doc.setTextColor(60, 60, 60)
 
-    const recommendations =
-      enhancement?.strategicRecommendations ||
-      (this.data.keyRecommendations ? this.data.keyRecommendations.split("\n").filter((r) => r.trim()) : []) ||
-      this.getDefaultRecommendations(type)
+    let recommendations: string[] = []
+
+    if (safeArray(enhancement?.strategicRecommendations).length > 0) {
+      recommendations = safeArray(enhancement?.strategicRecommendations)
+    } else if (safeString(this.data.keyRecommendations)) {
+      recommendations = safeString(this.data.keyRecommendations)
+        .split("\n")
+        .filter((r) => r.trim())
+    } else {
+      recommendations = this.getDefaultRecommendations(type)
+    }
 
     recommendations.slice(0, 5).forEach((rec, index) => {
       // Enhanced priority indicator with Portnox colors
@@ -554,7 +638,7 @@ export class EnhancedReportGenerator {
       doc.setFontSize(10)
       doc.setTextColor(0, 0, 0)
       doc.setFont("helvetica", "normal")
-      const recLines = doc.splitTextToSize(rec, 130)
+      const recLines = doc.splitTextToSize(safeString(rec), 130)
       doc.text(recLines, 57, yPosition)
       yPosition += Math.max(recLines.length * 5, 12) + 5
     })
@@ -608,8 +692,8 @@ export class EnhancedReportGenerator {
     doc.text("TCO Comparison ($K)", x + 5, y + 10)
 
     // Draw bars
-    const portnoxCost = this.data.preview?.portnoxCost || 250000
-    const avgCompetitorCost = this.data.preview?.avgCompetitorCost || 750000
+    const portnoxCost = safeNumber(this.data.preview?.portnoxCost, 250000)
+    const avgCompetitorCost = safeNumber(this.data.preview?.avgCompetitorCost, 750000)
     const maxCost = Math.max(portnoxCost, avgCompetitorCost)
 
     // Portnox bar
@@ -690,7 +774,7 @@ export class EnhancedReportGenerator {
     const centerX = x + width / 2
     const centerY = y + height / 2 + 5
     const radius = 20
-    const score = this.data.preview?.securityScore || 95
+    const score = safeNumber(this.data.preview?.securityScore, 95)
 
     // Background circle
     doc.setDrawColor(220, 220, 220)
@@ -758,7 +842,7 @@ export class EnhancedReportGenerator {
     doc.setFont("helvetica", "bold")
     doc.setTextColor(...portnoxDark)
     doc.text(
-      `${this.data.industry.charAt(0).toUpperCase() + this.data.industry.slice(1)} Industry Analysis`,
+      `${safeString(this.data.industry).charAt(0).toUpperCase() + safeString(this.data.industry).slice(1)} Industry Analysis`,
       20,
       yPosition,
     )
@@ -773,7 +857,7 @@ export class EnhancedReportGenerator {
     doc.setFont("helvetica", "normal")
     doc.setTextColor(60, 60, 60)
 
-    const analysisLines = doc.splitTextToSize(enhancement.industryAnalysis, 170)
+    const analysisLines = doc.splitTextToSize(safeString(enhancement.industryAnalysis), 170)
     doc.text(analysisLines, 20, yPosition)
   }
 
@@ -932,12 +1016,12 @@ export class EnhancedReportGenerator {
   }
 
   private getDefaultExecutiveSummary(type: string): string {
-    const portnoxCost = this.data.preview?.portnoxCost || 250000
-    const savings = this.data.preview?.maxSavings || 500000
-    const savingsPercent = this.data.preview?.savingsPercent || "67"
-    const roi = this.data.preview?.bestROI || 456
+    const portnoxCost = safeNumber(this.data.preview?.portnoxCost, 250000)
+    const savings = safeNumber(this.data.preview?.maxSavings, 500000)
+    const savingsPercent = safeString(this.data.preview?.savingsPercent) || "67"
+    const roi = safeNumber(this.data.preview?.bestROI, 456)
 
-    return `Our comprehensive analysis of Network Access Control solutions for ${this.data.deviceCount.toLocaleString()} devices over ${this.data.timeframe} years demonstrates that Portnox CLEAR delivers superior value through ${savingsPercent}% cost savings ($${Math.round(savings / 1000)}K), industry-leading security with zero CVE vulnerabilities, and 99% faster deployment (30 minutes vs 3-6 months). This ${type} analysis validates Portnox CLEAR as the optimal solution for modern enterprise network security requirements, combining cloud-native architecture with comprehensive Zero Trust capabilities to deliver immediate ROI of ${Math.round(roi)}% and long-term strategic value. The analysis demonstrates clear competitive advantages across all evaluation criteria: financial performance, security effectiveness, operational efficiency, and strategic alignment with digital transformation initiatives.`
+    return `Our comprehensive analysis of Network Access Control solutions for ${safeNumber(this.data.deviceCount).toLocaleString()} devices over ${safeNumber(this.data.timeframe)} years demonstrates that Portnox CLEAR delivers superior value through ${savingsPercent}% cost savings ($${Math.round(savings / 1000)}K), industry-leading security with zero CVE vulnerabilities, and 99% faster deployment (30 minutes vs 3-6 months). This ${safeString(type)} analysis validates Portnox CLEAR as the optimal solution for modern enterprise network security requirements, combining cloud-native architecture with comprehensive Zero Trust capabilities to deliver immediate ROI of ${Math.round(roi)}% and long-term strategic value. The analysis demonstrates clear competitive advantages across all evaluation criteria: financial performance, security effectiveness, operational efficiency, and strategic alignment with digital transformation initiatives.`
   }
 
   private getDefaultKeyFindings(type: string): string[] {
@@ -976,7 +1060,7 @@ export class EnhancedReportGenerator {
     doc.setTextColor(255, 255, 255)
     doc.setFont("helvetica", "bold")
     doc.text("PORTNOX CLEAR", 25, 35)
-    doc.text(this.data.title, 25, 45)
+    doc.text(safeString(this.data.title), 25, 45)
 
     // Basic content
     doc.setFontSize(14)
@@ -993,70 +1077,113 @@ export class EnhancedReportGenerator {
   async generateWord(
     type: "executive" | "technical" | "financial" | "security" | "compliance" | "board" | "comprehensive",
   ): Promise<Blob> {
-    // Generate proper Word document content
-    const content = this.generateWordContent(type)
+    try {
+      // Generate proper Word document content with enhanced structure
+      const wordContent = this.generateWordContent(safeString(type))
 
-    // Create a proper Word document structure
-    const wordDocument = `
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+      // Create proper Word document XML structure
+      const wordDocument = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
   <w:body>
+    <!-- Document Header -->
     <w:p>
       <w:pPr>
         <w:pStyle w:val="Title"/>
+        <w:jc w:val="center"/>
       </w:pPr>
       <w:r>
         <w:rPr>
           <w:color w:val="00D4AA"/>
-          <w:sz w:val="32"/>
-          <w:szCs w:val="32"/>
+          <w:sz w:val="36"/>
+          <w:szCs w:val="36"/>
           <w:b/>
         </w:rPr>
-        <w:t>PORTNOX CLEAR - ${this.data.title}</w:t>
+        <w:t>PORTNOX CLEAR</w:t>
       </w:r>
     </w:p>
     
     <w:p>
       <w:pPr>
         <w:pStyle w:val="Subtitle"/>
+        <w:jc w:val="center"/>
       </w:pPr>
       <w:r>
         <w:rPr>
           <w:color w:val="1B2951"/>
-          <w:sz w:val="16"/>
-          <w:szCs w:val="16"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:b/>
         </w:rPr>
-        <w:t>${this.data.subtitle}</w:t>
-      </w:r>
-    </w:p>
-    
-    <w:p>
-      <w:r>
-        <w:t>Generated: ${this.data.generatedAt.toLocaleDateString()}</w:t>
-      </w:r>
-    </w:p>
-    
-    <w:p>
-      <w:r>
-        <w:t>Industry: ${this.data.industry.charAt(0).toUpperCase() + this.data.industry.slice(1)}</w:t>
-      </w:r>
-    </w:p>
-    
-    <w:p>
-      <w:r>
-        <w:t>Scope: ${this.data.deviceCount.toLocaleString()} devices over ${this.data.timeframe} years</w:t>
+        <w:t>${safeString(this.data.title)}</w:t>
       </w:r>
     </w:p>
     
     <w:p>
       <w:pPr>
+        <w:jc w:val="center"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="666666"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+          <w:i/>
+        </w:rPr>
+        <w:t>${safeString(this.data.subtitle)}</w:t>
+      </w:r>
+    </w:p>
+    
+    <!-- Document Metadata -->
+    <w:p>
+      <w:pPr>
+        <w:spacing w:before="240"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>Generated: </w:t>
+      </w:r>
+      <w:r>
+        <w:t>${this.data.generatedAt.toLocaleDateString()}</w:t>
+      </w:r>
+    </w:p>
+    
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>Industry: </w:t>
+      </w:r>
+      <w:r>
+        <w:t>${safeString(this.data.industry).charAt(0).toUpperCase() + safeString(this.data.industry).slice(1)}</w:t>
+      </w:r>
+    </w:p>
+    
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>Analysis Scope: </w:t>
+      </w:r>
+      <w:r>
+        <w:t>${safeNumber(this.data.deviceCount).toLocaleString()} devices over ${safeNumber(this.data.timeframe)} years</w:t>
+      </w:r>
+    </w:p>
+    
+    <!-- Executive Summary Section -->
+    <w:p>
+      <w:pPr>
         <w:pStyle w:val="Heading1"/>
+        <w:spacing w:before="480"/>
       </w:pPr>
       <w:r>
         <w:rPr>
           <w:color w:val="00D4AA"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
           <w:b/>
         </w:rPr>
         <w:t>EXECUTIVE SUMMARY</w:t>
@@ -1064,27 +1191,213 @@ export class EnhancedReportGenerator {
     </w:p>
     
     <w:p>
+      <w:pPr>
+        <w:spacing w:after="120"/>
+      </w:pPr>
       <w:r>
-        <w:t>${this.data.executiveSummary || this.getDefaultExecutiveSummary(type)}</w:t>
+        <w:t>${safeString(this.data.executiveSummary) || this.getDefaultExecutiveSummary(safeString(type))}</w:t>
       </w:r>
     </w:p>
     
+    <!-- Key Metrics Table -->
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3000"/>
+        <w:gridCol w:w="2000"/>
+        <w:gridCol w:w="2000"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:tblHeader/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:color="auto" w:fill="00D4AA"/>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FFFFFF"/>
+                <w:b/>
+              </w:rPr>
+              <w:t>Metric</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:color="auto" w:fill="00D4AA"/>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FFFFFF"/>
+                <w:b/>
+              </w:rPr>
+              <w:t>Value</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:shd w:val="clear" w:color="auto" w:fill="00D4AA"/>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FFFFFF"/>
+                <w:b/>
+              </w:rPr>
+              <w:t>Advantage</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:tc>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>Total Investment</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:p>
+            <w:r>
+              <w:t>$${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / 1000)}K</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="00D4AA"/>
+                <w:b/>
+              </w:rPr>
+              <w:t>Recommended Solution</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:tc>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>Total Savings</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:p>
+            <w:r>
+              <w:t>$${Math.round(safeNumber(this.data.preview?.maxSavings, 500000) / 1000)}K</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="00D4AA"/>
+                <w:b/>
+              </w:rPr>
+              <w:t>${safeString(this.data.preview?.savingsPercent) || "67"}% Cost Reduction</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:tc>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>ROI</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:p>
+            <w:r>
+              <w:t>${Math.round(safeNumber(this.data.preview?.bestROI, 456))}%</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="00D4AA"/>
+                <w:b/>
+              </w:rPr>
+              <w:t>Exceptional Returns</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:tc>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>Security Score</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:p>
+            <w:r>
+              <w:t>${safeNumber(this.data.preview?.securityScore, 95)}/100</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="00D4AA"/>
+                <w:b/>
+              </w:rPr>
+              <w:t>Industry Leading</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    
+    <!-- Key Findings Section -->
     <w:p>
       <w:pPr>
         <w:pStyle w:val="Heading1"/>
+        <w:spacing w:before="480"/>
       </w:pPr>
       <w:r>
         <w:rPr>
           <w:color w:val="00D4AA"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
           <w:b/>
         </w:rPr>
         <w:t>KEY FINDINGS</w:t>
       </w:r>
     </w:p>
     
-    ${this.getDefaultKeyFindings(type)
+    ${this.getDefaultKeyFindings(safeString(type))
       .map(
         (finding, index) => `
     <w:p>
@@ -1093,31 +1406,34 @@ export class EnhancedReportGenerator {
           <w:ilvl w:val="0"/>
           <w:numId w:val="1"/>
         </w:numPr>
+        <w:spacing w:after="120"/>
       </w:pPr>
       <w:r>
-        <w:t>${finding}</w:t>
+        <w:t>${safeString(finding)}</w:t>
       </w:r>
     </w:p>
     `,
       )
       .join("")}
     
+    <!-- Strategic Recommendations Section -->
     <w:p>
       <w:pPr>
         <w:pStyle w:val="Heading1"/>
+        <w:spacing w:before="480"/>
       </w:pPr>
       <w:r>
         <w:rPr>
           <w:color w:val="00D4AA"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
           <w:b/>
         </w:rPr>
         <w:t>STRATEGIC RECOMMENDATIONS</w:t>
       </w:r>
     </w:p>
     
-    ${this.getDefaultRecommendations(type)
+    ${this.getDefaultRecommendations(safeString(type))
       .map(
         (rec, index) => `
     <w:p>
@@ -1126,328 +1442,398 @@ export class EnhancedReportGenerator {
           <w:ilvl w:val="0"/>
           <w:numId w:val="2"/>
         </w:numPr>
+        <w:spacing w:after="120"/>
       </w:pPr>
       <w:r>
-        <w:t>${rec}</w:t>
+        <w:t>${safeString(rec)}</w:t>
       </w:r>
     </w:p>
     `,
       )
       .join("")}
     
+    <!-- Footer Section -->
     <w:p>
       <w:pPr>
-        <w:pStyle w:val="Footer"/>
+        <w:spacing w:before="720"/>
+        <w:jc w:val="center"/>
       </w:pPr>
       <w:r>
         <w:rPr>
           <w:color w:val="1B2951"/>
           <w:sz w:val="16"/>
           <w:szCs w:val="16"/>
-          <w:i/>
+          <w:b/>
         </w:rPr>
-        <w:t>© 2024 Portnox Ltd. All rights reserved. | Professional Business Intelligence Platform</w:t>
+        <w:t>© 2024 Portnox Ltd. All rights reserved.</w:t>
       </w:r>
     </w:p>
-  </w:body>
-</w:document>
+    
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="center"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="666666"/>
+          <w:i/>
+        </w:rPr>
+        <w:t>Professional Business Intelligence Platform | Enterprise Network Access Control Solutions</w:t>
+      </w:r>
+    </w:p>
+    
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="center"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="666666"/>
+          <w:i/>
+        </w:rPr>
+        <w:t>Confidential and Proprietary - For Internal Use Only</w:t>
+      </w:r>
+    </w:p>
+    
+    ${
+      this.data.includeAIEnhancement
+        ? `
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:spacing w:before="240"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="3B82F6"/>
+          <w:sz w:val="14"/>
+          <w:szCs w:val="14"/>
+          <w:b/>
+        </w:rPr>
+        <w:t>🤖 AI-Enhanced Professional Report</w:t>
+      </w:r>
+    </w:p>
     `
+        : ""
+    }
+  </w:body>
+</w:document>`
 
-    return new Blob([wordDocument], {
-      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    })
+      return new Blob([wordDocument], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      })
+    } catch (error) {
+      console.error("Word generation failed:", error)
+      // Fallback to simple text content
+      const fallbackContent = this.generateWordContent(safeString(type))
+      return new Blob([fallbackContent], { type: "text/plain" })
+    }
   }
 
   async generatePowerPoint(
     type: "executive" | "technical" | "financial" | "security" | "compliance" | "board" | "comprehensive",
   ): Promise<Blob> {
-    // Generate proper PowerPoint presentation structure
-    const presentationData = {
-      title: this.data.title,
-      subtitle: this.data.subtitle,
-      type,
-      branding: {
-        primaryColor: "#00D4AA", // Portnox green
-        secondaryColor: "#1B2951", // Portnox dark
-        logoText: "PORTNOX CLEAR",
-        companyName: "Portnox Ltd.",
-        tagline: "Enterprise Network Access Control Solutions",
-      },
-      metadata: {
-        industry: this.data.industry,
-        devices: this.data.deviceCount,
-        timeframe: this.data.timeframe,
-        generated: this.data.generatedAt.toISOString(),
-        aiEnhanced: this.data.includeAIEnhancement,
-      },
-      slides: [
-        {
-          slideNumber: 1,
-          type: "title",
-          layout: "title_slide",
-          content: {
-            title: this.data.title,
-            subtitle: this.data.subtitle,
-            presenter: "Portnox Professional Services",
-            date: this.data.generatedAt.toLocaleDateString(),
-            footer: `${this.data.industry.charAt(0).toUpperCase() + this.data.industry.slice(1)} Industry Analysis | ${this.data.deviceCount.toLocaleString()} Devices | ${this.data.timeframe} Year Projection`,
-          },
-          design: {
-            backgroundColor: "#00D4AA",
-            titleColor: "#FFFFFF",
-            subtitleColor: "#FFFFFF",
-            logoPosition: "top-left",
-          },
+    try {
+      // Generate comprehensive PowerPoint presentation structure
+      const presentationData = {
+        title: safeString(this.data.title),
+        subtitle: safeString(this.data.subtitle),
+        type: safeString(type),
+        branding: {
+          primaryColor: "#00D4AA", // Portnox green
+          secondaryColor: "#1B2951", // Portnox dark
+          logoText: "PORTNOX CLEAR",
+          companyName: "Portnox Ltd.",
+          tagline: "Enterprise Network Access Control Solutions",
         },
-        {
-          slideNumber: 2,
-          type: "agenda",
-          layout: "content_slide",
-          content: {
-            title: "Presentation Agenda",
-            subtitle: "Strategic Analysis Overview",
-            items: [
-              "Executive Summary & Key Findings",
-              "Financial Impact Analysis with Visual Charts",
-              "Security & Risk Assessment",
-              "Competitive Landscape Overview",
-              "Strategic Recommendations",
-              "Implementation Roadmap",
-              "Next Steps & Action Items",
-            ],
-          },
-          design: {
-            backgroundColor: "#FFFFFF",
-            titleColor: "#1B2951",
-            contentColor: "#000000",
-            accentColor: "#00D4AA",
-          },
+        metadata: {
+          industry: safeString(this.data.industry),
+          devices: safeNumber(this.data.deviceCount),
+          timeframe: safeNumber(this.data.timeframe),
+          generated: this.data.generatedAt.toISOString(),
+          aiEnhanced: Boolean(this.data.includeAIEnhancement),
         },
-        {
-          slideNumber: 3,
-          type: "executive_summary",
-          layout: "content_slide",
-          content: {
-            title: "Executive Summary",
-            subtitle: "Strategic NAC Investment Analysis",
-            summary: this.data.executiveSummary || this.getDefaultExecutiveSummary(type),
-            keyMetrics: [
-              {
-                label: "Total Savings",
-                value: `$${Math.round((this.data.preview?.maxSavings || 500000) / 1000)}K`,
-                color: "#00D4AA",
-                icon: "💰",
-              },
-              {
-                label: "ROI",
-                value: `${Math.round(this.data.preview?.bestROI || 456)}%`,
-                color: "#3B82F6",
-                icon: "📈",
-              },
-              {
-                label: "Payback Period",
-                value: `${(this.data.preview?.avgPayback || 0.5).toFixed(1)} years`,
-                color: "#8B5CF6",
-                icon: "⏱️",
-              },
-              {
-                label: "Security Score",
-                value: `${this.data.preview?.securityScore || 95}/100`,
-                color: "#10B981",
-                icon: "🛡️",
-              },
-            ],
+        slides: [
+          {
+            slideNumber: 1,
+            type: "title",
+            layout: "title_slide",
+            content: {
+              title: safeString(this.data.title),
+              subtitle: safeString(this.data.subtitle),
+              presenter: "Portnox Professional Services",
+              date: this.data.generatedAt.toLocaleDateString(),
+              footer: `${safeString(this.data.industry).charAt(0).toUpperCase() + safeString(this.data.industry).slice(1)} Industry Analysis | ${safeNumber(this.data.deviceCount).toLocaleString()} Devices | ${safeNumber(this.data.timeframe)} Year Projection`,
+            },
+            design: {
+              backgroundColor: "#00D4AA",
+              titleColor: "#FFFFFF",
+              subtitleColor: "#FFFFFF",
+              logoPosition: "top-left",
+            },
           },
-          design: {
-            backgroundColor: "#F8FAFC",
-            titleColor: "#1B2951",
-            metricsLayout: "grid_2x2",
-            chartType: "metrics_cards",
+          {
+            slideNumber: 2,
+            type: "agenda",
+            layout: "content_slide",
+            content: {
+              title: "Presentation Agenda",
+              subtitle: "Strategic Analysis Overview",
+              items: [
+                "Executive Summary & Key Findings",
+                "Financial Impact Analysis with Visual Charts",
+                "Security & Risk Assessment",
+                "Competitive Landscape Overview",
+                "Strategic Recommendations",
+                "Implementation Roadmap",
+                "Next Steps & Action Items",
+              ],
+            },
+            design: {
+              backgroundColor: "#FFFFFF",
+              titleColor: "#1B2951",
+              contentColor: "#000000",
+              accentColor: "#00D4AA",
+            },
           },
-        },
-        {
-          slideNumber: 4,
-          type: "financial_analysis",
-          layout: "chart_slide",
-          content: {
-            title: "Financial Impact Analysis",
-            subtitle: `${this.data.timeframe}-Year Total Cost of Ownership Comparison`,
-            chartData: {
-              type: "column_chart",
-              categories: ["Portnox CLEAR", "Cisco ISE", "Aruba ClearPass", "Industry Average"],
-              series: [
+          {
+            slideNumber: 3,
+            type: "executive_summary",
+            layout: "content_slide",
+            content: {
+              title: "Executive Summary",
+              subtitle: "Strategic NAC Investment Analysis",
+              summary: safeString(this.data.executiveSummary) || this.getDefaultExecutiveSummary(safeString(type)),
+              keyMetrics: [
                 {
-                  name: "Total Cost ($K)",
-                  data: [
-                    Math.round((this.data.preview?.portnoxCost || 250000) / 1000),
-                    Math.round((this.data.preview?.avgCompetitorCost || 750000) / 1000),
-                    Math.round(((this.data.preview?.avgCompetitorCost || 750000) * 0.83) / 1000),
-                    Math.round((this.data.preview?.avgCompetitorCost || 750000) / 1000),
-                  ],
-                  colors: ["#00D4AA", "#DC2626", "#F59E0B", "#6B7280"],
+                  label: "Total Savings",
+                  value: `$${Math.round(safeNumber(this.data.preview?.maxSavings, 500000) / 1000)}K`,
+                  color: "#00D4AA",
+                  icon: "💰",
+                },
+                {
+                  label: "ROI",
+                  value: `${Math.round(safeNumber(this.data.preview?.bestROI, 456))}%`,
+                  color: "#3B82F6",
+                  icon: "📈",
+                },
+                {
+                  label: "Payback Period",
+                  value: `${safeNumber(this.data.preview?.avgPayback, 0.5).toFixed(1)} years`,
+                  color: "#8B5CF6",
+                  icon: "⏱️",
+                },
+                {
+                  label: "Security Score",
+                  value: `${safeNumber(this.data.preview?.securityScore, 95)}/100`,
+                  color: "#10B981",
+                  icon: "🛡️",
                 },
               ],
             },
-            insights: [
-              `Portnox CLEAR delivers ${this.data.preview?.savingsPercent || "67"}% cost savings`,
-              "Zero infrastructure investment required",
-              "Predictable OpEx model with no hidden costs",
-              "Immediate ROI with sub-year payback period",
-            ],
-          },
-          design: {
-            backgroundColor: "#FFFFFF",
-            chartPosition: "center",
-            insightsPosition: "bottom",
-          },
-        },
-        {
-          slideNumber: 5,
-          type: "security_analysis",
-          layout: "comparison_slide",
-          content: {
-            title: "Security & Risk Assessment",
-            subtitle: "Comprehensive Security Posture Comparison",
-            comparison: {
-              portnox: {
-                title: "Portnox CLEAR",
-                score: this.data.preview?.securityScore || 95,
-                features: [
-                  "Zero CVE vulnerabilities",
-                  "Cloud-native security",
-                  "AI-powered threat detection",
-                  "Automated remediation",
-                  "24/7 SOC monitoring",
-                ],
-                color: "#00D4AA",
-              },
-              competitors: {
-                title: "Industry Average",
-                score: 72,
-                features: [
-                  "15+ CVEs annually",
-                  "Legacy architecture",
-                  "Manual threat response",
-                  "Limited automation",
-                  "Business hours support",
-                ],
-                color: "#DC2626",
-              },
-            },
-            riskReduction: `${this.data.preview?.riskReduction || 92}% risk reduction with Portnox CLEAR`,
-          },
-        },
-        {
-          slideNumber: 6,
-          type: "recommendations",
-          layout: "action_slide",
-          content: {
-            title: "Strategic Recommendations",
-            subtitle: "Prioritized Action Plan for NAC Implementation",
-            recommendations: this.getDefaultRecommendations(type)
-              .slice(0, 5)
-              .map((rec, index) => ({
-                priority: index < 2 ? "CRITICAL" : index < 4 ? "HIGH" : "MEDIUM",
-                priorityColor: index < 2 ? "#DC2626" : index < 4 ? "#F59E0B" : "#00D4AA",
-                text: rec,
-                timeline: index < 2 ? "Week 1" : index < 4 ? "Week 2-3" : "Week 4-6",
-              })),
-          },
-        },
-        {
-          slideNumber: 7,
-          type: "implementation",
-          layout: "timeline_slide",
-          content: {
-            title: "Implementation Roadmap",
-            subtitle: "Accelerated Deployment Timeline",
-            timeline: [
-              {
-                phase: "Discovery & Planning",
-                duration: "Week 1-2",
-                activities: ["Requirements analysis", "Stakeholder alignment", "Technical assessment"],
-                deliverables: ["Project plan", "Technical specifications"],
-              },
-              {
-                phase: "Proof of Concept",
-                duration: "30 minutes",
-                activities: ["Portnox CLEAR deployment", "Initial testing", "Validation"],
-                deliverables: ["Working system", "Validation report"],
-              },
-              {
-                phase: "Production Deployment",
-                duration: "Week 3-4",
-                activities: ["Full deployment", "Policy migration", "User training"],
-                deliverables: ["Production system", "Training completion"],
-              },
-              {
-                phase: "Optimization",
-                duration: "Week 5-6",
-                activities: ["Performance tuning", "Advanced features", "ROI measurement"],
-                deliverables: ["Optimized system", "ROI validation"],
-              },
-            ],
-          },
-        },
-        {
-          slideNumber: 8,
-          type: "next_steps",
-          layout: "action_slide",
-          content: {
-            title: "Next Steps & Action Items",
-            subtitle: "Immediate Actions for Project Success",
-            actions: [
-              {
-                action: "Schedule Portnox CLEAR Demo",
-                owner: "IT Leadership",
-                timeline: "This Week",
-                priority: "CRITICAL",
-              },
-              {
-                action: "Initiate Proof of Concept",
-                owner: "Technical Team",
-                timeline: "Week 1",
-                priority: "CRITICAL",
-              },
-              {
-                action: "Stakeholder Alignment Meeting",
-                owner: "Project Manager",
-                timeline: "Week 1",
-                priority: "HIGH",
-              },
-              {
-                action: "Budget Approval Process",
-                owner: "Finance Team",
-                timeline: "Week 2",
-                priority: "HIGH",
-              },
-            ],
-            contact: {
-              company: "Portnox Ltd.",
-              email: "enterprise@portnox.com",
-              phone: "+1-800-PORTNOX",
-              website: "www.portnox.com",
+            design: {
+              backgroundColor: "#F8FAFC",
+              titleColor: "#1B2951",
+              metricsLayout: "grid_2x2",
+              chartType: "metrics_cards",
             },
           },
-        },
-      ],
-      notes: [
-        "This presentation includes comprehensive analysis based on real market data",
-        "Financial calculations reflect proven ROI from existing customer deployments",
-        "Security metrics validated by independent third-party assessments",
-        "Implementation timeline based on actual customer deployment experience",
-        this.data.includeAIEnhancement
-          ? "AI-enhanced insights provide industry-specific recommendations"
-          : "Standard analysis based on industry best practices",
-      ],
+          {
+            slideNumber: 4,
+            type: "financial_analysis",
+            layout: "chart_slide",
+            content: {
+              title: "Financial Impact Analysis",
+              subtitle: `${safeNumber(this.data.timeframe)}-Year Total Cost of Ownership Comparison`,
+              chartData: {
+                type: "column_chart",
+                categories: ["Portnox CLEAR", "Cisco ISE", "Aruba ClearPass", "Industry Average"],
+                series: [
+                  {
+                    name: "Total Cost ($K)",
+                    data: [
+                      Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / 1000),
+                      Math.round(safeNumber(this.data.preview?.avgCompetitorCost, 750000) / 1000),
+                      Math.round((safeNumber(this.data.preview?.avgCompetitorCost, 750000) * 0.83) / 1000),
+                      Math.round(safeNumber(this.data.preview?.avgCompetitorCost, 750000) / 1000),
+                    ],
+                    colors: ["#00D4AA", "#DC2626", "#F59E0B", "#6B7280"],
+                  },
+                ],
+              },
+              insights: [
+                `Portnox CLEAR delivers ${safeString(this.data.preview?.savingsPercent) || "67"}% cost savings`,
+                "Zero infrastructure investment required",
+                "Predictable OpEx model with no hidden costs",
+                "Immediate ROI with sub-year payback period",
+              ],
+            },
+            design: {
+              backgroundColor: "#FFFFFF",
+              chartPosition: "center",
+              insightsPosition: "bottom",
+            },
+          },
+          {
+            slideNumber: 5,
+            type: "security_analysis",
+            layout: "comparison_slide",
+            content: {
+              title: "Security & Risk Assessment",
+              subtitle: "Comprehensive Security Posture Comparison",
+              comparison: {
+                portnox: {
+                  title: "Portnox CLEAR",
+                  score: safeNumber(this.data.preview?.securityScore, 95),
+                  features: [
+                    "Zero CVE vulnerabilities",
+                    "Cloud-native security",
+                    "AI-powered threat detection",
+                    "Automated remediation",
+                    "24/7 SOC monitoring",
+                  ],
+                  color: "#00D4AA",
+                },
+                competitors: {
+                  title: "Industry Average",
+                  score: 72,
+                  features: [
+                    "15+ CVEs annually",
+                    "Legacy architecture",
+                    "Manual threat response",
+                    "Limited automation",
+                    "Business hours support",
+                  ],
+                  color: "#DC2626",
+                },
+              },
+              riskReduction: `${safeNumber(this.data.preview?.riskReduction, 92)}% risk reduction with Portnox CLEAR`,
+            },
+          },
+          {
+            slideNumber: 6,
+            type: "recommendations",
+            layout: "action_slide",
+            content: {
+              title: "Strategic Recommendations",
+              subtitle: "Prioritized Action Plan for NAC Implementation",
+              recommendations: this.getDefaultRecommendations(safeString(type))
+                .slice(0, 5)
+                .map((rec, index) => ({
+                  priority: index < 2 ? "CRITICAL" : index < 4 ? "HIGH" : "MEDIUM",
+                  priorityColor: index < 2 ? "#DC2626" : index < 4 ? "#F59E0B" : "#00D4AA",
+                  text: safeString(rec),
+                  timeline: index < 2 ? "Week 1" : index < 4 ? "Week 2-3" : "Week 4-6",
+                })),
+            },
+          },
+          {
+            slideNumber: 7,
+            type: "implementation",
+            layout: "timeline_slide",
+            content: {
+              title: "Implementation Roadmap",
+              subtitle: "Accelerated Deployment Timeline",
+              timeline: [
+                {
+                  phase: "Discovery & Planning",
+                  duration: "Week 1-2",
+                  activities: ["Requirements analysis", "Stakeholder alignment", "Technical assessment"],
+                  deliverables: ["Project plan", "Technical specifications"],
+                },
+                {
+                  phase: "Proof of Concept",
+                  duration: "30 minutes",
+                  activities: ["Portnox CLEAR deployment", "Initial testing", "Validation"],
+                  deliverables: ["Working system", "Validation report"],
+                },
+                {
+                  phase: "Production Deployment",
+                  duration: "Week 3-4",
+                  activities: ["Full deployment", "Policy migration", "User training"],
+                  deliverables: ["Production system", "Training completion"],
+                },
+                {
+                  phase: "Optimization",
+                  duration: "Week 5-6",
+                  activities: ["Performance tuning", "Advanced features", "ROI measurement"],
+                  deliverables: ["Optimized system", "ROI validation"],
+                },
+              ],
+            },
+          },
+          {
+            slideNumber: 8,
+            type: "next_steps",
+            layout: "action_slide",
+            content: {
+              title: "Next Steps & Action Items",
+              subtitle: "Immediate Actions for Project Success",
+              actions: [
+                {
+                  action: "Schedule Portnox CLEAR Demo",
+                  owner: "IT Leadership",
+                  timeline: "This Week",
+                  priority: "CRITICAL",
+                },
+                {
+                  action: "Initiate Proof of Concept",
+                  owner: "Technical Team",
+                  timeline: "Week 1",
+                  priority: "CRITICAL",
+                },
+                {
+                  action: "Stakeholder Alignment Meeting",
+                  owner: "Project Manager",
+                  timeline: "Week 1",
+                  priority: "HIGH",
+                },
+                {
+                  action: "Budget Approval Process",
+                  owner: "Finance Team",
+                  timeline: "Week 2",
+                  priority: "HIGH",
+                },
+              ],
+              contact: {
+                company: "Portnox Ltd.",
+                email: "enterprise@portnox.com",
+                phone: "+1-800-PORTNOX",
+                website: "www.portnox.com",
+              },
+            },
+          },
+        ],
+        notes: [
+          "This presentation includes comprehensive analysis based on real market data",
+          "Financial calculations reflect proven ROI from existing customer deployments",
+          "Security metrics validated by independent third-party assessments",
+          "Implementation timeline based on actual customer deployment experience",
+          this.data.includeAIEnhancement
+            ? "AI-enhanced insights provide industry-specific recommendations"
+            : "Standard analysis based on industry best practices",
+        ],
+      }
+
+      // Convert to proper PowerPoint format with enhanced structure
+      const pptContent = JSON.stringify(presentationData, null, 2)
+
+      return new Blob([pptContent], {
+        type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      })
+    } catch (error) {
+      console.error("PowerPoint generation failed:", error)
+      // Fallback to basic presentation data
+      const fallbackData = {
+        title: safeString(this.data.title),
+        subtitle: safeString(this.data.subtitle),
+        error: "Advanced features unavailable - using standard template",
+        content: this.generateWordContent(safeString(type)),
+      }
+      return new Blob([JSON.stringify(fallbackData, null, 2)], {
+        type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      })
     }
-
-    // Convert to proper PowerPoint format
-    const pptContent = JSON.stringify(presentationData, null, 2)
-
-    return new Blob([pptContent], {
-      type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    })
   }
 
   async generateExcel(
@@ -1534,41 +1920,41 @@ export class EnhancedReportGenerator {
   private generateWordContent(type: string): string {
     return `
 PORTNOX CLEAR - ENTERPRISE NETWORK ACCESS CONTROL ANALYSIS
-${this.data.title}
-${this.data.subtitle}
+${safeString(this.data.title)}
+${safeString(this.data.subtitle)}
 
 Generated: ${this.data.generatedAt.toLocaleDateString()}
-Industry: ${this.data.industry.charAt(0).toUpperCase() + this.data.industry.slice(1)}
-Scope: ${this.data.deviceCount.toLocaleString()} devices over ${this.data.timeframe} years
-Organization: ${this.data.organizationSize} enterprise
-Region: ${this.data.region}
+Industry: ${safeString(this.data.industry).charAt(0).toUpperCase() + safeString(this.data.industry).slice(1)}
+Scope: ${safeNumber(this.data.deviceCount).toLocaleString()} devices over ${safeNumber(this.data.timeframe)} years
+Organization: ${safeString(this.data.organizationSize)} enterprise
+Region: ${safeString(this.data.region)}
 
 EXECUTIVE SUMMARY
-${this.data.executiveSummary || this.getDefaultExecutiveSummary(type)}
+${safeString(this.data.executiveSummary) || this.getDefaultExecutiveSummary(safeString(type))}
 
 KEY STRATEGIC METRICS
-• Total Investment: $${Math.round((this.data.preview?.portnoxCost || 250000) / 1000)}K
-• Total Savings: $${Math.round((this.data.preview?.maxSavings || 500000) / 1000)}K (${this.data.preview?.savingsPercent || "67"}%)
-• Return on Investment: ${Math.round(this.data.preview?.bestROI || 456)}%
-• Payback Period: ${(this.data.preview?.avgPayback || 0.5).toFixed(1)} years
-• Security Score: ${this.data.preview?.securityScore || 95}/100
-• Risk Reduction: ${this.data.preview?.riskReduction || 92}%
+• Total Investment: $${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / 1000)}K
+• Total Savings: $${Math.round(safeNumber(this.data.preview?.maxSavings, 500000) / 1000)}K (${safeString(this.data.preview?.savingsPercent) || "67"}%)
+• Return on Investment: ${Math.round(safeNumber(this.data.preview?.bestROI, 456))}%
+• Payback Period: ${safeNumber(this.data.preview?.avgPayback, 0.5).toFixed(1)} years
+• Security Score: ${safeNumber(this.data.preview?.securityScore, 95)}/100
+• Risk Reduction: ${safeNumber(this.data.preview?.riskReduction, 92)}%
 
 KEY FINDINGS
-${this.getDefaultKeyFindings(type)
-  .map((finding, index) => `${index + 1}. ${finding}`)
+${this.getDefaultKeyFindings(safeString(type))
+  .map((finding, index) => `${index + 1}. ${safeString(finding)}`)
   .join("\n\n")}
 
 STRATEGIC RECOMMENDATIONS
-${this.getDefaultRecommendations(type)
-  .map((rec, index) => `${index + 1}. ${rec}`)
+${this.getDefaultRecommendations(safeString(type))
+  .map((rec, index) => `${index + 1}. ${safeString(rec)}`)
   .join("\n\n")}
 
 FINANCIAL ANALYSIS
-Portnox CLEAR TCO: $${Math.round((this.data.preview?.portnoxCost || 250000) / 1000)}K
-Industry Average TCO: $${Math.round((this.data.preview?.avgCompetitorCost || 750000) / 1000)}K
-Total Savings: $${Math.round((this.data.preview?.maxSavings || 500000) / 1000)}K
-Savings Percentage: ${this.data.preview?.savingsPercent || "67"}%
+Portnox CLEAR TCO: $${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / 1000)}K
+Industry Average TCO: $${Math.round(safeNumber(this.data.preview?.avgCompetitorCost, 750000) / 1000)}K
+Total Savings: $${Math.round(safeNumber(this.data.preview?.maxSavings, 500000) / 1000)}K
+Savings Percentage: ${safeString(this.data.preview?.savingsPercent) || "67"}%
 
 IMPLEMENTATION ROADMAP
 Phase 1: Discovery & Planning (Week 1-2)
@@ -1613,42 +1999,45 @@ Confidential and Proprietary - For Internal Use Only
       ["Enterprise Strategic Assessment with AI-Enhanced Insights", "", "", ""],
       ["", "", "", ""],
       ["REPORT METADATA", "", "", ""],
-      ["Report Type", this.data.templateData?.name || "Professional Analysis"],
-      ["Industry Vertical", this.data.industry.charAt(0).toUpperCase() + this.data.industry.slice(1)],
-      ["Device Count", this.data.deviceCount.toLocaleString()],
-      ["Analysis Period", `${this.data.timeframe} years`],
-      ["Organization Size", this.data.organizationSize],
-      ["Geographic Region", this.data.region || "Global"],
+      ["Report Type", safeString(this.data.templateData?.name) || "Professional Analysis"],
+      [
+        "Industry Vertical",
+        safeString(this.data.industry).charAt(0).toUpperCase() + safeString(this.data.industry).slice(1),
+      ],
+      ["Device Count", safeNumber(this.data.deviceCount).toLocaleString()],
+      ["Analysis Period", `${safeNumber(this.data.timeframe)} years`],
+      ["Organization Size", safeString(this.data.organizationSize)],
+      ["Geographic Region", safeString(this.data.region) || "Global"],
       ["Generated Date", this.data.generatedAt.toLocaleDateString()],
       ["AI Enhancement", this.data.includeAIEnhancement ? "Enabled" : "Standard"],
-      ["Report Format", this.data.format.toUpperCase()],
+      ["Report Format", safeString(this.data.format).toUpperCase()],
       ["", "", "", ""],
       ["KEY FINANCIAL METRICS", "", "", ""],
       [
         "Portnox CLEAR TCO",
-        `$${Math.round((this.data.preview?.portnoxCost || 250000) / 1000)}K`,
+        `$${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / 1000)}K`,
         "Recommended Solution",
         "✓",
       ],
       [
         "Industry Average TCO",
-        `$${Math.round((this.data.preview?.avgCompetitorCost || 750000) / 1000)}K`,
+        `$${Math.round(safeNumber(this.data.preview?.avgCompetitorCost, 750000) / 1000)}K`,
         "Competitive Baseline",
         "",
       ],
       [
         "Total Cost Savings",
-        `$${Math.round((this.data.preview?.maxSavings || 500000) / 1000)}K`,
+        `$${Math.round(safeNumber(this.data.preview?.maxSavings, 500000) / 1000)}K`,
         "Direct Benefit",
         "✓",
       ],
-      ["Savings Percentage", `${this.data.preview?.savingsPercent || "67"}%`, "Cost Reduction", "✓"],
-      ["ROI Percentage", `${Math.round(this.data.preview?.bestROI || 456)}%`, "Investment Return", "✓"],
-      ["Payback Period", `${(this.data.preview?.avgPayback || 0.5).toFixed(1)} years`, "Time to ROI", "✓"],
-      ["Deployment Time", this.data.preview?.deploymentTime || "30 minutes", "Time to Value", "✓"],
-      ["Security Score", `${this.data.preview?.securityScore || 95}/100`, "Risk Mitigation", "✓"],
-      ["Compliance Score", `${this.data.preview?.complianceScore || 95}/100`, "Regulatory Alignment", "✓"],
-      ["Risk Reduction", `${this.data.preview?.riskReduction || 92}%`, "Security Improvement", "✓"],
+      ["Savings Percentage", `${safeString(this.data.preview?.savingsPercent) || "67"}%`, "Cost Reduction", "✓"],
+      ["ROI Percentage", `${Math.round(safeNumber(this.data.preview?.bestROI, 456))}%`, "Investment Return", "✓"],
+      ["Payback Period", `${safeNumber(this.data.preview?.avgPayback, 0.5).toFixed(1)} years`, "Time to ROI", "✓"],
+      ["Deployment Time", safeString(this.data.preview?.deploymentTime) || "30 minutes", "Time to Value", "✓"],
+      ["Security Score", `${safeNumber(this.data.preview?.securityScore, 95)}/100`, "Risk Mitigation", "✓"],
+      ["Compliance Score", `${safeNumber(this.data.preview?.complianceScore, 95)}/100`, "Regulatory Alignment", "✓"],
+      ["Risk Reduction", `${safeNumber(this.data.preview?.riskReduction, 92)}%`, "Security Improvement", "✓"],
       ["", "", "", ""],
       ["COMPETITIVE ADVANTAGES", "", "", ""],
       ["Zero CVE Vulnerabilities", "Portnox CLEAR", "vs 15+ Industry Average", "✓"],
@@ -1660,7 +2049,7 @@ Confidential and Proprietary - For Internal Use Only
     ]
   }
 
-  private generateEnhancedExcelTCOData(): any[][] {
+  private generateExcelTCOData(): any[][] {
     return [
       ["TOTAL COST OF OWNERSHIP ANALYSIS", "", "", "", ""],
       ["Professional Financial Analysis with Portnox Advantage", "", "", "", ""],
@@ -1668,36 +2057,36 @@ Confidential and Proprietary - For Internal Use Only
       ["Vendor Solution", "3-Year TCO", "Annual Cost", "Deployment", "Security Score"],
       [
         "Portnox CLEAR (Recommended)",
-        `$${Math.round((this.data.preview?.portnoxCost || 250000) / 1000)}K`,
-        `$${Math.round((this.data.preview?.portnoxCost || 250000) / (this.data.timeframe * 1000))}K`,
+        `$${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / 1000)}K`,
+        `$${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / (safeNumber(this.data.timeframe, 3) * 1000))}K`,
         "30 minutes",
-        `${this.data.preview?.securityScore || 95}/100`,
+        `${safeNumber(this.data.preview?.securityScore, 95)}/100`,
       ],
       [
         "Cisco ISE",
-        `$${Math.round(((this.data.preview?.avgCompetitorCost || 750000) * 1.2) / 1000)}K`,
-        `$${Math.round(((this.data.preview?.avgCompetitorCost || 750000) * 1.2) / (this.data.timeframe * 1000))}K`,
+        `$${Math.round((safeNumber(this.data.preview?.avgCompetitorCost, 750000) * 1.2) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.avgCompetitorCost, 750000) * 1.2) / (safeNumber(this.data.timeframe, 3) * 1000))}K`,
         "6 months",
         "72/100",
       ],
       [
         "Aruba ClearPass",
-        `$${Math.round(((this.data.preview?.avgCompetitorCost || 750000) * 0.9) / 1000)}K`,
-        `$${Math.round(((this.data.preview?.avgCompetitorCost || 750000) * 0.9) / (this.data.timeframe * 1000))}K`,
+        `$${Math.round((safeNumber(this.data.preview?.avgCompetitorCost, 750000) * 0.9) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.avgCompetitorCost, 750000) * 0.9) / (safeNumber(this.data.timeframe, 3) * 1000))}K`,
         "3 months",
         "75/100",
       ],
       [
         "Forescout Platform",
-        `$${Math.round(((this.data.preview?.avgCompetitorCost || 750000) * 1.1) / 1000)}K`,
-        `$${Math.round(((this.data.preview?.avgCompetitorCost || 750000) * 1.1) / (this.data.timeframe * 1000))}K`,
+        `$${Math.round((safeNumber(this.data.preview?.avgCompetitorCost, 750000) * 1.1) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.avgCompetitorCost, 750000) * 1.1) / (safeNumber(this.data.timeframe, 3) * 1000))}K`,
         "4 months",
         "70/100",
       ],
       [
         "Industry Average",
-        `$${Math.round((this.data.preview?.avgCompetitorCost || 750000) / 1000)}K`,
-        `$${Math.round((this.data.preview?.avgCompetitorCost || 750000) / (this.data.timeframe * 1000))}K`,
+        `$${Math.round(safeNumber(this.data.preview?.avgCompetitorCost, 750000) / 1000)}K`,
+        `$${Math.round(safeNumber(this.data.preview?.avgCompetitorCost, 750000) / (safeNumber(this.data.timeframe, 3) * 1000))}K`,
         "3-6 months",
         "72/100",
       ],
@@ -1706,7 +2095,7 @@ Confidential and Proprietary - For Internal Use Only
       ["Cost Category", "Amount", "Percentage", "Industry Comparison", "Advantage"],
       [
         "Software Licensing",
-        `$${Math.round(((this.data.preview?.portnoxCost || 250000) * 0.75) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.portnoxCost, 250000) * 0.75) / 1000)}K`,
         "75%",
         "Higher per-device cost",
         "All-inclusive pricing",
@@ -1716,7 +2105,7 @@ Confidential and Proprietary - For Internal Use Only
       ["Training & Certification", "$0K", "0%", "$25K+ required", "Intuitive interface"],
       [
         "Annual Maintenance",
-        `$${Math.round(((this.data.preview?.portnoxCost || 250000) * 0.25) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.portnoxCost, 250000) * 0.25) / 1000)}K`,
         "25%",
         "22% of license cost",
         "Fully managed service",
@@ -1727,37 +2116,37 @@ Confidential and Proprietary - For Internal Use Only
       ["Year", "Investment", "Benefits", "Cumulative ROI", "Payback Status"],
       [
         "Year 1",
-        `$${Math.round((this.data.preview?.portnoxCost || 250000) / this.data.timeframe / 1000)}K`,
-        `$${Math.round(((this.data.preview?.maxSavings || 500000) * 0.4) / 1000)}K`,
+        `$${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / safeNumber(this.data.timeframe, 3) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.maxSavings, 500000) * 0.4) / 1000)}K`,
         "85%",
         "Approaching",
       ],
       [
         "Year 2",
-        `$${Math.round((this.data.preview?.portnoxCost || 250000) / this.data.timeframe / 1000)}K`,
-        `$${Math.round(((this.data.preview?.maxSavings || 500000) * 0.35) / 1000)}K`,
+        `$${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / safeNumber(this.data.timeframe, 3) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.maxSavings, 500000) * 0.35) / 1000)}K`,
         "165%",
         "Achieved",
       ],
       [
         "Year 3",
-        `$${Math.round((this.data.preview?.portnoxCost || 250000) / this.data.timeframe / 1000)}K`,
-        `$${Math.round(((this.data.preview?.maxSavings || 500000) * 0.25) / 1000)}K`,
-        `${Math.round(this.data.preview?.bestROI || 456)}%`,
+        `$${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / safeNumber(this.data.timeframe, 3) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.maxSavings, 500000) * 0.25) / 1000)}K`,
+        `${Math.round(safeNumber(this.data.preview?.bestROI, 456))}%`,
         "Exceeded",
       ],
       [
         "Year 4",
-        `$${Math.round((this.data.preview?.portnoxCost || 250000) / this.data.timeframe / 1000)}K`,
-        `$${Math.round(((this.data.preview?.maxSavings || 500000) * 0.2) / 1000)}K`,
-        `${Math.round((this.data.preview?.bestROI || 456) * 1.1)}%`,
+        `$${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / safeNumber(this.data.timeframe, 3) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.maxSavings, 500000) * 0.2) / 1000)}K`,
+        `${Math.round(safeNumber(this.data.preview?.bestROI, 456) * 1.1)}%`,
         "Sustained",
       ],
       [
         "Year 5",
-        `$${Math.round((this.data.preview?.portnoxCost || 250000) / this.data.timeframe / 1000)}K`,
-        `$${Math.round(((this.data.preview?.maxSavings || 500000) * 0.2) / 1000)}K`,
-        `${Math.round((this.data.preview?.bestROI || 456) * 1.2)}%`,
+        `$${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / safeNumber(this.data.timeframe, 3) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.maxSavings, 500000) * 0.2) / 1000)}K`,
+        `${Math.round(safeNumber(this.data.preview?.bestROI, 456) * 1.2)}%`,
         "Maximized",
       ],
     ]
@@ -1816,43 +2205,43 @@ Confidential and Proprietary - For Internal Use Only
       ["Year", "Investment", "Savings", "Operational Efficiency", "Risk Reduction", "Cumulative ROI"],
       [
         "Year 1",
-        `$${Math.round((this.data.preview?.portnoxCost || 250000) / this.data.timeframe / 1000)}K`,
-        `$${Math.round(((this.data.preview?.maxSavings || 500000) * 0.4) / 1000)}K`,
+        `$${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / safeNumber(this.data.timeframe, 3) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.maxSavings, 500000) * 0.4) / 1000)}K`,
         "15%",
         "20%",
         "85%",
       ],
       [
         "Year 2",
-        `$${Math.round((this.data.preview?.portnoxCost || 250000) / this.data.timeframe / 1000)}K`,
-        `$${Math.round(((this.data.preview?.maxSavings || 500000) * 0.35) / 1000)}K`,
+        `$${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / safeNumber(this.data.timeframe, 3) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.maxSavings, 500000) * 0.35) / 1000)}K`,
         "20%",
         "25%",
         "165%",
       ],
       [
         "Year 3",
-        `$${Math.round((this.data.preview?.portnoxCost || 250000) / this.data.timeframe / 1000)}K`,
-        `$${Math.round(((this.data.preview?.maxSavings || 500000) * 0.25) / 1000)}K`,
+        `$${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / safeNumber(this.data.timeframe, 3) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.maxSavings, 500000) * 0.25) / 1000)}K`,
         "25%",
         "30%",
-        `${Math.round(this.data.preview?.bestROI || 456)}%`,
+        `${Math.round(safeNumber(this.data.preview?.bestROI, 456))}%`,
       ],
       [
         "Year 4",
-        `$${Math.round((this.data.preview?.portnoxCost || 250000) / this.data.timeframe / 1000)}K`,
-        `$${Math.round(((this.data.preview?.maxSavings || 500000) * 0.2) / 1000)}K`,
+        `$${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / safeNumber(this.data.timeframe, 3) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.maxSavings, 500000) * 0.2) / 1000)}K`,
         "30%",
         "35%",
-        `${Math.round((this.data.preview?.bestROI || 456) * 1.1)}%`,
+        `${Math.round(safeNumber(this.data.preview?.bestROI, 456) * 1.1)}%`,
       ],
       [
         "Year 5",
-        `$${Math.round((this.data.preview?.portnoxCost || 250000) / this.data.timeframe / 1000)}K`,
-        `$${Math.round(((this.data.preview?.maxSavings || 500000) * 0.2) / 1000)}K`,
+        `$${Math.round(safeNumber(this.data.preview?.portnoxCost, 250000) / safeNumber(this.data.timeframe, 3) / 1000)}K`,
+        `$${Math.round((safeNumber(this.data.preview?.maxSavings, 500000) * 0.2) / 1000)}K`,
         "35%",
         "40%",
-        `${Math.round((this.data.preview?.bestROI || 456) * 1.2)}%`,
+        `${Math.round(safeNumber(this.data.preview?.bestROI, 456) * 1.2)}%`,
       ],
     ]
   }
@@ -1867,7 +2256,7 @@ Confidential and Proprietary - For Internal Use Only
       ["Threat Detection", "AI-Powered", "Manual", "Proactive"],
       ["Incident Response", "Automated", "Manual", "Immediate"],
       ["Compliance Automation", "95%", "60%", "Continuous"],
-      ["Risk Reduction", `${this.data.preview?.riskReduction || 92}%`, "50%", "Significant"],
+      ["Risk Reduction", `${safeNumber(this.data.preview?.riskReduction, 92)}%`, "50%", "Significant"],
       ["Data Protection", "Advanced Encryption", "Basic", "Enhanced"],
     ]
   }
@@ -1908,7 +2297,7 @@ Confidential and Proprietary - For Internal Use Only
     doc.setTextColor(255, 255, 255)
     data[0].forEach((header, i) => {
       doc.rect(startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0), currentY, columnWidths[i], rowHeight, "F")
-      doc.text(header, startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0) + 2, currentY + 8)
+      doc.text(safeString(header), startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0) + 2, currentY + 8)
     })
 
     currentY += rowHeight
@@ -1919,7 +2308,7 @@ Confidential and Proprietary - For Internal Use Only
     // Data rows
     data.slice(1).forEach((row) => {
       row.forEach((cell, i) => {
-        doc.text(cell, startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0) + 2, currentY + 8)
+        doc.text(safeString(cell), startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0) + 2, currentY + 8)
       })
       currentY += rowHeight
     })

@@ -49,6 +49,23 @@ interface EnhancedVendorSelectionProps {
   darkMode: boolean
 }
 
+// Safe string conversion utility
+function safeString(value: any): string {
+  if (value === null || value === undefined) return ""
+  if (typeof value === "string") return value
+  if (typeof value === "number") return value.toString()
+  if (typeof value === "boolean") return value.toString()
+  if (typeof value === "object") return JSON.stringify(value)
+  return String(value)
+}
+
+// Safe number conversion utility
+function safeNumber(value: any, defaultValue = 0): number {
+  if (value === null || value === undefined) return defaultValue
+  const num = Number(value)
+  return isNaN(num) || !isFinite(num) ? defaultValue : num
+}
+
 // Comprehensive vendor data with detailed specifications and pricing
 const VENDOR_DISPLAY_DATA = {
   portnox: {
@@ -1187,20 +1204,20 @@ export default function EnhancedVendorSelection({
   const filteredVendors = vendors.filter((vendor) => {
     const matchesSearch =
       searchQuery === "" ||
-      vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vendor.description.toLowerCase().includes(searchQuery.toLowerCase())
+      safeString(vendor.name).toLowerCase().includes(safeString(searchQuery).toLowerCase()) ||
+      safeString(vendor.description).toLowerCase().includes(safeString(searchQuery).toLowerCase())
 
-    const matchesCategory = !filterCategory || vendor.category === filterCategory
-    const matchesDeployment = !filterDeployment || vendor.deploymentType === filterDeployment
+    const matchesCategory = !filterCategory || safeString(vendor.category) === safeString(filterCategory)
+    const matchesDeployment = !filterDeployment || safeString(vendor.deploymentType) === safeString(filterDeployment)
 
     if (activeTab === "selected") {
       return matchesSearch && matchesCategory && matchesDeployment && selectedVendors.includes(vendor.id)
     } else if (activeTab === "cloud") {
-      return matchesSearch && matchesCategory && vendor.deploymentType === "cloud"
+      return matchesSearch && matchesCategory && safeString(vendor.deploymentType) === "cloud"
     } else if (activeTab === "onprem") {
-      return matchesSearch && matchesCategory && vendor.deploymentType === "on-premise"
+      return matchesSearch && matchesCategory && safeString(vendor.deploymentType) === "on-premise"
     } else if (activeTab === "hybrid") {
-      return matchesSearch && matchesCategory && vendor.deploymentType === "hybrid"
+      return matchesSearch && matchesCategory && safeString(vendor.deploymentType) === "hybrid"
     } else if (activeTab === "recommended") {
       return matchesSearch && matchesCategory && matchesDeployment && vendor.isRecommended
     }
@@ -1210,15 +1227,21 @@ export default function EnhancedVendorSelection({
 
   const sortedVendors = [...filteredVendors].sort((a, b) => {
     if (sortBy === "name") {
-      return sortDirection === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+      return sortDirection === "asc"
+        ? safeString(a.name).localeCompare(safeString(b.name))
+        : safeString(b.name).localeCompare(safeString(a.name))
     } else if (sortBy === "marketShare") {
-      return sortDirection === "asc" ? a.marketShare - b.marketShare : b.marketShare - a.marketShare
+      return sortDirection === "asc"
+        ? safeNumber(a.marketShare) - safeNumber(b.marketShare)
+        : safeNumber(b.marketShare) - safeNumber(a.marketShare)
     } else if (sortBy === "pricing") {
-      const aPrice = Number.parseFloat(a.pricing.startingPrice.replace("$", ""))
-      const bPrice = Number.parseFloat(b.pricing.startingPrice.replace("$", ""))
+      const aPrice = Number.parseFloat(safeString(a.pricing.startingPrice).replace("$", ""))
+      const bPrice = Number.parseFloat(safeString(b.pricing.startingPrice).replace("$", ""))
       return sortDirection === "asc" ? aPrice - bPrice : bPrice - aPrice
     } else {
-      return sortDirection === "asc" ? a.securityRating - b.securityRating : b.securityRating - a.securityRating
+      return sortDirection === "asc"
+        ? safeNumber(a.securityRating) - safeNumber(b.securityRating)
+        : safeNumber(b.securityRating) - safeNumber(a.securityRating)
     }
   })
 
@@ -1247,7 +1270,7 @@ export default function EnhancedVendorSelection({
   }
 
   const getCategoryColor = (category: string) => {
-    switch (category) {
+    switch (safeString(category).toLowerCase()) {
       case "leader":
         return "bg-blue-500 text-white"
       case "challenger":
@@ -1266,7 +1289,7 @@ export default function EnhancedVendorSelection({
   }
 
   const getDeploymentIcon = (deploymentType: string) => {
-    switch (deploymentType) {
+    switch (safeString(deploymentType).toLowerCase()) {
       case "cloud":
         return <Cloud className="h-3 w-3 text-blue-500" />
       case "on-premise":
@@ -1291,13 +1314,14 @@ export default function EnhancedVendorSelection({
   }
 
   const formatCurrency = (value: string) => {
-    if (value === "$0") return "Free"
-    return value
+    if (safeString(value) === "$0") return "Free"
+    return safeString(value)
   }
 
   const getSecurityColor = (rating: number) => {
-    if (rating >= 90) return "text-green-600"
-    if (rating >= 70) return "text-yellow-600"
+    const safeRating = safeNumber(rating)
+    if (safeRating >= 90) return "text-green-600"
+    if (safeRating >= 70) return "text-yellow-600"
     return "text-red-600"
   }
 
@@ -1374,7 +1398,7 @@ export default function EnhancedVendorSelection({
                           className="text-xs ml-2 flex items-center gap-1 cursor-pointer"
                         >
                           <Badge className={`${getCategoryColor(category)} text-[10px] py-0 h-4`}>
-                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                            {safeString(category).charAt(0).toUpperCase() + safeString(category).slice(1)}
                           </Badge>
                         </label>
                       </div>
@@ -1397,7 +1421,9 @@ export default function EnhancedVendorSelection({
                           className="text-xs ml-2 flex items-center gap-1 cursor-pointer"
                         >
                           {getDeploymentIcon(deployment)}
-                          <span>{deployment.charAt(0).toUpperCase() + deployment.slice(1)}</span>
+                          <span>
+                            {safeString(deployment).charAt(0).toUpperCase() + safeString(deployment).slice(1)}
+                          </span>
                         </label>
                       </div>
                     ))}
@@ -1516,8 +1542,8 @@ export default function EnhancedVendorSelection({
                         }`}
                       >
                         <Image
-                          src={vendor.logo || "/placeholder.svg"}
-                          alt={vendor.name}
+                          src={safeString(vendor.logo) || "/placeholder.svg"}
+                          alt={safeString(vendor.name)}
                           width={40}
                           height={40}
                           className="object-contain p-1"
@@ -1530,7 +1556,7 @@ export default function EnhancedVendorSelection({
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
                               <h3 className="font-medium text-sm flex items-center gap-1">
-                                {vendor.name}
+                                {safeString(vendor.name)}
                                 {isPortnox && <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />}
                                 {hasWarning && <AlertTriangle className="h-3 w-3 text-red-500" />}
                                 {vendor.isDefault && (
@@ -1566,21 +1592,26 @@ export default function EnhancedVendorSelection({
                                 className={`${getCategoryColor(vendor.category)} text-[10px] py-0 h-4`}
                                 variant="secondary"
                               >
-                                {vendor.category.charAt(0).toUpperCase() + vendor.category.slice(1)}
+                                {safeString(vendor.category).charAt(0).toUpperCase() +
+                                  safeString(vendor.category).slice(1)}
                               </Badge>
                               <Badge variant="outline" className="text-[10px] py-0 h-4 flex items-center gap-0.5">
                                 {getDeploymentIcon(vendor.deploymentType)}
-                                <span className="capitalize">{vendor.deploymentType}</span>
+                                <span className="capitalize">{safeString(vendor.deploymentType)}</span>
                               </Badge>
                             </div>
                           </div>
                         </div>
 
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{vendor.description}</p>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                          {safeString(vendor.description)}
+                        </p>
 
                         {hasWarning && (
                           <div className="mt-2 p-2 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
-                            <p className="text-xs text-red-600 dark:text-red-400">{vendor.warningMessage}</p>
+                            <p className="text-xs text-red-600 dark:text-red-400">
+                              {safeString(vendor.warningMessage)}
+                            </p>
                           </div>
                         )}
 
@@ -1590,7 +1621,7 @@ export default function EnhancedVendorSelection({
                             <div className="flex items-center justify-center gap-1">
                               <Shield className={`h-3 w-3 ${getSecurityColor(vendor.securityRating)}`} />
                               <span className={`text-xs font-medium ${getSecurityColor(vendor.securityRating)}`}>
-                                {vendor.securityRating}
+                                {safeNumber(vendor.securityRating)}
                               </span>
                             </div>
                             <p className="text-[10px] text-muted-foreground">Security</p>
@@ -1598,7 +1629,7 @@ export default function EnhancedVendorSelection({
                           <div className="text-center">
                             <div className="flex items-center justify-center gap-1">
                               <TrendingUp className="h-3 w-3 text-blue-500" />
-                              <span className="text-xs font-medium">{vendor.marketShare}%</span>
+                              <span className="text-xs font-medium">{safeNumber(vendor.marketShare)}%</span>
                             </div>
                             <p className="text-[10px] text-muted-foreground">Market</p>
                           </div>
@@ -1614,7 +1645,9 @@ export default function EnhancedVendorSelection({
                           <div className="text-center">
                             <div className="flex items-center justify-center gap-1">
                               <Clock className="h-3 w-3 text-orange-500" />
-                              <span className="text-xs font-medium">{vendor.implementation.deploymentTime}</span>
+                              <span className="text-xs font-medium">
+                                {safeString(vendor.implementation.deploymentTime)}
+                              </span>
                             </div>
                             <p className="text-[10px] text-muted-foreground">Deploy</p>
                           </div>
@@ -1665,17 +1698,17 @@ export default function EnhancedVendorSelection({
                                       <span
                                         className={`text-xs font-medium ${getSecurityColor(vendor.securityRating)}`}
                                       >
-                                        {vendor.securityRating}/100
+                                        {safeNumber(vendor.securityRating)}/100
                                       </span>
                                     </div>
-                                    <Progress value={vendor.securityRating} className="h-1 mt-1" />
+                                    <Progress value={safeNumber(vendor.securityRating)} className="h-1 mt-1" />
                                   </div>
                                   <div className="p-2 bg-gray-50 dark:bg-gray-900 rounded">
                                     <div className="flex items-center justify-between">
                                       <span className="text-xs text-muted-foreground">Market Share</span>
-                                      <span className="text-xs font-medium">{vendor.marketShare}%</span>
+                                      <span className="text-xs font-medium">{safeNumber(vendor.marketShare)}%</span>
                                     </div>
-                                    <Progress value={vendor.marketShare} className="h-1 mt-1" />
+                                    <Progress value={safeNumber(vendor.marketShare)} className="h-1 mt-1" />
                                   </div>
                                 </div>
                               </div>
@@ -1688,16 +1721,16 @@ export default function EnhancedVendorSelection({
                                 <div className="grid grid-cols-3 gap-2 text-xs">
                                   <div>
                                     <span className="text-muted-foreground">Time:</span>
-                                    <p className="font-medium">{vendor.implementation.deploymentTime}</p>
+                                    <p className="font-medium">{safeString(vendor.implementation.deploymentTime)}</p>
                                   </div>
                                   <div>
                                     <span className="text-muted-foreground">Complexity:</span>
-                                    <p className="font-medium">{vendor.implementation.complexity}</p>
+                                    <p className="font-medium">{safeString(vendor.implementation.complexity)}</p>
                                   </div>
                                   <div>
                                     <span className="text-muted-foreground">Success Rate:</span>
                                     <p className="font-medium">
-                                      {Math.round(vendor.implementation.successRate * 100)}%
+                                      {Math.round(safeNumber(vendor.implementation.successRate) * 100)}%
                                     </p>
                                   </div>
                                 </div>
@@ -1711,7 +1744,7 @@ export default function EnhancedVendorSelection({
                                 <div className="flex flex-wrap gap-1">
                                   {vendor.technical.compliance.slice(0, 6).map((cert) => (
                                     <Badge key={cert} variant="outline" className="text-[10px] py-0 h-4">
-                                      {cert}
+                                      {safeString(cert)}
                                     </Badge>
                                   ))}
                                   {vendor.technical.compliance.length > 6 && (
@@ -1733,7 +1766,7 @@ export default function EnhancedVendorSelection({
                                 </h4>
                                 <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded">
                                   <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium">{vendor.pricing.model}</span>
+                                    <span className="text-sm font-medium">{safeString(vendor.pricing.model)}</span>
                                     <div className="text-right">
                                       <div className="text-lg font-bold text-green-600">
                                         {formatCurrency(vendor.pricing.startingPrice)}
@@ -1742,9 +1775,9 @@ export default function EnhancedVendorSelection({
                                     </div>
                                   </div>
 
-                                  {vendor.pricing.minimumDevices > 1 && (
+                                  {safeNumber(vendor.pricing.minimumDevices) > 1 && (
                                     <p className="text-xs text-muted-foreground">
-                                      Minimum: {vendor.pricing.minimumDevices} devices
+                                      Minimum: {safeNumber(vendor.pricing.minimumDevices)} devices
                                     </p>
                                   )}
                                 </div>
@@ -1755,8 +1788,10 @@ export default function EnhancedVendorSelection({
                                 <div className="space-y-1">
                                   {vendor.pricing.volumeDiscounts.map((discount, index) => (
                                     <div key={index} className="flex justify-between text-xs">
-                                      <span>{discount.threshold}+ devices:</span>
-                                      <span className="font-medium text-green-600">{discount.discount} off</span>
+                                      <span>{safeNumber(discount.threshold)}+ devices:</span>
+                                      <span className="font-medium text-green-600">
+                                        {safeString(discount.discount)} off
+                                      </span>
                                     </div>
                                   ))}
                                 </div>
@@ -1767,19 +1802,27 @@ export default function EnhancedVendorSelection({
                                 <div className="space-y-1">
                                   <div className="flex justify-between text-xs">
                                     <span>Implementation:</span>
-                                    <span className="font-medium">{vendor.pricing.additionalCosts.implementation}</span>
+                                    <span className="font-medium">
+                                      {safeString(vendor.pricing.additionalCosts.implementation)}
+                                    </span>
                                   </div>
                                   <div className="flex justify-between text-xs">
                                     <span>Training:</span>
-                                    <span className="font-medium">{vendor.pricing.additionalCosts.training}</span>
+                                    <span className="font-medium">
+                                      {safeString(vendor.pricing.additionalCosts.training)}
+                                    </span>
                                   </div>
                                   <div className="flex justify-between text-xs">
                                     <span>Hardware:</span>
-                                    <span className="font-medium">{vendor.pricing.additionalCosts.hardware}</span>
+                                    <span className="font-medium">
+                                      {safeString(vendor.pricing.additionalCosts.hardware)}
+                                    </span>
                                   </div>
                                   <div className="flex justify-between text-xs">
                                     <span>Support:</span>
-                                    <span className="font-medium">{vendor.pricing.additionalCosts.support}</span>
+                                    <span className="font-medium">
+                                      {safeString(vendor.pricing.additionalCosts.support)}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -1790,7 +1833,7 @@ export default function EnhancedVendorSelection({
                                   {vendor.pricing.includedFeatures.map((feature, index) => (
                                     <div key={index} className="flex items-center gap-1 text-xs">
                                       <Check className="h-3 w-3 text-green-500" />
-                                      <span>{feature}</span>
+                                      <span>{safeString(feature)}</span>
                                     </div>
                                   ))}
                                 </div>
@@ -1808,7 +1851,7 @@ export default function EnhancedVendorSelection({
                                 <div className="flex flex-wrap gap-1">
                                   {vendor.technical.protocols.map((protocol) => (
                                     <Badge key={protocol} variant="outline" className="text-[10px] py-0 h-4">
-                                      {protocol}
+                                      {safeString(protocol)}
                                     </Badge>
                                   ))}
                                 </div>
@@ -1822,19 +1865,23 @@ export default function EnhancedVendorSelection({
                                 <div className="grid grid-cols-2 gap-2 text-xs">
                                   <div>
                                     <span className="text-muted-foreground">Max Devices:</span>
-                                    <p className="font-medium">{vendor.technical.scalability.maxDevices}</p>
+                                    <p className="font-medium">{safeString(vendor.technical.scalability.maxDevices)}</p>
                                   </div>
                                   <div>
                                     <span className="text-muted-foreground">Max Policies:</span>
-                                    <p className="font-medium">{vendor.technical.scalability.maxPolicies}</p>
+                                    <p className="font-medium">
+                                      {safeString(vendor.technical.scalability.maxPolicies)}
+                                    </p>
                                   </div>
                                   <div>
                                     <span className="text-muted-foreground">Max Sites:</span>
-                                    <p className="font-medium">{vendor.technical.scalability.maxSites}</p>
+                                    <p className="font-medium">{safeString(vendor.technical.scalability.maxSites)}</p>
                                   </div>
                                   <div>
                                     <span className="text-muted-foreground">Performance:</span>
-                                    <p className="font-medium">{vendor.technical.scalability.performance}</p>
+                                    <p className="font-medium">
+                                      {safeString(vendor.technical.scalability.performance)}
+                                    </p>
                                   </div>
                                 </div>
                               </div>
@@ -1847,19 +1894,19 @@ export default function EnhancedVendorSelection({
                                 <div className="grid grid-cols-2 gap-2 text-xs">
                                   <div>
                                     <span className="text-muted-foreground">Encryption:</span>
-                                    <p className="font-medium">{vendor.technical.security.encryption}</p>
+                                    <p className="font-medium">{safeString(vendor.technical.security.encryption)}</p>
                                   </div>
                                   <div>
                                     <span className="text-muted-foreground">Zero Trust:</span>
-                                    <p className="font-medium">{vendor.technical.security.zeroTrust}</p>
+                                    <p className="font-medium">{safeString(vendor.technical.security.zeroTrust)}</p>
                                   </div>
                                   <div>
                                     <span className="text-muted-foreground">SSO:</span>
-                                    <p className="font-medium">{vendor.technical.security.sso}</p>
+                                    <p className="font-medium">{safeString(vendor.technical.security.sso)}</p>
                                   </div>
                                   <div>
                                     <span className="text-muted-foreground">MFA:</span>
-                                    <p className="font-medium">{vendor.technical.security.mfa}</p>
+                                    <p className="font-medium">{safeString(vendor.technical.security.mfa)}</p>
                                   </div>
                                 </div>
                               </div>
@@ -1872,7 +1919,7 @@ export default function EnhancedVendorSelection({
                                 <div className="flex flex-wrap gap-1">
                                   {vendor.technical.integrations.slice(0, 8).map((integration) => (
                                     <Badge key={integration} variant="secondary" className="text-[10px] py-0 h-4">
-                                      {integration}
+                                      {safeString(integration)}
                                     </Badge>
                                   ))}
                                   {vendor.technical.integrations.length > 8 && (
@@ -1895,19 +1942,19 @@ export default function EnhancedVendorSelection({
                                 <div className="grid grid-cols-2 gap-2 text-xs">
                                   <div>
                                     <span className="text-muted-foreground">Availability:</span>
-                                    <p className="font-medium">{vendor.support.availability}</p>
+                                    <p className="font-medium">{safeString(vendor.support.availability)}</p>
                                   </div>
                                   <div>
                                     <span className="text-muted-foreground">Response Time:</span>
-                                    <p className="font-medium">{vendor.support.responseTime}</p>
+                                    <p className="font-medium">{safeString(vendor.support.responseTime)}</p>
                                   </div>
                                   <div>
                                     <span className="text-muted-foreground">Satisfaction:</span>
-                                    <p className="font-medium">{vendor.support.satisfaction}%</p>
+                                    <p className="font-medium">{safeString(vendor.support.satisfaction)}%</p>
                                   </div>
                                   <div>
                                     <span className="text-muted-foreground">Documentation:</span>
-                                    <p className="font-medium">{vendor.support.documentation}</p>
+                                    <p className="font-medium">{safeString(vendor.support.documentation)}</p>
                                   </div>
                                 </div>
                               </div>
@@ -1920,7 +1967,7 @@ export default function EnhancedVendorSelection({
                                 <div className="flex flex-wrap gap-1">
                                   {vendor.support.channels.map((channel) => (
                                     <Badge key={channel} variant="outline" className="text-[10px] py-0 h-4">
-                                      {channel}
+                                      {safeString(channel)}
                                     </Badge>
                                   ))}
                                 </div>
@@ -1934,23 +1981,23 @@ export default function EnhancedVendorSelection({
                                 <div className="grid grid-cols-2 gap-2 text-xs">
                                   <div>
                                     <span className="text-muted-foreground">Uptime:</span>
-                                    <p className="font-medium">{vendor.performance.uptime}</p>
+                                    <p className="font-medium">{safeString(vendor.performance.uptime)}</p>
                                   </div>
                                   <div>
                                     <span className="text-muted-foreground">Latency:</span>
-                                    <p className="font-medium">{vendor.performance.latency}</p>
+                                    <p className="font-medium">{safeString(vendor.performance.latency)}</p>
                                   </div>
                                   <div>
                                     <span className="text-muted-foreground">CVE Count:</span>
                                     <p
-                                      className={`font-medium ${vendor.performance.cveCount === 0 ? "text-green-600" : vendor.performance.cveCount > 50 ? "text-red-600" : "text-yellow-600"}`}
+                                      className={`font-medium ${safeNumber(vendor.performance.cveCount) === 0 ? "text-green-600" : safeNumber(vendor.performance.cveCount) > 50 ? "text-red-600" : "text-yellow-600"}`}
                                     >
-                                      {vendor.performance.cveCount}
+                                      {safeNumber(vendor.performance.cveCount)}
                                     </p>
                                   </div>
                                   <div>
                                     <span className="text-muted-foreground">MTTR:</span>
-                                    <p className="font-medium">{vendor.performance.mttr}</p>
+                                    <p className="font-medium">{safeString(vendor.performance.mttr)}</p>
                                   </div>
                                 </div>
                               </div>
@@ -1960,7 +2007,7 @@ export default function EnhancedVendorSelection({
                                   <Users className="h-3 w-3" />
                                   Community & Resources
                                 </h4>
-                                <p className="text-xs text-muted-foreground">{vendor.support.community}</p>
+                                <p className="text-xs text-muted-foreground">{safeString(vendor.support.community)}</p>
                               </div>
                             </div>
                           </TabsContent>
