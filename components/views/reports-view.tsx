@@ -38,6 +38,7 @@ import {
   Globe,
   Users,
   Lock,
+  Loader2,
 } from "lucide-react"
 import AnimatedPortnoxLogo from "@/components/animated-portnox-logo"
 import { EnhancedReportGenerator } from "@/lib/report-generator"
@@ -46,6 +47,31 @@ import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced
 interface ReportsViewProps {
   results?: CalculationResult[]
   config?: CalculationConfiguration
+}
+
+// Safe utility functions
+function safeString(value: any): string {
+  if (value === null || value === undefined) return ""
+  if (typeof value === "string") return value
+  if (typeof value === "number") return value.toString()
+  if (typeof value === "boolean") return value.toString()
+  if (typeof value === "object") return JSON.stringify(value)
+  return String(value)
+}
+
+function safeNumber(value: any, defaultValue = 0): number {
+  if (value === null || value === undefined) return defaultValue
+  const num = Number(value)
+  return isNaN(num) || !isFinite(num) ? defaultValue : num
+}
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(safeNumber(value))
 }
 
 export default function ReportsView({ results = [], config }: ReportsViewProps) {
@@ -65,6 +91,8 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
   const [executiveSummary, setExecutiveSummary] = useState("")
   const [keyRecommendations, setKeyRecommendations] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
+  const [generationProgress, setGenerationProgress] = useState(0)
+  const [generationStatus, setGenerationStatus] = useState("")
 
   // Enhanced report templates with comprehensive content
   const reportTemplates = [
@@ -175,42 +203,44 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
   const reportPreview = useMemo(() => {
     if (results.length === 0) return null
 
-    const portnoxResult = results.find((r) => r.vendorId === "portnox")
-    const competitorResults = results.filter((r) => r.vendorId !== "portnox")
+    const portnoxResult = results.find((r) => safeString(r.vendorId).toLowerCase() === "portnox")
+    const competitorResults = results.filter((r) => safeString(r.vendorId).toLowerCase() !== "portnox")
 
     if (!portnoxResult || competitorResults.length === 0) return null
 
-    const lowestCost = Math.min(...results.map((r) => r.totalCost))
-    const highestCost = Math.max(...results.map((r) => r.totalCost))
-    const avgCompetitorCost = competitorResults.reduce((sum, r) => sum + r.totalCost, 0) / competitorResults.length
-    const savings = avgCompetitorCost - portnoxResult.totalCost
+    const lowestCost = Math.min(...results.map((r) => safeNumber(r.totalCost)))
+    const highestCost = Math.max(...results.map((r) => safeNumber(r.totalCost)))
+    const avgCompetitorCost =
+      competitorResults.reduce((sum, r) => sum + safeNumber(r.totalCost), 0) / competitorResults.length
+    const savings = avgCompetitorCost - safeNumber(portnoxResult.totalCost)
     const savingsPercent = ((savings / avgCompetitorCost) * 100).toFixed(0)
 
-    const roi = portnoxResult.financialMetrics.roi
-    const payback = portnoxResult.financialMetrics.paybackPeriod
+    const roi = safeNumber(portnoxResult.financialMetrics?.roi)
+    const payback = safeNumber(portnoxResult.financialMetrics?.paybackPeriod)
 
-    const lowestCostVendor = results.find((r) => r.totalCost === lowestCost)
+    const lowestCostVendor = results.find((r) => safeNumber(r.totalCost) === lowestCost)
     const bestROIVendor = results.find(
-      (r) => r.financialMetrics.roi === Math.max(...results.map((r) => r.financialMetrics.roi)),
+      (r) =>
+        safeNumber(r.financialMetrics?.roi) === Math.max(...results.map((r) => safeNumber(r.financialMetrics?.roi))),
     )
 
     return {
       totalVendors: results.length,
-      analysisDevices: config?.devices || 0,
-      analysisPeriod: config?.years || 3,
+      analysisDevices: safeNumber(config?.devices) || 0,
+      analysisPeriod: safeNumber(config?.years) || 3,
       maxSavings: savings,
       savingsPercent,
-      lowestCostVendor: lowestCostVendor?.vendorName,
+      lowestCostVendor: safeString(lowestCostVendor?.vendorName),
       lowestCost,
-      portnoxCost: portnoxResult.totalCost,
+      portnoxCost: safeNumber(portnoxResult.totalCost),
       avgCompetitorCost,
       bestROI: roi,
-      bestROIVendor: bestROIVendor?.vendorName,
+      bestROIVendor: safeString(bestROIVendor?.vendorName),
       avgPayback: payback,
-      industry: config?.industry || "technology",
-      orgSize: config?.orgSize || "medium",
-      securityScore: portnoxResult.securityScore,
-      complianceScore: portnoxResult.complianceScore,
+      industry: safeString(config?.industry) || "technology",
+      orgSize: safeString(config?.orgSize) || "medium",
+      securityScore: safeNumber(portnoxResult.securityScore),
+      complianceScore: safeNumber(portnoxResult.complianceScore),
       riskReduction: 92, // Based on Portnox's security posture
       deploymentTime: "30 minutes",
       competitorDeploymentTime: "3-6 months",
@@ -223,22 +253,22 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
     const basePrompt = template?.aiPrompt || ""
 
     const contextPrompt = `
-    Context: Network Access Control vendor analysis for ${config?.industry || "technology"} industry, 
-    ${config?.devices || 0} devices, ${config?.years || 3} year analysis period.
+    Context: Network Access Control vendor analysis for ${safeString(config?.industry) || "technology"} industry, 
+    ${safeNumber(config?.devices) || 0} devices, ${safeNumber(config?.years) || 3} year analysis period.
     
     Key Data Points:
-    - Portnox CLEAR: $${reportPreview?.portnoxCost?.toLocaleString() || "0"} total cost
-    - Average Competitor: $${reportPreview?.avgCompetitorCost?.toLocaleString() || "0"} total cost  
-    - Potential Savings: $${reportPreview?.maxSavings?.toLocaleString() || "0"} (${reportPreview?.savingsPercent || "0"}%)
-    - ROI: ${reportPreview?.bestROI || "0"}%
-    - Payback Period: ${reportPreview?.avgPayback || "0"} years
-    - Security Score: ${reportPreview?.securityScore || "0"}/100
-    - Deployment Time: ${reportPreview?.deploymentTime || "N/A"} vs ${reportPreview?.competitorDeploymentTime || "N/A"}
+    - Portnox CLEAR: ${formatCurrency(safeNumber(reportPreview?.portnoxCost))} total cost
+    - Average Competitor: ${formatCurrency(safeNumber(reportPreview?.avgCompetitorCost))} total cost  
+    - Potential Savings: ${formatCurrency(safeNumber(reportPreview?.maxSavings))} (${safeString(reportPreview?.savingsPercent)}%)
+    - ROI: ${safeNumber(reportPreview?.bestROI)}%
+    - Payback Period: ${safeNumber(reportPreview?.avgPayback)} years
+    - Security Score: ${safeNumber(reportPreview?.securityScore)}/100
+    - Deployment Time: ${safeString(reportPreview?.deploymentTime)} vs ${safeString(reportPreview?.competitorDeploymentTime)}
     
     ${basePrompt}
     
     Please provide detailed, professional analysis with specific recommendations, 
-    quantified benefits, and actionable insights suitable for ${template?.audience || "stakeholders"}.
+    quantified benefits, and actionable insights suitable for ${safeString(template?.audience) || "stakeholders"}.
     Include industry-specific considerations and competitive intelligence.
     `
 
@@ -253,23 +283,42 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
     }
 
     setIsGenerating(true)
+    setGenerationProgress(0)
+    setGenerationStatus("Initializing report generation...")
 
     try {
       const selectedTemplateData = reportTemplates.find((t) => t.id === selectedTemplate)
 
+      // Simulate progress updates
+      const progressSteps = [
+        { progress: 10, status: "Preparing report data..." },
+        { progress: 25, status: "Generating executive summary..." },
+        { progress: 40, status: "Creating financial analysis..." },
+        { progress: 55, status: "Building technical assessment..." },
+        { progress: 70, status: "Adding security analysis..." },
+        { progress: 85, status: "Finalizing charts and visuals..." },
+        { progress: 95, status: "Applying Portnox branding..." },
+        { progress: 100, status: "Report generation complete!" },
+      ]
+
+      for (const step of progressSteps) {
+        setGenerationProgress(step.progress)
+        setGenerationStatus(step.status)
+        await new Promise((resolve) => setTimeout(resolve, 500))
+      }
+
       // Prepare enhanced report data
       const reportData = {
-        title: reportTitle,
-        subtitle: reportDescription,
-        template: selectedTemplate,
-        templateData: selectedTemplateData,
-        format,
+        title: safeString(reportTitle),
+        subtitle: safeString(reportDescription),
+        template: safeString(selectedTemplate),
+        format: safeString(format),
         generatedAt: new Date(),
-        industry: config?.industry || "technology",
-        deviceCount: config?.devices || 0,
-        timeframe: config?.years || 3,
-        organizationSize: config?.orgSize || "medium",
-        region: config?.region || "north-america",
+        industry: safeString(config?.industry) || "technology",
+        deviceCount: safeNumber(config?.devices) || 0,
+        timeframe: safeNumber(config?.years) || 3,
+        organizationSize: safeString(config?.orgSize) || "medium",
+        region: safeString(config?.region) || "north-america",
 
         // Analysis results
         results,
@@ -285,8 +334,8 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
         includeCompliance,
 
         // Custom content
-        executiveSummary: executiveSummary || "AI-generated executive summary will be included",
-        keyRecommendations: keyRecommendations || "AI-generated recommendations will be included",
+        executiveSummary: safeString(executiveSummary) || "AI-generated executive summary will be included",
+        keyRecommendations: safeString(keyRecommendations) || "AI-generated recommendations will be included",
 
         // AI enhancement
         aiPrompt: includeAIEnhancement ? getAIPrompt(selectedTemplate) : null,
@@ -294,8 +343,8 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
         // Branding
         branding: {
           logo: "/portnox-logo.png",
-          primaryColor: "#10B981",
-          secondaryColor: "#047857",
+          primaryColor: "#00D4AA",
+          secondaryColor: "#1B2951",
           companyName: "Portnox Ltd.",
           tagline: "Enterprise Network Access Control Solutions",
         },
@@ -307,7 +356,7 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
       let blob: Blob
 
       // Generate report based on format
-      switch (format.toLowerCase()) {
+      switch (safeString(format).toLowerCase()) {
         case "pdf":
           blob = await generator.generatePDF(selectedTemplate as any)
           break
@@ -331,23 +380,30 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `${reportTitle.replace(/\s+/g, "_")}_${selectedTemplate}_${format.toLowerCase()}.${format.toLowerCase()}`
+      a.download = `${safeString(reportTitle).replace(/\s+/g, "_")}_${safeString(selectedTemplate)}_${safeString(format).toLowerCase()}.${safeString(format).toLowerCase()}`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
+
+      setGenerationStatus("Download started successfully!")
     } catch (error) {
       console.error("Report generation failed:", error)
+      setGenerationStatus("Report generation failed. Please try again.")
       alert("Report generation failed. Please try again.")
     } finally {
-      setIsGenerating(false)
+      setTimeout(() => {
+        setIsGenerating(false)
+        setGenerationProgress(0)
+        setGenerationStatus("")
+      }, 2000)
     }
   }
 
   // Handle email scheduling
   const handleScheduleEmail = () => {
-    console.log(`Scheduling ${scheduleFrequency} email reports to ${recipientEmail}`)
-    alert(`Email scheduling configured: ${scheduleFrequency} reports to ${recipientEmail}`)
+    console.log(`Scheduling ${safeString(scheduleFrequency)} email reports to ${safeString(recipientEmail)}`)
+    alert(`Email scheduling configured: ${safeString(scheduleFrequency)} reports to ${safeString(recipientEmail)}`)
   }
 
   if (results.length === 0) {
@@ -413,7 +469,7 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
               <Input
                 id="report-title"
                 value={reportTitle}
-                onChange={(e) => setReportTitle(e.target.value)}
+                onChange={(e) => setReportTitle(safeString(e.target.value))}
                 placeholder="Enter professional report title"
                 className="font-medium"
               />
@@ -429,7 +485,7 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                     <SelectItem key={template.id} value={template.id}>
                       <div className="flex items-center gap-2">
                         {template.icon}
-                        {template.name}
+                        {safeString(template.name)}
                       </div>
                     </SelectItem>
                   ))}
@@ -443,7 +499,7 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
             <Textarea
               id="report-description"
               value={reportDescription}
-              onChange={(e) => setReportDescription(e.target.value)}
+              onChange={(e) => setReportDescription(safeString(e.target.value))}
               placeholder="Add executive summary or key message for stakeholders..."
               rows={3}
               className="resize-none"
@@ -455,7 +511,7 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
             <Textarea
               id="key-recommendations"
               value={keyRecommendations}
-              onChange={(e) => setKeyRecommendations(e.target.value)}
+              onChange={(e) => setKeyRecommendations(safeString(e.target.value))}
               placeholder="Add specific recommendations or strategic guidance..."
               rows={3}
               className="resize-none"
@@ -537,19 +593,19 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
                     {template.icon}
-                    <h4 className="font-semibold text-sm">{template.name}</h4>
+                    <h4 className="font-semibold text-sm">{safeString(template.name)}</h4>
                   </div>
                   <Badge variant="outline" className="text-xs">
-                    {template.pages}
+                    {safeString(template.pages)}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{template.description}</p>
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{safeString(template.description)}</p>
                 <div className="space-y-2">
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Users className="h-3 w-3" />
                     <span className="font-medium">Target Audience:</span>
                   </div>
-                  <p className="text-xs text-muted-foreground pl-4">{template.audience}</p>
+                  <p className="text-xs text-muted-foreground pl-4">{safeString(template.audience)}</p>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <CheckCircle2 className="h-3 w-3" />
                     <span className="font-medium">Key Sections:</span>
@@ -557,7 +613,7 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                   <div className="flex flex-wrap gap-1 pl-4">
                     {template.sections.slice(0, 3).map((section) => (
                       <Badge key={section} variant="secondary" className="text-[10px] py-0 h-4">
-                        {section}
+                        {safeString(section)}
                       </Badge>
                     ))}
                     {template.sections.length > 3 && (
@@ -583,7 +639,7 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
               Report Preview
             </CardTitle>
             <CardDescription>
-              Preview of your {reportTemplates.find((t) => t.id === selectedTemplate)?.name} report
+              Preview of your {safeString(reportTemplates.find((t) => t.id === selectedTemplate)?.name)} report
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -594,9 +650,11 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                   <div className="flex items-center gap-3 mb-3">
                     <AnimatedPortnoxLogo width={40} height={28} showText={false} animate={false} />
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg text-green-800 dark:text-green-200">{reportTitle}</h3>
+                      <h3 className="font-bold text-lg text-green-800 dark:text-green-200">
+                        {safeString(reportTitle)}
+                      </h3>
                       <p className="text-sm text-green-600 dark:text-green-300">
-                        {reportTemplates.find((t) => t.id === selectedTemplate)?.name}
+                        {safeString(reportTemplates.find((t) => t.id === selectedTemplate)?.name)}
                       </p>
                     </div>
                     {includeAIEnhancement && (
@@ -608,7 +666,7 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                   </div>
                   {reportDescription && (
                     <p className="text-sm text-muted-foreground italic border-l-2 border-green-300 pl-3">
-                      "{reportDescription}"
+                      "{safeString(reportDescription)}"
                     </p>
                   )}
                 </div>
@@ -623,19 +681,21 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                     <div className="space-y-1 text-xs text-muted-foreground">
                       <div className="flex justify-between">
                         <span>Vendors Analyzed:</span>
-                        <span className="font-medium">{reportPreview.totalVendors}</span>
+                        <span className="font-medium">{safeNumber(reportPreview.totalVendors)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Device Count:</span>
-                        <span className="font-medium">{reportPreview.analysisDevices.toLocaleString()}</span>
+                        <span className="font-medium">
+                          {safeNumber(reportPreview.analysisDevices).toLocaleString()}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span>Time Period:</span>
-                        <span className="font-medium">{reportPreview.analysisPeriod} years</span>
+                        <span className="font-medium">{safeNumber(reportPreview.analysisPeriod)} years</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Industry:</span>
-                        <span className="font-medium capitalize">{reportPreview.industry}</span>
+                        <span className="font-medium capitalize">{safeString(reportPreview.industry)}</span>
                       </div>
                     </div>
                   </div>
@@ -648,19 +708,25 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                     <div className="space-y-1 text-xs text-muted-foreground">
                       <div className="flex justify-between">
                         <span>Total Savings:</span>
-                        <span className="font-medium text-green-600">${reportPreview.maxSavings.toLocaleString()}</span>
+                        <span className="font-medium text-green-600">
+                          {formatCurrency(safeNumber(reportPreview.maxSavings))}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span>ROI:</span>
-                        <span className="font-medium text-blue-600">{reportPreview.bestROI.toFixed(0)}%</span>
+                        <span className="font-medium text-blue-600">
+                          {safeNumber(reportPreview.bestROI).toFixed(0)}%
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span>Payback:</span>
-                        <span className="font-medium">{reportPreview.avgPayback.toFixed(1)} years</span>
+                        <span className="font-medium">{safeNumber(reportPreview.avgPayback).toFixed(1)} years</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Security Score:</span>
-                        <span className="font-medium text-green-600">{reportPreview.securityScore}/100</span>
+                        <span className="font-medium text-green-600">
+                          {safeNumber(reportPreview.securityScore)}/100
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -676,30 +742,34 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                     <li className="flex items-start gap-2">
                       <div className="w-2 h-2 rounded-full bg-green-500 mt-2 flex-shrink-0"></div>
                       <span>
-                        <strong>Cost Leadership:</strong> Portnox CLEAR delivers $
-                        {reportPreview.maxSavings.toLocaleString()}({reportPreview.savingsPercent}%) in total cost
-                        savings compared to traditional NAC solutions
+                        <strong>Cost Leadership:</strong> Portnox CLEAR delivers{" "}
+                        {formatCurrency(safeNumber(reportPreview.maxSavings))} (
+                        {safeString(reportPreview.savingsPercent)}%) in total cost savings compared to traditional NAC
+                        solutions
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
                       <span>
-                        <strong>Exceptional ROI:</strong> {reportPreview.bestROI.toFixed(0)}% return on investment with{" "}
-                        {reportPreview.avgPayback.toFixed(1)}-year payback period demonstrates compelling business value
+                        <strong>Exceptional ROI:</strong> {safeNumber(reportPreview.bestROI).toFixed(0)}% return on
+                        investment with {safeNumber(reportPreview.avgPayback).toFixed(1)}-year payback period
+                        demonstrates compelling business value
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <div className="w-2 h-2 rounded-full bg-purple-500 mt-2 flex-shrink-0"></div>
                       <span>
-                        <strong>Deployment Advantage:</strong> {reportPreview.deploymentTime} deployment vs
-                        {reportPreview.competitorDeploymentTime} for competitors represents 99% faster time-to-value
+                        <strong>Deployment Advantage:</strong> {safeString(reportPreview.deploymentTime)} deployment vs{" "}
+                        {safeString(reportPreview.competitorDeploymentTime)} for competitors represents 99% faster
+                        time-to-value
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <div className="w-2 h-2 rounded-full bg-red-500 mt-2 flex-shrink-0"></div>
                       <span>
-                        <strong>Security Excellence:</strong> {reportPreview.securityScore}/100 security rating with
-                        {reportPreview.riskReduction}% risk reduction through zero-vulnerability architecture
+                        <strong>Security Excellence:</strong> {safeNumber(reportPreview.securityScore)}/100 security
+                        rating with {safeNumber(reportPreview.riskReduction)}% risk reduction through zero-vulnerability
+                        architecture
                       </span>
                     </li>
                   </ul>
@@ -712,9 +782,11 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                     <AlertTitle className="text-blue-900 dark:text-blue-100">AI Enhancement Active</AlertTitle>
                     <AlertDescription className="text-blue-800 dark:text-blue-200">
                       This report will include AI-powered insights, industry-specific analysis, and intelligent
-                      recommendations tailored for {reportTemplates.find((t) => t.id === selectedTemplate)?.audience}.
+                      recommendations tailored for{" "}
+                      {safeString(reportTemplates.find((t) => t.id === selectedTemplate)?.audience)}.
                       <div className="mt-2 p-2 bg-blue-100 dark:bg-blue-900/30 rounded text-xs">
-                        <strong>AI Prompt Preview:</strong> {getAIPrompt(selectedTemplate).substring(0, 200)}...
+                        <strong>AI Prompt Preview:</strong>{" "}
+                        {safeString(getAIPrompt(selectedTemplate)).substring(0, 200)}...
                       </div>
                     </AlertDescription>
                   </Alert>
@@ -748,7 +820,7 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                     <div className="font-medium">Professional PDF Report</div>
                     <div className="text-xs opacity-90">Executive-ready with charts & branding</div>
                   </div>
-                  {isGenerating && <div className="ml-auto animate-spin">⏳</div>}
+                  {isGenerating && <Loader2 className="ml-auto h-4 w-4 animate-spin" />}
                 </Button>
 
                 <Button
@@ -761,7 +833,7 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                     <div className="font-medium">Microsoft Word Document</div>
                     <div className="text-xs opacity-90">Editable format with full formatting</div>
                   </div>
-                  {isGenerating && <div className="ml-auto animate-spin">⏳</div>}
+                  {isGenerating && <Loader2 className="ml-auto h-4 w-4 animate-spin" />}
                 </Button>
 
                 <Button
@@ -774,7 +846,7 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                     <div className="font-medium">PowerPoint Presentation</div>
                     <div className="text-xs opacity-90">Board-ready slides with visuals</div>
                   </div>
-                  {isGenerating && <div className="ml-auto animate-spin">⏳</div>}
+                  {isGenerating && <Loader2 className="ml-auto h-4 w-4 animate-spin" />}
                 </Button>
 
                 <Button
@@ -787,7 +859,7 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                     <div className="font-medium">Excel Workbook</div>
                     <div className="text-xs opacity-90">Data analysis with interactive charts</div>
                   </div>
-                  {isGenerating && <div className="ml-auto animate-spin">⏳</div>}
+                  {isGenerating && <Loader2 className="ml-auto h-4 w-4 animate-spin" />}
                 </Button>
               </div>
             </div>
@@ -796,15 +868,15 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
             <div className="space-y-3">
               <h4 className="font-semibold">Quick Actions</h4>
               <div className="grid gap-2">
-                <Button variant="outline" className="justify-start bg-transparent">
+                <Button variant="outline" className="justify-start bg-transparent" disabled={isGenerating}>
                   <Printer className="h-4 w-4 mr-2" />
                   Print Report Preview
                 </Button>
-                <Button variant="outline" className="justify-start bg-transparent">
+                <Button variant="outline" className="justify-start bg-transparent" disabled={isGenerating}>
                   <Share2 className="h-4 w-4 mr-2" />
                   Share Analysis Link
                 </Button>
-                <Button variant="outline" className="justify-start bg-transparent">
+                <Button variant="outline" className="justify-start bg-transparent" disabled={isGenerating}>
                   <Save className="h-4 w-4 mr-2" />
                   Save Report Template
                 </Button>
@@ -815,17 +887,13 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
             {isGenerating && (
               <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="animate-spin">
-                    <Sparkles className="h-4 w-4 text-blue-600" />
-                  </div>
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
                   <span className="font-medium text-blue-900 dark:text-blue-100">
                     Generating Professional Report...
                   </span>
                 </div>
-                <Progress value={75} className="h-2" />
-                <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">
-                  {includeAIEnhancement ? "AI enhancement in progress..." : "Formatting professional content..."}
-                </p>
+                <Progress value={generationProgress} className="h-2 mb-2" />
+                <p className="text-xs text-blue-700 dark:text-blue-300">{safeString(generationStatus)}</p>
               </div>
             )}
           </CardContent>
@@ -856,12 +924,12 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                     id="recipient-email"
                     type="email"
                     value={recipientEmail}
-                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    onChange={(e) => setRecipientEmail(safeString(e.target.value))}
                     placeholder="stakeholder@company.com"
                   />
                 </div>
                 <div className="flex items-end">
-                  <Button className="w-full bg-green-600 hover:bg-green-700">
+                  <Button className="w-full bg-green-600 hover:bg-green-700" disabled={isGenerating}>
                     <Mail className="h-4 w-4 mr-2" />
                     Send Professional Report
                   </Button>
@@ -877,7 +945,7 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                     id="schedule-email"
                     type="email"
                     value={recipientEmail}
-                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    onChange={(e) => setRecipientEmail(safeString(e.target.value))}
                     placeholder="executive@company.com"
                   />
                 </div>
@@ -898,7 +966,7 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                 <div className="flex items-end">
                   <Button
                     onClick={handleScheduleEmail}
-                    disabled={scheduleFrequency === "none" || !recipientEmail}
+                    disabled={scheduleFrequency === "none" || !recipientEmail || isGenerating}
                     className="w-full"
                   >
                     <Calendar className="h-4 w-4 mr-2" />
@@ -912,8 +980,9 @@ export default function ReportsView({ results = [], config }: ReportsViewProps) 
                   <CheckCircle2 className="h-4 w-4" />
                   <AlertTitle className="text-green-900 dark:text-green-100">Scheduling Configured</AlertTitle>
                   <AlertDescription className="text-green-800 dark:text-green-200">
-                    Professional {scheduleFrequency} reports will be automatically generated and sent to{" "}
-                    {recipientEmail}. Each report will include the latest analysis data and AI-enhanced insights.
+                    Professional {safeString(scheduleFrequency)} reports will be automatically generated and sent to{" "}
+                    {safeString(recipientEmail)}. Each report will include the latest analysis data and AI-enhanced
+                    insights.
                   </AlertDescription>
                 </Alert>
               )}
