@@ -1758,5 +1758,4 @@ export async function generateAIInsights(
   return response.content
 }
 
-// Export enhanced types and utilities
-export type { AIConfig, AIResponse, ReportEnhancement, VendorWarning }
+// Types are already exported above, no need to re-export
