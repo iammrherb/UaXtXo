@@ -995,58 +995,158 @@ export function getOrgSizeList(): Array<{ value: string; label: string }> {
   ]
 }
 
-// Placeholder for calculateVendorCosts function
+// Regional cost multipliers for accurate global pricing
+const REGIONAL_COST_MULTIPLIERS = {
+  "north-america": { labor: 1.0, hardware: 1.0, services: 1.0 },
+  "europe": { labor: 0.85, hardware: 1.15, services: 1.1 },
+  "asia-pacific": { labor: 0.65, hardware: 1.05, services: 0.8 },
+  "latin-america": { labor: 0.55, hardware: 1.2, services: 0.7 },
+  "middle-east": { labor: 0.7, hardware: 1.3, services: 0.9 },
+  "africa": { labor: 0.45, hardware: 1.4, services: 0.6 },
+}
+
+// Industry-specific cost factors
+const INDUSTRY_FACTORS = {
+  healthcare: { complianceMultiplier: 1.4, securityMultiplier: 1.3, riskTolerance: 0.1 },
+  finance: { complianceMultiplier: 1.6, securityMultiplier: 1.5, riskTolerance: 0.05 },
+  education: { complianceMultiplier: 1.1, securityMultiplier: 1.0, riskTolerance: 0.3 },
+  government: { complianceMultiplier: 1.8, securityMultiplier: 1.7, riskTolerance: 0.02 },
+  retail: { complianceMultiplier: 1.2, securityMultiplier: 1.1, riskTolerance: 0.2 },
+  manufacturing: { complianceMultiplier: 1.1, securityMultiplier: 1.2, riskTolerance: 0.25 },
+  technology: { complianceMultiplier: 1.0, securityMultiplier: 1.0, riskTolerance: 0.15 },
+  energy: { complianceMultiplier: 1.5, securityMultiplier: 1.4, riskTolerance: 0.08 },
+}
+
 function calculateVendorCosts(vendorId: string, config: CalculationConfiguration): CalculationResult {
-  // Implementation of calculateVendorCosts goes here
+  const vendor = COMPREHENSIVE_VENDOR_DATA[vendorId]
+  if (!vendor) {
+    throw new Error(`Vendor data not found for ${vendorId}`)
+  }
+
+  const regionalMultiplier = REGIONAL_COST_MULTIPLIERS[config.region] || REGIONAL_COST_MULTIPLIERS["north-america"]
+  const industryFactor = INDUSTRY_FACTORS[config.industry] || INDUSTRY_FACTORS.technology
+  
+  // Calculate licensing costs with volume discounts
+  let licensingCost = 0
+  if (vendorId === "portnox") {
+    const basePrice = config.portnoxBasePrice || vendor.pricing.basePerDeviceYear
+    licensingCost = basePrice * config.devices * config.years
+    
+    // Apply volume discounts
+    const volumeDiscount = vendor.pricing.volumeDiscounts.find(d => config.devices >= d.threshold)
+    if (volumeDiscount) {
+      licensingCost *= (1 - volumeDiscount.discount)
+    }
+    
+    // Add addon costs
+    if (config.portnoxAddons?.atp) licensingCost += vendor.pricing.addons.advancedThreatProtection * config.devices * config.years
+    if (config.portnoxAddons?.compliance) licensingCost += vendor.pricing.addons.complianceAutomation * config.devices * config.years
+    if (config.portnoxAddons?.iot) licensingCost += vendor.pricing.addons.iotOtSecurity * config.devices * config.years
+    if (config.portnoxAddons?.analytics) licensingCost += vendor.pricing.addons.riskAnalytics * config.devices * config.years
+  } else {
+    licensingCost = vendor.pricing.basePerDeviceYear * config.devices * config.years
+  }
+  
+  // Hardware costs (primarily for on-premise solutions)
+  const hardwareCost = vendor.type === "on-premise" ? 
+    vendor.pricing.hardwareCost || (config.devices * 150 * regionalMultiplier.hardware) : 0
+  
+  // Professional services and implementation
+  const implementationCost = vendor.implementation.professionalServicesCost * regionalMultiplier.services
+  
+  // Training costs
+  const trainingCost = vendor.implementation.trainingCost * config.users * regionalMultiplier.services
+  
+  // Ongoing operational costs
+  const annualMaintenance = vendor.implementation.ongoingMaintenanceHours * 150 * regionalMultiplier.labor
+  const operationalCost = annualMaintenance * config.years
+  
+  // Support costs
+  const supportCost = vendor.pricing.supportCost || (licensingCost * 0.18) // 18% of licensing
+  
+  // Hidden costs based on complexity
+  const hiddenCostFactor = vendor.implementation.complexityFactor
+  const hiddenCost = (licensingCost + hardwareCost + implementationCost) * hiddenCostFactor * config.years
+  
+  // Total cost calculation
+  const totalCost = licensingCost + hardwareCost + implementationCost + trainingCost + 
+                   operationalCost + supportCost + hiddenCost
+  
+  // Calculate financial metrics
+  const discountRate = config.discountRate || 0.1
+  const annualCost = totalCost / config.years
+  
+  // Benefits calculation
+  const avgBreachCost = 4500000 * (industryFactor.complianceMultiplier || 1)
+  const breachReduction = vendor.benefits.breachCostAvoidance
+  const annualBenefits = (avgBreachCost * breachReduction) + 
+                        (config.users * 500 * vendor.benefits.productivityMultiplier) +
+                        (annualCost * 0.2 * vendor.benefits.operationalEfficiencyGain)
+  
+  const totalBenefits = annualBenefits * config.years
+  const netBenefit = totalBenefits - totalCost
+  const roi = totalCost > 0 ? (netBenefit / totalCost) * 100 : 0
+  const paybackPeriod = annualBenefits > 0 ? totalCost / annualBenefits : 999
+  
+  // NPV calculation
+  let npv = -totalCost
+  for (let year = 1; year <= config.years; year++) {
+    npv += annualBenefits / Math.pow(1 + discountRate, year)
+  }
+  
+  // IRR calculation (simplified)
+  const irr = totalCost > 0 ? ((totalBenefits / totalCost) ** (1/config.years) - 1) * 100 : 0
+  
   return {
     vendorId,
-    vendorName: COMPREHENSIVE_VENDOR_DATA[vendorId].name,
-    vendorData: COMPREHENSIVE_VENDOR_DATA[vendorId],
-    totalCost: 0,
+    vendorName: vendor.name,
+    vendorData: vendor,
+    totalCost,
     costBreakdown: {
-      licensing: 0,
-      hardware: 0,
-      services: 0,
-      training: 0,
-      maintenance: 0,
-      operational: 0,
-      hidden: 0,
+      licensing: licensingCost,
+      hardware: hardwareCost,
+      services: implementationCost,
+      training: trainingCost,
+      maintenance: supportCost,
+      operational: operationalCost,
+      hidden: hiddenCost,
     },
     financialMetrics: {
-      npv: 0,
-      irr: 0,
-      roi: 0,
-      paybackPeriod: 0,
-      profitabilityIndex: 0,
-      totalBenefits: 0,
-      netBenefit: 0,
+      npv,
+      irr,
+      roi,
+      paybackPeriod,
+      profitabilityIndex: npv > 0 ? (npv + totalCost) / totalCost : 0,
+      totalBenefits,
+      netBenefit,
     },
     riskAssessment: {
-      overallRisk: 0,
-      securityRisk: 0,
-      operationalRisk: 0,
-      financialRisk: 0,
-      complianceRisk: 0,
-      breachProbability: 0,
-      mttr: 0,
+      overallRisk: vendor.risk.securityRisk + vendor.risk.operationalRisk + vendor.risk.financialRisk,
+      securityRisk: vendor.risk.securityRisk,
+      operationalRisk: vendor.risk.operationalRisk,
+      financialRisk: vendor.risk.financialRisk,
+      complianceRisk: vendor.risk.complianceRisk,
+      breachProbability: vendor.risk.breachProbability,
+      mttr: vendor.security.mttrMinutes,
     },
     businessImpact: {
-      productivityGains: 0,
-      riskReduction: 0,
-      complianceSavings: 0,
-      operationalSavings: 0,
-      totalBenefits: 0,
-      annualBenefits: 0,
+      productivityGains: config.users * 500 * vendor.benefits.productivityMultiplier * config.years,
+      riskReduction: avgBreachCost * breachReduction,
+      complianceSavings: annualCost * 0.15 * vendor.benefits.complianceCostReduction * config.years,
+      operationalSavings: annualCost * 0.2 * vendor.benefits.operationalEfficiencyGain * config.years,
+      totalBenefits,
+      annualBenefits,
     },
     implementation: {
-      timeline: "",
-      complexity: "Low",
-      resources: 0,
-      successProbability: 0,
-      timeToValue: 0,
+      timeline: `${vendor.implementation.timeToValueDays} days`,
+      complexity: vendor.implementation.complexityFactor > 0.5 ? "High" : 
+                 vendor.implementation.complexityFactor > 0.2 ? "Medium" : "Low",
+      resources: vendor.implementation.deploymentHours,
+      successProbability: vendor.implementation.successRate * 100,
+      timeToValue: vendor.implementation.timeToValueDays,
     },
-    complianceScore: 0,
-    securityScore: 0,
-    marketPosition: COMPREHENSIVE_VENDOR_DATA[vendorId].marketPosition,
+    complianceScore: vendor.security.complianceAutomation,
+    securityScore: vendor.security.securityScore,
+    marketPosition: vendor.marketPosition,
   }
 }
