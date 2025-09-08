@@ -1010,7 +1010,7 @@ export default function SettingsPanel({
                         )}
 
                         <div className="space-y-3 mt-4">
-                          {aiSettings.customPrompts.map((prompt) => (
+                          {(aiSettings.customPrompts || []).map((prompt) => (
                             <div key={prompt.id} className="border rounded-lg p-4">
                               <div className="flex items-center justify-between mb-2">
                                 <div>

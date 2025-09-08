@@ -105,8 +105,8 @@ export default function DetailedCostsView({ results = [], configuration }: Detai
   const sampleResults = useMemo(() => {
     if (results.length > 0) return results
 
-    const deviceCount = configuration?.deviceCount || 5000
-    const timeframe = configuration?.timeframe || 3
+    const deviceCount = configuration?.devices || configuration?.deviceCount || 5000
+    const timeframe = configuration?.years || configuration?.timeframe || 3
 
     return [
       calculateTCO("PORTNOX", deviceCount, timeframe, "HEALTHCARE", "LARGE"),
@@ -268,7 +268,7 @@ export default function DetailedCostsView({ results = [], configuration }: Detai
                 <p className="text-2xl font-bold text-blue-900">
                   {formatCurrency(processedResults.reduce((sum, r) => sum + r.totalCost, 0) / processedResults.length)}
                 </p>
-                <p className="text-xs text-blue-600">{configuration?.timeframe || 3}-year analysis</p>
+                <p className="text-xs text-blue-600">{configuration?.years || configuration?.timeframe || 3}-year analysis</p>
               </div>
               <Calculator className="h-8 w-8 text-blue-600" />
             </div>
@@ -329,7 +329,7 @@ export default function DetailedCostsView({ results = [], configuration }: Detai
             <Card>
               <CardHeader>
                 <CardTitle>Total Cost of Ownership Comparison</CardTitle>
-                <CardDescription>{configuration?.timeframe || 3}-Year TCO Analysis</CardDescription>
+                <CardDescription>{configuration?.years || configuration?.timeframe || 3}-Year TCO Analysis</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
@@ -600,7 +600,7 @@ export default function DetailedCostsView({ results = [], configuration }: Detai
               <CardContent>
                 <div className="space-y-4">
                   {processedResults.map((result, index) => {
-                    const costPerDevice = result.totalCost / (configuration?.timeframe || 3) / (configuration?.deviceCount || 5000)
+                    const costPerDevice = result.totalCost / (configuration?.years || configuration?.timeframe || 3) / (configuration?.devices || configuration?.deviceCount || 5000)
                     return (
                       <div key={result.vendor} className="flex justify-between items-center">
                         <span className="font-medium">{result.vendor}</span>
