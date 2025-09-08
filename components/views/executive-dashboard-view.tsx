@@ -38,18 +38,18 @@ import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced
 
 interface ExecutiveDashboardViewProps {
   results?: CalculationResult[]
-  config?: CalculationConfiguration
+  configuration?: CalculationConfiguration
 }
 
 const COLORS = ["#00D4AA", "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8"]
 
-export default function ExecutiveDashboardView({ results = [], config }: ExecutiveDashboardViewProps) {
+export default function ExecutiveDashboardView({ results = [], configuration }: ExecutiveDashboardViewProps) {
   const [selectedMetric, setSelectedMetric] = useState<string>("savings")
   const [timeRange, setTimeRange] = useState<string>("3years")
 
   // Safely handle results and config with comprehensive defaults
   const safeResults = Array.isArray(results) ? results : []
-  const safeConfig = config || {
+  const safeConfig = configuration || {
     devices: 2500,
     years: 3,
     industry: "healthcare",
@@ -57,8 +57,8 @@ export default function ExecutiveDashboardView({ results = [], config }: Executi
   }
 
   // Calculate key metrics from results with comprehensive safety checks
-  const portnoxResult = safeResults.find((r) => r && typeof r === "object" && r.vendor === "portnox")
-  const competitorResults = safeResults.filter((r) => r && typeof r === "object" && r.vendor && r.vendor !== "portnox")
+  const portnoxResult = safeResults.find((r) => r && typeof r === "object" && r.vendorId === "portnox")
+  const competitorResults = safeResults.filter((r) => r && typeof r === "object" && r.vendorId && r.vendorId !== "portnox")
 
   const totalSavings =
     competitorResults.length > 0
