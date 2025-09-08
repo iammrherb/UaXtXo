@@ -327,6 +327,28 @@ class AISettingsManager {
       retryAttempts: 3,
       enableLogging: true,
       logLevel: "info",
+      prompts: {
+        executiveSummary: {
+          openai: "Generate a comprehensive executive summary for a NAC vendor comparison analysis focused on business value, ROI, and strategic recommendations.",
+          anthropic: "Create an executive-level summary that highlights key business decisions, ROI projections, and strategic implications of NAC vendor selection.",
+          gemini: "Produce a high-level executive summary emphasizing business impact, cost savings, and strategic advantages of the recommended NAC solution."
+        },
+        technicalAnalysis: {
+          openai: "Provide detailed technical analysis comparing NAC solutions including architecture, scalability, security features, and integration capabilities.",
+          anthropic: "Analyze technical specifications, deployment models, performance metrics, and integration requirements for NAC solutions.",
+          gemini: "Generate comprehensive technical evaluation covering security posture, architectural considerations, and operational capabilities."
+        },
+        complianceReport: {
+          openai: "Create detailed compliance analysis showing how each NAC solution addresses regulatory requirements and industry standards.",
+          anthropic: "Analyze compliance capabilities across HIPAA, PCI-DSS, SOX, GDPR, and other frameworks for each NAC vendor.",
+          gemini: "Generate compliance assessment report detailing regulatory coverage and risk mitigation capabilities."
+        },
+        securityAssessment: {
+          openai: "Evaluate security capabilities, threat detection, incident response, and vulnerability management across NAC solutions.",
+          anthropic: "Assess security posture including zero trust maturity, threat protection, and security control effectiveness.",
+          gemini: "Analyze security features, threat landscape coverage, and defensive capabilities of each NAC solution."
+        }
+      }
     }
   }
 

@@ -880,7 +880,7 @@ export default function SettingsPanel({
                       <div>
                         <Label className="text-base font-medium">Built-in Prompts</Label>
                         <div className="space-y-4 mt-4">
-                          {Object.entries(aiSettings.prompts).map(([category, prompts]) => (
+                          {aiSettings.prompts && Object.entries(aiSettings.prompts).map(([category, prompts]) => (
                             <div key={category} className="border rounded-lg p-4">
                               <h4 className="font-medium capitalize mb-3">{category.replace(/([A-Z])/g, " $1")}</h4>
                               <div className="space-y-3">
