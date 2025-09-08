@@ -8,10 +8,8 @@ export interface CalculationConfiguration {
   region: string
   portnoxBasePrice?: number
   portnoxAddons?: {
-    atp: boolean // Advanced Threat Protection
-    compliance: boolean // Compliance Automation
-    iot: boolean // IoT/OT Security
-    analytics: boolean // Risk Analytics
+    tacacs: boolean // TACACS+ Authentication & Authorization 
+    ztna: boolean // Zero Trust Network Access
   }
   discountRate?: number
   inflationRate?: number
@@ -1038,11 +1036,9 @@ function calculateVendorCosts(vendorId: string, config: CalculationConfiguration
       licensingCost *= (1 - volumeDiscount.discount)
     }
     
-    // Add addon costs
-    if (config.portnoxAddons?.atp) licensingCost += vendor.pricing.addons.advancedThreatProtection * config.devices * config.years
-    if (config.portnoxAddons?.compliance) licensingCost += vendor.pricing.addons.complianceAutomation * config.devices * config.years
-    if (config.portnoxAddons?.iot) licensingCost += vendor.pricing.addons.iotOtSecurity * config.devices * config.years
-    if (config.portnoxAddons?.analytics) licensingCost += vendor.pricing.addons.riskAnalytics * config.devices * config.years
+    // Add addon costs for TACACS and ZTNA
+    if (config.portnoxAddons?.tacacs) licensingCost += (vendor.pricing.addons?.tacacs || 2.5) * config.devices * config.years
+    if (config.portnoxAddons?.ztna) licensingCost += (vendor.pricing.addons?.ztna || 3.0) * config.devices * config.years
   } else {
     licensingCost = vendor.pricing.basePerDeviceYear * config.devices * config.years
   }

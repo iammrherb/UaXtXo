@@ -64,7 +64,7 @@ export default function TcoAnalyzerUltimate() {
     years: 3,
     region: "north-america",
     portnoxBasePrice: 4.0,
-    portnoxAddons: { atp: false, compliance: false, iot: false, analytics: false },
+    portnoxAddons: { tacacs: false, ztna: false },
     aiConfig: {
       openaiApiKey: "",
       openaiModel: "gpt-4o",
