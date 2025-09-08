@@ -1,13 +1,13 @@
 // Ultra-accurate TCO calculator with real-time market data and AI optimization
 export interface CalculationConfiguration {
   devices: number
-  deviceCount: number // alias for compatibility
+  deviceCount?: number // alias for compatibility
   users: number
   industry: string
   orgSize: "small" | "medium" | "large" | "enterprise"
-  companySize: "small" | "medium" | "large" | "enterprise" // alias for compatibility
+  companySize?: "small" | "medium" | "large" | "enterprise" // alias for compatibility
   years: number
-  timeframe: number // alias for compatibility
+  timeframe?: number // alias for compatibility
   region: string
   portnoxBasePrice?: number
   portnoxAddons?: {
