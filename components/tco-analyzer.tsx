@@ -343,13 +343,13 @@ export default function TcoAnalyzerUltimate() {
                     <div className="flex items-center gap-2">
                       <Select 
                         value={selectedVendors[2] || ""} 
-                        onValueChange={(value) => handleVendorChange("second", value)}
+                        onValueChange={(value) => handleVendorChange("second", value === "none" ? "" : value)}
                       >
                         <SelectTrigger className="w-48">
                           <SelectValue placeholder="Add second competitor" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Remove second competitor</SelectItem>
+                          <SelectItem value="none">Remove second competitor</SelectItem>
                           {availableVendors
                             .filter(v => v.id !== selectedVendors[1])
                             .map((vendor) => (
