@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -30,7 +30,7 @@ import {
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
 
-import EnhancedVendorSelection from "./enhanced-vendor-selection"
+// Removed complex vendor selection - now using compact top selector
 import SettingsPanel from "./settings-panel"
 import ExecutiveDashboardView from "./views/executive-dashboard-view"
 import DetailedCostsView from "./views/detailed-costs-view"
@@ -54,8 +54,7 @@ export default function TcoAnalyzerUltimate() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSettingsOpen, setSettingsOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  // Removed sidebar state - now using top vendor selector
 
   const [configuration, setConfiguration] = useState<CalculationConfiguration>({
     devices: 2500,
@@ -120,28 +119,47 @@ export default function TcoAnalyzerUltimate() {
     }
   }, [darkMode])
 
-  const handleVendorToggle = (vendorId: string) => {
+  // Available vendors for comparison (excluding Portnox which is always selected)
+  const availableVendors = [
+    { id: "cisco", name: "Cisco ISE", logo: "/cisco-logo.png" },
+    { id: "aruba", name: "Aruba ClearPass", logo: "/aruba-logo.png" },
+    { id: "forescout", name: "Forescout", logo: "/forescout-logo.png" },
+    { id: "fortinet", name: "Fortinet FortiNAC", logo: "/fortinet-logo.png" },
+    { id: "extreme", name: "Extreme Networks", logo: "/extreme-logo.png" },
+    { id: "juniper", name: "Juniper", logo: "/juniper-logo.png" },
+    { id: "microsoft", name: "Microsoft NAP", logo: "/microsoft-logo.png" },
+    { id: "securew2", name: "SecureW2", logo: "/securew2-logo.png" },
+  ]
+
+  const handleVendorChange = (position: "first" | "second", vendorId: string) => {
     setSelectedVendors((prev) => {
-      if (prev.includes(vendorId)) {
-        // Deselecting a vendor
-        return prev.filter((v) => v !== vendorId)
+      const newVendors = ["portnox"] // Always start with Portnox
+      const currentComparisonVendors = prev.filter(v => v !== "portnox")
+      
+      if (position === "first") {
+        newVendors.push(vendorId)
+        // Keep the second vendor if it exists and is different
+        if (currentComparisonVendors.length > 1 && currentComparisonVendors[1] !== vendorId) {
+          newVendors.push(currentComparisonVendors[1])
+        } else if (currentComparisonVendors.length > 0 && currentComparisonVendors[0] !== vendorId) {
+          newVendors.push(currentComparisonVendors[0])
+        }
       } else {
-        // Selecting a vendor, enforce single selection limit
-        const newSelection = [DEFAULT_VENDORS[0], vendorId] // Ensure Portnox is always first
-        return newSelection
+        // Position is "second"
+        if (currentComparisonVendors.length > 0) {
+          newVendors.push(currentComparisonVendors[0])
+        }
+        newVendors.push(vendorId)
       }
+      
+      return newVendors
     })
-    toast(`${vendorId} selection updated.`)
+    toast(`Comparison updated with ${vendorId}`)
   }
 
-  const handleClearAll = () => {
-    setSelectedVendors(DEFAULT_VENDORS)
-    toast("All vendors cleared.")
-  }
-
-  const handleSelectRecommended = () => {
-    setSelectedVendors(DEFAULT_VENDORS)
-    toast("Recommended vendors selected.")
+  const handleClearComparison = () => {
+    setSelectedVendors(["portnox"])
+    toast("Comparison vendors cleared. Portnox remains selected.")
   }
 
   const handleConfigChange = (newConfig: any) => {
@@ -261,28 +279,6 @@ export default function TcoAnalyzerUltimate() {
               <Badge variant="outline" className="hidden md:flex">
                 v3.0
               </Badge>
-              <Sheet open={!sidebarOpen} onOpenChange={setSidebarOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="md:hidden">
-                    {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-80 p-0">
-                  <div className="p-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <AnimatedPortnoxLogo width={24} height={24} showText={false} animate={false} />
-                      <span className="font-semibold text-sm">Vendor Selection</span>
-                    </div>
-                    <EnhancedVendorSelection
-                      selectedVendors={selectedVendors}
-                      onVendorToggle={handleVendorToggle}
-                      onClearAll={handleClearAll}
-                      onSelectRecommended={handleSelectRecommended}
-                      darkMode={darkMode}
-                    />
-                  </div>
-                </SheetContent>
-              </Sheet>
               <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
@@ -298,115 +294,126 @@ export default function TcoAnalyzerUltimate() {
           </div>
         </header>
 
-        {/* Main Content */}
-        <div className="flex-1 flex overflow-hidden">
-          <ResizablePanelGroup direction="horizontal" className="h-full w-full">
-            {/* Sidebar Panel - Fixed sizing issue */}
-            <ResizablePanel
-              defaultSize={sidebarCollapsed ? 4 : 25}
-              minSize={4}
-              maxSize={35}
-              className={`${!sidebarOpen ? "hidden md:block" : ""} transition-all duration-300`}
-              collapsible={true}
-              collapsedSize={4}
-            >
-              <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900/50 border-r border-gray-200 dark:border-gray-700">
-                {/* Sidebar Header */}
-                <div className="p-4 border-b bg-white dark:bg-gray-900 flex-shrink-0">
-                  <div className="flex items-center justify-between">
-                    {!sidebarCollapsed && (
-                      <div className="flex items-center gap-2">
-                        <AnimatedPortnoxLogo width={24} height={24} showText={false} animate={false} />
-                        <span className="font-semibold text-sm">Vendor Selection</span>
-                      </div>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                      className="h-8 w-8 p-0 flex-shrink-0"
-                    >
-                      {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Sidebar Content */}
-                <div className="flex-1 overflow-hidden">
-                  {sidebarCollapsed ? (
-                    <div className="p-2 space-y-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSidebarCollapsed(false)}
-                        className="w-full h-10 p-0"
-                        title="Expand vendor selection"
-                      >
-                        <Menu className="h-4 w-4" />
-                      </Button>
-                      <div className="text-center">
-                        <Badge variant="secondary" className="text-xs">
-                          {selectedVendors.length}
-                        </Badge>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="h-full overflow-y-auto">
-                      <EnhancedVendorSelection
-                        selectedVendors={selectedVendors}
-                        onVendorToggle={handleVendorToggle}
-                        onClearAll={handleClearAll}
-                        onSelectRecommended={handleSelectRecommended}
-                        darkMode={darkMode}
-                      />
-                    </div>
-                  )}
-                </div>
+        {/* Vendor Selection Bar */}
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-green-600" />
+                <span className="font-medium text-sm">NAC Vendor Comparison</span>
               </div>
-            </ResizablePanel>
+              
+              <div className="flex items-center gap-4">
+                {/* Always Show Portnox */}
+                <div className="flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <img src="/portnox-logo.png" alt="Portnox" className="h-5 w-5" />
+                  <span className="text-sm font-medium text-green-700 dark:text-green-300">Portnox CLEAR</span>
+                  <Badge variant="secondary" className="text-xs bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300">Baseline</Badge>
+                </div>
 
-            <ResizableHandle
-              withHandle
-              className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-            />
+                <span className="text-muted-foreground">vs</span>
 
-            {/* Main Content Panel - Improved sizing */}
-            <ResizablePanel defaultSize={sidebarCollapsed ? 96 : 75} minSize={50}>
-              <div className="flex flex-col h-full bg-white dark:bg-gray-900">
-                {/* Tab Navigation - Fixed positioning */}
-                <div className="border-b bg-white dark:bg-gray-900 px-6 py-3 flex-shrink-0">
-                  <Tabs defaultValue="executive" className="w-full">
-                    <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 h-auto bg-gray-100 dark:bg-gray-800 p-1">
-                      {TABS.map((tab) => (
-                        <TabsTrigger
-                          key={tab.value}
-                          value={tab.value}
-                          className="text-xs px-2 py-2 flex items-center gap-1 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 rounded-md transition-all"
-                        >
-                          {tab.icon}
-                          <span className="hidden sm:inline truncate">{tab.label}</span>
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-
-                    {/* Tab Content - Fixed overflow and sizing */}
-                    <div className="mt-4">
-                      {TABS.map((tab) => (
-                        <TabsContent key={tab.value} value={tab.value} className="mt-0 focus-visible:outline-none">
-                          <div
-                            className="h-[calc(100vh-240px)] overflow-y-auto overflow-x-hidden"
-                            style={{ scrollbarWidth: "thin" }}
-                          >
-                            <div className="pr-2">{tab.component}</div>
+                {/* First Comparison Vendor */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Compare with:</span>
+                  <Select 
+                    value={selectedVendors[1] || ""} 
+                    onValueChange={(value) => handleVendorChange("first", value)}
+                  >
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Select competitor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableVendors.map((vendor) => (
+                        <SelectItem key={vendor.id} value={vendor.id}>
+                          <div className="flex items-center gap-2">
+                            <img src={vendor.logo} alt={vendor.name} className="h-4 w-4" />
+                            {vendor.name}
                           </div>
-                        </TabsContent>
+                        </SelectItem>
                       ))}
-                    </div>
-                  </Tabs>
+                    </SelectContent>
+                  </Select>
                 </div>
+
+                {/* Second Comparison Vendor (Optional) */}
+                {selectedVendors.length >= 2 && (
+                  <>
+                    <span className="text-muted-foreground">&</span>
+                    <div className="flex items-center gap-2">
+                      <Select 
+                        value={selectedVendors[2] || ""} 
+                        onValueChange={(value) => handleVendorChange("second", value)}
+                      >
+                        <SelectTrigger className="w-48">
+                          <SelectValue placeholder="Add second competitor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Remove second competitor</SelectItem>
+                          {availableVendors
+                            .filter(v => v.id !== selectedVendors[1])
+                            .map((vendor) => (
+                              <SelectItem key={vendor.id} value={vendor.id}>
+                                <div className="flex items-center gap-2">
+                                  <img src={vendor.logo} alt={vendor.name} className="h-4 w-4" />
+                                  {vendor.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
               </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleClearComparison}>
+                Clear Comparison
+              </Button>
+              <Badge variant="outline" className="text-xs">
+                {selectedVendors.length} vendor{selectedVendors.length !== 1 ? 's' : ''} selected
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col">
+          <div className="flex flex-col h-full bg-white dark:bg-gray-900">
+            {/* Tab Navigation */}
+            <div className="border-b bg-white dark:bg-gray-900 px-6 py-3 flex-shrink-0">
+              <Tabs defaultValue="executive" className="w-full">
+                <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 h-auto bg-gray-100 dark:bg-gray-800 p-1">
+                  {TABS.map((tab) => (
+                    <TabsTrigger
+                      key={tab.value}
+                      value={tab.value}
+                      className="text-xs px-2 py-2 flex items-center gap-1 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 rounded-md transition-all"
+                    >
+                      {tab.icon}
+                      <span className="hidden sm:inline truncate">{tab.label}</span>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                {/* Tab Content */}
+                <div className="mt-4">
+                  {TABS.map((tab) => (
+                    <TabsContent key={tab.value} value={tab.value} className="mt-0 focus-visible:outline-none">
+                      <div
+                        className="h-[calc(100vh-280px)] overflow-y-auto overflow-x-hidden"
+                        style={{ scrollbarWidth: "thin" }}
+                      >
+                        <div className="pr-2">{tab.component}</div>
+                      </div>
+                    </TabsContent>
+                  ))}
+                </div>
+              </Tabs>
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
