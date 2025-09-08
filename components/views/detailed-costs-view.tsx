@@ -34,15 +34,15 @@ import {
   Eye,
   Calculator,
 } from "lucide-react"
-import { calculateTCO, type TCOResult } from "@/lib/enhanced-tco-calculator"
+import { calculateTCO, type CalculationResult } from "@/lib/enhanced-tco-calculator"
 
 interface DetailedCostsViewProps {
-  results?: TCOResult[]
-  config?: {
-    deviceCount: number
-    timeframe: number
+  results?: CalculationResult[]
+  configuration?: {
+    devices: number
+    years: number
     industry: string
-    organizationSize: string
+    orgSize: string
   }
 }
 
@@ -97,7 +97,7 @@ function getSafeVendorName(vendor: any): string {
 
 const COLORS = ["#00D4AA", "#1B2951", "#3B82F6", "#8B5CF6", "#F59E0B", "#EF4444", "#10B981", "#F97316"]
 
-export default function DetailedCostsView({ results = [], config }: DetailedCostsViewProps) {
+export default function DetailedCostsView({ results = [], configuration }: DetailedCostsViewProps) {
   const [selectedVendor, setSelectedVendor] = useState<string>("")
   const [viewMode, setViewMode] = useState<"summary" | "breakdown" | "comparison">("summary")
 

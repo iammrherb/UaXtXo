@@ -100,7 +100,7 @@ export default function TcoAnalyzerUltimate() {
   }, [])
 
   useEffect(() => {
-    if (!isLoading) {
+    try {
       const newResults = compareVendors(selectedVendors, configuration)
       setResults(newResults)
       // Save to localStorage
@@ -108,8 +108,12 @@ export default function TcoAnalyzerUltimate() {
         "portnox-tco-config",
         JSON.stringify({ configuration, selectedVendors, darkMode, timestamp: new Date().toISOString() }),
       )
+    } catch (error) {
+      console.error("Calculation error:", error)
+      // Use fallback data if calculation fails
+      setResults([])
     }
-  }, [selectedVendors, configuration, darkMode, isLoading])
+  }, [selectedVendors, configuration, darkMode])
 
   useEffect(() => {
     if (darkMode) {
@@ -173,24 +177,9 @@ export default function TcoAnalyzerUltimate() {
     }))
   }
 
-  if (!isClient || isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-        <div className="text-center">
-          <AnimatedPortnoxLogo width={120} height={40} animate={true} />
-          <div className="mt-6 space-y-2">
-            <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-              Executive Intelligence Decision Platform
-            </h2>
-            <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Loading comprehensive analysis...</p>
-            <div className="w-64 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mx-auto mt-4">
-              <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full animate-pulse" />
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+  // Skip loading screen for now to get app working
+  if (!isClient) {
+    return null
   }
 
   const TABS = [
@@ -210,49 +199,49 @@ export default function TcoAnalyzerUltimate() {
       value: "roi",
       label: "ROI Analysis",
       icon: <TrendingUp className="h-4 w-4" />,
-      component: <ROIView results={results} configuration={configuration} />,
+      component: <ROIView results={results} config={configuration} />,
     },
     {
       value: "security",
       label: "Security Posture",
       icon: <Shield className="h-4 w-4" />,
-      component: <SecurityPostureView results={results} configuration={configuration} />,
+      component: <SecurityPostureView results={results} config={configuration} />,
     },
     {
       value: "compliance",
       label: "Compliance & Risk",
       icon: <FileCheck className="h-4 w-4" />,
-      component: <ComplianceRiskView results={results} configuration={configuration} />,
+      component: <ComplianceRiskView results={results} config={configuration} />,
     },
     {
       value: "operations",
       label: "Operations Impact",
       icon: <Users className="h-4 w-4" />,
-      component: <OperationsImpactView results={results} configuration={configuration} />,
+      component: <OperationsImpactView results={results} config={configuration} />,
     },
     {
       value: "features",
       label: "Feature Matrix",
       icon: <LayoutGrid className="h-4 w-4" />,
-      component: <FeatureMatrixView results={results} configuration={configuration} />,
+      component: <FeatureMatrixView results={results} config={configuration} />,
     },
     {
       value: "roadmap",
       label: "Implementation",
       icon: <MapPin className="h-4 w-4" />,
-      component: <ImplementationRoadmapView results={results} configuration={configuration} />,
+      component: <ImplementationRoadmapView results={results} config={configuration} />,
     },
     {
       value: "business",
       label: "Business Impact",
       icon: <Building2 className="h-4 w-4" />,
-      component: <BusinessImpactView results={results} configuration={configuration} />,
+      component: <BusinessImpactView results={results} config={configuration} />,
     },
     {
       value: "reports",
       label: "Reports",
       icon: <FileText className="h-4 w-4" />,
-      component: <ReportsView results={results} configuration={configuration} />,
+      component: <ReportsView />,
     },
   ]
 

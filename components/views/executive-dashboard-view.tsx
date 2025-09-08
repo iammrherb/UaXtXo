@@ -122,9 +122,9 @@ export default function ExecutiveDashboardView({ results = [], configuration }: 
 
   // TCO comparison data with comprehensive safety checks
   const tcoData = safeResults
-    .filter((result) => result && typeof result === "object" && result.vendor)
+    .filter((result) => result && typeof result === "object" && result.vendorId)
     .map((result) => {
-      const vendorName = result.vendor || "Unknown"
+      const vendorName = result.vendorId || "Unknown"
       const formattedVendor =
         typeof vendorName === "string"
           ? vendorName.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
@@ -133,10 +133,10 @@ export default function ExecutiveDashboardView({ results = [], configuration }: 
       return {
         vendor: formattedVendor,
         totalCost: (result.totalCost || 0) / 1000,
-        licensing: (result.breakdown?.licensing || 0) / 1000,
-        hardware: (result.breakdown?.hardware || 0) / 1000,
-        services: (result.breakdown?.services || 0) / 1000,
-        operations: (result.breakdown?.operations || 0) / 1000,
+        licensing: (result.costBreakdown?.licensing || 0) / 1000,
+        hardware: (result.costBreakdown?.hardware || 0) / 1000,
+        services: (result.costBreakdown?.services || 0) / 1000,
+        operations: (result.costBreakdown?.operational || 0) / 1000,
       }
     })
 
