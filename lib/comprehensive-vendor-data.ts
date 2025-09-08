@@ -128,14 +128,14 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
 
     pricing: {
       model: "per-device",
-      basePrice: 50000,
-      pricePerDevice: 12.0,
+      basePrice: 75000,
+      pricePerDevice: 28.0,
       minimumDevices: 100,
       additionalCosts: {
-        hardware: 150000,
-        services: 75000,
-        training: 25000,
-        maintenance: 30000,
+        hardware: 180000,
+        services: 85000,
+        training: 35000,
+        maintenance: 45000,
       },
     },
 
@@ -148,8 +148,8 @@ export const ComprehensiveVendorDatabase: Record<string, VendorData> = {
 
     security: {
       securityRating: 85,
-      cveCount: 47,
-      lastSecurityIncident: "2023-Q4",
+      cveCount: 52,
+      lastSecurityIncident: "2024-Q2",
       complianceSupport: ["HIPAA", "PCI-DSS", "SOX", "GDPR", "NIST", "ISO27001", "Common Criteria"],
       zeroTrustMaturity: 75,
     },

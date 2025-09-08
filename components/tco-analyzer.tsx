@@ -46,6 +46,7 @@ import AnimatedPortnoxLogo from "./animated-portnox-logo"
 
 import { compareVendors } from "@/lib/enhanced-tco-calculator"
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
+import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
 
 const DEFAULT_VENDORS = ["portnox"]
 
@@ -123,16 +124,20 @@ export default function TcoAnalyzerUltimate() {
     }
   }, [darkMode])
 
-  // Available vendors for comparison (excluding Portnox which is always selected)
+  // Available vendors for comparison (excluding Portnox which is always selected)  
   const availableVendors = [
-    { id: "cisco", name: "Cisco ISE", logo: "/cisco-logo.png" },
-    { id: "aruba", name: "Aruba ClearPass", logo: "/aruba-logo.png" },
-    { id: "forescout", name: "Forescout", logo: "/forescout-logo.png" },
-    { id: "fortinet", name: "Fortinet FortiNAC", logo: "/fortinet-logo.png" },
-    { id: "extreme", name: "Extreme Networks", logo: "/extreme-logo.png" },
-    { id: "juniper", name: "Juniper", logo: "/juniper-logo.png" },
-    { id: "microsoft", name: "Microsoft NAP", logo: "/microsoft-logo.png" },
-    { id: "securew2", name: "SecureW2", logo: "/securew2-logo.png" },
+    { id: "cisco", name: "Cisco ISE", logo: "/cisco-logo.png", category: "leader", pricePerDevice: 28.0, description: "Industry-leading identity services engine" },
+    { id: "aruba", name: "Aruba ClearPass", logo: "/aruba-logo.png", category: "challenger", pricePerDevice: 8.5, description: "Comprehensive network access control" },
+    { id: "forescout", name: "Forescout Platform", logo: "/forescout-logo.png", category: "challenger", pricePerDevice: 6.5, description: "Device visibility and control platform" },
+    { id: "fortinet", name: "Fortinet FortiNAC", logo: "/fortinet-logo.png", category: "challenger", pricePerDevice: 5.8, description: "Integrated network access control" },
+    { id: "extreme", name: "Extreme ExtremeControl", logo: "/extreme-logo.png", category: "niche", pricePerDevice: 7.2, description: "Policy-based network access control" },
+    { id: "juniper", name: "Juniper Mist NAC", logo: "/juniper-logo.png", category: "visionary", pricePerDevice: 6.8, description: "AI-driven cloud network access control" },
+    { id: "microsoft", name: "Microsoft NPS", logo: "/microsoft-logo.png", category: "niche", pricePerDevice: 3.2, description: "Native Windows network policy server" },
+    { id: "securew2", name: "SecureW2 CloudRADIUS", logo: "/securew2-logo.png", category: "niche", pricePerDevice: 4.8, description: "Cloud-based RADIUS and certificate services" },
+    { id: "foxpass", name: "Foxpass", logo: "/foxpass-logo.png", category: "niche", pricePerDevice: 3.5, description: "Cloud identity and access management" },
+    { id: "identity_automation", name: "Identity Automation", logo: "/ia-logo.png", category: "niche", pricePerDevice: 8.2, description: "Identity management platform" },
+    { id: "radiuspoint", name: "RADIUSPoint", logo: "/radiuspoint-logo.png", category: "niche", pricePerDevice: 5.2, description: "Enterprise RADIUS solution" },
+    { id: "meraki", name: "Cisco Meraki Systems Manager", logo: "/meraki-logo.png", category: "niche", pricePerDevice: 4.5, description: "Cloud-managed network access control" }
   ]
 
   const handleVendorChange = (position: "first" | "second", vendorId: string) => {
@@ -315,9 +320,15 @@ export default function TcoAnalyzerUltimate() {
                     <SelectContent>
                       {availableVendors.map((vendor) => (
                         <SelectItem key={vendor.id} value={vendor.id}>
-                          <div className="flex items-center gap-2">
-                            <img src={vendor.logo} alt={vendor.name} className="h-4 w-4" />
-                            {vendor.name}
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-2">
+                              <img src={vendor.logo} alt={vendor.name} className="h-4 w-4" />
+                              <span className="font-medium">{vendor.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Badge variant="outline" className="text-xs">{vendor.category}</Badge>
+                              <span>${vendor.pricePerDevice}/device</span>
+                            </div>
                           </div>
                         </SelectItem>
                       ))}
