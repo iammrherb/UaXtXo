@@ -46,7 +46,6 @@ import AnimatedPortnoxLogo from "./animated-portnox-logo"
 
 import { compareVendors } from "@/lib/enhanced-tco-calculator"
 import type { CalculationResult, CalculationConfiguration } from "@/lib/enhanced-tco-calculator"
-import { ComprehensiveVendorDatabase } from "@/lib/comprehensive-vendor-data"
 
 const DEFAULT_VENDORS = ["portnox"]
 
@@ -135,8 +134,8 @@ export default function TcoAnalyzerUltimate() {
     { id: "microsoft", name: "Microsoft NPS", logo: "/microsoft-logo.png", category: "niche", pricePerDevice: 3.2, description: "Native Windows network policy server" },
     { id: "securew2", name: "SecureW2 CloudRADIUS", logo: "/securew2-logo.png", category: "niche", pricePerDevice: 4.8, description: "Cloud-based RADIUS and certificate services" },
     { id: "foxpass", name: "Foxpass", logo: "/foxpass-logo.png", category: "niche", pricePerDevice: 3.5, description: "Cloud identity and access management" },
-    { id: "identity_automation", name: "Identity Automation", logo: "/ia-logo.png", category: "niche", pricePerDevice: 8.2, description: "Identity management platform" },
-    { id: "radiuspoint", name: "RADIUSPoint", logo: "/radiuspoint-logo.png", category: "niche", pricePerDevice: 5.2, description: "Enterprise RADIUS solution" },
+    { id: "identity_automation", name: "Identity Automation", logo: "/cisco-logo.png", category: "niche", pricePerDevice: 8.2, description: "Identity management platform" },
+    { id: "radiuspoint", name: "RADIUSPoint", logo: "/aruba-logo.png", category: "niche", pricePerDevice: 5.2, description: "Enterprise RADIUS solution" },
     { id: "meraki", name: "Cisco Meraki Systems Manager", logo: "/meraki-logo.png", category: "niche", pricePerDevice: 4.5, description: "Cloud-managed network access control" }
   ]
 

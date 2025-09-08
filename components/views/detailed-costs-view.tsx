@@ -114,7 +114,7 @@ export default function DetailedCostsView({ results = [], configuration }: Detai
       calculateTCO("ARUBA_CLEARPASS", deviceCount, timeframe, "HEALTHCARE", "LARGE"),
       calculateTCO("FORESCOUT", deviceCount, timeframe, "HEALTHCARE", "LARGE"),
     ]
-  }, [results, config])
+  }, [results, configuration])
 
   // Safe data processing
   const processedResults = useMemo(() => {
