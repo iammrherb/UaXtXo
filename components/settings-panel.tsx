@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,7 +12,8 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import {
   Settings,
@@ -32,7 +33,12 @@ import {
   CheckCircle,
   HelpCircle,
   Loader2,
+  Plus,
+  Trash2,
+  Edit,
+  Copy,
 } from "lucide-react"
+import { aiSettingsManager, type AISettings } from "@/lib/ai-settings-manager"
 
 interface SettingsPanelProps {
   isOpen: boolean
@@ -59,8 +65,21 @@ export default function SettingsPanel({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [currency, setCurrency] = useState("USD")
   const [numberFormat, setNumberFormat] = useState("en-US")
-  const [testingAI, setTestingAI] = useState(false)
-  const [aiTestResult, setAITestResult] = useState<string | null>(null)
+  const [aiSettings, setAiSettings] = useState<AISettings>(aiSettingsManager.getSettings())
+  const [testingConnections, setTestingConnections] = useState<Record<string, boolean>>({})
+  const [connectionResults, setConnectionResults] = useState<Record<string, boolean | null>>({})
+  const [editingPrompt, setEditingPrompt] = useState<string | null>(null)
+  const [newCustomPrompt, setNewCustomPrompt] = useState({
+    name: "",
+    description: "",
+    category: "custom" as const,
+    prompt: "",
+    variables: [] as string[],
+  })
+
+  useEffect(() => {
+    setAiSettings(aiSettingsManager.getSettings())
+  }, [])
 
   const handleConfigChange = (key: string, value: any) => {
     onConfigurationChange({ ...configuration, [key]: value })
@@ -72,33 +91,62 @@ export default function SettingsPanel({
     setHasUnsavedChanges(true)
   }
 
-  const handleAIConfigChange = (key: string, value: any) => {
-    const newAIConfig = { ...configuration.aiConfig, [key]: value }
-    onConfigurationChange({ ...configuration, aiConfig: newAIConfig })
+  const handleAIProviderChange = (provider: "openai" | "anthropic" | "gemini", field: string, value: any) => {
+    aiSettingsManager.updateProviderSettings(provider, { [field]: value })
+    setAiSettings(aiSettingsManager.getSettings())
     setHasUnsavedChanges(true)
   }
 
-  const testAIConnection = async () => {
-    setTestingAI(true)
-    setAITestResult(null)
+  const handlePromptChange = (
+    category: keyof AISettings["prompts"],
+    provider: "openai" | "anthropic" | "gemini",
+    prompt: string,
+  ) => {
+    aiSettingsManager.updatePrompt(category, provider, prompt)
+    setAiSettings(aiSettingsManager.getSettings())
+    setHasUnsavedChanges(true)
+  }
+
+  const testAIConnection = async (provider: "openai" | "anthropic" | "gemini") => {
+    setTestingConnections((prev) => ({ ...prev, [provider]: true }))
+    setConnectionResults((prev) => ({ ...prev, [provider]: null }))
 
     try {
-      // Test the AI connection with a simple prompt
-      const testPrompt = "Test connection. Respond with 'AI connection successful.'"
-
-      // Simulate API test - replace with actual test
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      if (configuration.aiConfig?.openaiApiKey) {
-        setAITestResult("success")
-      } else {
-        setAITestResult("error")
-      }
+      const result = await aiSettingsManager.testConnection(provider)
+      setConnectionResults((prev) => ({ ...prev, [provider]: result }))
     } catch (error) {
-      setAITestResult("error")
+      setConnectionResults((prev) => ({ ...prev, [provider]: false }))
     } finally {
-      setTestingAI(false)
+      setTestingConnections((prev) => ({ ...prev, [provider]: false }))
     }
+  }
+
+  const addCustomPrompt = () => {
+    if (newCustomPrompt.name && newCustomPrompt.prompt) {
+      aiSettingsManager.addCustomPrompt({
+        name: newCustomPrompt.name,
+        description: newCustomPrompt.description,
+        category: newCustomPrompt.category,
+        provider: "all",
+        prompt: newCustomPrompt.prompt,
+        variables: newCustomPrompt.variables,
+      })
+      setAiSettings(aiSettingsManager.getSettings())
+      setNewCustomPrompt({
+        name: "",
+        description: "",
+        category: "custom",
+        prompt: "",
+        variables: [],
+      })
+      setHasUnsavedChanges(true)
+    }
+  }
+
+  const deleteCustomPrompt = (id: string) => {
+    aiSettingsManager.deleteCustomPrompt(id)
+    setAiSettings(aiSettingsManager.getSettings())
+    setHasUnsavedChanges(true)
   }
 
   const handleSave = () => {
@@ -109,6 +157,7 @@ export default function SettingsPanel({
         configuration,
         portnoxAddons,
         darkMode,
+        aiSettings,
         timestamp: new Date().toISOString(),
       }),
     )
@@ -143,6 +192,8 @@ export default function SettingsPanel({
     }
     onConfigurationChange(defaultConfig)
     onAddonsChange(defaultAddons)
+    aiSettingsManager.resetToDefaults()
+    setAiSettings(aiSettingsManager.getSettings())
     setHasUnsavedChanges(false)
   }
 
@@ -151,6 +202,7 @@ export default function SettingsPanel({
       configuration,
       portnoxAddons,
       darkMode,
+      aiSettings,
       exportDate: new Date().toISOString(),
       version: "3.0",
     }
@@ -174,6 +226,10 @@ export default function SettingsPanel({
         if (settings.configuration) onConfigurationChange(settings.configuration)
         if (settings.portnoxAddons) onAddonsChange(settings.portnoxAddons)
         if (typeof settings.darkMode === "boolean") onDarkModeChange(settings.darkMode)
+        if (settings.aiSettings) {
+          aiSettingsManager.importSettings(JSON.stringify(settings.aiSettings))
+          setAiSettings(aiSettingsManager.getSettings())
+        }
         setHasUnsavedChanges(true)
       } catch (error) {
         console.error("Failed to import settings:", error)
@@ -202,7 +258,7 @@ export default function SettingsPanel({
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className={cn(
-              "fixed right-0 top-0 h-full w-full max-w-3xl z-50 overflow-y-auto",
+              "fixed right-0 top-0 h-full w-full max-w-4xl z-50 overflow-y-auto",
               darkMode ? "bg-gray-900 border-l border-gray-700" : "bg-white border-l border-gray-200",
             )}
           >
@@ -217,9 +273,11 @@ export default function SettingsPanel({
                 <div className="flex items-center gap-3">
                   <Settings className="h-6 w-6 text-blue-600" />
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Settings & Configuration</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                      Advanced Settings & AI Configuration
+                    </h2>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Customize your TCO analysis parameters and AI integration
+                      Customize your TCO analysis parameters and AI integration with OpenAI, Anthropic, and Gemini
                     </p>
                   </div>
                 </div>
@@ -274,7 +332,7 @@ export default function SettingsPanel({
             {/* Content */}
             <div className="p-6">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-5">
+                <TabsList className="grid w-full grid-cols-6">
                   <TabsTrigger value="organization" className="gap-2">
                     <Building className="h-4 w-4" />
                     <span className="hidden sm:inline">Organization</span>
@@ -283,9 +341,13 @@ export default function SettingsPanel({
                     <DollarSign className="h-4 w-4" />
                     <span className="hidden sm:inline">Pricing</span>
                   </TabsTrigger>
-                  <TabsTrigger value="ai" className="gap-2">
+                  <TabsTrigger value="ai-providers" className="gap-2">
                     <Brain className="h-4 w-4" />
-                    <span className="hidden sm:inline">AI Engine</span>
+                    <span className="hidden sm:inline">AI Providers</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="ai-prompts" className="gap-2">
+                    <Edit className="h-4 w-4" />
+                    <span className="hidden sm:inline">AI Prompts</span>
                   </TabsTrigger>
                   <TabsTrigger value="preferences" className="gap-2">
                     <Palette className="h-4 w-4" />
@@ -502,25 +564,47 @@ export default function SettingsPanel({
                   </Card>
                 </TabsContent>
 
-                {/* AI Configuration Tab */}
-                <TabsContent value="ai" className="space-y-6 mt-6">
+                {/* AI Providers Tab */}
+                <TabsContent value="ai-providers" className="space-y-6 mt-6">
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Brain className="h-5 w-5" />
-                        AI Engine Configuration
+                        AI Provider Configuration
                       </CardTitle>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Configure AI providers to enhance reports with intelligent insights and industry-specific
-                        recommendations.
+                        Configure AI providers to enhance reports with intelligent insights and automated company
+                        research.
                       </p>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       {/* OpenAI Configuration */}
                       <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                          <Key className="h-4 w-4" />
-                          <Label className="text-base font-medium">OpenAI Configuration</Label>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Key className="h-4 w-4" />
+                            <Label className="text-base font-medium">OpenAI Configuration</Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={aiSettings.providers.openai.enabled}
+                              onCheckedChange={(checked) => handleAIProviderChange("openai", "enabled", checked)}
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => testAIConnection("openai")}
+                              disabled={testingConnections.openai || !aiSettings.providers.openai.apiKey}
+                            >
+                              {testingConnections.openai ? <Loader2 className="h-4 w-4 animate-spin" /> : "Test"}
+                            </Button>
+                            {connectionResults.openai !== null &&
+                              (connectionResults.openai ? (
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <AlertTriangle className="h-4 w-4 text-red-500" />
+                              ))}
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -530,71 +614,139 @@ export default function SettingsPanel({
                               id="openaiApiKey"
                               type="password"
                               placeholder="sk-..."
-                              value={configuration.aiConfig?.openaiApiKey || ""}
-                              onChange={(e) => handleAIConfigChange("openaiApiKey", e.target.value)}
+                              value={aiSettings.providers.openai.apiKey}
+                              onChange={(e) => handleAIProviderChange("openai", "apiKey", e.target.value)}
                             />
                             <p className="text-xs text-gray-500 mt-1">Your OpenAI API key for GPT models</p>
                           </div>
                           <div>
                             <Label htmlFor="openaiModel">Model</Label>
-                            <select
-                              id="openaiModel"
-                              value={configuration.aiConfig?.openaiModel || "gpt-4o"}
-                              onChange={(e) => handleAIConfigChange("openaiModel", e.target.value)}
-                              className={cn(
-                                "w-full p-2 border rounded-md",
-                                darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300",
-                              )}
+                            <Select
+                              value={aiSettings.providers.openai.model}
+                              onValueChange={(value) => handleAIProviderChange("openai", "model", value)}
                             >
-                              <option value="gpt-4o">GPT-4o (Recommended)</option>
-                              <option value="gpt-4">GPT-4</option>
-                              <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                              <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                            </select>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="gpt-4o">GPT-4o (Recommended)</SelectItem>
+                                <SelectItem value="gpt-4">GPT-4</SelectItem>
+                                <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
+                                <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label>Temperature: {aiSettings.providers.openai.temperature}</Label>
+                            <Slider
+                              value={[aiSettings.providers.openai.temperature]}
+                              onValueChange={(value) => handleAIProviderChange("openai", "temperature", value[0])}
+                              min={0}
+                              max={1}
+                              step={0.1}
+                              className="mt-2"
+                            />
+                          </div>
+                          <div>
+                            <Label>Max Tokens: {aiSettings.providers.openai.maxTokens}</Label>
+                            <Slider
+                              value={[aiSettings.providers.openai.maxTokens]}
+                              onValueChange={(value) => handleAIProviderChange("openai", "maxTokens", value[0])}
+                              min={500}
+                              max={8000}
+                              step={100}
+                              className="mt-2"
+                            />
                           </div>
                         </div>
                       </div>
 
                       <Separator />
 
-                      {/* Claude Configuration */}
+                      {/* Anthropic Configuration */}
                       <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                          <Key className="h-4 w-4" />
-                          <Label className="text-base font-medium">Claude Configuration</Label>
-                          <Badge variant="outline" className="text-xs">
-                            Coming Soon
-                          </Badge>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Key className="h-4 w-4" />
+                            <Label className="text-base font-medium">Anthropic Claude Configuration</Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={aiSettings.providers.anthropic.enabled}
+                              onCheckedChange={(checked) => handleAIProviderChange("anthropic", "enabled", checked)}
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => testAIConnection("anthropic")}
+                              disabled={testingConnections.anthropic || !aiSettings.providers.anthropic.apiKey}
+                            >
+                              {testingConnections.anthropic ? <Loader2 className="h-4 w-4 animate-spin" /> : "Test"}
+                            </Button>
+                            {connectionResults.anthropic !== null &&
+                              (connectionResults.anthropic ? (
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <AlertTriangle className="h-4 w-4 text-red-500" />
+                              ))}
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="claudeApiKey">API Key</Label>
+                            <Label htmlFor="anthropicApiKey">API Key</Label>
                             <Input
-                              id="claudeApiKey"
+                              id="anthropicApiKey"
                               type="password"
                               placeholder="sk-ant-..."
-                              value={configuration.aiConfig?.claudeApiKey || ""}
-                              onChange={(e) => handleAIConfigChange("claudeApiKey", e.target.value)}
-                              disabled
+                              value={aiSettings.providers.anthropic.apiKey}
+                              onChange={(e) => handleAIProviderChange("anthropic", "apiKey", e.target.value)}
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Your Anthropic API key for Claude models</p>
+                          </div>
+                          <div>
+                            <Label htmlFor="anthropicModel">Model</Label>
+                            <Select
+                              value={aiSettings.providers.anthropic.model}
+                              onValueChange={(value) => handleAIProviderChange("anthropic", "model", value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="claude-3-opus-20240229">Claude 3 Opus</SelectItem>
+                                <SelectItem value="claude-3-sonnet-20240229">Claude 3 Sonnet (Recommended)</SelectItem>
+                                <SelectItem value="claude-3-haiku-20240307">Claude 3 Haiku</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label>Temperature: {aiSettings.providers.anthropic.temperature}</Label>
+                            <Slider
+                              value={[aiSettings.providers.anthropic.temperature]}
+                              onValueChange={(value) => handleAIProviderChange("anthropic", "temperature", value[0])}
+                              min={0}
+                              max={1}
+                              step={0.1}
+                              className="mt-2"
                             />
                           </div>
                           <div>
-                            <Label htmlFor="claudeModel">Model</Label>
-                            <select
-                              id="claudeModel"
-                              value={configuration.aiConfig?.claudeModel || "claude-3-sonnet-20240229"}
-                              onChange={(e) => handleAIConfigChange("claudeModel", e.target.value)}
-                              className={cn(
-                                "w-full p-2 border rounded-md",
-                                darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300",
-                              )}
-                              disabled
-                            >
-                              <option value="claude-3-opus-20240229">Claude 3 Opus</option>
-                              <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
-                              <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
-                            </select>
+                            <Label>Max Tokens: {aiSettings.providers.anthropic.maxTokens}</Label>
+                            <Slider
+                              value={[aiSettings.providers.anthropic.maxTokens]}
+                              onValueChange={(value) => handleAIProviderChange("anthropic", "maxTokens", value[0])}
+                              min={500}
+                              max={8000}
+                              step={100}
+                              className="mt-2"
+                            />
                           </div>
                         </div>
                       </div>
@@ -603,12 +755,31 @@ export default function SettingsPanel({
 
                       {/* Gemini Configuration */}
                       <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                          <Key className="h-4 w-4" />
-                          <Label className="text-base font-medium">Google Gemini Configuration</Label>
-                          <Badge variant="outline" className="text-xs">
-                            Coming Soon
-                          </Badge>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Key className="h-4 w-4" />
+                            <Label className="text-base font-medium">Google Gemini Configuration</Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={aiSettings.providers.gemini.enabled}
+                              onCheckedChange={(checked) => handleAIProviderChange("gemini", "enabled", checked)}
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => testAIConnection("gemini")}
+                              disabled={testingConnections.gemini || !aiSettings.providers.gemini.apiKey}
+                            >
+                              {testingConnections.gemini ? <Loader2 className="h-4 w-4 animate-spin" /> : "Test"}
+                            </Button>
+                            {connectionResults.gemini !== null &&
+                              (connectionResults.gemini ? (
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <AlertTriangle className="h-4 w-4 text-red-500" />
+                              ))}
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -618,120 +789,256 @@ export default function SettingsPanel({
                               id="geminiApiKey"
                               type="password"
                               placeholder="AI..."
-                              value={configuration.aiConfig?.geminiApiKey || ""}
-                              onChange={(e) => handleAIConfigChange("geminiApiKey", e.target.value)}
-                              disabled
+                              value={aiSettings.providers.gemini.apiKey}
+                              onChange={(e) => handleAIProviderChange("gemini", "apiKey", e.target.value)}
                             />
+                            <p className="text-xs text-gray-500 mt-1">Your Google AI API key for Gemini models</p>
                           </div>
                           <div>
                             <Label htmlFor="geminiModel">Model</Label>
-                            <select
-                              id="geminiModel"
-                              value={configuration.aiConfig?.geminiModel || "gemini-pro"}
-                              onChange={(e) => handleAIConfigChange("geminiModel", e.target.value)}
-                              className={cn(
-                                "w-full p-2 border rounded-md",
-                                darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300",
-                              )}
-                              disabled
+                            <Select
+                              value={aiSettings.providers.gemini.model}
+                              onValueChange={(value) => handleAIProviderChange("gemini", "model", value)}
                             >
-                              <option value="gemini-pro">Gemini Pro</option>
-                              <option value="gemini-pro-vision">Gemini Pro Vision</option>
-                            </select>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="gemini-pro">Gemini Pro (Recommended)</SelectItem>
+                                <SelectItem value="gemini-pro-vision">Gemini Pro Vision</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
-                      </div>
-
-                      <Separator />
-
-                      {/* AI Parameters */}
-                      <div className="space-y-4">
-                        <Label className="text-base font-medium">AI Parameters</Label>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="maxTokens">Max Tokens</Label>
-                            <div className="flex items-center gap-4 mt-2">
-                              <Slider
-                                value={[configuration.aiConfig?.maxTokens || 2000]}
-                                onValueChange={(value) => handleAIConfigChange("maxTokens", value[0])}
-                                min={500}
-                                max={4000}
-                                step={100}
-                                className="flex-1"
-                              />
-                              <Badge variant="outline" className="min-w-[80px] justify-center">
-                                {configuration.aiConfig?.maxTokens || 2000}
-                              </Badge>
-                            </div>
+                            <Label>Temperature: {aiSettings.providers.gemini.temperature}</Label>
+                            <Slider
+                              value={[aiSettings.providers.gemini.temperature]}
+                              onValueChange={(value) => handleAIProviderChange("gemini", "temperature", value[0])}
+                              min={0}
+                              max={1}
+                              step={0.1}
+                              className="mt-2"
+                            />
                           </div>
                           <div>
-                            <Label htmlFor="temperature">Temperature</Label>
-                            <div className="flex items-center gap-4 mt-2">
-                              <Slider
-                                value={[configuration.aiConfig?.temperature || 0.7]}
-                                onValueChange={(value) => handleAIConfigChange("temperature", value[0])}
-                                min={0}
-                                max={1}
-                                step={0.1}
-                                className="flex-1"
-                              />
-                              <Badge variant="outline" className="min-w-[80px] justify-center">
-                                {(configuration.aiConfig?.temperature || 0.7).toFixed(1)}
-                              </Badge>
-                            </div>
+                            <Label>Max Tokens: {aiSettings.providers.gemini.maxTokens}</Label>
+                            <Slider
+                              value={[aiSettings.providers.gemini.maxTokens]}
+                              onValueChange={(value) => handleAIProviderChange("gemini", "maxTokens", value[0])}
+                              min={500}
+                              max={8000}
+                              step={100}
+                              className="mt-2"
+                            />
                           </div>
                         </div>
                       </div>
 
                       <Separator />
 
-                      {/* Test Connection */}
-                      <div className="space-y-4">
+                      {/* Default Provider */}
+                      <div>
+                        <Label>Default AI Provider</Label>
+                        <Select
+                          value={aiSettings.defaultProvider}
+                          onValueChange={(value: "openai" | "anthropic" | "gemini") =>
+                            aiSettingsManager.setDefaultProvider(value)
+                          }
+                        >
+                          <SelectTrigger className="mt-2">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="openai">OpenAI GPT-4</SelectItem>
+                            <SelectItem value="anthropic">Anthropic Claude</SelectItem>
+                            <SelectItem value="gemini">Google Gemini</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* AI Prompts Tab */}
+                <TabsContent value="ai-prompts" className="space-y-6 mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Edit className="h-5 w-5" />
+                        AI Prompt Management
+                      </CardTitle>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Customize AI prompts for different analysis types and create custom prompts for specialized use
+                        cases.
+                      </p>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Built-in Prompts */}
+                      <div>
+                        <Label className="text-base font-medium">Built-in Prompts</Label>
+                        <div className="space-y-4 mt-4">
+                          {Object.entries(aiSettings.prompts).map(([category, prompts]) => (
+                            <div key={category} className="border rounded-lg p-4">
+                              <h4 className="font-medium capitalize mb-3">{category.replace(/([A-Z])/g, " $1")}</h4>
+                              <div className="space-y-3">
+                                {Object.entries(prompts).map(([provider, prompt]) => (
+                                  <div key={provider} className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <Label className="capitalize">{provider} Prompt</Label>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setEditingPrompt(`${category}-${provider}`)}
+                                      >
+                                        <Edit className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                    {editingPrompt === `${category}-${provider}` ? (
+                                      <div className="space-y-2">
+                                        <Textarea
+                                          value={prompt}
+                                          onChange={(e) =>
+                                            handlePromptChange(
+                                              category as keyof AISettings["prompts"],
+                                              provider as "openai" | "anthropic" | "gemini",
+                                              e.target.value,
+                                            )
+                                          }
+                                          rows={6}
+                                          className="font-mono text-sm"
+                                        />
+                                        <div className="flex gap-2">
+                                          <Button size="sm" onClick={() => setEditingPrompt(null)}>
+                                            Save
+                                          </Button>
+                                          <Button variant="outline" size="sm" onClick={() => setEditingPrompt(null)}>
+                                            Cancel
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded text-sm font-mono">
+                                        {prompt.substring(0, 200)}...
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Custom Prompts */}
+                      <div>
                         <div className="flex items-center justify-between">
-                          <div>
-                            <Label className="text-base font-medium">Test AI Connection</Label>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              Verify your AI configuration is working correctly
-                            </p>
-                          </div>
-                          <Button
-                            onClick={testAIConnection}
-                            disabled={testingAI || !configuration.aiConfig?.openaiApiKey}
-                            className="gap-2"
-                          >
-                            {testingAI ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Testing...
-                              </>
-                            ) : (
-                              <>
-                                <Zap className="h-4 w-4" />
-                                Test Connection
-                              </>
-                            )}
+                          <Label className="text-base font-medium">Custom Prompts</Label>
+                          <Button variant="outline" size="sm" onClick={() => setEditingPrompt("new-custom")}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Custom Prompt
                           </Button>
                         </div>
 
-                        {aiTestResult && (
-                          <Alert
-                            className={
-                              aiTestResult === "success" ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"
-                            }
-                          >
-                            {aiTestResult === "success" ? (
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                            ) : (
-                              <AlertTriangle className="h-4 w-4 text-red-600" />
-                            )}
-                            <AlertDescription>
-                              {aiTestResult === "success"
-                                ? "AI connection successful! Your reports will now include AI-enhanced insights."
-                                : "AI connection failed. Please check your API key and try again."}
-                            </AlertDescription>
-                          </Alert>
+                        {editingPrompt === "new-custom" && (
+                          <Card className="mt-4">
+                            <CardContent className="p-4 space-y-4">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label>Name</Label>
+                                  <Input
+                                    value={newCustomPrompt.name}
+                                    onChange={(e) => setNewCustomPrompt((prev) => ({ ...prev, name: e.target.value }))}
+                                    placeholder="Custom Analysis Prompt"
+                                  />
+                                </div>
+                                <div>
+                                  <Label>Category</Label>
+                                  <Select
+                                    value={newCustomPrompt.category}
+                                    onValueChange={(value: "research" | "enhancement" | "analysis" | "custom") =>
+                                      setNewCustomPrompt((prev) => ({ ...prev, category: value }))
+                                    }
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="research">Research</SelectItem>
+                                      <SelectItem value="enhancement">Enhancement</SelectItem>
+                                      <SelectItem value="analysis">Analysis</SelectItem>
+                                      <SelectItem value="custom">Custom</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                              <div>
+                                <Label>Description</Label>
+                                <Input
+                                  value={newCustomPrompt.description}
+                                  onChange={(e) =>
+                                    setNewCustomPrompt((prev) => ({ ...prev, description: e.target.value }))
+                                  }
+                                  placeholder="Brief description of what this prompt does"
+                                />
+                              </div>
+                              <div>
+                                <Label>Prompt Template</Label>
+                                <Textarea
+                                  value={newCustomPrompt.prompt}
+                                  onChange={(e) => setNewCustomPrompt((prev) => ({ ...prev, prompt: e.target.value }))}
+                                  rows={6}
+                                  placeholder="Enter your custom prompt template here. Use {variableName} for variables."
+                                  className="font-mono text-sm"
+                                />
+                              </div>
+                              <div className="flex gap-2">
+                                <Button onClick={addCustomPrompt}>
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  Add Prompt
+                                </Button>
+                                <Button variant="outline" onClick={() => setEditingPrompt(null)}>
+                                  Cancel
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
                         )}
+
+                        <div className="space-y-3 mt-4">
+                          {aiSettings.customPrompts.map((prompt) => (
+                            <div key={prompt.id} className="border rounded-lg p-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <div>
+                                  <h4 className="font-medium">{prompt.name}</h4>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">{prompt.description}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Badge variant="outline">{prompt.category}</Badge>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(prompt.prompt)
+                                    }}
+                                  >
+                                    <Copy className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="outline" size="sm" onClick={() => deleteCustomPrompt(prompt.id)}>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded text-sm font-mono">
+                                {prompt.prompt.substring(0, 200)}...
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -818,22 +1125,41 @@ export default function SettingsPanel({
 
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label>Analytics & Telemetry</Label>
+                          <Label>AI-Enhanced Reports</Label>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Help improve the tool by sharing anonymous usage data
+                            Enable AI-powered company research and report enhancement
                           </p>
                         </div>
-                        <Switch defaultChecked />
+                        <Switch
+                          checked={aiSettings.features.enhancedReports}
+                          onCheckedChange={(checked) => aiSettingsManager.updateFeatures({ enhancedReports: checked })}
+                        />
                       </div>
 
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label>Advanced Calculations</Label>
+                          <Label>Automatic Company Research</Label>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Include detailed risk and compliance calculations
+                            Automatically research companies when generating reports
                           </p>
                         </div>
-                        <Switch defaultChecked />
+                        <Switch
+                          checked={aiSettings.features.autoResearch}
+                          onCheckedChange={(checked) => aiSettingsManager.updateFeatures({ autoResearch: checked })}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label>Industry Insights</Label>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Include AI-powered industry analysis in reports
+                          </p>
+                        </div>
+                        <Switch
+                          checked={aiSettings.features.industryInsights}
+                          onCheckedChange={(checked) => aiSettingsManager.updateFeatures({ industryInsights: checked })}
+                        />
                       </div>
 
                       <Separator />
