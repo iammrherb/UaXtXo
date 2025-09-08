@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+    "dev": "next dev --hostname 0.0.0.0 --port 5000",
     "lint": "next lint",
-    "start": "next start",
+    "start": "next start --hostname 0.0.0.0 --port 5000",
     "test-imports": "node -e \"require('./lib/import-test.ts')\""
   },
   "dependencies": {

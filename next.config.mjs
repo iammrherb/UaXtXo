@@ -1,5 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Allow requests from all hosts (required for Replit proxy)
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+        ],
+      },
+    ]
+  },
+  
   webpack: (config, { isServer }) => {
     // Handle es-toolkit and other problematic packages
     config.resolve.fallback = {
