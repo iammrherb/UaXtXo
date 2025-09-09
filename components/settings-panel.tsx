@@ -99,7 +99,15 @@ export default function SettingsPanel({
           totalRequests: 0,
           costs: { openai: 0, anthropic: 0, gemini: 0 },
           lastReset: new Date().toISOString()
-        }
+        },
+        enhancementLevel: "standard" as const,
+        cacheResults: true,
+        rateLimiting: true,
+        maxRequestsPerMinute: 60,
+        timeout: 30000,
+        retryAttempts: 3,
+        enableLogging: true,
+        logLevel: "info" as const
       }
     }
   })
@@ -1052,7 +1060,7 @@ export default function SettingsPanel({
                         )}
 
                         <div className="space-y-3 mt-4">
-                          {(aiSettings.customPrompts || []).map((prompt) => (
+                          {(aiSettings.prompts?.custom || []).map((prompt: any) => (
                             <div key={prompt.id} className="border rounded-lg p-4">
                               <div className="flex items-center justify-between mb-2">
                                 <div>
