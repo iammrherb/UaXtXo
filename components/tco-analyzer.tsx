@@ -299,7 +299,7 @@ export default function TcoAnalyzerUltimate() {
               <div className="flex items-center gap-4">
                 {/* Always Show Portnox */}
                 <div className="flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                  <img src="/portnox-logo.png" alt="Portnox" className="h-5 w-5" />
+                  <img src="/portnox-logo.png" alt="Portnox" className="h-5 w-auto" />
                   <span className="text-sm font-medium text-green-700 dark:text-green-300">Portnox CLEAR</span>
                   <Badge variant="secondary" className="text-xs bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300">Baseline</Badge>
                 </div>
@@ -321,7 +321,7 @@ export default function TcoAnalyzerUltimate() {
                         <SelectItem key={vendor.id} value={vendor.id}>
                           <div className="flex items-center justify-between w-full">
                             <div className="flex items-center gap-2">
-                              <img src={vendor.logo} alt={vendor.name} className="h-4 w-4" />
+                              <img src={vendor.logo} alt={vendor.name} className="h-4 w-auto" />
                               <span className="font-medium">{vendor.name}</span>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -354,7 +354,7 @@ export default function TcoAnalyzerUltimate() {
                             .map((vendor) => (
                               <SelectItem key={vendor.id} value={vendor.id}>
                                 <div className="flex items-center gap-2">
-                                  <img src={vendor.logo} alt={vendor.name} className="h-4 w-4" />
+                                  <img src={vendor.logo} alt={vendor.name} className="h-4 w-auto" />
                                   {vendor.name}
                                 </div>
                               </SelectItem>
