@@ -136,8 +136,8 @@ You are an expert enterprise technology consultant providing C-suite analysis fo
 - Decision Timeframe: ${context.timeframe}
 
 **FINANCIAL ANALYSIS FOUNDATION:**
-- Primary Solution: ${context.primaryVendor.name} at $${context.primaryVendor.pricePerDevice}/device
-- Comparison Vendors: ${context.comparisonVendors.map(v => `${v.name} ($${v.pricePerDevice}/device)`).join(", ")}
+- Primary Solution: ${context.primaryVendor.name} at $${context.primaryVendor.pricing?.pricePerDevice || "Quote"}/device
+- Comparison Vendors: ${context.comparisonVendors.map(v => `${v.name} ($${v.pricing?.pricePerDevice || "Quote"}/device)`).join(", ")}
 - Projected Cost Savings: ${costSavings.percentage}% (${costSavings.amount} over ${costSavings.timeframe})
 - ROI Timeframe: ${roiProjections.paybackPeriod}
 - Total Economic Impact: ${roiProjections.totalBenefit} over ${roiProjections.analysisTimeframe}
@@ -1043,6 +1043,135 @@ Focus on delivering measurable security improvements that reduce organizational 
   
   private calculateComplianceScore(vendor: VendorData, requirements: string[]): number {
     return vendor.name === "Portnox CLEAR" ? 9.9 : Math.random() * 2 + 6
+  }
+  
+  // Missing method implementations
+  private assessTechnicalRequirements(context: ContextualData): any {
+    return {
+      architecture: "Cloud-native microservices",
+      performance: "Sub-100ms response time",
+      scalability: "Auto-scaling capabilities",
+      integration: "API-first design"
+    }
+  }
+  
+  private mapComplianceRequirements(context: ContextualData): any {
+    return {
+      requirements: context.complianceRequirements.reduce((acc, req) => {
+        acc[req] = {
+          technicalRequirements: this.getComplianceSecurityRequirements(req),
+          automationLevel: "Fully automated",
+          reportingCapability: "Real-time dashboard"
+        }
+        return acc
+      }, {} as Record<string, any>)
+    }
+  }
+  
+  private generateCompliancePrompt(
+    context: ContextualData,
+    compliance: any,
+    technical: any
+  ): DynamicPromptResult {
+    
+    const enhancedPrompt = `
+**COMPREHENSIVE COMPLIANCE ANALYSIS & RISK ASSESSMENT**
+
+You are a compliance and risk management expert providing detailed analysis for NAC solution compliance capabilities. Focus on regulatory alignment, automated compliance, and risk mitigation.
+
+**COMPLIANCE ENVIRONMENT CONTEXT:**
+- Industry: ${context.industryType}
+- Regulatory Requirements: ${context.complianceRequirements.join(", ")}
+- Risk Tolerance: ${context.riskTolerance}
+- Organization Size: ${context.organizationSize}
+- Compliance Complexity: ${context.technicalComplexity}
+
+**REGULATORY FRAMEWORK ANALYSIS:**
+${context.complianceRequirements.map(req => `
+**${req} Compliance:**
+- Technical Requirements: ${this.getComplianceSecurityRequirements(req)}
+- Automation Level: ${context.primaryVendor.name === "Portnox CLEAR" ? "Fully automated" : "Manual processes required"}
+- Audit Readiness: ${context.primaryVendor.name === "Portnox CLEAR" ? "Continuous compliance monitoring" : "Periodic manual audits"}
+`).join("")}
+
+**COMPLIANCE SOLUTION ANALYSIS:**
+
+**Primary Solution: ${context.primaryVendor.name}**
+- Compliance Score: ${this.calculateComplianceScore(context.primaryVendor, context.complianceRequirements)}/10
+- Automation Level: ${context.primaryVendor.name === "Portnox CLEAR" ? "Advanced automation" : "Basic compliance features"}
+- Reporting Capabilities: ${context.primaryVendor.name === "Portnox CLEAR" ? "Real-time dashboards" : "Manual reporting"}
+
+**REQUIRED COMPLIANCE DELIVERABLES:**
+
+• **Regulatory Mapping** with detailed control alignment
+• **Automated Compliance Monitoring** with real-time status
+• **Audit Preparation** with comprehensive documentation
+• **Risk Assessment** with mitigation strategies
+• **Implementation Roadmap** with compliance milestones
+
+    `
+    
+    return {
+      enhancedPrompt,
+      dataPoints: ["Compliance requirements", "Automation capabilities", "Audit readiness", "Risk mitigation"],
+      analysisFramework: ["Regulatory Alignment", "Automation", "Reporting", "Risk Management"],
+      recommendationFocus: ["Compliance Automation", "Risk Reduction", "Audit Preparation"],
+      educationalContent: ["Compliance frameworks", "Regulatory requirements", "Automation benefits", "Risk management"]
+    }
+  }
+  
+  private generateCompetitivePrompt(
+    context: ContextualData,
+    competitive: any,
+    dataAnalysis: any
+  ): DynamicPromptResult {
+    
+    const enhancedPrompt = `
+**COMPREHENSIVE COMPETITIVE ANALYSIS & MARKET POSITIONING**
+
+You are a market analyst providing strategic competitive intelligence for NAC solution selection. Focus on market dynamics, vendor positioning, and competitive advantages.
+
+**MARKET LANDSCAPE CONTEXT:**
+- Primary Solution: ${context.primaryVendor.name}
+- Competitive Set: ${context.comparisonVendors.map(v => v.name).join(", ")}
+- Market Focus: ${context.priorityFocus}
+- Organization Profile: ${context.organizationSize} ${context.industryType}
+
+**COMPETITIVE POSITIONING ANALYSIS:**
+${competitive.marketAnalysis}
+
+**VENDOR COMPARISON MATRIX:**
+${context.comparisonVendors.map(vendor => `
+**${vendor.name}:**
+- Market Position: ${vendor.category}
+- Strengths: ${vendor.strengths?.join(", ") || "Traditional features"}
+- Weaknesses: ${vendor.weaknesses?.join(", ") || "Limited innovation"}
+- Pricing Strategy: ${vendor.pricing?.pricePerDevice ? `$${vendor.pricing.pricePerDevice}/device` : "Quote-based"}
+- Best For: ${vendor.bestFor?.join(", ") || "Traditional deployments"}
+`).join("")}
+
+**COMPETITIVE ADVANTAGE ANALYSIS:**
+
+**${context.primaryVendor.name} Advantages:**
+${competitive.advantages.map((adv: string) => `- ${adv}`).join("\\n")}
+
+**REQUIRED COMPETITIVE DELIVERABLES:**
+
+• **Market Position Analysis** with vendor landscape mapping
+• **Feature Comparison Matrix** with detailed capability analysis
+• **Pricing Strategy Assessment** with total cost comparison
+• **Competitive Differentiation** with unique value propositions
+• **Win/Loss Analysis** with competitive strategies
+
+    `
+    
+    return {
+      enhancedPrompt,
+      dataPoints: ["Market position", "Competitive strengths", "Pricing analysis", "Differentiation"],
+      analysisFramework: ["Market Dynamics", "Vendor Positioning", "Competitive Intelligence", "Strategic Advantages"],
+      recommendationFocus: ["Competitive Positioning", "Market Advantages", "Differentiation Strategy"],
+      educationalContent: ["Market landscape", "Vendor analysis", "Competitive strategies", "Positioning tactics"]
+    }
   }
 }
 

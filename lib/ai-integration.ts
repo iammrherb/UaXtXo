@@ -1,4 +1,5 @@
 // Enhanced AI integration with multiple providers and marketing-ready reports
+import { dynamicPromptEngine, type ContextualData } from './dynamic-ai-prompt-engine'
 export interface VendorWarning {
   vendorId: string
   severity: 'low' | 'medium' | 'high' | 'critical'
