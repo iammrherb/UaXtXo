@@ -19,8 +19,37 @@ export interface AISettings {
     gemini: AIProvider
   }
   defaultProvider: "openai" | "anthropic" | "gemini"
+  features: {
+    autoResearch: boolean
+    enhancedReports: boolean
+    competitiveAnalysis: boolean
+    industryInsights: boolean
+    riskAssessment: boolean
+    implementationGuidance: boolean
+  }
+  prompts: {
+    executiveSummary: { openai: string; anthropic: string; gemini: string }
+    technicalAnalysis: { openai: string; anthropic: string; gemini: string }
+    competitiveComparison: { openai: string; anthropic: string; gemini: string }
+    riskAssessment: { openai: string; anthropic: string; gemini: string }
+    implementationPlan: { openai: string; anthropic: string; gemini: string }
+    costOptimization: { openai: string; anthropic: string; gemini: string }
+    custom: Array<{
+      id: string
+      name: string
+      description: string
+      category: "custom" | "research" | "enhancement" | "analysis"
+      prompt: string
+      variables: string[]
+    }>
+  }
+  usage: {
+    totalTokens: number
+    totalRequests: number
+    costs: { openai: number; anthropic: number; gemini: number }
+    lastReset: string
+  }
   enhancementLevel: "basic" | "standard" | "advanced" | "maximum"
-  autoResearch: boolean
   cacheResults: boolean
   rateLimiting: boolean
   maxRequestsPerMinute: number
@@ -75,6 +104,71 @@ class AISettingsManager {
       configured: Boolean(updates.apiKey || this.settings.providers[providerName].apiKey),
     }
     this.saveSettings()
+  }
+
+  updateProviderSettings(provider: "openai" | "anthropic" | "gemini", updates: Partial<AIProvider>): void {
+    this.updateProvider(provider, updates)
+  }
+
+  // Features Management
+  updateFeatures(updates: Partial<AISettings["features"]>): void {
+    this.settings.features = { ...this.settings.features, ...updates }
+    this.saveSettings()
+  }
+
+  // Prompts Management
+  updatePrompt(category: keyof AISettings["prompts"], provider: "openai" | "anthropic" | "gemini", prompt: string): void {
+    if (category === "custom") return // Custom prompts handled separately
+    
+    if (!this.settings.prompts[category]) {
+      this.settings.prompts[category] = { openai: "", anthropic: "", gemini: "" }
+    }
+    this.settings.prompts[category][provider] = prompt
+    this.saveSettings()
+  }
+
+  addCustomPrompt(prompt: {
+    name: string
+    description: string
+    category: "custom" | "research" | "enhancement" | "analysis"
+    prompt: string
+    variables: string[]
+  }): void {
+    const id = `custom_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    this.settings.prompts.custom.push({ id, ...prompt })
+    this.saveSettings()
+  }
+
+  deleteCustomPrompt(id: string): void {
+    this.settings.prompts.custom = this.settings.prompts.custom.filter(p => p.id !== id)
+    this.saveSettings()
+  }
+
+  // Default Provider Management
+  setDefaultProvider(provider: "openai" | "anthropic" | "gemini"): void {
+    this.settings.defaultProvider = provider
+    this.saveSettings()
+  }
+
+  // Connection Testing
+  async testConnection(provider: "openai" | "anthropic" | "gemini"): Promise<boolean> {
+    const providerSettings = this.settings.providers[provider]
+    if (!providerSettings.apiKey) return false
+    
+    // Mock test - in real implementation, this would make actual API calls
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(true), 1000)
+    })
+  }
+
+  // Reset and Import/Export
+  resetToDefaults(): void {
+    this.settings = this.getDefaultSettings()
+    this.saveSettings()
+  }
+
+  importSettings(settingsJson: string): { success: boolean; error?: string } {
+    return this.importConfiguration(settingsJson)
   }
 
   getProvider(providerName: keyof AISettings["providers"]): AIProvider {
@@ -318,8 +412,21 @@ class AISettingsManager {
         },
       },
       defaultProvider: "openai",
+      features: {
+        autoResearch: true,
+        enhancedReports: true,
+        competitiveAnalysis: true,
+        industryInsights: true,
+        riskAssessment: true,
+        implementationGuidance: true,
+      },
+      usage: {
+        totalTokens: 0,
+        totalRequests: 0,
+        costs: { openai: 0, anthropic: 0, gemini: 0 },
+        lastReset: new Date().toISOString(),
+      },
       enhancementLevel: "standard",
-      autoResearch: true,
       cacheResults: true,
       rateLimiting: true,
       maxRequestsPerMinute: 60,
@@ -338,16 +445,27 @@ class AISettingsManager {
           anthropic: "Analyze technical specifications, deployment models, performance metrics, and integration requirements for NAC solutions.",
           gemini: "Generate comprehensive technical evaluation covering security posture, architectural considerations, and operational capabilities."
         },
-        complianceReport: {
-          openai: "Create detailed compliance analysis showing how each NAC solution addresses regulatory requirements and industry standards.",
-          anthropic: "Analyze compliance capabilities across HIPAA, PCI-DSS, SOX, GDPR, and other frameworks for each NAC vendor.",
-          gemini: "Generate compliance assessment report detailing regulatory coverage and risk mitigation capabilities."
+        competitiveComparison: {
+          openai: "Create detailed competitive analysis comparing NAC solutions including strengths, weaknesses, and market positioning.",
+          anthropic: "Analyze competitive landscape showing how each NAC vendor compares in features, pricing, and capabilities.",
+          gemini: "Generate comprehensive competitive comparison highlighting market advantages and differentiation."
         },
-        securityAssessment: {
+        riskAssessment: {
           openai: "Evaluate security capabilities, threat detection, incident response, and vulnerability management across NAC solutions.",
           anthropic: "Assess security posture including zero trust maturity, threat protection, and security control effectiveness.",
           gemini: "Analyze security features, threat landscape coverage, and defensive capabilities of each NAC solution."
-        }
+        },
+        implementationPlan: {
+          openai: "Create detailed implementation roadmap including phases, timelines, resources, and success criteria.",
+          anthropic: "Develop comprehensive deployment plan with technical requirements, milestones, and risk mitigation.",
+          gemini: "Generate implementation strategy covering technical deployment, change management, and success metrics."
+        },
+        costOptimization: {
+          openai: "Analyze cost optimization opportunities including licensing strategies, resource planning, and ROI maximization.",
+          anthropic: "Evaluate cost reduction strategies, budget optimization, and long-term financial planning for NAC deployment.",
+          gemini: "Generate cost optimization recommendations including procurement strategies and operational efficiency."
+        },
+        custom: []
       }
     }
   }
