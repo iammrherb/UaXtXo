@@ -65,7 +65,44 @@ export default function SettingsPanel({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [currency, setCurrency] = useState("USD")
   const [numberFormat, setNumberFormat] = useState("en-US")
-  const [aiSettings, setAiSettings] = useState<AISettings>(aiSettingsManager.getSettings())
+  const [aiSettings, setAiSettings] = useState<AISettings>(() => {
+    try {
+      return aiSettingsManager.getSettings()
+    } catch (error) {
+      console.warn("Failed to load AI settings, using defaults:", error)
+      return {
+        providers: {
+          openai: { apiKey: "", model: "gpt-4o", temperature: 0.7, maxTokens: 2000, enabled: false },
+          anthropic: { apiKey: "", model: "claude-3-sonnet-20240229", temperature: 0.7, maxTokens: 2000, enabled: false },
+          gemini: { apiKey: "", model: "gemini-pro", temperature: 0.7, maxTokens: 2000, enabled: false }
+        },
+        defaultProvider: "openai",
+        features: {
+          autoResearch: true,
+          enhancedReports: true,
+          competitiveAnalysis: true,
+          industryInsights: true,
+          riskAssessment: true,
+          implementationGuidance: true
+        },
+        prompts: {
+          executiveSummary: { openai: "", anthropic: "", gemini: "" },
+          technicalAnalysis: { openai: "", anthropic: "", gemini: "" },
+          competitiveComparison: { openai: "", anthropic: "", gemini: "" },
+          riskAssessment: { openai: "", anthropic: "", gemini: "" },
+          implementationPlan: { openai: "", anthropic: "", gemini: "" },
+          costOptimization: { openai: "", anthropic: "", gemini: "" },
+          custom: []
+        },
+        usage: {
+          totalTokens: 0,
+          totalRequests: 0,
+          costs: { openai: 0, anthropic: 0, gemini: 0 },
+          lastReset: new Date().toISOString()
+        }
+      }
+    }
+  })
   const [testingConnections, setTestingConnections] = useState<Record<string, boolean>>({})
   const [connectionResults, setConnectionResults] = useState<Record<string, boolean | null>>({})
   const [editingPrompt, setEditingPrompt] = useState<string | null>(null)
@@ -1131,8 +1168,15 @@ export default function SettingsPanel({
                           </p>
                         </div>
                         <Switch
-                          checked={aiSettings.features.enhancedReports}
-                          onCheckedChange={(checked) => aiSettingsManager.updateFeatures({ enhancedReports: checked })}
+                          checked={aiSettings.features?.enhancedReports || false}
+                          onCheckedChange={(checked) => {
+                            try {
+                              aiSettingsManager.updateFeatures({ enhancedReports: checked })
+                              setAiSettings(aiSettingsManager.getSettings())
+                            } catch (error) {
+                              console.warn("Failed to update enhanced reports setting:", error)
+                            }
+                          }}
                         />
                       </div>
 
