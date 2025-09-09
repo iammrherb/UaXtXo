@@ -105,14 +105,61 @@ export default function DetailedCostsView({ results = [], configuration }: Detai
   const sampleResults = useMemo(() => {
     if (results.length > 0) return results
 
-    const deviceCount = configuration?.devices || configuration?.deviceCount || 5000
-    const timeframe = configuration?.years || configuration?.timeframe || 3
+    const deviceCount = configuration?.devices || 5000
+    const timeframe = configuration?.years || 3
 
+    // Generate sample calculation results for demo
     return [
-      calculateTCO("PORTNOX", deviceCount, timeframe, "HEALTHCARE", "LARGE"),
-      calculateTCO("CISCO_ISE", deviceCount, timeframe, "HEALTHCARE", "LARGE"),
-      calculateTCO("ARUBA_CLEARPASS", deviceCount, timeframe, "HEALTHCARE", "LARGE"),
-      calculateTCO("FORESCOUT", deviceCount, timeframe, "HEALTHCARE", "LARGE"),
+      {
+        vendor: "PORTNOX",
+        vendorId: "portnox",
+        totalCost: deviceCount * 4.0 * timeframe,
+        yearlyBreakdown: Array.from({ length: timeframe }, (_, i) => ({
+          year: i + 1,
+          total: deviceCount * 4.0,
+          licensing: deviceCount * 4.0 * 0.6,
+          hardware: deviceCount * 4.0 * 0.1,
+          services: deviceCount * 4.0 * 0.15,
+          maintenance: deviceCount * 4.0 * 0.15,
+        })),
+        costBreakdown: {
+          licensing: deviceCount * 4.0 * timeframe * 0.6,
+          hardware: deviceCount * 4.0 * timeframe * 0.1,
+          services: deviceCount * 4.0 * timeframe * 0.15,
+          maintenance: deviceCount * 4.0 * timeframe * 0.15,
+          training: deviceCount * 4.0 * timeframe * 0.05,
+          support: deviceCount * 4.0 * timeframe * 0.05,
+        },
+        savings: 0,
+        roi: 100,
+        paybackPeriod: 12,
+        recommendations: ["Recommended baseline solution"],
+      },
+      {
+        vendor: "CISCO_ISE",
+        vendorId: "cisco",
+        totalCost: deviceCount * 28.0 * timeframe,
+        yearlyBreakdown: Array.from({ length: timeframe }, (_, i) => ({
+          year: i + 1,
+          total: deviceCount * 28.0,
+          licensing: deviceCount * 28.0 * 0.7,
+          hardware: deviceCount * 28.0 * 0.2,
+          services: deviceCount * 28.0 * 0.1,
+          maintenance: deviceCount * 28.0 * 0.1,
+        })),
+        costBreakdown: {
+          licensing: deviceCount * 28.0 * timeframe * 0.7,
+          hardware: deviceCount * 28.0 * timeframe * 0.2,
+          services: deviceCount * 28.0 * timeframe * 0.1,
+          maintenance: deviceCount * 28.0 * timeframe * 0.1,
+          training: deviceCount * 28.0 * timeframe * 0.05,
+          support: deviceCount * 28.0 * timeframe * 0.05,
+        },
+        savings: -(deviceCount * (28.0 - 4.0) * timeframe),
+        roi: -85,
+        paybackPeriod: 999,
+        recommendations: ["Expensive enterprise solution"],
+      },
     ]
   }, [results, configuration])
 
@@ -138,6 +185,10 @@ export default function DetailedCostsView({ results = [], configuration }: Detai
         training: safeNumber(result.costBreakdown?.training, 0),
         support: safeNumber(result.costBreakdown?.support, 0),
       },
+      savings: safeNumber(result.savings, 0),
+      roi: safeNumber(result.roi, 0),
+      paybackPeriod: safeNumber(result.paybackPeriod, 0),
+      recommendations: result.recommendations || [],
     }))
   }, [sampleResults])
 

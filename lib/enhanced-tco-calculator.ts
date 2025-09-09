@@ -927,7 +927,7 @@ export function calculateTCO(vendorIds: string[], config: CalculationConfigurati
     years: Math.max(1, Math.min(10, Math.floor(Number(config.years) || 3))),
     region: typeof config.region === "string" ? config.region : "north-america",
     portnoxBasePrice: Number(config.portnoxBasePrice) || 48,
-    portnoxAddons: config.portnoxAddons || { atp: false, compliance: false, iot: false, analytics: false },
+    portnoxAddons: config.portnoxAddons || { tacacs: false, ztna: false },
     discountRate: Number(config.discountRate) || 0.1,
     inflationRate: Number(config.inflationRate) || 0.03,
     taxRate: Number(config.taxRate) || 0.25,
@@ -946,9 +946,10 @@ export function calculateTCO(vendorIds: string[], config: CalculationConfigurati
     })
     .filter((result: any) => result !== null)
 
-  results.sort((a, b) => a.totalCost - b.totalCost)
+  const validResults = results.filter((result): result is CalculationResult => result !== null)
+  validResults.sort((a, b) => a.totalCost - b.totalCost)
 
-  return results
+  return validResults
 }
 
 export function compareVendors(vendorIds: string[], config: CalculationConfiguration): CalculationResult[] {
