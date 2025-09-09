@@ -115,7 +115,12 @@ export default function SettingsPanel({
   })
 
   useEffect(() => {
-    setAiSettings(aiSettingsManager.getSettings())
+    try {
+      const settings = aiSettingsManager.getSettings()
+      setAiSettings(settings)
+    } catch (error) {
+      console.warn("Failed to load AI settings in useEffect:", error)
+    }
   }, [])
 
   const handleConfigChange = (key: string, value: any) => {
@@ -624,14 +629,14 @@ export default function SettingsPanel({
                           </div>
                           <div className="flex items-center gap-2">
                             <Switch
-                              checked={aiSettings.providers.openai.enabled}
+                              checked={aiSettings.providers?.openai?.enabled || false}
                               onCheckedChange={(checked) => handleAIProviderChange("openai", "enabled", checked)}
                             />
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => testAIConnection("openai")}
-                              disabled={testingConnections.openai || !aiSettings.providers.openai.apiKey}
+                              disabled={testingConnections.openai || !aiSettings.providers?.openai?.apiKey}
                             >
                               {testingConnections.openai ? <Loader2 className="h-4 w-4 animate-spin" /> : "Test"}
                             </Button>
@@ -651,7 +656,7 @@ export default function SettingsPanel({
                               id="openaiApiKey"
                               type="password"
                               placeholder="sk-..."
-                              value={aiSettings.providers.openai.apiKey}
+                              value={aiSettings.providers?.openai?.apiKey || ""}
                               onChange={(e) => handleAIProviderChange("openai", "apiKey", e.target.value)}
                             />
                             <p className="text-xs text-gray-500 mt-1">Your OpenAI API key for GPT models</p>
@@ -659,7 +664,7 @@ export default function SettingsPanel({
                           <div>
                             <Label htmlFor="openaiModel">Model</Label>
                             <Select
-                              value={aiSettings.providers.openai.model}
+                              value={aiSettings.providers?.openai?.model || "gpt-4o"}
                               onValueChange={(value) => handleAIProviderChange("openai", "model", value)}
                             >
                               <SelectTrigger>
@@ -677,9 +682,9 @@ export default function SettingsPanel({
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label>Temperature: {aiSettings.providers.openai.temperature}</Label>
+                            <Label>Temperature: {aiSettings.providers?.openai?.temperature || 0.7}</Label>
                             <Slider
-                              value={[aiSettings.providers.openai.temperature]}
+                              value={[aiSettings.providers?.openai?.temperature || 0.7]}
                               onValueChange={(value) => handleAIProviderChange("openai", "temperature", value[0])}
                               min={0}
                               max={1}
@@ -688,9 +693,9 @@ export default function SettingsPanel({
                             />
                           </div>
                           <div>
-                            <Label>Max Tokens: {aiSettings.providers.openai.maxTokens}</Label>
+                            <Label>Max Tokens: {aiSettings.providers?.openai?.maxTokens || 2000}</Label>
                             <Slider
-                              value={[aiSettings.providers.openai.maxTokens]}
+                              value={[aiSettings.providers?.openai?.maxTokens || 2000]}
                               onValueChange={(value) => handleAIProviderChange("openai", "maxTokens", value[0])}
                               min={500}
                               max={8000}
@@ -712,14 +717,14 @@ export default function SettingsPanel({
                           </div>
                           <div className="flex items-center gap-2">
                             <Switch
-                              checked={aiSettings.providers.anthropic.enabled}
+                              checked={aiSettings.providers?.anthropic?.enabled || false}
                               onCheckedChange={(checked) => handleAIProviderChange("anthropic", "enabled", checked)}
                             />
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => testAIConnection("anthropic")}
-                              disabled={testingConnections.anthropic || !aiSettings.providers.anthropic.apiKey}
+                              disabled={testingConnections.anthropic || !aiSettings.providers?.anthropic?.apiKey}
                             >
                               {testingConnections.anthropic ? <Loader2 className="h-4 w-4 animate-spin" /> : "Test"}
                             </Button>
@@ -739,7 +744,7 @@ export default function SettingsPanel({
                               id="anthropicApiKey"
                               type="password"
                               placeholder="sk-ant-..."
-                              value={aiSettings.providers.anthropic.apiKey}
+                              value={aiSettings.providers?.anthropic?.apiKey || ""}
                               onChange={(e) => handleAIProviderChange("anthropic", "apiKey", e.target.value)}
                             />
                             <p className="text-xs text-gray-500 mt-1">Your Anthropic API key for Claude models</p>
@@ -747,7 +752,7 @@ export default function SettingsPanel({
                           <div>
                             <Label htmlFor="anthropicModel">Model</Label>
                             <Select
-                              value={aiSettings.providers.anthropic.model}
+                              value={aiSettings.providers?.anthropic?.model || "claude-3-sonnet-20240229"}
                               onValueChange={(value) => handleAIProviderChange("anthropic", "model", value)}
                             >
                               <SelectTrigger>
@@ -764,9 +769,9 @@ export default function SettingsPanel({
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label>Temperature: {aiSettings.providers.anthropic.temperature}</Label>
+                            <Label>Temperature: {aiSettings.providers?.anthropic?.temperature || 0.7}</Label>
                             <Slider
-                              value={[aiSettings.providers.anthropic.temperature]}
+                              value={[aiSettings.providers?.anthropic?.temperature || 0.7]}
                               onValueChange={(value) => handleAIProviderChange("anthropic", "temperature", value[0])}
                               min={0}
                               max={1}
@@ -775,9 +780,9 @@ export default function SettingsPanel({
                             />
                           </div>
                           <div>
-                            <Label>Max Tokens: {aiSettings.providers.anthropic.maxTokens}</Label>
+                            <Label>Max Tokens: {aiSettings.providers?.anthropic?.maxTokens || 2000}</Label>
                             <Slider
-                              value={[aiSettings.providers.anthropic.maxTokens]}
+                              value={[aiSettings.providers?.anthropic?.maxTokens || 2000]}
                               onValueChange={(value) => handleAIProviderChange("anthropic", "maxTokens", value[0])}
                               min={500}
                               max={8000}
@@ -799,14 +804,14 @@ export default function SettingsPanel({
                           </div>
                           <div className="flex items-center gap-2">
                             <Switch
-                              checked={aiSettings.providers.gemini.enabled}
+                              checked={aiSettings.providers?.gemini?.enabled || false}
                               onCheckedChange={(checked) => handleAIProviderChange("gemini", "enabled", checked)}
                             />
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => testAIConnection("gemini")}
-                              disabled={testingConnections.gemini || !aiSettings.providers.gemini.apiKey}
+                              disabled={testingConnections.gemini || !aiSettings.providers?.gemini?.apiKey}
                             >
                               {testingConnections.gemini ? <Loader2 className="h-4 w-4 animate-spin" /> : "Test"}
                             </Button>
@@ -826,7 +831,7 @@ export default function SettingsPanel({
                               id="geminiApiKey"
                               type="password"
                               placeholder="AI..."
-                              value={aiSettings.providers.gemini.apiKey}
+                              value={aiSettings.providers?.gemini?.apiKey || ""}
                               onChange={(e) => handleAIProviderChange("gemini", "apiKey", e.target.value)}
                             />
                             <p className="text-xs text-gray-500 mt-1">Your Google AI API key for Gemini models</p>
@@ -834,7 +839,7 @@ export default function SettingsPanel({
                           <div>
                             <Label htmlFor="geminiModel">Model</Label>
                             <Select
-                              value={aiSettings.providers.gemini.model}
+                              value={aiSettings.providers?.gemini?.model || "gemini-pro"}
                               onValueChange={(value) => handleAIProviderChange("gemini", "model", value)}
                             >
                               <SelectTrigger>
@@ -850,9 +855,9 @@ export default function SettingsPanel({
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label>Temperature: {aiSettings.providers.gemini.temperature}</Label>
+                            <Label>Temperature: {aiSettings.providers?.gemini?.temperature || 0.7}</Label>
                             <Slider
-                              value={[aiSettings.providers.gemini.temperature]}
+                              value={[aiSettings.providers?.gemini?.temperature || 0.7]}
                               onValueChange={(value) => handleAIProviderChange("gemini", "temperature", value[0])}
                               min={0}
                               max={1}
@@ -861,9 +866,9 @@ export default function SettingsPanel({
                             />
                           </div>
                           <div>
-                            <Label>Max Tokens: {aiSettings.providers.gemini.maxTokens}</Label>
+                            <Label>Max Tokens: {aiSettings.providers?.gemini?.maxTokens || 2000}</Label>
                             <Slider
-                              value={[aiSettings.providers.gemini.maxTokens]}
+                              value={[aiSettings.providers?.gemini?.maxTokens || 2000]}
                               onValueChange={(value) => handleAIProviderChange("gemini", "maxTokens", value[0])}
                               min={500}
                               max={8000}
@@ -1188,8 +1193,15 @@ export default function SettingsPanel({
                           </p>
                         </div>
                         <Switch
-                          checked={aiSettings.features.autoResearch}
-                          onCheckedChange={(checked) => aiSettingsManager.updateFeatures({ autoResearch: checked })}
+                          checked={aiSettings.features?.autoResearch || false}
+                          onCheckedChange={(checked) => {
+                            try {
+                              aiSettingsManager.updateFeatures({ autoResearch: checked })
+                              setAiSettings(aiSettingsManager.getSettings())
+                            } catch (error) {
+                              console.warn("Failed to update autoResearch setting:", error)
+                            }
+                          }}
                         />
                       </div>
 
@@ -1201,8 +1213,15 @@ export default function SettingsPanel({
                           </p>
                         </div>
                         <Switch
-                          checked={aiSettings.features.industryInsights}
-                          onCheckedChange={(checked) => aiSettingsManager.updateFeatures({ industryInsights: checked })}
+                          checked={aiSettings.features?.industryInsights || false}
+                          onCheckedChange={(checked) => {
+                            try {
+                              aiSettingsManager.updateFeatures({ industryInsights: checked })
+                              setAiSettings(aiSettingsManager.getSettings())
+                            } catch (error) {
+                              console.warn("Failed to update industryInsights setting:", error)
+                            }
+                          }}
                         />
                       </div>
 
