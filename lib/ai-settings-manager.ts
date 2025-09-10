@@ -549,5 +549,4 @@ export function validateProviderConfig(provider: AIProvider): { isValid: boolean
   }
 }
 
-// Export types for external use
-export type { AIProvider, AISettings, AIUsageStats }
+// Note: Types are already exported as interfaces above, no need to re-export
