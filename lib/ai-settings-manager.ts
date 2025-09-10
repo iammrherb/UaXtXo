@@ -337,10 +337,12 @@ class AISettingsManager {
   // Private Methods
   private loadSettings(): AISettings {
     try {
-      const stored = localStorage.getItem(this.STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        return { ...this.getDefaultSettings(), ...parsed }
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const stored = localStorage.getItem(this.STORAGE_KEY)
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          return { ...this.getDefaultSettings(), ...parsed }
+        }
       }
     } catch (error) {
       console.warn("Failed to load AI settings from localStorage:", error)
@@ -350,7 +352,9 @@ class AISettingsManager {
 
   private saveSettings(): void {
     try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.settings))
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.settings))
+      }
     } catch (error) {
       console.warn("Failed to save AI settings to localStorage:", error)
     }
@@ -358,10 +362,12 @@ class AISettingsManager {
 
   private loadUsageStats(): AIUsageStats {
     try {
-      const stored = localStorage.getItem(this.STATS_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        return { ...this.getDefaultUsageStats(), ...parsed }
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const stored = localStorage.getItem(this.STATS_KEY)
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          return { ...this.getDefaultUsageStats(), ...parsed }
+        }
       }
     } catch (error) {
       console.warn("Failed to load AI usage stats from localStorage:", error)
@@ -371,7 +377,9 @@ class AISettingsManager {
 
   private saveUsageStats(): void {
     try {
-      localStorage.setItem(this.STATS_KEY, JSON.stringify(this.usageStats))
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(this.STATS_KEY, JSON.stringify(this.usageStats))
+      }
     } catch (error) {
       console.warn("Failed to save AI usage stats to localStorage:", error)
     }
