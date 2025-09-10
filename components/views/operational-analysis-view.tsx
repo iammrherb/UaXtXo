@@ -414,7 +414,7 @@ export default function OperationalAnalysisView({ results, config }: Operational
                     <Tooltip formatter={(value: number) => `${value.toFixed(1)}h`} />
                     <Bar
                       dataKey="totalDailyHours"
-                      fill={(entry: any) => (entry.vendorId === "portnox" ? COLORS.portnox : COLORS.categories[0])}
+                      fill={COLORS.portnox}
                       name="Daily Hours Required"
                     />
                   </BarChart>
