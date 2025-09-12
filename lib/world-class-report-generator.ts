@@ -130,12 +130,13 @@ export async function generateWorldClassReport(
 
 // PDF Report Generation
 async function generatePDFReport(data: WorldClassReportData): Promise<Blob> {
-  console.log("Starting PDF generation for:", data.organization.name)
+  try {
+    console.log("Starting PDF generation for:", data.organization.name)
 
-  const pdf = new jsPDF("p", "mm", "a4")
-  const pageWidth = pdf.internal.pageSize.getWidth()
-  const pageHeight = pdf.internal.pageSize.getHeight()
-  const margin = 20
+    const pdf = new jsPDF("p", "mm", "a4")
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    const margin = 20
 
   // Colors from branding
   const primaryColor = data.branding.primaryColor || "#00D4AA"
@@ -393,6 +394,18 @@ async function generatePDFReport(data: WorldClassReportData): Promise<Blob> {
 
   console.log("PDF generation completed successfully")
   return new Blob([pdf.output("blob")], { type: "application/pdf" })
+  } catch (error) {
+    console.error("PDF generation error:", error)
+    
+    // Return a simple fallback PDF
+    const fallbackPdf = new jsPDF("p", "mm", "a4")
+    fallbackPdf.setFontSize(16)
+    fallbackPdf.text("Report Generation Error", 20, 40)
+    fallbackPdf.setFontSize(12)
+    fallbackPdf.text(`Failed to generate report for ${data.organization.name}`, 20, 60)
+    fallbackPdf.text("Please contact support for assistance.", 20, 80)
+    return new Blob([fallbackPdf.output("blob")], { type: "application/pdf" })
+  }
 }
 
 // Word Report Generation
